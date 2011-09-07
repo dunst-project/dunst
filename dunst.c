@@ -28,6 +28,8 @@ typedef struct _msg_queue_t {
 
 /* global variables */
 static int bh, mw, mh;
+static int expand = False;
+static int right = False;
 static int lines = 0;
 static const char *font = NULL;
 static const char *normbgcolor = "#cccccc";
@@ -98,13 +100,29 @@ pop(msg_queue_t *queue) {
 
 void
 drawmsg(const char *msg) {
+    int width, x, y;
+    int screen = DefaultScreen(dc->dpy);
     dc->x = 0;
     dc->y = 0;
     dc->h = 0;
-    drawrect(dc, 0, 0, mw, mh, True, BG(dc, normcol));
+    y = topbar ? 0 : DisplayHeight(dc->dpy, screen) - mh;
+    if(expand) {
+        width = mw;
+    } else {
+        width = textw(dc, msg);
+    }
+    if(right) {
+        x = mw -width;
+    } else {
+        x = 0;
+    }
+    resizedc(dc, width, mh);
+    XResizeWindow(dc->dpy, win, width, mh);
+    drawrect(dc, 0, 0, width, mh, True, BG(dc, normcol));
     drawtext(dc, msg, normcol);
+    XMoveWindow(dc->dpy, win, x, y);
 
-    mapdc(dc, win, mw, mh);
+    mapdc(dc, win, width, mh);
 }
 
 void
@@ -258,10 +276,27 @@ main(int argc, char *argv[]) {
     now = time(&now);
 
     for(i = 1; i < argc; i++) {
+        /* switches */
         if(!strcmp(argv[i], "-b"))
             topbar = False;
-        else if(!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
+        else if(!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help"))
             usage(EXIT_SUCCESS);
+
+        /* options */
+        else if(i == argc) {
+            printf("Option needs an argument\n");
+            usage(1);
+        }
+        else if(!strcmp(argv[i], "-ne")) {
+            expand = False;
+            if(!strcmp(argv[i+1], "l")) {
+                right = False;
+            } else if (!strcmp(argv[i+1], "r")) {
+                right = True;
+            } else {
+                usage(EXIT_FAILURE);
+            }
+            i++;
         }
         else if(!strcmp(argv[i], "-fn"))
             font = argv[++i];
@@ -272,9 +307,6 @@ main(int argc, char *argv[]) {
         else if(!strcmp(argv[i], "-to"))
             global_timeout = atoi(argv[++i]);
         else if(!strcmp(argv[i], "-msg")) {
-             if(i+1 == argc) {
-                 usage(EXIT_FAILURE);
-             }
              msgqueuehead = append(msgqueuehead, argv[++i]);
              loop = False;
         }
@@ -297,6 +329,6 @@ main(int argc, char *argv[]) {
 
 void
 usage(int exit_status) {
-    fputs("usage: dunst [-h/--help] [-b] [-fn font]\n[-nb/-bg color] [-nf/-fg color] [-to secs] [-msg msg]\n", stderr);
+    fputs("usage: dunst [-h/--help] [-b] [-ne l/r] [-fn font]\n[-nb/-bg color] [-nf/-fg color] [-to secs] [-msg msg]\n", stderr);
     exit(exit_status);
 }
