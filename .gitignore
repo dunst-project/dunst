@@ -1,4 +1,4 @@
-dnotify
+dunst
 *.o
 core
 vgcore.*
