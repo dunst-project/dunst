@@ -1,0 +1,43 @@
+NAME
+       dunst - dmenu-ish universal notification system
+
+SYNOPSIS
+       dunst [-b] [-fn font] [-nb color] [-nf color] [-to secs]
+
+DESCRIPTION
+       dunst  is  a  lightweight notification-daemon for the libnotify. It can also be used as a standalone notification system. Dnotify displays messages received via
+       dbus or as commandline argument in a fashion similar to dmenu and additionally prints them to stdout. Notifications can be closed via mouseclick.
+
+OPTIONS
+       -h/--help
+              display help message.
+
+       -b     dunst appears at the bottom of the screen.
+
+       -fn/ font
+              defines the font or font set used.
+
+       -nb/-bg color
+              defines the background color. #RGB, #RRGGBB and X color names are supported.
+
+       -nf/-fg color
+              defines the background color.
+
+       -msg msg
+              display msg instead of listening to notifications. This option can be used multiple times.
+
+       -to secs
+              display each message for secs seconds.
+
+AUTHOR
+       written by Sascha Kruse <knopwob@googlemail.com>
+
+COPYRIGHT
+       Parts of the code are taken from dmenu (especially draw.c and draw.h).  Read LICENCE.dmenu and look at http://tools.suckless.org/dmenu.
+
+       Some snippets in dunst_dbus.c are taken from twmn. See http://github.com/sboli/twmn.
+
+       If you feel that copyrights are violated, please send me an e-mail to knopwob@googlemail.com.
+
+SEE also
+       dwm(1), dmenu(1), twmn(1), notify-send(1)
