@@ -1,0 +1,4 @@
+dnotify
+*.o
+core
+vgcore.*

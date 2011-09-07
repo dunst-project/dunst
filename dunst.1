@@ -1,0 +1,54 @@
+.TH DNOTIFY 1
+.SH NAME
+dunst \- dmenu\-ish universal notification system
+.SH SYNOPSIS
+.B dunst
+.RB [ \-b ]
+.RB [ \-fn
+.IR font ]
+.RB [ \-nb
+.IR color ]
+.RB [ \-nf
+.IR color ]
+.RB [ \-to
+.IR secs ]
+.P
+.SH DESCRIPTION
+.B dunst 
+is a lightweight notification\-daemon for the libnotify. It can also be used as a standalone notification system. Dnotify displays messages received via dbus or as commandline argument in a fashion similar to dmenu and additionally prints them to stdout. Notifications can be closed via mouseclick.
+.SH OPTIONS
+.TP
+.B \-h/\-\-help	
+display help message.
+.TP
+.B \-b
+dunst appears at the bottom of the screen.
+.TP
+.BI \-fn/ " font"
+defines the font or font set used.
+.TP
+.BI \-nb/\-bg " color"
+defines the background color. #RGB, #RRGGBB and X color names are supported.
+.TP
+.BI \-nf/\-fg " color" 
+defines the background color.
+.TP
+.BI \-msg " msg"
+display msg instead of listening to notifications. This option can be used multiple times.
+.TP
+.BI \-to " secs"
+display each message for secs seconds.
+.SH AUTHOR
+written by Sascha Kruse <knopwob@googlemail.com>
+.SH COPYRIGHT
+Parts of the code are taken from dmenu (especially draw.c and draw.h). 
+Read LICENCE.dmenu and look at http://tools.suckless.org/dmenu.
+.TP
+Some snippets in dunst_dbus.c are taken from twmn. See http://github.com/sboli/twmn.
+.TP
+If you feel that copyrights are violated, please send me an e-mail to knopwob@googlemail.com.
+.SH SEE also
+.IR dwm (1),
+.IR dmenu (1),
+.IR twmn (1),
+.IR notify-send (1)
