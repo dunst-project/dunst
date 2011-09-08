@@ -28,7 +28,7 @@ typedef struct _msg_queue_t {
 
 /* global variables */
 static int bh, mw, mh;
-static int expand = False;
+static int expand = True;
 static int right = False;
 static int lines = 0;
 static const char *font = NULL;
