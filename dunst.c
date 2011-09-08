@@ -13,6 +13,9 @@
 
 #include "draw.h"
 
+#define KEY_MASK ControlMask
+#define KEY XK_space
+
 #define INRECT(x,y,rx,ry,rw,rh) ((x) >= (rx) && (x) < (rx)+(rw) && (y) >= (ry) && (y) < (ry)+(rh))
 #define MIN(a,b)                ((a) < (b) ? (a) : (b))
 #define MAX(a,b)                ((a) > (b) ? (a) : (b))
@@ -150,6 +153,13 @@ handleXEvents(void) {
                 }
             }
             break;
+        case KeyPress:
+            if (XLookupKeysym(&ev.xkey, 0) == KEY  && msgqueuehead != NULL) {
+                msgqueuehead = pop(msgqueuehead);
+                if(msgqueuehead == NULL) {
+                    hide_win();
+                }
+            }
         }
     }
 }
@@ -197,6 +207,7 @@ setup(void) {
 	int x, y, screen = DefaultScreen(dc->dpy);
 	Window root = RootWindow(dc->dpy, screen);
 	XSetWindowAttributes wa;
+    KeyCode code;
 #ifdef XINERAMA
 	int n;
 	XineramaScreenInfo *info;
@@ -247,6 +258,10 @@ setup(void) {
 
 	XMapRaised(dc->dpy, win);
 	resizedc(dc, mw, mh);
+
+    /* grab keys */
+    code = XKeysymToKeycode(dc->dpy, KEY);
+    XGrabKey(dc->dpy, code, KEY_MASK, root, True, GrabModeAsync, GrabModeAsync);
 }
 
 void
