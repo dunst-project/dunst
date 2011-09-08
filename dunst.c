@@ -13,8 +13,6 @@
 
 #include "draw.h"
 
-#define KEY_MASK ControlMask
-#define KEY XK_space
 
 #define INRECT(x,y,rx,ry,rw,rh) ((x) >= (rx) && (x) < (rx)+(rw) && (y) >= (ry) && (y) < (ry)+(rh))
 #define MIN(a,b)                ((a) < (b) ? (a) : (b))
@@ -50,6 +48,8 @@ static msg_queue_t *msgqueuehead = NULL;
 static time_t now;
 static int loop = True;
 static int visible = False;
+static KeySym key = NoSymbol;
+static KeySym mask = 0;
 
 
 /* list functions */
@@ -152,7 +152,7 @@ handleXEvents(void) {
             }
             break;
         case KeyPress:
-            if(XLookupKeysym(&ev.xkey, 0) == KEY) {
+            if(XLookupKeysym(&ev.xkey, 0) == key) {
                 next_win();
             }
         }
@@ -262,8 +262,8 @@ setup(void) {
 	resizedc(dc, mw, mh);
 
     /* grab keys */
-    code = XKeysymToKeycode(dc->dpy, KEY);
-    XGrabKey(dc->dpy, code, KEY_MASK, root, True, GrabModeAsync, GrabModeAsync);
+    code = XKeysymToKeycode(dc->dpy, key);
+    XGrabKey(dc->dpy, code, mask, root, True, GrabModeAsync, GrabModeAsync);
 }
 
 void
@@ -300,7 +300,7 @@ main(int argc, char *argv[]) {
             usage(EXIT_SUCCESS);
 
         /* options */
-        else if(i == argc) {
+        else if(i == argc-1) {
             printf("Option needs an argument\n");
             usage(1);
         }
@@ -326,6 +326,38 @@ main(int argc, char *argv[]) {
         else if(!strcmp(argv[i], "-msg")) {
              msgqueuehead = append(msgqueuehead, argv[++i]);
              loop = False;
+        }
+        else if(!strcmp(argv[i], "-key")) {
+            key = XStringToKeysym(argv[i+1]);
+            if(key == NoSymbol) {
+                fprintf(stderr, "Unable to grab key: %s.\n", argv[i+1]);
+                exit(EXIT_FAILURE);
+            }
+            i++;
+        }
+        else if(!strcmp(argv[i], "-mod")) {
+            if(!strcmp(argv[i+1], "ctrl")) {
+                mask |= ControlMask;
+            }
+            else if(!strcmp(argv[i+1], "shift")) {
+                mask |= ShiftMask;
+            }
+            else if(!strcmp(argv[i+1], "mod1")) {
+                mask |= Mod1Mask;
+            }
+            else if(!strcmp(argv[i+1], "mod2")) {
+                mask |= Mod2Mask;
+            }
+            else if(!strcmp(argv[i+1], "mod3")) {
+                mask |= Mod3Mask;
+            }
+            else if(!strcmp(argv[i+1], "mod4")) {
+                mask |= Mod4Mask;
+            } else {
+                fprintf(stderr, "Unable to find mask: %s\n", argv[i+1]);
+                fprintf(stderr, "See manpage for list of available masks\n");
+            }
+            i++;
         }
         else
             usage(EXIT_FAILURE);
