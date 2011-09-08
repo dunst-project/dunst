@@ -61,6 +61,7 @@ msg_queue_t *pop(msg_queue_t *queue);
 void drawmsg(const char *msg);
 void handleXEvents(void);
 void hide_win(void);
+void next_win(void);
 void run(void);
 void setup(void);
 void show_win(void);
@@ -146,19 +147,13 @@ handleXEvents(void) {
                 XRaiseWindow(dc->dpy, win);
             break;
         case ButtonPress:
-            if(ev.xbutton.window == win && msgqueuehead != NULL) {
-                msgqueuehead = pop(msgqueuehead);
-                if(msgqueuehead == NULL) {
-                    hide_win();
-                }
+            if(ev.xbutton.window == win) {
+                next_win();
             }
             break;
         case KeyPress:
-            if (XLookupKeysym(&ev.xkey, 0) == KEY  && msgqueuehead != NULL) {
-                msgqueuehead = pop(msgqueuehead);
-                if(msgqueuehead == NULL) {
-                    hide_win();
-                }
+            if(XLookupKeysym(&ev.xkey, 0) == KEY) {
+                next_win();
             }
         }
     }
@@ -178,6 +173,17 @@ hide_win(void) {
 }
 
 void
+next_win(void) {
+    if(msgqueuehead == NULL) {
+        return;
+    }
+    msgqueuehead = pop(msgqueuehead);
+    if(msgqueuehead == NULL) {
+        hide_win();
+    }
+}
+
+void
 run(void) {
 
     while(True) {
@@ -189,11 +195,7 @@ run(void) {
         if(msgqueuehead != NULL) {
             show_win();
             if(difftime(now, msgqueuehead->start) > global_timeout) {
-                msgqueuehead = pop(msgqueuehead);
-                if(msgqueuehead == NULL) {
-                    hide_win();
-                }
-
+                next_win();
             }
             handleXEvents();
         } else if (!loop) {
