@@ -14,6 +14,10 @@ dunst \- dmenu\-ish universal notification system
 .IR color ]
 .RB [ \-to
 .IR secs ]
+.RB [ \- key
+.IR key ]
+.RB [ \- mod
+.IR modifier ]
 .P
 .SH DESCRIPTION
 .B dunst 
@@ -43,6 +47,12 @@ display msg instead of listening to notifications. This option can be used multi
 .TP
 .BI \-to " secs"
 display each message for secs seconds.
+.TP
+.BI \-key " key"
+close window by pressing key [a,b,space,Return etc.] (should be used in combination with -mod).
+.TP
+.BI \-mod " modifier"
+defines the modifier for the key. Available modifiers are: ctrl,shift,mod1 (usually the alt-key),mod2,mod3,mod4 (usually windows key). This option can be used multiple times to combine modifiers.
 .SH AUTHOR
 written by Sascha Kruse <knopwob@googlemail.com>
 .SH COPYRIGHT
