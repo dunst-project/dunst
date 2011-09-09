@@ -35,10 +35,7 @@ static int lines = 0;
 static const char *font = NULL;
 static const char *normbgcolor = "#cccccc";
 static const char *normfgcolor = "#000000";
-static const char *selbgcolor  = "#0066ff";
-static const char *selfgcolor  = "#ffffff";
 static unsigned long normcol[ColLast];
-static unsigned long selcol[ColLast];
 static Atom utf8;
 static Bool topbar = True;
 static DC *dc;
@@ -217,8 +214,6 @@ setup(void) {
 
 	normcol[ColBG] = getcolor(dc, normbgcolor);
 	normcol[ColFG] = getcolor(dc, normfgcolor);
-	selcol[ColBG]  = getcolor(dc, selbgcolor);
-	selcol[ColFG]  = getcolor(dc, selfgcolor);
 
 	utf8 = XInternAtom(dc->dpy, "UTF8_STRING", False);
 
