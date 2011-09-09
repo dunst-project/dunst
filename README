@@ -2,15 +2,14 @@ NAME
        dunst - dmenu-ish universal notification system
 
 SYNOPSIS
-       dunst  [-b]  [-ne  l/r]  [-fn  font] [-nb color] [-nf color] [-to secs]
-       [-key key] [-mod modifier]
+       dunst  [-b]  [-ne  l/r]  [-fn  font] [-nb color] [-nf color] [-to secs] [-key key] [-mod modifier]
+       [-mon n]
 
 DESCRIPTION
-       dunst is a lightweight notification-daemon for the  libnotify.  It  can
-       also be used as a standalone notification system. Dnotify displays mes‐
-       sages received via dbus or as commandline argument in a fashion similar
-       to  dmenu  and additionally prints them to stdout. Notifications can be
-       closed via mouseclick.
+       dunst is a lightweight notification-daemon for the libnotify. It can also be used as a  standalone
+       notification  system.  Dnotify displays messages received via dbus or as commandline argument in a
+       fashion similar to dmenu and additionally prints them to stdout. Notifications can be  closed  via
+       mouseclick.
 
 OPTIONS
        -h/--help
@@ -19,48 +18,44 @@ OPTIONS
        -b     dunst appears at the bottom of the screen.
 
        -ne l/r
-              Don't expand popup across the screen and put it in the [l]eft or
-              [r]ight edge
+              Don't expand popup across the screen and put it in the [l]eft or [r]ight edge
 
        -fn/ font
               defines the font or font set used.
 
        -nb/-bg color
-              defines  the  background  color. #RGB, #RRGGBB and X color names
-              are supported.
+              defines the background color. #RGB, #RRGGBB and X color names are supported.
 
        -nf/-fg color
               defines the background color.
 
        -msg msg
-              display msg instead of listening to notifications.  This  option
-              can be used multiple times.
+              display msg instead of listening to notifications. This option can be used multiple times.
 
        -to secs
               display each message for secs seconds.
 
        -key key
-              close  window by pressing key [a,b,space,Return etc.] (should be
-              used in combination with -mod).
+              close  window  by  pressing key [a,b,space,Return etc.] (should be used in combination with
+              -mod).
 
        -mod modifier
-              defines the modifier  for  the  key.  Available  modifiers  are:
-              ctrl,shift,mod1  (usually  the  alt-key),mod2,mod3,mod4 (usually
-              windows key). This option can be used multiple times to  combine
-              modifiers.
+              defines the modifier for the key. Available modifiers  are:  ctrl,shift,mod1  (usually  the
+              alt-key),mod2,mod3,mod4  (usually  windows  key). This option can be used multiple times to
+              combine modifiers.
+
+       -mon n show the notification on monitor n.
 
 AUTHOR
        written by Sascha Kruse <knopwob@googlemail.com>
 
 COPYRIGHT
-       Parts  of the code are taken from dmenu (especially draw.c and draw.h).
-       Read LICENCE.dmenu and look at http://tools.suckless.org/dmenu.
+       Parts of the code are taken from dmenu (especially draw.c and  draw.h).   Read  LICENCE.dmenu  and
+       look at http://tools.suckless.org/dmenu.
 
-       Some   snippets   in   dunst_dbus.c   are   taken   from   twmn.    See
-       http://github.com/sboli/twmn.
+       Some snippets in dunst_dbus.c are taken from twmn. See http://github.com/sboli/twmn.
 
-       If  you  feel that copyrights are violated, please send me an e-mail to
-       knopwob@googlemail.com.
+       If you feel that copyrights are violated, please send me an e-mail to knopwob@googlemail.com.
 
 SEE also
        dwm(1), dmenu(1), twmn(1), notify-send(1)

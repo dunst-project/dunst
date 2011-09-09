@@ -27,7 +27,6 @@ typedef struct _msg_queue_t {
 
 
 /* global variables */
-static int mw, mh;
 static int expand = True;
 static int right = False;
 static const char *font = NULL;
@@ -45,6 +44,12 @@ static int listen_to_dbus = True;
 static int visible = False;
 static KeySym key = NoSymbol;
 static KeySym mask = 0;
+static int screen = -1;
+static int screen_x = 0;
+static int screen_y = 0;
+static int screen_h = 0;
+static int screen_w = 0;
+static int message_h = 0;
 
 
 /* list functions */
@@ -99,28 +104,27 @@ pop(msg_queue_t *queue) {
 void
 drawmsg(const char *msg) {
     int width, x, y;
-    int screen = DefaultScreen(dc->dpy);
     dc->x = 0;
     dc->y = 0;
     dc->h = 0;
-    y = topbar ? 0 : DisplayHeight(dc->dpy, screen) - mh;
+    y = topbar ? 0 : screen_h - message_h;
     if(expand) {
-        width = mw;
+        width = screen_w;
     } else {
         width = textw(dc, msg);
     }
     if(right) {
-        x = mw -width;
+        x = screen_x + (screen_w - width);
     } else {
-        x = 0;
+        x = screen_x;
     }
-    resizedc(dc, width, mh);
-    XResizeWindow(dc->dpy, win, width, mh);
-    drawrect(dc, 0, 0, width, mh, True, BG(dc, normcol));
+    resizedc(dc, width, message_h);
+    XResizeWindow(dc->dpy, win, width, message_h);
+    drawrect(dc, 0, 0, width, message_h, True, BG(dc, normcol));
     drawtext(dc, msg, normcol);
     XMoveWindow(dc->dpy, win, x, y);
 
-    mapdc(dc, win, width, mh);
+    mapdc(dc, win, width, message_h);
 }
 
 void
@@ -131,7 +135,7 @@ handleXEvents(void) {
         switch(ev.type) {
         case Expose:
             if(ev.xexpose.count == 0)
-                mapdc(dc, win, mw, mh);
+                mapdc(dc, win, screen_w, message_h);
             break;
         case SelectionNotify:
             if(ev.xselection.property == utf8)
@@ -195,14 +199,17 @@ run(void) {
 
 void
 setup(void) {
-	int x, y, screen = DefaultScreen(dc->dpy);
-	Window root = RootWindow(dc->dpy, screen);
+	Window root;
 	XSetWindowAttributes wa;
     KeyCode code;
 #ifdef XINERAMA
 	int n;
 	XineramaScreenInfo *info;
 #endif
+    if(screen < 0) {
+        screen = DefaultScreen(dc->dpy);
+    }
+    root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
 
 	normcol[ColBG] = getcolor(dc, normbgcolor);
 	normcol[ColFG] = getcolor(dc, normfgcolor);
@@ -210,41 +217,35 @@ setup(void) {
 	utf8 = XInternAtom(dc->dpy, "UTF8_STRING", False);
 
 	/* menu geometry */
-	mh = dc->font.height + 2;
+	message_h = dc->font.height + 2;
 #ifdef XINERAMA
 	if((info = XineramaQueryScreens(dc->dpy, &n))) {
-		int i, di;
-		unsigned int du;
-		Window dw;
-
-		XQueryPointer(dc->dpy, root, &dw, &dw, &x, &y, &di, &di, &du);
-		for(i = 0; i < n-1; i++)
-			if(INRECT(x, y, info[i].x_org, info[i].y_org, info[i].width, info[i].height))
-				break;
-		x = info[i].x_org;
-		y = info[i].y_org + (topbar ? 0 : info[i].height - mh);
-		mw = info[i].width;
+        if(screen >= n) {
+            fprintf(stderr, "Monitor %d not found\n", n);
+            exit(EXIT_FAILURE);
+        }
+		screen_x = info[screen].x_org;
+		screen_y = info[screen].y_org;
+        screen_h = info[screen].height;
+        screen_w = info[screen].width;
 		XFree(info);
 	}
 	else
 #endif
 	{
-		x = 0;
-		y = topbar ? 0 : DisplayHeight(dc->dpy, screen) - mh;
-		mw = DisplayWidth(dc->dpy, screen);
+		screen_x = 0;
+		screen_y = 0;
+		screen_w = DisplayWidth(dc->dpy, screen);
+        screen_h = DisplayHeight(dc->dpy, screen);
 	}
-
 	/* menu window */
 	wa.override_redirect = True;
 	wa.background_pixmap = ParentRelative;
 	wa.event_mask = ExposureMask | KeyPressMask | VisibilityChangeMask | ButtonPressMask;
-	win = XCreateWindow(dc->dpy, root, x, y, mw, mh, 0,
-	                    DefaultDepth(dc->dpy, screen), CopyFromParent,
-	                    DefaultVisual(dc->dpy, screen),
+	win = XCreateWindow(dc->dpy, root, screen_x, screen_y, screen_w, message_h, 0,
+	                    DefaultDepth(dc->dpy, DefaultScreen(dc->dpy)), CopyFromParent,
+	                    DefaultVisual(dc->dpy, DefaultScreen(dc->dpy)),
 	                    CWOverrideRedirect | CWBackPixmap | CWEventMask, &wa);
-
-	XMapRaised(dc->dpy, win);
-	resizedc(dc, mw, mh);
 
     /* grab keys */
     code = XKeysymToKeycode(dc->dpy, key);
@@ -312,6 +313,9 @@ main(int argc, char *argv[]) {
              msgqueuehead = append(msgqueuehead, argv[++i]);
              listen_to_dbus = False;
         }
+        else if(!strcmp(argv[i], "-mon")) {
+            screen = atoi(argv[++i]);
+        }
         else if(!strcmp(argv[i], "-key")) {
             key = XStringToKeysym(argv[i+1]);
             if(key == NoSymbol) {
@@ -363,6 +367,6 @@ main(int argc, char *argv[]) {
 
 void
 usage(int exit_status) {
-    fputs("usage: dunst [-h/--help] [-b] [-ne l/r] [-fn font]\n[-nb/-bg color] [-nf/-fg color] [-to secs] [-key key] [-mod modifier] [-msg msg]\n", stderr);
+    fputs("usage: dunst [-h/--help] [-b] [-ne l/r] [-fn font]\n[-nb/-bg color] [-nf/-fg color] [-to secs] [-key key] [-mod modifier] [-mon n] [-msg msg]\n", stderr);
     exit(exit_status);
 }
