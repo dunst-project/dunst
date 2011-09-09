@@ -41,7 +41,7 @@ static Window win;
 static double global_timeout = 10;
 static msg_queue_t *msgqueuehead = NULL;
 static time_t now;
-static int loop = True;
+static int listen_to_dbus = True;
 static int visible = False;
 static KeySym key = NoSymbol;
 static KeySym mask = 0;
@@ -55,7 +55,6 @@ msg_queue_t *pop(msg_queue_t *queue);
 /* misc funtions */
 void drawmsg(const char *msg);
 void handleXEvents(void);
-void hide_win(void);
 void next_win(void);
 void run(void);
 void setup(void);
@@ -154,19 +153,6 @@ handleXEvents(void) {
     }
 }
 
-
-void
-hide_win(void) {
-    if(!visible) {
-        /* window is already hidden */
-        return;
-    }
-    XUngrabButton(dc->dpy, AnyButton, AnyModifier, win);
-    XUnmapWindow(dc->dpy, win);
-    XFlush(dc->dpy);
-    visible = False;
-}
-
 void
 next_win(void) {
     if(msgqueuehead == NULL) {
@@ -174,7 +160,15 @@ next_win(void) {
     }
     msgqueuehead = pop(msgqueuehead);
     if(msgqueuehead == NULL) {
-        hide_win();
+        /* hide window */
+        if(!visible) {
+            /* window is already hidden */
+            return;
+        }
+        XUngrabButton(dc->dpy, AnyButton, AnyModifier, win);
+        XUnmapWindow(dc->dpy, win);
+        XFlush(dc->dpy);
+        visible = False;
     }
 }
 
@@ -183,7 +177,7 @@ run(void) {
 
     while(True) {
         /* dbus_poll blocks for max 2 seconds, if no events are present */
-        if(loop) {
+        if(listen_to_dbus) {
             dbus_poll();
         }
         now = time(&now);
@@ -193,7 +187,7 @@ run(void) {
                 next_win();
             }
             handleXEvents();
-        } else if (!loop) {
+        } else if (!listen_to_dbus) {
             break;
         }
     }
@@ -316,7 +310,7 @@ main(int argc, char *argv[]) {
             global_timeout = atoi(argv[++i]);
         else if(!strcmp(argv[i], "-msg")) {
              msgqueuehead = append(msgqueuehead, argv[++i]);
-             loop = False;
+             listen_to_dbus = False;
         }
         else if(!strcmp(argv[i], "-key")) {
             key = XStringToKeysym(argv[i+1]);
@@ -354,7 +348,7 @@ main(int argc, char *argv[]) {
             usage(EXIT_FAILURE);
     }
 
-    if(loop) {
+    if(listen_to_dbus) {
         initdbus();
     }
     dc = initdc();
