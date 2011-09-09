@@ -13,7 +13,6 @@
 
 #include "draw.h"
 
-
 #define INRECT(x,y,rx,ry,rw,rh) ((x) >= (rx) && (x) < (rx)+(rw) && (y) >= (ry) && (y) < (ry)+(rh))
 #define MIN(a,b)                ((a) < (b) ? (a) : (b))
 #define MAX(a,b)                ((a) > (b) ? (a) : (b))
@@ -28,10 +27,9 @@ typedef struct _msg_queue_t {
 
 
 /* global variables */
-static int bh, mw, mh;
+static int mw, mh;
 static int expand = True;
 static int right = False;
-static int lines = 0;
 static const char *font = NULL;
 static const char *normbgcolor = "#cccccc";
 static const char *normfgcolor = "#000000";
@@ -218,9 +216,7 @@ setup(void) {
 	utf8 = XInternAtom(dc->dpy, "UTF8_STRING", False);
 
 	/* menu geometry */
-	bh = dc->font.height + 2;
-	lines = MAX(lines, 0);
-	mh = (lines + 1) * bh;
+	mh = dc->font.height + 2;
 #ifdef XINERAMA
 	if((info = XineramaQueryScreens(dc->dpy, &n))) {
 		int i, di;
