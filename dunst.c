@@ -25,6 +25,13 @@ typedef struct _msg_queue_t {
     time_t start;
 } msg_queue_t;
 
+typedef struct _screen_info {
+    int scr;
+    int x;
+    int y;
+    int h;
+    int w;
+} screen_info;
 
 /* global variables */
 static int expand = True;
@@ -44,13 +51,8 @@ static int listen_to_dbus = True;
 static int visible = False;
 static KeySym key = NoSymbol;
 static KeySym mask = 0;
-static int screen = -1;
-static int screen_x = 0;
-static int screen_y = 0;
-static int screen_h = 0;
-static int screen_w = 0;
-static int message_h = 0;
-
+static screen_info scr;
+static int message_h;
 
 /* list functions */
 msg_queue_t *append(msg_queue_t *queue, char *msg);
@@ -107,16 +109,16 @@ drawmsg(const char *msg) {
     dc->x = 0;
     dc->y = 0;
     dc->h = 0;
-    y = topbar ? 0 : screen_h - message_h;
+    y = topbar ? 0 : scr.h - message_h;
     if(expand) {
-        width = screen_w;
+        width = scr.w;
     } else {
         width = textw(dc, msg);
     }
     if(right) {
-        x = screen_x + (screen_w - width);
+        x = scr.x + (scr.w - width);
     } else {
-        x = screen_x;
+        x = scr.x;
     }
     resizedc(dc, width, message_h);
     XResizeWindow(dc->dpy, win, width, message_h);
@@ -135,7 +137,7 @@ handleXEvents(void) {
         switch(ev.type) {
         case Expose:
             if(ev.xexpose.count == 0)
-                mapdc(dc, win, screen_w, message_h);
+                mapdc(dc, win, scr.w, message_h);
             break;
         case SelectionNotify:
             if(ev.xselection.property == utf8)
@@ -206,8 +208,8 @@ setup(void) {
 	int n;
 	XineramaScreenInfo *info;
 #endif
-    if(screen < 0) {
-        screen = DefaultScreen(dc->dpy);
+    if(scr.scr < 0) {
+        scr.scr = DefaultScreen(dc->dpy);
     }
     root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
 
@@ -220,29 +222,29 @@ setup(void) {
 	message_h = dc->font.height + 2;
 #ifdef XINERAMA
 	if((info = XineramaQueryScreens(dc->dpy, &n))) {
-        if(screen >= n) {
-            fprintf(stderr, "Monitor %d not found\n", screen);
+        if(scr.scr >= n) {
+            fprintf(stderr, "Monitor %d not found\n", scr.scr);
             exit(EXIT_FAILURE);
         }
-		screen_x = info[screen].x_org;
-		screen_y = info[screen].y_org;
-        screen_h = info[screen].height;
-        screen_w = info[screen].width;
+		scr.x = info[scr.scr].x_org;
+		scr.y = info[scr.scr].y_org;
+        scr.h = info[scr.scr].height;
+        scr.w = info[scr.scr].width;
 		XFree(info);
 	}
 	else
 #endif
 	{
-		screen_x = 0;
-		screen_y = 0;
-		screen_w = DisplayWidth(dc->dpy, screen);
-        screen_h = DisplayHeight(dc->dpy, screen);
+		scr.x = 0;
+		scr.y = 0;
+		scr.w = DisplayWidth(dc->dpy, scr.scr);
+        scr.h = DisplayHeight(dc->dpy, scr.scr);
 	}
 	/* menu window */
 	wa.override_redirect = True;
 	wa.background_pixmap = ParentRelative;
 	wa.event_mask = ExposureMask | KeyPressMask | VisibilityChangeMask | ButtonPressMask;
-	win = XCreateWindow(dc->dpy, root, screen_x, screen_y, screen_w, message_h, 0,
+	win = XCreateWindow(dc->dpy, root, scr.x, scr.y, scr.w, message_h, 0,
 	                    DefaultDepth(dc->dpy, DefaultScreen(dc->dpy)), CopyFromParent,
 	                    DefaultVisual(dc->dpy, DefaultScreen(dc->dpy)),
 	                    CWOverrideRedirect | CWBackPixmap | CWEventMask, &wa);
@@ -316,7 +318,7 @@ main(int argc, char *argv[]) {
              listen_to_dbus = False;
         }
         else if(!strcmp(argv[i], "-mon")) {
-            screen = atoi(argv[++i]);
+            scr.scr = atoi(argv[++i]);
         }
         else if(!strcmp(argv[i], "-key")) {
             key = XStringToKeysym(argv[i+1]);
