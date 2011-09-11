@@ -221,7 +221,7 @@ setup(void) {
 #ifdef XINERAMA
 	if((info = XineramaQueryScreens(dc->dpy, &n))) {
         if(screen >= n) {
-            fprintf(stderr, "Monitor %d not found\n", n);
+            fprintf(stderr, "Monitor %d not found\n", screen);
             exit(EXIT_FAILURE);
         }
 		screen_x = info[screen].x_org;
