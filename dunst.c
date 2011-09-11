@@ -248,8 +248,10 @@ setup(void) {
 	                    CWOverrideRedirect | CWBackPixmap | CWEventMask, &wa);
 
     /* grab keys */
-    code = XKeysymToKeycode(dc->dpy, key);
-    XGrabKey(dc->dpy, code, mask, root, True, GrabModeAsync, GrabModeAsync);
+    if(key != NoSymbol) {
+        code = XKeysymToKeycode(dc->dpy, key);
+        XGrabKey(dc->dpy, code, mask, root, True, GrabModeAsync, GrabModeAsync);
+    }
 }
 
 void
