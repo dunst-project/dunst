@@ -17,6 +17,7 @@
 #define MIN(a,b)                ((a) < (b) ? (a) : (b))
 #define MAX(a,b)                ((a) > (b) ? (a) : (b))
 #define BUTTONMASK              (ButtonPressMask|ButtonReleaseMask)
+#define FONT_HEIGHT_BORDER 2
 
 /* structs */
 typedef struct _msg_queue_t {
@@ -28,8 +29,9 @@ typedef struct _msg_queue_t {
 typedef struct _dimension_t {
     int x;
     int y;
-    int h;
-    int w;
+    unsigned int h;
+    unsigned int w;
+    int mask;
 } dimension_t;
 
 typedef struct _screen_info {
@@ -38,14 +40,11 @@ typedef struct _screen_info {
 } screen_info;
 
 /* global variables */
-static int expand = True;
-static int right = False;
 static const char *font = NULL;
 static const char *normbgcolor = "#cccccc";
 static const char *normfgcolor = "#000000";
 static unsigned long normcol[ColLast];
 static Atom utf8;
-static Bool topbar = True;
 static DC *dc;
 static Window win;
 static double global_timeout = 10;
@@ -56,7 +55,8 @@ static int visible = False;
 static KeySym key = NoSymbol;
 static KeySym mask = 0;
 static screen_info scr;
-static int message_h;
+static dimension_t geometry;
+static int font_h;
 
 /* list functions */
 msg_queue_t *append(msg_queue_t *queue, char *msg);
@@ -65,9 +65,9 @@ int list_len(msg_queue_t *list);
 
 
 /* misc funtions */
-void drawmsg(const char *msg);
+void delete_msg(void);
+void drawmsg(void);
 void handleXEvents(void);
-void next_win(void);
 void run(void);
 void setup(void);
 void show_win(void);
@@ -80,10 +80,10 @@ append(msg_queue_t *queue, char *msg) {
     msg_queue_t *new = malloc(sizeof(msg_queue_t));
     msg_queue_t *last;
     new->msg = msg;
+    new->start = 0;
     printf("%s\n", new->msg);
     new->next = NULL;
     if(queue == NULL) {
-        new->start = now;
         return new;
     }
     for(last = queue; last->next; last = last->next);
@@ -102,7 +102,6 @@ pop(msg_queue_t *queue) {
         return NULL;
     }
     new_head = queue->next;
-    new_head->start = now;
     free(queue);
     return new_head;
 }
@@ -120,63 +119,7 @@ int list_len(msg_queue_t *list) {
 }
 
 void
-drawmsg(const char *msg) {
-    int width, x, y;
-    dc->x = 0;
-    dc->y = 0;
-    dc->h = 0;
-    y = topbar ? 0 : scr.dim.h - message_h;
-    if(expand) {
-        width = scr.dim.w;
-    } else {
-        width = textw(dc, msg);
-    }
-    if(right) {
-        x = scr.dim.x + (scr.dim.w - width);
-    } else {
-        x = scr.dim.x;
-    }
-    resizedc(dc, width, message_h);
-    XResizeWindow(dc->dpy, win, width, message_h);
-    drawrect(dc, 0, 0, width, message_h, True, BG(dc, normcol));
-    drawtext(dc, msg, normcol);
-    XMoveWindow(dc->dpy, win, x, y);
-
-    mapdc(dc, win, width, message_h);
-}
-
-void
-handleXEvents(void) {
-	XEvent ev;
-    while(XPending(dc->dpy) > 0) {
-        XNextEvent(dc->dpy, &ev);
-        switch(ev.type) {
-        case Expose:
-            if(ev.xexpose.count == 0)
-                mapdc(dc, win, scr.dim.w, message_h);
-            break;
-        case SelectionNotify:
-            if(ev.xselection.property == utf8)
-            break;
-        case VisibilityNotify:
-            if(ev.xvisibility.state != VisibilityUnobscured)
-                XRaiseWindow(dc->dpy, win);
-            break;
-        case ButtonPress:
-            if(ev.xbutton.window == win) {
-                next_win();
-            }
-            break;
-        case KeyPress:
-            if(XLookupKeysym(&ev.xkey, 0) == key) {
-                next_win();
-            }
-        }
-    }
-}
-
-void
-next_win(void) {
+delete_msg(void) {
     if(msgqueue == NULL) {
         return;
     }
@@ -192,7 +135,98 @@ next_win(void) {
         XFlush(dc->dpy);
         visible = False;
     } else {
-        drawmsg(msgqueue->msg);
+        drawmsg();
+    }
+}
+
+void
+drawmsg(void) {
+    int width, x, y, height, i;
+    int len = list_len(msgqueue);
+    msg_queue_t *cur_msg = msgqueue;
+    dc->x = 0;
+    dc->y = 0;
+    dc->h = 0;
+    /* a height of 0 doesn't make sense, so we define it as 1 */
+    if(geometry.h == 0) {
+        geometry.h = 1;
+    }
+
+    height = MIN(geometry.h, len);
+
+    if(geometry.mask & WidthValue) {
+        if(geometry.w == 0) {
+            width = 0;
+            for(i = 0; i < height; i++){
+                width = MAX(width, textw(dc, cur_msg->msg));
+                cur_msg = cur_msg->next;
+            }
+        } else {
+            width = geometry.w;
+        }
+    } else {
+        width = scr.dim.w;
+    }
+
+    cur_msg = msgqueue;
+
+    if(geometry.mask & XNegative) {
+        x = (scr.dim.x + (scr.dim.w - width)) + geometry.x;
+    } else {
+        x = scr.dim.x + geometry.x;
+    }
+
+    if(geometry.mask & YNegative) {
+        y = (scr.dim.h + geometry.y) - height*font_h;
+    } else {
+       y = 0 + geometry.y;
+    }
+
+    resizedc(dc, width, height*font_h);
+    XResizeWindow(dc->dpy, win, width, height*font_h);
+    drawrect(dc, 0, 0, width, height*font_h, True, BG(dc, normcol));
+
+    for(i = 0; i < height; i++) {
+        if(cur_msg->start == 0)
+            cur_msg->start = now;
+
+        drawtext(dc, cur_msg->msg, normcol);
+        dc->y += font_h;
+        cur_msg = cur_msg->next;
+    }
+
+    XMoveWindow(dc->dpy, win, x, y);
+
+    mapdc(dc, win, width, height*font_h);
+}
+
+void
+handleXEvents(void) {
+	XEvent ev;
+    while(XPending(dc->dpy) > 0) {
+        XNextEvent(dc->dpy, &ev);
+        switch(ev.type) {
+        case Expose:
+            if(ev.xexpose.count == 0)
+                mapdc(dc, win, scr.dim.w, font_h);
+            break;
+        case SelectionNotify:
+            if(ev.xselection.property == utf8)
+            break;
+        case VisibilityNotify:
+            if(ev.xvisibility.state != VisibilityUnobscured)
+                XRaiseWindow(dc->dpy, win);
+            break;
+        case ButtonPress:
+            if(ev.xbutton.window == win) {
+                delete_msg();
+            }
+            break;
+        case KeyPress:
+            if(XLookupKeysym(&ev.xkey, 0) == key) {
+                delete_msg();
+            }
+        }
     }
 }
 
@@ -208,7 +242,7 @@ run(void) {
         if(msgqueue != NULL) {
             show_win();
             if(difftime(now, msgqueue->start) > global_timeout) {
-                next_win();
+                delete_msg();
             }
             handleXEvents();
         } else if (!listen_to_dbus) {
@@ -237,7 +271,7 @@ setup(void) {
 	utf8 = XInternAtom(dc->dpy, "UTF8_STRING", False);
 
 	/* menu geometry */
-	message_h = dc->font.height + 2;
+	font_h = dc->font.height + FONT_HEIGHT_BORDER;
 #ifdef XINERAMA
 	if((info = XineramaQueryScreens(dc->dpy, &n))) {
         if(scr.scr >= n) {
@@ -262,7 +296,7 @@ setup(void) {
 	wa.override_redirect = True;
 	wa.background_pixmap = ParentRelative;
 	wa.event_mask = ExposureMask | KeyPressMask | VisibilityChangeMask | ButtonPressMask;
-	win = XCreateWindow(dc->dpy, root, scr.dim.x, scr.dim.y, scr.dim.w, message_h, 0,
+	win = XCreateWindow(dc->dpy, root, scr.dim.x, scr.dim.y, scr.dim.w, font_h, 0,
 	                    DefaultDepth(dc->dpy, DefaultScreen(dc->dpy)), CopyFromParent,
 	                    DefaultVisual(dc->dpy, DefaultScreen(dc->dpy)),
 	                    CWOverrideRedirect | CWBackPixmap | CWEventMask, &wa);
@@ -288,10 +322,9 @@ show_win(void) {
     XGrabButton(dc->dpy, AnyButton, AnyModifier, win, False,
         BUTTONMASK, GrabModeAsync, GrabModeSync, None, None);
     XFlush(dc->dpy);
-    drawmsg(msgqueue->msg);
+    drawmsg();
     visible = True;
 }
-
 
 int
 main(int argc, char *argv[]) {
@@ -302,8 +335,9 @@ main(int argc, char *argv[]) {
 
     for(i = 1; i < argc; i++) {
         /* switches */
-        if(!strcmp(argv[i], "-b"))
-            topbar = False;
+        if(!strcmp(argv[i], "-b")) {
+            geometry.mask |= YNegative;
+        }
         else if(!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help"))
             usage(EXIT_SUCCESS);
 
@@ -311,17 +345,6 @@ main(int argc, char *argv[]) {
         else if(i == argc-1) {
             printf("Option needs an argument\n");
             usage(1);
-        }
-        else if(!strcmp(argv[i], "-ne")) {
-            expand = False;
-            if(!strcmp(argv[i+1], "l")) {
-                right = False;
-            } else if (!strcmp(argv[i+1], "r")) {
-                right = True;
-            } else {
-                usage(EXIT_FAILURE);
-            }
-            i++;
         }
         else if(!strcmp(argv[i], "-fn"))
             font = argv[++i];
@@ -345,6 +368,9 @@ main(int argc, char *argv[]) {
                 exit(EXIT_FAILURE);
             }
             i++;
+        }
+        else if(!strcmp(argv[i], "-geometry")) {
+            geometry.mask = XParseGeometry(argv[++i], &geometry.x, &geometry.y, &geometry.w, &geometry.h);
         }
         else if(!strcmp(argv[i], "-mod")) {
             if(!strcmp(argv[i+1], "ctrl")) {
@@ -389,6 +415,6 @@ main(int argc, char *argv[]) {
 
 void
 usage(int exit_status) {
-    fputs("usage: dunst [-h/--help] [-b] [-ne l/r] [-fn font]\n[-nb/-bg color] [-nf/-fg color] [-to secs] [-key key] [-mod modifier] [-mon n] [-msg msg]\n", stderr);
+    fputs("usage: dunst [-h/--help] [-geometry geom] [-fn font]\n[-nb/-bg color] [-nf/-fg color] [-to secs] [-key key] [-mod modifier] [-mon n] [-msg msg]\n", stderr);
     exit(exit_status);
 }

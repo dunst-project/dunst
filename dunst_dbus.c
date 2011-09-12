@@ -200,6 +200,7 @@ notify(DBusMessage *dmsg) {
     }
 
     msgqueue = append(msgqueue, msg);
+    drawmsg();
 
     reply = dbus_message_new_method_return(dmsg);
 
