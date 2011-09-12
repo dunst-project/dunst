@@ -25,12 +25,16 @@ typedef struct _msg_queue_t {
     time_t start;
 } msg_queue_t;
 
-typedef struct _screen_info {
-    int scr;
+typedef struct _dimension_t {
     int x;
     int y;
     int h;
     int w;
+} dimension_t;
+
+typedef struct _screen_info {
+    int scr;
+    dimension_t dim;
 } screen_info;
 
 /* global variables */
@@ -121,16 +125,16 @@ drawmsg(const char *msg) {
     dc->x = 0;
     dc->y = 0;
     dc->h = 0;
-    y = topbar ? 0 : scr.h - message_h;
+    y = topbar ? 0 : scr.dim.h - message_h;
     if(expand) {
-        width = scr.w;
+        width = scr.dim.w;
     } else {
         width = textw(dc, msg);
     }
     if(right) {
-        x = scr.x + (scr.w - width);
+        x = scr.dim.x + (scr.dim.w - width);
     } else {
-        x = scr.x;
+        x = scr.dim.x;
     }
     resizedc(dc, width, message_h);
     XResizeWindow(dc->dpy, win, width, message_h);
@@ -149,7 +153,7 @@ handleXEvents(void) {
         switch(ev.type) {
         case Expose:
             if(ev.xexpose.count == 0)
-                mapdc(dc, win, scr.w, message_h);
+                mapdc(dc, win, scr.dim.w, message_h);
             break;
         case SelectionNotify:
             if(ev.xselection.property == utf8)
@@ -240,25 +244,25 @@ setup(void) {
             fprintf(stderr, "Monitor %d not found\n", scr.scr);
             exit(EXIT_FAILURE);
         }
-		scr.x = info[scr.scr].x_org;
-		scr.y = info[scr.scr].y_org;
-        scr.h = info[scr.scr].height;
-        scr.w = info[scr.scr].width;
+		scr.dim.x = info[scr.scr].x_org;
+		scr.dim.y = info[scr.scr].y_org;
+        scr.dim.h = info[scr.scr].height;
+        scr.dim.w = info[scr.scr].width;
 		XFree(info);
 	}
 	else
 #endif
 	{
-		scr.x = 0;
-		scr.y = 0;
-		scr.w = DisplayWidth(dc->dpy, scr.scr);
-        scr.h = DisplayHeight(dc->dpy, scr.scr);
+		scr.dim.x = 0;
+		scr.dim.y = 0;
+		scr.dim.w = DisplayWidth(dc->dpy, scr.scr);
+        scr.dim.h = DisplayHeight(dc->dpy, scr.scr);
 	}
 	/* menu window */
 	wa.override_redirect = True;
 	wa.background_pixmap = ParentRelative;
 	wa.event_mask = ExposureMask | KeyPressMask | VisibilityChangeMask | ButtonPressMask;
-	win = XCreateWindow(dc->dpy, root, scr.x, scr.y, scr.w, message_h, 0,
+	win = XCreateWindow(dc->dpy, root, scr.dim.x, scr.dim.y, scr.dim.w, message_h, 0,
 	                    DefaultDepth(dc->dpy, DefaultScreen(dc->dpy)), CopyFromParent,
 	                    DefaultVisual(dc->dpy, DefaultScreen(dc->dpy)),
 	                    CWOverrideRedirect | CWBackPixmap | CWEventMask, &wa);
