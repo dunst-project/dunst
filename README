@@ -38,7 +38,7 @@ OPTIONS
               defines the modifier for the key. Available modifiers are: ctrl,shift,mod1 (usually the alt-key),mod2,mod3,mod4 (usually windows key). This option can be used  multiple  times  to
               combine modifiers.
 
-       -mon n
+       -mon n show the notification on monitor n.
 
        -mon [[<width>]x<height>][+/-<X>+/-<y>]
               The geometry of the message window. The height is measured in lines everything else in pixels. If the width is omitted but the height is given ("-geometry x2"), the message window
