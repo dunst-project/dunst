@@ -57,6 +57,7 @@ static int message_h;
 /* list functions */
 msg_queue_t *append(msg_queue_t *queue, char *msg);
 msg_queue_t *pop(msg_queue_t *queue);
+int list_len(msg_queue_t *list);
 
 
 /* misc funtions */
@@ -100,6 +101,18 @@ pop(msg_queue_t *queue) {
     new_head->start = now;
     free(queue);
     return new_head;
+}
+
+int list_len(msg_queue_t *list) {
+    int count = 0;
+    msg_queue_t *i;
+    if(list == NULL) {
+        return 0;
+    }
+    for(i = list; i != NULL; i = i->next) {
+        count++;
+    }
+    return count;
 }
 
 void
