@@ -45,7 +45,7 @@ static Bool topbar = True;
 static DC *dc;
 static Window win;
 static double global_timeout = 10;
-static msg_queue_t *msgqueuehead = NULL;
+static msg_queue_t *msgqueue = NULL;
 static time_t now;
 static int listen_to_dbus = True;
 static int visible = False;
@@ -160,11 +160,11 @@ handleXEvents(void) {
 
 void
 next_win(void) {
-    if(msgqueuehead == NULL) {
+    if(msgqueue == NULL) {
         return;
     }
-    msgqueuehead = pop(msgqueuehead);
-    if(msgqueuehead == NULL) {
+    msgqueue = pop(msgqueue);
+    if(msgqueue == NULL) {
         /* hide window */
         if(!visible) {
             /* window is already hidden */
@@ -175,7 +175,7 @@ next_win(void) {
         XFlush(dc->dpy);
         visible = False;
     } else {
-        drawmsg(msgqueuehead->msg);
+        drawmsg(msgqueue->msg);
     }
 }
 
@@ -188,9 +188,9 @@ run(void) {
             dbus_poll();
         }
         now = time(&now);
-        if(msgqueuehead != NULL) {
+        if(msgqueue != NULL) {
             show_win();
-            if(difftime(now, msgqueuehead->start) > global_timeout) {
+            if(difftime(now, msgqueue->start) > global_timeout) {
                 next_win();
             }
             handleXEvents();
@@ -263,7 +263,7 @@ show_win(void) {
         /* window is already visible */
         return;
     }
-    if(msgqueuehead == NULL) {
+    if(msgqueue == NULL) {
         /* there's nothing to show */
         return;
     }
@@ -271,7 +271,7 @@ show_win(void) {
     XGrabButton(dc->dpy, AnyButton, AnyModifier, win, False,
         BUTTONMASK, GrabModeAsync, GrabModeSync, None, None);
     XFlush(dc->dpy);
-    drawmsg(msgqueuehead->msg);
+    drawmsg(msgqueue->msg);
     visible = True;
 }
 
@@ -315,7 +315,7 @@ main(int argc, char *argv[]) {
         else if(!strcmp(argv[i], "-to"))
             global_timeout = atoi(argv[++i]);
         else if(!strcmp(argv[i], "-msg")) {
-             msgqueuehead = append(msgqueuehead, argv[++i]);
+             msgqueue = append(msgqueue, argv[++i]);
              listen_to_dbus = False;
         }
         else if(!strcmp(argv[i], "-mon")) {
@@ -363,7 +363,7 @@ main(int argc, char *argv[]) {
     dc = initdc();
     initfont(dc, font);
     setup();
-    if(msgqueuehead != NULL) {
+    if(msgqueue != NULL) {
         show_win();
     }
     run();

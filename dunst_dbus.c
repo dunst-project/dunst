@@ -47,7 +47,7 @@ dbus_poll(void) {
     /* make timeout smaller if we are displaying a message
      * to improve responsivness for mouse clicks
      */
-    if(msgqueuehead == NULL) {
+    if(msgqueue == NULL) {
         dbus_connection_read_write(dbus_conn, DBUS_POLL_TIMEOUT);
     } else {
         dbus_connection_read_write(dbus_conn, 100);
@@ -199,7 +199,7 @@ notify(DBusMessage *dmsg) {
         sprintf(msg, "%s: %s", appname, summary);
     }
 
-    msgqueuehead = append(msgqueuehead, msg);
+    msgqueue = append(msgqueue, msg);
 
     reply = dbus_message_new_method_return(dmsg);
 
