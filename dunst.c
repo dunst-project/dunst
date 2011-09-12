@@ -98,7 +98,6 @@ pop(msg_queue_t *queue) {
     }
     new_head = queue->next;
     new_head->start = now;
-    drawmsg(new_head->msg);
     free(queue);
     return new_head;
 }
@@ -175,6 +174,8 @@ next_win(void) {
         XUnmapWindow(dc->dpy, win);
         XFlush(dc->dpy);
         visible = False;
+    } else {
+        drawmsg(msgqueuehead->msg);
     }
 }
 
