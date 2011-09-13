@@ -199,7 +199,10 @@ notify(DBusMessage *dmsg) {
         sprintf(msg, "%s: %s", appname, summary);
     }
 
-    msgqueue = append(msgqueue, msg);
+    if(expires > 0) {
+        expires = expires/1000;
+    }
+    msgqueue = append(msgqueue, msg, expires);
     drawmsg();
 
     reply = dbus_message_new_method_return(dmsg);

@@ -24,6 +24,7 @@ typedef struct _msg_queue_t {
     char *msg;
     struct _msg_queue_t *next;
     time_t start;
+    int timeout;
 } msg_queue_t;
 
 typedef struct _dimension_t {
@@ -59,13 +60,15 @@ static dimension_t geometry;
 static int font_h;
 
 /* list functions */
-msg_queue_t *append(msg_queue_t *queue, char *msg);
+msg_queue_t *append(msg_queue_t *queue, char *msg, int to);
+msg_queue_t *delete(msg_queue_t *elem);
 msg_queue_t *pop(msg_queue_t *queue);
 int list_len(msg_queue_t *list);
 
 
 /* misc funtions */
-void delete_msg(void);
+void check_timeouts(void);
+void delete_msg(msg_queue_t *elem);
 void drawmsg(void);
 void handleXEvents(void);
 void run(void);
@@ -77,12 +80,17 @@ char *xml_unescape(char *str);
 #include "dunst_dbus.h"
 
 msg_queue_t*
-append(msg_queue_t *queue, char *msg) {
+append(msg_queue_t *queue, char *msg, int to) {
     msg_queue_t *new = malloc(sizeof(msg_queue_t));
     msg_queue_t *last;
     new->msg = xml_unescape(msg);
+    if(to == -1) {
+        new->timeout = global_timeout;
+    } else {
+        new->timeout = to;
+    }
     new->start = 0;
-    printf("%s\n", new->msg);
+    printf("%s (timeout: %d)\n", new->msg, new->timeout);
     new->next = NULL;
     if(queue == NULL) {
         return new;
@@ -90,6 +98,41 @@ append(msg_queue_t *queue, char *msg) {
     for(last = queue; last->next; last = last->next);
     last->next = new;
     return queue;
+}
+
+msg_queue_t*
+delete(msg_queue_t *elem) {
+    msg_queue_t *prev;
+    msg_queue_t *next;
+    if(msgqueue == NULL) {
+        return NULL;
+    }
+    if(elem == NULL) {
+        return msgqueue;
+    }
+
+    if(elem == msgqueue) {
+        next = elem->next;
+        free(elem->msg);
+        free(elem);
+        return next;
+    }
+
+    next = elem->next;
+    for(prev = msgqueue; prev != NULL; prev = prev->next) {
+        if(prev->next == elem) {
+            break;
+        }
+    }
+    if(prev == NULL) {
+        /* the element wasn't in the list */
+        return msgqueue;
+    }
+
+    prev->next = next;
+    free(elem->msg);
+    free(elem);
+    return msgqueue;
 }
 
 msg_queue_t*
@@ -121,12 +164,37 @@ int list_len(msg_queue_t *list) {
 }
 
 void
-delete_msg(void) {
+check_timeouts(void) {
+    msg_queue_t *cur;
+
+    for(cur = msgqueue; cur != NULL; cur = cur->next) {
+        if(cur->start == 0 || cur->timeout == 0) {
+            continue;
+        }
+        if(difftime(now, cur->start) > cur->timeout) {
+            delete_msg(cur);
+        }
+    }
+}
+
+void
+delete_msg(msg_queue_t *elem) {
+    msg_queue_t *cur;
+    int visible_count = 0;
     if(msgqueue == NULL) {
         return;
     }
-    msgqueue = pop(msgqueue);
-    if(msgqueue == NULL) {
+    if(elem == NULL) {
+        /* delete the last element */
+        for(elem = msgqueue; elem->next != NULL; elem = elem->next);
+    }
+    msgqueue = delete(elem);
+    for(cur = msgqueue; cur != NULL; cur = cur->next) {
+        if(cur->start != 0) {
+            visible_count++;
+        }
+    }
+    if(visible_count == 0) {
         /* hide window */
         if(!visible) {
             /* window is already hidden */
@@ -221,12 +289,12 @@ handleXEvents(void) {
             break;
         case ButtonPress:
             if(ev.xbutton.window == win) {
-                delete_msg();
+                delete_msg(NULL);
             }
             break;
         case KeyPress:
             if(XLookupKeysym(&ev.xkey, 0) == key) {
-                delete_msg();
+                delete_msg(NULL);
             }
         }
     }
@@ -245,9 +313,7 @@ run(void) {
         now = time(&now);
         if(msgqueue != NULL) {
             show_win();
-            if(difftime(now, msgqueue->start) > global_timeout) {
-                delete_msg();
-            }
+            check_timeouts();
             handleXEvents();
         } else if (!listen_to_dbus) {
             break;
@@ -417,7 +483,7 @@ main(int argc, char *argv[]) {
         else if(!strcmp(argv[i], "-to"))
             global_timeout = atoi(argv[++i]);
         else if(!strcmp(argv[i], "-msg")) {
-             msgqueue = append(msgqueue, strdup(argv[++i]));
+             msgqueue = append(msgqueue, strdup(argv[++i]), -1);
              listen_to_dbus = False;
         }
         else if(!strcmp(argv[i], "-mon")) {
