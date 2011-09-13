@@ -180,13 +180,20 @@ check_timeouts(void) {
 void
 delete_msg(msg_queue_t *elem) {
     msg_queue_t *cur;
+    msg_queue_t *tmp;
     int visible_count = 0;
     if(msgqueue == NULL) {
         return;
     }
     if(elem == NULL) {
-        /* delete the last element */
-        for(elem = msgqueue; elem->next != NULL; elem = elem->next);
+        /* delete the oldest element */
+        tmp = msgqueue;
+        for(elem = msgqueue; elem->next != NULL; elem = elem->next) {
+            if(tmp->start > 0 && tmp->start < elem->start) {
+                tmp = elem;
+            }
+        }
+        elem = tmp;
     }
     msgqueue = delete(elem);
     for(cur = msgqueue; cur != NULL; cur = cur->next) {
