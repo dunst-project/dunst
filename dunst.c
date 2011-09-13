@@ -72,6 +72,7 @@ void run(void);
 void setup(void);
 void show_win(void);
 void usage(int exit_status);
+char *xml_unescape(char *str);
 
 #include "dunst_dbus.h"
 
@@ -79,7 +80,7 @@ msg_queue_t*
 append(msg_queue_t *queue, char *msg) {
     msg_queue_t *new = malloc(sizeof(msg_queue_t));
     msg_queue_t *last;
-    new->msg = msg;
+    new->msg = xml_unescape(msg);
     new->start = 0;
     printf("%s\n", new->msg);
     new->next = NULL;
@@ -102,6 +103,7 @@ pop(msg_queue_t *queue) {
         return NULL;
     }
     new_head = queue->next;
+    free(queue->msg);
     free(queue);
     return new_head;
 }
@@ -328,6 +330,64 @@ show_win(void) {
     visible = True;
 }
 
+char
+*xml_unescape(char *str) {
+    char *tmpString, *strpos, *tmppos;
+
+    if(str == NULL) {
+        return NULL;
+    }
+
+    /* tmpString can never be bigger than str */
+    tmpString = (char *) calloc(strlen(str), sizeof(char) + 1);
+    memset(tmpString, '\0', strlen(tmpString) * sizeof(char) + 1);
+    tmppos = tmpString;
+    strpos = str;
+
+    while(*strpos != '\0') {
+        if(*strpos != '&') {
+            /* not the beginning of an xml-escape */
+            *tmppos = *strpos;
+            strpos++;
+            tmppos++;
+            continue;
+        }
+        else if(!strncmp(strpos, "&quot;", strlen("&quot;"))) {
+            *tmppos = '"';
+            tmppos++;
+            strpos += strlen("&quot;");
+        }
+        else if(!strncmp(strpos, "&apos;", strlen("apos;"))) {
+            *tmppos = '\'';
+            tmppos++;
+            strpos += strlen("&apos;");
+        }
+        else if(!strncmp(strpos, "&amp;", strlen("amp;"))) {
+            *tmppos = '&';
+            tmppos++;
+            strpos += strlen("&amp;") - 1;
+        }
+        else if(!strncmp(strpos, "&lt;", strlen("lt;"))) {
+            *tmppos = '<';
+            tmppos++;
+            strpos += strlen("&lt;") - 1;
+        }
+        else if(!strncmp(strpos, "&gt;", strlen("gt;"))) {
+            *tmppos = '>';
+            tmppos++;
+            strpos += strlen("&gt;") - 1;
+        }
+        else {
+            *tmppos = *strpos;
+            strpos++;
+            tmppos++;
+        }
+    }
+
+    free(str);
+    return tmpString;
+}
+
 int
 main(int argc, char *argv[]) {
 
@@ -357,7 +417,7 @@ main(int argc, char *argv[]) {
         else if(!strcmp(argv[i], "-to"))
             global_timeout = atoi(argv[++i]);
         else if(!strcmp(argv[i], "-msg")) {
-             msgqueue = append(msgqueue, argv[++i]);
+             msgqueue = append(msgqueue, strdup(argv[++i]));
              listen_to_dbus = False;
         }
         else if(!strcmp(argv[i], "-mon")) {
