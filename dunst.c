@@ -237,6 +237,8 @@ run(void) {
         /* dbus_poll blocks for max 2 seconds, if no events are present */
         if(listen_to_dbus) {
             dbus_poll();
+        } else {
+            usleep(1000*50);
         }
         now = time(&now);
         if(msgqueue != NULL) {
