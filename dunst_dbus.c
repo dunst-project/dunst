@@ -155,12 +155,17 @@ void
 notify(DBusMessage *dmsg) {
     DBusMessage *reply;
     DBusMessageIter args;
+    DBusMessageIter hints;
+    DBusMessageIter hint;
+    DBusMessageIter hint_value;
+    char *hint_name;
 
     int id = 23;
     const char *appname;
     const char *summary;
     const char *body;
     const char *icon;
+    int urgency = 1;
     char *msg;
     dbus_uint32_t nid=0;
     dbus_int32_t expires=-1;
@@ -178,8 +183,31 @@ notify(DBusMessage *dmsg) {
     dbus_message_iter_get_basic(&args, &body);
     dbus_message_iter_next( &args );
     dbus_message_iter_next( &args );
+    dbus_message_iter_recurse(&args, &hints);
     dbus_message_iter_next( &args );
     dbus_message_iter_get_basic(&args, &expires);
+
+    do {
+        dbus_message_iter_recurse(&hints, &hint);
+        do {
+            /* 115 == dbus urgency type thingy... i hate this shit */
+            if(dbus_message_iter_get_arg_type(&hint) != 115) {
+                continue;
+            }
+            dbus_message_iter_get_basic(&hint, &hint_name);
+            if(!strcmp(hint_name, "urgency")) {
+                dbus_message_iter_next(&hint);
+                dbus_message_iter_recurse(&hint, &hint_value);
+                do {
+                    dbus_message_iter_get_basic(&hint_value, &urgency);
+                } while(dbus_message_iter_next(&hint));
+
+            }
+        } while(dbus_message_iter_next(&hint));
+    } while(dbus_message_iter_next(&hints));
+
+
+
 
 
     if(strlen(body) > 0) {
@@ -202,7 +230,7 @@ notify(DBusMessage *dmsg) {
     if(expires > 0) {
         expires = expires/1000;
     }
-    msgqueue = append(msgqueue, msg, expires);
+    msgqueue = append(msgqueue, msg, expires, urgency);
     drawmsg();
 
     reply = dbus_message_new_method_return(dmsg);

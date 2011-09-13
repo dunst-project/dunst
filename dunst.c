@@ -25,6 +25,7 @@ typedef struct _msg_queue_t {
     struct _msg_queue_t *next;
     time_t start;
     int timeout;
+    int urgency;
 } msg_queue_t;
 
 typedef struct _dimension_t {
@@ -44,7 +45,13 @@ typedef struct _screen_info {
 static const char *font = NULL;
 static const char *normbgcolor = "#cccccc";
 static const char *normfgcolor = "#000000";
+static const char *critbgcolor = "#ffaaaa";
+static const char *critfgcolor = "#000000";
+static const char *lowbgcolor =  "#aaaaff";
+static const char *lowfgcolor = "#000000";
 static unsigned long normcol[ColLast];
+static unsigned long critcol[ColLast];
+static unsigned long lowcol[ColLast];
 static Atom utf8;
 static DC *dc;
 static Window win;
@@ -60,7 +67,7 @@ static dimension_t geometry;
 static int font_h;
 
 /* list functions */
-msg_queue_t *append(msg_queue_t *queue, char *msg, int to);
+msg_queue_t *append(msg_queue_t *queue, char *msg, int to, int urgency);
 msg_queue_t *delete(msg_queue_t *elem);
 msg_queue_t *pop(msg_queue_t *queue);
 int list_len(msg_queue_t *list);
@@ -80,17 +87,18 @@ char *xml_unescape(char *str);
 #include "dunst_dbus.h"
 
 msg_queue_t*
-append(msg_queue_t *queue, char *msg, int to) {
+append(msg_queue_t *queue, char *msg, int to, int urgency) {
     msg_queue_t *new = malloc(sizeof(msg_queue_t));
     msg_queue_t *last;
     new->msg = xml_unescape(msg);
+    new->urgency = urgency;
     if(to == -1) {
         new->timeout = global_timeout;
     } else {
         new->timeout = to;
     }
     new->start = 0;
-    printf("%s (timeout: %d)\n", new->msg, new->timeout);
+    printf("%s (timeout: %d, urgency: %d)\n", new->msg, new->timeout, urgency);
     new->next = NULL;
     if(queue == NULL) {
         return new;
@@ -267,7 +275,25 @@ drawmsg(void) {
         if(cur_msg->start == 0)
             cur_msg->start = now;
 
-        drawtext(dc, cur_msg->msg, normcol);
+        switch ( cur_msg->urgency ) {
+            case 0 :
+                drawrect(dc, 0 , dc->y, width, font_h, True, BG(dc, lowcol));
+                drawtext(dc, cur_msg->msg, lowcol);
+                break;
+            case 1 :
+                drawrect(dc, 0, dc->y, width, font_h, True, BG(dc, normcol));
+                drawtext(dc, cur_msg->msg, normcol);
+                break;
+            case 2 :
+                drawrect(dc, 0, dc->y, width, font_h, True, BG(dc, critcol));
+                drawtext(dc, cur_msg->msg, critcol);
+                break;
+            default :
+                drawrect(dc, 0 ,dc->y, width, font_h, True, BG(dc, lowcol));
+                drawtext(dc, cur_msg->msg, normcol);
+                break;
+        }
+
         dc->y += font_h;
         cur_msg = cur_msg->next;
     }
@@ -342,8 +368,12 @@ setup(void) {
     }
     root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
 
-	normcol[ColBG] = getcolor(dc, normbgcolor);
-	normcol[ColFG] = getcolor(dc, normfgcolor);
+    normcol[ColBG] = getcolor(dc, normbgcolor);
+    normcol[ColFG] = getcolor(dc, normfgcolor);
+    critcol[ColBG] = getcolor(dc, critbgcolor);
+    critcol[ColFG] = getcolor(dc, critfgcolor);
+    lowcol[ColBG] = getcolor(dc, lowbgcolor);
+    lowcol[ColFG] = getcolor(dc, lowfgcolor);
 
 	utf8 = XInternAtom(dc->dpy, "UTF8_STRING", False);
 
@@ -483,14 +513,22 @@ main(int argc, char *argv[]) {
         }
         else if(!strcmp(argv[i], "-fn"))
             font = argv[++i];
-        else if(!strcmp(argv[i], "-nb") || !strcmp(argv[i], "-bg"))
+        else if(!strcmp(argv[i], "-nb"))
             normbgcolor = argv[++i];
-        else if(!strcmp(argv[i], "-nf") || !strcmp(argv[i], "-fg"))
+        else if(!strcmp(argv[i], "-nf"))
             normfgcolor = argv[++i];
+        else if(!strcmp(argv[i], "-lb"))
+            lowbgcolor = argv[++i];
+        else if(!strcmp(argv[i], "-lf"))
+            lowfgcolor = argv[++i];
+        else if(!strcmp(argv[i], "-cb"))
+            critbgcolor = argv[++i];
+        else if(!strcmp(argv[i], "-cf"))
+            critfgcolor = argv[++i];
         else if(!strcmp(argv[i], "-to"))
             global_timeout = atoi(argv[++i]);
         else if(!strcmp(argv[i], "-msg")) {
-             msgqueue = append(msgqueue, strdup(argv[++i]), -1);
+             msgqueue = append(msgqueue, strdup(argv[++i]), -1, 1);
              listen_to_dbus = False;
         }
         else if(!strcmp(argv[i], "-mon")) {
