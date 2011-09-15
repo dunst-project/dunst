@@ -16,7 +16,7 @@ OPTIONS
        -h/--help
               display help message.
 
-       -fn/ font
+       -fn font
               defines the font or font set used.
 
        -nb/-bg color
