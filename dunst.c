@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <unistd.h>
 #include <time.h>
 #include <stdio.h>
@@ -65,6 +66,7 @@ static KeySym mask = 0;
 static screen_info scr;
 static dimension_t geometry;
 static int font_h;
+static const char *format = "%s %b";
 
 /* list functions */
 msg_queue_t *append(msg_queue_t *queue, char *msg, int to, int urgency);
@@ -77,7 +79,9 @@ int list_len(msg_queue_t *list);
 void check_timeouts(void);
 void delete_msg(msg_queue_t *elem);
 void drawmsg(void);
+char *format_msg(const char *app, const char *sum, const char *body, const char *icon);
 void handleXEvents(void);
+char *string_replace(const char *needle, const char *replacement, char *haystack);
 void run(void);
 void setup(void);
 void show_win(void);
@@ -303,6 +307,23 @@ drawmsg(void) {
     mapdc(dc, win, width, height*font_h);
 }
 
+char *
+_do_replace(char *buf, char *replace_buf, const char *to_replace, const char *replacement) {
+    char *replace_buf_old = strdup(replace_buf);
+    if(strstr(replace_buf, to_replace)) {
+        if(strlen(replacement) > 0) {
+            replace_buf = string_replace("%{", "", replace_buf);
+
+            replace_buf = string_replace(to_replace, replacement, replace_buf);
+            replace_buf[strlen(replace_buf)-1] = '\0';
+            buf = string_replace(replace_buf_old, replace_buf, buf);
+        } else {
+            buf = string_replace(replace_buf, "", buf);
+        }
+    }
+    return buf;
+}
+
 void
 handleXEvents(void) {
 	XEvent ev;
@@ -330,6 +351,32 @@ handleXEvents(void) {
                 delete_msg(NULL);
             }
         }
+    }
+}
+
+char *
+string_replace(const char *needle, const char *replacement, char *haystack) {
+    char *tmp, *start;
+    int size;
+    start = strstr(haystack, needle);
+    if(start == NULL) {
+        return haystack;
+    }
+
+    size = (strlen(haystack) - strlen(needle)) + strlen(replacement) + 1;
+    tmp = calloc(sizeof(char), size);
+    memset(tmp, '\0', size);
+
+    strncpy(tmp, haystack, start-haystack);
+    tmp[start-haystack] = '\0';
+
+    sprintf(tmp+strlen(tmp), "%s%s", replacement, start+strlen(needle));
+    free(haystack);
+
+    if(strstr(tmp, needle)) {
+        return string_replace(needle, replacement, tmp);
+    } else {
+        return tmp;
     }
 }
 
@@ -534,6 +581,9 @@ main(int argc, char *argv[]) {
         else if(!strcmp(argv[i], "-mon")) {
             scr.scr = atoi(argv[++i]);
         }
+        else if(!strcmp(argv[i], "-format")) {
+            format = argv[++i];
+        }
         else if(!strcmp(argv[i], "-key")) {
             key = XStringToKeysym(argv[i+1]);
             if(key == NoSymbol) {
@@ -588,6 +638,6 @@ main(int argc, char *argv[]) {
 
 void
 usage(int exit_status) {
-    fputs("usage: dunst [-h/--help] [-geometry geom] [-fn font]\n[-nb color] [-nf color] [-lb color] [-lf color] [-cb color] [ -cf color]\n[-to secs] [-key key] [-mod modifier] [-mon n] [-msg msg]\n", stderr);
+    fputs("usage: dunst [-h/--help] [-geometry geom] [-fn font] [-format fmt]\n[-nb color] [-nf color] [-lb color] [-lf color] [-cb color] [ -cf color]\n[-to secs] [-key key] [-mod modifier] [-mon n] [-msg msg]\n", stderr);
     exit(exit_status);
 }

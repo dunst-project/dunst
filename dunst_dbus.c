@@ -210,22 +210,12 @@ notify(DBusMessage *dmsg) {
 
 
 
-    if(strlen(body) > 0) {
-        msg = malloc(
-                  strlen(appname)
-                 +strlen(summary)
-                 +strlen(body)
-                 +strlen(":  -- ")
-                 +5);
-        sprintf(msg, "%s: %s -- %s", appname, summary, body);
-    } else {
-        msg = malloc(
-                  strlen(appname)
-                 +strlen(summary)
-                 +strlen(": ")
-                 +5);
-        sprintf(msg, "%s: %s", appname, summary);
-    }
+    msg = string_replace("%a", appname, strdup(format));
+    msg = string_replace("%s", summary, msg);
+    msg = string_replace("%i", icon, msg);
+    msg = string_replace("%I", basename(icon), msg);
+    msg = string_replace("%b", body, msg);
+
 
     if(expires > 0) {
         expires = expires/1000;
