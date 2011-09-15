@@ -57,6 +57,7 @@ static KeySym mask = 0;
 static screen_info scr;
 static dimension_t geometry;
 static int font_h;
+static int display_appname = True;
 
 /* list functions */
 msg_queue_t *append(msg_queue_t *queue, char *msg);
@@ -398,6 +399,8 @@ main(int argc, char *argv[]) {
             }
             i++;
         }
+        else if(!strcmp(argv[i], "-appname"))
+          display_appname = atoi(argv[++i]);
         else
             usage(EXIT_FAILURE);
     }
