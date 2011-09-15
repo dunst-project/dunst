@@ -588,6 +588,6 @@ main(int argc, char *argv[]) {
 
 void
 usage(int exit_status) {
-    fputs("usage: dunst [-h/--help] [-geometry geom] [-fn font]\n[-nb/-bg color] [-nf/-fg color] [-to secs] [-key key] [-mod modifier] [-mon n] [-msg msg]\n", stderr);
+    fputs("usage: dunst [-h/--help] [-geometry geom] [-fn font]\n[-nb color] [-nf color] [-lb color] [-lf color] [-cb color] [ -cf color]\n[-to secs] [-key key] [-mod modifier] [-mon n] [-msg msg]\n", stderr);
     exit(exit_status);
 }
