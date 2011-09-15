@@ -181,22 +181,29 @@ notify(DBusMessage *dmsg) {
     dbus_message_iter_next( &args );
     dbus_message_iter_get_basic(&args, &expires);
 
-
     if(strlen(body) > 0) {
         msg = malloc(
-                  strlen(appname)
+                  display_appname ? strlen(appname) : 0
                  +strlen(summary)
                  +strlen(body)
                  +strlen(":  -- ")
                  +5);
-        sprintf(msg, "%s: %s -- %s", appname, summary, body);
+        if (display_appname) {
+            sprintf(msg, "%s: %s -- %s", appname, summary, body);
+        } else {
+          sprintf(msg, "%s -- %s", summary, body);
+        }
     } else {
         msg = malloc(
-                  strlen(appname)
+                  (display_appname ? strlen(appname) : 0)
                  +strlen(summary)
                  +strlen(": ")
                  +5);
-        sprintf(msg, "%s: %s", appname, summary);
+   if (display_appname) {
+          sprintf(msg, "%s: %s", appname, summary);
+      } else {
+          sprintf(msg, "%s", summary);
+      }
     }
 
     msgqueue = append(msgqueue, msg);
