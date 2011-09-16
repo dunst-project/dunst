@@ -79,6 +79,7 @@ int list_len(msg_queue_t *list);
 void check_timeouts(void);
 void delete_msg(msg_queue_t *elem);
 void drawmsg(void);
+char *fix_markup(char *str);
 char *format_msg(const char *app, const char *sum, const char *body, const char *icon);
 void handleXEvents(void);
 char *string_replace(const char *needle, const char *replacement, char *haystack);
@@ -86,7 +87,6 @@ void run(void);
 void setup(void);
 void show_win(void);
 void usage(int exit_status);
-char *xml_unescape(char *str);
 
 #include "dunst_dbus.h"
 
@@ -94,7 +94,7 @@ msg_queue_t*
 append(msg_queue_t *queue, char *msg, int to, int urgency) {
     msg_queue_t *new = malloc(sizeof(msg_queue_t));
     msg_queue_t *last;
-    new->msg = xml_unescape(msg);
+    new->msg = fix_markup(msg);
     new->urgency = urgency;
 
     if(to == -1) {
@@ -310,6 +310,96 @@ drawmsg(void) {
     mapdc(dc, win, width, height*font_h);
 }
 
+char
+*fix_markup(char *str) {
+    char *tmpString, *strpos, *tmppos;
+    char *replace_buf, *start, *end;
+
+    if(str == NULL) {
+        return NULL;
+    }
+
+    /* tmpString can never be bigger than str */
+    tmpString = (char *) calloc(strlen(str), sizeof(char) + 1);
+    memset(tmpString, '\0', strlen(tmpString) * sizeof(char) + 1);
+    tmppos = tmpString;
+    strpos = str;
+
+    while(*strpos != '\0') {
+        if(*strpos != '&') {
+            /* not the beginning of an xml-escape */
+            *tmppos = *strpos;
+            strpos++;
+            tmppos++;
+            continue;
+        }
+        else if(!strncmp(strpos, "&quot;", strlen("&quot;"))) {
+            *tmppos = '"';
+            tmppos++;
+            strpos += strlen("&quot;");
+        }
+        else if(!strncmp(strpos, "&apos;", strlen("apos;"))) {
+            *tmppos = '\'';
+            tmppos++;
+            strpos += strlen("&apos;");
+        }
+        else if(!strncmp(strpos, "&amp;", strlen("amp;"))) {
+            *tmppos = '&';
+            tmppos++;
+            strpos += strlen("&amp;") - 1;
+        }
+        else if(!strncmp(strpos, "&lt;", strlen("lt;"))) {
+            *tmppos = '<';
+            tmppos++;
+            strpos += strlen("&lt;") - 1;
+        }
+        else if(!strncmp(strpos, "&gt;", strlen("gt;"))) {
+            *tmppos = '>';
+            tmppos++;
+            strpos += strlen("&gt;") - 1;
+        }
+        else {
+            *tmppos = *strpos;
+            strpos++;
+            tmppos++;
+        }
+    }
+
+    free(str);
+
+    /* remove tags */
+    tmpString = string_replace("<b>", "", tmpString);
+    tmpString = string_replace("</b>", "", tmpString);
+    tmpString = string_replace("<i>", "", tmpString);
+    tmpString = string_replace("</i>", "", tmpString);
+    tmpString = string_replace("<u>", "", tmpString);
+    tmpString = string_replace("</u>", "", tmpString);
+    tmpString = string_replace("</a>", "", tmpString);
+
+    start = strstr(tmpString, "<a href");
+    if(start != NULL) {
+        end = strstr(tmpString, ">");
+        if(end != NULL) {
+            replace_buf = strndup(start, end-start+1);
+            printf("replace_buf: '%s'\n", replace_buf);
+            tmpString = string_replace(replace_buf, "", tmpString);
+            free(replace_buf);
+        }
+    }
+    start = strstr(tmpString, "<img src");
+    if(start != NULL) {
+        end = strstr(tmpString, "/>");
+        if(end != NULL) {
+            replace_buf = strndup(start, end-start+2);
+            printf("replace_buf: '%s'\n", replace_buf);
+            tmpString = string_replace(replace_buf, "", tmpString);
+            free(replace_buf);
+        }
+    }
+    return tmpString;
+
+}
+
 char *
 _do_replace(char *buf, char *replace_buf, const char *to_replace, const char *replacement) {
     char *replace_buf_old = strdup(replace_buf);
@@ -483,63 +573,6 @@ show_win(void) {
     visible = True;
 }
 
-char
-*xml_unescape(char *str) {
-    char *tmpString, *strpos, *tmppos;
-
-    if(str == NULL) {
-        return NULL;
-    }
-
-    /* tmpString can never be bigger than str */
-    tmpString = (char *) calloc(strlen(str), sizeof(char) + 1);
-    memset(tmpString, '\0', strlen(tmpString) * sizeof(char) + 1);
-    tmppos = tmpString;
-    strpos = str;
-
-    while(*strpos != '\0') {
-        if(*strpos != '&') {
-            /* not the beginning of an xml-escape */
-            *tmppos = *strpos;
-            strpos++;
-            tmppos++;
-            continue;
-        }
-        else if(!strncmp(strpos, "&quot;", strlen("&quot;"))) {
-            *tmppos = '"';
-            tmppos++;
-            strpos += strlen("&quot;");
-        }
-        else if(!strncmp(strpos, "&apos;", strlen("apos;"))) {
-            *tmppos = '\'';
-            tmppos++;
-            strpos += strlen("&apos;");
-        }
-        else if(!strncmp(strpos, "&amp;", strlen("amp;"))) {
-            *tmppos = '&';
-            tmppos++;
-            strpos += strlen("&amp;") - 1;
-        }
-        else if(!strncmp(strpos, "&lt;", strlen("lt;"))) {
-            *tmppos = '<';
-            tmppos++;
-            strpos += strlen("&lt;") - 1;
-        }
-        else if(!strncmp(strpos, "&gt;", strlen("gt;"))) {
-            *tmppos = '>';
-            tmppos++;
-            strpos += strlen("&gt;") - 1;
-        }
-        else {
-            *tmppos = *strpos;
-            strpos++;
-            tmppos++;
-        }
-    }
-
-    free(str);
-    return tmpString;
-}
 
 int
 main(int argc, char *argv[]) {
