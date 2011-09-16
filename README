@@ -1,4 +1,4 @@
-DNOTIFY(1)                                                                                                                                                                                  DNOTIFY(1)
+DNOTIFY(1)                                                                                                                                                                             DNOTIFY(1)
 
 
 
@@ -6,11 +6,12 @@ NAME
        dunst - dmenu-ish universal notification system
 
 SYNOPSIS
-       dunst [-geometry geom] [-fn font] [-nf color] [-nb color] [-lf color] [-lb color] [-cf color] [-cb color] [-to secs] [-format fmt] [-key key] [-mod modifier] [-mon n]
+       dunst  [-geometry  geom]  [-fn font] [-nf color] [-nb color] [-lf color] [-lb color] [-cf color] [-cb color] [-to secs] [-nto secs] [-lto secs] [-cto secs] [-format fmt] [-key key] [-mod
+       modifier] [-mon n]
 
 DESCRIPTION
-       dunst  is  a lightweight notification-daemon for the libnotify. It can also be used as a standalone notification system. Dnotify displays messages received via dbus or as commandline argument
-       in a fashion similar to dmenu and additionally prints them to stdout. Notifications can be closed via mouseclick.
+       dunst is a lightweight notification-daemon for the libnotify. It can also be used as a standalone notification system. Dnotify displays messages received via dbus or as commandline argu‐
+       ment in a fashion similar to dmenu and additionally prints them to stdout. Notifications can be closed via mouseclick.
 
 OPTIONS
        -h/--help
@@ -41,14 +42,23 @@ OPTIONS
               display msg instead of listening to notifications. This option can be used multiple times.
 
        -to secs
-              display each message for secs seconds.
+              timeout for messages with low and normal urgency. Messages with a timeout of 0 will not dissappear automaticly (defaults to 10)
+
+       -nto secs
+              timeout for messages with normal urgency (defaults to 10)
+
+       -lto secs
+              timeout for messages with low urgency (defaults to 10)
+
+       -cto secs
+              timeout for messages with critical urgency (defaults to 0)
 
        -key key
               close window by pressing key [a,b,space,Return etc.] (should be used in combination with -mod).
 
        -mod modifier
-              defines the modifier for the key. Available modifiers are: ctrl,shift,mod1 (usually the alt-key),mod2,mod3,mod4 (usually windows key). This option can be used multiple times to combine
-              modifiers.
+              defines  the  modifier  for the key. Available modifiers are: ctrl,shift,mod1 (usually the alt-key),mod2,mod3,mod4 (usually windows key). This option can be used multiple times to
+              combine modifiers.
 
        -format fmt
               defines the format of the messages. See FORMAT.
@@ -56,9 +66,9 @@ OPTIONS
        -mon n show the notification on monitor n.
 
        -geometry [[<width>]x<height>][+/-<X>+/-<y>]
-              The  geometry  of  the  message  window. The height is measured in lines everything else in pixels. If the width is omitted but the height is given ("-geometry x2"), the message window
-              expands over the whole screen (dmenu-like). If width is 0, the window expands to the longest message displayed. A positive x is measured from the left, a negative from the  right  side
-              of the screen. Y is measured from the top and down respectevly. see also EXAMPLES show the notification on monitor n.
+              The geometry of the message window. The height is measured in lines everything else in pixels. If the width is omitted but the height is given ("-geometry x2"), the message window
+              expands  over  the whole screen (dmenu-like). If width is 0, the window expands to the longest message displayed. A positive x is measured from the left, a negative from the right
+              side of the screen. Y is measured from the top and down respectevly. see also EXAMPLES show the notification on monitor n.
 
 
 FORMAT
@@ -101,4 +111,4 @@ SEE also
 
 
 
-                                                                                                                                                                                            DNOTIFY(1)
+                                                                                                                                                                                       DNOTIFY(1)

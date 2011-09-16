@@ -56,7 +56,7 @@ static unsigned long lowcol[ColLast];
 static Atom utf8;
 static DC *dc;
 static Window win;
-static double global_timeout = 10;
+static double timeouts[] = { 10, 10, 0 };
 static msg_queue_t *msgqueue = NULL;
 static time_t now;
 static int listen_to_dbus = True;
@@ -96,11 +96,14 @@ append(msg_queue_t *queue, char *msg, int to, int urgency) {
     msg_queue_t *last;
     new->msg = xml_unescape(msg);
     new->urgency = urgency;
+
     if(to == -1) {
-        new->timeout = global_timeout;
+        new->urgency = new->urgency > 2 ? 2 : new->urgency;
+        new->timeout = timeouts[urgency];
     } else {
         new->timeout = to;
     }
+
     new->start = 0;
     printf("%s (timeout: %d, urgency: %d)\n", new->msg, new->timeout, urgency);
     new->next = NULL;
@@ -201,7 +204,7 @@ delete_msg(msg_queue_t *elem) {
         /* delete the oldest element */
         tmp = msgqueue;
         for(elem = msgqueue; elem->next != NULL; elem = elem->next) {
-            if(tmp->start > 0 && tmp->start < elem->start) {
+            if(tmp->start > 0 && tmp->start > elem->start) {
                 tmp = elem;
             }
         }
@@ -572,8 +575,16 @@ main(int argc, char *argv[]) {
             critbgcolor = argv[++i];
         else if(!strcmp(argv[i], "-cf"))
             critfgcolor = argv[++i];
-        else if(!strcmp(argv[i], "-to"))
-            global_timeout = atoi(argv[++i]);
+        else if(!strcmp(argv[i], "-to")) {
+            timeouts[0] = atoi(argv[++i]);
+            timeouts[1] = timeouts[0];
+        }
+        else if(!strcmp(argv[i], "-lto"))
+            timeouts[0] = atoi(argv[++i]);
+        else if(!strcmp(argv[i], "-nto"))
+            timeouts[1] = atoi(argv[++i]);
+        else if(!strcmp(argv[i], "-cto"))
+            timeouts[2] = atoi(argv[++i]);
         else if(!strcmp(argv[i], "-msg")) {
              msgqueue = append(msgqueue, strdup(argv[++i]), -1, 1);
              listen_to_dbus = False;
@@ -638,6 +649,6 @@ main(int argc, char *argv[]) {
 
 void
 usage(int exit_status) {
-    fputs("usage: dunst [-h/--help] [-geometry geom] [-fn font] [-format fmt]\n[-nb color] [-nf color] [-lb color] [-lf color] [-cb color] [ -cf color]\n[-to secs] [-key key] [-mod modifier] [-mon n] [-msg msg]\n", stderr);
+    fputs("usage: dunst [-h/--help] [-geometry geom] [-fn font] [-format fmt]\n[-nb color] [-nf color] [-lb color] [-lf color] [-cb color] [ -cf color]\n[-to secs] [-lto secs] [-cto secs] [-nto secs] [-key key] [-mod modifier] [-mon n] [-msg msg]\n", stderr);
     exit(exit_status);
 }

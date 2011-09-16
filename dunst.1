@@ -21,6 +21,12 @@ dunst \- dmenu\-ish universal notification system
 .IR color ]
 .RB [ \-to
 .IR secs ]
+.RB [ \-nto
+.IR secs ]
+.RB [ \-lto
+.IR secs ]
+.RB [ \-cto
+.IR secs ]
 .RB [ \-format
 .IR fmt ]
 .RB [ \-key
@@ -63,7 +69,16 @@ defines the forground color for critical messages.
 display msg instead of listening to notifications. This option can be used multiple times.
 .TP
 .BI \-to " secs"
-display each message for secs seconds.
+timeout for messages with low and normal urgency. Messages with a timeout of 0 will not dissappear automaticly (defaults to 10)
+.TP
+.BI \-nto " secs"
+timeout for messages with normal urgency (defaults to 10)
+.TP
+.BI \-lto " secs"
+timeout for messages with low urgency (defaults to 10)
+.TP
+.BI \-cto " secs"
+timeout for messages with critical urgency (defaults to 0)
 .TP
 .BI \-key " key"
 close window by pressing key [a,b,space,Return etc.] (should be used in combination with -mod).
