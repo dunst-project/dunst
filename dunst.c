@@ -236,7 +236,7 @@ delete_msg(msg_queue_t *elem) {
 void
 drawmsg(void) {
     int width, x, y, height, i;
-    int len = list_len(msgqueue);
+    unsigned int len = list_len(msgqueue);
     msg_queue_t *cur_msg = msgqueue;
     dc->x = 0;
     dc->y = 0;
