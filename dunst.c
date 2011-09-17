@@ -19,6 +19,9 @@
 #define MAX(a,b)                ((a) > (b) ? (a) : (b))
 #define BUTTONMASK              (ButtonPressMask|ButtonReleaseMask)
 #define FONT_HEIGHT_BORDER 2
+#define LOW 0
+#define NORM 1
+#define CRIT 2
 
 /* structs */
 typedef struct _msg_queue_t {
@@ -50,9 +53,8 @@ static const char *critbgcolor = "#ffaaaa";
 static const char *critfgcolor = "#000000";
 static const char *lowbgcolor =  "#aaaaff";
 static const char *lowfgcolor = "#000000";
-static unsigned long normcol[ColLast];
-static unsigned long critcol[ColLast];
-static unsigned long lowcol[ColLast];
+/* index of colors fit to urgency level */
+static unsigned long colors[3][ColLast];
 static Atom utf8;
 static DC *dc;
 static Window win;
@@ -96,9 +98,9 @@ append(msg_queue_t *queue, char *msg, int to, int urgency) {
     msg_queue_t *last;
     new->msg = fix_markup(msg);
     new->urgency = urgency;
+    new->urgency = new->urgency > CRIT ? CRIT : new->urgency;
 
     if(to == -1) {
-        new->urgency = new->urgency > 2 ? 2 : new->urgency;
         new->timeout = timeouts[urgency];
     } else {
         new->timeout = to;
@@ -276,30 +278,14 @@ drawmsg(void) {
 
     resizedc(dc, width, height*font_h);
     XResizeWindow(dc->dpy, win, width, height*font_h);
-    drawrect(dc, 0, 0, width, height*font_h, True, BG(dc, normcol));
+    drawrect(dc, 0, 0, width, height*font_h, True, BG(dc, colors[NORM]));
 
     for(i = 0; i < height; i++) {
         if(cur_msg->start == 0)
             cur_msg->start = now;
 
-        switch ( cur_msg->urgency ) {
-            case 0 :
-                drawrect(dc, 0 , dc->y, width, font_h, True, BG(dc, lowcol));
-                drawtext(dc, cur_msg->msg, lowcol);
-                break;
-            case 1 :
-                drawrect(dc, 0, dc->y, width, font_h, True, BG(dc, normcol));
-                drawtext(dc, cur_msg->msg, normcol);
-                break;
-            case 2 :
-                drawrect(dc, 0, dc->y, width, font_h, True, BG(dc, critcol));
-                drawtext(dc, cur_msg->msg, critcol);
-                break;
-            default :
-                drawrect(dc, 0 ,dc->y, width, font_h, True, BG(dc, lowcol));
-                drawtext(dc, cur_msg->msg, normcol);
-                break;
-        }
+        drawrect(dc, 0, dc->y, width, font_h, True, BG(dc, colors[cur_msg->urgency]));
+        drawtext(dc, cur_msg->msg, colors[cur_msg->urgency]);
 
         dc->y += font_h;
         cur_msg = cur_msg->next;
@@ -508,12 +494,12 @@ setup(void) {
     }
     root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
 
-    normcol[ColBG] = getcolor(dc, normbgcolor);
-    normcol[ColFG] = getcolor(dc, normfgcolor);
-    critcol[ColBG] = getcolor(dc, critbgcolor);
-    critcol[ColFG] = getcolor(dc, critfgcolor);
-    lowcol[ColBG] = getcolor(dc, lowbgcolor);
-    lowcol[ColFG] = getcolor(dc, lowfgcolor);
+    colors[0][ColBG] = getcolor(dc, lowbgcolor);
+    colors[0][ColFG] = getcolor(dc, lowfgcolor);
+    colors[1][ColBG] = getcolor(dc, normbgcolor);
+    colors[1][ColFG] = getcolor(dc, normfgcolor);
+    colors[2][ColBG] = getcolor(dc, critbgcolor);
+    colors[2][ColFG] = getcolor(dc, critfgcolor);
 
 	utf8 = XInternAtom(dc->dpy, "UTF8_STRING", False);
 
