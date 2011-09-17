@@ -197,20 +197,20 @@ check_timeouts(void) {
 void
 delete_msg(msg_queue_t *elem) {
     msg_queue_t *cur;
-    msg_queue_t *tmp;
+    msg_queue_t *min;
     int visible_count = 0;
     if(msgqueue == NULL) {
         return;
     }
     if(elem == NULL) {
         /* delete the oldest element */
-        tmp = msgqueue;
+        min = msgqueue;
         for(elem = msgqueue; elem->next != NULL; elem = elem->next) {
-            if(tmp->start > 0 && tmp->start > elem->start) {
-                tmp = elem;
+            if(elem->start > 0 && min->start > elem->start) {
+                min = elem;
             }
         }
-        elem = tmp;
+        elem = min;
     }
     msgqueue = delete(elem);
     for(cur = msgqueue; cur != NULL; cur = cur->next) {
