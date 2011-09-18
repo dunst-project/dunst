@@ -332,17 +332,17 @@ char
         else if(!strncmp(strpos, "&amp;", strlen("amp;"))) {
             *tmppos = '&';
             tmppos++;
-            strpos += strlen("&amp;") - 1;
+            strpos += strlen("&amp;");
         }
         else if(!strncmp(strpos, "&lt;", strlen("lt;"))) {
             *tmppos = '<';
             tmppos++;
-            strpos += strlen("&lt;") - 1;
+            strpos += strlen("&lt;");
         }
         else if(!strncmp(strpos, "&gt;", strlen("gt;"))) {
             *tmppos = '>';
             tmppos++;
-            strpos += strlen("&gt;") - 1;
+            strpos += strlen("&gt;");
         }
         else {
             *tmppos = *strpos;
