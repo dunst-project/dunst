@@ -30,6 +30,7 @@ typedef struct _msg_queue_t {
     time_t start;
     int timeout;
     int urgency;
+    unsigned long colors[ColLast];
 } msg_queue_t;
 
 typedef struct _dimension_t {
@@ -71,7 +72,7 @@ static int font_h;
 static const char *format = "%s %b";
 
 /* list functions */
-msg_queue_t *append(msg_queue_t *queue, char *msg, int to, int urgency);
+msg_queue_t *append(msg_queue_t *queue, char *msg, int to, int urgency, const char *fg, const char *bg);
 msg_queue_t *delete(msg_queue_t *elem);
 msg_queue_t *pop(msg_queue_t *queue);
 int list_len(msg_queue_t *list);
@@ -93,12 +94,27 @@ void usage(int exit_status);
 #include "dunst_dbus.h"
 
 msg_queue_t*
-append(msg_queue_t *queue, char *msg, int to, int urgency) {
+append(msg_queue_t *queue, char *msg, int to, int urgency, const char *fg, const char *bg) {
     msg_queue_t *new = malloc(sizeof(msg_queue_t));
     msg_queue_t *last;
+    Colormap cmap = DefaultColormap(dc->dpy, DefaultScreen(dc->dpy));
+    XColor color;
+
+
     new->msg = fix_markup(msg);
     new->urgency = urgency;
     new->urgency = new->urgency > CRIT ? CRIT : new->urgency;
+
+	if(fg == NULL || !XAllocNamedColor(dc->dpy, cmap, fg, &color, &color)) {
+        new->colors[ColFG] = colors[new->urgency][ColFG];
+    } else {
+        new->colors[ColFG] = color.pixel;
+    }
+	if(bg == NULL || !XAllocNamedColor(dc->dpy, cmap, bg, &color, &color)) {
+        new->colors[ColBG] = colors[new->urgency][ColBG];
+    } else {
+        new->colors[ColBG] = color.pixel;
+    }
 
     if(to == -1) {
         new->timeout = timeouts[urgency];
@@ -291,8 +307,8 @@ drawmsg(void) {
         if(cur_msg->start == 0)
             cur_msg->start = now;
 
-        drawrect(dc, 0, dc->y, width, font_h, True, BG(dc, colors[cur_msg->urgency]));
-        drawtext(dc, cur_msg->msg, colors[cur_msg->urgency]);
+        drawrect(dc, 0, dc->y, width, font_h, True, BG(dc, cur_msg->colors));
+        drawtext(dc, cur_msg->msg, cur_msg->colors);
 
         dc->y += font_h;
         cur_msg = cur_msg->next;
@@ -612,7 +628,7 @@ main(int argc, char *argv[]) {
         else if(!strcmp(argv[i], "-cto"))
             timeouts[2] = atoi(argv[++i]);
         else if(!strcmp(argv[i], "-msg")) {
-             msgqueue = append(msgqueue, strdup(argv[++i]), -1, 1);
+             msgqueue = append(msgqueue, strdup(argv[++i]), -1, 1, NULL, NULL);
              listen_to_dbus = False;
         }
         else if(!strcmp(argv[i], "-mon")) {

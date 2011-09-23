@@ -165,6 +165,8 @@ notify(DBusMessage *dmsg) {
     const char *summary;
     const char *body;
     const char *icon;
+    const char *fgcolor = NULL;
+    const char *bgcolor = NULL;
     int urgency = 1;
     char *msg;
     dbus_uint32_t nid=0;
@@ -203,6 +205,22 @@ notify(DBusMessage *dmsg) {
                 } while(dbus_message_iter_next(&hint));
 
             }
+            if(!strcmp(hint_name, "fgcolor")) {
+                dbus_message_iter_next(&hint);
+                dbus_message_iter_recurse(&hint, &hint_value);
+                do {
+                    dbus_message_iter_get_basic(&hint_value, &fgcolor);
+                } while(dbus_message_iter_next(&hint));
+
+            }
+            if(!strcmp(hint_name, "bgcolor")) {
+                dbus_message_iter_next(&hint);
+                dbus_message_iter_recurse(&hint, &hint_value);
+                do {
+                    dbus_message_iter_get_basic(&hint_value, &bgcolor);
+                } while(dbus_message_iter_next(&hint));
+
+            }
         } while(dbus_message_iter_next(&hint));
     } while(dbus_message_iter_next(&hints));
 
@@ -220,7 +238,7 @@ notify(DBusMessage *dmsg) {
     if(expires > 0) {
         expires = expires/1000;
     }
-    msgqueue = append(msgqueue, msg, expires, urgency);
+    msgqueue = append(msgqueue, msg, expires, urgency, fgcolor, bgcolor);
     drawmsg();
 
     reply = dbus_message_new_method_return(dmsg);

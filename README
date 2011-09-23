@@ -71,6 +71,15 @@ OPTIONS
               side of the screen. Y is measured from the top and down respectevly. see also EXAMPLES show the notification on monitor n.
 
 
+NOTIFY-SEND
+       dunst is able to get different colors for a message via notify-send. For that, you have to add a hint via the -h option.
+
+       notify-send -h string:fgcolor:#ff4444
+
+       notify-send -h string:bgcolor:#4444ff
+
+       notify-send -h string:bgcolor:#4444ff -h string:fgcolor:#ff4444
+
 FORMAT
        fmt is a string containing placeholders. The placeholders will be replaced with the corresponding text, or if the text is not present, nothing.  Possible placeholders are:
 
