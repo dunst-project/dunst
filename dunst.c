@@ -159,6 +159,7 @@ pop(msg_queue_t *queue) {
         return NULL;
     }
     if(queue->next == NULL) {
+        free(queue->msg);
         free(queue);
         return NULL;
     }
