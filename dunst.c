@@ -183,14 +183,20 @@ int list_len(msg_queue_t *list) {
 
 void
 check_timeouts(void) {
-    msg_queue_t *cur;
+    msg_queue_t *cur, *next;
 
-    for(cur = msgqueue; cur != NULL; cur = cur->next) {
+    cur = msgqueue;
+    while(cur != NULL) {
         if(cur->start == 0 || cur->timeout == 0) {
+            cur = cur->next;
             continue;
         }
         if(difftime(now, cur->start) > cur->timeout) {
+            next = cur->next;
             delete_msg(cur);
+            cur = next;
+        } else {
+            cur = cur->next;
         }
     }
 }
