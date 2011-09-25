@@ -62,7 +62,6 @@ static Window win;
 static double timeouts[] = { 10, 10, 0 };
 static msg_queue_t *msgqueue = NULL;
 static time_t now;
-static int listen_to_dbus = True;
 static int visible = False;
 static KeySym key = NoSymbol;
 static KeySym mask = 0;
@@ -487,18 +486,12 @@ run(void) {
 
     while(True) {
         /* dbus_poll blocks for max 2 seconds, if no events are present */
-        if(listen_to_dbus) {
-            dbus_poll();
-        } else {
-            usleep(1000*50);
-        }
+        dbus_poll();
         now = time(&now);
         if(msgqueue != NULL) {
             show_win();
             check_timeouts();
             handleXEvents();
-        } else if (!listen_to_dbus) {
-            break;
         }
     }
 }
@@ -589,6 +582,7 @@ main(int argc, char *argv[]) {
     int i;
 
     now = time(&now);
+    dc = initdc();
 
     for(i = 1; i < argc; i++) {
         /* switches */
@@ -627,10 +621,6 @@ main(int argc, char *argv[]) {
             timeouts[1] = atoi(argv[++i]);
         else if(!strcmp(argv[i], "-cto"))
             timeouts[2] = atoi(argv[++i]);
-        else if(!strcmp(argv[i], "-msg")) {
-             msgqueue = append(msgqueue, strdup(argv[++i]), -1, 1, NULL, NULL);
-             listen_to_dbus = False;
-        }
         else if(!strcmp(argv[i], "-mon")) {
             scr.scr = atoi(argv[++i]);
         }
@@ -676,10 +666,7 @@ main(int argc, char *argv[]) {
             usage(EXIT_FAILURE);
     }
 
-    if(listen_to_dbus) {
-        initdbus();
-    }
-    dc = initdc();
+    initdbus();
     initfont(dc, font);
     setup();
     if(msgqueue != NULL) {
@@ -691,6 +678,6 @@ main(int argc, char *argv[]) {
 
 void
 usage(int exit_status) {
-    fputs("usage: dunst [-h/--help] [-geometry geom] [-fn font] [-format fmt]\n[-nb color] [-nf color] [-lb color] [-lf color] [-cb color] [ -cf color]\n[-to secs] [-lto secs] [-cto secs] [-nto secs] [-key key] [-mod modifier] [-mon n] [-msg msg]\n", stderr);
+    fputs("usage: dunst [-h/--help] [-geometry geom] [-fn font] [-format fmt]\n[-nb color] [-nf color] [-lb color] [-lf color] [-cb color] [ -cf color]\n[-to secs] [-lto secs] [-cto secs] [-nto secs] [-key key] [-mod modifier] [-mon n]\n", stderr);
     exit(exit_status);
 }

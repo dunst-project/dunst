@@ -10,8 +10,8 @@ SYNOPSIS
        modifier] [-mon n]
 
 DESCRIPTION
-       dunst is a lightweight notification-daemon for the libnotify. It can also be used as a standalone notification system. Dnotify displays messages received via dbus or as commandline argu‐
-       ment in a fashion similar to dmenu and additionally prints them to stdout. Notifications can be closed via mouseclick.
+       dunst is a lightweight notification-daemon for the libnotify. Dnotify displays messages received via dbus or as commandline argument in a fashion similar to dmenu and additionally prints
+       them to stdout. Notifications can be closed via mouseclick.
 
 OPTIONS
        -h/--help
@@ -37,9 +37,6 @@ OPTIONS
 
        -cf color
               defines the forground color for critical messages.
-
-       -msg msg
-              display msg instead of listening to notifications. This option can be used multiple times.
 
        -to secs
               timeout for messages with low and normal urgency. Messages with a timeout of 0 will not dissappear automaticly (defaults to 10)
