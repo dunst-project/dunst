@@ -375,6 +375,7 @@ char
 
     free(str);
 
+    tmpString = string_replace("\n", " ", tmpString);
     /* remove tags */
     tmpString = string_replace("<b>", "", tmpString);
     tmpString = string_replace("</b>", "", tmpString);
