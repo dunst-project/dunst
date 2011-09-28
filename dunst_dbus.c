@@ -236,7 +236,11 @@ notify(DBusMessage *dmsg) {
 
 
     if(expires > 0) {
-        expires = expires/1000;
+        /* do some rounding */
+        expires = (expires+500)/1000;
+        if(expires < 1) {
+            expires = 1;
+        }
     }
     msgqueue = append(msgqueue, msg, expires, urgency, fgcolor, bgcolor);
     drawmsg();
