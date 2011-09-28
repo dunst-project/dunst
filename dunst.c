@@ -492,8 +492,8 @@ run(void) {
         if(msgqueue != NULL) {
             show_win();
             check_timeouts();
-            handleXEvents();
         }
+        handleXEvents();
     }
 }
 
