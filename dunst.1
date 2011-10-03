@@ -35,6 +35,7 @@ dunst \- dmenu\-ish universal notification system
 .IR modifier ]
 .RB [ \-mon
 .IR n ]
+.RB [ \-v ]
 .P
 .SH DESCRIPTION
 .B dunst 
@@ -92,6 +93,9 @@ show the notification on monitor n.
 .BI \-geometry " [[<width>]x<height>][+/-<X>+/-<y>]"
 The geometry of the message window. The height is measured in lines everything else in pixels. If the width is omitted but the height is given ("-geometry x2"), the message window expands over the whole screen (dmenu-like). If width is 0, the window expands to the longest message displayed. A positive x is measured from the left, a negative from the right side of the screen. Y is measured from the top and down respectevly. see also EXAMPLES
 show the notification on monitor n.
+.TP
+.BI \-v
+Activate verbose mode.
 
 .SH NOTIFY-SEND 
 dunst is able to get different colors for a message via notify-send. For that, you have to add a hint via the -h option. 

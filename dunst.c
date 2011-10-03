@@ -69,6 +69,7 @@ static screen_info scr;
 static dimension_t geometry;
 static int font_h;
 static const char *format = "%s %b";
+static int verbose = False;
 
 /* list functions */
 msg_queue_t *append(msg_queue_t *queue, char *msg, int to, int urgency, const char *fg, const char *bg);
@@ -81,6 +82,7 @@ int list_len(msg_queue_t *list);
 void check_timeouts(void);
 void delete_msg(msg_queue_t *elem);
 void drawmsg(void);
+void dunst_printf(const char *fmt, ...);
 char *fix_markup(char *str);
 char *format_msg(const char *app, const char *sum, const char *body, const char *icon);
 void handleXEvents(void);
@@ -122,7 +124,7 @@ append(msg_queue_t *queue, char *msg, int to, int urgency, const char *fg, const
     }
 
     new->start = 0;
-    printf("%s (timeout: %d, urgency: %d)\n", new->msg, new->timeout, urgency);
+    dunst_printf("%s (timeout: %d, urgency: %d)\n", new->msg, new->timeout, urgency);
     new->next = NULL;
     if(queue == NULL) {
         return new;
@@ -318,6 +320,18 @@ drawmsg(void) {
     mapdc(dc, win, width, height*font_h);
 }
 
+void
+dunst_printf(const char *fmt, ...) {
+	va_list ap;
+
+    if(!verbose) {
+        return;
+    }
+	va_start(ap, fmt);
+	vfprintf(stderr, fmt, ap);
+	va_end(ap);
+}
+
 char
 *fix_markup(char *str) {
     char *tmpString, *strpos, *tmppos;
@@ -390,7 +404,6 @@ char
         end = strstr(tmpString, ">");
         if(end != NULL) {
             replace_buf = strndup(start, end-start+1);
-            printf("replace_buf: '%s'\n", replace_buf);
             tmpString = string_replace(replace_buf, "", tmpString);
             free(replace_buf);
         }
@@ -400,7 +413,6 @@ char
         end = strstr(tmpString, "/>");
         if(end != NULL) {
             replace_buf = strndup(start, end-start+2);
-            printf("replace_buf: '%s'\n", replace_buf);
             tmpString = string_replace(replace_buf, "", tmpString);
             free(replace_buf);
         }
@@ -590,12 +602,15 @@ main(int argc, char *argv[]) {
         if(!strcmp(argv[i], "-b")) {
             geometry.mask |= YNegative;
         }
+        if(!strcmp(argv[i], "-v")) {
+            verbose = True;
+        }
         else if(!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help"))
             usage(EXIT_SUCCESS);
 
         /* options */
         else if(i == argc-1) {
-            printf("Option needs an argument\n");
+            fprintf(stderr, "Option needs an argument\n");
             usage(1);
         }
         else if(!strcmp(argv[i], "-fn"))
@@ -679,6 +694,6 @@ main(int argc, char *argv[]) {
 
 void
 usage(int exit_status) {
-    fputs("usage: dunst [-h/--help] [-geometry geom] [-fn font] [-format fmt]\n[-nb color] [-nf color] [-lb color] [-lf color] [-cb color] [ -cf color]\n[-to secs] [-lto secs] [-cto secs] [-nto secs] [-key key] [-mod modifier] [-mon n]\n", stderr);
+    fputs("usage: dunst [-h/--help] [-q] [-geometry geom] [-fn font] [-format fmt]\n[-nb color] [-nf color] [-lb color] [-lf color] [-cb color] [ -cf color]\n[-to secs] [-lto secs] [-cto secs] [-nto secs] [-key key] [-mod modifier] [-mon n]\n", stderr);
     exit(exit_status);
 }
