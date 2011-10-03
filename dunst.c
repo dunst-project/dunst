@@ -361,23 +361,6 @@ char
 
 }
 
-char *
-_do_replace(char *buf, char *replace_buf, const char *to_replace, const char *replacement) {
-    char *replace_buf_old = strdup(replace_buf);
-    if(strstr(replace_buf, to_replace)) {
-        if(strlen(replacement) > 0) {
-            replace_buf = string_replace("%{", "", replace_buf);
-
-            replace_buf = string_replace(to_replace, replacement, replace_buf);
-            replace_buf[strlen(replace_buf)-1] = '\0';
-            buf = string_replace(replace_buf_old, replace_buf, buf);
-        } else {
-            buf = string_replace(replace_buf, "", buf);
-        }
-    }
-    return buf;
-}
-
 void
 handleXEvents(void) {
 	XEvent ev;
