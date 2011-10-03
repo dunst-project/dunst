@@ -334,90 +334,47 @@ dunst_printf(const char *fmt, ...) {
 
 char
 *fix_markup(char *str) {
-    char *tmpString, *strpos, *tmppos;
     char *replace_buf, *start, *end;
 
     if(str == NULL) {
         return NULL;
     }
 
-    /* tmpString can never be bigger than str */
-    tmpString = (char *) calloc(strlen(str), sizeof(char) + 1);
-    memset(tmpString, '\0', strlen(tmpString) * sizeof(char) + 1);
-    tmppos = tmpString;
-    strpos = str;
+    str = string_replace("&quot;", "\"", str);
+    str = string_replace("&apos;", "'", str);
+    str = string_replace("&amp;", "&", str);
+    str = string_replace("&lt;", "<", str);
+    str = string_replace("&gt;", ">", str);
 
-    while(*strpos != '\0') {
-        if(*strpos != '&') {
-            /* not the beginning of an xml-escape */
-            *tmppos = *strpos;
-            strpos++;
-            tmppos++;
-            continue;
-        }
-        else if(!strncmp(strpos, "&quot;", strlen("&quot;"))) {
-            *tmppos = '"';
-            tmppos++;
-            strpos += strlen("&quot;");
-        }
-        else if(!strncmp(strpos, "&apos;", strlen("apos;"))) {
-            *tmppos = '\'';
-            tmppos++;
-            strpos += strlen("&apos;");
-        }
-        else if(!strncmp(strpos, "&amp;", strlen("amp;"))) {
-            *tmppos = '&';
-            tmppos++;
-            strpos += strlen("&amp;");
-        }
-        else if(!strncmp(strpos, "&lt;", strlen("lt;"))) {
-            *tmppos = '<';
-            tmppos++;
-            strpos += strlen("&lt;");
-        }
-        else if(!strncmp(strpos, "&gt;", strlen("gt;"))) {
-            *tmppos = '>';
-            tmppos++;
-            strpos += strlen("&gt;");
-        }
-        else {
-            *tmppos = *strpos;
-            strpos++;
-            tmppos++;
-        }
-    }
-
-    free(str);
-
-    tmpString = string_replace("\n", " ", tmpString);
+    str = string_replace("\n", " ", str);
     /* remove tags */
-    tmpString = string_replace("<b>", "", tmpString);
-    tmpString = string_replace("</b>", "", tmpString);
-    tmpString = string_replace("<i>", "", tmpString);
-    tmpString = string_replace("</i>", "", tmpString);
-    tmpString = string_replace("<u>", "", tmpString);
-    tmpString = string_replace("</u>", "", tmpString);
-    tmpString = string_replace("</a>", "", tmpString);
+    str = string_replace("<b>", "", str);
+    str = string_replace("</b>", "", str);
+    str = string_replace("<i>", "", str);
+    str = string_replace("</i>", "", str);
+    str = string_replace("<u>", "", str);
+    str = string_replace("</u>", "", str);
+    str = string_replace("</a>", "", str);
 
-    start = strstr(tmpString, "<a href");
+    start = strstr(str, "<a href");
     if(start != NULL) {
-        end = strstr(tmpString, ">");
+        end = strstr(str, ">");
         if(end != NULL) {
             replace_buf = strndup(start, end-start+1);
-            tmpString = string_replace(replace_buf, "", tmpString);
+            str = string_replace(replace_buf, "", str);
             free(replace_buf);
         }
     }
-    start = strstr(tmpString, "<img src");
+    start = strstr(str, "<img src");
     if(start != NULL) {
-        end = strstr(tmpString, "/>");
+        end = strstr(str, "/>");
         if(end != NULL) {
             replace_buf = strndup(start, end-start+2);
-            tmpString = string_replace(replace_buf, "", tmpString);
+            str = string_replace(replace_buf, "", str);
             free(replace_buf);
         }
     }
-    return tmpString;
+    return str;
 
 }
 
