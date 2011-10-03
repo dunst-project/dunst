@@ -108,7 +108,13 @@ getCapabilities(DBusMessage *dmsg) {
 
 void
 closeNotification(DBusMessage *dmsg) {
-    fprintf(stderr, "closeNotification to be implemented\n");
+    DBusMessage *reply;
+    reply = dbus_message_new_method_return(dmsg);
+    if(!reply) {
+        return;
+    }
+    dbus_connection_send(dbus_conn, reply, &dbus_serial);
+    dbus_connection_flush(dbus_conn);
 }
 
 void
@@ -250,5 +256,6 @@ notify(DBusMessage *dmsg) {
     dbus_message_iter_init_append(reply, &args);
     dbus_message_iter_append_basic(&args, DBUS_TYPE_UINT32, &id);
     dbus_connection_send(dbus_conn, reply, &dbus_serial);
+
     dbus_message_unref(reply);
 }
