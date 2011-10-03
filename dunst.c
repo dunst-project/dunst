@@ -169,23 +169,6 @@ delete(msg_queue_t *elem) {
     return msgqueue;
 }
 
-msg_queue_t*
-pop(msg_queue_t *queue) {
-    msg_queue_t *new_head;
-    if(queue == NULL) {
-        return NULL;
-    }
-    if(queue->next == NULL) {
-        free(queue->msg);
-        free(queue);
-        return NULL;
-    }
-    new_head = queue->next;
-    free(queue->msg);
-    free(queue);
-    return new_head;
-}
-
 int list_len(msg_queue_t *list) {
     int count = 0;
     msg_queue_t *i;
