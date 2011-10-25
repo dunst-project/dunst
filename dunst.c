@@ -106,12 +106,12 @@ append(msg_queue_t *queue, char *msg, int to, int urgency, const char *fg, const
     new->urgency = urgency;
     new->urgency = new->urgency > CRIT ? CRIT : new->urgency;
 
-	if(fg == NULL || !XAllocNamedColor(dc->dpy, cmap, fg, &color, &color)) {
+    if(fg == NULL || !XAllocNamedColor(dc->dpy, cmap, fg, &color, &color)) {
         new->colors[ColFG] = colors[new->urgency][ColFG];
     } else {
         new->colors[ColFG] = color.pixel;
     }
-	if(bg == NULL || !XAllocNamedColor(dc->dpy, cmap, bg, &color, &color)) {
+    if(bg == NULL || !XAllocNamedColor(dc->dpy, cmap, bg, &color, &color)) {
         new->colors[ColBG] = colors[new->urgency][ColBG];
     } else {
         new->colors[ColBG] = color.pixel;
@@ -305,14 +305,14 @@ drawmsg(void) {
 
 void
 dunst_printf(const char *fmt, ...) {
-	va_list ap;
+    va_list ap;
 
     if(!verbose) {
         return;
     }
-	va_start(ap, fmt);
-	vfprintf(stderr, fmt, ap);
-	va_end(ap);
+    va_start(ap, fmt);
+    vfprintf(stderr, fmt, ap);
+    va_end(ap);
 }
 
 char
@@ -363,7 +363,7 @@ char
 
 void
 handleXEvents(void) {
-	XEvent ev;
+    XEvent ev;
     while(XPending(dc->dpy) > 0) {
         XNextEvent(dc->dpy, &ev);
         switch(ev.type) {
@@ -434,12 +434,12 @@ run(void) {
 
 void
 setup(void) {
-	Window root;
-	XSetWindowAttributes wa;
+    Window root;
+    XSetWindowAttributes wa;
     KeyCode code;
 #ifdef XINERAMA
-	int n;
-	XineramaScreenInfo *info;
+    int n;
+    XineramaScreenInfo *info;
 #endif
     if(scr.scr < 0) {
         scr.scr = DefaultScreen(dc->dpy);
@@ -453,38 +453,38 @@ setup(void) {
     colors[2][ColBG] = getcolor(dc, critbgcolor);
     colors[2][ColFG] = getcolor(dc, critfgcolor);
 
-	utf8 = XInternAtom(dc->dpy, "UTF8_STRING", False);
+    utf8 = XInternAtom(dc->dpy, "UTF8_STRING", False);
 
-	/* menu geometry */
-	font_h = dc->font.height + FONT_HEIGHT_BORDER;
+    /* menu geometry */
+    font_h = dc->font.height + FONT_HEIGHT_BORDER;
 #ifdef XINERAMA
-	if((info = XineramaQueryScreens(dc->dpy, &n))) {
+    if((info = XineramaQueryScreens(dc->dpy, &n))) {
         if(scr.scr >= n) {
             fprintf(stderr, "Monitor %d not found\n", scr.scr);
             exit(EXIT_FAILURE);
         }
-		scr.dim.x = info[scr.scr].x_org;
-		scr.dim.y = info[scr.scr].y_org;
+        scr.dim.x = info[scr.scr].x_org;
+        scr.dim.y = info[scr.scr].y_org;
         scr.dim.h = info[scr.scr].height;
         scr.dim.w = info[scr.scr].width;
-		XFree(info);
-	}
-	else
+        XFree(info);
+    }
+    else
 #endif
-	{
-		scr.dim.x = 0;
-		scr.dim.y = 0;
-		scr.dim.w = DisplayWidth(dc->dpy, scr.scr);
+    {
+        scr.dim.x = 0;
+        scr.dim.y = 0;
+        scr.dim.w = DisplayWidth(dc->dpy, scr.scr);
         scr.dim.h = DisplayHeight(dc->dpy, scr.scr);
-	}
-	/* menu window */
-	wa.override_redirect = True;
-	wa.background_pixmap = ParentRelative;
-	wa.event_mask = ExposureMask | KeyPressMask | VisibilityChangeMask | ButtonPressMask;
-	win = XCreateWindow(dc->dpy, root, scr.dim.x, scr.dim.y, scr.dim.w, font_h, 0,
-	                    DefaultDepth(dc->dpy, DefaultScreen(dc->dpy)), CopyFromParent,
-	                    DefaultVisual(dc->dpy, DefaultScreen(dc->dpy)),
-	                    CWOverrideRedirect | CWBackPixmap | CWEventMask, &wa);
+    }
+    /* menu window */
+    wa.override_redirect = True;
+    wa.background_pixmap = ParentRelative;
+    wa.event_mask = ExposureMask | KeyPressMask | VisibilityChangeMask | ButtonPressMask;
+    win = XCreateWindow(dc->dpy, root, scr.dim.x, scr.dim.y, scr.dim.w, font_h, 0,
+                        DefaultDepth(dc->dpy, DefaultScreen(dc->dpy)), CopyFromParent,
+                        DefaultVisual(dc->dpy, DefaultScreen(dc->dpy)),
+                        CWOverrideRedirect | CWBackPixmap | CWEventMask, &wa);
 
     /* grab keys */
     if(key != NoSymbol) {
