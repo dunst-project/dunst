@@ -80,6 +80,7 @@ int list_len(msg_queue_t *list);
 
 /* misc funtions */
 void check_timeouts(void);
+void delete_all_msg(void);
 void delete_msg(msg_queue_t *elem);
 void drawmsg(void);
 void dunst_printf(const char *fmt, ...);
@@ -198,6 +199,13 @@ check_timeouts(void) {
         } else {
             cur = cur->next;
         }
+    }
+}
+
+void
+delete_all_msg(void) {
+    while (msgqueue != NULL) {
+        delete_msg(NULL);
     }
 }
 
@@ -380,7 +388,11 @@ handleXEvents(void) {
             break;
         case ButtonPress:
             if(ev.xbutton.window == win) {
-                delete_msg(NULL);
+                if(ev.xbutton.button == Button1) {
+                    delete_msg(NULL);
+                } else {
+                    delete_all_msg();
+                }
             }
             break;
         case KeyPress:
