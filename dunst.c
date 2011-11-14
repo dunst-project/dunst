@@ -104,25 +104,21 @@ append(msg_queue_t *queue, char *msg, int to, int urgency, const char *fg, const
 
 
     new->msg = fix_markup(msg);
-    new->urgency = urgency;
-    new->urgency = new->urgency > CRIT ? CRIT : new->urgency;
+    new->urgency = urgency > CRIT ? CRIT : urgency;
 
     if(fg == NULL || !XAllocNamedColor(dc->dpy, cmap, fg, &color, &color)) {
         new->colors[ColFG] = colors[new->urgency][ColFG];
     } else {
         new->colors[ColFG] = color.pixel;
     }
+
     if(bg == NULL || !XAllocNamedColor(dc->dpy, cmap, bg, &color, &color)) {
         new->colors[ColBG] = colors[new->urgency][ColBG];
     } else {
         new->colors[ColBG] = color.pixel;
     }
 
-    if(to == -1) {
-        new->timeout = timeouts[urgency];
-    } else {
-        new->timeout = to;
-    }
+    new->timeout = to == -1 ? timeouts[urgency] : to;
 
     new->start = 0;
     dunst_printf("%s (timeout: %d, urgency: %d)\n", new->msg, new->timeout, urgency);
@@ -139,11 +135,8 @@ msg_queue_t*
 delete(msg_queue_t *elem) {
     msg_queue_t *prev;
     msg_queue_t *next;
-    if(msgqueue == NULL) {
+    if(msgqueue == NULL || elem == NULL) {
         return NULL;
-    }
-    if(elem == NULL) {
-        return msgqueue;
     }
 
     if(elem == msgqueue) {
@@ -507,14 +500,10 @@ setup(void) {
 
 void
 show_win(void) {
-    if(visible == True) {
-        /* window is already visible */
+    if(visible || msgqueue == NULL) {
         return;
     }
-    if(msgqueue == NULL) {
-        /* there's nothing to show */
-        return;
-    }
+
     XMapRaised(dc->dpy, win);
     XGrabButton(dc->dpy, AnyButton, AnyModifier, win, False,
         BUTTONMASK, GrabModeAsync, GrabModeSync, None, None);
