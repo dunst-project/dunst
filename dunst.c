@@ -547,7 +547,7 @@ main(int argc, char *argv[]) {
 
         int option_index = 0;
 
-        c = getopt_long_only(argc, argv, "bh", long_options, &option_index);
+        c = getopt_long_only(argc, argv, "bhv", long_options, &option_index);
 
         if(c == -1) {
             break;
@@ -627,6 +627,9 @@ main(int argc, char *argv[]) {
                     fprintf(stderr, "Unable to find mask: %s\n", optarg);
                     fprintf(stderr, "See manpage for list of available masks\n");
                 }
+                break;
+            case 'v':
+                verbose = True;
                 break;
             default:
                 usage(EXIT_FAILURE);
