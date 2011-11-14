@@ -5,7 +5,7 @@
 
 
 /* appearance */
-const char *font = NULL;
+const char *font = "-*-terminus-medium-r-*-*-16-*-*-*-*-*-*-*";
 const char *normbgcolor = "#1793D1";
 const char *normfgcolor = "#DDDDDD";
 const char *critbgcolor = "#ffaaaa";
@@ -15,6 +15,11 @@ const char *lowfgcolor = "#000000";
 const char *format = "%a-->%s %b"; /* default format */
 int timeouts[] = { 10, 10, 0 }; /* low, normal, critical */
 const char *geom = "0x4-10+10"; /* geometry */
+
+
+char *key_string = "space"; /* set to NULL for no keybinging */
+KeySym mask = ControlMask;
+/* KeySym mask = ControlMask || Mod4Mask */
 
 
 int verbose = True; /* print info to stdout? */

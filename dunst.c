@@ -42,7 +42,6 @@ static msg_queue_t *msgqueue = NULL;
 static time_t now;
 static int visible = False;
 static KeySym key = NoSymbol;
-static KeySym mask = 0;
 static screen_info scr;
 static dimension_t geometry;
 static int font_h;
@@ -540,6 +539,7 @@ main(int argc, char *argv[]) {
     geometry.mask = XParseGeometry(geom,
             &geometry.x, &geometry.y,
             &geometry.w, &geometry.h);
+    key = key_string ? XStringToKeysym(key_string) : NoSymbol;
 
     while(1) {
         static struct option long_options[] = {
