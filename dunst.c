@@ -5,6 +5,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
+#include <getopt.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
@@ -516,94 +517,121 @@ show_win(void) {
 int
 main(int argc, char *argv[]) {
 
-    int i;
+    int c;
 
     now = time(&now);
     dc = initdc();
 
-    for(i = 1; i < argc; i++) {
-        /* switches */
-        if(!strcmp(argv[i], "-b")) {
-            geometry.mask |= YNegative;
-        }
-        if(!strcmp(argv[i], "-v")) {
-            verbose = True;
-        }
-        else if(!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help"))
-            usage(EXIT_SUCCESS);
+    while(1) {
+        static struct option long_options[] = {
+        {"help", no_argument, NULL, 'h'},
+        {"fn", required_argument, NULL, 'F'},
+        {"nb", required_argument, NULL, 'n'},
+        {"nf", required_argument, NULL, 'N'},
+        {"lb", required_argument, NULL, 'l'},
+        {"lf", required_argument, NULL, 'L'},
+        {"cb", required_argument, NULL, 'c'},
+        {"cf", required_argument, NULL, 'C'},
+        {"to", required_argument, NULL, 't'},
+        {"lto", required_argument, NULL, '0'},
+        {"nto", required_argument, NULL, '1'},
+        {"cto", required_argument, NULL, '2'},
+        {"mon", required_argument, NULL, 'm'},
+        {"format", required_argument, NULL, 'f'},
+        {"key", required_argument, NULL, 'k'},
+        {"geometry", required_argument, NULL, 'g'},
+        {"mod", required_argument, NULL, 'M'},
+        {0,0,0,0}
+    };
 
-        /* options */
-        else if(i == argc-1) {
-            fprintf(stderr, "Option needs an argument\n");
-            usage(1);
+
+        int option_index = 0;
+
+        c = getopt_long_only(argc, argv, "bh", long_options, &option_index);
+
+        if(c == -1) {
+            break;
         }
-        else if(!strcmp(argv[i], "-fn"))
-            font = argv[++i];
-        else if(!strcmp(argv[i], "-nb"))
-            normbgcolor = argv[++i];
-        else if(!strcmp(argv[i], "-nf"))
-            normfgcolor = argv[++i];
-        else if(!strcmp(argv[i], "-lb"))
-            lowbgcolor = argv[++i];
-        else if(!strcmp(argv[i], "-lf"))
-            lowfgcolor = argv[++i];
-        else if(!strcmp(argv[i], "-cb"))
-            critbgcolor = argv[++i];
-        else if(!strcmp(argv[i], "-cf"))
-            critfgcolor = argv[++i];
-        else if(!strcmp(argv[i], "-to")) {
-            timeouts[0] = atoi(argv[++i]);
-            timeouts[1] = timeouts[0];
+
+        switch(c)
+        {
+            case 0:
+                break;
+            case 'h':
+                usage(EXIT_SUCCESS);
+                break;
+            case 'F':
+                font = optarg;
+                break;
+            case 'n':
+                normbgcolor = optarg;
+                break;
+            case 'N':
+                normfgcolor = optarg;
+                break;
+            case 'l':
+                lowbgcolor = optarg;
+                break;
+            case 'L':
+                lowfgcolor = optarg;
+                break;
+            case 'c':
+                critbgcolor = optarg;
+                break;
+            case 'C':
+                critfgcolor = optarg;
+                break;
+            case 't':
+                timeouts[0] = atoi(optarg);
+                timeouts[1] = timeouts[0];
+                break;
+            case '0':
+                timeouts[0] = atoi(optarg);
+                break;
+            case '1':
+                timeouts[1] = atoi(optarg);
+                break;
+            case '2':
+                timeouts[2] = atoi(optarg);
+                break;
+            case 'm':
+                scr.scr = atoi(optarg);
+                break;
+            case 'f':
+                format = optarg;
+                break;
+            case 'k':
+                key = XStringToKeysym(optarg);
+                break;
+            case 'g':
+                geometry.mask = XParseGeometry(optarg,
+                        &geometry.x, &geometry.y,
+                        &geometry.w, &geometry.h);
+                break;
+            case 'M':
+                if(!strcmp(optarg, "ctrl")) {
+                    mask |= ControlMask;
+                }
+                else if(!strcmp(optarg, "mod1")) {
+                    mask |= Mod1Mask;
+                }
+                else if(!strcmp(optarg, "mod2")) {
+                    mask |= Mod2Mask;
+                }
+                else if(!strcmp(optarg, "mod3")) {
+                    mask |= Mod3Mask;
+                }
+                else if(!strcmp(optarg, "mod4")) {
+                    mask |= Mod4Mask;
+                } else {
+                    fprintf(stderr, "Unable to find mask: %s\n", optarg);
+                    fprintf(stderr, "See manpage for list of available masks\n");
+                }
+                break;
+            default:
+                usage(EXIT_FAILURE);
+                break;
         }
-        else if(!strcmp(argv[i], "-lto"))
-            timeouts[0] = atoi(argv[++i]);
-        else if(!strcmp(argv[i], "-nto"))
-            timeouts[1] = atoi(argv[++i]);
-        else if(!strcmp(argv[i], "-cto"))
-            timeouts[2] = atoi(argv[++i]);
-        else if(!strcmp(argv[i], "-mon")) {
-            scr.scr = atoi(argv[++i]);
-        }
-        else if(!strcmp(argv[i], "-format")) {
-            format = argv[++i];
-        }
-        else if(!strcmp(argv[i], "-key")) {
-            key = XStringToKeysym(argv[i+1]);
-            if(key == NoSymbol) {
-                fprintf(stderr, "Unable to grab key: %s.\n", argv[i+1]);
-                exit(EXIT_FAILURE);
-            }
-            i++;
-        }
-        else if(!strcmp(argv[i], "-geometry")) {
-            geometry.mask = XParseGeometry(argv[++i], &geometry.x, &geometry.y, &geometry.w, &geometry.h);
-        }
-        else if(!strcmp(argv[i], "-mod")) {
-            if(!strcmp(argv[i+1], "ctrl")) {
-                mask |= ControlMask;
-            }
-            else if(!strcmp(argv[i+1], "shift")) {
-                mask |= ShiftMask;
-            }
-            else if(!strcmp(argv[i+1], "mod1")) {
-                mask |= Mod1Mask;
-            }
-            else if(!strcmp(argv[i+1], "mod2")) {
-                mask |= Mod2Mask;
-            }
-            else if(!strcmp(argv[i+1], "mod3")) {
-                mask |= Mod3Mask;
-            }
-            else if(!strcmp(argv[i+1], "mod4")) {
-                mask |= Mod4Mask;
-            } else {
-                fprintf(stderr, "Unable to find mask: %s\n", argv[i+1]);
-                fprintf(stderr, "See manpage for list of available masks\n");
-            }
-            i++;
-        }
-        else
-            usage(EXIT_FAILURE);
     }
 
     initdbus();
