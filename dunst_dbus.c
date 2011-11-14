@@ -1,5 +1,7 @@
 #include <dbus/dbus.h>
 
+#include "dunst.h"
+
 #define DBUS_POLL_TIMEOUT 1000
 
 DBusError dbus_err;
@@ -166,6 +168,7 @@ notify(DBusMessage *dmsg) {
     DBusMessageIter hint_value;
     char *hint_name;
 
+    int i;
     int id = 23;
     const char *appname;
     const char *summary;
@@ -174,7 +177,7 @@ notify(DBusMessage *dmsg) {
     const char *fgcolor = NULL;
     const char *bgcolor = NULL;
     int urgency = 1;
-    char *msg;
+    msg_queue_t *msg = malloc(sizeof(msg_queue_t));
     dbus_uint32_t nid=0;
     dbus_int32_t expires=-1;
 
@@ -233,14 +236,6 @@ notify(DBusMessage *dmsg) {
 
 
 
-
-    msg = string_replace("%a", appname, strdup(format));
-    msg = string_replace("%s", summary, msg);
-    msg = string_replace("%i", icon, msg);
-    msg = string_replace("%I", basename(icon), msg);
-    msg = string_replace("%b", body, msg);
-
-
     if(expires > 0) {
         /* do some rounding */
         expires = (expires+500)/1000;
@@ -248,7 +243,18 @@ notify(DBusMessage *dmsg) {
             expires = 1;
         }
     }
-    msgqueue = append(msgqueue, msg, expires, urgency, fgcolor, bgcolor);
+    msg->appname = strdup(appname);
+    msg->summary = strdup(summary);
+    msg->body = strdup(body);
+    msg->icon = strdup(icon);
+    msg->timeout = expires;
+    msg->urgency = urgency;
+    for(i = 0; i < ColLast; i++) {
+        msg->color_strings[i] = NULL;
+    }
+    msg->color_strings[ColFG] = fgcolor == NULL ? NULL : strdup(fgcolor);
+    msg->color_strings[ColBG] = bgcolor == NULL ? NULL : strdup(bgcolor);
+    msgqueue = append(msgqueue, msg);
     drawmsg();
 
     reply = dbus_message_new_method_return(dmsg);

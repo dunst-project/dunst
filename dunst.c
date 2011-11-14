@@ -13,6 +13,7 @@
 #include <X11/extensions/Xinerama.h>
 #endif
 
+#include "dunst.h"
 #include "draw.h"
 
 #define INRECT(x,y,rx,ry,rw,rh) ((x) >= (rx) && (x) < (rx)+(rw) && (y) >= (ry) && (y) < (ry)+(rh))
@@ -25,14 +26,6 @@
 #define CRIT 2
 
 /* structs */
-typedef struct _msg_queue_t {
-    char *msg;
-    struct _msg_queue_t *next;
-    time_t start;
-    int timeout;
-    int urgency;
-    unsigned long colors[ColLast];
-} msg_queue_t;
 
 typedef struct _dimension_t {
     int x;
@@ -46,6 +39,7 @@ typedef struct _screen_info {
     int scr;
     dimension_t dim;
 } screen_info;
+
 
 /* global variables */
 static const char *font = NULL;
@@ -73,7 +67,7 @@ static const char *format = "%s %b";
 static int verbose = False;
 
 /* list functions */
-msg_queue_t *append(msg_queue_t *queue, char *msg, int to, int urgency, const char *fg, const char *bg);
+msg_queue_t *append(msg_queue_t *queue, msg_queue_t *msg);
 msg_queue_t *delete(msg_queue_t *elem);
 msg_queue_t *pop(msg_queue_t *queue);
 int list_len(msg_queue_t *list);
@@ -86,7 +80,7 @@ void delete_msg(msg_queue_t *elem);
 void drawmsg(void);
 void dunst_printf(const char *fmt, ...);
 char *fix_markup(char *str);
-char *format_msg(const char *app, const char *sum, const char *body, const char *icon);
+void free_msgqueue_t(msg_queue_t *elem);
 void handleXEvents(void);
 char *string_replace(const char *needle, const char *replacement, char *haystack);
 void run(void);
@@ -96,33 +90,41 @@ void usage(int exit_status);
 
 #include "dunst_dbus.h"
 
-msg_queue_t*
-append(msg_queue_t *queue, char *msg, int to, int urgency, const char *fg, const char *bg) {
-    msg_queue_t *new = malloc(sizeof(msg_queue_t));
-    msg_queue_t *last;
+static void
+_set_color(msg_queue_t *msg, int color_idx) {
     Colormap cmap = DefaultColormap(dc->dpy, DefaultScreen(dc->dpy));
     XColor color;
-
-
-    new->msg = fix_markup(msg);
-    new->urgency = urgency > CRIT ? CRIT : urgency;
-
-    if(fg == NULL || !XAllocNamedColor(dc->dpy, cmap, fg, &color, &color)) {
-        new->colors[ColFG] = colors[new->urgency][ColFG];
+    if(msg->color_strings[color_idx] == NULL
+       || !XAllocNamedColor(dc->dpy, cmap,
+           msg->color_strings[color_idx], &color, &color)) {
+        msg->colors[color_idx] = colors[msg->urgency][color_idx];
     } else {
-        new->colors[ColFG] = color.pixel;
+        msg->colors[color_idx] = color.pixel;
     }
+}
 
-    if(bg == NULL || !XAllocNamedColor(dc->dpy, cmap, bg, &color, &color)) {
-        new->colors[ColBG] = colors[new->urgency][ColBG];
-    } else {
-        new->colors[ColBG] = color.pixel;
-    }
+msg_queue_t*
+append(msg_queue_t *queue, msg_queue_t *new) {
+    msg_queue_t *last;
 
-    new->timeout = to == -1 ? timeouts[urgency] : to;
+    new->msg = string_replace("%a", new->appname, strdup(format));
+    new->msg = string_replace("%s", new->summary, new->msg);
+    new->msg = string_replace("%i", new->icon, new->msg);
+    new->msg = string_replace("%I", basename(new->icon), new->msg);
+    new->msg = string_replace("%b", new->body, new->msg);
 
+    new->msg = fix_markup(new->msg);
+
+    /* urgency > CRIT -> array out of range */
+    new->urgency = new->urgency > CRIT ? CRIT : new->urgency;
+
+    _set_color(new, ColFG);
+    _set_color(new, ColBG);
+
+    new->timeout = new->timeout == -1 ? timeouts[new->urgency] : new->timeout;
     new->start = 0;
-    dunst_printf("%s (timeout: %d, urgency: %d)\n", new->msg, new->timeout, urgency);
+
+    dunst_printf("%s (timeout: %d, urgency: %d)\n", new->msg, new->timeout, new->urgency);
     new->next = NULL;
     if(queue == NULL) {
         return new;
@@ -130,7 +132,9 @@ append(msg_queue_t *queue, char *msg, int to, int urgency, const char *fg, const
     for(last = queue; last->next; last = last->next);
     last->next = new;
     return queue;
+
 }
+
 
 msg_queue_t*
 delete(msg_queue_t *elem) {
@@ -142,8 +146,7 @@ delete(msg_queue_t *elem) {
 
     if(elem == msgqueue) {
         next = elem->next;
-        free(elem->msg);
-        free(elem);
+        free_msgqueue_t(elem);
         return next;
     }
 
@@ -159,8 +162,7 @@ delete(msg_queue_t *elem) {
     }
 
     prev->next = next;
-    free(elem->msg);
-    free(elem);
+    free_msgqueue_t(elem);
     return msgqueue;
 }
 
@@ -361,6 +363,21 @@ char
     }
     return str;
 
+}
+
+void
+free_msgqueue_t(msg_queue_t *elem) {
+    int i;
+    free(elem->appname);
+    free(elem->summary);
+    free(elem->body);
+    free(elem->msg);
+    for(i = 0; i < ColLast; i++) {
+        if(elem->color_strings[i] != NULL) {
+            free(elem->color_strings[i]);
+        }
+    }
+    free(elem);
 }
 
 void
