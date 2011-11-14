@@ -5,6 +5,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
+#include <fnmatch.h>
 #include <getopt.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
@@ -13,28 +14,18 @@
 #include <X11/extensions/Xinerama.h>
 #endif
 
+#include "config.h"
 #include "dunst.h"
 #include "draw.h"
 
 #define INRECT(x,y,rx,ry,rw,rh) ((x) >= (rx) && (x) < (rx)+(rw) && (y) >= (ry) && (y) < (ry)+(rh))
+#define LENGTH(X)               (sizeof X / sizeof X[0])
 #define MIN(a,b)                ((a) < (b) ? (a) : (b))
 #define MAX(a,b)                ((a) > (b) ? (a) : (b))
 #define BUTTONMASK              (ButtonPressMask|ButtonReleaseMask)
 #define FONT_HEIGHT_BORDER 2
-#define LOW 0
-#define NORM 1
-#define CRIT 2
 
 /* structs */
-
-typedef struct _dimension_t {
-    int x;
-    int y;
-    unsigned int h;
-    unsigned int w;
-    int mask;
-} dimension_t;
-
 typedef struct _screen_info {
     int scr;
     dimension_t dim;
@@ -42,19 +33,11 @@ typedef struct _screen_info {
 
 
 /* global variables */
-static const char *font = NULL;
-static const char *normbgcolor = "#cccccc";
-static const char *normfgcolor = "#000000";
-static const char *critbgcolor = "#ffaaaa";
-static const char *critfgcolor = "#000000";
-static const char *lowbgcolor =  "#aaaaff";
-static const char *lowfgcolor = "#000000";
 /* index of colors fit to urgency level */
 static unsigned long colors[3][ColLast];
 static Atom utf8;
 static DC *dc;
 static Window win;
-static double timeouts[] = { 10, 10, 0 };
 static msg_queue_t *msgqueue = NULL;
 static time_t now;
 static int visible = False;
@@ -63,8 +46,6 @@ static KeySym mask = 0;
 static screen_info scr;
 static dimension_t geometry;
 static int font_h;
-static const char *format = "%s %b";
-static int verbose = False;
 
 /* list functions */
 msg_queue_t *append(msg_queue_t *queue, msg_queue_t *msg);
@@ -74,6 +55,7 @@ int list_len(msg_queue_t *list);
 
 
 /* misc funtions */
+void apply_rules(msg_queue_t *msg);
 void check_timeouts(void);
 void delete_all_msg(void);
 void delete_msg(msg_queue_t *elem);
@@ -107,6 +89,9 @@ msg_queue_t*
 append(msg_queue_t *queue, msg_queue_t *new) {
     msg_queue_t *last;
 
+
+    apply_rules(new);
+
     new->msg = string_replace("%a", new->appname, strdup(format));
     new->msg = string_replace("%s", new->summary, new->msg);
     new->msg = string_replace("%i", new->icon, new->msg);
@@ -114,7 +99,6 @@ append(msg_queue_t *queue, msg_queue_t *new) {
     new->msg = string_replace("%b", new->body, new->msg);
 
     new->msg = fix_markup(new->msg);
-
     /* urgency > CRIT -> array out of range */
     new->urgency = new->urgency > CRIT ? CRIT : new->urgency;
 
@@ -135,6 +119,21 @@ append(msg_queue_t *queue, msg_queue_t *new) {
 
 }
 
+void
+apply_rules(msg_queue_t *msg) {
+    int i;
+    for(i = 0; i < LENGTH(rules); i++) {
+        if((!rules[i].appname || !fnmatch(rules[i].appname, msg->appname, 0))
+        && (!rules[i].summary || !fnmatch(rules[i].summary, msg->summary, 0))
+        && (!rules[i].body || !fnmatch(rules[i].body, msg->body, 0))
+        && (!rules[i].icon || !fnmatch(rules[i].icon, msg->icon, 0))) {
+            msg->timeout = rules[i].timeout != -1 ? rules[i].timeout : msg->timeout;
+            msg->urgency = rules[i].urgency != -1 ? rules[i].urgency : msg->urgency;
+            msg->color_strings[ColFG] = rules[i].fg ? rules[i].fg : msg->color_strings[ColFG];
+            msg->color_strings[ColBG] = rules[i].bg ? rules[i].bg : msg->color_strings[ColBG];
+        }
+    }
+}
 
 msg_queue_t*
 delete(msg_queue_t *elem) {
@@ -538,6 +537,9 @@ main(int argc, char *argv[]) {
 
     now = time(&now);
     dc = initdc();
+    geometry.mask = XParseGeometry(geom,
+            &geometry.x, &geometry.y,
+            &geometry.w, &geometry.h);
 
     while(1) {
         static struct option long_options[] = {

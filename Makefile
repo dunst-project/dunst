@@ -18,9 +18,13 @@ options:
 	@echo CC -c $<
 	@${CC} -c $< ${CFLAGS}
 
-${OBJ}: config.mk
+${OBJ}: config.h config.mk
 
-dunst: dunst.o draw.o
+config.h:
+	@echo creating $@ from config.def.h
+	@cp config.def.h $@
+
+dunst: draw.o dunst.o
 	@echo CC -o $@
 	@${CC} ${CFLAGS} -o $@ dunst.o draw.o ${LDFLAGS} 
 

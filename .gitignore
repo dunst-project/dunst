@@ -2,3 +2,4 @@ dunst
 *.o
 core
 vgcore.*
+config.h
