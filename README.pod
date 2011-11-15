@@ -1,0 +1,135 @@
+=head1 NAME
+
+dunst - dmenu-ish universal notification system
+
+=head1 SYNOPSIS
+
+dunst [-geometry geom] [-fn font] [-nf/nb/lf/lb/cf/cb color] 
+[-to/nto/lto/cto secs] [-format fmt] [-key key] [-mod mod] [-mon n] [-v]
+
+=head1 DESCRIPTION
+
+dunst is a lightweight notification-daemon for the libnotify. dunst
+displays messages received via dbus or as commandline argument in a
+fashion similar to dmenu.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-h/--help> 
+
+display help message.
+
+=item B<-fn font>
+
+defines the font or font set used.
+
+=item B<-lb/nb/cg color>
+
+defines the background color of low/normal/critical messages.
+
+=item B<-lf/nf/cf color>
+
+defines the foreground color of low/normal/critical messages.
+
+=item B<-to secs>
+
+defines the default timeout. Can be (partially) overridden by
+the following options.
+
+=item B<-lto/nto/cto secs>
+
+timeouts for low/normal/critical messages.
+
+=item B<-key key>
+
+close window by pressing key. See also -mod.
+
+=item B<-mod modifier>
+
+defines the modifier used in conjunction with -key. Available
+modifiers are: ctrl, shift, mod1-mod4. This option can be used
+multiple times to combine modifiers.
+
+=item B<-format fmt>
+
+defines the format of the message. See FORMAT.
+
+=item B<-mon n>
+
+show the notification on monitor n.
+
+=item B<-geometry [{width}]x{height}][+/-{x}+/-{y}]>
+
+The geometry of the message window. The height is measured
+in lines everything else in pixels. If the width is omitted
+but the height is given ("-geometry x2"), the message window
+expands over  the  whole  screen (dmenu-like).
+If  width  is  0,  the  window  expands  to  the longest
+message displayed. A positive x is measured from the left,
+a negative from the right side of the screen.
+Y is measured from the top and down respectevly.
+see also EXAMPLES show the notification on monitor n.
+
+=item B<-v>
+
+Increase verbosity. Can be used multiple times.
+
+=back
+
+=head1 FORMAT
+
+fmt is a string containing placeholders. The placeholders will be replaced with the corresponding text, or if the text is not present, nothing. Possible placeholders are:
+
+=over 4
+
+=item B<%a>  appname
+
+=item B<%s>  summary
+
+=item B<%b>  body
+
+=item B<%i>  iconname (including its path)
+
+=item B<%I>  iconname (without its path)
+
+=back
+
+=head1 COLORS
+
+Every option that needs a color as argument accepts #RGB, #RRGGBB and
+X color names.
+
+
+=head1 NOTIFY-SEND
+
+dunst is able to get different colors for a message via notify-send.
+In order to do that you have to add a hint via the -h option.
+
+=over 4
+
+=item notify-send -h string:fgcolor:#ff4444
+
+=item notify-send -h string:bgcolor:#4444ff -h string:fgcolor:#ff4444
+
+=back
+
+=head1 AUTHOR
+
+written by Sascha Kruse <knopwob@googlemail.com>
+
+=head1 COPYRIGHT
+
+Parts of the code are taken from dmenu. Especially draw.c and draw.h.
+See LICENSE.dmenu and http://tools.suckless.org/dmenu .
+Some snippets in dunst_dbus.c are taken from twm.
+See http://github.com/sboli/twmn.
+
+Everything else can be considered beerware.
+
+If you feel that copyrights are violated, please send me an email.
+
+=head1 SEE ALSO
+
+dwm(1), dmenu(1), twmn(1), notify-send(1)

@@ -32,6 +32,11 @@ clean:
 	@echo cleaning
 	@rm -f ${OBJ}
 	@rm -f dunst
+	@rm -f dunst.1
+
+doc: dunst.1
+dunst.1: README.pod
+	pod2man $< > $@
 
 install: all
 	@echo installing executables to ${DESTDIR}${PREFIX}/bin
