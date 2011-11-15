@@ -6,7 +6,7 @@ include config.mk
 SRC = draw.c dunst.c
 OBJ = ${SRC:.c=.o}
 
-all: options dunst
+all: doc options dunst
 
 options:
 	@echo dunst build options:
