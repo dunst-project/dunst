@@ -25,6 +25,10 @@
 #define BUTTONMASK              (ButtonPressMask|ButtonReleaseMask)
 #define FONT_HEIGHT_BORDER 2
 
+#define MSG 1
+#define INFO 2
+#define DEBUG 3
+
 /* structs */
 typedef struct _screen_info {
     int scr;
@@ -58,7 +62,7 @@ void check_timeouts(void);
 void delete_all_msg(void);
 void delete_msg(msg_queue_t *elem);
 void drawmsg(void);
-void dunst_printf(const char *fmt, ...);
+void dunst_printf(int level, const char *fmt, ...);
 char *fix_markup(char *str);
 void free_msgqueue_t(msg_queue_t *elem);
 void handleXEvents(void);
@@ -107,7 +111,10 @@ append(msg_queue_t *queue, msg_queue_t *new) {
     new->timeout = new->timeout == -1 ? timeouts[new->urgency] : new->timeout;
     new->start = 0;
 
-    dunst_printf("%s (timeout: %d, urgency: %d)\n", new->msg, new->timeout, new->urgency);
+    dunst_printf(MSG, "%s\n", new->msg);
+    dunst_printf(INFO, "{\n  appname: %s\n  summary: %s\n  body: %s\n  icon: %s\n  urgency: %d\n  timeout: %d\n}",
+            new->appname, new->summary, new->body, new->icon, new->urgency, new->timeout);
+
     new->next = NULL;
     if(queue == NULL) {
         return new;
@@ -307,10 +314,10 @@ drawmsg(void) {
 }
 
 void
-dunst_printf(const char *fmt, ...) {
+dunst_printf(int level, const char *fmt, ...) {
     va_list ap;
 
-    if(!verbose) {
+    if(level > verbosity) {
         return;
     }
     va_start(ap, fmt);
@@ -649,7 +656,7 @@ main(int argc, char *argv[]) {
                 }
                 break;
             case 'v':
-                verbose = True;
+                verbosity++;
                 break;
             default:
                 usage(EXIT_FAILURE);

@@ -25,7 +25,12 @@ char *key_string = "space"; /* set to NULL for no keybinging */
 KeySym mask = ControlMask;
 /* KeySym mask = ControlMask || Mod4Mask */
 
-int verbose = True; /* print info to stdout? */
+/* 0 -> print nothing
+ * 1 -> print messages to stdout
+ * 2 -> print everything to stdout (Useful for finding rules
+ * 3 -> print everything above + debug info
+ */
+int verbosity = 0;
 
 /* You can use shell-like wildcards to match <appname> <summary> <body> and <icon>. */
 const rule_t rules[] = {
