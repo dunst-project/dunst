@@ -6,6 +6,10 @@
 
 /* appearance */
 const char *font = "-*-terminus-medium-r-*-*-16-*-*-*-*-*-*-*";
+/*
+ * Background and forground colors for messages with
+ * low normal and critical urgency.
+ */
 const char *normbgcolor = "#1793D1";
 const char *normfgcolor = "#DDDDDD";
 const char *critbgcolor = "#ffaaaa";
@@ -23,7 +27,7 @@ KeySym mask = ControlMask;
 
 int verbose = True; /* print info to stdout? */
 
-
+/* You can use shell-like wildcards to match <appname> <summary> <body> and <icon>. */
 const rule_t rules[] = {
     /* appname,       summary,         body,  icon,  timeout,  urgency,  fg,    bg, format */
     { "notify-send",  NULL,            NULL,  NULL,  -1,       -1,       NULL,  NULL, "%s %b" },
