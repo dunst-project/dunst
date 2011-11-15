@@ -89,9 +89,10 @@ append(msg_queue_t *queue, msg_queue_t *new) {
     msg_queue_t *last;
 
 
+    new->format = format;
     apply_rules(new);
 
-    new->msg = string_replace("%a", new->appname, strdup(format));
+    new->msg = string_replace("%a", new->appname, strdup(new->format));
     new->msg = string_replace("%s", new->summary, new->msg);
     new->msg = string_replace("%i", new->icon, new->msg);
     new->msg = string_replace("%I", basename(new->icon), new->msg);
@@ -130,6 +131,7 @@ apply_rules(msg_queue_t *msg) {
             msg->urgency = rules[i].urgency != -1 ? rules[i].urgency : msg->urgency;
             msg->color_strings[ColFG] = rules[i].fg ? rules[i].fg : msg->color_strings[ColFG];
             msg->color_strings[ColBG] = rules[i].bg ? rules[i].bg : msg->color_strings[ColBG];
+            msg->format = rules[i].format ? rules[i].format : msg->format;
         }
     }
 }

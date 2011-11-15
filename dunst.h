@@ -19,6 +19,7 @@ typedef struct _rule_t {
     int urgency;
     char *fg;
     char *bg;
+    const char *format;
 } rule_t;
 
 typedef struct _msg_queue_t {
@@ -27,6 +28,7 @@ typedef struct _msg_queue_t {
     char *body;
     char *icon;
     char *msg;
+    const char *format;
     struct _msg_queue_t *next;
     time_t start;
     int timeout;
