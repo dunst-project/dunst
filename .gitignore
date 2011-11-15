@@ -3,3 +3,4 @@ dunst
 core
 vgcore.*
 config.h
+dunst.1
