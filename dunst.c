@@ -49,7 +49,6 @@ static int font_h;
 /* list functions */
 msg_queue_t *append(msg_queue_t *queue, msg_queue_t *msg);
 msg_queue_t *delete(msg_queue_t *elem);
-msg_queue_t *pop(msg_queue_t *queue);
 int list_len(msg_queue_t *list);
 
 
