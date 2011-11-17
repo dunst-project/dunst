@@ -182,22 +182,71 @@ notify(DBusMessage *dmsg) {
     dbus_int32_t expires=-1;
 
     dbus_serial++;
+    dunst_printf(DEBUG, "new dbus message\n");
     dbus_message_iter_init(dmsg, &args);
-    dbus_message_iter_get_basic(&args, &appname);
+
+    dunst_printf(DEBUG, "extracting appname\n");
+    if (dbus_message_iter_get_arg_type(&args) != DBUS_TYPE_STRING) {
+        dunst_printf(DEBUG, "Invalid dbus notification: expected type %d but got %d.\n",
+                DBUS_TYPE_STRING, dbus_message_iter_get_arg_type(&args));
+    } else {
+        dbus_message_iter_get_basic(&args, &appname);
+    }
+
     dbus_message_iter_next( &args );
-    dbus_message_iter_get_basic(&args, &nid);
+    dunst_printf(DEBUG, "extracting nid\n");
+    if (dbus_message_iter_get_arg_type(&args) != DBUS_TYPE_UINT32) {
+        dunst_printf(DEBUG, "Invalid dbus notification: expected type %d but got %d.\n",
+                DBUS_TYPE_UINT32, dbus_message_iter_get_arg_type(&args));
+    } else {
+        dbus_message_iter_get_basic(&args, &nid);
+    }
+
     dbus_message_iter_next( &args );
-    dbus_message_iter_get_basic(&args, &icon);
+    dunst_printf(DEBUG, "extracting icon\n");
+    if (dbus_message_iter_get_arg_type(&args) != DBUS_TYPE_STRING) {
+        dunst_printf(DEBUG, "Invalid dbus notification: expected type %d but got %d.\n",
+                DBUS_TYPE_STRING, dbus_message_iter_get_arg_type(&args));
+    } else {
+        dbus_message_iter_get_basic(&args, &icon);
+    }
+
     dbus_message_iter_next( &args );
-    dbus_message_iter_get_basic(&args, &summary);
+    dunst_printf(DEBUG, "extracting summary\n");
+    if (dbus_message_iter_get_arg_type(&args) != DBUS_TYPE_STRING) {
+        dunst_printf(DEBUG, "Invalid dbus notification: expected type %d but got %d.\n",
+                DBUS_TYPE_STRING, dbus_message_iter_get_arg_type(&args));
+    } else {
+        dbus_message_iter_get_basic(&args, &summary);
+    }
+
     dbus_message_iter_next( &args );
-    dbus_message_iter_get_basic(&args, &body);
+    dunst_printf(DEBUG, "extracting body\n");
+    if (dbus_message_iter_get_arg_type(&args) != DBUS_TYPE_STRING) {
+        dunst_printf(DEBUG, "Invalid dbus notification: expected type %d but got %d.\n",
+                DBUS_TYPE_STRING, dbus_message_iter_get_arg_type(&args));
+    } else {
+        dbus_message_iter_get_basic(&args, &body);
+    }
+
     dbus_message_iter_next( &args );
     dbus_message_iter_next( &args );
+
+    dunst_printf(DEBUG, "extracting hints\n");
     dbus_message_iter_recurse(&args, &hints);
     dbus_message_iter_next( &args );
-    dbus_message_iter_get_basic(&args, &expires);
 
+    dunst_printf(DEBUG, "extracting expires\n");
+    if (dbus_message_iter_get_arg_type(&args) != DBUS_TYPE_INT32) {
+        dunst_printf(DEBUG, "Invalid dbus notification: expected type %d but got %d.\n",
+                DBUS_TYPE_INT32, dbus_message_iter_get_arg_type(&args));
+    } else {
+        dbus_message_iter_get_basic(&args, &expires);
+    }
+
+
+
+    dunst_printf(DEBUG, "extracting hints\n");
     do {
         dbus_message_iter_recurse(&hints, &hint);
         do {
@@ -207,6 +256,7 @@ notify(DBusMessage *dmsg) {
             }
             dbus_message_iter_get_basic(&hint, &hint_name);
             if(!strcmp(hint_name, "urgency")) {
+                dunst_printf(DEBUG, "urgency found\n");
                 dbus_message_iter_next(&hint);
                 dbus_message_iter_recurse(&hint, &hint_value);
                 do {
@@ -215,6 +265,7 @@ notify(DBusMessage *dmsg) {
 
             }
             if(!strcmp(hint_name, "fgcolor")) {
+                dunst_printf(DEBUG, "fgcolor found\n");
                 dbus_message_iter_next(&hint);
                 dbus_message_iter_recurse(&hint, &hint_value);
                 do {
@@ -223,6 +274,7 @@ notify(DBusMessage *dmsg) {
 
             }
             if(!strcmp(hint_name, "bgcolor")) {
+                dunst_printf(DEBUG, "bgcolor found\n");
                 dbus_message_iter_next(&hint);
                 dbus_message_iter_recurse(&hint, &hint_value);
                 do {
