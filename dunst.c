@@ -343,6 +343,9 @@ char
     /* remove tags */
     str = string_replace("<b>", "", str);
     str = string_replace("</b>", "", str);
+    str = string_replace("<br>", " ", str);
+    str = string_replace("<br/>", " ", str);
+    str = string_replace("<br />", " ", str);
     str = string_replace("<i>", "", str);
     str = string_replace("</i>", "", str);
     str = string_replace("<u>", "", str);
