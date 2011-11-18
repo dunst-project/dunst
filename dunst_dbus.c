@@ -274,7 +274,8 @@ notify(DBusMessage *dmsg) {
     }
     msg->color_strings[ColFG] = fgcolor == NULL ? NULL : strdup(fgcolor);
     msg->color_strings[ColBG] = bgcolor == NULL ? NULL : strdup(bgcolor);
-    msgqueue = append(msgqueue, msg);
+    initmsg(msg);
+    msgqueue = add(msgqueue, msg);
     drawmsg();
 
     reply = dbus_message_new_method_return(dmsg);

@@ -60,6 +60,14 @@ defines the format of the message. See FORMAT.
 
 show the notification on monitor n.
 
+=item B<-s>
+
+sort messages by urgency.
+
+=item B<-ns>
+
+don't sort messages by urgency.
+
 =item B<-geometry [{width}]x{height}][+/-{x}+/-{y}]>
 
 The geometry of the message window. The height is measured

@@ -51,7 +51,7 @@ static dimension_t geometry;
 static int font_h;
 
 /* list functions */
-msg_queue_t *append(msg_queue_t *queue, msg_queue_t *msg);
+msg_queue_t *add(msg_queue_t *queue, msg_queue_t *msg);
 msg_queue_t *delete(msg_queue_t *elem);
 int list_len(msg_queue_t *list);
 
@@ -66,6 +66,7 @@ void dunst_printf(int level, const char *fmt, ...);
 char *fix_markup(char *str);
 void free_msgqueue_t(msg_queue_t *elem);
 void handleXEvents(void);
+void initmsg(msg_queue_t *msg);
 char *string_replace(const char *needle, const char *replacement, char *haystack);
 void run(void);
 void setup(void);
@@ -74,53 +75,40 @@ void usage(int exit_status);
 
 #include "dunst_dbus.h"
 
-static void
-_set_color(msg_queue_t *msg, int color_idx) {
-    Colormap cmap = DefaultColormap(dc->dpy, DefaultScreen(dc->dpy));
-    XColor color;
-    if(msg->color_strings[color_idx] == NULL
-       || !XAllocNamedColor(dc->dpy, cmap,
-           msg->color_strings[color_idx], &color, &color)) {
-        msg->colors[color_idx] = colors[msg->urgency][color_idx];
-    } else {
-        msg->colors[color_idx] = color.pixel;
-    }
-}
 
 msg_queue_t*
-append(msg_queue_t *queue, msg_queue_t *new) {
-    msg_queue_t *last;
-
-
-    new->format = format;
-    apply_rules(new);
-
-    new->msg = string_replace("%a", new->appname, strdup(new->format));
-    new->msg = string_replace("%s", new->summary, new->msg);
-    new->msg = string_replace("%i", new->icon, new->msg);
-    new->msg = string_replace("%I", basename(new->icon), new->msg);
-    new->msg = string_replace("%b", new->body, new->msg);
-
-    new->msg = fix_markup(new->msg);
-    /* urgency > CRIT -> array out of range */
-    new->urgency = new->urgency > CRIT ? CRIT : new->urgency;
-
-    _set_color(new, ColFG);
-    _set_color(new, ColBG);
-
-    new->timeout = new->timeout == -1 ? timeouts[new->urgency] : new->timeout;
-    new->start = 0;
-
-    dunst_printf(MSG, "%s\n", new->msg);
-    dunst_printf(INFO, "{\n  appname: %s\n  summary: %s\n  body: %s\n  icon: %s\n  urgency: %d\n  timeout: %d\n}",
-            new->appname, new->summary, new->body, new->icon, new->urgency, new->timeout);
+add(msg_queue_t *queue, msg_queue_t *new) {
+    msg_queue_t *i;
+    msg_queue_t *prev = NULL;
 
     new->next = NULL;
     if(queue == NULL) {
         return new;
     }
-    for(last = queue; last->next; last = last->next);
-    last->next = new;
+
+    if(sort) {
+        for(i = queue; i->next; i = i->next) {
+            if(new->urgency > i->urgency) {
+                if (!prev) {
+                    /* we are at the first element */
+                    queue = new;
+                    new->next = i;
+                    return queue;
+                } else {
+                    prev->next = new;
+                    new->next = i;
+                    return queue;
+                }
+            }
+            prev = i;
+        }
+        /* we've reached the end of the queue */
+        i->next = new;
+        new->next = NULL;
+    } else {
+        for(i = queue; i->next; i = i->next);
+        i->next = new;
+    }
     return queue;
 
 }
@@ -424,6 +412,46 @@ handleXEvents(void) {
     }
 }
 
+static void
+_set_color(msg_queue_t *msg, int color_idx) {
+    Colormap cmap = DefaultColormap(dc->dpy, DefaultScreen(dc->dpy));
+    XColor color;
+    if(msg->color_strings[color_idx] == NULL
+       || !XAllocNamedColor(dc->dpy, cmap,
+           msg->color_strings[color_idx], &color, &color)) {
+        msg->colors[color_idx] = colors[msg->urgency][color_idx];
+    } else {
+        msg->colors[color_idx] = color.pixel;
+    }
+}
+
+void
+initmsg(msg_queue_t *msg) {
+    msg->format = format;
+    apply_rules(msg);
+
+    msg->msg = string_replace("%a", msg->appname, strdup(msg->format));
+    msg->msg = string_replace("%s", msg->summary, msg->msg);
+    msg->msg = string_replace("%i", msg->icon, msg->msg);
+    msg->msg = string_replace("%I", basename(msg->icon), msg->msg);
+    msg->msg = string_replace("%b", msg->body, msg->msg);
+
+    msg->msg = fix_markup(msg->msg);
+    /* urgency > CRIT -> array out of range */
+    msg->urgency = msg->urgency > CRIT ? CRIT : msg->urgency;
+
+    _set_color(msg, ColFG);
+    _set_color(msg, ColBG);
+
+    msg->timeout = msg->timeout == -1 ? timeouts[msg->urgency] : msg->timeout;
+    msg->start = 0;
+
+    dunst_printf(MSG, "%s\n", msg->msg);
+    dunst_printf(INFO, "{\n  appname: %s\n  summary: %s\n  body: %s\n  icon: %s\n  urgency: %d\n  timeout: %d\n}",
+            msg->appname, msg->summary, msg->body, msg->icon, msg->urgency, msg->timeout);
+
+}
+
 char *
 string_replace(const char *needle, const char *replacement, char *haystack) {
     char *tmp, *start;
@@ -572,13 +600,14 @@ main(int argc, char *argv[]) {
         {"key", required_argument, NULL, 'k'},
         {"geometry", required_argument, NULL, 'g'},
         {"mod", required_argument, NULL, 'M'},
+        {"ns", no_argument, NULL, 'x'},
         {0,0,0,0}
     };
 
 
         int option_index = 0;
 
-        c = getopt_long_only(argc, argv, "bhv", long_options, &option_index);
+        c = getopt_long_only(argc, argv, "bhsv", long_options, &option_index);
 
         if(c == -1) {
             break;
@@ -658,6 +687,12 @@ main(int argc, char *argv[]) {
                     fprintf(stderr, "Unable to find mask: %s\n", optarg);
                     fprintf(stderr, "See manpage for list of available masks\n");
                 }
+                break;
+            case 's':
+                sort = True;
+                break;
+            case 'x':
+                sort = False;
                 break;
             case 'v':
                 verbosity++;
