@@ -159,21 +159,47 @@ getServerInformation(DBusMessage *dmsg) {
 }
 
 
+static void
+_extract_basic(int type, DBusMessageIter *iter, void *target) {
+    int iter_type = dbus_message_iter_get_arg_type(iter);
+    if (iter_type != type) {
+        dunst_printf(DEBUG, "Invalid dbus notification: expected type %d but got %d.\n",
+                type, iter_type);
+    } else {
+        dbus_message_iter_get_basic(iter, target);
+    }
+}
+
+static void
+_extract_hint(const char *name, const char *hint_name,
+        DBusMessageIter *hint, void *target) {
+
+    DBusMessageIter hint_value;
+
+    if(!strcmp(hint_name, name)) {
+        dunst_printf(DEBUG, "%s found\n", name);
+        dbus_message_iter_next(hint);
+        dbus_message_iter_recurse(hint, &hint_value);
+        do {
+            dbus_message_iter_get_basic(&hint_value, target);
+        } while(dbus_message_iter_next(hint));
+    }
+}
+
 void
 notify(DBusMessage *dmsg) {
     DBusMessage *reply;
     DBusMessageIter args;
     DBusMessageIter hints;
     DBusMessageIter hint;
-    DBusMessageIter hint_value;
     char *hint_name;
 
     int i;
     int id = 23;
-    const char *appname;
-    const char *summary;
-    const char *body;
-    const char *icon;
+    const char *appname = NULL;
+    const char *summary = NULL;
+    const char *body = NULL;
+    const char *icon = NULL;
     const char *fgcolor = NULL;
     const char *bgcolor = NULL;
     int urgency = 1;
@@ -186,48 +212,23 @@ notify(DBusMessage *dmsg) {
     dbus_message_iter_init(dmsg, &args);
 
     dunst_printf(DEBUG, "extracting appname\n");
-    if (dbus_message_iter_get_arg_type(&args) != DBUS_TYPE_STRING) {
-        dunst_printf(DEBUG, "Invalid dbus notification: expected type %d but got %d.\n",
-                DBUS_TYPE_STRING, dbus_message_iter_get_arg_type(&args));
-    } else {
-        dbus_message_iter_get_basic(&args, &appname);
-    }
+    _extract_basic(DBUS_TYPE_STRING, &args, &appname);
 
     dbus_message_iter_next( &args );
     dunst_printf(DEBUG, "extracting nid\n");
-    if (dbus_message_iter_get_arg_type(&args) != DBUS_TYPE_UINT32) {
-        dunst_printf(DEBUG, "Invalid dbus notification: expected type %d but got %d.\n",
-                DBUS_TYPE_UINT32, dbus_message_iter_get_arg_type(&args));
-    } else {
-        dbus_message_iter_get_basic(&args, &nid);
-    }
+    _extract_basic(DBUS_TYPE_UINT32, &args, &nid);
 
     dbus_message_iter_next( &args );
     dunst_printf(DEBUG, "extracting icon\n");
-    if (dbus_message_iter_get_arg_type(&args) != DBUS_TYPE_STRING) {
-        dunst_printf(DEBUG, "Invalid dbus notification: expected type %d but got %d.\n",
-                DBUS_TYPE_STRING, dbus_message_iter_get_arg_type(&args));
-    } else {
-        dbus_message_iter_get_basic(&args, &icon);
-    }
+    _extract_basic(DBUS_TYPE_STRING, &args, &icon);
 
     dbus_message_iter_next( &args );
     dunst_printf(DEBUG, "extracting summary\n");
-    if (dbus_message_iter_get_arg_type(&args) != DBUS_TYPE_STRING) {
-        dunst_printf(DEBUG, "Invalid dbus notification: expected type %d but got %d.\n",
-                DBUS_TYPE_STRING, dbus_message_iter_get_arg_type(&args));
-    } else {
-        dbus_message_iter_get_basic(&args, &summary);
-    }
+    _extract_basic(DBUS_TYPE_STRING, &args, &summary);
 
     dbus_message_iter_next( &args );
     dunst_printf(DEBUG, "extracting body\n");
-    if (dbus_message_iter_get_arg_type(&args) != DBUS_TYPE_STRING) {
-        dunst_printf(DEBUG, "Invalid dbus notification: expected type %d but got %d.\n",
-                DBUS_TYPE_STRING, dbus_message_iter_get_arg_type(&args));
-    } else {
-        dbus_message_iter_get_basic(&args, &body);
-    }
+    _extract_basic(DBUS_TYPE_STRING, &args, &body);
 
     dbus_message_iter_next( &args );
     dbus_message_iter_next( &args );
@@ -237,55 +238,22 @@ notify(DBusMessage *dmsg) {
     dbus_message_iter_next( &args );
 
     dunst_printf(DEBUG, "extracting expires\n");
-    if (dbus_message_iter_get_arg_type(&args) != DBUS_TYPE_INT32) {
-        dunst_printf(DEBUG, "Invalid dbus notification: expected type %d but got %d.\n",
-                DBUS_TYPE_INT32, dbus_message_iter_get_arg_type(&args));
-    } else {
-        dbus_message_iter_get_basic(&args, &expires);
-    }
-
+    _extract_basic(DBUS_TYPE_INT32, &args, &expires);
 
 
     dunst_printf(DEBUG, "extracting hints\n");
     do {
         dbus_message_iter_recurse(&hints, &hint);
         do {
-            /* 115 == dbus urgency type thingy... i hate this shit */
-            if(dbus_message_iter_get_arg_type(&hint) != 115) {
+            if(dbus_message_iter_get_arg_type(&hint) != DBUS_TYPE_STRING) {
                 continue;
             }
             dbus_message_iter_get_basic(&hint, &hint_name);
-            if(!strcmp(hint_name, "urgency")) {
-                dunst_printf(DEBUG, "urgency found\n");
-                dbus_message_iter_next(&hint);
-                dbus_message_iter_recurse(&hint, &hint_value);
-                do {
-                    dbus_message_iter_get_basic(&hint_value, &urgency);
-                } while(dbus_message_iter_next(&hint));
-
-            }
-            if(!strcmp(hint_name, "fgcolor")) {
-                dunst_printf(DEBUG, "fgcolor found\n");
-                dbus_message_iter_next(&hint);
-                dbus_message_iter_recurse(&hint, &hint_value);
-                do {
-                    dbus_message_iter_get_basic(&hint_value, &fgcolor);
-                } while(dbus_message_iter_next(&hint));
-
-            }
-            if(!strcmp(hint_name, "bgcolor")) {
-                dunst_printf(DEBUG, "bgcolor found\n");
-                dbus_message_iter_next(&hint);
-                dbus_message_iter_recurse(&hint, &hint_value);
-                do {
-                    dbus_message_iter_get_basic(&hint_value, &bgcolor);
-                } while(dbus_message_iter_next(&hint));
-
-            }
+            _extract_hint("urgency", hint_name, &hint, &urgency);
+            _extract_hint("fgcolor", hint_name, &hint, &fgcolor);
+            _extract_hint("bgcolor", hint_name, &hint, &bgcolor);
         } while(dbus_message_iter_next(&hint));
     } while(dbus_message_iter_next(&hints));
-
-
 
 
     if(expires > 0) {
