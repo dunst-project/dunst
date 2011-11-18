@@ -416,7 +416,7 @@ handleXEvents(void) {
             if(ev.xbutton.window == win) {
                 if(ev.xbutton.button == Button1) {
                     delete_msg(NULL);
-                } else {
+                } else if(ev.xbutton.button == Button3) {
                     delete_all_msg();
                 }
             }
