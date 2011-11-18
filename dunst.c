@@ -240,9 +240,11 @@ delete_msg(msg_queue_t *elem) {
 
 void
 drawmsg(void) {
-    int width, x, y, height, i;
+    int width, x, y, height, drawn_msg_count, i;
     unsigned int len = list_len(msgqueue);
     msg_queue_t *cur_msg = msgqueue;
+    char hidden[128];
+    int hidden_count = 0;
     dc->x = 0;
     dc->y = 0;
     dc->h = 0;
@@ -252,12 +254,20 @@ drawmsg(void) {
     }
 
     height = MIN(geometry.h, len);
+    drawn_msg_count = height;
+    hidden_count = len - height;
+    hidden_count = indicate_hidden && hidden_count > 0 ? hidden_count : 0;
+    sprintf(hidden, "(%d more)", hidden_count);
+    if(hidden_count)
+        height++;
 
     if(geometry.mask & WidthValue) {
         if(geometry.w == 0) {
             width = 0;
             for(i = 0; i < height; i++){
                 width = MAX(width, textw(dc, cur_msg->msg));
+                if(hidden_count)
+                    width = MAX(width, textw(dc,hidden));
                 cur_msg = cur_msg->next;
             }
         } else {
@@ -285,7 +295,7 @@ drawmsg(void) {
     XResizeWindow(dc->dpy, win, width, height*font_h);
     drawrect(dc, 0, 0, width, height*font_h, True, BG(dc, colors[NORM]));
 
-    for(i = 0; i < height; i++) {
+    for(i = 0; i < drawn_msg_count; i++) {
         if(cur_msg->start == 0)
             cur_msg->start = now;
 
@@ -295,6 +305,13 @@ drawmsg(void) {
         dc->y += font_h;
         cur_msg = cur_msg->next;
     }
+
+    if(hidden_count) {
+        drawrect(dc, 0, dc->y, width, font_h, True, BG(dc, colors[NORM]));
+        drawtext(dc, hidden, colors[NORM]);
+        dc->y += font_h;
+    }
+
 
     XMoveWindow(dc->dpy, win, x, y);
 

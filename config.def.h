@@ -20,6 +20,7 @@ const char *format = "%s %b"; /* default format */
 int timeouts[] = { 10, 10, 0 }; /* low, normal, critical */
 const char *geom = "0x3-30+20"; /* geometry */
 int sort = True; /* sort messages by urgency */
+int indicate_hidden = True; /* show count of hidden messages */
 /* const char *geom = "x1"; */
 
 
