@@ -65,6 +65,7 @@ void drawmsg(void);
 void dunst_printf(int level, const char *fmt, ...);
 char *fix_markup(char *str);
 void free_msgqueue_t(msg_queue_t *elem);
+void handle_mouse_click(XEvent ev);
 void handleXEvents(void);
 void initmsg(msg_queue_t *msg);
 char *string_replace(const char *needle, const char *replacement, char *haystack);
@@ -396,6 +397,22 @@ free_msgqueue_t(msg_queue_t *elem) {
 }
 
 void
+handle_mouse_click(XEvent ev) {
+    msg_queue_t *cur_msg = msgqueue;
+    int i;
+    if(ev.xbutton.button == Button3) {
+        delete_all_msg();
+    } else if(ev.xbutton.button == Button1) {
+        i = ev.xbutton.y / font_h;
+        printf("i: %d\n",i);
+        for(i = i; i > 0; i--) {
+            cur_msg = cur_msg->next;
+        }
+        delete_msg(cur_msg);
+    }
+}
+
+void
 handleXEvents(void) {
     XEvent ev;
     while(XPending(dc->dpy) > 0) {
@@ -414,11 +431,7 @@ handleXEvents(void) {
             break;
         case ButtonPress:
             if(ev.xbutton.window == win) {
-                if(ev.xbutton.button == Button1) {
-                    delete_msg(NULL);
-                } else if(ev.xbutton.button == Button3) {
-                    delete_all_msg();
-                }
+                handle_mouse_click(ev);
             }
             break;
         case KeyPress:
