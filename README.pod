@@ -25,7 +25,7 @@ display help message.
 
 defines the font or font set used.
 
-=item B<-lb/nb/cg color>
+=item B<-lb/nb/cb color>
 
 defines the background color of low/normal/critical messages.
 
