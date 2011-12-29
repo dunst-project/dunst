@@ -244,9 +244,9 @@ notify(DBusMessage *dmsg) {
     dunst_printf(DEBUG, "extracting hints\n");
     while (dbus_message_iter_get_arg_type(&hints) != DBUS_TYPE_INVALID) {
         dbus_message_iter_recurse(&hints, &hint);
-        printf("Type: %d\n", dbus_message_iter_get_arg_type(&hint));
         while (dbus_message_iter_get_arg_type(&hint) != DBUS_TYPE_INVALID) {
             if(dbus_message_iter_get_arg_type(&hint) != DBUS_TYPE_STRING) {
+                dbus_message_iter_next(&hints);
                 continue;
             }
             dbus_message_iter_get_basic(&hint, &hint_name);
