@@ -242,9 +242,10 @@ notify(DBusMessage *dmsg) {
 
 
     dunst_printf(DEBUG, "extracting hints\n");
-    do {
+    while (dbus_message_iter_get_arg_type(&hints) != DBUS_TYPE_INVALID) {
         dbus_message_iter_recurse(&hints, &hint);
-        do {
+        printf("Type: %d\n", dbus_message_iter_get_arg_type(&hint));
+        while (dbus_message_iter_get_arg_type(&hint) != DBUS_TYPE_INVALID) {
             if(dbus_message_iter_get_arg_type(&hint) != DBUS_TYPE_STRING) {
                 continue;
             }
@@ -252,8 +253,10 @@ notify(DBusMessage *dmsg) {
             _extract_hint("urgency", hint_name, &hint, &urgency);
             _extract_hint("fgcolor", hint_name, &hint, &fgcolor);
             _extract_hint("bgcolor", hint_name, &hint, &bgcolor);
-        } while(dbus_message_iter_next(&hint));
-    } while(dbus_message_iter_next(&hints));
+            dbus_message_iter_next(&hint);
+        }
+        dbus_message_iter_next(&hints);
+    }
 
 
     if(expires > 0) {
