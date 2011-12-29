@@ -246,7 +246,7 @@ notify(DBusMessage *dmsg) {
         dbus_message_iter_recurse(&hints, &hint);
         while (dbus_message_iter_get_arg_type(&hint) != DBUS_TYPE_INVALID) {
             if(dbus_message_iter_get_arg_type(&hint) != DBUS_TYPE_STRING) {
-                dbus_message_iter_next(&hints);
+                dbus_message_iter_next(&hint);
                 continue;
             }
             dbus_message_iter_get_basic(&hint, &hint_name);
