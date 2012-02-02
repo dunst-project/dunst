@@ -246,6 +246,7 @@ drawmsg(void) {
     msg_queue_t *cur_msg = msgqueue;
     char hidden[128];
     int hidden_count = 0;
+    int hidden_color_idx = NORM;
     dc->x = 0;
     dc->y = 0;
     dc->h = 0;
@@ -304,12 +305,13 @@ drawmsg(void) {
         drawtext(dc, cur_msg->msg, cur_msg->colors);
 
         dc->y += font_h;
+        hidden_color_idx = cur_msg->urgency;
         cur_msg = cur_msg->next;
     }
 
     if(hidden_count) {
         drawrect(dc, 0, dc->y, width, font_h, True, BG(dc, colors[NORM]));
-        drawtext(dc, hidden, colors[NORM]);
+        drawtext(dc, hidden, colors[hidden_color_idx]);
         dc->y += font_h;
     }
 
