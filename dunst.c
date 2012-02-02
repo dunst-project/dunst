@@ -406,7 +406,6 @@ handle_mouse_click(XEvent ev) {
         delete_all_msg();
     } else if(ev.xbutton.button == Button1) {
         i = ev.xbutton.y / font_h;
-        printf("i: %d\n",i);
         for(i = i; i > 0; i--) {
             cur_msg = cur_msg->next;
         }
