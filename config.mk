@@ -11,7 +11,7 @@ XINERAMAFLAGS = -DXINERAMA
 
 # includes and libs
 INCS = -I${X11INC} -I/usr/lib/dbus-1.0/include -I/usr/include/dbus-1.0
-LIBS = -L${X11LIB} -lX11 -ldbus-1 -lpthread -lrt ${XINERAMALIBS}
+LIBS = -L${X11LIB} -lX11 -lXext -lXss -ldbus-1 -lpthread -lrt ${XINERAMALIBS}
 
 # flags
 CPPFLAGS = -D_BSD_SOURCE -DVERSION=\"${VERSION}\" ${XINERAMAFLAGS}

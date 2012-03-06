@@ -23,6 +23,9 @@ int sort = True; /* sort messages by urgency */
 int indicate_hidden = True; /* show count of hidden messages */
 /* const char *geom = "x1"; */
 
+/* If this is > 0, messages won't be closed, when user is idle for
+ * longer than idle_threshold seconds */
+const int idle_threshold = 120;
 
 char *key_string = NULL; /* set to NULL for no keybinging */
 /* char *key_string = "space"; */

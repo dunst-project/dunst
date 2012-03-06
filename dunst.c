@@ -13,6 +13,7 @@
 #ifdef XINERAMA
 #include <X11/extensions/Xinerama.h>
 #endif
+#include <X11/extensions/scrnsaver.h>
 
 #include "config.h"
 #include "dunst.h"
@@ -48,6 +49,7 @@ static int visible = False;
 static KeySym key = NoSymbol;
 static screen_info scr;
 static dimension_t geometry;
+static XScreenSaverInfo *screensaver_info;
 static int font_h;
 
 /* list functions */
@@ -68,6 +70,7 @@ void free_msgqueue_t(msg_queue_t *elem);
 void handle_mouse_click(XEvent ev);
 void handleXEvents(void);
 void initmsg(msg_queue_t *msg);
+int is_idle(void);
 char *string_replace(const char *needle, const char *replacement, char *haystack);
 void run(void);
 void setup(void);
@@ -179,6 +182,11 @@ check_timeouts(void) {
 
     cur = msgqueue;
     while(cur != NULL) {
+        if(is_idle()) {
+            cur->start = now;
+            cur = cur->next;
+            continue;
+        }
         if(cur->start == 0 || cur->timeout == 0) {
             cur = cur->next;
             continue;
@@ -483,6 +491,17 @@ initmsg(msg_queue_t *msg) {
 
 }
 
+int
+is_idle(void)
+{
+    XScreenSaverQueryInfo(dc->dpy, DefaultRootWindow(dc->dpy),
+            screensaver_info);
+    if(idle_threshold == 0) {
+        return False;
+    }
+    return screensaver_info->idle / 1000 > idle_threshold;
+}
+
 char *
 string_replace(const char *needle, const char *replacement, char *haystack) {
     char *tmp, *start;
@@ -611,6 +630,7 @@ main(int argc, char *argv[]) {
             &geometry.x, &geometry.y,
             &geometry.w, &geometry.h);
     key = key_string ? XStringToKeysym(key_string) : NoSymbol;
+    screensaver_info = XScreenSaverAllocInfo();
 
     while(1) {
         static struct option long_options[] = {
