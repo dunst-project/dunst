@@ -621,19 +621,10 @@ show_win(void) {
     visible = True;
 }
 
-
-int
-main(int argc, char *argv[]) {
+void
+parse_cmdline(int argc, char *argv[]) {
 
     int c;
-
-    now = time(&now);
-    dc = initdc();
-    geometry.mask = XParseGeometry(geom,
-            &geometry.x, &geometry.y,
-            &geometry.w, &geometry.h);
-    key = key_string ? XStringToKeysym(key_string) : NoSymbol;
-
     while(1) {
         static struct option long_options[] = {
         {"help", no_argument, NULL, 'h'},
@@ -755,6 +746,19 @@ main(int argc, char *argv[]) {
                 break;
         }
     }
+}
+
+int
+main(int argc, char *argv[]) {
+
+    now = time(&now);
+    dc = initdc();
+    geometry.mask = XParseGeometry(geom,
+            &geometry.x, &geometry.y,
+            &geometry.w, &geometry.h);
+    key = key_string ? XStringToKeysym(key_string) : NoSymbol;
+
+    parse_cmdline(argc, argv);
 
     initdbus();
     initfont(dc, font);
