@@ -1,0 +1,44 @@
+[global]
+    font = -*-terminus-medium-r-*-*-16-*-*-*-*-*-*-*
+    format = "%s %b"
+    sort = no
+    indicate_hidden = yes
+    key = space
+    modifier = ctrl
+    geometry = "0x3-30+20"
+
+[urgency_low]
+    background = "#aaaaff"
+    foreground = "#000000"
+    timeout = 10
+
+[urgency_normal]
+    background = "#1793D1"
+    foreground = "#DDDDDD"
+    timeout = 10
+
+[urgency_critical]
+    background = "#ffaaaa"
+    foreground = "#000000"
+    timeout = 0
+
+
+[signed_on]
+    appname = Pidgin
+    summary = "*signed on*"
+    urgency = low
+    
+[signed_off]
+    appname = Pidgin
+    summary = *signed off*
+    urgency = low
+
+[says]
+    appname = Pidgin
+    summary = *says*
+    urgency = critical
+
+[twitter]
+    appname = Pidgin
+    summary = *twitter.com*
+    urgency = normal
