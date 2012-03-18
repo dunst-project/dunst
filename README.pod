@@ -86,6 +86,10 @@ Increase verbosity. Can be used multiple times.
 
 =back
 
+=item B<-config file>
+
+use alternative config file.
+
 =head1 FORMAT
 
 fmt is a string containing placeholders. The placeholders will be replaced with the corresponding text, or if the text is not present, nothing. Possible placeholders are:

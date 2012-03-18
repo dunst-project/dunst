@@ -8,6 +8,7 @@
 #define CRIT 2
 
 typedef struct _rule_t {
+    char *name;
     /* filters */
     char *appname;
     char *summary;

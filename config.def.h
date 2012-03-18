@@ -10,15 +10,15 @@ const char *font = "-*-terminus-medium-r-*-*-16-*-*-*-*-*-*-*";
  * Background and forground colors for messages with
  * low normal and critical urgency.
  */
-const char *normbgcolor = "#1793D1";
-const char *normfgcolor = "#DDDDDD";
-const char *critbgcolor = "#ffaaaa";
-const char *critfgcolor = "#000000";
-const char *lowbgcolor =  "#aaaaff";
-const char *lowfgcolor = "#000000";
-const char *format = "%s %b"; /* default format */
+char *normbgcolor = "#1793D1";
+char *normfgcolor = "#DDDDDD";
+char *critbgcolor = "#ffaaaa";
+char *critfgcolor = "#000000";
+char *lowbgcolor =  "#aaaaff";
+char *lowfgcolor = "#000000";
+char *format = "%s %b"; /* default format */
 int timeouts[] = { 10, 10, 0 }; /* low, normal, critical */
-const char *geom = "0x3-30+20"; /* geometry */
+char *geom = "0x3-30+20"; /* geometry */
 int sort = True; /* sort messages by urgency */
 int indicate_hidden = True; /* show count of hidden messages */
 /* const char *geom = "x1"; */
@@ -36,4 +36,5 @@ KeySym mask = 0;
  * 3 -> print everything above + debug info
  */
 int verbosity = 0;
+
 #endif

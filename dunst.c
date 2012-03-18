@@ -14,6 +14,8 @@
 #include <X11/extensions/Xinerama.h>
 #endif
 
+#include <iniparser.h>
+
 #include "config.h"
 #include "dunst.h"
 #include "draw.h"
@@ -51,6 +53,7 @@ static KeySym key = NoSymbol;
 static screen_info scr;
 static dimension_t geometry;
 static int font_h;
+static char *config_file;
 
 /* list functions */
 msg_queue_t *add(msg_queue_t *queue, msg_queue_t *msg);
@@ -79,6 +82,34 @@ void usage(int exit_status);
 
 #include "dunst_dbus.h"
 
+
+void
+print_rule(rule_t *r) {
+    fprintf(stderr, "%s %s %s %s %s %d %d %s %s %s\n",
+            r->name,
+            r->appname,
+            r->summary,
+            r->body,
+            r->icon,
+            r->timeout,
+            r->urgency,
+            r->fg,
+            r->bg,
+            r->format);
+}
+
+void
+print_rules(void) {
+    rule_t *cur = rules;
+    if (cur == NULL) {
+        fprintf(stderr, "no rules present\n");
+        return;
+    }
+    while(cur->next) {
+        print_rule(cur);
+        cur = cur->next;
+    }
+}
 
 msg_queue_t*
 add(msg_queue_t *queue, msg_queue_t *new) {
@@ -125,6 +156,7 @@ apply_rules(msg_queue_t *msg) {
         && (!cur->summary || !fnmatch(cur->summary, msg->summary, 0))
         && (!cur->body || !fnmatch(cur->body, msg->body, 0))
         && (!cur->icon || !fnmatch(cur->icon, msg->icon, 0))) {
+            fprintf(stderr, "matched rule: %s\n", cur->name);
             msg->timeout = cur->timeout != -1 ? cur->timeout : msg->timeout;
             msg->urgency = cur->urgency != -1 ? cur->urgency : msg->urgency;
             msg->color_strings[ColFG] = cur->fg ? cur->fg : msg->color_strings[ColFG];
@@ -491,6 +523,7 @@ initmsg(msg_queue_t *msg) {
 rule_t *
 initrule(void) {
     rule_t *r = malloc(sizeof(rule_t));
+    r->name = NULL;
     r->appname = NULL;
     r->summary = NULL;
     r->body = NULL;
@@ -644,6 +677,7 @@ parse_cmdline(int argc, char *argv[]) {
         {"key", required_argument, NULL, 'k'},
         {"geometry", required_argument, NULL, 'g'},
         {"mod", required_argument, NULL, 'M'},
+        {"config", required_argument, NULL, 'r'},
         {"ns", no_argument, NULL, 'x'},
         {0,0,0,0}
     };
@@ -741,12 +775,176 @@ parse_cmdline(int argc, char *argv[]) {
             case 'v':
                 verbosity++;
                 break;
+            case 'r':
+                config_file = optarg;
+                break;
             default:
                 usage(EXIT_FAILURE);
                 break;
         }
     }
 }
+
+char *
+create_iniparser_key(char *section, char *key) {
+    char *new_key;
+
+    new_key = malloc(sizeof(char) * (strlen(section)
+                                   + strlen(key)
+                                   + strlen(":")
+                                   + 1 /* \0 */ ));
+
+    sprintf(new_key, "%s:%s", section, key);
+    return new_key;
+}
+
+void
+parse_dunstrc(void) {
+
+    char *mod = NULL;
+    char *urg = NULL;
+    char *secname = NULL;
+    rule_t *last_rule;
+    rule_t *new_rule;
+    char *key;
+
+    int nsec = 0;
+    int i;
+
+    dictionary *ini;
+
+    if (config_file == NULL) {
+        config_file = malloc(sizeof(char) * BUFSIZ);
+        memset(config_file, '\0', BUFSIZ);
+        strcat(config_file, getenv("XDG_CONFIG_HOME"));
+        strcat(config_file, "/");
+        strcat(config_file, "dunstrc");
+    }
+
+    ini = iniparser_load(config_file);
+    if (ini == NULL) {
+        puts("no dunstrc found -> skipping");
+    }
+
+    font = iniparser_getstring(ini, "global:font", font);
+    format = iniparser_getstring(ini, "global:format", format);
+    sort = iniparser_getboolean(ini, "global:sort", sort);
+    indicate_hidden = iniparser_getboolean(ini, "global:indicate_hidden", indicate_hidden);
+    key_string = iniparser_getstring(ini, "global:key", key_string);
+
+    geom = iniparser_getstring(ini, "global:geometry", geom);
+                geometry.mask = XParseGeometry(geom,
+                        &geometry.x, &geometry.y,
+                        &geometry.w, &geometry.h);
+
+    mod = iniparser_getstring(ini, "global:modifier", mod);
+
+    if (mod == NULL) {
+        mask = 0;
+    } else if (!strcmp(mod, "ctrl")) {
+        mask = ControlMask;
+    } else if (!strcmp(mod, "mod4")) {
+        mask = Mod4Mask;
+    } else if (!strcmp(mod, "mod3")) {
+        mask = Mod3Mask;
+    } else if (!strcmp(mod, "mod2")) {
+        mask = Mod2Mask;
+    } else if (!strcmp(mod, "mod1")) {
+        mask = Mod1Mask;
+    } else {
+        mask = 0;
+    }
+
+    lowbgcolor = iniparser_getstring(ini, "urgency_low:background", lowbgcolor);
+    lowfgcolor = iniparser_getstring(ini, "urgency_low:foreground", lowfgcolor);
+    timeouts[LOW] = iniparser_getint(ini, "urgency_low:timeout", timeouts[LOW]);
+    normbgcolor = iniparser_getstring(ini, "urgency_normal:background", normbgcolor);
+    normfgcolor = iniparser_getstring(ini, "urgency_normal:foreground", normfgcolor);
+    timeouts[NORM] = iniparser_getint(ini, "urgency_normal:timeout", timeouts[NORM]);
+    critbgcolor = iniparser_getstring(ini, "urgency_critical:background", critbgcolor);
+    critfgcolor = iniparser_getstring(ini, "urgency_critical:foreground", critfgcolor);
+    timeouts[CRIT] = iniparser_getint(ini, "urgency_critical:timeout", timeouts[CRIT]);
+
+    /* parse rules */
+    nsec = iniparser_getnsec(ini);
+
+    /* init last_rule */
+    last_rule = rules;
+    while (last_rule && last_rule->next) {
+        last_rule = last_rule->next;
+    }
+
+    for (i = 0; i < nsec; i++) {
+        secname = iniparser_getsecname(ini, i);
+
+        /* every section not handled above is considered a rule */
+        if (strcmp(secname, "global") == 0
+         || strcmp(secname, "urgency_low") == 0
+         || strcmp(secname, "urgency_normal") == 0
+         || strcmp(secname, "urgency_critical") == 0) {
+            continue;
+        }
+
+        fprintf(stderr, "adding rule %s\n", secname);
+
+        new_rule = initrule();
+
+        new_rule->name = secname;
+        key = create_iniparser_key(secname, "appname");
+        new_rule->appname = iniparser_getstring(ini, key, NULL);
+        free(key);
+        key = create_iniparser_key(secname, "summary");
+        new_rule->summary= iniparser_getstring(ini, key, NULL);
+        free(key);
+        key = create_iniparser_key(secname, "body");
+        new_rule->body= iniparser_getstring(ini, key, NULL);
+        free(key);
+        key = create_iniparser_key(secname, "icon");
+        new_rule->icon= iniparser_getstring(ini, key, NULL);
+        free(key);
+        key = create_iniparser_key(secname, "timeout");
+        new_rule->timeout= iniparser_getint(ini, key, -1);
+        free(key);
+
+        key = create_iniparser_key(secname, "urgency");
+        urg = iniparser_getstring(ini, key, NULL);
+        free(key);
+        if (urg == NULL) {
+            new_rule->urgency = -1;
+        } else if (!strcmp(urg, "low")) {
+            new_rule->urgency = LOW;
+        } else if (!strcmp(urg, "normal")) {
+            new_rule->urgency = NORM;
+        } else if (!strcmp(urg, "critical")) {
+            new_rule->urgency = CRIT;
+        } else {
+            fprintf(stderr, "unknown urgency: %s, ignoring\n", urg);
+        }
+
+        key = create_iniparser_key(secname, "foreground");
+        new_rule->fg= iniparser_getstring(ini, key, NULL);
+        free(key);
+        key = create_iniparser_key(secname, "background");
+        new_rule->bg= iniparser_getstring(ini, key, NULL);
+        free(key);
+        key = create_iniparser_key(secname, "format");
+        new_rule->format= iniparser_getstring(ini, key, NULL);
+        free(key);
+
+        if (last_rule == NULL) {
+            last_rule = new_rule;
+            rules = last_rule;
+        } else {
+            last_rule->next = new_rule;
+            last_rule = last_rule->next;
+        }
+    }
+
+    print_rules();
+
+}
+
+
 
 int
 main(int argc, char *argv[]) {
@@ -756,9 +954,16 @@ main(int argc, char *argv[]) {
     geometry.mask = XParseGeometry(geom,
             &geometry.x, &geometry.y,
             &geometry.w, &geometry.h);
-    key = key_string ? XStringToKeysym(key_string) : NoSymbol;
 
+    /* FIXME: we need to parse the cmdline to get the -config option
+     * in order to read the config file. After reading the config file
+     * we have to parse the cmdline again, to override the OPTIONS
+     * read from the config file.
+     */
     parse_cmdline(argc, argv);
+    parse_dunstrc();
+    parse_cmdline(argc, argv);
+    key = key_string ? XStringToKeysym(key_string) : NoSymbol;
 
     initdbus();
     initfont(dc, font);
@@ -772,6 +977,6 @@ main(int argc, char *argv[]) {
 
 void
 usage(int exit_status) {
-    fputs("usage: dunst [-h/--help] [-v] [-geometry geom] [-fn font] [-format fmt]\n[-nb color] [-nf color] [-lb color] [-lf color] [-cb color] [ -cf color]\n[-to secs] [-lto secs] [-cto secs] [-nto secs] [-key key] [-mod modifier] [-mon n]\n", stderr);
+    fputs("usage: dunst [-h/--help] [-v] [-geometry geom] [-fn font] [-format fmt]\n[-nb color] [-nf color] [-lb color] [-lf color] [-cb color] [ -cf color]\n[-to secs] [-lto secs] [-cto secs] [-nto secs] [-key key] [-mod modifier] [-mon n] [-config dunstrc]\n", stderr);
     exit(exit_status);
 }
