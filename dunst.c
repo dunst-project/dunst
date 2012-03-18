@@ -37,6 +37,8 @@ typedef struct _screen_info {
 
 
 /* global variables */
+
+rule_t *rules = NULL;
 /* index of colors fit to urgency level */
 static unsigned long colors[3][ColLast];
 static Atom utf8;
@@ -68,6 +70,7 @@ void free_msgqueue_t(msg_queue_t *elem);
 void handle_mouse_click(XEvent ev);
 void handleXEvents(void);
 void initmsg(msg_queue_t *msg);
+rule_t *initrule(void);
 char *string_replace(const char *needle, const char *replacement, char *haystack);
 void run(void);
 void setup(void);
@@ -116,18 +119,20 @@ add(msg_queue_t *queue, msg_queue_t *new) {
 
 void
 apply_rules(msg_queue_t *msg) {
-    int i;
-    for(i = 0; i < LENGTH(rules); i++) {
-        if((!rules[i].appname || !fnmatch(rules[i].appname, msg->appname, 0))
-        && (!rules[i].summary || !fnmatch(rules[i].summary, msg->summary, 0))
-        && (!rules[i].body || !fnmatch(rules[i].body, msg->body, 0))
-        && (!rules[i].icon || !fnmatch(rules[i].icon, msg->icon, 0))) {
-            msg->timeout = rules[i].timeout != -1 ? rules[i].timeout : msg->timeout;
-            msg->urgency = rules[i].urgency != -1 ? rules[i].urgency : msg->urgency;
-            msg->color_strings[ColFG] = rules[i].fg ? rules[i].fg : msg->color_strings[ColFG];
-            msg->color_strings[ColBG] = rules[i].bg ? rules[i].bg : msg->color_strings[ColBG];
-            msg->format = rules[i].format ? rules[i].format : msg->format;
+    rule_t *cur = rules;
+    while(cur != NULL) {
+        if((!cur->appname || !fnmatch(cur->appname, msg->appname, 0))
+        && (!cur->summary || !fnmatch(cur->summary, msg->summary, 0))
+        && (!cur->body || !fnmatch(cur->body, msg->body, 0))
+        && (!cur->icon || !fnmatch(cur->icon, msg->icon, 0))) {
+            msg->timeout = cur->timeout != -1 ? cur->timeout : msg->timeout;
+            msg->urgency = cur->urgency != -1 ? cur->urgency : msg->urgency;
+            msg->color_strings[ColFG] = cur->fg ? cur->fg : msg->color_strings[ColFG];
+            msg->color_strings[ColBG] = cur->bg ? cur->bg : msg->color_strings[ColBG];
+            msg->format = cur->format ? cur->format : msg->format;
         }
+
+        cur = cur->next;
     }
 }
 
@@ -481,6 +486,23 @@ initmsg(msg_queue_t *msg) {
     dunst_printf(INFO, "{\n  appname: %s\n  summary: %s\n  body: %s\n  icon: %s\n  urgency: %d\n  timeout: %d\n}",
             msg->appname, msg->summary, msg->body, msg->icon, msg->urgency, msg->timeout);
 
+}
+
+rule_t *
+initrule(void) {
+    rule_t *r = malloc(sizeof(rule_t));
+    r->appname = NULL;
+    r->summary = NULL;
+    r->body = NULL;
+    r->icon = NULL;
+    r->timeout = -1;
+    r->urgency = -1;
+    r->fg = NULL;
+    r->bg = NULL;
+    r->format = NULL;
+    r->next = NULL;
+
+    return r;
 }
 
 char *

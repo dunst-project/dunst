@@ -36,19 +36,4 @@ KeySym mask = 0;
  * 3 -> print everything above + debug info
  */
 int verbosity = 0;
-
-/* You can use shell-like wildcards to match <appname> <summary> <body> and <icon>. */
-const rule_t rules[] = {
-    /* appname,       summary,         body,  icon,  timeout,  urgency,  fg,    bg, format */
-    { NULL,           NULL,            NULL,  NULL,  -1,       -1,       NULL,  NULL, NULL },
-    /* { "notify-send",  NULL,            NULL,  NULL,  -1,       -1,       NULL,  NULL, "%s %b" }, */
-    /* { "Pidgin",       NULL,            NULL,  NULL,  -1,       -1,       NULL,  NULL, "%s %b" }, */
-    /* { "Pidgin",       "*signed on*",   NULL,  NULL,  -1,       LOW,      NULL,  NULL, "%s %b" }, */
-    /* { "Pidgin",       "*signed off*",  NULL,  NULL,  -1,       LOW,      NULL,  NULL, "%s %b" }, */
-    /* { "Pidgin",       "*says*",        NULL,  NULL,  -1,       CRIT,     NULL,  NULL, "%s %b" }, */
-    /* { "Pidgin",       "twitter.com*",  NULL,  NULL,  -1,       NORM,     NULL,  NULL, "%s %b" }, */
-};
-
-
-
 #endif

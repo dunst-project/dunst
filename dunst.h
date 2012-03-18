@@ -20,6 +20,8 @@ typedef struct _rule_t {
     char *fg;
     char *bg;
     const char *format;
+
+    struct _rule_t *next;
 } rule_t;
 
 typedef struct _msg_queue_t {
