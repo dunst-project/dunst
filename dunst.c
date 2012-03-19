@@ -16,7 +16,6 @@
 
 #include <iniparser.h>
 
-#include "config.h"
 #include "dunst.h"
 #include "draw.h"
 
@@ -39,6 +38,23 @@ typedef struct _screen_info {
 
 
 /* global variables */
+char *font = "-*-terminus-medium-r-*-*-16-*-*-*-*-*-*-*";
+char *normbgcolor = "#1793D1";
+char *normfgcolor = "#DDDDDD";
+char *critbgcolor = "#ffaaaa";
+char *critfgcolor = "#000000";
+char *lowbgcolor =  "#aaaaff";
+char *lowfgcolor = "#000000";
+char *format = "%s %b"; /* default format */
+int timeouts[] = { 10, 10, 0 }; /* low, normal, critical */
+char *geom = "0x0"; /* geometry */
+int sort = True; /* sort messages by urgency */
+int indicate_hidden = True; /* show count of hidden messages */
+char *key_string = NULL;
+KeySym mask = 0;
+
+int verbosity = 0;
+
 
 rule_t *rules = NULL;
 /* index of colors fit to urgency level */
