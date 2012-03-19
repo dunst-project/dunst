@@ -13,6 +13,7 @@
 #ifdef XINERAMA
 #include <X11/extensions/Xinerama.h>
 #endif
+#include <X11/extensions/scrnsaver.h>
 
 #include <iniparser.h>
 
@@ -52,6 +53,7 @@ int sort = True; /* sort messages by urgency */
 int indicate_hidden = True; /* show count of hidden messages */
 char *key_string = NULL;
 KeySym mask = 0;
+int idle_threshold = 0;
 
 int verbosity = 0;
 
@@ -68,6 +70,7 @@ static int visible = False;
 static KeySym key = NoSymbol;
 static screen_info scr;
 static dimension_t geometry;
+static XScreenSaverInfo *screensaver_info;
 static int font_h;
 static char *config_file;
 
@@ -90,6 +93,7 @@ void handle_mouse_click(XEvent ev);
 void handleXEvents(void);
 void initmsg(msg_queue_t *msg);
 rule_t *initrule(void);
+int is_idle(void);
 char *string_replace(const char *needle, const char *replacement, char *haystack);
 void run(void);
 void setup(void);
@@ -232,6 +236,11 @@ check_timeouts(void) {
 
     cur = msgqueue;
     while(cur != NULL) {
+        if(is_idle()) {
+            cur->start = now;
+            cur = cur->next;
+            continue;
+        }
         if(cur->start == 0 || cur->timeout == 0) {
             cur = cur->next;
             continue;
@@ -552,6 +561,17 @@ initrule(void) {
     r->next = NULL;
 
     return r;
+}
+
+int
+is_idle(void)
+{
+    XScreenSaverQueryInfo(dc->dpy, DefaultRootWindow(dc->dpy),
+            screensaver_info);
+    if(idle_threshold == 0) {
+        return False;
+    }
+    return screensaver_info->idle / 1000 > idle_threshold;
 }
 
 char *
@@ -980,6 +1000,7 @@ main(int argc, char *argv[]) {
     parse_dunstrc();
     parse_cmdline(argc, argv);
     key = key_string ? XStringToKeysym(key_string) : NoSymbol;
+    screensaver_info = XScreenSaverAllocInfo();
 
     initdbus();
     initfont(dc, font);
