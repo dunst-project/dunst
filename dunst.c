@@ -866,6 +866,7 @@ parse_dunstrc(void) {
     format = iniparser_getstring(ini, "global:format", format);
     sort = iniparser_getboolean(ini, "global:sort", sort);
     indicate_hidden = iniparser_getboolean(ini, "global:indicate_hidden", indicate_hidden);
+    idle_threshold = iniparser_getint(ini, "global:idle_threshold", idle_threshold);
     key_string = iniparser_getstring(ini, "global:key", key_string);
 
     geom = iniparser_getstring(ini, "global:geometry", geom);
