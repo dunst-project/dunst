@@ -105,7 +105,7 @@ void usage(int exit_status);
 
 void
 print_rule(rule_t *r) {
-    fprintf(stderr, "%s %s %s %s %s %d %d %s %s %s\n",
+    dunst_printf(DEBUG, "%s %s %s %s %s %d %d %s %s %s\n",
             r->name,
             r->appname,
             r->summary,
@@ -121,8 +121,9 @@ print_rule(rule_t *r) {
 void
 print_rules(void) {
     rule_t *cur = rules;
+    dunst_printf(DEBUG, "current rules:\n");
     if (cur == NULL) {
-        fprintf(stderr, "no rules present\n");
+        dunst_printf(DEBUG, "no rules present\n");
         return;
     }
     while(cur->next) {
@@ -176,7 +177,7 @@ apply_rules(msg_queue_t *msg) {
         && (!cur->summary || !fnmatch(cur->summary, msg->summary, 0))
         && (!cur->body || !fnmatch(cur->body, msg->body, 0))
         && (!cur->icon || !fnmatch(cur->icon, msg->icon, 0))) {
-            fprintf(stderr, "matched rule: %s\n", cur->name);
+            dunst_printf(DEBUG, "matched rule: %s\n", cur->name);
             msg->timeout = cur->timeout != -1 ? cur->timeout : msg->timeout;
             msg->urgency = cur->urgency != -1 ? cur->urgency : msg->urgency;
             msg->color_strings[ColFG] = cur->fg ? cur->fg : msg->color_strings[ColFG];
@@ -849,6 +850,8 @@ parse_dunstrc(void) {
 
     dictionary *ini;
 
+    dunst_printf(DEBUG, "Begin parsing of dunstrc\n");
+
     if (config_file == NULL) {
         config_file = malloc(sizeof(char) * BUFSIZ);
         memset(config_file, '\0', BUFSIZ);
@@ -857,9 +860,10 @@ parse_dunstrc(void) {
         strcat(config_file, "dunstrc");
     }
 
+    dunst_printf(DEBUG, "Reading %s\n", config_file);
     ini = iniparser_load(config_file);
     if (ini == NULL) {
-        puts("no dunstrc found -> skipping");
+        puts("no dunstrc found -> skipping\n");
     }
 
     font = iniparser_getstring(ini, "global:font", font);
@@ -922,7 +926,7 @@ parse_dunstrc(void) {
             continue;
         }
 
-        fprintf(stderr, "adding rule %s\n", secname);
+        dunst_printf(DEBUG, "adding rule %s\n", secname);
 
         new_rule = initrule();
 
@@ -975,6 +979,7 @@ parse_dunstrc(void) {
             last_rule->next = new_rule;
             last_rule = last_rule->next;
         }
+        print_rule(last_rule);
     }
 
     print_rules();
