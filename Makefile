@@ -22,7 +22,7 @@ ${OBJ}: config.mk
 
 dunst: draw.o dunst.o
 	@echo CC -o $@
-	@${CC} ${CFLAGS} -o $@ dunst.o draw.o ${LDFLAGS} 
+	@${CC} ${CFLAGS} -o $@ dunst.o draw.o ${LDFLAGS}
 
 clean:
 	@echo cleaning
@@ -43,6 +43,8 @@ install: all
 	@mkdir -p ${DESTDIR}${MANPREFIX}/man1
 	@cp -f dunst.1 ${DESTDIR}${MANPREFIX}/man1/
 	@chmod 644 ${DESTDIR}${MANPREFIX}/man1/dunst.1
+	@mkdir -p "${DESTDIR}${PREFIX}/share/dunst"
+	@ cp -f dunstrc ${DESTDIR}${PREFIX}/share/dunst
 
 uninstall:
 	@echo removing executables from ${DESTDIR}${PREFIX}/bin
