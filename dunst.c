@@ -63,7 +63,7 @@ int verbosity = 0;
 rule_t *rules = NULL;
 /* index of colors fit to urgency level */
 static ColorSet *colors[3];
-static const char *color_strings[3][3];
+static const char *color_strings[2][3];
 static Atom utf8;
 static DC *dc;
 static Window win;
@@ -1015,7 +1015,7 @@ main(int argc, char *argv[]) {
 
     color_strings[ColFG][LOW] = lowfgcolor;
     color_strings[ColFG][NORM] = normfgcolor;
-    color_strings[ColFG][LOW] = lowfgcolor;
+    color_strings[ColFG][CRIT] = critfgcolor;
 
     color_strings[ColBG][LOW] = lowbgcolor;
     color_strings[ColBG][NORM] = normbgcolor;
