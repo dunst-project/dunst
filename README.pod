@@ -4,7 +4,7 @@ dunst - dmenu-ish universal notification system
 
 =head1 SYNOPSIS
 
-dunst [-geometry geom] [-fn font] [-nf/nb/lf/lb/cf/cb color] 
+dunst [-geometry geom] [-fn font] [-nf/nb/lf/lb/cf/cb color]
 [-to/nto/lto/cto secs] [-format fmt] [-key key] [-mod mod] [-mon n] [-v]
 
 =head1 DESCRIPTION
@@ -17,7 +17,7 @@ fashion similar to dmenu.
 
 =over 4
 
-=item B<-h/--help> 
+=item B<-h/--help>
 
 display help message.
 
@@ -84,11 +84,12 @@ see also EXAMPLES show the notification on monitor n.
 
 Increase verbosity. Can be used multiple times.
 
-=back
 
 =item B<-config file>
 
 use alternative config file.
+
+=back
 
 =head1 FORMAT
 
@@ -126,6 +127,12 @@ In order to do that you have to add a hint via the -h option.
 =item notify-send -h string:bgcolor:#4444ff -h string:fgcolor:#ff4444
 
 =back
+
+=head1 CONFIGURATION
+
+An example configuration file is included (usually /usr/share/dunst/dunstrc).
+To change the configuration, copy this file to ~/.config/dunstrc and edit it
+accordingly.
 
 =head1 AUTHOR
 
