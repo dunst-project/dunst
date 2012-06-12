@@ -45,7 +45,6 @@ drawtextn(DC *dc, const char *text, size_t n, ColorSet *col) {
 	if(dc->font.xft_font) {
 		if (!dc->xftdraw)
 			eprintf("error, xft drawable does not exist");
-        printf("XftDrawStringUtf8\n");
 		XftDrawStringUtf8(dc->xftdraw, &col->FG_xft,
 			dc->font.xft_font, x, y, (unsigned char*)text, n);
 	} else if(dc->font.set) {
