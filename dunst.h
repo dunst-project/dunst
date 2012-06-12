@@ -7,6 +7,10 @@
 #define NORM 1
 #define CRIT 2
 
+#define ColLast 2
+#define ColFG 1
+#define ColBG 0
+
 typedef struct _rule_t {
     char *name;
     /* filters */
@@ -36,8 +40,8 @@ typedef struct _msg_queue_t {
     time_t start;
     int timeout;
     int urgency;
-    unsigned long colors[ColLast];
-    char *color_strings[ColLast];
+    ColorSet *colors;
+    char *color_strings[2];
 } msg_queue_t;
 
 typedef struct _dimension_t {

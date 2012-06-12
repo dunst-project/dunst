@@ -27,6 +27,8 @@
 #define BUTTONMASK              (ButtonPressMask|ButtonReleaseMask)
 #define FONT_HEIGHT_BORDER 2
 
+#define DEFFONT "Monospace-11"
+
 #define MSG 1
 #define INFO 2
 #define DEBUG 3
@@ -60,7 +62,8 @@ int verbosity = 0;
 
 rule_t *rules = NULL;
 /* index of colors fit to urgency level */
-static unsigned long colors[3][ColLast];
+static ColorSet *colors[3];
+static const char *color_strings[3][3];
 static Atom utf8;
 static DC *dc;
 static Window win;
@@ -358,13 +361,13 @@ drawmsg(void) {
 
     resizedc(dc, width, height*font_h);
     XResizeWindow(dc->dpy, win, width, height*font_h);
-    drawrect(dc, 0, 0, width, height*font_h, True, BG(dc, colors[NORM]));
+    drawrect(dc, 0, 0, width, height*font_h, True, colors[NORM]->BG);
 
     for(i = 0; i < drawn_msg_count; i++) {
         if(cur_msg->start == 0)
             cur_msg->start = now;
 
-        drawrect(dc, 0, dc->y, width, font_h, True, BG(dc, cur_msg->colors));
+        drawrect(dc, 0, dc->y, width, font_h, True, cur_msg->colors->BG);
         drawtext(dc, cur_msg->msg, cur_msg->colors);
 
         dc->y += font_h;
@@ -373,7 +376,8 @@ drawmsg(void) {
     }
 
     if(hidden_count) {
-        drawrect(dc, 0, dc->y, width, font_h, True, BG(dc, colors[NORM]));
+        drawrect(dc, 0, dc->y, width, font_h, True, colors[NORM]->BG);
+
         drawtext(dc, hidden, colors[hidden_color_idx]);
         dc->y += font_h;
     }
@@ -506,21 +510,10 @@ handleXEvents(void) {
     }
 }
 
-static void
-_set_color(msg_queue_t *msg, int color_idx) {
-    Colormap cmap = DefaultColormap(dc->dpy, DefaultScreen(dc->dpy));
-    XColor color;
-    if(msg->color_strings[color_idx] == NULL
-       || !XAllocNamedColor(dc->dpy, cmap,
-           msg->color_strings[color_idx], &color, &color)) {
-        msg->colors[color_idx] = colors[msg->urgency][color_idx];
-    } else {
-        msg->colors[color_idx] = color.pixel;
-    }
-}
-
 void
 initmsg(msg_queue_t *msg) {
+    const char *fg = NULL;
+    const char *bg = NULL;
     msg->format = format;
     apply_rules(msg);
 
@@ -534,8 +527,21 @@ initmsg(msg_queue_t *msg) {
     /* urgency > CRIT -> array out of range */
     msg->urgency = msg->urgency > CRIT ? CRIT : msg->urgency;
 
-    _set_color(msg, ColFG);
-    _set_color(msg, ColBG);
+
+
+    if (msg->color_strings[ColFG]) {
+        fg = msg->color_strings[ColFG];
+    } else {
+        fg = color_strings[ColFG][msg->urgency];
+    }
+
+    if (msg->color_strings[ColBG]) {
+        bg = msg->color_strings[ColBG];
+    } else {
+        bg = color_strings[ColBG][msg->urgency];
+    }
+
+    msg->colors = initcolor(dc, fg, bg);
 
     msg->timeout = msg->timeout == -1 ? timeouts[msg->urgency] : msg->timeout;
     msg->start = 0;
@@ -629,13 +635,6 @@ setup(void) {
         scr.scr = DefaultScreen(dc->dpy);
     }
     root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
-
-    colors[0][ColBG] = getcolor(dc, lowbgcolor);
-    colors[0][ColFG] = getcolor(dc, lowfgcolor);
-    colors[1][ColBG] = getcolor(dc, normbgcolor);
-    colors[1][ColFG] = getcolor(dc, normfgcolor);
-    colors[2][ColBG] = getcolor(dc, critbgcolor);
-    colors[2][ColFG] = getcolor(dc, critfgcolor);
 
     utf8 = XInternAtom(dc->dpy, "UTF8_STRING", False);
 
@@ -1010,6 +1009,17 @@ main(int argc, char *argv[]) {
 
     initdbus();
     initfont(dc, font);
+    colors[LOW] = initcolor(dc, lowfgcolor, lowbgcolor);
+    colors[NORM] = initcolor(dc, normfgcolor, normbgcolor);
+    colors[CRIT] = initcolor(dc, critfgcolor, critbgcolor);
+
+    color_strings[ColFG][LOW] = lowfgcolor;
+    color_strings[ColFG][NORM] = normfgcolor;
+    color_strings[ColFG][LOW] = lowfgcolor;
+
+    color_strings[ColBG][LOW] = lowbgcolor;
+    color_strings[ColBG][NORM] = normbgcolor;
+    color_strings[ColBG][CRIT] = critbgcolor;
     setup();
     if(msgqueue != NULL) {
         show_win();
