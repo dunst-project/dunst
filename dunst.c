@@ -451,17 +451,11 @@ char
 
 void
 free_msgqueue_t(msg_queue_t *elem) {
-    int i;
     free(elem->appname);
     free(elem->summary);
     free(elem->body);
     free(elem->icon);
     free(elem->msg);
-    for(i = 0; i < ColLast; i++) {
-        if(elem->color_strings[i] != NULL) {
-            free(elem->color_strings[i]);
-        }
-    }
     free(elem);
 }
 
