@@ -706,8 +706,8 @@ parse_cmdline(int argc, char *argv[]) {
         {"format", required_argument, NULL, 'f'},
         {"key", required_argument, NULL, 'k'},
         {"geometry", required_argument, NULL, 'g'},
-        {"mod", required_argument, NULL, 'M'},
         {"config", required_argument, NULL, 'r'},
+        {"mod", required_argument, NULL, 'M'},
         {"ns", no_argument, NULL, 'x'},
         {0,0,0,0}
     };
@@ -799,14 +799,15 @@ parse_cmdline(int argc, char *argv[]) {
             case 's':
                 sort = True;
                 break;
+            case 'r':
+                /* this option is parsed elsewhere. This is just to supress
+                 * error message */
+                break;
             case 'x':
                 sort = False;
                 break;
             case 'v':
                 verbosity++;
-                break;
-            case 'r':
-                config_file = optarg;
                 break;
             default:
                 usage(EXIT_FAILURE);
@@ -990,6 +991,19 @@ parse_dunstrc(void) {
 }
 
 
+void
+parse_cmdline_for_config_file(int argc, char *argv[]) {
+    int i;
+    for (i = 0; i < argc; i++) {
+        if(strstr(argv[i], "-config") != 0) {
+            if (i + 1 == argc) {
+                printf("Invalid commandline: -config needs argument\n");
+            }
+            config_file = argv[++i];
+            return;
+        }
+    }
+}
 
 int
 main(int argc, char *argv[]) {
@@ -1000,12 +1014,7 @@ main(int argc, char *argv[]) {
             &geometry.x, &geometry.y,
             &geometry.w, &geometry.h);
 
-    /* FIXME: we need to parse the cmdline to get the -config option
-     * in order to read the config file. After reading the config file
-     * we have to parse the cmdline again, to override the OPTIONS
-     * read from the config file.
-     */
-    parse_cmdline(argc, argv);
+    parse_cmdline_for_config_file(argc, argv);
     parse_dunstrc();
     parse_cmdline(argc, argv);
     key = key_string ? XStringToKeysym(key_string) : NoSymbol;
