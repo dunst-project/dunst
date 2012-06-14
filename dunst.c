@@ -837,6 +837,7 @@ parse_dunstrc(void) {
     rule_t *last_rule;
     rule_t *new_rule;
     char *key;
+    char *config_path = NULL;
 
     int nsec = 0;
     int i;
@@ -848,7 +849,16 @@ parse_dunstrc(void) {
     if (config_file == NULL) {
         config_file = malloc(sizeof(char) * BUFSIZ);
         memset(config_file, '\0', BUFSIZ);
-        strcat(config_file, getenv("XDG_CONFIG_HOME"));
+
+        config_path = getenv("XDG_CONFIG_HOME");
+
+        if (!config_path) {
+            puts("no dunstrc found -> skipping\n");
+            return;
+        }
+
+
+        strcat(config_file, config_path);
         strcat(config_file, "/");
         strcat(config_file, "dunstrc");
     }
