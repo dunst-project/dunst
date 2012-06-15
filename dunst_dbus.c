@@ -2,7 +2,7 @@
 
 #include "dunst.h"
 
-#define DBUS_POLL_TIMEOUT 1000
+#define DBUS_POLL_TIMEOUT 200
 
 DBusError dbus_err;
 DBusConnection *dbus_conn;

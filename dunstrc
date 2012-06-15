@@ -16,8 +16,11 @@
     indicate_hidden = yes
 
     # keybindings to remove notification
-    key = space
     modifier = ctrl
+    key = space
+    # key to redisplay last message(s)
+    history_key = grave
+
 
     # the geometry of the window
     # geometry [{width}]x{height}][+/-{x}+/-{y}]
