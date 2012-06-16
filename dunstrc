@@ -19,6 +19,8 @@
     # available modifiers are 'ctrl', 'mod1' (the alt-key), 'mod2', 'mod3'
     # and 'mod4' (windows-key)
     modifier = ctrl
+
+    # use xev to find the names for keys
     key = space
     # key to redisplay last message(s)
     history_key = grave
