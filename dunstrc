@@ -16,6 +16,8 @@
     indicate_hidden = yes
 
     # keybindings to remove notification
+    # available modifiers are 'ctrl', 'mod1' (the alt-key), 'mod2', 'mod3'
+    # and 'mod4' (windows-key)
     modifier = ctrl
     key = space
     # key to redisplay last message(s)
