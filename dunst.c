@@ -102,6 +102,7 @@ void initmsg(msg_queue_t *msg);
 rule_t *initrule(void);
 int is_idle(void);
 char *string_replace(const char *needle, const char *replacement, char *haystack);
+char *strtrim(char *str);
 void run(void);
 void setup(void);
 void show_win(void);
@@ -558,6 +559,7 @@ initmsg(msg_queue_t *msg) {
     msg->msg = string_replace("%b", msg->body, msg->msg);
 
     msg->msg = fix_markup(msg->msg);
+    msg->msg = strtrim(msg->msg);
     /* urgency > CRIT -> array out of range */
     msg->urgency = msg->urgency > CRIT ? CRIT : msg->urgency;
 
@@ -639,6 +641,21 @@ string_replace(const char *needle, const char *replacement, char *haystack) {
     } else {
         return tmp;
     }
+}
+
+char *
+strtrim(char *str) {
+    char *end;
+    while(isspace(*str)) str++;
+
+    end = str + strlen(str) - 1;
+    while(isspace(*end)) {
+        *end = '\0';
+        end--;
+    }
+
+    return str;
+
 }
 
 void
