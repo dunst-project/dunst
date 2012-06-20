@@ -3,7 +3,7 @@
 
 include config.mk
 
-SRC = draw.c dunst.c
+SRC = draw.c dunst.c ini.c
 OBJ = ${SRC:.c=.o}
 
 all: doc options dunst
@@ -20,9 +20,9 @@ options:
 
 ${OBJ}: config.mk
 
-dunst: draw.o dunst.o
+dunst: draw.o dunst.o ini.o
 	@echo CC -o $@
-	@${CC} ${CFLAGS} -o $@ dunst.o draw.o ${LDFLAGS}
+	@${CC} ${CFLAGS} -o $@ dunst.o draw.o ini.o ${LDFLAGS}
 
 clean:
 	@echo cleaning
