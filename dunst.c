@@ -891,15 +891,15 @@ dunst_ini_get_boolean(const char *value) {
         case 't':
         case 'T':
         case '1':
-	    return True;
+        return True;
         case 'n':
         case 'N':
         case 'f':
         case 'F':
         case '0':
-	    return False;
+        return False;
         default:
-	    return False;
+        return False;
    }
 }
 
@@ -909,11 +909,11 @@ dunst_rules_find_or_create(const char *section) {
     rule_t *current_rule = rules, *last_rule;
 
     while (current_rule && strcmp(current_rule->name, section) != 0) {
-	current_rule = current_rule->next;
+    current_rule = current_rule->next;
     }
 
     if (current_rule) {
-	return current_rule;
+    return current_rule;
     }
 
     dunst_printf(DEBUG, "adding rule %s\n", section);
@@ -923,14 +923,14 @@ dunst_rules_find_or_create(const char *section) {
 
     last_rule = rules;
     while (last_rule && last_rule->next) {
-	last_rule = last_rule->next;
+    last_rule = last_rule->next;
     }
 
     if (last_rule == NULL) {
-	last_rule = current_rule;
-	rules = last_rule;
+    last_rule = current_rule;
+    rules = last_rule;
     } else {
-	last_rule->next = current_rule;
+    last_rule->next = current_rule;
     }
 
     return current_rule;
@@ -942,110 +942,110 @@ dunst_ini_get_string(const char *value) {
     char *s;
 
     if (value[0] == '"')
-	s = strdup(value + 1);
+    s = strdup(value + 1);
     else
-	s = strdup(value);
+    s = strdup(value);
 
     if (s[strlen(s) - 1] == '"')
-	s[strlen(s) - 1] = '\0';
+    s[strlen(s) - 1] = '\0';
 
     return s;
 }
 
 static int
 dunst_ini_handle(void *user_data, const char *section,
-		 const char *name, const char *value) {
+         const char *name, const char *value) {
 
     if (strcmp(section, "global") == 0) {
-	if (strcmp(name, "font") == 0)
-	    font = dunst_ini_get_string(value);
-	else if (strcmp(name, "format") == 0)
-	    format = dunst_ini_get_string(value);
-	else if (strcmp(name, "sort") == 0)
-	    sort = dunst_ini_get_boolean(value);
-	else if (strcmp(name, "indicate_hidden") == 0)
-	    indicate_hidden = dunst_ini_get_boolean(value);
-	else if (strcmp(name, "key") == 0)
-	    key_string = dunst_ini_get_string(value);
-	else if (strcmp(name, "history_key") == 0)
-	    history_key_string = dunst_ini_get_string(value);
-	else if (strcmp(name, "geometry") == 0) {
-	    geom = dunst_ini_get_string(value);
-	    geometry.mask = XParseGeometry(geom,
-					   &geometry.x, &geometry.y,
-					   &geometry.w, &geometry.h);
-	} else if (strcmp(name, "modifier") == 0) {
-	    char *mod = dunst_ini_get_string(value);
+    if (strcmp(name, "font") == 0)
+        font = dunst_ini_get_string(value);
+    else if (strcmp(name, "format") == 0)
+        format = dunst_ini_get_string(value);
+    else if (strcmp(name, "sort") == 0)
+        sort = dunst_ini_get_boolean(value);
+    else if (strcmp(name, "indicate_hidden") == 0)
+        indicate_hidden = dunst_ini_get_boolean(value);
+    else if (strcmp(name, "key") == 0)
+        key_string = dunst_ini_get_string(value);
+    else if (strcmp(name, "history_key") == 0)
+        history_key_string = dunst_ini_get_string(value);
+    else if (strcmp(name, "geometry") == 0) {
+        geom = dunst_ini_get_string(value);
+        geometry.mask = XParseGeometry(geom,
+                       &geometry.x, &geometry.y,
+                       &geometry.w, &geometry.h);
+    } else if (strcmp(name, "modifier") == 0) {
+        char *mod = dunst_ini_get_string(value);
 
-	    if (mod == NULL) {
-		mask = 0;
-	    } else if (!strcmp(mod, "ctrl")) {
-		mask = ControlMask;
-	    } else if (!strcmp(mod, "mod4")) {
-		mask = Mod4Mask;
-	    } else if (!strcmp(mod, "mod3")) {
-		mask = Mod3Mask;
-	    } else if (!strcmp(mod, "mod2")) {
-		mask = Mod2Mask;
-	    } else if (!strcmp(mod, "mod1")) {
-		mask = Mod1Mask;
-	    } else {
-		mask = 0;
-	    }
-	    free (mod);
-	}
+        if (mod == NULL) {
+        mask = 0;
+        } else if (!strcmp(mod, "ctrl")) {
+        mask = ControlMask;
+        } else if (!strcmp(mod, "mod4")) {
+        mask = Mod4Mask;
+        } else if (!strcmp(mod, "mod3")) {
+        mask = Mod3Mask;
+        } else if (!strcmp(mod, "mod2")) {
+        mask = Mod2Mask;
+        } else if (!strcmp(mod, "mod1")) {
+        mask = Mod1Mask;
+        } else {
+        mask = 0;
+        }
+        free (mod);
+    }
     } else if (strcmp(section, "urgency_low") == 0) {
-	if (strcmp(name, "background") == 0)
-	    lowbgcolor = dunst_ini_get_string(value);
-	else if (strcmp(name, "foreground") == 0)
-	    lowfgcolor = dunst_ini_get_string(value);
-	else if (strcmp(name, "timeout") == 0)
-	    timeouts[LOW] = atoi(value);
+    if (strcmp(name, "background") == 0)
+        lowbgcolor = dunst_ini_get_string(value);
+    else if (strcmp(name, "foreground") == 0)
+        lowfgcolor = dunst_ini_get_string(value);
+    else if (strcmp(name, "timeout") == 0)
+        timeouts[LOW] = atoi(value);
     } else if (strcmp(section, "urgency_normal") == 0) {
-	if (strcmp(name, "background") == 0)
-	    normbgcolor = dunst_ini_get_string(value);
-	else if (strcmp(name, "foreground") == 0)
-	    normfgcolor = dunst_ini_get_string(value);
-	else if (strcmp(name, "timeout") == 0)
-	    timeouts[NORM] = atoi(value);
+    if (strcmp(name, "background") == 0)
+        normbgcolor = dunst_ini_get_string(value);
+    else if (strcmp(name, "foreground") == 0)
+        normfgcolor = dunst_ini_get_string(value);
+    else if (strcmp(name, "timeout") == 0)
+        timeouts[NORM] = atoi(value);
     } else if (strcmp(section, "urgency_critical") == 0) {
-	if (strcmp(name, "background") == 0)
-	    critbgcolor = dunst_ini_get_string(value);
-	else if (strcmp(name, "foreground") == 0)
-	    critfgcolor = dunst_ini_get_string(value);
-	else if (strcmp(name, "timeout") == 0)
-	    timeouts[CRIT] = atoi(value);
+    if (strcmp(name, "background") == 0)
+        critbgcolor = dunst_ini_get_string(value);
+    else if (strcmp(name, "foreground") == 0)
+        critfgcolor = dunst_ini_get_string(value);
+    else if (strcmp(name, "timeout") == 0)
+        timeouts[CRIT] = atoi(value);
     } else {
 
-	rule_t *current_rule = dunst_rules_find_or_create(section);
+    rule_t *current_rule = dunst_rules_find_or_create(section);
 
-	if (strcmp(name, "appname") == 0)
-	    current_rule->appname = dunst_ini_get_string(value);
-	else if (strcmp(name, "summary") == 0)
-	    current_rule->summary = dunst_ini_get_string(value);
-	else if (strcmp(name, "body") == 0)
-	    current_rule->body = dunst_ini_get_string(value);
-	else if (strcmp(name, "icon") == 0)
-	    current_rule->icon = dunst_ini_get_string(value);
-	else if (strcmp(name, "timeout") == 0)
-	    current_rule->timeout = atoi(value);
-	else if (strcmp(name, "urgency") == 0) {
-	    const char *urg = value;
+    if (strcmp(name, "appname") == 0)
+        current_rule->appname = dunst_ini_get_string(value);
+    else if (strcmp(name, "summary") == 0)
+        current_rule->summary = dunst_ini_get_string(value);
+    else if (strcmp(name, "body") == 0)
+        current_rule->body = dunst_ini_get_string(value);
+    else if (strcmp(name, "icon") == 0)
+        current_rule->icon = dunst_ini_get_string(value);
+    else if (strcmp(name, "timeout") == 0)
+        current_rule->timeout = atoi(value);
+    else if (strcmp(name, "urgency") == 0) {
+        const char *urg = value;
 
-	    if (strcmp(urg, "low") == 0)
-		current_rule->urgency = LOW;
-	    else if (strcmp(urg, "normal") == 0)
-		current_rule->urgency = NORM;
-	    else if (strcmp(urg, "critical") == 0)
-		current_rule->urgency = CRIT;
-	    else
-		fprintf(stderr, "unknown urgency: %s, ignoring\n", urg);
-	} else if (strcmp(name, "foreground") == 0)
-	    current_rule->fg = dunst_ini_get_string(value);
-	else if (strcmp(name, "background") == 0)
-	    current_rule->bg = dunst_ini_get_string(value);
-	else if (strcmp(name, "format") == 0)
-	    current_rule->format = dunst_ini_get_string(value);
+        if (strcmp(urg, "low") == 0)
+        current_rule->urgency = LOW;
+        else if (strcmp(urg, "normal") == 0)
+        current_rule->urgency = NORM;
+        else if (strcmp(urg, "critical") == 0)
+        current_rule->urgency = CRIT;
+        else
+        fprintf(stderr, "unknown urgency: %s, ignoring\n", urg);
+    } else if (strcmp(name, "foreground") == 0)
+        current_rule->fg = dunst_ini_get_string(value);
+    else if (strcmp(name, "background") == 0)
+        current_rule->bg = dunst_ini_get_string(value);
+    else if (strcmp(name, "format") == 0)
+        current_rule->format = dunst_ini_get_string(value);
     }
 
     return 1;
