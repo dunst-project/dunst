@@ -920,15 +920,6 @@ dunst_rules_find_or_create(const char *section) {
 
     current_rule = initrule();
     current_rule->name = strdup(section);
-    current_rule->appname = NULL;
-    current_rule->summary = NULL;
-    current_rule->body = NULL;
-    current_rule->icon = NULL;
-    current_rule->timeout = -1;
-    current_rule->urgency = -1;
-    current_rule->fg = NULL;
-    current_rule->bg = NULL;
-    current_rule->format = NULL;
 
     last_rule = rules;
     while (last_rule && last_rule->next) {
