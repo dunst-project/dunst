@@ -1,3 +1,5 @@
+/* copyright 2012 Sascha Kruse and contributors (see LICENSE for licensing information) */
+
 #include <dbus/dbus.h>
 
 #include "dunst.h"

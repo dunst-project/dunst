@@ -1,3 +1,5 @@
+/* copyright 2012 Sascha Kruse and contributors (see LICENSE for licensing information) */
+
 #ifndef DUNST_H
 #define DUNST_H
 

@@ -140,12 +140,7 @@ written by Sascha Kruse <knopwob@googlemail.com>
 
 =head1 COPYRIGHT
 
-Parts of the code are taken from dmenu. Especially draw.c and draw.h.
-See LICENSE.dmenu and http://tools.suckless.org/dmenu .
-Some snippets in dunst_dbus.c are taken from twm.
-See http://github.com/sboli/twmn.
-
-Everything else can be considered beerware.
+copyright 2012 Sascha Kruse and contributors (see LICENSE for licensing information)
 
 If you feel that copyrights are violated, please send me an email.
 

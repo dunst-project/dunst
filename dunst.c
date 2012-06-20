@@ -1,3 +1,5 @@
+/* copyright 2012 Sascha Kruse and contributors (see LICENSE for licensing information) */
+
 #define _GNU_SOURCE
 #include <unistd.h>
 #include <time.h>
