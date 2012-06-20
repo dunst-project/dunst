@@ -15,10 +15,9 @@
 #endif
 #include <X11/extensions/scrnsaver.h>
 
-#include <iniparser.h>
-
 #include "dunst.h"
 #include "draw.h"
+#include "ini.h"
 
 #define INRECT(x,y,rx,ry,rw,rh) ((x) >= (rx) && (x) < (rx)+(rw) && (y) >= (ry) && (y) < (ry)+(rh))
 #define LENGTH(X)               (sizeof X / sizeof X[0])
@@ -882,34 +881,189 @@ parse_cmdline(int argc, char *argv[]) {
     }
 }
 
-char *
-create_iniparser_key(char *section, char *key) {
-    char *new_key;
+static int
+dunst_ini_get_boolean(const char *value) {
 
-    new_key = malloc(sizeof(char) * (strlen(section)
-                                   + strlen(key)
-                                   + strlen(":")
-                                   + 1 /* \0 */ ));
+    switch (value[0])
+    {
+        case 'y':
+        case 'Y':
+        case 't':
+        case 'T':
+        case '1':
+	    return True;
+        case 'n':
+        case 'N':
+        case 'f':
+        case 'F':
+        case '0':
+	    return False;
+        default:
+	    return False;
+   }
+}
 
-    sprintf(new_key, "%s:%s", section, key);
-    return new_key;
+static rule_t *
+dunst_rules_find_or_create(const char *section) {
+
+    rule_t *current_rule = rules, *last_rule;
+
+    while (current_rule && strcmp(current_rule->name, section) != 0) {
+	current_rule = current_rule->next;
+    }
+
+    if (current_rule) {
+	return current_rule;
+    }
+
+    dunst_printf(DEBUG, "adding rule %s\n", section);
+
+    current_rule = initrule();
+    current_rule->name = strdup(section);
+    current_rule->appname = NULL;
+    current_rule->summary = NULL;
+    current_rule->body = NULL;
+    current_rule->icon = NULL;
+    current_rule->timeout = -1;
+    current_rule->urgency = -1;
+    current_rule->fg = NULL;
+    current_rule->bg = NULL;
+    current_rule->format = NULL;
+
+    last_rule = rules;
+    while (last_rule && last_rule->next) {
+	last_rule = last_rule->next;
+    }
+
+    if (last_rule == NULL) {
+	last_rule = current_rule;
+	rules = last_rule;
+    } else {
+	last_rule->next = current_rule;
+    }
+
+    return current_rule;
+}
+
+static char *
+dunst_ini_get_string(const char *value) {
+
+    char *s;
+
+    if (value[0] == '"')
+	s = strdup(value + 1);
+    else
+	s = strdup(value);
+
+    if (s[strlen(s) - 1] == '"')
+	s[strlen(s) - 1] = '\0';
+
+    return s;
+}
+
+static int
+dunst_ini_handle(void *user_data, const char *section,
+		 const char *name, const char *value) {
+
+    if (strcmp(section, "global") == 0) {
+	if (strcmp(name, "font") == 0)
+	    font = dunst_ini_get_string(value);
+	else if (strcmp(name, "format") == 0)
+	    format = dunst_ini_get_string(value);
+	else if (strcmp(name, "sort") == 0)
+	    sort = dunst_ini_get_boolean(value);
+	else if (strcmp(name, "indicate_hidden") == 0)
+	    indicate_hidden = dunst_ini_get_boolean(value);
+	else if (strcmp(name, "key") == 0)
+	    key_string = dunst_ini_get_string(value);
+	else if (strcmp(name, "history_key") == 0)
+	    history_key_string = dunst_ini_get_string(value);
+	else if (strcmp(name, "geometry") == 0) {
+	    geom = dunst_ini_get_string(value);
+	    geometry.mask = XParseGeometry(geom,
+					   &geometry.x, &geometry.y,
+					   &geometry.w, &geometry.h);
+	} else if (strcmp(name, "modifier") == 0) {
+	    char *mod = dunst_ini_get_string(value);
+
+	    if (mod == NULL) {
+		mask = 0;
+	    } else if (!strcmp(mod, "ctrl")) {
+		mask = ControlMask;
+	    } else if (!strcmp(mod, "mod4")) {
+		mask = Mod4Mask;
+	    } else if (!strcmp(mod, "mod3")) {
+		mask = Mod3Mask;
+	    } else if (!strcmp(mod, "mod2")) {
+		mask = Mod2Mask;
+	    } else if (!strcmp(mod, "mod1")) {
+		mask = Mod1Mask;
+	    } else {
+		mask = 0;
+	    }
+	    free (mod);
+	}
+    } else if (strcmp(section, "urgency_low") == 0) {
+	if (strcmp(name, "background") == 0)
+	    lowbgcolor = dunst_ini_get_string(value);
+	else if (strcmp(name, "foreground") == 0)
+	    lowfgcolor = dunst_ini_get_string(value);
+	else if (strcmp(name, "timeout") == 0)
+	    timeouts[LOW] = atoi(value);
+    } else if (strcmp(section, "urgency_normal") == 0) {
+	if (strcmp(name, "background") == 0)
+	    normbgcolor = dunst_ini_get_string(value);
+	else if (strcmp(name, "foreground") == 0)
+	    normfgcolor = dunst_ini_get_string(value);
+	else if (strcmp(name, "timeout") == 0)
+	    timeouts[NORM] = atoi(value);
+    } else if (strcmp(section, "urgency_critical") == 0) {
+	if (strcmp(name, "background") == 0)
+	    critbgcolor = dunst_ini_get_string(value);
+	else if (strcmp(name, "foreground") == 0)
+	    critfgcolor = dunst_ini_get_string(value);
+	else if (strcmp(name, "timeout") == 0)
+	    timeouts[CRIT] = atoi(value);
+    } else {
+
+	rule_t *current_rule = dunst_rules_find_or_create(section);
+
+	if (strcmp(name, "appname") == 0)
+	    current_rule->appname = dunst_ini_get_string(value);
+	else if (strcmp(name, "summary") == 0)
+	    current_rule->summary = dunst_ini_get_string(value);
+	else if (strcmp(name, "body") == 0)
+	    current_rule->body = dunst_ini_get_string(value);
+	else if (strcmp(name, "icon") == 0)
+	    current_rule->icon = dunst_ini_get_string(value);
+	else if (strcmp(name, "timeout") == 0)
+	    current_rule->timeout = atoi(value);
+	else if (strcmp(name, "urgency") == 0) {
+	    const char *urg = value;
+
+	    if (strcmp(urg, "low") == 0)
+		current_rule->urgency = LOW;
+	    else if (strcmp(urg, "normal") == 0)
+		current_rule->urgency = NORM;
+	    else if (strcmp(urg, "critical") == 0)
+		current_rule->urgency = CRIT;
+	    else
+		fprintf(stderr, "unknown urgency: %s, ignoring\n", urg);
+	} else if (strcmp(name, "foreground") == 0)
+	    current_rule->fg = dunst_ini_get_string(value);
+	else if (strcmp(name, "background") == 0)
+	    current_rule->bg = dunst_ini_get_string(value);
+	else if (strcmp(name, "format") == 0)
+	    current_rule->format = dunst_ini_get_string(value);
+    }
+
+    return 1;
 }
 
 void
 parse_dunstrc(void) {
 
-    char *mod = NULL;
-    char *urg = NULL;
-    char *secname = NULL;
-    rule_t *last_rule;
-    rule_t *new_rule;
-    char *key;
     char *config_path = NULL;
-
-    int nsec = 0;
-    int i;
-
-    dictionary *ini;
 
     dunst_printf(DEBUG, "Begin parsing of dunstrc\n");
 
@@ -931,130 +1085,12 @@ parse_dunstrc(void) {
     }
 
     dunst_printf(DEBUG, "Reading %s\n", config_file);
-    ini = iniparser_load(config_file);
-    if (ini == NULL) {
+
+    if (ini_parse(config_file, dunst_ini_handle, NULL) < 0) {
         puts("no dunstrc found -> skipping\n");
     }
 
-    font = iniparser_getstring(ini, "global:font", font);
-    format = iniparser_getstring(ini, "global:format", format);
-    sort = iniparser_getboolean(ini, "global:sort", sort);
-    indicate_hidden = iniparser_getboolean(ini, "global:indicate_hidden", indicate_hidden);
-    idle_threshold = iniparser_getint(ini, "global:idle_threshold", idle_threshold);
-    key_string = iniparser_getstring(ini, "global:key", key_string);
-    history_key_string = iniparser_getstring(ini, "global:history_key", history_key_string);
-
-    geom = iniparser_getstring(ini, "global:geometry", geom);
-                geometry.mask = XParseGeometry(geom,
-                        &geometry.x, &geometry.y,
-                        &geometry.w, &geometry.h);
-
-    mod = iniparser_getstring(ini, "global:modifier", mod);
-
-    if (mod == NULL) {
-        mask = 0;
-    } else if (!strcmp(mod, "ctrl")) {
-        mask = ControlMask;
-    } else if (!strcmp(mod, "mod4")) {
-        mask = Mod4Mask;
-    } else if (!strcmp(mod, "mod3")) {
-        mask = Mod3Mask;
-    } else if (!strcmp(mod, "mod2")) {
-        mask = Mod2Mask;
-    } else if (!strcmp(mod, "mod1")) {
-        mask = Mod1Mask;
-    } else {
-        mask = 0;
-    }
-
-    lowbgcolor = iniparser_getstring(ini, "urgency_low:background", lowbgcolor);
-    lowfgcolor = iniparser_getstring(ini, "urgency_low:foreground", lowfgcolor);
-    timeouts[LOW] = iniparser_getint(ini, "urgency_low:timeout", timeouts[LOW]);
-    normbgcolor = iniparser_getstring(ini, "urgency_normal:background", normbgcolor);
-    normfgcolor = iniparser_getstring(ini, "urgency_normal:foreground", normfgcolor);
-    timeouts[NORM] = iniparser_getint(ini, "urgency_normal:timeout", timeouts[NORM]);
-    critbgcolor = iniparser_getstring(ini, "urgency_critical:background", critbgcolor);
-    critfgcolor = iniparser_getstring(ini, "urgency_critical:foreground", critfgcolor);
-    timeouts[CRIT] = iniparser_getint(ini, "urgency_critical:timeout", timeouts[CRIT]);
-
-    /* parse rules */
-    nsec = iniparser_getnsec(ini);
-
-    /* init last_rule */
-    last_rule = rules;
-    while (last_rule && last_rule->next) {
-        last_rule = last_rule->next;
-    }
-
-    for (i = 0; i < nsec; i++) {
-        secname = iniparser_getsecname(ini, i);
-
-        /* every section not handled above is considered a rule */
-        if (strcmp(secname, "global") == 0
-         || strcmp(secname, "urgency_low") == 0
-         || strcmp(secname, "urgency_normal") == 0
-         || strcmp(secname, "urgency_critical") == 0) {
-            continue;
-        }
-
-        dunst_printf(DEBUG, "adding rule %s\n", secname);
-
-        new_rule = initrule();
-
-        new_rule->name = secname;
-        key = create_iniparser_key(secname, "appname");
-        new_rule->appname = iniparser_getstring(ini, key, NULL);
-        free(key);
-        key = create_iniparser_key(secname, "summary");
-        new_rule->summary= iniparser_getstring(ini, key, NULL);
-        free(key);
-        key = create_iniparser_key(secname, "body");
-        new_rule->body= iniparser_getstring(ini, key, NULL);
-        free(key);
-        key = create_iniparser_key(secname, "icon");
-        new_rule->icon= iniparser_getstring(ini, key, NULL);
-        free(key);
-        key = create_iniparser_key(secname, "timeout");
-        new_rule->timeout= iniparser_getint(ini, key, -1);
-        free(key);
-
-        key = create_iniparser_key(secname, "urgency");
-        urg = iniparser_getstring(ini, key, NULL);
-        free(key);
-        if (urg == NULL) {
-            new_rule->urgency = -1;
-        } else if (!strcmp(urg, "low")) {
-            new_rule->urgency = LOW;
-        } else if (!strcmp(urg, "normal")) {
-            new_rule->urgency = NORM;
-        } else if (!strcmp(urg, "critical")) {
-            new_rule->urgency = CRIT;
-        } else {
-            fprintf(stderr, "unknown urgency: %s, ignoring\n", urg);
-        }
-
-        key = create_iniparser_key(secname, "foreground");
-        new_rule->fg= iniparser_getstring(ini, key, NULL);
-        free(key);
-        key = create_iniparser_key(secname, "background");
-        new_rule->bg= iniparser_getstring(ini, key, NULL);
-        free(key);
-        key = create_iniparser_key(secname, "format");
-        new_rule->format= iniparser_getstring(ini, key, NULL);
-        free(key);
-
-        if (last_rule == NULL) {
-            last_rule = new_rule;
-            rules = last_rule;
-        } else {
-            last_rule->next = new_rule;
-            last_rule = last_rule->next;
-        }
-        print_rule(last_rule);
-    }
-
     print_rules();
-
 }
 
 
