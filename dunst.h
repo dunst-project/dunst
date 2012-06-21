@@ -28,7 +28,6 @@ typedef struct _rule_t {
         char *bg;
         const char *format;
 
-        struct _rule_t *next;
 } rule_t;
 
 typedef struct _notification {

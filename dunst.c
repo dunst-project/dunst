@@ -66,7 +66,7 @@ int idle_threshold = 0;
 
 int verbosity = 0;
 
-rule_t *rules = NULL;
+list *rules = NULL;
 /* index of colors fit to urgency level */
 static ColorSet *colors[3];
 static const char *color_strings[2][3];
@@ -160,39 +160,40 @@ void print_rule(rule_t * r)
 
 void print_rules(void)
 {
-        rule_t *cur = rules;
+        l_node *iter;
         dunst_printf(DEBUG, "current rules:\n");
-        if (cur == NULL) {
+        if (l_is_empty(rules)) {
                 dunst_printf(DEBUG, "no rules present\n");
                 return;
         }
-        while (cur->next) {
-                print_rule(cur);
-                cur = cur->next;
+        for (iter = rules->head; iter; iter = iter->next) {
+                print_rule((rule_t *) iter->data);
         }
 }
 
 void apply_rules(notification * n)
 {
-        rule_t *cur = rules;
-        while (cur != NULL) {
-                if ((!cur->appname || !fnmatch(cur->appname, n->appname, 0))
-                    && (!cur->summary || !fnmatch(cur->summary, n->summary, 0))
-                    && (!cur->body || !fnmatch(cur->body, n->body, 0))
-                    && (!cur->icon || !fnmatch(cur->icon, n->icon, 0))) {
-                        dunst_printf(DEBUG, "matched rule: %s\n", cur->name);
-                        n->timeout =
-                            cur->timeout != -1 ? cur->timeout : n->timeout;
-                        n->urgency =
-                            cur->urgency != -1 ? cur->urgency : n->urgency;
-                        n->color_strings[ColFG] =
-                            cur->fg ? cur->fg : n->color_strings[ColFG];
-                        n->color_strings[ColBG] =
-                            cur->bg ? cur->bg : n->color_strings[ColBG];
-                        n->format = cur->format ? cur->format : n->format;
-                }
+        l_node *iter;
+        if (l_is_empty(rules)) {
+                return;
+        }
 
-                cur = cur->next;
+        for (iter = rules->head; iter; iter = iter->next) {
+                rule_t *r = (rule_t *) iter->data;
+
+                if ((!r->appname || !fnmatch(r->appname, n->appname, 0))
+                    && (!r->summary || !fnmatch(r->summary, n->summary, 0))
+                    && (!r->body || !fnmatch(r->body, n->body, 0))
+                    && (!r->icon || !fnmatch(r->icon, n->icon, 0))) {
+                        dunst_printf(DEBUG, "matched rule: %s\n", r->name);
+                        n->timeout = r->timeout != -1 ? r->timeout : n->timeout;
+                        n->urgency = r->urgency != -1 ? r->urgency : n->urgency;
+                        n->color_strings[ColFG] =
+                            r->fg ? r->fg : n->color_strings[ColFG];
+                        n->color_strings[ColBG] =
+                            r->bg ? r->bg : n->color_strings[ColBG];
+                        n->format = r->format ? r->format : n->format;
+                }
         }
 }
 
@@ -597,7 +598,6 @@ rule_t *initrule(void)
         r->fg = NULL;
         r->bg = NULL;
         r->format = NULL;
-        r->next = NULL;
 
         return r;
 }
@@ -928,34 +928,26 @@ static int dunst_ini_get_boolean(const char *value)
 static rule_t *dunst_rules_find_or_create(const char *section)
 {
 
-        rule_t *current_rule = rules, *last_rule;
+        l_node *iter;
+        rule_t *rule;
 
-        while (current_rule && strcmp(current_rule->name, section) != 0) {
-                current_rule = current_rule->next;
+        /* find rule */
+        for (iter = rules->head; iter; iter = iter->next) {
+                rule_t *r = (rule_t *) iter->data;
+                if (strcmp(r->name, section) == 0) {
+                        return r;
+                }
         }
 
-        if (current_rule) {
-                return current_rule;
-        }
-
+        /* rule not found in rules, create new one */
         dunst_printf(DEBUG, "adding rule %s\n", section);
 
-        current_rule = initrule();
-        current_rule->name = strdup(section);
+        rule = initrule();
+        rule->name = strdup(section);
 
-        last_rule = rules;
-        while (last_rule && last_rule->next) {
-                last_rule = last_rule->next;
-        }
+        l_push(rules, rule);
 
-        if (last_rule == NULL) {
-                last_rule = current_rule;
-                rules = last_rule;
-        } else {
-                last_rule->next = current_rule;
-        }
-
-        return current_rule;
+        return rule;
 }
 
 static char *dunst_ini_get_string(const char *value)
@@ -1085,6 +1077,7 @@ void parse_dunstrc(void)
         FILE *config_file;
 
         xdgInitHandle(&xdg);
+        rules = l_init();
 
         config_file = xdgConfigOpen("dunst/dunstrc", "r", &xdg);
         if (config_file == NULL) {
