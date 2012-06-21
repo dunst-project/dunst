@@ -464,7 +464,6 @@ void handle_mouse_click(XEvent ev)
 void handleXEvents(void)
 {
         XEvent ev;
-        l_node *iter;
         while (XPending(dc->dpy) > 0) {
                 XNextEvent(dc->dpy, &ev);
                 switch (ev.type) {
@@ -488,11 +487,9 @@ void handleXEvents(void)
                 case KeyPress:
                         if (XLookupKeysym(&ev.xkey, 0) == key) {
                                 if (!l_is_empty(displayed_notifications)) {
-                                        for (iter =
-                                             displayed_notifications->head;
-                                             iter->next; iter = iter->next) ;
                                         l_move(displayed_notifications,
-                                               notification_history, iter);
+                                               notification_history,
+                                               displayed_notifications->head);
                                 }
                         }
                         if (XLookupKeysym(&ev.xkey, 0) == history_key) {
