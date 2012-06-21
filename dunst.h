@@ -14,43 +14,48 @@
 #define ColBG 0
 
 typedef struct _rule_t {
-    char *name;
-    /* filters */
-    char *appname;
-    char *summary;
-    char *body;
-    char *icon;
+        char *name;
+        /* filters */
+        char *appname;
+        char *summary;
+        char *body;
+        char *icon;
 
-    /* actions */
-    int timeout;
-    int urgency;
-    char *fg;
-    char *bg;
-    const char *format;
+        /* actions */
+        int timeout;
+        int urgency;
+        char *fg;
+        char *bg;
+        const char *format;
 
-    struct _rule_t *next;
+        struct _rule_t *next;
 } rule_t;
 
-typedef struct _msg_queue_t {
-    char *appname;
-    char *summary;
-    char *body;
-    char *icon;
-    char *msg;
-    const char *format;
-    struct _msg_queue_t *next;
-    time_t start;
-    int timeout;
-    int urgency;
-    ColorSet *colors;
-    char *color_strings[2];
-} msg_queue_t;
+typedef struct _notification {
+        char *appname;
+        char *summary;
+        char *body;
+        char *icon;
+        char *msg;
+        const char *format;
+        time_t start;
+        time_t timestamp;
+        int timeout;
+        int urgency;
+        int redisplayed;        /* has been displayed before? */
+        ColorSet *colors;
+        char *color_strings[2];
+} notification;
 
 typedef struct _dimension_t {
-    int x;
-    int y;
-    unsigned int h;
-    unsigned int w;
-    int mask;
+        int x;
+        int y;
+        unsigned int h;
+        unsigned int w;
+        int mask;
 } dimension_t;
 #endif
+/* vim: set ts=8 sw=8 tw=0: */
+
+void init_notification(notification * n);
+void map_win(void);
