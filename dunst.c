@@ -83,6 +83,8 @@ static XScreenSaverInfo *screensaver_info;
 static int font_h;
 static char *config_file;
 
+int next_notification_id = 1;
+
 /* notification lists */
 list *notification_queue = NULL;        /* all new notifications get into here */
 list *displayed_notifications = NULL;   /* currently displayed notifications */
@@ -534,7 +536,7 @@ void history_pop(void)
         }
 }
 
-void init_notification(notification * n)
+int init_notification(notification * n)
 {
         const char *fg = NULL;
         const char *bg = NULL;
@@ -573,6 +575,8 @@ void init_notification(notification * n)
 
         n->redisplayed = False;
 
+        n->id = ++next_notification_id;
+
         dunst_printf(MSG, "%s\n", n->msg);
         dunst_printf(INFO,
                      "{\n  appname: %s\n  summary: %s\n  body: %s\n  icon: %s\n  urgency: %d\n  timeout: %d\n}",
@@ -580,6 +584,8 @@ void init_notification(notification * n)
                      n->urgency, n->timeout);
 
         l_push(notification_queue, n);
+
+        return n->id;
 }
 
 rule_t *initrule(void)

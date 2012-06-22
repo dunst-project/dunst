@@ -251,7 +251,7 @@ void notify(DBusMessage * dmsg)
         char *hint_name;
 
         int i;
-        int id = 23;
+        int id;
         const char *appname = NULL;
         const char *summary = NULL;
         const char *body = NULL;
@@ -324,7 +324,7 @@ void notify(DBusMessage * dmsg)
         }
         n->color_strings[ColFG] = fgcolor == NULL ? NULL : strdup(fgcolor);
         n->color_strings[ColBG] = bgcolor == NULL ? NULL : strdup(bgcolor);
-        init_notification(n);
+        id = init_notification(n);
         map_win();
 
         reply = dbus_message_new_method_return(dmsg);

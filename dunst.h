@@ -42,6 +42,7 @@ typedef struct _notification {
         int timeout;
         int urgency;
         int redisplayed;        /* has been displayed before? */
+        int id;
         ColorSet *colors;
         char *color_strings[2];
 } notification;
@@ -56,5 +57,6 @@ typedef struct _dimension_t {
 #endif
 /* vim: set ts=8 sw=8 tw=0: */
 
-void init_notification(notification * n);
+/* return id of notification */
+int init_notification(notification * n);
 void map_win(void);
