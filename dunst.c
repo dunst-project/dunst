@@ -536,7 +536,7 @@ void history_pop(void)
         }
 }
 
-int init_notification(notification * n)
+int init_notification(notification * n, int id)
 {
         const char *fg = NULL;
         const char *bg = NULL;
@@ -575,7 +575,6 @@ int init_notification(notification * n)
 
         n->redisplayed = False;
 
-        n->id = ++next_notification_id;
 
         dunst_printf(MSG, "%s\n", n->msg);
         dunst_printf(INFO,
@@ -583,9 +582,39 @@ int init_notification(notification * n)
                      n->appname, n->summary, n->body, n->icon,
                      n->urgency, n->timeout);
 
+        if (id == 0) {
+                n->id = ++next_notification_id;
+        } else {
+                close_notification(id);
+        }
+
         l_push(notification_queue, n);
 
         return n->id;
+}
+
+
+
+int close_notification(int id) {
+        l_node *iter;
+
+        for(iter = displayed_notifications->head; iter; iter = iter->next) {
+                notification *n = (notification *) iter->data;
+                if (n->id == id) {
+                        l_move(displayed_notifications, notification_history, iter);
+                        return True;
+                }
+        }
+
+        for(iter = notification_queue->head; iter; iter = iter->next) {
+                notification *n = (notification *) iter->data;
+                if (n->id == id) {
+                        l_move(displayed_notifications, notification_history, iter);
+                        return True;
+                }
+        }
+
+        return False;
 }
 
 rule_t *initrule(void)

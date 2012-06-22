@@ -58,5 +58,6 @@ typedef struct _dimension_t {
 /* vim: set ts=8 sw=8 tw=0: */
 
 /* return id of notification */
-int init_notification(notification * n);
+int init_notification(notification * n, int id);
+int close_notification(int id);
 void map_win(void);

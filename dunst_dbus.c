@@ -11,6 +11,31 @@ DBusError dbus_err;
 DBusConnection *dbus_conn;
 dbus_uint32_t dbus_serial = 0;
 
+static void _extract_basic(int type, DBusMessageIter * iter, void *target)
+{
+        int iter_type = dbus_message_iter_get_arg_type(iter);
+        if (iter_type == type) {
+                dbus_message_iter_get_basic(iter, target);
+        }
+}
+
+static void
+_extract_hint(const char *name, const char *hint_name,
+              DBusMessageIter * hint, void *target)
+{
+
+        DBusMessageIter hint_value;
+
+        if (!strcmp(hint_name, name)) {
+                dbus_message_iter_next(hint);
+                dbus_message_iter_recurse(hint, &hint_value);
+                do {
+                        dbus_message_iter_get_basic(&hint_value, target);
+                } while (dbus_message_iter_next(hint));
+        }
+}
+
+
 static const char *introspect = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
     "<node name=\"/org/freedesktop/Notifications\">"
     "    <interface name=\"org.freedesktop.Notifications\">"
@@ -64,7 +89,6 @@ void dbus_introspect(DBusMessage * dmsg)
         dbus_connection_send(dbus_conn, reply, &dbus_serial);
 
         dbus_message_unref(reply);
-
 }
 
 void initdbus(void)
@@ -173,10 +197,21 @@ void getCapabilities(DBusMessage * dmsg)
 void closeNotification(DBusMessage * dmsg)
 {
         DBusMessage *reply;
+        DBusMessageIter args;
+        int id;
+
         reply = dbus_message_new_method_return(dmsg);
         if (!reply) {
                 return;
         }
+        dbus_message_iter_init(dmsg, &args);
+
+        _extract_basic(DBUS_TYPE_UINT32, &args, &id);
+
+        close_notification(id);
+
+        /* TODO org.freedesktop.Notifications.NotificationClosed */
+
         dbus_connection_send(dbus_conn, reply, &dbus_serial);
         dbus_connection_flush(dbus_conn);
 }
@@ -218,30 +253,6 @@ void getServerInformation(DBusMessage * dmsg)
         dbus_message_unref(reply);
 }
 
-static void _extract_basic(int type, DBusMessageIter * iter, void *target)
-{
-        int iter_type = dbus_message_iter_get_arg_type(iter);
-        if (iter_type == type) {
-                dbus_message_iter_get_basic(iter, target);
-        }
-}
-
-static void
-_extract_hint(const char *name, const char *hint_name,
-              DBusMessageIter * hint, void *target)
-{
-
-        DBusMessageIter hint_value;
-
-        if (!strcmp(hint_name, name)) {
-                dbus_message_iter_next(hint);
-                dbus_message_iter_recurse(hint, &hint_value);
-                do {
-                        dbus_message_iter_get_basic(&hint_value, target);
-                } while (dbus_message_iter_next(hint));
-        }
-}
-
 void notify(DBusMessage * dmsg)
 {
         DBusMessage *reply;
@@ -260,7 +271,7 @@ void notify(DBusMessage * dmsg)
         const char *bgcolor = NULL;
         int urgency = 1;
         notification *n = malloc(sizeof(notification));
-        dbus_uint32_t nid = 0;
+        dbus_uint32_t replaces_id = 0;
         dbus_int32_t expires = -1;
 
         dbus_serial++;
@@ -269,7 +280,7 @@ void notify(DBusMessage * dmsg)
         _extract_basic(DBUS_TYPE_STRING, &args, &appname);
 
         dbus_message_iter_next(&args);
-        _extract_basic(DBUS_TYPE_UINT32, &args, &nid);
+        _extract_basic(DBUS_TYPE_UINT32, &args, &replaces_id);
 
         dbus_message_iter_next(&args);
         _extract_basic(DBUS_TYPE_STRING, &args, &icon);
@@ -324,7 +335,7 @@ void notify(DBusMessage * dmsg)
         }
         n->color_strings[ColFG] = fgcolor == NULL ? NULL : strdup(fgcolor);
         n->color_strings[ColBG] = bgcolor == NULL ? NULL : strdup(bgcolor);
-        id = init_notification(n);
+        id = init_notification(n, replaces_id);
         map_win();
 
         reply = dbus_message_new_method_return(dmsg);
