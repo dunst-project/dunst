@@ -17,8 +17,8 @@ XINERAMAFLAGS = -DXINERAMA
 INIFLAGS = -DINI_ALLOW_MULTILINE=0
 
 # includes and libs
-INCS = -I${X11INC} -I/usr/lib/dbus-1.0/include -I/usr/include/dbus-1.0 ${XFTINC}
-LIBS = -L${X11LIB} -lX11 -lXss -ldbus-1 ${XFTLIBS} ${XINERAMALIBS}
+INCS = -I${X11INC} $(shell pkg-config --cflags dbus-1) ${XFTINC}
+LIBS = -L${X11LIB} -lX11 -lXss ${XFTLIBS} ${XINERAMALIBS} $(shell pkg-config --libs dbus-1)
 
 # flags
 CPPFLAGS = -D_BSD_SOURCE -DVERSION=\"${VERSION}\" ${XINERAMAFLAGS} ${INIFLAGS}
