@@ -1067,9 +1067,14 @@ parse_dunstrc(void) {
 
     config_file = xdgConfigOpen("dunst/dunstrc", "r", &xdg);
     if (config_file == NULL) {
-        puts("no dunstrc found -> skipping\n");
-        xdgWipeHandle(&xdg);
-        return;
+        /* Fall back to just "dunstrc", which was used before 2012-06-23
+         * (before v0.2). */
+        config_file = xdgConfigOpen("dunstrc", "r", &xdg);
+        if (config_file == NULL) {
+            puts("no dunstrc found -> skipping\n");
+            xdgWipeHandle(&xdg);
+            return;
+        }
     }
 
     if (ini_parse_file(config_file, dunst_ini_handle, NULL) < 0) {
