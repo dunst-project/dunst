@@ -131,8 +131,8 @@ In order to do that you have to add a hint via the -h option.
 =head1 CONFIGURATION
 
 An example configuration file is included (usually /usr/share/dunst/dunstrc).
-To change the configuration, copy this file to ~/.config/dunstrc and edit it
-accordingly.
+To change the configuration, copy this file to ~/.config/dunst/dunstrc and edit
+it accordingly.
 
 =head1 AUTHOR
 
