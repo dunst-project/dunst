@@ -16,6 +16,8 @@
 #include <X11/extensions/Xinerama.h>
 #endif
 #include <X11/extensions/scrnsaver.h>
+#include <basedir.h>
+#include <basedir_fs.h>
 
 #include "dunst.h"
 #include "draw.h"
@@ -1056,32 +1058,26 @@ dunst_ini_handle(void *user_data, const char *section,
 void
 parse_dunstrc(void) {
 
-    char *config_path = NULL;
+    xdgHandle xdg;
+    FILE *config_file;
 
     dunst_printf(DEBUG, "Begin parsing of dunstrc\n");
 
+    xdgInitHandle(&xdg);
+
+    config_file = xdgConfigOpen("dunst/dunstrc", "r", &xdg);
     if (config_file == NULL) {
-        config_file = malloc(sizeof(char) * BUFSIZ);
-        memset(config_file, '\0', BUFSIZ);
-
-        config_path = getenv("XDG_CONFIG_HOME");
-
-        if (!config_path) {
-            puts("no dunstrc found -> skipping\n");
-            return;
-        }
-
-
-        strcat(config_file, config_path);
-        strcat(config_file, "/");
-        strcat(config_file, "dunstrc");
-    }
-
-    dunst_printf(DEBUG, "Reading %s\n", config_file);
-
-    if (ini_parse(config_file, dunst_ini_handle, NULL) < 0) {
         puts("no dunstrc found -> skipping\n");
+        xdgWipeHandle(&xdg);
+        return;
     }
+
+    if (ini_parse_file(config_file, dunst_ini_handle, NULL) < 0) {
+        puts("dunstrc could not be parsed -> skipping\n");
+    }
+
+    fclose(config_file);
+    xdgWipeHandle(&xdg);
 
     print_rules();
 }
