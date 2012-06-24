@@ -11,6 +11,64 @@ DBusConnection *dbus_conn;
 dbus_uint32_t dbus_serial = 0;
 
 
+static const char *introspect = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+
+"<node name=\"/org/freedesktop/Notifications\">"
+"    <interface name=\"org.freedesktop.Notifications\">"
+"        "
+"        <method name=\"GetCapabilities\">"
+"            <arg direction=\"out\" name=\"capabilities\" type=\"as\"/>"
+"        </method>"
+"        <method name=\"Notify\">"
+"            <arg direction=\"in\" name=\"app_name\" type=\"s\"/>"
+"            <arg direction=\"in\" name=\"replaces_id\" type=\"u\"/>"
+"            <arg direction=\"in\" name=\"app_icon\" type=\"s\"/>"
+"            <arg direction=\"in\" name=\"summary\" type=\"s\"/>"
+"            <arg direction=\"in\" name=\"body\" type=\"s\"/>"
+"            <arg direction=\"in\" name=\"actions\" type=\"as\"/>"
+"            <arg direction=\"in\" name=\"hints\" type=\"a{sv}\"/>"
+"            <arg direction=\"in\" name=\"expire_timeout\" type=\"i\"/>"
+"            <arg direction=\"out\" name=\"id\" type=\"u\"/>"
+"        </method>"
+"        "
+"        <method name=\"CloseNotification\">"
+"            <arg direction=\"in\" name=\"id\" type=\"u\"/>"
+"        </method>"
+"        <method name=\"GetServerInformation\">"
+"            <arg direction=\"out\" name=\"name\" type=\"s\"/>"
+"            <arg direction=\"out\" name=\"vendor\" type=\"s\"/>"
+"            <arg direction=\"out\" name=\"version\" type=\"s\"/>"
+"            <arg direction=\"out\" name=\"spec_version\" type=\"s\"/>"
+"        </method>"
+"        <signal name=\"NotificationClosed\">"
+"            <arg name=\"id\" type=\"u\"/>"
+"            <arg name=\"reason\" type=\"u\"/>"
+"        </signal>"
+"        <signal name=\"ActionInvoked\">"
+"            <arg name=\"id\" type=\"u\"/>"
+"            <arg name=\"action_key\" type=\"s\"/>"
+"        </signal>"
+"    </interface>"
+"    "
+"    <interface name=\"org.xfce.Notifyd\">"
+"        <method name=\"Quit\"/>"
+"    </interface>"
+"</node>";
+
+void dbus_introspect(DBusMessage * dmsg) {
+        DBusMessage *reply;
+        DBusMessageIter args;
+
+        reply = dbus_message_new_method_return(dmsg);
+
+        dbus_message_iter_init_append(reply, &args);
+        dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING, &introspect);
+        dbus_connection_send(dbus_conn, reply, &dbus_serial);
+
+        dbus_message_unref(reply);
+
+}
+
 void
 initdbus(void) {
     int ret;
@@ -61,6 +119,10 @@ dbus_poll(void) {
     /* we don't have a new message */
     if(dbus_msg == NULL) {
         return;
+    }
+
+    if (dbus_message_is_method_call(dbus_msg,"org.freedesktop.DBus.Introspectable", "Introspect")) {
+        dbus_introspect(dbus_msg);
     }
 
     if(dbus_message_is_method_call(dbus_msg,
