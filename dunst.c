@@ -1178,7 +1178,7 @@ int main(int argc, char *argv[])
         color_strings[ColBG][CRIT] = critbgcolor;
         setup();
 
-        height_limit = indicate_hidden ? geometry.h - 1 : geometry.w;
+        height_limit = indicate_hidden ? geometry.h - 1 : geometry.h;
         run();
         return 0;
 }
