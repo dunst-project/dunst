@@ -42,6 +42,9 @@
     # Set to 0 to disable.
     idle_threshold = 120
 
+    # Which monitor should the notifications be displayed one
+    monitor = 0
+
 [urgency_low]
     # IMPORTANT: colors have to be defined in quotation marks.
     # Otherwise the '#' and following  would be interpreted as a comment.

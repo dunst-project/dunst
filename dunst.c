@@ -1017,6 +1017,8 @@ dunst_ini_handle(void *user_data, const char *section,
                         history_key_string = dunst_ini_get_string(value);
                 else if (strcmp(name, "idle_threshold") == 0)
                         idle_threshold = atoi(value);
+                else if (strcmp(name, "monitor") == 0)
+                        scr.scr = atoi(value);
                 else if (strcmp(name, "geometry") == 0) {
                         geom = dunst_ini_get_string(value);
                         geometry.mask = XParseGeometry(geom,
