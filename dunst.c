@@ -690,7 +690,11 @@ char *strtrim(char *str)
 void run(void)
 {
         while (True) {
-                dbus_poll(200);
+                if (visible) {
+                        dbus_poll(50);
+                } else {
+                        dbus_poll(200);
+                }
                 now = time(&now);
 
                 /* move messages from notification_queue to displayed_notifications */
