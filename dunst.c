@@ -900,10 +900,10 @@ void parse_cmdline(int argc, char *argv[])
                         format = optarg;
                         break;
                 case 'k':
-                        key = XStringToKeysym(optarg);
+                        key_string = optarg;
                         break;
                 case 'K':
-                        history_key = XStringToKeysym(optarg);
+                        history_key = optarg;
                         break;
                 case 'g':
                         geometry.mask = XParseGeometry(optarg,
@@ -1170,6 +1170,8 @@ int main(int argc, char *argv[])
         parse_dunstrc();
         parse_cmdline(argc, argv);
         dc = initdc();
+
+        /* initialize keys */
         key = key_string ? XStringToKeysym(key_string) : NoSymbol;
         history_key =
             history_key_string ? XStringToKeysym(history_key_string) : NoSymbol;
