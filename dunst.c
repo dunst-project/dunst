@@ -1162,7 +1162,6 @@ void parse_cmdline_for_config_file(int argc, char *argv[])
 int main(int argc, char *argv[])
 {
         now = time(&now);
-        dc = initdc();
         geometry.mask = XParseGeometry(geom,
                                        &geometry.x, &geometry.y,
                                        &geometry.w, &geometry.h);
@@ -1170,6 +1169,7 @@ int main(int argc, char *argv[])
         parse_cmdline_for_config_file(argc, argv);
         parse_dunstrc();
         parse_cmdline(argc, argv);
+        dc = initdc();
         key = key_string ? XStringToKeysym(key_string) : NoSymbol;
         history_key =
             history_key_string ? XStringToKeysym(history_key_string) : NoSymbol;
