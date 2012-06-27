@@ -246,13 +246,24 @@ void update_lists()
 {
         l_node *to_move;
         notification *n;
+        int limit;
+
         check_timeouts();
 
-        /* move notifications from queue to displayed */
-        while (l_length(displayed_notifications) < height_limit
-               && !l_is_empty(notification_queue)) {
+        if (geometry.h == 0) {
+                limit = 0;
+        } else if (geometry.h == 1) {
+                limit = 1;
+        } else if (indicate_hidden) {
+                limit = geometry.h - 1;
+        } else {
+                limit = geometry.h;
+        }
 
-                if (l_length(displayed_notifications) >= height_limit) {
+        /* move notifications from queue to displayed */
+        while (!l_is_empty(notification_queue)) {
+
+                if (limit > 0 && l_length(displayed_notifications) >= limit) {
                         /* the list is full */
                         break;
                 }
@@ -285,12 +296,11 @@ void draw_win(void)
         dc->y = 0;
         dc->h = 0;
 
-        /* a height of 0 doesn't make sense, so we define it as 1 */
         if (geometry.h == 0) {
-                geometry.h = 1;
+                height = len;
+        } else {
+                height = MIN(geometry.h, len);
         }
-
-        height = MIN(geometry.h, len);
 
         if (indicate_hidden && !l_is_empty(notification_queue)) {
                 sprintf(hidden, "(%d more)", l_length(notification_queue));
@@ -1180,7 +1190,6 @@ int main(int argc, char *argv[])
         color_strings[ColBG][CRIT] = critbgcolor;
         setup();
 
-        height_limit = indicate_hidden ? geometry.h - 1 : geometry.h;
         run();
         return 0;
 }
