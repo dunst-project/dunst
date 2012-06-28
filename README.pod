@@ -80,9 +80,9 @@ a negative from the right side of the screen.
 Y is measured from the top and down respectevly.
 see also EXAMPLES show the notification on monitor n.
 
-=item B<-v>
+=item B<-v/--version>
 
-Increase verbosity. Can be used multiple times.
+print version information.
 
 
 =item B<-config file>

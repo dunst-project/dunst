@@ -2,6 +2,8 @@
 PREFIX = /usr/local
 MANPREFIX = ${PREFIX}/share/man
 
+VERSION="pre-0.3.0"
+
 X11INC = /usr/X11R6/include
 X11LIB = /usr/X11R6/lib
 

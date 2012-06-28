@@ -112,6 +112,7 @@ l_node *most_important(list * l);
 void draw_win(void);
 void hide_win(void);
 void move_all_to_history(void);
+void print_version(void);
 
 int cmp_notification(notification * a, notification * b)
 {
@@ -841,6 +842,7 @@ void parse_cmdline(int argc, char *argv[])
                         {"config", required_argument, NULL, 'r'},
                         {"mod", required_argument, NULL, 'M'},
                         {"ns", no_argument, NULL, 'x'},
+                        {"version", no_argument, NULL, 'v'},
                         {0, 0, 0, 0}
                 };
 
@@ -940,7 +942,7 @@ void parse_cmdline(int argc, char *argv[])
                         sort = False;
                         break;
                 case 'v':
-                        verbosity++;
+                        print_version();
                         break;
                 default:
                         usage(EXIT_FAILURE);
@@ -1202,6 +1204,12 @@ void usage(int exit_status)
             ("usage: dunst [-h/--help] [-v] [-geometry geom] [-fn font] [-format fmt]\n[-nb color] [-nf color] [-lb color] [-lf color] [-cb color] [ -cf color]\n[-to secs] [-lto secs] [-cto secs] [-nto secs] [-key key] [-history_key key] [-mod modifier] [-mon n] [-config dunstrc]\n",
              stderr);
         exit(exit_status);
+}
+
+void print_version(void)
+{
+        printf("Dunst - Dmenuish notification daemon version: %s\n", VERSION);
+        exit(EXIT_SUCCESS);
 }
 
 /* vim: set ts=8 sw=8 tw=0: */
