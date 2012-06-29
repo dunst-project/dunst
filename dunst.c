@@ -905,7 +905,7 @@ void parse_cmdline(int argc, char *argv[])
                         key_string = optarg;
                         break;
                 case 'K':
-                        history_key = optarg;
+                        history_key_string = optarg;
                         break;
                 case 'g':
                         geometry.mask = XParseGeometry(optarg,
