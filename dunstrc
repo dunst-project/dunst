@@ -25,6 +25,10 @@
     # key to redisplay last message(s)
     history_key = grave
 
+    # alignment of message text.
+    # Possible values are "left", "center" and "right"
+    alignment = left
+
 
     # the geometry of the window
     # geometry [{width}]x{height}][+/-{x}+/-{y}]
@@ -44,6 +48,7 @@
 
     # Which monitor should the notifications be displayed one
     monitor = 0
+
 
 [urgency_low]
     # IMPORTANT: colors have to be defined in quotation marks.

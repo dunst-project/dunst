@@ -47,6 +47,7 @@ typedef struct _screen_info {
 typedef struct _notification_buffer {
         char txt[BUFSIZ];
         notification *n;
+        int x_offset;
 } notification_buffer;
 
 /* global variables */
@@ -68,6 +69,7 @@ char *key_string = NULL;
 char *history_key_string = NULL;
 KeySym mask = 0;
 int idle_threshold = 0;
+enum alignment align = left;
 
 int verbosity = 0;
 
@@ -320,6 +322,7 @@ void draw_win(void)
 
         for (i = 0, iter = displayed_notifications->head; i < height; i++) {
                 memset(n_buf[i].txt, '\0', BUFSIZ);
+                n_buf[i].x_offset = 0;
                 if (iter) {
                         n_buf[i].n = (notification *) iter->data;
                         strncpy(n_buf[i].txt, n_buf[i].n->msg, BUFSIZ);
@@ -359,6 +362,18 @@ void draw_win(void)
                 width = scr.dim.w;
         }
 
+        /* calculate offsets for alignment */
+        for (i = 0; i < height; i++) {
+                if (strlen(n_buf[i].txt) < 1)
+                        continue;
+
+                if (align == right) {
+                        n_buf[i].x_offset = width - textw(dc, n_buf[i].txt);
+                } else if (align == center) {
+                        n_buf[i].x_offset = (width - textw(dc,
+                                                           n_buf[i].txt)) / 2;
+                }
+        }
 
         /* calculate window position */
         if (geometry.mask & XNegative) {
@@ -388,8 +403,9 @@ void draw_win(void)
                          * its attributes
                          */
                         n = n_buf[i].n ? n_buf[i].n : n_buf[i - 1].n;
-
+                        dc->x = 0;
                         drawrect(dc, 0, 0, width, font_h, True, n->colors->BG);
+                        dc->x = n_buf[i].x_offset;
                         drawtext(dc, n_buf[i].txt, n->colors);
                         dc->y += font_h;
                 }
@@ -1065,9 +1081,18 @@ dunst_ini_handle(void *user_data, const char *section,
                         } else if (!strcmp(mod, "mod1")) {
                                 mask = Mod1Mask;
                         } else {
+                                /* FIXME warning on unknown modifier */
                                 mask = 0;
                         }
                         free(mod);
+                } else if (strcmp(name, "alignment") == 0) {
+                        if (strcmp(value, "left") == 0)
+                                align = left;
+                        else if (strcmp(value, "center") == 0)
+                                align = center;
+                        else if (strcmp(value, "right") == 0)
+                                align = right;
+                        /* FIXME warning on unknown alignment */
                 }
         } else if (strcmp(section, "urgency_low") == 0) {
                 if (strcmp(name, "background") == 0)

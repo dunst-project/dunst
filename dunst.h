@@ -13,6 +13,8 @@
 #define ColFG 1
 #define ColBG 0
 
+enum alignment {left, center, right};
+
 typedef struct _rule_t {
         char *name;
         /* filters */
