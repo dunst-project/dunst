@@ -972,10 +972,7 @@ void parse_cmdline(int argc, char *argv[])
                         history_key_string = optarg;
                         break;
                 case 'g':
-                        geometry.mask = XParseGeometry(optarg,
-                                                       &geometry.x, &geometry.y,
-                                                       &geometry.w,
-                                                       &geometry.h);
+                        geom = optarg;
                         break;
                 case 'M':
                         if (!strcmp(optarg, "ctrl")) {
@@ -1097,10 +1094,6 @@ dunst_ini_handle(void *user_data, const char *section,
                         scr.scr = atoi(value);
                 else if (strcmp(name, "geometry") == 0) {
                         geom = dunst_ini_get_string(value);
-                        geometry.mask = XParseGeometry(geom,
-                                                       &geometry.x, &geometry.y,
-                                                       &geometry.w,
-                                                       &geometry.h);
                 } else if (strcmp(name, "modifier") == 0) {
                         char *mod = dunst_ini_get_string(value);
 
@@ -1244,14 +1237,15 @@ int main(int argc, char *argv[])
 {
         char *cmdline_config_path;
         now = time(&now);
-        geometry.mask = XParseGeometry(geom,
-                                       &geometry.x, &geometry.y,
-                                       &geometry.w, &geometry.h);
 
         cmdline_config_path = parse_cmdline_for_config_file(argc, argv);
         parse_dunstrc(cmdline_config_path);
         parse_cmdline(argc, argv);
         dc = initdc();
+
+        geometry.mask = XParseGeometry(geom,
+                                       &geometry.x, &geometry.y,
+                                       &geometry.w, &geometry.h);
 
         /* initialize keys */
         key = key_string ? XStringToKeysym(key_string) : NoSymbol;
