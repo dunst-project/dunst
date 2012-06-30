@@ -89,7 +89,6 @@ static screen_info scr;
 static dimension_t geometry;
 static XScreenSaverInfo *screensaver_info;
 static int font_h;
-static char *config_file;
 
 int next_notification_id = 1;
 
@@ -1190,16 +1189,21 @@ dunst_ini_handle(void *user_data, const char *section,
         return 1;
 }
 
-void parse_dunstrc(void)
+void parse_dunstrc(char *cmdline_config_path)
 {
 
         xdgHandle xdg;
-        FILE *config_file;
+        FILE *config_file = NULL;
 
         xdgInitHandle(&xdg);
         rules = l_init();
 
-        config_file = xdgConfigOpen("dunst/dunstrc", "r", &xdg);
+        if (cmdline_config_path != NULL) {
+                config_file = fopen(cmdline_config_path, "r");
+        }
+        if (config_file == NULL) {
+                config_file = xdgConfigOpen("dunst/dunstrc", "r", &xdg);
+        }
         if (config_file == NULL) {
                 /* Fall back to just "dunstrc", which was used before 2012-06-23
                  * (before v0.2). */
@@ -1221,7 +1225,7 @@ void parse_dunstrc(void)
         print_rules();
 }
 
-void parse_cmdline_for_config_file(int argc, char *argv[])
+char *parse_cmdline_for_config_file(int argc, char *argv[])
 {
         int i;
         for (i = 0; i < argc; i++) {
@@ -1230,21 +1234,22 @@ void parse_cmdline_for_config_file(int argc, char *argv[])
                                 printf
                                     ("Invalid commandline: -config needs argument\n");
                         }
-                        config_file = argv[++i];
-                        return;
+                        return argv[++i];
                 }
         }
+        return NULL;
 }
 
 int main(int argc, char *argv[])
 {
+        char *cmdline_config_path;
         now = time(&now);
         geometry.mask = XParseGeometry(geom,
                                        &geometry.x, &geometry.y,
                                        &geometry.w, &geometry.h);
 
-        parse_cmdline_for_config_file(argc, argv);
-        parse_dunstrc();
+        cmdline_config_path = parse_cmdline_for_config_file(argc, argv);
+        parse_dunstrc(cmdline_config_path);
         parse_cmdline(argc, argv);
         dc = initdc();
 
