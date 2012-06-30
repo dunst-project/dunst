@@ -29,6 +29,10 @@
     # Possible values are "left", "center" and "right"
     alignment = left
 
+    # show age of message if message is older than sow_age_threshold seconds.
+    # set to -1 to disable
+    show_age_threshold = 60;
+
 
     # the geometry of the window
     # geometry [{width}]x{height}][+/-{x}+/-{y}]

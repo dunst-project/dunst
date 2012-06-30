@@ -69,6 +69,7 @@ char *key_string = NULL;
 char *history_key_string = NULL;
 KeySym mask = 0;
 int idle_threshold = 0;
+int show_age_threshold = -1;
 enum alignment align = left;
 
 int verbosity = 0;
@@ -329,6 +330,42 @@ void draw_win(void)
                         iter = iter->next;
                 } else {
                         n_buf[i].n = NULL;
+                }
+        }
+
+        /* add message age to text */
+        if (show_age_threshold >= 0) {
+                for (i = 0; i < height; i++) {
+
+                        time_t t_delta;
+                        int hours, minutes, seconds;
+                        char *end;
+
+                        if (strlen(n_buf[i].txt) < 1)
+                                continue;
+
+                        t_delta = now - n_buf[i].n->timestamp;
+
+                        if (t_delta < show_age_threshold)
+                                continue;
+
+                        hours = t_delta / 3600;
+                        minutes = (t_delta / 60);
+                        seconds = (t_delta % 60);
+
+                        for (end = n_buf[i].txt; *end != '\0'; end++) ;
+                        if (hours > 0) {
+                                snprintf(end, BUFSIZ - strlen(n_buf[i].txt),
+                                         " (%dh %dm %ds old)",
+                                         hours, minutes, seconds);
+                        } else if (minutes > 0) {
+                                snprintf(end, BUFSIZ - strlen(n_buf[i].txt),
+                                         " (%dm %ds old)", minutes, seconds);
+                        } else {
+                                snprintf(end, BUFSIZ - strlen(n_buf[i].txt),
+                                         " (%ds old)", seconds);
+                        }
+
                 }
         }
 
@@ -1093,7 +1130,8 @@ dunst_ini_handle(void *user_data, const char *section,
                         else if (strcmp(value, "right") == 0)
                                 align = right;
                         /* FIXME warning on unknown alignment */
-                }
+                } else if (strcmp(name, "show_age_threshold") == 0)
+                        show_age_threshold = atoi(value);
         } else if (strcmp(section, "urgency_low") == 0) {
                 if (strcmp(name, "background") == 0)
                         lowbgcolor = dunst_ini_get_string(value);
