@@ -373,6 +373,10 @@ void draw_win(void)
             && !l_is_empty(notification_queue)) {
                 snprintf(n_buf[height - 1].txt, BUFSIZ, "(%d more)",
                          l_length(notification_queue));
+                /* give this buffer the most important notification in order
+                 * to set the colors to it
+                 */
+                n_buf[height - 1].n = most_important(notification_queue)->data;
 
         } else if (indicate_hidden && !l_is_empty(notification_queue)) {
                 /* append "(x more)" message to notification text */
@@ -433,12 +437,7 @@ void draw_win(void)
         for (i = 0; i < height; i++) {
                 if (strlen(n_buf[i].txt) > 0) {
                         notification *n;
-                        /*
-                         * "(x more)" hasn't got a notification assigned to it.
-                         * Take the previous notification instead to 'clone'
-                         * its attributes
-                         */
-                        n = n_buf[i].n ? n_buf[i].n : n_buf[i - 1].n;
+                        n = n_buf[i].n;
                         dc->x = 0;
                         drawrect(dc, 0, 0, width, font_h, True, n->colors->BG);
                         dc->x = n_buf[i].x_offset;
