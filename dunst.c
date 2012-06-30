@@ -114,12 +114,14 @@ void hide_win(void);
 void move_all_to_history(void);
 void print_version(void);
 
-int cmp_notification(notification * a, notification * b)
+int cmp_notification(void * a, void * b)
 {
-        if (a->urgency != b->urgency) {
-                return a->urgency - b->urgency;
+        notification *na = (notification *) a;
+        notification *nb = (notification *) b;
+        if (na->urgency != nb->urgency) {
+                return na->urgency - nb->urgency;
         } else {
-                return b->timestamp - a->timestamp;
+                return nb->timestamp - na->timestamp;
         }
 }
 
