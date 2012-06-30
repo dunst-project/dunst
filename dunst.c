@@ -44,6 +44,11 @@ typedef struct _screen_info {
         dimension_t dim;
 } screen_info;
 
+typedef struct _notification_buffer {
+        char txt[BUFSIZ];
+        notification *n;
+} notification_buffer;
+
 /* global variables */
 char *font = "-*-terminus-medium-r-*-*-16-*-*-*-*-*-*-*";
 char *normbgcolor = "#1793D1";
@@ -114,7 +119,7 @@ void hide_win(void);
 void move_all_to_history(void);
 void print_version(void);
 
-int cmp_notification(void * a, void * b)
+int cmp_notification(void *a, void *b)
 {
         notification *na = (notification *) a;
         notification *nb = (notification *) b;
@@ -290,65 +295,72 @@ void update_lists()
 void draw_win(void)
 {
         int width, x, y, height;
+        int i;
         unsigned int len = l_length(displayed_notifications);
         l_node *iter;
-        notification *data;
-        char hidden[128];
-        ColorSet *hidden_colors = colors[NORM];
+        notification_buffer *n_buf;
         dc->x = 0;
         dc->y = 0;
         dc->h = 0;
 
+        /* calculate height */
         if (geometry.h == 0) {
                 height = len;
         } else {
                 height = MIN(geometry.h, len);
         }
 
-        if (indicate_hidden && !l_is_empty(notification_queue)) {
-                sprintf(hidden, "(%d more)", l_length(notification_queue));
+        if (indicate_hidden && geometry.h != 1
+            && !l_is_empty(notification_queue)) {
                 height++;
         }
 
-        /*
-         * calculate the width
-         */
+        /* initialize and fill buffers */
+        n_buf = calloc(height, sizeof(notification_buffer));
 
-        if (geometry.mask & HeightValue) {
-                if (geometry.h) {
-                        /* code */
+        for (i = 0, iter = displayed_notifications->head; i < height; i++) {
+                memset(n_buf[i].txt, '\0', BUFSIZ);
+                if (iter) {
+                        n_buf[i].n = (notification *) iter->data;
+                        strncpy(n_buf[i].txt, n_buf[i].n->msg, BUFSIZ);
+                        iter = iter->next;
+                } else {
+                        n_buf[i].n = NULL;
                 }
         }
-        /* defined width */
-        if (geometry.mask & WidthValue) {
 
+        /* add "(x more)" */
+        if (indicate_hidden && geometry.h != 1
+            && !l_is_empty(notification_queue)) {
+                snprintf(n_buf[height - 1].txt, BUFSIZ, "(%d more)",
+                         l_length(notification_queue));
+
+        } else if (indicate_hidden && !l_is_empty(notification_queue)) {
+                /* append "(x more)" message to notification text */
+                char *begin;
+                for (begin = n_buf[0].txt; *begin != '\0'; begin++) ;
+                snprintf(begin, BUFSIZ - strlen(n_buf[0].txt),
+                         " (%d more)", l_length(notification_queue));
+
+        }
+
+        /* calculate width */
+        if (geometry.mask & WidthValue && geometry.w == 0) {
                 /* dynamic width */
-                if (geometry.w == 0) {
-                        width = 0;
-
-                        for (iter = displayed_notifications->head;
-                             iter; iter = iter->next) {
-                                data = (notification *) iter->data;
-                                width = MAX(width, textw(dc, data->msg));
-                        }
-
-                        /* we also have the "(x more)" message into account */
-                        if (indicate_hidden
-                            && !l_is_empty(displayed_notifications)) {
-                                width = MAX(width, textw(dc, hidden));
-                        }
-
-                } else {
-                        width = geometry.w;
+                width = 0;
+                for (i = 0; i < height; i++) {
+                        width = MAX(width, textw(dc, n_buf[i].txt));
                 }
+        } else if (geometry.mask & WidthValue) {
+                /* fixed width */
+                width = geometry.w;
         } else {
+                /* across the screen */
                 width = scr.dim.w;
         }
 
-        /*
-         * calculate window position
-         */
 
+        /* calculate window position */
         if (geometry.mask & XNegative) {
                 x = (scr.dim.x + (scr.dim.w - width)) + geometry.x;
         } else {
@@ -366,31 +378,29 @@ void draw_win(void)
         XResizeWindow(dc->dpy, win, width, height * font_h);
         drawrect(dc, 0, 0, width, height * font_h, True, colors[NORM]->BG);
 
-        /* draw notifications */
-        for (iter = displayed_notifications->head; iter; iter = iter->next) {
-                data = (notification *) iter->data;
+        /* draw buffers */
+        for (i = 0; i < height; i++) {
+                if (strlen(n_buf[i].txt) > 0) {
+                        notification *n;
+                        /*
+                         * "(x more)" hasn't got a notification assigned to it.
+                         * Take the previous notification instead to 'clone'
+                         * its attributes
+                         */
+                        n = n_buf[i].n ? n_buf[i].n : n_buf[i - 1].n;
 
-                drawrect(dc, 0, dc->y, width, font_h, True, data->colors->BG);
-                drawtext(dc, data->msg, data->colors);
-                dc->y += font_h;
-
-                /* the "(x more)" message should have the same BG-color as
-                 * the last displayed_notifications
-                 */
-                hidden_colors = data->colors;
-        }
-
-        /* actually draw the "(x more)" message */
-        if (indicate_hidden && !l_is_empty(notification_queue)) {
-                drawrect(dc, 0, dc->y, width, font_h, True, hidden_colors->BG);
-
-                drawtext(dc, hidden, hidden_colors);
-                dc->y += font_h;
+                        drawrect(dc, 0, 0, width, font_h, True, n->colors->BG);
+                        drawtext(dc, n_buf[i].txt, n->colors);
+                        dc->y += font_h;
+                }
         }
 
         /* move and map window */
         XMoveWindow(dc->dpy, win, x, y);
         mapdc(dc, win, width, height * font_h);
+
+        /* cleanup */
+        free(n_buf);
 }
 
 void dunst_printf(int level, const char *fmt, ...)
