@@ -11,6 +11,7 @@ void notify(DBusMessage * msg);
 void getCapabilities(DBusMessage * dmsg);
 void closeNotification(DBusMessage * dmsg);
 void getServerInformation(DBusMessage * dmsg);
+void notificationClosed(notification * n, int reason);
 
 #endif
 

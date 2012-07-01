@@ -13,7 +13,7 @@
 #define ColFG 1
 #define ColBG 0
 
-enum alignment {left, center, right};
+enum alignment { left, center, right };
 
 typedef struct _rule_t {
         char *name;
@@ -39,6 +39,7 @@ typedef struct _notification {
         char *icon;
         char *msg;
         const char *format;
+        char *dbus_client;
         time_t start;
         time_t timestamp;
         int timeout;
@@ -61,5 +62,6 @@ typedef struct _dimension_t {
 
 /* return id of notification */
 int init_notification(notification * n, int id);
-int close_notification(int id);
+int close_notification(notification * n, int reason);
+int close_notification_by_id(int id, int reason);
 void map_win(void);

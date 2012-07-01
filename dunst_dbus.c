@@ -35,7 +35,6 @@ _extract_hint(const char *name, const char *hint_name,
         }
 }
 
-
 static const char *introspect = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
     "<node name=\"/org/freedesktop/Notifications\">"
     "    <interface name=\"org.freedesktop.Notifications\">"
@@ -208,9 +207,7 @@ void closeNotification(DBusMessage * dmsg)
 
         _extract_basic(DBUS_TYPE_UINT32, &args, &id);
 
-        close_notification(id);
-
-        /* TODO org.freedesktop.Notifications.NotificationClosed */
+        close_notification_by_id(id, 3);
 
         dbus_connection_send(dbus_conn, reply, &dbus_serial);
         dbus_connection_flush(dbus_conn);
@@ -251,6 +248,29 @@ void getServerInformation(DBusMessage * dmsg)
         dbus_connection_flush(dbus_conn);
 
         dbus_message_unref(reply);
+}
+
+void notificationClosed(notification * n, int reason)
+{
+        DBusMessage *dmsg;
+        DBusMessageIter args;
+        int id = n->id;
+
+        dmsg =
+            dbus_message_new_signal("/org/freedesktop/Notifications",
+                                    "org.freedesktop.Notifications",
+                                    "NotificationClosed");
+        dbus_message_iter_init_append(dmsg, &args);
+        dbus_message_iter_append_basic(&args, DBUS_TYPE_UINT32, &id);
+        dbus_message_iter_append_basic(&args, DBUS_TYPE_UINT32, &reason);
+
+        dbus_message_set_destination(dmsg, n->dbus_client);
+
+        dbus_connection_send(dbus_conn, dmsg, &dbus_serial);
+
+        dbus_message_unref(dmsg);
+
+        dbus_connection_flush(dbus_conn);
 }
 
 void notify(DBusMessage * dmsg)
@@ -330,6 +350,7 @@ void notify(DBusMessage * dmsg)
         n->icon = strdup(icon);
         n->timeout = expires;
         n->urgency = urgency;
+        n->dbus_client = strdup(dbus_message_get_sender(dmsg));
         for (i = 0; i < ColLast; i++) {
                 n->color_strings[i] = NULL;
         }

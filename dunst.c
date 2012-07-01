@@ -242,8 +242,7 @@ void check_timeouts(void)
                 if (difftime(now, current->start) > current->timeout) {
                         /* l_move changes iter->next, so we need to store it beforehand */
                         next = iter->next;
-                        l_move(displayed_notifications, notification_history,
-                               iter);
+                        close_notification(current, 1);
                         iter = next;
                         continue;
 
@@ -520,6 +519,7 @@ char
 void handle_mouse_click(XEvent ev)
 {
         l_node *iter = displayed_notifications->head;
+        notification *n;
         int i;
         if (ev.xbutton.button == Button3) {
                 move_all_to_history();
@@ -534,7 +534,8 @@ void handle_mouse_click(XEvent ev)
                                 iter = iter->next;
                         }
                 }
-                l_move(displayed_notifications, notification_history, iter);
+                n = (notification *) iter->data;
+                close_notification(n, 2);
         }
 }
 
@@ -564,9 +565,9 @@ void handleXEvents(void)
                 case KeyPress:
                         if (XLookupKeysym(&ev.xkey, 0) == key) {
                                 if (!l_is_empty(displayed_notifications)) {
-                                        l_move(displayed_notifications,
-                                               notification_history,
-                                               displayed_notifications->head);
+                                        notification *n = (notification *)
+                                            displayed_notifications->head->data;
+                                        close_notification(n, 2);
                                 }
                         }
                         if (XLookupKeysym(&ev.xkey, 0) == history_key) {
@@ -579,14 +580,17 @@ void handleXEvents(void)
 void move_all_to_history()
 {
         l_node *node;
+        notification *n;
 
         while (!l_is_empty(displayed_notifications)) {
                 node = displayed_notifications->head;
-                l_move(displayed_notifications, notification_history, node);
+                n = (notification *) node->data;
+                close_notification(n, 2);
         }
         while (!l_is_empty(notification_queue)) {
                 node = notification_queue->head;
-                l_move(notification_queue, notification_history, node);
+                n = (notification *) node->data;
+                close_notification(n, 2);
         }
 }
 
@@ -662,7 +666,7 @@ int init_notification(notification * n, int id)
         if (id == 0) {
                 n->id = ++next_notification_id;
         } else {
-                close_notification(id);
+                close_notification_by_id(id, -1);
         }
 
         l_push(notification_queue, n);
@@ -670,16 +674,25 @@ int init_notification(notification * n, int id)
         return n->id;
 }
 
-int close_notification(int id)
+/*
+ * reasons:
+ * -1 -> notification is a replacement, no NotificationClosed signal emitted
+ *  1 -> the notification expired
+ *  2 -> the notification was dismissed by the user_data
+ *  3 -> The notification was closed by a call to CloseNotification
+ */
+int close_notification_by_id(int id, int reason)
 {
         l_node *iter;
+        notification *target = NULL;
 
         for (iter = displayed_notifications->head; iter; iter = iter->next) {
                 notification *n = (notification *) iter->data;
                 if (n->id == id) {
                         l_move(displayed_notifications, notification_history,
                                iter);
-                        return True;
+                        target = n;
+                        break;
                 }
         }
 
@@ -688,11 +701,21 @@ int close_notification(int id)
                 if (n->id == id) {
                         l_move(displayed_notifications, notification_history,
                                iter);
-                        return True;
+                        target = n;
+                        break;
                 }
         }
 
-        return False;
+        if (reason > 0 && reason < 4) {
+                notificationClosed(target, reason);
+        }
+
+        return target == NULL;
+}
+
+int close_notification(notification * n, int reason)
+{
+        return close_notification_by_id(n->id, reason);
 }
 
 rule_t *initrule(void)
@@ -1127,8 +1150,8 @@ dunst_ini_handle(void *user_data, const char *section,
                         /* FIXME warning on unknown alignment */
                 } else if (strcmp(name, "show_age_threshold") == 0)
                         show_age_threshold = atoi(value);
-                 else if (strcmp(name, "sticky_history") == 0)
-                         sticky_history = dunst_ini_get_boolean(value);
+                else if (strcmp(name, "sticky_history") == 0)
+                        sticky_history = dunst_ini_get_boolean(value);
         } else if (strcmp(section, "urgency_low") == 0) {
                 if (strcmp(name, "background") == 0)
                         lowbgcolor = dunst_ini_get_string(value);
