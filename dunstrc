@@ -53,6 +53,10 @@
     # Which monitor should the notifications be displayed one
     monitor = 0
 
+    # should a notification popped up from history be sticky or
+    # timeout as if it would normally down
+    sticky_history = yes
+
 
 [urgency_low]
     # IMPORTANT: colors have to be defined in quotation marks.

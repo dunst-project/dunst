@@ -71,6 +71,7 @@ KeySym mask = 0;
 int idle_threshold = 0;
 int show_age_threshold = -1;
 enum alignment align = left;
+int sticky_history = True;
 
 int verbosity = 0;
 
@@ -603,6 +604,9 @@ void history_pop(void)
         data = (notification *) iter->data;
         data->redisplayed = True;
         data->start = 0;
+        if (sticky_history) {
+                data->timeout = 0;
+        }
         l_move(notification_history, notification_queue, iter);
 
         if (!visible) {
@@ -1123,6 +1127,8 @@ dunst_ini_handle(void *user_data, const char *section,
                         /* FIXME warning on unknown alignment */
                 } else if (strcmp(name, "show_age_threshold") == 0)
                         show_age_threshold = atoi(value);
+                 else if (strcmp(name, "sticky_history") == 0)
+                         sticky_history = dunst_ini_get_boolean(value);
         } else if (strcmp(section, "urgency_low") == 0) {
                 if (strcmp(name, "background") == 0)
                         lowbgcolor = dunst_ini_get_string(value);
