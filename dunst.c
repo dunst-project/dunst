@@ -141,14 +141,13 @@ l_node *most_important(list * l)
         }
 
         if (sort) {
-                l_node *iter;
                 notification *max;
                 l_node *node_max;
                 notification *data;
 
                 max = l->head->data;
                 node_max = l->head;
-                for (iter = l->head; iter; iter = iter->next) {
+                for (l_node * iter = l->head; iter; iter = iter->next) {
                         data = (notification *) iter->data;
                         if (cmp_notification(max, data) < 0) {
                                 max = data;
@@ -173,25 +172,23 @@ void print_rule(rule_t * r)
 
 void print_rules(void)
 {
-        l_node *iter;
         dunst_printf(DEBUG, "current rules:\n");
         if (l_is_empty(rules)) {
                 dunst_printf(DEBUG, "no rules present\n");
                 return;
         }
-        for (iter = rules->head; iter; iter = iter->next) {
+        for (l_node * iter = rules->head; iter; iter = iter->next) {
                 print_rule((rule_t *) iter->data);
         }
 }
 
 void apply_rules(notification * n)
 {
-        l_node *iter;
         if (l_is_empty(rules)) {
                 return;
         }
 
-        for (iter = rules->head; iter; iter = iter->next) {
+        for (l_node * iter = rules->head; iter; iter = iter->next) {
                 rule_t *r = (rule_t *) iter->data;
 
                 if ((!r->appname || !fnmatch(r->appname, n->appname, 0))
@@ -297,9 +294,7 @@ void update_lists()
 void draw_win(void)
 {
         int width, x, y, height;
-        int i;
         unsigned int len = l_length(displayed_notifications);
-        l_node *iter;
         notification_buffer *n_buf;
         dc->x = 0;
         dc->y = 0;
@@ -320,6 +315,8 @@ void draw_win(void)
         /* initialize and fill buffers */
         n_buf = calloc(height, sizeof(notification_buffer));
 
+        l_node *iter;
+        int i;
         for (i = 0, iter = displayed_notifications->head; i < height; i++) {
                 memset(n_buf[i].txt, '\0', BUFSIZ);
                 n_buf[i].x_offset = 0;
@@ -403,7 +400,7 @@ void draw_win(void)
         }
 
         /* calculate offsets for alignment */
-        for (i = 0; i < height; i++) {
+        for (int i = 0; i < height; i++) {
                 if (strlen(n_buf[i].txt) < 1)
                         continue;
 
@@ -434,7 +431,7 @@ void draw_win(void)
         drawrect(dc, 0, 0, width, height * font_h, True, colors[NORM]->BG);
 
         /* draw buffers */
-        for (i = 0; i < height; i++) {
+        for (int i = 0; i < height; i++) {
                 if (strlen(n_buf[i].txt) > 0) {
                         notification *n;
                         n = n_buf[i].n;
@@ -520,11 +517,10 @@ void handle_mouse_click(XEvent ev)
 {
         l_node *iter = displayed_notifications->head;
         notification *n;
-        int i;
         if (ev.xbutton.button == Button3) {
                 move_all_to_history();
         } else if (ev.xbutton.button == Button1) {
-                i = ev.xbutton.y / font_h;
+                int i = ev.xbutton.y / font_h;
                 for (i = i; i > 0; i--) {
                         /* if the user clicks on the "(x more)" message,
                          * keep iter at the last displayed message and
@@ -1248,8 +1244,7 @@ void parse_dunstrc(char *cmdline_config_path)
 
 char *parse_cmdline_for_config_file(int argc, char *argv[])
 {
-        int i;
-        for (i = 0; i < argc; i++) {
+        for (int i = 0; i < argc; i++) {
                 if (strstr(argv[i], "-config") != 0) {
                         if (i + 1 == argc) {
                                 printf
