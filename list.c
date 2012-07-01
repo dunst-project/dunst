@@ -226,12 +226,14 @@ list *l_init(void)
 
 void l_sort(list * l, int (*f) (void *, void *))
 {
-        list *old_list = l_init();
+        list *old_list;
 
         if (!l || l_length(l) < 2) {
                 /* nothing to do */
                 return;
         }
+
+        old_list = l_init();
 
         old_list->head = l->head;
         l->head = NULL;
