@@ -46,6 +46,7 @@ typedef struct _notification {
         int urgency;
         int redisplayed;        /* has been displayed before? */
         int id;
+        int dup_count;
         ColorSet *colors;
         char *color_strings[2];
 } notification;

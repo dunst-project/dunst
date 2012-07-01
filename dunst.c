@@ -322,7 +322,13 @@ void draw_win(void)
                 n_buf[i].x_offset = 0;
                 if (iter) {
                         n_buf[i].n = (notification *) iter->data;
-                        strncpy(n_buf[i].txt, n_buf[i].n->msg, BUFSIZ);
+                        if (n_buf[i].n->dup_count > 0) {
+                                snprintf(n_buf[i].txt, BUFSIZ, "(%d) %s",
+                                         n_buf[i].n->dup_count,
+                                         n_buf[i].n->msg);
+                        } else {
+                                strncpy(n_buf[i].txt, n_buf[i].n->msg, BUFSIZ);
+                        }
                         iter = iter->next;
                 } else {
                         n_buf[i].n = NULL;
@@ -614,6 +620,16 @@ void history_pop(void)
         }
 }
 
+void free_notification(notification *n) {
+        free(n->appname);
+        free(n->summary);
+        free(n->body);
+        free(n->icon);
+        free(n->msg);
+        free(n->dbus_client);
+        free(n);
+}
+
 int init_notification(notification * n, int id)
 {
         const char *fg = NULL;
@@ -629,6 +645,30 @@ int init_notification(notification * n, int id)
 
         n->msg = fix_markup(n->msg);
         n->msg = strtrim(n->msg);
+
+        n->dup_count = 0;
+
+        /* check if n is a duplicate */
+        for (l_node * iter = notification_queue->head; iter; iter = iter->next) {
+                notification *orig = (notification *) iter->data;
+                if (strcmp(orig->msg, n->msg) == 0) {
+                        orig->dup_count++;
+                        free_notification(n);
+                        return orig->id;
+                }
+        }
+
+        for (l_node * iter = displayed_notifications->head; iter;
+             iter = iter->next) {
+                notification *orig = (notification *) iter->data;
+                if (strcmp(orig->msg, n->msg) == 0) {
+                        orig->dup_count++;
+                        orig->start = now;
+                        free_notification(n);
+                        return orig->id;
+                }
+        }
+
         /* urgency > CRIT -> array out of range */
         n->urgency = n->urgency > CRIT ? CRIT : n->urgency;
 
