@@ -29,7 +29,7 @@
     # Possible values are "left", "center" and "right"
     alignment = left
 
-    # show age of message if message is older than sow_age_threshold seconds.
+    # show age of message if message is older than show_age_threshold seconds.
     # set to -1 to disable
     show_age_threshold = 60;
 
