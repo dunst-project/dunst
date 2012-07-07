@@ -114,6 +114,7 @@ char *string_replace(const char *needle, const char *replacement,
 char *strtrim(char *str);
 void run(void);
 void setup(void);
+void update_screen_info();
 void usage(int exit_status);
 void hide_window();
 l_node *most_important(list * l);
@@ -859,28 +860,12 @@ void hide_win()
         visible = False;
 }
 
-void setup(void)
+void update_screen_info()
 {
-        Window root;
-        XSetWindowAttributes wa;
-        KeyCode code;
 #ifdef XINERAMA
         int n;
         XineramaScreenInfo *info;
 #endif
-
-        notification_queue = l_init();
-        notification_history = l_init();
-        displayed_notifications = l_init();
-        if (scr.scr < 0) {
-                scr.scr = DefaultScreen(dc->dpy);
-        }
-        root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
-
-        utf8 = XInternAtom(dc->dpy, "UTF8_STRING", False);
-
-        /* menu geometry */
-        font_h = dc->font.height + FONT_HEIGHT_BORDER;
 #ifdef XINERAMA
         if ((info = XineramaQueryScreens(dc->dpy, &n))) {
                 if (scr.scr >= n) {
@@ -900,6 +885,29 @@ void setup(void)
                 scr.dim.w = DisplayWidth(dc->dpy, scr.scr);
                 scr.dim.h = DisplayHeight(dc->dpy, scr.scr);
         }
+}
+
+void setup(void)
+{
+        Window root;
+        XSetWindowAttributes wa;
+        KeyCode code;
+
+        notification_queue = l_init();
+        notification_history = l_init();
+        displayed_notifications = l_init();
+        if (scr.scr < 0) {
+                scr.scr = DefaultScreen(dc->dpy);
+        }
+        root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
+
+        utf8 = XInternAtom(dc->dpy, "UTF8_STRING", False);
+
+        /* menu geometry */
+        font_h = dc->font.height + FONT_HEIGHT_BORDER;
+
+        update_screen_info();
+
         /* menu window */
         wa.override_redirect = True;
         wa.background_pixmap = ParentRelative;
@@ -934,6 +942,8 @@ void map_win(void)
         if (visible || l_is_empty(displayed_notifications)) {
                 return;
         }
+
+        update_screen_info();
 
         XMapRaised(dc->dpy, win);
         XGrabButton(dc->dpy, AnyButton, AnyModifier, win, False,
