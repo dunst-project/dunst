@@ -433,6 +433,20 @@ void draw_win(void)
         }
 
         /* resize window and draw background */
+        if (width == 0) {
+                printf("Warning: width == 0\n");
+                return;
+        }
+
+        if (height == 0) {
+                printf("Warning: height == 0\n");
+                return;
+        }
+
+        if (font_h == 0) {
+                printf("Warning: font_h == 0\n");
+                return;
+        }
         resizedc(dc, width, height * font_h);
         XResizeWindow(dc->dpy, win, width, height * font_h);
         drawrect(dc, 0, 0, width, height * font_h, True, colors[NORM]->BG);
