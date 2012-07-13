@@ -26,6 +26,3 @@ LIBS = -L${X11LIB} -lX11 -lXss ${XFTLIBS} ${XINERAMALIBS} $(shell pkg-config --l
 CPPFLAGS = -D_BSD_SOURCE -DVERSION=\"${VERSION}\" ${XINERAMAFLAGS} ${INIFLAGS}
 CFLAGS   = -g --std=c99 -pedantic -Wall -Wno-overlength-strings -Os ${INCS} ${CPPFLAGS}
 LDFLAGS  = ${LIBS}
-
-# compiler and linker
-CC = cc
