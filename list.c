@@ -123,7 +123,14 @@ int l_node_insert(l_node * node, l_node * to_be_inserted)
 void *l_remove(list * l, l_node * node)
 {
         void *data;
-        l_node_remove(l, node);
+        if (l != NULL) {
+                l_node_remove(l, node);
+        }
+
+        if (node == NULL) {
+                return NULL;
+        }
+
         data = node->data;
         free(node);
 
