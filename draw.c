@@ -183,8 +183,10 @@ DC *initdc(void)
                 exit(EXIT_FAILURE);
         }
 
-        if (!(dc->dpy = XOpenDisplay(NULL)))
+        if (!(dc->dpy = XOpenDisplay(NULL))) {
                 eprintf("cannot open display\n");
+                exit(EXIT_FAILURE);
+        }
 
         dc->gc = XCreateGC(dc->dpy, DefaultRootWindow(dc->dpy), 0, NULL);
         XSetLineAttributes(dc->dpy, dc->gc, 1, LineSolid, CapButt, JoinMiter);
