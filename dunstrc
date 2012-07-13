@@ -22,6 +22,8 @@
 
     # use xev to find the names for keys
     key = space
+		# key to clear all messages
+		all_key = Menu
     # key to redisplay last message(s)
     history_key = grave
 
