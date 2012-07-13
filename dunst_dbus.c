@@ -197,7 +197,7 @@ void closeNotification(DBusMessage * dmsg)
 {
         DBusMessage *reply;
         DBusMessageIter args;
-        int id;
+        int id = 0;
 
         reply = dbus_message_new_method_return(dmsg);
         if (!reply) {
