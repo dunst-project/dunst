@@ -156,8 +156,10 @@ unsigned long getcolor(DC * dc, const char *colstr)
 ColorSet *initcolor(DC * dc, const char *foreground, const char *background)
 {
         ColorSet *col = (ColorSet *) malloc(sizeof(ColorSet));
-        if (!col)
+        if (!col) {
                 eprintf("error, cannot allocate memory for color set");
+                exit(EXIT_FAILURE);
+        }
         col->BG = getcolor(dc, background);
         col->FG = getcolor(dc, foreground);
         if (dc->font.xft_font)
