@@ -344,10 +344,10 @@ void notify(DBusMessage * dmsg)
                         expires = 1;
                 }
         }
-        n->appname = strdup(appname);
-        n->summary = strdup(summary);
-        n->body = strdup(body);
-        n->icon = strdup(icon);
+        n->appname = appname != NULL ? strdup(appname) : "";
+        n->summary = summary != NULL ? strdup(summary) : "";
+        n->body = body != NULL ? strdup(body) : "";
+        n->icon = icon != NULL ? strdup(icon) : "";
         n->timeout = expires;
         n->urgency = urgency;
         n->dbus_client = strdup(dbus_message_get_sender(dmsg));
