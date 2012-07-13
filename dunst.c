@@ -542,7 +542,7 @@ void handle_mouse_click(XEvent ev)
                 move_all_to_history();
         } else if (ev.xbutton.button == Button1) {
                 int i = ev.xbutton.y / font_h;
-                for (i = i; i > 0; i--) {
+                for (; i > 0; i--) {
                         /* if the user clicks on the "(x more)" message,
                          * keep iter at the last displayed message and
                          * remove that instead
