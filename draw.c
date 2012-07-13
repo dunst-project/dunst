@@ -176,8 +176,11 @@ DC *initdc(void)
 
         if (!setlocale(LC_CTYPE, "") || !XSupportsLocale())
                 fputs("no locale support\n", stderr);
-        if (!(dc = calloc(1, sizeof *dc)))
+        if (!(dc = calloc(1, sizeof *dc))) {
                 eprintf("cannot malloc %u bytes:", sizeof *dc);
+                exit(EXIT_FAILURE);
+        }
+
         if (!(dc->dpy = XOpenDisplay(NULL)))
                 eprintf("cannot open display\n");
 
