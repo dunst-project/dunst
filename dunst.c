@@ -67,6 +67,7 @@ int sort = True;                /* sort messages by urgency */
 int indicate_hidden = True;     /* show count of hidden messages */
 char *key_string = NULL;
 char *history_key_string = NULL;
+char *all_key_string = NULL;
 KeySym mask = 0;
 int idle_threshold = 0;
 int show_age_threshold = -1;
@@ -86,6 +87,7 @@ static time_t now;
 static int visible = False;
 static KeySym key = NoSymbol;
 static KeySym history_key = NoSymbol;
+static KeySym all_key = NoSymbol;
 static screen_info scr;
 static dimension_t geometry;
 static XScreenSaverInfo *screensaver_info;
@@ -590,6 +592,9 @@ void handleXEvents(void)
                         if (XLookupKeysym(&ev.xkey, 0) == history_key) {
                                 history_pop();
                         }
+			if (XLookupKeysym(&ev.xkey, 0) == all_key) {
+				move_all_to_history();
+			}
                 }
         }
 }
@@ -948,6 +953,12 @@ void setup(void)
                 XGrabKey(dc->dpy, code, mask, root, True, GrabModeAsync,
                          GrabModeAsync);
         }
+
+	if (all_key != NoSymbol) {
+		code = XKeysymToKeycode(dc->dpy, all_key);
+                XGrabKey(dc->dpy, code, mask, root, True, GrabModeAsync,
+                         GrabModeAsync);
+	}
 }
 
 void map_win(void)
@@ -988,6 +999,7 @@ void parse_cmdline(int argc, char *argv[])
                         {"format", required_argument, NULL, 'f'},
                         {"key", required_argument, NULL, 'k'},
                         {"history_key", required_argument, NULL, 'K'},
+                        {"all_key", required_argument, NULL, 'A'},
                         {"geometry", required_argument, NULL, 'g'},
                         {"config", required_argument, NULL, 'r'},
                         {"mod", required_argument, NULL, 'M'},
@@ -1057,6 +1069,9 @@ void parse_cmdline(int argc, char *argv[])
                 case 'K':
                         history_key_string = optarg;
                         break;
+		case 'A':
+			all_key_string = optarg;
+			break;
                 case 'g':
                         geom = optarg;
                         break;
@@ -1174,6 +1189,8 @@ dunst_ini_handle(void *user_data, const char *section,
                         key_string = dunst_ini_get_string(value);
                 else if (strcmp(name, "history_key") == 0)
                         history_key_string = dunst_ini_get_string(value);
+                else if (strcmp(name, "all_key") == 0)
+                        all_key_string = dunst_ini_get_string(value);
                 else if (strcmp(name, "idle_threshold") == 0)
                         idle_threshold = atoi(value);
                 else if (strcmp(name, "monitor") == 0)
@@ -1338,6 +1355,8 @@ int main(int argc, char *argv[])
         key = key_string ? XStringToKeysym(key_string) : NoSymbol;
         history_key =
             history_key_string ? XStringToKeysym(history_key_string) : NoSymbol;
+        all_key =
+            all_key_string ? XStringToKeysym(all_key_string) : NoSymbol;
         screensaver_info = XScreenSaverAllocInfo();
 
         initdbus();
@@ -1362,7 +1381,7 @@ int main(int argc, char *argv[])
 void usage(int exit_status)
 {
         fputs
-            ("usage: dunst [-h/--help] [-v] [-geometry geom] [-fn font] [-format fmt]\n[-nb color] [-nf color] [-lb color] [-lf color] [-cb color] [ -cf color]\n[-to secs] [-lto secs] [-cto secs] [-nto secs] [-key key] [-history_key key] [-mod modifier] [-mon n] [-config dunstrc]\n",
+            ("usage: dunst [-h/--help] [-v] [-geometry geom] [-fn font] [-format fmt]\n[-nb color] [-nf color] [-lb color] [-lf color] [-cb color] [ -cf color]\n[-to secs] [-lto secs] [-cto secs] [-nto secs] [-key key] [-history_key key] [-all_key key] [-mod modifier] [-mon n] [-config dunstrc]\n",
              stderr);
         exit(exit_status);
 }
