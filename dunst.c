@@ -757,7 +757,7 @@ int close_notification_by_id(int id, int reason)
                 }
         }
 
-        if (reason > 0 && reason < 4) {
+        if (reason > 0 && reason < 4 && target != NULL) {
                 notificationClosed(target, reason);
         }
 

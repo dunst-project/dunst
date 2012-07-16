@@ -254,7 +254,13 @@ void notificationClosed(notification * n, int reason)
 {
         DBusMessage *dmsg;
         DBusMessageIter args;
-        int id = n->id;
+        int id;
+
+        if (n == NULL) {
+                return;
+        }
+
+        id = n->id;
 
         dmsg =
             dbus_message_new_signal("/org/freedesktop/Notifications",
