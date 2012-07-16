@@ -750,7 +750,7 @@ int close_notification_by_id(int id, int reason)
         for (iter = notification_queue->head; iter; iter = iter->next) {
                 notification *n = (notification *) iter->data;
                 if (n->id == id) {
-                        l_move(displayed_notifications, notification_history,
+                        l_move(notification_queue, notification_history,
                                iter);
                         target = n;
                         break;
