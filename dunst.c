@@ -592,9 +592,9 @@ void handleXEvents(void)
                         if (XLookupKeysym(&ev.xkey, 0) == history_key) {
                                 history_pop();
                         }
-			if (XLookupKeysym(&ev.xkey, 0) == all_key) {
-				move_all_to_history();
-			}
+                        if (XLookupKeysym(&ev.xkey, 0) == all_key) {
+                                move_all_to_history();
+                        }
                 }
         }
 }
@@ -640,7 +640,8 @@ void history_pop(void)
         }
 }
 
-void free_notification(notification *n) {
+void free_notification(notification * n)
+{
         free(n->appname);
         free(n->summary);
         free(n->body);
@@ -755,8 +756,7 @@ int close_notification_by_id(int id, int reason)
         for (iter = notification_queue->head; iter; iter = iter->next) {
                 notification *n = (notification *) iter->data;
                 if (n->id == id) {
-                        l_move(notification_queue, notification_history,
-                               iter);
+                        l_move(notification_queue, notification_history, iter);
                         target = n;
                         break;
                 }
@@ -954,11 +954,11 @@ void setup(void)
                          GrabModeAsync);
         }
 
-	if (all_key != NoSymbol) {
-		code = XKeysymToKeycode(dc->dpy, all_key);
+        if (all_key != NoSymbol) {
+                code = XKeysymToKeycode(dc->dpy, all_key);
                 XGrabKey(dc->dpy, code, mask, root, True, GrabModeAsync,
                          GrabModeAsync);
-	}
+        }
 }
 
 void map_win(void)
@@ -1069,9 +1069,9 @@ void parse_cmdline(int argc, char *argv[])
                 case 'K':
                         history_key_string = optarg;
                         break;
-		case 'A':
-			all_key_string = optarg;
-			break;
+                case 'A':
+                        all_key_string = optarg;
+                        break;
                 case 'g':
                         geom = optarg;
                         break;
@@ -1355,8 +1355,7 @@ int main(int argc, char *argv[])
         key = key_string ? XStringToKeysym(key_string) : NoSymbol;
         history_key =
             history_key_string ? XStringToKeysym(history_key_string) : NoSymbol;
-        all_key =
-            all_key_string ? XStringToKeysym(all_key_string) : NoSymbol;
+        all_key = all_key_string ? XStringToKeysym(all_key_string) : NoSymbol;
         screensaver_info = XScreenSaverAllocInfo();
 
         initdbus();
