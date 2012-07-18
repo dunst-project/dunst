@@ -127,6 +127,13 @@ void print_version(void);
 
 int cmp_notification(void *a, void *b)
 {
+        if (a == NULL && b == NULL)
+                return 0;
+        else if (a == NULL)
+                return -1;
+        else if (b == NULL)
+                return 1;
+
         notification *na = (notification *) a;
         notification *nb = (notification *) b;
         if (na->urgency != nb->urgency) {
@@ -165,6 +172,9 @@ l_node *most_important(list * l)
 
 void print_rule(rule_t * r)
 {
+        if (r == NULL)
+                return;
+
         dunst_printf(DEBUG, "%s %s %s %s %s %d %d %s %s %s\n",
                      r->name,
                      r->appname,
@@ -187,7 +197,7 @@ void print_rules(void)
 
 void apply_rules(notification * n)
 {
-        if (l_is_empty(rules)) {
+        if (l_is_empty(rules) || n == NULL) {
                 return;
         }
 
@@ -642,6 +652,8 @@ void history_pop(void)
 
 void free_notification(notification * n)
 {
+        if (n == NULL)
+                return;
         free(n->appname);
         free(n->summary);
         free(n->body);
@@ -655,7 +667,11 @@ int init_notification(notification * n, int id)
 {
         const char *fg = NULL;
         const char *bg = NULL;
+
+        if (n == NULL)
+                return -1;
         n->format = format;
+
         apply_rules(n);
 
         n->msg = string_replace("%a", n->appname, strdup(n->format));
@@ -771,6 +787,8 @@ int close_notification_by_id(int id, int reason)
 
 int close_notification(notification * n, int reason)
 {
+        if (n == NULL)
+                return -1;
         return close_notification_by_id(n->id, reason);
 }
 
