@@ -893,6 +893,20 @@ void run(void)
 
 void hide_win()
 {
+        KeyCode code;
+        Window root;
+        root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
+
+        if (key != NoSymbol) {
+                code = XKeysymToKeycode(dc->dpy, key);
+                XUngrabKey(dc->dpy, code, mask, root);
+        }
+
+        if (all_key != NoSymbol) {
+                code = XKeysymToKeycode(dc->dpy, all_key);
+                XUngrabKey(dc->dpy, code, mask, root);
+        }
+
         XUngrabButton(dc->dpy, AnyButton, AnyModifier, win);
         XUnmapWindow(dc->dpy, win);
         XFlush(dc->dpy);
@@ -962,14 +976,26 @@ void setup(void)
                           CWOverrideRedirect | CWBackPixmap | CWEventMask, &wa);
 
         /* grab keys */
-        if (key != NoSymbol) {
-                code = XKeysymToKeycode(dc->dpy, key);
+        if (history_key != NoSymbol) {
+                code = XKeysymToKeycode(dc->dpy, history_key);
                 XGrabKey(dc->dpy, code, mask, root, True, GrabModeAsync,
                          GrabModeAsync);
         }
 
-        if (history_key != NoSymbol) {
-                code = XKeysymToKeycode(dc->dpy, history_key);
+}
+
+void map_win(void)
+{
+        /* window is already mapped or there's nothing to show */
+        if (visible || l_is_empty(displayed_notifications)) {
+                return;
+        }
+
+        KeyCode code;
+        Window root;
+        root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
+        if (key != NoSymbol) {
+                code = XKeysymToKeycode(dc->dpy, key);
                 XGrabKey(dc->dpy, code, mask, root, True, GrabModeAsync,
                          GrabModeAsync);
         }
@@ -978,14 +1004,6 @@ void setup(void)
                 code = XKeysymToKeycode(dc->dpy, all_key);
                 XGrabKey(dc->dpy, code, mask, root, True, GrabModeAsync,
                          GrabModeAsync);
-        }
-}
-
-void map_win(void)
-{
-        /* window is already mapped or there's nothing to show */
-        if (visible || l_is_empty(displayed_notifications)) {
-                return;
         }
 
         update_screen_info();
