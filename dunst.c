@@ -899,12 +899,14 @@ void hide_win()
 
         if (key != NoSymbol) {
                 code = XKeysymToKeycode(dc->dpy, key);
-                XUngrabKey(dc->dpy, code, mask, root);
+                if (code != NoSymbol)
+                        XUngrabKey(dc->dpy, code, mask, root);
         }
 
         if (all_key != NoSymbol) {
                 code = XKeysymToKeycode(dc->dpy, all_key);
-                XUngrabKey(dc->dpy, code, mask, root);
+                if (code != NoSymbol)
+                        XUngrabKey(dc->dpy, code, mask, root);
         }
 
         XUngrabButton(dc->dpy, AnyButton, AnyModifier, win);
@@ -978,8 +980,11 @@ void setup(void)
         /* grab keys */
         if (history_key != NoSymbol) {
                 code = XKeysymToKeycode(dc->dpy, history_key);
-                XGrabKey(dc->dpy, code, mask, root, True, GrabModeAsync,
-                         GrabModeAsync);
+                if (code == NoSymbol)
+                        fprintf(stderr, "no keycode for keysym '%s'\n", history_key_string);
+                else
+                        XGrabKey(dc->dpy, code, mask, root, True, GrabModeAsync,
+                                 GrabModeAsync);
         }
 
 }
@@ -996,14 +1001,20 @@ void map_win(void)
         root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
         if (key != NoSymbol) {
                 code = XKeysymToKeycode(dc->dpy, key);
-                XGrabKey(dc->dpy, code, mask, root, True, GrabModeAsync,
-                         GrabModeAsync);
+                if (code == NoSymbol)
+                        fprintf(stderr, "no keycode for keysym '%s'\n", key_string);
+                else
+                        XGrabKey(dc->dpy, code, mask, root, True, GrabModeAsync,
+                                 GrabModeAsync);
         }
 
         if (all_key != NoSymbol) {
                 code = XKeysymToKeycode(dc->dpy, all_key);
-                XGrabKey(dc->dpy, code, mask, root, True, GrabModeAsync,
-                         GrabModeAsync);
+                if (code == NoSymbol)
+                        fprintf(stderr, "no keycode for keysym '%s'\n", all_key_string);
+                else
+                        XGrabKey(dc->dpy, code, mask, root, True, GrabModeAsync,
+                                 GrabModeAsync);
         }
 
         update_screen_info();
