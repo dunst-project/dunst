@@ -58,11 +58,12 @@ typedef struct _dimension_t {
         unsigned int w;
         int mask;
 } dimension_t;
-#endif
-/* vim: set ts=8 sw=8 tw=0: */
 
 /* return id of notification */
 int init_notification(notification * n, int id);
 int close_notification(notification * n, int reason);
 int close_notification_by_id(int id, int reason);
 void map_win(void);
+
+#endif
+/* vim: set ts=8 sw=8 tw=0: */
