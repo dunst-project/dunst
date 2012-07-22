@@ -44,13 +44,15 @@ timeouts for low/normal/critical messages.
 
 =item B<-key key>
 
-close window by pressing key. See also -mod.
+remove notification by pressing key.
 
-=item B<-mod modifier>
+=item B<-all_key key>
 
-defines the modifier used in conjunction with -key. Available
-modifiers are: ctrl, shift, mod1-mod4. This option can be used
-multiple times to combine modifiers.
+remove all notifications by pressing key.
+
+=item B<-history_key key>
+
+redisplay last notification by pressing key.
 
 =item B<-format fmt>
 

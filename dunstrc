@@ -15,18 +15,6 @@
     # Show how many messages are currently hidden (because of geometry)
     indicate_hidden = yes
 
-    # keybindings to remove notification
-    # available modifiers are 'ctrl', 'mod1' (the alt-key), 'mod2', 'mod3'
-    # and 'mod4' (windows-key)
-    modifier = ctrl
-
-    # use xev to find the names for keys
-    key = space
-    # key to clear all messages
-    all_key = Menu
-    # key to redisplay last message(s)
-    history_key = grave
-
     # alignment of message text.
     # Possible values are "left", "center" and "right"
     alignment = left
@@ -59,6 +47,10 @@
     # timeout as if it would normally down
     sticky_history = yes
 
+[shortcuts]
+    close = ctrl+space
+    close_all = ctrl+shift+space
+    history = ctrl+grave
 
 [urgency_low]
     # IMPORTANT: colors have to be defined in quotation marks.

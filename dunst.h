@@ -59,6 +59,14 @@ typedef struct _dimension_t {
         int mask;
 } dimension_t;
 
+typedef struct _keyboard_shortcut {
+        const char *str;
+        KeyCode code;
+        KeySym sym;
+        KeySym mask;
+        int is_valid;
+} keyboard_shortcut;
+
 /* return id of notification */
 int init_notification(notification * n, int id);
 int close_notification(notification * n, int reason);

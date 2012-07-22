@@ -65,10 +65,6 @@ char *geom = "0x0";             /* geometry */
 int height_limit;
 int sort = True;                /* sort messages by urgency */
 int indicate_hidden = True;     /* show count of hidden messages */
-char *key_string = NULL;
-char *history_key_string = NULL;
-char *all_key_string = NULL;
-KeySym mask = 0;
 int idle_threshold = 0;
 int show_age_threshold = -1;
 enum alignment align = left;
@@ -85,9 +81,12 @@ static DC *dc;
 static Window win;
 static time_t now;
 static int visible = False;
-static KeySym key = NoSymbol;
-static KeySym history_key = NoSymbol;
-static KeySym all_key = NoSymbol;
+static keyboard_shortcut close_ks = {.str = NULL,.code = 0,.sym =
+            NoSymbol,.mask = 0,.is_valid = False };
+static keyboard_shortcut close_all_ks = {.str = NULL,.code = 0,.sym =
+            NoSymbol,.mask = 0,.is_valid = False };
+static keyboard_shortcut history_ks = {.str = NULL,.code = 0,.sym =
+            NoSymbol,.mask = 0,.is_valid = False };
 static screen_info scr;
 static dimension_t geometry;
 static XScreenSaverInfo *screensaver_info;
@@ -124,6 +123,9 @@ void draw_win(void);
 void hide_win(void);
 void move_all_to_history(void);
 void print_version(void);
+
+void init_shortcut(keyboard_shortcut * shortcut);
+KeySym string_to_mask(char *str);
 
 int cmp_notification(void *a, void *b)
 {
@@ -480,8 +482,7 @@ void draw_win(void)
         XMoveWindow(dc->dpy, win, x, y);
         mapdc(dc, win, width, height * font_h);
 
-
-draw_win_cleanup:
+ draw_win_cleanup:
         /* cleanup */
         free(n_buf);
 }
@@ -594,17 +595,23 @@ void handleXEvents(void)
                         }
                         break;
                 case KeyPress:
-                        if (XLookupKeysym(&ev.xkey, 0) == key) {
+                        if (close_ks.str
+                            && XLookupKeysym(&ev.xkey, 0) == close_ks.sym
+                            && close_ks.mask == ev.xkey.state) {
                                 if (!l_is_empty(displayed_notifications)) {
                                         notification *n = (notification *)
                                             displayed_notifications->head->data;
                                         close_notification(n, 2);
                                 }
                         }
-                        if (XLookupKeysym(&ev.xkey, 0) == history_key) {
+                        if (history_ks.str
+                            && XLookupKeysym(&ev.xkey, 0) == history_ks.sym
+                            && history_ks.mask == ev.xkey.state) {
                                 history_pop();
                         }
-                        if (XLookupKeysym(&ev.xkey, 0) == all_key) {
+                        if (close_all_ks.str
+                            && XLookupKeysym(&ev.xkey, 0) == close_all_ks.sym
+                            && close_all_ks.mask == ev.xkey.state) {
                                 move_all_to_history();
                         }
                 }
@@ -794,6 +801,62 @@ int close_notification(notification * n, int reason)
         return close_notification_by_id(n->id, reason);
 }
 
+KeySym string_to_mask(char *str)
+{
+        if (!strcmp(str, "ctrl")) {
+                return ControlMask;
+        } else if (!strcmp(str, "mod4")) {
+                return Mod4Mask;
+        } else if (!strcmp(str, "mod3")) {
+                return Mod3Mask;
+        } else if (!strcmp(str, "mod2")) {
+                return Mod2Mask;
+        } else if (!strcmp(str, "mod1")) {
+                return Mod1Mask;
+        } else if (!strcmp(str, "shift")) {
+                return ShiftMask;
+        } else {
+                fprintf(stderr, "Warning: Unknown Modifier: %s\n", str);
+                return 0;
+        }
+
+}
+
+void init_shortcut(keyboard_shortcut * ks)
+{
+        if (ks == NULL || ks->str == NULL)
+                return;
+
+        char *str = strdup(ks->str);
+        char *str_begin = str;
+
+        if (str == NULL) {
+                fprintf(stderr, "Unable to allocate memory");
+                exit(EXIT_FAILURE);
+        }
+
+        while (strstr(str, "+")) {
+                char delim = '+';
+                char *mod = strsep(&str, &delim);
+                strtrim(mod);
+                ks->mask = ks->mask | string_to_mask(mod);
+        }
+        strtrim(str);
+
+        ks->sym = XStringToKeysym(str);
+        ks->code = XKeysymToKeycode(dc->dpy, ks->sym);
+
+        if (ks->sym == NoSymbol || ks->code == NoSymbol) {
+                fprintf(stderr, "Warning: Unknown keyboard shortcut: %s\n",
+                        ks->str);
+                ks->is_valid = False;
+        } else {
+                ks->is_valid = True;
+        }
+
+        free(str_begin);
+}
+
 rule_t *initrule(void)
 {
         rule_t *r = malloc(sizeof(rule_t));
@@ -893,21 +956,14 @@ void run(void)
 
 void hide_win()
 {
-        KeyCode code;
         Window root;
         root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
 
-        if (key != NoSymbol) {
-                code = XKeysymToKeycode(dc->dpy, key);
-                if (code != NoSymbol)
-                        XUngrabKey(dc->dpy, code, mask, root);
-        }
+        if (close_ks.is_valid)
+                XUngrabKey(dc->dpy, close_ks.code, close_ks.mask, root);
 
-        if (all_key != NoSymbol) {
-                code = XKeysymToKeycode(dc->dpy, all_key);
-                if (code != NoSymbol)
-                        XUngrabKey(dc->dpy, code, mask, root);
-        }
+        if (close_all_ks.is_valid)
+                XUngrabKey(dc->dpy, close_all_ks.code, close_all_ks.mask, root);
 
         XUngrabButton(dc->dpy, AnyButton, AnyModifier, win);
         XUnmapWindow(dc->dpy, win);
@@ -946,7 +1002,6 @@ void setup(void)
 {
         Window root;
         XSetWindowAttributes wa;
-        KeyCode code;
 
         notification_queue = l_init();
         notification_history = l_init();
@@ -978,15 +1033,9 @@ void setup(void)
                           CWOverrideRedirect | CWBackPixmap | CWEventMask, &wa);
 
         /* grab keys */
-        if (history_key != NoSymbol) {
-                code = XKeysymToKeycode(dc->dpy, history_key);
-                if (code == NoSymbol)
-                        fprintf(stderr, "no keycode for keysym '%s'\n", history_key_string);
-                else
-                        XGrabKey(dc->dpy, code, mask, root, True, GrabModeAsync,
-                                 GrabModeAsync);
-        }
-
+        if (history_ks.is_valid)
+                XGrabKey(dc->dpy, history_ks.code, history_ks.mask, root,
+                         True, GrabModeAsync, GrabModeAsync);
 }
 
 void map_win(void)
@@ -996,26 +1045,16 @@ void map_win(void)
                 return;
         }
 
-        KeyCode code;
         Window root;
         root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
-        if (key != NoSymbol) {
-                code = XKeysymToKeycode(dc->dpy, key);
-                if (code == NoSymbol)
-                        fprintf(stderr, "no keycode for keysym '%s'\n", key_string);
-                else
-                        XGrabKey(dc->dpy, code, mask, root, True, GrabModeAsync,
-                                 GrabModeAsync);
-        }
 
-        if (all_key != NoSymbol) {
-                code = XKeysymToKeycode(dc->dpy, all_key);
-                if (code == NoSymbol)
-                        fprintf(stderr, "no keycode for keysym '%s'\n", all_key_string);
-                else
-                        XGrabKey(dc->dpy, code, mask, root, True, GrabModeAsync,
-                                 GrabModeAsync);
-        }
+        if (close_ks.is_valid)
+                XGrabKey(dc->dpy, close_ks.code, close_ks.mask, root, True,
+                         GrabModeAsync, GrabModeAsync);
+
+        if (close_all_ks.is_valid)
+                XGrabKey(dc->dpy, close_all_ks.code, close_all_ks.mask, root,
+                         True, GrabModeAsync, GrabModeAsync);
 
         update_screen_info();
 
@@ -1044,7 +1083,6 @@ void parse_cmdline(int argc, char *argv[])
                         {"lto", required_argument, NULL, '0'},
                         {"nto", required_argument, NULL, '1'},
                         {"cto", required_argument, NULL, '2'},
-                        {"mon", required_argument, NULL, 'm'},
                         {"format", required_argument, NULL, 'f'},
                         {"key", required_argument, NULL, 'k'},
                         {"history_key", required_argument, NULL, 'K'},
@@ -1066,6 +1104,7 @@ void parse_cmdline(int argc, char *argv[])
                         break;
                 }
 
+                KeySym mod = 0;
                 switch (c) {
                 case 0:
                         break;
@@ -1112,35 +1151,22 @@ void parse_cmdline(int argc, char *argv[])
                 case 'f':
                         format = optarg;
                         break;
+                case 'M':
+                        fprintf(stderr, "-mod is depricated. Use \"-key mod+key\" instead\n");
+                        mod = string_to_mask(optarg);
+                        close_ks.mask = mod;
+                        close_all_ks.mask = mod;
+                        history_ks.mask = mod;
+                        break;
                 case 'k':
-                        key_string = optarg;
+                        close_ks.str = optarg;
                         break;
                 case 'K':
-                        history_key_string = optarg;
-                        break;
+                        history_ks.str = optarg;
                 case 'A':
-                        all_key_string = optarg;
-                        break;
+                        close_all_ks.str = optarg;
                 case 'g':
                         geom = optarg;
-                        break;
-                case 'M':
-                        if (!strcmp(optarg, "ctrl")) {
-                                mask |= ControlMask;
-                        } else if (!strcmp(optarg, "mod1")) {
-                                mask |= Mod1Mask;
-                        } else if (!strcmp(optarg, "mod2")) {
-                                mask |= Mod2Mask;
-                        } else if (!strcmp(optarg, "mod3")) {
-                                mask |= Mod3Mask;
-                        } else if (!strcmp(optarg, "mod4")) {
-                                mask |= Mod4Mask;
-                        } else {
-                                fprintf(stderr, "Unable to find mask: %s\n",
-                                        optarg);
-                                fprintf(stderr,
-                                        "See manpage for list of available masks\n");
-                        }
                         break;
                 case 's':
                         sort = True;
@@ -1234,38 +1260,34 @@ dunst_ini_handle(void *user_data, const char *section,
                         sort = dunst_ini_get_boolean(value);
                 else if (strcmp(name, "indicate_hidden") == 0)
                         indicate_hidden = dunst_ini_get_boolean(value);
-                else if (strcmp(name, "key") == 0)
-                        key_string = dunst_ini_get_string(value);
-                else if (strcmp(name, "history_key") == 0)
-                        history_key_string = dunst_ini_get_string(value);
-                else if (strcmp(name, "all_key") == 0)
-                        all_key_string = dunst_ini_get_string(value);
                 else if (strcmp(name, "idle_threshold") == 0)
                         idle_threshold = atoi(value);
                 else if (strcmp(name, "monitor") == 0)
                         scr.scr = atoi(value);
-                else if (strcmp(name, "geometry") == 0) {
+                else if (strcmp(name, "geometry") == 0)
                         geom = dunst_ini_get_string(value);
-                } else if (strcmp(name, "modifier") == 0) {
-                        char *mod = dunst_ini_get_string(value);
+                else if (strcmp(name, "modifier") == 0) {
+                        fprintf(stderr,
+                                "WARNING: Keyboard Shortcuts in [global] are depricated. See example dunstrc for new [shortcuts] section\n");
+                        KeySym mod =
+                            string_to_mask(dunst_ini_get_string(value));
 
-                        if (mod == NULL) {
-                                mask = 0;
-                        } else if (!strcmp(mod, "ctrl")) {
-                                mask = ControlMask;
-                        } else if (!strcmp(mod, "mod4")) {
-                                mask = Mod4Mask;
-                        } else if (!strcmp(mod, "mod3")) {
-                                mask = Mod3Mask;
-                        } else if (!strcmp(mod, "mod2")) {
-                                mask = Mod2Mask;
-                        } else if (!strcmp(mod, "mod1")) {
-                                mask = Mod1Mask;
-                        } else {
-                                /* FIXME warning on unknown modifier */
-                                mask = 0;
-                        }
-                        free(mod);
+                        close_ks.mask = mod;
+                        close_all_ks.mask = mod;
+                        history_ks.mask = mod;
+                } else if (strcmp(name, "key") == 0) {
+                        fprintf(stderr,
+                                "WARNING: Keyboard Shortcuts in [global] are depricated. See example dunstrc for new [shortcuts] section\n");
+                        close_ks.str = dunst_ini_get_string(value);
+                } else if (strcmp(name, "all_key") == 0) {
+                        fprintf(stderr,
+                                "WARNING: Keyboard Shortcuts in [global] are depricated. See example dunstrc for new [shortcuts] section\n");
+                        close_all_ks.str = dunst_ini_get_string(value);
+                } else if (strcmp(name, "history_key") == 0) {
+                        fprintf(stderr,
+                                "WARNING: Keyboard Shortcuts in [global] are depricated. See example dunstrc for new [shortcuts] section\n");
+                        history_ks.str = dunst_ini_get_string(value);
+
                 } else if (strcmp(name, "alignment") == 0) {
                         if (strcmp(value, "left") == 0)
                                 align = left;
@@ -1278,6 +1300,7 @@ dunst_ini_handle(void *user_data, const char *section,
                         show_age_threshold = atoi(value);
                 else if (strcmp(name, "sticky_history") == 0)
                         sticky_history = dunst_ini_get_boolean(value);
+
         } else if (strcmp(section, "urgency_low") == 0) {
                 if (strcmp(name, "background") == 0)
                         lowbgcolor = dunst_ini_get_string(value);
@@ -1285,6 +1308,7 @@ dunst_ini_handle(void *user_data, const char *section,
                         lowfgcolor = dunst_ini_get_string(value);
                 else if (strcmp(name, "timeout") == 0)
                         timeouts[LOW] = atoi(value);
+
         } else if (strcmp(section, "urgency_normal") == 0) {
                 if (strcmp(name, "background") == 0)
                         normbgcolor = dunst_ini_get_string(value);
@@ -1292,6 +1316,7 @@ dunst_ini_handle(void *user_data, const char *section,
                         normfgcolor = dunst_ini_get_string(value);
                 else if (strcmp(name, "timeout") == 0)
                         timeouts[NORM] = atoi(value);
+
         } else if (strcmp(section, "urgency_critical") == 0) {
                 if (strcmp(name, "background") == 0)
                         critbgcolor = dunst_ini_get_string(value);
@@ -1299,6 +1324,14 @@ dunst_ini_handle(void *user_data, const char *section,
                         critfgcolor = dunst_ini_get_string(value);
                 else if (strcmp(name, "timeout") == 0)
                         timeouts[CRIT] = atoi(value);
+
+        } else if (strcmp(section, "shortcuts") == 0) {
+                if (strcmp(name, "close") == 0)
+                        close_ks.str = dunst_ini_get_string(value);
+                else if (strcmp(name, "close_all") == 0)
+                        close_all_ks.str = dunst_ini_get_string(value);
+                else if (strcmp(name, "history") == 0)
+                        history_ks.str = dunst_ini_get_string(value);
         } else {
 
                 rule_t *current_rule = dunst_rules_find_or_create(section);
@@ -1392,19 +1425,19 @@ int main(int argc, char *argv[])
         now = time(&now);
 
         cmdline_config_path = parse_cmdline_for_config_file(argc, argv);
+
         parse_dunstrc(cmdline_config_path);
         parse_cmdline(argc, argv);
         dc = initdc();
+
+        init_shortcut(&close_ks);
+        init_shortcut(&close_all_ks);
+        init_shortcut(&history_ks);
 
         geometry.mask = XParseGeometry(geom,
                                        &geometry.x, &geometry.y,
                                        &geometry.w, &geometry.h);
 
-        /* initialize keys */
-        key = key_string ? XStringToKeysym(key_string) : NoSymbol;
-        history_key =
-            history_key_string ? XStringToKeysym(history_key_string) : NoSymbol;
-        all_key = all_key_string ? XStringToKeysym(all_key_string) : NoSymbol;
         screensaver_info = XScreenSaverAllocInfo();
 
         initdbus();
@@ -1429,7 +1462,7 @@ int main(int argc, char *argv[])
 void usage(int exit_status)
 {
         fputs
-            ("usage: dunst [-h/--help] [-v] [-geometry geom] [-fn font] [-format fmt]\n[-nb color] [-nf color] [-lb color] [-lf color] [-cb color] [ -cf color]\n[-to secs] [-lto secs] [-cto secs] [-nto secs] [-key key] [-history_key key] [-all_key key] [-mod modifier] [-mon n] [-config dunstrc]\n",
+            ("usage: dunst [-h/--help] [-v] [-geometry geom] [-fn font] [-format fmt]\n[-nb color] [-nf color] [-lb color] [-lf color] [-cb color] [ -cf color]\n[-to secs] [-lto secs] [-cto secs] [-nto secs] [-key key] [-history_key key] [-all_key key] [-mon n] [-config dunstrc]\n",
              stderr);
         exit(exit_status);
 }
