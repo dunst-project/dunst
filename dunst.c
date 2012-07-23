@@ -836,8 +836,11 @@ void init_shortcut(keyboard_shortcut * ks)
         }
 
         while (strstr(str, "+")) {
-                char delim = '+';
-                char *mod = strsep(&str, &delim);
+                char *mod = str;
+                while(*str != '+')
+                        str++;
+                *str = '\0';
+                str++;
                 strtrim(mod);
                 ks->mask = ks->mask | string_to_mask(mod);
         }
