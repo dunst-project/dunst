@@ -48,8 +48,18 @@
     sticky_history = yes
 
 [shortcuts]
+    # shortcuts are specified as [modifier+][modifier+]...key
+    # available modifiers are 'ctrl', 'mod1' (the alt-key), 'mod2', 'mod3'
+    # and 'mod4' (windows-key)
+    # xev might be helpful to find names for keys
+
+    # close notification
     close = ctrl+space
+
+    # close all notifications
     close_all = ctrl+shift+space
+
+    # redisplay last message(s)
     history = ctrl+grave
 
 [urgency_low]
