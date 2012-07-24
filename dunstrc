@@ -72,6 +72,7 @@
     close_all = ctrl+shift+space
 
     # redisplay last message(s)
+    # On the US keyboard layout 'grave' is normally above TAB and left of '1'.
     history = ctrl+grave
 
 [urgency_low]
