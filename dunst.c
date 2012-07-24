@@ -38,6 +38,8 @@
 #define INFO 2
 #define DEBUG 3
 
+enum follow_mode { FOLLOW_NONE, FOLLOW_MOUSE, FOLLOW_KEYBOARD };
+
 /* structs */
 typedef struct _screen_info {
         int scr;
@@ -82,15 +84,23 @@ static Window win;
 static time_t now;
 static int visible = False;
 static keyboard_shortcut close_ks = {.str = NULL,.code = 0,.sym =
-            NoSymbol,.mask = 0,.is_valid = False };
+            NoSymbol,.mask = 0,.is_valid = False
+};
+
 static keyboard_shortcut close_all_ks = {.str = NULL,.code = 0,.sym =
-            NoSymbol,.mask = 0,.is_valid = False };
+            NoSymbol,.mask = 0,.is_valid = False
+};
+
 static keyboard_shortcut history_ks = {.str = NULL,.code = 0,.sym =
-            NoSymbol,.mask = 0,.is_valid = False };
+            NoSymbol,.mask = 0,.is_valid = False
+};
+
 static screen_info scr;
 static dimension_t geometry;
 static XScreenSaverInfo *screensaver_info;
 static int font_h;
+
+static enum follow_mode f_mode = FOLLOW_NONE;
 
 int next_notification_id = 1;
 
@@ -314,6 +324,8 @@ void draw_win(void)
         dc->x = 0;
         dc->y = 0;
         dc->h = 0;
+
+        update_screen_info();
 
         /* calculate height */
         if (geometry.h == 0) {
@@ -837,7 +849,7 @@ void init_shortcut(keyboard_shortcut * ks)
 
         while (strstr(str, "+")) {
                 char *mod = str;
-                while(*str != '+')
+                while (*str != '+')
                         str++;
                 *str = '\0';
                 str++;
@@ -974,22 +986,92 @@ void hide_win()
         visible = False;
 }
 
+Window get_focused_window(void)
+{
+        Window focused = 0;
+        Atom type;
+        int format;
+        unsigned long nitems, bytes_after;
+        unsigned char *prop_return = NULL;
+        Window root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
+        Atom netactivewindow =
+            XInternAtom(dc->dpy, "_NET_ACTIVE_WINDOW", False);
+
+        XGetWindowProperty(dc->dpy, root, netactivewindow, 0L,
+                           sizeof(Window), False, XA_WINDOW,
+                           &type, &format, &nitems, &bytes_after, &prop_return);
+        if (prop_return) {
+                focused = *(Window *) prop_return;
+                XFree(prop_return);
+        }
+
+        return focused;
+}
+
+int select_screen(XineramaScreenInfo * info, int info_len)
+{
+        if (f_mode == FOLLOW_NONE) {
+                return scr.scr;
+
+        } else {
+                int x, y;
+                Window root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
+
+                if (f_mode == FOLLOW_MOUSE) {
+                        int dummy;
+                        unsigned int dummy_ui;
+                        Window dummy_win;
+
+                        XQueryPointer(dc->dpy, root, &dummy_win,
+                                      &dummy_win, &x, &y, &dummy,
+                                      &dummy, &dummy_ui);
+                }
+
+                if (f_mode == FOLLOW_KEYBOARD) {
+
+                        Window focused = get_focused_window();
+
+                        if (focused == 0) {
+                                /* something went wrong. Fallback to default */
+                                return scr.scr;
+                        }
+
+                        Window child_return;
+                        XTranslateCoordinates(dc->dpy, focused, root,
+                                              0, 0, &x, &y, &child_return);
+                }
+
+                for (int i = 0; i < info_len; i++) {
+                        if (INRECT(x, y, info[i].x_org,
+                                   info[i].y_org,
+                                   info[i].width, info[i].height)) {
+                                return i;
+                        }
+                }
+
+                /* something seems to be wrong. Fallback to default */
+                return scr.scr;
+        }
+}
+
 void update_screen_info()
 {
 #ifdef XINERAMA
         int n;
+        int screen = 0;
         XineramaScreenInfo *info;
 #endif
 #ifdef XINERAMA
         if ((info = XineramaQueryScreens(dc->dpy, &n))) {
-                if (scr.scr >= n) {
-                        fprintf(stderr, "Monitor %d not found\n", scr.scr);
+                screen = select_screen(info, n);
+                if (screen >= n) {
+                        fprintf(stderr, "Monitor %d not found\n", screen);
                         exit(EXIT_FAILURE);
                 }
-                scr.dim.x = info[scr.scr].x_org;
-                scr.dim.y = info[scr.scr].y_org;
-                scr.dim.h = info[scr.scr].height;
-                scr.dim.w = info[scr.scr].width;
+                scr.dim.x = info[screen].x_org;
+                scr.dim.y = info[screen].y_org;
+                scr.dim.h = info[screen].height;
+                scr.dim.w = info[screen].width;
                 XFree(info);
         } else
 #endif
@@ -1069,6 +1151,21 @@ void map_win(void)
         visible = True;
 }
 
+void parse_follow_mode(const char *mode)
+{
+        if (strcmp(mode, "mouse") == 0)
+                f_mode = FOLLOW_MOUSE;
+        else if (strcmp(mode, "keyboard") == 0)
+                f_mode = FOLLOW_KEYBOARD;
+        else if (strcmp(mode, "none") == 0)
+                f_mode = FOLLOW_NONE;
+        else {
+                fprintf(stderr, "Warning: unknown follow mode: \"%s\"\n", mode);
+                f_mode = FOLLOW_NONE;
+        }
+
+}
+
 void parse_cmdline(int argc, char *argv[])
 {
         int c;
@@ -1094,6 +1191,7 @@ void parse_cmdline(int argc, char *argv[])
                         {"config", required_argument, NULL, 'r'},
                         {"mod", required_argument, NULL, 'M'},
                         {"ns", no_argument, NULL, 'x'},
+                        {"follow", required_argument, NULL, 'o'},
                         {"version", no_argument, NULL, 'v'},
                         {0, 0, 0, 0}
                 };
@@ -1155,7 +1253,8 @@ void parse_cmdline(int argc, char *argv[])
                         format = optarg;
                         break;
                 case 'M':
-                        fprintf(stderr, "-mod is depricated. Use \"-key mod+key\" instead\n");
+                        fprintf(stderr,
+                                "-mod is depricated. Use \"-key mod+key\" instead\n");
                         mod = string_to_mask(optarg);
                         close_ks.mask = mod;
                         close_all_ks.mask = mod;
@@ -1180,6 +1279,9 @@ void parse_cmdline(int argc, char *argv[])
                         break;
                 case 'x':
                         sort = False;
+                        break;
+                case 'o':
+                        parse_follow_mode(optarg);
                         break;
                 case 'v':
                         print_version();
@@ -1267,6 +1369,8 @@ dunst_ini_handle(void *user_data, const char *section,
                         idle_threshold = atoi(value);
                 else if (strcmp(name, "monitor") == 0)
                         scr.scr = atoi(value);
+                else if (strcmp(name, "follow") == 0)
+                        parse_follow_mode(dunst_ini_get_string(value));
                 else if (strcmp(name, "geometry") == 0)
                         geom = dunst_ini_get_string(value);
                 else if (strcmp(name, "modifier") == 0) {
@@ -1465,7 +1569,7 @@ int main(int argc, char *argv[])
 void usage(int exit_status)
 {
         fputs
-            ("usage: dunst [-h/--help] [-v] [-geometry geom] [-fn font] [-format fmt]\n[-nb color] [-nf color] [-lb color] [-lf color] [-cb color] [ -cf color]\n[-to secs] [-lto secs] [-cto secs] [-nto secs] [-key key] [-history_key key] [-all_key key] [-mon n] [-config dunstrc]\n",
+            ("usage: dunst [-h/--help] [-v] [-geometry geom] [-fn font] [-format fmt]\n[-nb color] [-nf color] [-lb color] [-lf color] [-cb color] [ -cf color]\n[-to secs] [-lto secs] [-cto secs] [-nto secs] [-key key] [-history_key key] [-all_key key] [-mon n]  [-follow none/mouse/keyboard] [-config dunstrc]\n",
              stderr);
         exit(exit_status);
 }

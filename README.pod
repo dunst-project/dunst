@@ -62,6 +62,10 @@ defines the format of the message. See FORMAT.
 
 show the notification on monitor n.
 
+=item B<-follow mode>
+
+display notifications on focused monitor. Possible options are "mouse" to follow the mouse cursor, "keyboard" to follow the window with the keyboard focus and "none" to disable focus following. "mouse" and "keyboard" overwrite the -mon option.
+
 =item B<-s>
 
 sort messages by urgency.

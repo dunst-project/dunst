@@ -43,6 +43,18 @@
     # Which monitor should the notifications be displayed one
     monitor = 0
 
+    # Display notification on focused monitor. Possible modes are:
+    # mouse: follow mouse pointer
+    # keyboard: follow window with keyboard focus
+    # none: don't follow anything
+    #
+    # "keyboard" needs a windowmanager that exports the _NET_ACTIVE_WINDOW property.
+    # This should be the case for almost all modern windowmanagers.
+    #
+    # If this option is set to mouse or keyboard, the monitor option will be
+    # ignored.
+    follow = none
+
     # should a notification popped up from history be sticky or
     # timeout as if it would normally down
     sticky_history = yes
