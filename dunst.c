@@ -105,7 +105,7 @@ static enum follow_mode f_mode = FOLLOW_NONE;
 int next_notification_id = 1;
 
 int depricated_mod = False;
-int depricated_dunstrc_shortcuts;
+int depricated_dunstrc_shortcuts = False;
 
 /* notification lists */
 list *notification_queue = NULL;        /* all new notifications get into here */
