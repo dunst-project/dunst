@@ -77,7 +77,6 @@ static dimension_t geometry;
 static XScreenSaverInfo *screensaver_info;
 static int font_h;
 
-static enum follow_mode f_mode = FOLLOW_NONE;
 
 int next_notification_id = 1;
 
@@ -958,7 +957,7 @@ Window get_focused_window(void)
 int select_screen(XineramaScreenInfo * info, int info_len)
 {
         if (f_mode == FOLLOW_NONE) {
-                return scr.scr;
+                return monitor;
 
         } else {
                 int x, y;
@@ -980,7 +979,7 @@ int select_screen(XineramaScreenInfo * info, int info_len)
 
                         if (focused == 0) {
                                 /* something went wrong. Fallback to default */
-                                return scr.scr;
+                                return monitor;
                         }
 
                         Window child_return;
@@ -997,7 +996,7 @@ int select_screen(XineramaScreenInfo * info, int info_len)
                 }
 
                 /* something seems to be wrong. Fallback to default */
-                return scr.scr;
+                return monitor;
         }
 }
 
@@ -1005,15 +1004,15 @@ void update_screen_info()
 {
 #ifdef XINERAMA
         int n;
-        int screen = 0;
+        int screen = monitor;
         XineramaScreenInfo *info;
 #endif
 #ifdef XINERAMA
         if ((info = XineramaQueryScreens(dc->dpy, &n))) {
                 screen = select_screen(info, n);
                 if (screen >= n) {
-                        fprintf(stderr, "Monitor %d not found\n", screen);
-                        exit(EXIT_FAILURE);
+                        /* invalid monitor, fallback to default */
+                        screen = 0;
                 }
                 scr.dim.x = info[screen].x_org;
                 scr.dim.y = info[screen].y_org;

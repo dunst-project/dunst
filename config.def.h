@@ -20,6 +20,20 @@ enum alignment align = left;    /* text alignment [left/center/right] */
 int sticky_history = True;
 int verbosity = 0;
 
+
+/* monitor to display notifications on */
+int monitor = 0;
+
+/* follow focus to different monitor and display notifications there?
+ * possible values:
+ * FOLLOW_NONE
+ * FOLLOW_MOUSE
+ * FOLLOW_KEYBOARD
+ *
+ *  everything else than FOLLOW_NONE overrides 'monitor'
+ */
+enum follow_mode f_mode = FOLLOW_NONE;
+
 /* keyboard shortcuts */
 keyboard_shortcut close_ks = {.str = "ctrl+space",
                        .code = 0, .sym = NoSymbol,.is_valid = False}; /* ignore this */
