@@ -137,6 +137,12 @@ void print_version(void);
 void init_shortcut(keyboard_shortcut * shortcut);
 KeySym string_to_mask(char *str);
 
+void die(char *text, int exit_value)
+{
+        fputs(text, stderr);
+        exit(exit_value);
+}
+
 int cmp_notification(void *a, void *b)
 {
         if (a == NULL && b == NULL)
@@ -842,10 +848,8 @@ void init_shortcut(keyboard_shortcut * ks)
         char *str = strdup(ks->str);
         char *str_begin = str;
 
-        if (str == NULL) {
-                fprintf(stderr, "Unable to allocate memory");
-                exit(EXIT_FAILURE);
-        }
+        if (str == NULL)
+                die("Unable to allocate memory", EXIT_FAILURE);
 
         while (strstr(str, "+")) {
                 char *mod = str;
