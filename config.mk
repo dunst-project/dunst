@@ -15,6 +15,7 @@ XINERAMALIBS  = -lXinerama
 XINERAMAFLAGS = -DXINERAMA
 
 # uncomment to disable parsing of dunstrc
+# or use "CFLAGS=-DSTATIC_CONFIG make" to build
 #STATIC= -DSTATIC_CONFIG
 
 # inih flags
@@ -25,6 +26,6 @@ INCS = -I${X11INC} $(shell pkg-config --cflags dbus-1 libxdg-basedir) ${XFTINC}
 LIBS = -L${X11LIB} -lX11 -lXss ${XFTLIBS} ${XINERAMALIBS} $(shell pkg-config --libs dbus-1 libxdg-basedir)
 
 # flags
-CPPFLAGS = -D_BSD_SOURCE -DVERSION=\"${VERSION}\" ${XINERAMAFLAGS} ${INIFLAGS}
-CFLAGS   = -g --std=c99 -pedantic -Wall -Wno-overlength-strings -Os ${INCS} ${STATIC} ${CPPFLAGS}
-LDFLAGS  = ${LIBS}
+CPPFLAGS += -D_BSD_SOURCE -DVERSION=\"${VERSION}\" ${XINERAMAFLAGS} ${INIFLAGS}
+CFLAGS   += -g --std=c99 -pedantic -Wall -Wno-overlength-strings -Os ${INCS} ${STATIC} ${CPPFLAGS}
+LDFLAGS  += ${LIBS}
