@@ -1,0 +1,19 @@
+v0.3.0:
+    - full support for Desktop Notification Specification (mandatory parts)
+    - option to select monitor on which notifications are shown
+    - follow focus
+    - oneline mode
+    - text alignment
+    - show age of notifications
+    - sticky history
+    - filter duplicate messages
+    - keybinding to close all notifications
+    - new way to specify keybindings
+    - cleanup / bugfixes etc.
+
+v0.2.0:
+    - introduction of dunstrc
+    - removed static configuration via config.h
+    - don't timeout when user is idle
+    - xft-support
+    - history (a.k.a. redisplay old notifications)
