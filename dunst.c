@@ -133,6 +133,7 @@ void draw_win(void);
 void hide_win(void);
 void move_all_to_history(void);
 void print_version(void);
+void warn(const char * text, int urg);
 
 void init_shortcut(keyboard_shortcut * shortcut);
 KeySym string_to_mask(char *str);
@@ -141,6 +142,28 @@ void die(char *text, int exit_value)
 {
         fputs(text, stderr);
         exit(exit_value);
+}
+
+void warn(const char *text, int urg)
+{
+        notification *n = malloc(sizeof(notification));
+
+        if (n == NULL)
+                die("Unable to allocate memory", EXIT_FAILURE);
+
+        n->appname = "dunst";
+        n->summary = strdup(text);
+        if (n->summary == NULL)
+                die("Unable to allocate memory", EXIT_FAILURE);
+        n->body = "";
+        n->icon = "";
+        n->timeout = 0;
+        n->urgency = urg;
+        n->dbus_client = NULL;
+        n->color_strings[ColFG] = NULL;
+        n->color_strings[ColBG] = NULL;
+        init_notification(n, 0);
+        map_win();
 }
 
 int cmp_notification(void *a, void *b)
