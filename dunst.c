@@ -24,6 +24,7 @@
 #include "dunst_dbus.h"
 #include "list.h"
 #include "ini.h"
+#include "utils.h"
 
 #define INRECT(x,y,rx,ry,rw,rh) ((x) >= (rx) && (x) < (rx)+(rw) && (y) >= (ry) && (y) < (ry)+(rh))
 #define LENGTH(X)               (sizeof X / sizeof X[0])
@@ -53,6 +54,9 @@ typedef struct _notification_buffer {
 } notification_buffer;
 
 /* global variables */
+ /* extern */
+int verbosity = 0;
+
 char *font = "-*-terminus-medium-r-*-*-16-*-*-*-*-*-*-*";
 char *normbgcolor = "#1793D1";
 char *normfgcolor = "#DDDDDD";
@@ -72,7 +76,6 @@ int show_age_threshold = -1;
 enum alignment align = left;
 int sticky_history = True;
 
-int verbosity = 0;
 
 list *rules = NULL;
 /* index of colors fit to urgency level */
@@ -116,16 +119,12 @@ list *notification_history = NULL;      /* history of displayed notifications */
 void apply_rules(notification * n);
 void check_timeouts(void);
 void draw_notifications(void);
-void dunst_printf(int level, const char *fmt, ...);
 char *fix_markup(char *str);
 void handle_mouse_click(XEvent ev);
 void handleXEvents(void);
 void history_pop(void);
 rule_t *initrule(void);
 int is_idle(void);
-char *string_replace(const char *needle, const char *replacement,
-                     char *haystack);
-char *strtrim(char *str);
 void run(void);
 void setup(void);
 void update_screen_info();
@@ -136,16 +135,13 @@ void draw_win(void);
 void hide_win(void);
 void move_all_to_history(void);
 void print_version(void);
+
+/* show warning notification */
 void warn(const char * text, int urg);
 
 void init_shortcut(keyboard_shortcut * shortcut);
 KeySym string_to_mask(char *str);
 
-void die(char *text, int exit_value)
-{
-        fputs(text, stderr);
-        exit(exit_value);
-}
 
 void warn(const char *text, int urg)
 {
@@ -531,17 +527,6 @@ void draw_win(void)
         free(n_buf);
 }
 
-void dunst_printf(int level, const char *fmt, ...)
-{
-        va_list ap;
-
-        if (level > verbosity) {
-                return;
-        }
-        va_start(ap, fmt);
-        vfprintf(stderr, fmt, ap);
-        va_end(ap);
-}
 
 char
 *fix_markup(char *str)
@@ -929,48 +914,6 @@ int is_idle(void)
         return screensaver_info->idle / 1000 > idle_threshold;
 }
 
-char *string_replace(const char *needle, const char *replacement,
-                     char *haystack)
-{
-        char *tmp, *start;
-        int size;
-        start = strstr(haystack, needle);
-        if (start == NULL) {
-                return haystack;
-        }
-
-        size = (strlen(haystack) - strlen(needle)) + strlen(replacement) + 1;
-        tmp = calloc(sizeof(char), size);
-        memset(tmp, '\0', size);
-
-        strncpy(tmp, haystack, start - haystack);
-        tmp[start - haystack] = '\0';
-
-        sprintf(tmp + strlen(tmp), "%s%s", replacement, start + strlen(needle));
-        free(haystack);
-
-        if (strstr(tmp, needle)) {
-                return string_replace(needle, replacement, tmp);
-        } else {
-                return tmp;
-        }
-}
-
-char *strtrim(char *str)
-{
-        char *end;
-        while (isspace(*str))
-                str++;
-
-        end = str + strlen(str) - 1;
-        while (isspace(*end)) {
-                *end = '\0';
-                end--;
-        }
-
-        return str;
-
-}
 
 void run(void)
 {

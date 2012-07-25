@@ -1,7 +1,6 @@
 /* copyright 2012 Sascha Kruse and contributors (see LICENSE for licensing information) */
 
-#ifndef DUNST_H
-#define DUNST_H
+#pragma once
 
 #include "draw.h"
 
@@ -12,6 +11,7 @@
 #define ColLast 2
 #define ColFG 1
 #define ColBG 0
+
 
 enum alignment { left, center, right };
 
@@ -67,11 +67,12 @@ typedef struct _keyboard_shortcut {
         int is_valid;
 } keyboard_shortcut;
 
+extern int verbosity;
+
 /* return id of notification */
 int init_notification(notification * n, int id);
 int close_notification(notification * n, int reason);
 int close_notification_by_id(int id, int reason);
 void map_win(void);
 
-#endif
 /* vim: set ts=8 sw=8 tw=0: */
