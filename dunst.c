@@ -1471,6 +1471,9 @@ int main(int argc, char *argv[])
         now = time(&now);
 
         rules = l_init();
+        for (int i = 0; i < LENGTH(default_rules); i++) {
+                l_push(rules, &default_rules[i]);
+        }
 #ifndef STATIC_CONFIG
         char *cmdline_config_path;
         cmdline_config_path = parse_cmdline_for_config_file(argc, argv);

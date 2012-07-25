@@ -15,7 +15,7 @@ XINERAMALIBS  = -lXinerama
 XINERAMAFLAGS = -DXINERAMA
 
 # uncomment to disable parsing of dunstrc
-STATIC= -DSTATIC_CONFIG
+#STATIC= -DSTATIC_CONFIG
 
 # inih flags
 INIFLAGS = -DINI_ALLOW_MULTILINE=0

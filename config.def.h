@@ -29,3 +29,15 @@ keyboard_shortcut close_all_ks = {.str = "ctrl+shift+space",
 
 keyboard_shortcut history_ks = {.str = "ctrl+grave",
                        .code = 0, .sym = NoSymbol,.is_valid = False}; /* ignore this */
+
+rule_t default_rules[] = {
+     /* name can be any unique string. It is used to identify the rule in dunstrc to override it there */
+
+     /*   name,     appname,       summary,         body,  icon,  timeout,  urgency,  fg,    bg, format */
+        { "empty", NULL,           NULL,            NULL,  NULL,  -1,       -1,       NULL,  NULL, NULL, },
+     /* { "rule1", "notify-send",  NULL,            NULL,  NULL,  -1,       -1,       NULL,  NULL, "%s %b" }, */
+     /* { "rule2", "Pidgin",       "*says*,         NULL,  NULL,  -1,       CRITICAL, NULL,  NULL, NULL    }, */
+     /* { "rule3", "Pidgin",       "*signed on*",   NULL,  NULL,  -1,       LOW,      NULL,  NULL, NULL    }, */
+     /* { "rule4", "Pidgin",       "*signed off*",  NULL,  NULL,  -1,       LOW,      NULL,  NULL, NULL    }, */
+     /* { "rule5", NULL,           "*foobar*",      NULL,  NULL,  -1,       -1,       NULL,  "#00FF00", NULL, }, */
+ };
