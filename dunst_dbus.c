@@ -256,7 +256,7 @@ void notificationClosed(notification * n, int reason)
         DBusMessageIter args;
         int id;
 
-        if (n == NULL) {
+        if (n == NULL || n->dbus_client == NULL) {
                 return;
         }
 
