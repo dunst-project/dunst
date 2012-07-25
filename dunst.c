@@ -26,6 +26,7 @@
 #include "ini.h"
 #include "utils.h"
 
+
 #define INRECT(x,y,rx,ry,rw,rh) ((x) >= (rx) && (x) < (rx)+(rw) && (y) >= (ry) && (y) < (ry)+(rh))
 #define LENGTH(X)               (sizeof X / sizeof X[0])
 #define MIN(a,b)                ((a) < (b) ? (a) : (b))
@@ -53,29 +54,14 @@ typedef struct _notification_buffer {
         int x_offset;
 } notification_buffer;
 
+
+
+
 /* global variables */
- /* extern */
-int verbosity = 0;
 
-char *font = "-*-terminus-medium-r-*-*-16-*-*-*-*-*-*-*";
-char *normbgcolor = "#1793D1";
-char *normfgcolor = "#DDDDDD";
-char *critbgcolor = "#ffaaaa";
-char *critfgcolor = "#000000";
-char *lowbgcolor = "#aaaaff";
-char *lowfgcolor = "#000000";
-char *format = "%s %b";         /* default format */
-int timeouts[] = { 10, 10, 0 }; /* low, normal, critical */
+#include "config.h"
 
-char *geom = "0x0";             /* geometry */
 int height_limit;
-int sort = True;                /* sort messages by urgency */
-int indicate_hidden = True;     /* show count of hidden messages */
-int idle_threshold = 0;
-int show_age_threshold = -1;
-enum alignment align = left;
-int sticky_history = True;
-
 
 list *rules = NULL;
 /* index of colors fit to urgency level */
@@ -86,18 +72,6 @@ static DC *dc;
 static Window win;
 static time_t now;
 static int visible = False;
-static keyboard_shortcut close_ks = {.str = NULL,.code = 0,.sym =
-            NoSymbol,.mask = 0,.is_valid = False
-};
-
-static keyboard_shortcut close_all_ks = {.str = NULL,.code = 0,.sym =
-            NoSymbol,.mask = 0,.is_valid = False
-};
-
-static keyboard_shortcut history_ks = {.str = NULL,.code = 0,.sym =
-            NoSymbol,.mask = 0,.is_valid = False
-};
-
 static screen_info scr;
 static dimension_t geometry;
 static XScreenSaverInfo *screensaver_info;
@@ -1265,6 +1239,7 @@ void parse_cmdline(int argc, char *argv[])
         }
 }
 
+#ifndef STATIC_CONFIG
 static int dunst_ini_get_boolean(const char *value)
 {
         switch (value[0]) {
@@ -1448,7 +1423,6 @@ void parse_dunstrc(char *cmdline_config_path)
         FILE *config_file = NULL;
 
         xdgInitHandle(&xdg);
-        rules = l_init();
 
         if (cmdline_config_path != NULL) {
                 config_file = fopen(cmdline_config_path, "r");
@@ -1476,6 +1450,7 @@ void parse_dunstrc(char *cmdline_config_path)
 
         print_rules();
 }
+#endif /* STATIC_CONFIG */
 
 char *parse_cmdline_for_config_file(int argc, char *argv[])
 {
@@ -1493,12 +1468,14 @@ char *parse_cmdline_for_config_file(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
-        char *cmdline_config_path;
         now = time(&now);
 
+        rules = l_init();
+#ifndef STATIC_CONFIG
+        char *cmdline_config_path;
         cmdline_config_path = parse_cmdline_for_config_file(argc, argv);
-
         parse_dunstrc(cmdline_config_path);
+#endif
         parse_cmdline(argc, argv);
         dc = initdc();
 
