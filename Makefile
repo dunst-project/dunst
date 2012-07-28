@@ -6,7 +6,7 @@ include config.mk
 SRC = draw.c dunst.c list.c dunst_dbus.c ini.c
 OBJ = ${SRC:.c=.o}
 
-all: doc options dunst
+all: doc options dunst service
 
 options:
 	@echo dunst build options:
@@ -29,10 +29,14 @@ clean:
 	@rm -f ${OBJ}
 	@rm -f dunst
 	@rm -f dunst.1
+	@rm -f dunst.service
 
 doc: dunst.1
 dunst.1: README.pod
 	pod2man $< > $@
+
+service:
+	@sed "s|##PREFIX##|$(PREFIX)|" dunst.service.in > dunst.service
 
 install: all
 	@echo installing executables to ${DESTDIR}${PREFIX}/bin
@@ -45,11 +49,14 @@ install: all
 	@chmod 644 ${DESTDIR}${MANPREFIX}/man1/dunst.1
 	@mkdir -p "${DESTDIR}${PREFIX}/share/dunst"
 	@ cp -f dunstrc ${DESTDIR}${PREFIX}/share/dunst
+	@mkdir -p "${DESTDIR}${PREFIX}/share/dbus-1/services/"
+	@cp -vf dunst.service "${DESTDIR}${PREFIX}/share/dbus-1/services/dunst.service"
 
 uninstall:
 	@echo removing executables from ${DESTDIR}${PREFIX}/bin
 	@rm -f ${DESTDIR}${PREFIX}/bin/dunst
 	@echo removing manual page from ${DESTDIR}${MANPREFIX}/man1
 	@rm -f ${DESTDIR}${MANPREFIX}/man1/dunst
+	@rm -f ${DESTDIR}${PREFIX}/share/dbus-1/service/dunst.service
 
 .PHONY: all options clean dist install uninstall

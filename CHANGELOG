@@ -10,6 +10,7 @@ v0.3.0:
     - keybinding to close all notifications
     - new way to specify keybindings
     - cleanup / bugfixes etc.
+    - added dunst.service
 
 v0.2.0:
     - introduction of dunstrc
