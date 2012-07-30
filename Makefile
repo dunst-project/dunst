@@ -29,7 +29,7 @@ clean:
 	@rm -f ${OBJ}
 	@rm -f dunst
 	@rm -f dunst.1
-	@rm -f dunst.service
+	@rm -f org.knopwob.dunst.service
 
 doc: dunst.1
 dunst.1: README.pod
