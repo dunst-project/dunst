@@ -36,7 +36,7 @@ dunst.1: README.pod
 	pod2man $< > $@
 
 service:
-	@sed "s|##PREFIX##|$(PREFIX)|" dunst.service.in > dunst.service
+	@sed "s|##PREFIX##|$(PREFIX)|" org.knopwob.dunst.service.in > org.knopwob.dunst.service
 
 install: all
 	@echo installing executables to ${DESTDIR}${PREFIX}/bin
@@ -50,7 +50,7 @@ install: all
 	@mkdir -p "${DESTDIR}${PREFIX}/share/dunst"
 	@ cp -f dunstrc ${DESTDIR}${PREFIX}/share/dunst
 	@mkdir -p "${DESTDIR}${PREFIX}/share/dbus-1/services/"
-	@cp -vf dunst.service "${DESTDIR}${PREFIX}/share/dbus-1/services/dunst.service"
+	@cp -vf org.knopwob.dunst.service "${DESTDIR}${PREFIX}/share/dbus-1/services/org.knopwob.dunst.service"
 
 uninstall:
 	@echo removing executables from ${DESTDIR}${PREFIX}/bin
