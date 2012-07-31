@@ -24,6 +24,8 @@
 #include "dunst_dbus.h"
 #include "list.h"
 #include "ini.h"
+#include "utils.h"
+
 
 #define INRECT(x,y,rx,ry,rw,rh) ((x) >= (rx) && (x) < (rx)+(rw) && (y) >= (ry) && (y) < (ry)+(rh))
 #define LENGTH(X)               (sizeof X / sizeof X[0])
@@ -52,27 +54,14 @@ typedef struct _notification_buffer {
         int x_offset;
 } notification_buffer;
 
+
+
+
 /* global variables */
-char *font = "-*-terminus-medium-r-*-*-16-*-*-*-*-*-*-*";
-char *normbgcolor = "#1793D1";
-char *normfgcolor = "#DDDDDD";
-char *critbgcolor = "#ffaaaa";
-char *critfgcolor = "#000000";
-char *lowbgcolor = "#aaaaff";
-char *lowfgcolor = "#000000";
-char *format = "%s %b";         /* default format */
-int timeouts[] = { 10, 10, 0 }; /* low, normal, critical */
 
-char *geom = "0x0";             /* geometry */
+#include "config.h"
+
 int height_limit;
-int sort = True;                /* sort messages by urgency */
-int indicate_hidden = True;     /* show count of hidden messages */
-int idle_threshold = 0;
-int show_age_threshold = -1;
-enum alignment align = left;
-int sticky_history = True;
-
-int verbosity = 0;
 
 list *rules = NULL;
 /* index of colors fit to urgency level */
@@ -83,24 +72,11 @@ static DC *dc;
 static Window win;
 static time_t now;
 static int visible = False;
-static keyboard_shortcut close_ks = {.str = NULL,.code = 0,.sym =
-            NoSymbol,.mask = 0,.is_valid = False
-};
-
-static keyboard_shortcut close_all_ks = {.str = NULL,.code = 0,.sym =
-            NoSymbol,.mask = 0,.is_valid = False
-};
-
-static keyboard_shortcut history_ks = {.str = NULL,.code = 0,.sym =
-            NoSymbol,.mask = 0,.is_valid = False
-};
-
 static screen_info scr;
 static dimension_t geometry;
 static XScreenSaverInfo *screensaver_info;
 static int font_h;
 
-static enum follow_mode f_mode = FOLLOW_NONE;
 
 int next_notification_id = 1;
 
@@ -116,16 +92,12 @@ list *notification_history = NULL;      /* history of displayed notifications */
 void apply_rules(notification * n);
 void check_timeouts(void);
 void draw_notifications(void);
-void dunst_printf(int level, const char *fmt, ...);
 char *fix_markup(char *str);
 void handle_mouse_click(XEvent ev);
 void handleXEvents(void);
 void history_pop(void);
 rule_t *initrule(void);
 int is_idle(void);
-char *string_replace(const char *needle, const char *replacement,
-                     char *haystack);
-char *strtrim(char *str);
 void run(void);
 void setup(void);
 void update_screen_info();
@@ -136,16 +108,13 @@ void draw_win(void);
 void hide_win(void);
 void move_all_to_history(void);
 void print_version(void);
+
+/* show warning notification */
 void warn(const char * text, int urg);
 
 void init_shortcut(keyboard_shortcut * shortcut);
 KeySym string_to_mask(char *str);
 
-void die(char *text, int exit_value)
-{
-        fputs(text, stderr);
-        exit(exit_value);
-}
 
 void warn(const char *text, int urg)
 {
@@ -531,17 +500,6 @@ void draw_win(void)
         free(n_buf);
 }
 
-void dunst_printf(int level, const char *fmt, ...)
-{
-        va_list ap;
-
-        if (level > verbosity) {
-                return;
-        }
-        va_start(ap, fmt);
-        vfprintf(stderr, fmt, ap);
-        va_end(ap);
-}
 
 char
 *fix_markup(char *str)
@@ -929,48 +887,6 @@ int is_idle(void)
         return screensaver_info->idle / 1000 > idle_threshold;
 }
 
-char *string_replace(const char *needle, const char *replacement,
-                     char *haystack)
-{
-        char *tmp, *start;
-        int size;
-        start = strstr(haystack, needle);
-        if (start == NULL) {
-                return haystack;
-        }
-
-        size = (strlen(haystack) - strlen(needle)) + strlen(replacement) + 1;
-        tmp = calloc(sizeof(char), size);
-        memset(tmp, '\0', size);
-
-        strncpy(tmp, haystack, start - haystack);
-        tmp[start - haystack] = '\0';
-
-        sprintf(tmp + strlen(tmp), "%s%s", replacement, start + strlen(needle));
-        free(haystack);
-
-        if (strstr(tmp, needle)) {
-                return string_replace(needle, replacement, tmp);
-        } else {
-                return tmp;
-        }
-}
-
-char *strtrim(char *str)
-{
-        char *end;
-        while (isspace(*str))
-                str++;
-
-        end = str + strlen(str) - 1;
-        while (isspace(*end)) {
-                *end = '\0';
-                end--;
-        }
-
-        return str;
-
-}
 
 void run(void)
 {
@@ -1041,7 +957,7 @@ Window get_focused_window(void)
 int select_screen(XineramaScreenInfo * info, int info_len)
 {
         if (f_mode == FOLLOW_NONE) {
-                return scr.scr;
+                return monitor;
 
         } else {
                 int x, y;
@@ -1063,7 +979,7 @@ int select_screen(XineramaScreenInfo * info, int info_len)
 
                         if (focused == 0) {
                                 /* something went wrong. Fallback to default */
-                                return scr.scr;
+                                return monitor;
                         }
 
                         Window child_return;
@@ -1080,7 +996,7 @@ int select_screen(XineramaScreenInfo * info, int info_len)
                 }
 
                 /* something seems to be wrong. Fallback to default */
-                return scr.scr;
+                return monitor;
         }
 }
 
@@ -1088,15 +1004,15 @@ void update_screen_info()
 {
 #ifdef XINERAMA
         int n;
-        int screen = 0;
+        int screen = monitor;
         XineramaScreenInfo *info;
 #endif
 #ifdef XINERAMA
         if ((info = XineramaQueryScreens(dc->dpy, &n))) {
                 screen = select_screen(info, n);
                 if (screen >= n) {
-                        fprintf(stderr, "Monitor %d not found\n", screen);
-                        exit(EXIT_FAILURE);
+                        /* invalid monitor, fallback to default */
+                        screen = 0;
                 }
                 scr.dim.x = info[screen].x_org;
                 scr.dim.y = info[screen].y_org;
@@ -1322,6 +1238,7 @@ void parse_cmdline(int argc, char *argv[])
         }
 }
 
+#ifndef STATIC_CONFIG
 static int dunst_ini_get_boolean(const char *value)
 {
         switch (value[0]) {
@@ -1505,7 +1422,6 @@ void parse_dunstrc(char *cmdline_config_path)
         FILE *config_file = NULL;
 
         xdgInitHandle(&xdg);
-        rules = l_init();
 
         if (cmdline_config_path != NULL) {
                 config_file = fopen(cmdline_config_path, "r");
@@ -1533,6 +1449,7 @@ void parse_dunstrc(char *cmdline_config_path)
 
         print_rules();
 }
+#endif /* STATIC_CONFIG */
 
 char *parse_cmdline_for_config_file(int argc, char *argv[])
 {
@@ -1550,12 +1467,17 @@ char *parse_cmdline_for_config_file(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
-        char *cmdline_config_path;
         now = time(&now);
 
+        rules = l_init();
+        for (int i = 0; i < LENGTH(default_rules); i++) {
+                l_push(rules, &default_rules[i]);
+        }
+#ifndef STATIC_CONFIG
+        char *cmdline_config_path;
         cmdline_config_path = parse_cmdline_for_config_file(argc, argv);
-
         parse_dunstrc(cmdline_config_path);
+#endif
         parse_cmdline(argc, argv);
         dc = initdc();
 

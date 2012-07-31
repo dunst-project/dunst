@@ -3,7 +3,7 @@
 
 include config.mk
 
-SRC = draw.c dunst.c list.c dunst_dbus.c ini.c
+SRC = draw.c dunst.c list.c dunst_dbus.c ini.c utils.c
 OBJ = ${SRC:.c=.o}
 
 all: doc options dunst service
@@ -18,11 +18,15 @@ options:
 	@echo CC -c $<
 	@${CC} -c $< ${CFLAGS}
 
-${OBJ}: config.mk
+${OBJ}: config.h config.mk
 
-dunst: draw.o dunst.o list.o dunst_dbus.o ini.o
+config.h:
+	@echo creating $@ from config.def.h
+	@cp config.def.h $@
+
+dunst: draw.o dunst.o list.o dunst_dbus.o ini.o utils.o
 	@echo CC -o $@
-	@${CC} ${CFLAGS} -o $@ dunst.o draw.o list.o dunst_dbus.o ini.o ${LDFLAGS}
+	@${CC} ${CFLAGS} -o $@ dunst.o draw.o list.o dunst_dbus.o ini.o utils.o ${LDFLAGS}
 
 clean:
 	@echo cleaning
