@@ -1,3 +1,5 @@
+v0.3.1:
+    fix regression: cmdlineoption -mon
 v0.3.0:
     - full support for Desktop Notification Specification (mandatory parts)
     - option to select monitor on which notifications are shown
