@@ -61,6 +61,6 @@ uninstall:
 	@rm -f ${DESTDIR}${PREFIX}/bin/dunst
 	@echo removing manual page from ${DESTDIR}${MANPREFIX}/man1
 	@rm -f ${DESTDIR}${MANPREFIX}/man1/dunst
-	@rm -f ${DESTDIR}${PREFIX}/share/dbus-1/service/dunst.service
+	@rm -f ${DESTDIR}${PREFIX}/share/dbus-1/service/org.knopwob.dunst.service
 
 .PHONY: all options clean dist install uninstall
