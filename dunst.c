@@ -957,7 +957,7 @@ Window get_focused_window(void)
 int select_screen(XineramaScreenInfo * info, int info_len)
 {
         if (f_mode == FOLLOW_NONE) {
-                return monitor;
+                return scr.scr;
 
         } else {
                 int x, y;
@@ -979,7 +979,7 @@ int select_screen(XineramaScreenInfo * info, int info_len)
 
                         if (focused == 0) {
                                 /* something went wrong. Fallback to default */
-                                return monitor;
+                                return scr.scr;
                         }
 
                         Window child_return;
@@ -996,7 +996,7 @@ int select_screen(XineramaScreenInfo * info, int info_len)
                 }
 
                 /* something seems to be wrong. Fallback to default */
-                return monitor;
+                return scr.scr;
         }
 }
 
@@ -1004,7 +1004,7 @@ void update_screen_info()
 {
 #ifdef XINERAMA
         int n;
-        int screen = monitor;
+        int screen = scr.scr;
         XineramaScreenInfo *info;
 #endif
 #ifdef XINERAMA
@@ -1474,6 +1474,7 @@ int main(int argc, char *argv[])
         for (int i = 0; i < LENGTH(default_rules); i++) {
                 l_push(rules, &default_rules[i]);
         }
+        scr.scr = monitor;
 #ifndef STATIC_CONFIG
         char *cmdline_config_path;
         cmdline_config_path = parse_cmdline_for_config_file(argc, argv);
