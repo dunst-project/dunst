@@ -1220,6 +1220,7 @@ void parse_cmdline(int argc, char *argv[])
                         {"geometry", required_argument, NULL, 'g'},
                         {"config", required_argument, NULL, 'r'},
                         {"mod", required_argument, NULL, 'M'},
+                        {"mon", required_argument, NULL, 'm'},
                         {"ns", no_argument, NULL, 'x'},
                         {"follow", required_argument, NULL, 'o'},
                         {"version", no_argument, NULL, 'v'},
