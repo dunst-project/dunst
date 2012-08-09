@@ -1211,8 +1211,10 @@ void parse_cmdline(int argc, char *argv[])
                         break;
                 case 'K':
                         history_ks.str = optarg;
+                        break;
                 case 'A':
                         close_all_ks.str = optarg;
+                        break;
                 case 'g':
                         geom = optarg;
                         break;
