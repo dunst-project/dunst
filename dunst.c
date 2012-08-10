@@ -380,8 +380,8 @@ void draw_win(void)
                                 continue;
 
                         hours = t_delta / 3600;
-                        minutes = (t_delta / 60);
-                        seconds = (t_delta % 60);
+                        minutes = t_delta / 60 % 60;
+                        seconds = t_delta % 60;
 
                         for (end = n_buf[i].txt; *end != '\0'; end++) ;
                         if (hours > 0) {
