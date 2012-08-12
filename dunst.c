@@ -880,6 +880,11 @@ void init_shortcut(keyboard_shortcut * ks)
         if (ks == NULL || ks->str == NULL)
                 return;
 
+        if (!strcmp(ks->str, "none") || (!strcmp(ks->str, ""))) {
+                ks->is_valid = False;
+                return;
+        }
+
         char *str = strdup(ks->str);
         char *str_begin = str;
 
