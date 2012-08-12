@@ -34,14 +34,17 @@ int monitor = 0;
  */
 enum follow_mode f_mode = FOLLOW_NONE;
 
-/* keyboard shortcuts */
-keyboard_shortcut close_ks = {.str = "ctrl+space",
+/* keyboard shortcuts
+ * use for example "ctrl+shift+space"
+ * use "none" to disable
+ */
+keyboard_shortcut close_ks = {.str = "none",
                        .code = 0, .sym = NoSymbol,.is_valid = False}; /* ignore this */
 
-keyboard_shortcut close_all_ks = {.str = "ctrl+shift+space",
+keyboard_shortcut close_all_ks = {.str = "none",
                        .code = 0, .sym = NoSymbol,.is_valid = False}; /* ignore this */
 
-keyboard_shortcut history_ks = {.str = "ctrl+grave",
+keyboard_shortcut history_ks = {.str = "none",
                        .code = 0, .sym = NoSymbol,.is_valid = False}; /* ignore this */
 
 rule_t default_rules[] = {
