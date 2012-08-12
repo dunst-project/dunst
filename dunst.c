@@ -77,6 +77,7 @@ static dimension_t geometry;
 static XScreenSaverInfo *screensaver_info;
 static int font_h;
 
+int dunst_grab_key_errored = False;
 
 int next_notification_id = 1;
 
@@ -115,6 +116,56 @@ void warn(const char * text, int urg);
 void init_shortcut(keyboard_shortcut * shortcut);
 KeySym string_to_mask(char *str);
 
+
+static int GrabKeyXErrorHandler(Display *display, XErrorEvent *e)
+{
+        dunst_grab_key_errored = True;
+        char err_buf[BUFSIZ];
+        XGetErrorText(display, e->error_code, err_buf, BUFSIZ);
+        fputs(err_buf, stderr);
+        fputs("\n", stderr);
+
+        if (e->error_code != BadAccess) {
+                exit(EXIT_FAILURE);
+        }
+
+    return 0 ;
+}
+
+int grab_key(keyboard_shortcut *ks)
+{
+        Window root;
+        root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
+        dunst_grab_key_errored = False;
+
+        XFlush(dc->dpy);
+
+        XErrorHandler old_handler = XSetErrorHandler(GrabKeyXErrorHandler);
+
+        if (ks->is_valid)
+                XGrabKey(dc->dpy, ks->code, ks->mask, root,
+                         True, GrabModeAsync, GrabModeAsync);
+
+
+        XFlush(dc->dpy);
+        XSync(dc->dpy, False);
+
+        XSetErrorHandler(old_handler);
+
+        if (dunst_grab_key_errored) {
+                fprintf(stderr, "Unable to grab key \"%s\"\n", ks->str);
+                return 1;
+        }
+        return 0;
+}
+
+void ungrab_key(keyboard_shortcut *ks)
+{
+        Window root;
+        root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
+        if (ks->is_valid)
+                XUngrabKey(dc->dpy, ks->code, ks->mask, root);
+}
 
 void warn(const char *text, int urg)
 {
@@ -917,14 +968,8 @@ void run(void)
 
 void hide_win()
 {
-        Window root;
-        root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
-
-        if (close_ks.is_valid)
-                XUngrabKey(dc->dpy, close_ks.code, close_ks.mask, root);
-
-        if (close_all_ks.is_valid)
-                XUngrabKey(dc->dpy, close_all_ks.code, close_all_ks.mask, root);
+        ungrab_key(&close_ks);
+        ungrab_key(&close_all_ks);
 
         XUngrabButton(dc->dpy, AnyButton, AnyModifier, win);
         XUnmapWindow(dc->dpy, win);
@@ -1063,10 +1108,7 @@ void setup(void)
                                                         DefaultScreen(dc->dpy)),
                           CWOverrideRedirect | CWBackPixmap | CWEventMask, &wa);
 
-        /* grab keys */
-        if (history_ks.is_valid)
-                XGrabKey(dc->dpy, history_ks.code, history_ks.mask, root,
-                         True, GrabModeAsync, GrabModeAsync);
+        grab_key(&history_ks);
 }
 
 void map_win(void)
@@ -1076,16 +1118,8 @@ void map_win(void)
                 return;
         }
 
-        Window root;
-        root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
-
-        if (close_ks.is_valid)
-                XGrabKey(dc->dpy, close_ks.code, close_ks.mask, root, True,
-                         GrabModeAsync, GrabModeAsync);
-
-        if (close_all_ks.is_valid)
-                XGrabKey(dc->dpy, close_all_ks.code, close_all_ks.mask, root,
-                         True, GrabModeAsync, GrabModeAsync);
+        grab_key(&close_ks);
+        grab_key(&close_all_ks);
 
         update_screen_info();
 
