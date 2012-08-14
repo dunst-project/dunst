@@ -379,6 +379,57 @@ int next_split(char *source, int max_width) {
         return -1;
 }
 
+void fill_notification_buffer(notification * n, notification_buffer * buf)
+{
+        memset(buf->txt, '\0', BUFSIZ);
+        buf->n = n;
+
+        char *end = buf->txt;
+        int size = BUFSIZ;
+
+        /* print duplication count */
+        if (n->dup_count > 0) {
+                size -= snprintf(end, size, "(%d)", n->dup_count);
+        }
+        if (size <= 0)
+                return;
+
+        end = buf->txt + strlen(buf->txt);
+
+        /* print message */
+        size -= snprintf(end, size, " %s", n->msg);
+        if (size <= 0)
+                return;
+
+        end = buf->txt + strlen(buf->txt);
+
+        /* print age */
+        time_t t_delta;
+        int hours, minutes, seconds;
+
+        t_delta = now - n->timestamp;
+
+        if (show_age_threshold >= 0 && t_delta >= show_age_threshold) {
+                hours = t_delta / 3600;
+                minutes = t_delta / 60 % 60;
+                seconds = t_delta % 60;
+
+                if (hours > 0) {
+                        size -=
+                            snprintf(end, size, " (%dh %dm %ds old)",
+                                     hours, minutes, seconds);
+                } else if (minutes > 0) {
+                        size -= snprintf(end, size, " (%dm %ds old)",
+                                         minutes, seconds);
+                } else {
+                        size -=
+                            snprintf(end, size, " (%ds old)", seconds);
+                }
+        }
+        if (size <= 0)
+                return;
+}
+
 void draw_win(void)
 {
         int width, x, y, height;
@@ -409,56 +460,12 @@ void draw_win(void)
         l_node *iter;
         int i;
         for (i = 0, iter = displayed_notifications->head; i < height; i++) {
-                memset(n_buf[i].txt, '\0', BUFSIZ);
-                n_buf[i].x_offset = 0;
                 if (iter) {
-                        n_buf[i].n = (notification *) iter->data;
-                        if (n_buf[i].n->dup_count > 0) {
-                                snprintf(n_buf[i].txt, BUFSIZ, "(%d) %s",
-                                         n_buf[i].n->dup_count,
-                                         n_buf[i].n->msg);
-                        } else {
-                                strncpy(n_buf[i].txt, n_buf[i].n->msg, BUFSIZ);
-                        }
+                        notification *n = (notification *) iter->data;
+                        fill_notification_buffer(n, &n_buf[i]);
                         iter = iter->next;
                 } else {
                         n_buf[i].n = NULL;
-                }
-        }
-
-        /* add message age to text */
-        if (show_age_threshold >= 0) {
-                for (i = 0; i < height; i++) {
-
-                        time_t t_delta;
-                        int hours, minutes, seconds;
-                        char *end;
-
-                        if (strlen(n_buf[i].txt) < 1)
-                                continue;
-
-                        t_delta = now - n_buf[i].n->timestamp;
-
-                        if (t_delta < show_age_threshold)
-                                continue;
-
-                        hours = t_delta / 3600;
-                        minutes = t_delta / 60 % 60;
-                        seconds = t_delta % 60;
-
-                        for (end = n_buf[i].txt; *end != '\0'; end++) ;
-                        if (hours > 0) {
-                                snprintf(end, BUFSIZ - strlen(n_buf[i].txt),
-                                         " (%dh %dm %ds old)",
-                                         hours, minutes, seconds);
-                        } else if (minutes > 0) {
-                                snprintf(end, BUFSIZ - strlen(n_buf[i].txt),
-                                         " (%dm %ds old)", minutes, seconds);
-                        } else {
-                                snprintf(end, BUFSIZ - strlen(n_buf[i].txt),
-                                         " (%ds old)", seconds);
-                        }
-
                 }
         }
 
@@ -496,21 +503,6 @@ void draw_win(void)
                 width = scr.dim.w;
         }
 
-        /* resize window and draw background */
-        if (width == 0) {
-                printf("Warning: width == 0\n");
-                goto draw_win_cleanup;
-        }
-
-        if (height == 0) {
-                printf("Warning: height == 0\n");
-                goto draw_win_cleanup;
-        }
-
-        if (font_h == 0) {
-                printf("Warning: font_h == 0\n");
-                goto draw_win_cleanup;
-        }
 
         /* calculate dc_height */
         if (word_wrap) {
@@ -532,6 +524,21 @@ void draw_win(void)
                 dc_height = height;
         }
 
+        /* */
+        if (width <= 0) {
+                printf("Warning: width == 0\n");
+                goto draw_win_cleanup;
+        }
+
+        if (dc_height <= 0) {
+                printf("Warning: dc_height == 0\n");
+                goto draw_win_cleanup;
+        }
+
+        if (font_h <= 0) {
+                printf("Warning: font_h == 0\n");
+                goto draw_win_cleanup;
+        }
         resizedc(dc, width, dc_height * font_h);
 
         /* draw buffers */
@@ -557,14 +564,17 @@ void draw_win(void)
                                 }
 
                                 dc->x = 0;
-                                drawrect(dc, 0, 0, width, font_h, True, n->colors->BG);
+                                drawrect(dc, 0, 0, width, font_h, True,
+                                         n->colors->BG);
 
                                 /* calculate offset */
-                               if (align == right) {
-                                       dc->x = width - textnw(dc, txt, txtlen);
-                               } else if (align == center) {
-                                       dc->x = (width - textnw(dc, txt, txtlen)) / 2;
-                               }
+                                if (align == right) {
+                                        dc->x = width - textnw(dc, txt, txtlen);
+                                } else if (align == center) {
+                                        dc->x =
+                                            (width -
+                                             textnw(dc, txt, txtlen)) / 2;
+                                }
 
                                 drawtextn(dc, txt, txtlen, n->colors);
                                 dc->y += font_h;
@@ -596,7 +606,6 @@ void draw_win(void)
         /* cleanup */
         free(n_buf);
 }
-
 
 char
 *fix_markup(char *str)
