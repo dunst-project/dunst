@@ -26,7 +26,6 @@
 #include "ini.h"
 #include "utils.h"
 
-
 #define INRECT(x,y,rx,ry,rw,rh) ((x) >= (rx) && (x) < (rx)+(rw) && (y) >= (ry) && (y) < (ry)+(rh))
 #define LENGTH(X)               (sizeof X / sizeof X[0])
 #define MIN(a,b)                ((a) < (b) ? (a) : (b))
@@ -107,13 +106,12 @@ void move_all_to_history(void);
 void print_version(void);
 
 /* show warning notification */
-void warn(const char * text, int urg);
+void warn(const char *text, int urg);
 
 void init_shortcut(keyboard_shortcut * shortcut);
 KeySym string_to_mask(char *str);
 
-
-static int GrabKeyXErrorHandler(Display *display, XErrorEvent *e)
+static int GrabKeyXErrorHandler(Display * display, XErrorEvent * e)
 {
         dunst_grab_key_errored = True;
         char err_buf[BUFSIZ];
@@ -125,10 +123,10 @@ static int GrabKeyXErrorHandler(Display *display, XErrorEvent *e)
                 exit(EXIT_FAILURE);
         }
 
-    return 0 ;
+        return 0;
 }
 
-int grab_key(keyboard_shortcut *ks)
+int grab_key(keyboard_shortcut * ks)
 {
         Window root;
         root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
@@ -142,7 +140,6 @@ int grab_key(keyboard_shortcut *ks)
                 XGrabKey(dc->dpy, ks->code, ks->mask, root,
                          True, GrabModeAsync, GrabModeAsync);
 
-
         XFlush(dc->dpy);
         XSync(dc->dpy, False);
 
@@ -155,7 +152,7 @@ int grab_key(keyboard_shortcut *ks)
         return 0;
 }
 
-void ungrab_key(keyboard_shortcut *ks)
+void ungrab_key(keyboard_shortcut * ks)
 {
         Window root;
         root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
@@ -364,11 +361,12 @@ void update_lists()
         }
 }
 
-int next_split(char *source, int max_width) {
+int next_split(char *source, int max_width)
+{
         int last_word = 0;
         for (int i = 0; i < strlen(source); i++) {
                 if (isspace(source[i])) {
-                        if (textnw(dc, source, i ) > max_width) {
+                        if (textnw(dc, source, i) > max_width) {
                                 return last_word;
                         } else {
                                 last_word = i;
@@ -421,8 +419,7 @@ void fill_notification_buffer(notification * n, notification_buffer * buf)
                         size -= snprintf(end, size, " (%dm %ds old)",
                                          minutes, seconds);
                 } else {
-                        size -=
-                            snprintf(end, size, " (%ds old)", seconds);
+                        size -= snprintf(end, size, " (%ds old)", seconds);
                 }
         }
         if (size <= 0)
@@ -501,7 +498,6 @@ void draw_win(void)
                 /* across the screen */
                 width = scr.dim.w;
         }
-
 
         /* calculate dc_height */
         if (word_wrap) {
@@ -996,7 +992,6 @@ int is_idle(void)
         }
         return screensaver_info->idle / 1000 > idle_threshold;
 }
-
 
 void run(void)
 {
@@ -1547,7 +1542,7 @@ void parse_dunstrc(char *cmdline_config_path)
 
         print_rules();
 }
-#endif /* STATIC_CONFIG */
+#endif                          /* STATIC_CONFIG */
 
 char *parse_cmdline_for_config_file(int argc, char *argv[])
 {
@@ -1605,11 +1600,11 @@ int main(int argc, char *argv[])
         color_strings[ColBG][CRIT] = critbgcolor;
         setup();
 
-
         if (depricated_mod)
-                warn("-mod is depricated. Use \"-key mod+key\" instead\n", CRIT);
+                warn("-mod is depricated. Use \"-key mod+key\" instead\n",
+                     CRIT);
         if (depricated_dunstrc_shortcuts)
-                warn("You are using depricated settings. Please update your dunstrc. SEE [shortcuts]",CRIT);
+                warn("You are using depricated settings. Please update your dunstrc. SEE [shortcuts]", CRIT);
         run();
         return 0;
 }
