@@ -51,7 +51,6 @@ typedef struct _screen_info {
 typedef struct _notification_buffer {
         char txt[BUFSIZ];
         notification *n;
-        int x_offset;
 } notification_buffer;
 
 /* global variables */
