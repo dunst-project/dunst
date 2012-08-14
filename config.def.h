@@ -19,6 +19,7 @@ int show_age_threshold = -1;    /* show age of notification, when notification i
 enum alignment align = left;    /* text alignment [left/center/right] */
 int sticky_history = True;
 int verbosity = 0;
+int word_wrap = False;
 
 
 /* monitor to display notifications on */

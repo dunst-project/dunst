@@ -54,9 +54,6 @@ typedef struct _notification_buffer {
         int x_offset;
 } notification_buffer;
 
-
-
-
 /* global variables */
 
 #include "config.h"
@@ -368,9 +365,24 @@ void update_lists()
         }
 }
 
+int next_split(char *source, int max_width) {
+        int last_word = 0;
+        for (int i = 0; i < strlen(source); i++) {
+                if (isspace(source[i])) {
+                        if (textnw(dc, source, i ) > max_width) {
+                                return last_word;
+                        } else {
+                                last_word = i;
+                        }
+                }
+        }
+        return -1;
+}
+
 void draw_win(void)
 {
         int width, x, y, height;
+        int dc_height = 0;
         unsigned int len = l_length(displayed_notifications);
         notification_buffer *n_buf;
         dc->x = 0;
@@ -484,32 +496,6 @@ void draw_win(void)
                 width = scr.dim.w;
         }
 
-        /* calculate offsets for alignment */
-        for (int i = 0; i < height; i++) {
-                if (strlen(n_buf[i].txt) < 1)
-                        continue;
-
-                if (align == right) {
-                        n_buf[i].x_offset = width - textw(dc, n_buf[i].txt);
-                } else if (align == center) {
-                        n_buf[i].x_offset = (width - textw(dc,
-                                                           n_buf[i].txt)) / 2;
-                }
-        }
-
-        /* calculate window position */
-        if (geometry.mask & XNegative) {
-                x = (scr.dim.x + (scr.dim.w - width)) + geometry.x;
-        } else {
-                x = scr.dim.x + geometry.x;
-        }
-
-        if (geometry.mask & YNegative) {
-                y = (scr.dim.h + geometry.y) - height * font_h;
-        } else {
-                y = 0 + geometry.y;
-        }
-
         /* resize window and draw background */
         if (width == 0) {
                 printf("Warning: width == 0\n");
@@ -525,26 +511,86 @@ void draw_win(void)
                 printf("Warning: font_h == 0\n");
                 goto draw_win_cleanup;
         }
-        resizedc(dc, width, height * font_h);
-        XResizeWindow(dc->dpy, win, width, height * font_h);
-        drawrect(dc, 0, 0, width, height * font_h, True, colors[NORM]->BG);
+
+        /* calculate dc_height */
+        if (word_wrap) {
+                for (int i = 0; i < height; i++) {
+                        if (strlen(n_buf[i].txt) > 0) {
+                                char *txt = n_buf[i].txt;
+                                int done = False;
+                                while (!done) {
+                                        int txtlen = next_split(txt, width);
+                                        if (txtlen < 0) {
+                                                done = True;
+                                        }
+                                        dc_height++;
+                                        txt += txtlen;
+                                }
+                        }
+                }
+        } else {
+                dc_height = height;
+        }
+
+        resizedc(dc, width, dc_height * font_h);
 
         /* draw buffers */
         for (int i = 0; i < height; i++) {
                 if (strlen(n_buf[i].txt) > 0) {
                         notification *n;
                         n = n_buf[i].n;
-                        dc->x = 0;
-                        drawrect(dc, 0, 0, width, font_h, True, n->colors->BG);
-                        dc->x = n_buf[i].x_offset;
-                        drawtext(dc, n_buf[i].txt, n->colors);
-                        dc->y += font_h;
+
+                        int done = False;
+                        char *txt = n_buf[i].txt;
+                        while (!done) {
+                                int txtlen;
+                                if (!word_wrap) {
+                                        txtlen = strlen(txt);
+                                        done = True;
+                                } else {
+                                        txtlen = next_split(txt, width);
+                                }
+
+                                if (txtlen < 0) {
+                                        done = True;
+                                        txtlen = strlen(txt);
+                                }
+
+                                dc->x = 0;
+                                drawrect(dc, 0, 0, width, font_h, True, n->colors->BG);
+
+                                /* calculate offset */
+                               if (align == right) {
+                                       dc->x = width - textnw(dc, txt, txtlen);
+                               } else if (align == center) {
+                                       dc->x = (width - textnw(dc, txt, txtlen)) / 2;
+                               }
+
+                                drawtextn(dc, txt, txtlen, n->colors);
+                                dc->y += font_h;
+
+                                txt = txt + txtlen;
+                        }
                 }
         }
 
+        /* calculate window position */
+        if (geometry.mask & XNegative) {
+                x = (scr.dim.x + (scr.dim.w - width)) + geometry.x;
+        } else {
+                x = scr.dim.x + geometry.x;
+        }
+
+        if (geometry.mask & YNegative) {
+                y = (scr.dim.h + geometry.y) - dc_height * font_h;
+        } else {
+                y = 0 + geometry.y;
+        }
+
         /* move and map window */
+        XResizeWindow(dc->dpy, win, width, dc_height * font_h);
         XMoveWindow(dc->dpy, win, x, y);
-        mapdc(dc, win, width, height * font_h);
+        mapdc(dc, win, width, dc_height * font_h);
 
  draw_win_cleanup:
         /* cleanup */
@@ -1353,6 +1399,8 @@ dunst_ini_handle(void *user_data, const char *section,
                         sort = dunst_ini_get_boolean(value);
                 else if (strcmp(name, "indicate_hidden") == 0)
                         indicate_hidden = dunst_ini_get_boolean(value);
+                else if (strcmp(name, "word_wrap") == 0)
+                        word_wrap = dunst_ini_get_boolean(value);
                 else if (strcmp(name, "idle_threshold") == 0)
                         idle_threshold = atoi(value);
                 else if (strcmp(name, "monitor") == 0)

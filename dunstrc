@@ -23,6 +23,9 @@
     # set to -1 to disable
     show_age_threshold = 60;
 
+    # split long notifications into multiple lines
+    word_wrap = yes
+
 
     # the geometry of the window
     # geometry [{width}]x{height}][+/-{x}+/-{y}]
