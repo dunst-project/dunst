@@ -587,9 +587,9 @@ void draw_win(void)
         }
 
         if (geometry.mask & YNegative) {
-                y = (scr.dim.h + geometry.y) - dc_height * font_h;
+                y = scr.dim.y + (scr.dim.h + geometry.y) - dc_height * font_h;
         } else {
-                y = 0 + geometry.y;
+                y = scr.dim.y + geometry.y;
         }
 
         /* move and map window */
@@ -1105,8 +1105,6 @@ void update_screen_info()
         int n;
         int screen = scr.scr;
         XineramaScreenInfo *info;
-#endif
-#ifdef XINERAMA
         if ((info = XineramaQueryScreens(dc->dpy, &n))) {
                 screen = select_screen(info, n);
                 if (screen >= n) {
