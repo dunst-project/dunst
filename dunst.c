@@ -1,6 +1,7 @@
 /* copyright 2012 Sascha Kruse and contributors (see LICENSE for licensing information) */
 
 #define _GNU_SOURCE
+#include <assert.h>
 #include <unistd.h>
 #include <time.h>
 #include <stdio.h>
@@ -361,50 +362,67 @@ void update_lists()
         }
 }
 
-int next_split(char *source, int max_width)
+/* TODO get draw_txt_buf as argument */
+int do_word_wrap(char *source, int max_width)
 {
-        int last_word = 0;
-        for (int i = 0; i < strlen(source); i++) {
-                if (isspace(source[i])) {
-                        if (textnw(dc, source, i) > max_width) {
-                                return last_word;
+        char *last_space = NULL;
+        char *cur = source;
+        int lines = 1;
+
+        if (max_width < 1)
+                return 1;
+
+        while (*cur != '\0') {
+                if (isspace(*cur)) {
+                        if (textnw(dc, source, cur - source) > max_width) {
+                                *last_space = '\0';
+                                lines++;
+                                cur = last_space + 1;
+                                source = cur;
+                                continue;
                         } else {
-                                last_word = i;
+                                last_space = cur;
                         }
                 }
+                cur++;
         }
-        return -1;
+        return lines;
 }
 
-void fill_notification_buffer(notification * n, notification_buffer * buf)
+void update_draw_txt_buf(notification * n, int max_width)
 {
-        memset(buf->txt, '\0', BUFSIZ);
-        buf->n = n;
+        if (!n->draw_txt_buf.txt) {
+                int dup_len = strlen(" () ") + digit_count(INT_MAX);
+                int msg_len = strlen(n->msg) + 2;       /* 2 == surrounding spaces */
+                int age_len = strlen(" ( h 60m 60s old ) ")
+                    + digit_count(INT_MAX);     /* could be INT_MAX hours */
+                int line_length = dup_len + msg_len + age_len;
 
-        char *end = buf->txt;
-        int size = BUFSIZ;
+                line_length += sizeof(" ( more ) ") + digit_count(INT_MAX);
 
-        /* print duplication count */
-        if (n->dup_count > 0) {
-                size -= snprintf(end, size, "(%d)", n->dup_count);
+                n->draw_txt_buf.txt = calloc(line_length, sizeof(char));
+                n->draw_txt_buf.bufsize = line_length;
         }
-        if (size <= 0)
-                return;
 
-        end = buf->txt + strlen(buf->txt);
+        char *buf = n->draw_txt_buf.txt;
+        int bufsize = n->draw_txt_buf.bufsize;
+        char *next = buf;
 
-        /* print message */
-        size -= snprintf(end, size, " %s", n->msg);
-        if (size <= 0)
-                return;
+        memset(buf, '\0', bufsize);
 
-        end = buf->txt + strlen(buf->txt);
+        /* print dup_count */
+        if (n->dup_count > 0) {
+                snprintf(next, bufsize - strlen(buf), "(%d) ", n->dup_count);
+                next = buf + strlen(buf);
+        }
+
+        /* print msg */
+        strncat(buf, n->msg, bufsize - strlen(buf));
+        next = buf + strlen(buf);
 
         /* print age */
-        time_t t_delta;
         int hours, minutes, seconds;
-
-        t_delta = now - n->timestamp;
+        time_t t_delta = now - n->timestamp;
 
         if (show_age_threshold >= 0 && t_delta >= show_age_threshold) {
                 hours = t_delta / 3600;
@@ -412,85 +430,60 @@ void fill_notification_buffer(notification * n, notification_buffer * buf)
                 seconds = t_delta % 60;
 
                 if (hours > 0) {
-                        size -=
-                            snprintf(end, size, " (%dh %dm %ds old)",
-                                     hours, minutes, seconds);
+                        snprintf(next, bufsize - strlen(buf),
+                                 " (%dh %dm %ds old)", hours, minutes, seconds);
                 } else if (minutes > 0) {
-                        size -= snprintf(end, size, " (%dm %ds old)",
-                                         minutes, seconds);
+                        snprintf(next, bufsize - strlen(buf), " (%dm %ds old)",
+                                 minutes, seconds);
                 } else {
-                        size -= snprintf(end, size, " (%ds old)", seconds);
+                        snprintf(next, bufsize - strlen(buf), " (%ds old)",
+                                 seconds);
                 }
         }
-        if (size <= 0)
-                return;
+
+        n->draw_txt_buf.line_count =
+            do_word_wrap(n->draw_txt_buf.txt, max_width);
+}
+
+char *draw_txt_get_line(draw_txt * dt, int line)
+{
+        if (line > dt->line_count) {
+                return NULL;
+        }
+
+        char *begin = dt->txt;
+        for (int i = 1; i < line; i++) {
+                begin += strlen(begin) + 1;
+        }
+
+        return begin;
+}
+
+int calculate_x_offset(int line_width, int text_width)
+{
+        switch (align) {
+        case left:
+                return 0;
+        case center:
+                return (line_width - text_width) / 2;
+        case right:
+                return line_width - text_width;
+        default:
+                /* this can't happen */
+                return 0;
+        }
 }
 
 void draw_win(void)
 {
         int width, x, y, height;
-        int dc_height = 0;
-        unsigned int len = l_length(displayed_notifications);
-        notification_buffer *n_buf;
-        dc->x = 0;
-        dc->y = 0;
-        dc->h = 0;
 
         update_screen_info();
-
-        /* calculate height */
-        if (geometry.h == 0) {
-                height = len;
-        } else {
-                height = MIN(geometry.h, len);
-        }
-
-        if (indicate_hidden && geometry.h != 1
-            && !l_is_empty(notification_queue)) {
-                height++;
-        }
-
-        /* initialize and fill buffers */
-        n_buf = calloc(height, sizeof(notification_buffer));
-
-        l_node *iter;
-        int i;
-        for (i = 0, iter = displayed_notifications->head; i < height; i++) {
-                if (iter) {
-                        notification *n = (notification *) iter->data;
-                        fill_notification_buffer(n, &n_buf[i]);
-                        iter = iter->next;
-                } else {
-                        n_buf[i].n = NULL;
-                }
-        }
-
-        /* add "(x more)" */
-        if (indicate_hidden && geometry.h != 1
-            && !l_is_empty(notification_queue)) {
-                snprintf(n_buf[height - 1].txt, BUFSIZ, "(%d more)",
-                         l_length(notification_queue));
-                /* give this buffer the most important notification in order
-                 * to set the colors to it
-                 */
-                n_buf[height - 1].n = most_important(notification_queue)->data;
-
-        } else if (indicate_hidden && !l_is_empty(notification_queue)) {
-                /* append "(x more)" message to notification text */
-                char *begin;
-                for (begin = n_buf[0].txt; *begin != '\0'; begin++) ;
-                snprintf(begin, BUFSIZ - strlen(n_buf[0].txt),
-                         " (%d more)", l_length(notification_queue));
-
-        }
 
         /* calculate width */
         if (geometry.mask & WidthValue && geometry.w == 0) {
                 /* dynamic width */
                 width = 0;
-                for (i = 0; i < height; i++) {
-                        width = MAX(width, textw(dc, n_buf[i].txt));
-                }
         } else if (geometry.mask & WidthValue) {
                 /* fixed width */
                 width = geometry.w;
@@ -499,84 +492,102 @@ void draw_win(void)
                 width = scr.dim.w;
         }
 
-        /* calculate dc_height */
-        if (word_wrap) {
-                for (int i = 0; i < height; i++) {
-                        if (strlen(n_buf[i].txt) > 0) {
-                                char *txt = n_buf[i].txt;
-                                int done = False;
-                                while (!done) {
-                                        int txtlen = next_split(txt, width);
-                                        if (txtlen < 0) {
-                                                done = True;
-                                        }
-                                        dc_height++;
-                                        txt += txtlen;
-                                }
+        /* update draw_txt_bufs and line_cnt */
+        int line_cnt = 0;
+        for (l_node * iter = displayed_notifications->head; iter;
+             iter = iter->next) {
+                notification *n = (notification *) iter->data;
+                update_draw_txt_buf(n, width);
+                line_cnt += n->draw_txt_buf.line_count;
+        }
+
+        /* if we have a dynamic width, calculate the actual width */
+        if (width == 0) {
+                for (l_node * iter = displayed_notifications->head; iter;
+                     iter = iter->next) {
+                        notification *n = (notification *) iter->data;
+                        for (int i = 0; i < n->draw_txt_buf.line_count; i++) {
+                                char *line =
+                                    draw_txt_get_line(&n->draw_txt_buf, i);
+                                assert(line != NULL);
+                                width = MAX(width, textw(dc, line));
                         }
                 }
+        }
+
+        /* calculate height */
+        if (geometry.h == 0) {
+                height = line_cnt * font_h;
         } else {
-                dc_height = height;
+                height = MIN(geometry.h, line_cnt) * font_h;
         }
 
-        /* */
-        if (width <= 0) {
-                printf("Warning: width == 0\n");
-                goto draw_win_cleanup;
+        /* add "(x more)" */
+        draw_txt x_more;
+        x_more.txt = NULL;
+
+        char *print_to;
+        int more = l_length(notification_queue);
+        if (indicate_hidden && more > 0) {
+
+                int x_more_len = strlen(" ( more) ") + digit_count(more);
+
+                if (geometry.h != 1) {
+                        /* add additional line */
+                        x_more.txt = calloc(x_more_len, sizeof(char));
+                        height += font_h;
+                        line_cnt++;
+
+                        print_to = x_more.txt;
+
+                } else {
+                        /* append "(x more)" message to notification text */
+                        notification *n =
+                            (notification *) displayed_notifications->head;
+                        print_to =
+                            draw_txt_get_line(&n->draw_txt_buf,
+                                              n->draw_txt_buf.line_count);
+                        for (; *print_to != '\0'; print_to++) ;
+                }
+
+                snprintf(print_to, x_more_len, "(%d more)", more);
         }
 
-        if (dc_height <= 0) {
-                printf("Warning: dc_height == 0\n");
-                goto draw_win_cleanup;
-        }
+        assert(font_h > 0);
+        assert(width > 0);
+        assert(height > 0);
+        assert(line_cnt > 0);
 
-        if (font_h <= 0) {
-                printf("Warning: font_h == 0\n");
-                goto draw_win_cleanup;
-        }
-        resizedc(dc, width, dc_height * font_h);
+        resizedc(dc, width, height);
 
         /* draw buffers */
-        for (int i = 0; i < height; i++) {
-                if (strlen(n_buf[i].txt) > 0) {
-                        notification *n;
-                        n = n_buf[i].n;
+        dc->y = 0;
+        ColorSet *last_color;
+        assert(displayed_notifications->head != NULL);
+        for (l_node * iter = displayed_notifications->head; iter;
+             iter = iter->next) {
 
-                        int done = False;
-                        char *txt = n_buf[i].txt;
-                        while (!done) {
-                                int txtlen;
-                                if (!word_wrap) {
-                                        txtlen = strlen(txt);
-                                        done = True;
-                                } else {
-                                        txtlen = next_split(txt, width);
-                                }
+                notification *n = (notification *) iter->data;
+                last_color = n->colors;
 
-                                if (txtlen < 0) {
-                                        done = True;
-                                        txtlen = strlen(txt);
-                                }
+                for (int i = 0; i < n->draw_txt_buf.line_count; i++) {
 
-                                dc->x = 0;
-                                drawrect(dc, 0, 0, width, font_h, True,
-                                         n->colors->BG);
+                        char *line = draw_txt_get_line(&n->draw_txt_buf, i + 1);
+                        dc->x = 0;
+                        drawrect(dc, 0, 0, width, font_h, True, n->colors->BG);
 
-                                /* calculate offset */
-                                if (align == right) {
-                                        dc->x = width - textnw(dc, txt, txtlen);
-                                } else if (align == center) {
-                                        dc->x =
-                                            (width -
-                                             textnw(dc, txt, txtlen)) / 2;
-                                }
-
-                                drawtextn(dc, txt, txtlen, n->colors);
-                                dc->y += font_h;
-
-                                txt = txt + txtlen;
-                        }
+                        dc->x = calculate_x_offset(width, textw(dc, line));
+                        drawtext(dc, line, n->colors);
+                        dc->y += font_h;
                 }
+        }
+
+        /* draw x_more */
+        if (x_more.txt) {
+                dc->x = 0;
+                drawrect(dc, 0, 0, width, font_h, True, last_color->BG);
+                dc->x = calculate_x_offset(width, textw(dc, x_more.txt));
+                drawtext(dc, x_more.txt, last_color);
         }
 
         /* calculate window position */
@@ -587,19 +598,17 @@ void draw_win(void)
         }
 
         if (geometry.mask & YNegative) {
-                y = scr.dim.y + (scr.dim.h + geometry.y) - dc_height * font_h;
+                y = scr.dim.y + (scr.dim.h + geometry.y) - height;
         } else {
                 y = scr.dim.y + geometry.y;
         }
 
         /* move and map window */
-        XResizeWindow(dc->dpy, win, width, dc_height * font_h);
+        XResizeWindow(dc->dpy, win, width, height);
         XMoveWindow(dc->dpy, win, x, y);
-        mapdc(dc, win, width, dc_height * font_h);
+        mapdc(dc, win, width, height);
 
- draw_win_cleanup:
-        /* cleanup */
-        free(n_buf);
+        free(x_more.txt);
 }
 
 char
@@ -796,6 +805,7 @@ int init_notification(notification * n, int id)
         n->msg = strtrim(n->msg);
 
         n->dup_count = 0;
+        n->draw_txt_buf.txt = NULL;
 
         /* check if n is a duplicate */
         for (l_node * iter = notification_queue->head; iter; iter = iter->next) {

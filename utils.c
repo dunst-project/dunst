@@ -62,6 +62,26 @@ void dunst_printf(int level, const char *fmt, ...)
         va_end(ap);
 }
 
+int digit_count(int i)
+{
+        int len = 0;
+        if ( i == 0) {
+                return 1;
+        }
+
+        if (i < 0) {
+                len++;
+                i *= -1;
+        }
+
+        while (i > 0) {
+                len++;
+                i /= 10;
+        }
+
+        return len;
+}
+
 void die(char *text, int exit_value)
 {
         fputs(text, stderr);

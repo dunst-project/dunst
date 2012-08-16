@@ -32,12 +32,19 @@ typedef struct _rule_t {
 
 } rule_t;
 
+typedef struct _draw_txt {
+        char *txt;
+        int line_count;
+        int bufsize;
+} draw_txt;
+
 typedef struct _notification {
         char *appname;
         char *summary;
         char *body;
         char *icon;
         char *msg;
+        draw_txt draw_txt_buf;
         const char *format;
         char *dbus_client;
         time_t start;
@@ -66,6 +73,7 @@ typedef struct _keyboard_shortcut {
         KeySym mask;
         int is_valid;
 } keyboard_shortcut;
+
 
 extern int verbosity;
 
