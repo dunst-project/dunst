@@ -1416,15 +1416,17 @@ dunst_ini_handle(void *user_data, const char *section,
                         idle_threshold = atoi(value);
                 else if (strcmp(name, "monitor") == 0)
                         scr.scr = atoi(value);
-                else if (strcmp(name, "follow") == 0)
-                        parse_follow_mode(dunst_ini_get_string(value));
-                else if (strcmp(name, "geometry") == 0)
+                else if (strcmp(name, "follow") == 0) {
+                        char *c = dunst_ini_get_string(value);
+                        parse_follow_mode(c);
+                        free(c);
+                } else if (strcmp(name, "geometry") == 0)
                         geom = dunst_ini_get_string(value);
                 else if (strcmp(name, "modifier") == 0) {
                         depricated_dunstrc_shortcuts = True;
-                        KeySym mod =
-                            string_to_mask(dunst_ini_get_string(value));
-
+                        char *c = dunst_ini_get_string(value);
+                        KeySym mod = string_to_mask(c);
+                        free(c);
                         close_ks.mask = mod;
                         close_all_ks.mask = mod;
                         history_ks.mask = mod;
