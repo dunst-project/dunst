@@ -86,6 +86,10 @@ a negative from the right side of the screen.
 Y is measured from the top and down respectevly.
 see also EXAMPLES show the notification on monitor n.
 
+=item B<-lh/-line_height> height
+
+The height of a single line in pixel. If the height is smaller than the font height, it will get raised to the font height.
+
 =item B<-v/--version>
 
 print version information.

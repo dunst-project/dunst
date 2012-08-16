@@ -478,6 +478,8 @@ void draw_win(void)
 {
         int width, x, y, height;
 
+        line_height = MAX(line_height, font_h);
+
         update_screen_info();
 
         /* calculate width */
@@ -517,9 +519,9 @@ void draw_win(void)
 
         /* calculate height */
         if (geometry.h == 0) {
-                height = line_cnt * font_h;
+                height = line_cnt * line_height;
         } else {
-                height = MIN(geometry.h, line_cnt) * font_h;
+                height = MIN(geometry.h, line_cnt) * line_height;
         }
 
         /* add "(x more)" */
@@ -535,7 +537,7 @@ void draw_win(void)
                 if (geometry.h != 1) {
                         /* add additional line */
                         x_more.txt = calloc(x_more_len, sizeof(char));
-                        height += font_h;
+                        height += line_height;
                         line_cnt++;
 
                         print_to = x_more.txt;
@@ -553,6 +555,7 @@ void draw_win(void)
                 snprintf(print_to, x_more_len, "(%d more)", more);
         }
 
+        assert(line_height > 0);
         assert(font_h > 0);
         assert(width > 0);
         assert(height > 0);
@@ -574,18 +577,19 @@ void draw_win(void)
 
                         char *line = draw_txt_get_line(&n->draw_txt_buf, i + 1);
                         dc->x = 0;
-                        drawrect(dc, 0, 0, width, font_h, True, n->colors->BG);
+                        drawrect(dc, 0, 0, width, line_height, True, n->colors->BG);
 
                         dc->x = calculate_x_offset(width, textw(dc, line));
+                        dc->y += (line_height - font_h) / 2;
                         drawtext(dc, line, n->colors);
-                        dc->y += font_h;
+                        dc->y += line_height - ((line_height - font_h) / 2);
                 }
         }
 
         /* draw x_more */
         if (x_more.txt) {
                 dc->x = 0;
-                drawrect(dc, 0, 0, width, font_h, True, last_color->BG);
+                drawrect(dc, 0, 0, width, line_height, True, last_color->BG);
                 dc->x = calculate_x_offset(width, textw(dc, x_more.txt));
                 drawtext(dc, x_more.txt, last_color);
         }
@@ -1235,6 +1239,8 @@ void parse_cmdline(int argc, char *argv[])
                         {"mon", required_argument, NULL, 'm'},
                         {"ns", no_argument, NULL, 'x'},
                         {"follow", required_argument, NULL, 'o'},
+                        {"line_height", required_argument, NULL, 'H'},
+                        {"lh", required_argument, NULL, 'H'},
                         {"version", no_argument, NULL, 'v'},
                         {0, 0, 0, 0}
                 };
@@ -1326,6 +1332,9 @@ void parse_cmdline(int argc, char *argv[])
                         break;
                 case 'o':
                         parse_follow_mode(optarg);
+                        break;
+                case 'H':
+                        line_height = atoi(optarg);
                         break;
                 case 'v':
                         print_version();
@@ -1422,6 +1431,8 @@ dunst_ini_handle(void *user_data, const char *section,
                         free(c);
                 } else if (strcmp(name, "geometry") == 0)
                         geom = dunst_ini_get_string(value);
+                else if (strcmp(name, "line_height") == 0)
+                        line_height = atoi(value);
                 else if (strcmp(name, "modifier") == 0) {
                         depricated_dunstrc_shortcuts = True;
                         char *c = dunst_ini_get_string(value);
@@ -1622,7 +1633,7 @@ int main(int argc, char *argv[])
 void usage(int exit_status)
 {
         fputs
-            ("usage: dunst [-h/--help] [-v] [-geometry geom] [-fn font] [-format fmt]\n[-nb color] [-nf color] [-lb color] [-lf color] [-cb color] [ -cf color]\n[-to secs] [-lto secs] [-cto secs] [-nto secs] [-key key] [-history_key key] [-all_key key] [-mon n]  [-follow none/mouse/keyboard] [-config dunstrc]\n",
+            ("usage: dunst [-h/--help] [-v] [-geometry geom] [-lh height] [-fn font] [-format fmt]\n[-nb color] [-nf color] [-lb color] [-lf color] [-cb color] [ -cf color]\n[-to secs] [-lto secs] [-cto secs] [-nto secs] [-key key] [-history_key key] [-all_key key] [-mon n]  [-follow none/mouse/keyboard] [-config dunstrc]\n",
              stderr);
         exit(exit_status);
 }

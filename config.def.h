@@ -20,6 +20,7 @@ enum alignment align = left;    /* text alignment [left/center/right] */
 int sticky_history = True;
 int verbosity = 0;
 int word_wrap = False;
+int line_height = 0;   /* a line height < font height will be raised to font height */
 
 
 /* monitor to display notifications on */
