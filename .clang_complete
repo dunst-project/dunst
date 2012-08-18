@@ -5,3 +5,4 @@
 -DINI_ALLOW_MULTILINE=0
 -I/usr/include/dbus-1.0
 -I/usr/lib/dbus-1.0/include
+-DVERSION=0
