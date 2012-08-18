@@ -365,28 +365,30 @@ void update_lists()
 /* TODO get draw_txt_buf as argument */
 int do_word_wrap(char *source, int max_width)
 {
-        char *last_space = NULL;
-        char *cur = source;
-        int lines = 1;
+        char *eol = source;
+        while (True) {
+                if ( *eol == '\0')
+                        return 1;
 
-        if (max_width < 1)
-                return 1;
+                if (textnw(dc, source, (eol - source) + 1) >= max_width) {
+                        /* go back to previous space */
+                        char *space = eol;
+                        while (space > source && !isspace(*space))
+                                space--;
 
-        while (*cur != '\0') {
-                if (isspace(*cur)) {
-                        if (textnw(dc, source, cur - source) > max_width) {
-                                *last_space = '\0';
-                                lines++;
-                                cur = last_space + 1;
-                                source = cur;
-                                continue;
-                        } else {
-                                last_space = cur;
+                        if (space <= source) {
+                                /* whe have a word longer than width, so we
+                                 * split mid-word. That one letter is
+                                 * collateral damage */
+                                space = eol;
                         }
+                        *space = '\0';
+                        if (*(space + 1) == '\0')
+                                return 1;
+                        return 1 + do_word_wrap(space+1, max_width);
                 }
-                cur++;
+        eol++;
         }
-        return lines;
 }
 
 void update_draw_txt_buf(notification * n, int max_width)
@@ -581,7 +583,7 @@ void draw_win(void)
 
                         dc->x = calculate_x_offset(width, textw(dc, line));
                         dc->y += (line_height - font_h) / 2;
-                        drawtext(dc, line, n->colors);
+                        drawtextn(dc, line, strlen(line), n->colors);
                         dc->y += line_height - ((line_height - font_h) / 2);
                 }
         }
