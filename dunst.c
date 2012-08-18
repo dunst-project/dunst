@@ -367,7 +367,7 @@ int do_word_wrap(char *source, int max_width)
 {
         char *eol = source;
         while (True) {
-                if ( *eol == '\0')
+                if (*eol == '\0')
                         return 1;
 
                 if (textnw(dc, source, (eol - source) + 1) >= max_width) {
@@ -385,9 +385,9 @@ int do_word_wrap(char *source, int max_width)
                         *space = '\0';
                         if (*(space + 1) == '\0')
                                 return 1;
-                        return 1 + do_word_wrap(space+1, max_width);
+                        return 1 + do_word_wrap(space + 1, max_width);
                 }
-        eol++;
+                eol++;
         }
 }
 
@@ -579,7 +579,8 @@ void draw_win(void)
 
                         char *line = draw_txt_get_line(&n->draw_txt_buf, i + 1);
                         dc->x = 0;
-                        drawrect(dc, 0, 0, width, line_height, True, n->colors->BG);
+                        drawrect(dc, 0, 0, width, line_height, True,
+                                 n->colors->BG);
 
                         dc->x = calculate_x_offset(width, textw(dc, line));
                         dc->y += (line_height - font_h) / 2;
@@ -680,7 +681,7 @@ void handle_mouse_click(XEvent ev)
                 notification *n;
                 l_node *iter = displayed_notifications->head;
                 assert(iter);
-                for(; iter; iter = iter->next ) {
+                for (; iter; iter = iter->next) {
                         n = (notification *) iter->data;
                         int height = font_h * n->draw_txt_buf.line_count;
                         if (ev.xbutton.y > y && ev.xbutton.y < y + height)
