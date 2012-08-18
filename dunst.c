@@ -523,7 +523,7 @@ void draw_win(void)
         if (geometry.h == 0) {
                 height = line_cnt * line_height;
         } else {
-                height = MIN(geometry.h, line_cnt) * line_height;
+                height = MAX(geometry.h, (line_cnt * line_height));
         }
 
         /* add "(x more)" */
