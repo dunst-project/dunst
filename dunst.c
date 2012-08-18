@@ -669,22 +669,25 @@ char
 
 void handle_mouse_click(XEvent ev)
 {
-        l_node *iter = displayed_notifications->head;
-        notification *n;
         if (ev.xbutton.button == Button3) {
                 move_all_to_history();
-        } else if (ev.xbutton.button == Button1) {
-                int i = ev.xbutton.y / font_h;
-                for (; i > 0; i--) {
-                        /* if the user clicks on the "(x more)" message,
-                         * keep iter at the last displayed message and
-                         * remove that instead
-                         */
-                        if (iter->next) {
-                                iter = iter->next;
-                        }
+
+                return;
+        }
+
+        if (ev.xbutton.button == Button1) {
+                int y = 0;
+                notification *n;
+                l_node *iter = displayed_notifications->head;
+                assert(iter);
+                for(; iter; iter = iter->next ) {
+                        n = (notification *) iter->data;
+                        int height = font_h * n->draw_txt_buf.line_count;
+                        if (ev.xbutton.y > y && ev.xbutton.y < y + height)
+                                break;
+                        else
+                                y += height;
                 }
-                n = (notification *) iter->data;
                 close_notification(n, 2);
         }
 }
