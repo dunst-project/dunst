@@ -365,7 +365,7 @@ void update_lists()
 /* TODO get draw_txt_buf as argument */
 int do_word_wrap(char *source, int max_width)
 {
-        strtrim(source);
+        strtrim_end(source);
         if (!source || source == '\0' || strcmp(source, "") == 0)
                 return 0;
 
@@ -406,9 +406,14 @@ int do_word_wrap(char *source, int max_width)
 
 void update_draw_txt_buf(notification * n, int max_width)
 {
+        strtrim_end(n->msg);
+        char *msg = n->msg;
+        while(isspace(*msg))
+                msg++;
+
         if (!n->draw_txt_buf.txt) {
                 int dup_len = strlen(" () ") + digit_count(INT_MAX);
-                int msg_len = strlen(n->msg) + 2;       /* 2 == surrounding spaces */
+                int msg_len = strlen(msg) + 2;       /* 2 == surrounding spaces */
                 int age_len = strlen(" ( h 60m 60s old ) ")
                     + digit_count(INT_MAX);     /* could be INT_MAX hours */
                 int line_length = dup_len + msg_len + age_len;
@@ -432,7 +437,7 @@ void update_draw_txt_buf(notification * n, int max_width)
         }
 
         /* print msg */
-        strncat(buf, n->msg, bufsize - strlen(buf));
+        strncat(buf, msg, bufsize - strlen(buf));
         next = buf + strlen(buf);
 
         /* print age */
@@ -825,7 +830,6 @@ int init_notification(notification * n, int id)
         n->msg = string_replace("%b", n->body, n->msg);
 
         n->msg = fix_markup(n->msg);
-        n->msg = strtrim(n->msg);
 
         n->dup_count = 0;
         n->draw_txt_buf.txt = NULL;
@@ -980,10 +984,10 @@ void init_shortcut(keyboard_shortcut * ks)
                         str++;
                 *str = '\0';
                 str++;
-                strtrim(mod);
+                strtrim_end(mod);
                 ks->mask = ks->mask | string_to_mask(mod);
         }
-        strtrim(str);
+        strtrim_end(str);
 
         ks->sym = XStringToKeysym(str);
         ks->code = XKeysymToKeycode(dc->dpy, ks->sym);
