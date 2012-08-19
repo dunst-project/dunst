@@ -365,10 +365,23 @@ void update_lists()
 /* TODO get draw_txt_buf as argument */
 int do_word_wrap(char *source, int max_width)
 {
+        strtrim(source);
+        if (!source || source == '\0' || strcmp(source, "") == 0)
+                return 0;
+
         char *eol = source;
         while (True) {
                 if (*eol == '\0')
                         return 1;
+                if (*eol == '\n') {
+                        *eol = '\0';
+                        return 1 + do_word_wrap(eol + 1, max_width);
+                }
+                if (*eol == '\\' && *(eol+1) == 'n') {
+                        *eol = ' ';
+                        *(eol+1) = '\0';
+                        return 1 + do_word_wrap(eol + 2, max_width);
+                }
 
                 if (textnw(dc, source, (eol - source) + 1) >= max_width) {
                         /* go back to previous space */
