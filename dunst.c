@@ -365,6 +365,9 @@ void update_lists()
 /* TODO get draw_txt_buf as argument */
 int do_word_wrap(char *source, int max_width)
 {
+        if (!word_wrap)
+                return 1;
+
         strtrim_end(source);
         if (!source || source == '\0' || strcmp(source, "") == 0)
                 return 0;
