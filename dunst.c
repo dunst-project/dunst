@@ -365,7 +365,7 @@ void update_lists()
 /* TODO get draw_txt_buf as argument */
 int do_word_wrap(char *source, int max_width)
 {
-        if (!word_wrap)
+        if (!word_wrap || max_width < 1)
                 return 1;
 
         strtrim_end(source);
@@ -526,6 +526,7 @@ void draw_win(void)
                 line_cnt += n->draw_txt_buf.line_count;
         }
 
+        printf("width: %d\n", width);
         /* if we have a dynamic width, calculate the actual width */
         if (width == 0) {
                 for (l_node * iter = displayed_notifications->head; iter;
@@ -539,6 +540,10 @@ void draw_win(void)
                         }
                 }
         }
+
+        printf("width: %d\n", width);
+
+        printf("------\n");
 
         /* calculate height */
         if (geometry.h == 0) {
