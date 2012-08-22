@@ -73,7 +73,7 @@ static dimension_t geometry;
 static XScreenSaverInfo *screensaver_info;
 static int font_h;
 
-int dunst_grab_key_errored = False;
+int dunst_grab_errored = False;
 
 int next_notification_id = 1;
 
@@ -112,9 +112,9 @@ void warn(const char *text, int urg);
 void init_shortcut(keyboard_shortcut * shortcut);
 KeySym string_to_mask(char *str);
 
-static int GrabKeyXErrorHandler(Display * display, XErrorEvent * e)
+static int GrabXErrorHandler(Display * display, XErrorEvent * e)
 {
-        dunst_grab_key_errored = True;
+        dunst_grab_errored = True;
         char err_buf[BUFSIZ];
         XGetErrorText(display, e->error_code, err_buf, BUFSIZ);
         fputs(err_buf, stderr);
@@ -127,26 +127,34 @@ static int GrabKeyXErrorHandler(Display * display, XErrorEvent * e)
         return 0;
 }
 
+static void setup_error_handler(void)
+{
+        dunst_grab_errored = False;
+
+        XFlush(dc->dpy);
+        XSetErrorHandler(GrabXErrorHandler);
+}
+
+static int tear_down_error_handler(void)
+{
+        XFlush(dc->dpy);
+        XSync(dc->dpy, False);
+        XSetErrorHandler(NULL);
+        return dunst_grab_errored;
+}
+
 int grab_key(keyboard_shortcut * ks)
 {
         Window root;
         root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
-        dunst_grab_key_errored = False;
 
-        XFlush(dc->dpy);
-
-        XErrorHandler old_handler = XSetErrorHandler(GrabKeyXErrorHandler);
+        setup_error_handler();
 
         if (ks->is_valid)
                 XGrabKey(dc->dpy, ks->code, ks->mask, root,
                          True, GrabModeAsync, GrabModeAsync);
 
-        XFlush(dc->dpy);
-        XSync(dc->dpy, False);
-
-        XSetErrorHandler(old_handler);
-
-        if (dunst_grab_key_errored) {
+        if (tear_down_error_handler()) {
                 fprintf(stderr, "Unable to grab key \"%s\"\n", ks->str);
                 return 1;
         }
@@ -1217,8 +1225,14 @@ void map_win(void)
         update_screen_info();
 
         XMapRaised(dc->dpy, win);
+
+        setup_error_handler();
         XGrabButton(dc->dpy, AnyButton, AnyModifier, win, False,
                     BUTTONMASK, GrabModeAsync, GrabModeSync, None, None);
+        if (tear_down_error_handler()) {
+                fprintf(stderr, "Unable to grab mouse button(s)\n");
+        }
+
         XFlush(dc->dpy);
         draw_win();
         visible = True;
