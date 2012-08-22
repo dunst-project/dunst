@@ -526,7 +526,6 @@ void draw_win(void)
                 line_cnt += n->draw_txt_buf.line_count;
         }
 
-        printf("width: %d\n", width);
         /* if we have a dynamic width, calculate the actual width */
         if (width == 0) {
                 for (l_node * iter = displayed_notifications->head; iter;
