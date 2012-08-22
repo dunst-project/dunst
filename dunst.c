@@ -540,9 +540,6 @@ void draw_win(void)
                 }
         }
 
-        printf("width: %d\n", width);
-
-        printf("------\n");
 
         /* calculate height */
         if (geometry.h == 0) {
