@@ -543,7 +543,7 @@ void draw_win(void)
                         notification *n = (notification *) iter->data;
                         for (int i = 0; i < n->draw_txt_buf.line_count; i++) {
                                 char *line =
-                                    draw_txt_get_line(&n->draw_txt_buf, i);
+                                    draw_txt_get_line(&n->draw_txt_buf, i+1);
                                 assert(line != NULL);
                                 width = MAX(width, textw(dc, line));
                         }
