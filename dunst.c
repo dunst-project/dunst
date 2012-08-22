@@ -373,14 +373,14 @@ void update_lists()
 /* TODO get draw_txt_buf as argument */
 int do_word_wrap(char *source, int max_width)
 {
-        if (!word_wrap || max_width < 1)
-                return 1;
 
         strtrim_end(source);
-        if (!source || source == '\0' || strcmp(source, "") == 0)
+
+        if (!source || strlen(source) == 0)
                 return 0;
 
         char *eol = source;
+
         while (True) {
                 if (*eol == '\0')
                         return 1;
@@ -394,24 +394,26 @@ int do_word_wrap(char *source, int max_width)
                         return 1 + do_word_wrap(eol + 2, max_width);
                 }
 
-                if (textnw(dc, source, (eol - source) + 1) >= max_width) {
-                        /* go back to previous space */
-                        char *space = eol;
-                        while (space > source && !isspace(*space))
-                                space--;
+                if (word_wrap && max_width > 0) {
+                        if (textnw(dc, source, (eol - source) + 1) >= max_width) {
+                                /* go back to previous space */
+                                char *space = eol;
+                                while (space > source && !isspace(*space))
+                                        space--;
 
-                        if (space <= source) {
-                                /* whe have a word longer than width, so we
-                                 * split mid-word. That one letter is
-                                 * collateral damage */
-                                space = eol;
+                                if (space <= source) {
+                                        /* whe have a word longer than width, so we
+                                         * split mid-word. That one letter is
+                                         * collateral damage */
+                                        space = eol;
+                                }
+                                *space = '\0';
+                                if (*(space + 1) == '\0')
+                                        return 1;
+                                return 1 + do_word_wrap(space + 1, max_width);
                         }
-                        *space = '\0';
-                        if (*(space + 1) == '\0')
-                                return 1;
-                        return 1 + do_word_wrap(space + 1, max_width);
                 }
-                eol++;
+        eol++;
         }
 }
 
