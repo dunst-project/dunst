@@ -37,7 +37,7 @@ clean:
 
 doc: dunst.1
 dunst.1: README.pod
-	pod2man $< > $@
+	pod2man --name=dunst -c "Dunst Reference" --section=1 --release=${VERSION} $< > $@
 
 service:
 	@sed "s|##PREFIX##|$(PREFIX)|" org.knopwob.dunst.service.in > org.knopwob.dunst.service
