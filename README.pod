@@ -1,6 +1,6 @@
 =head1 NAME
 
-dunst - dmenu-ish notification-daemon
+dunst - dmenu-ish notification daemon
 
 =head1 SYNOPSIS
 
@@ -9,7 +9,7 @@ dunst [-geometry geom] [-fn font] [-nf/nb/lf/lb/cf/cb color]
 
 =head1 DESCRIPTION
 
-Dunst is a highly configurable and lightweight notification-daemon.
+Dunst is a highly configurable and lightweight notification daemon.
 
 =head1 OPTIONS
 
