@@ -4,3 +4,4 @@ core
 vgcore.*
 config.h
 dunst.1
+org.knopwob.dunst.service
