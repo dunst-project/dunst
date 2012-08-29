@@ -27,5 +27,5 @@ LIBS = -L${X11LIB} -lX11 -lXss ${XFTLIBS} ${XINERAMALIBS} $(shell pkg-config --l
 
 # flags
 CPPFLAGS += -D_BSD_SOURCE -DVERSION=\"${VERSION}\" ${XINERAMAFLAGS} ${INIFLAGS}
-CFLAGS   += -g --std=c99 -pedantic -Wall -Wno-overlength-strings -Os ${INCS} ${STATIC} ${CPPFLAGS}
+CFLAGS   += -g --std=c99 -pedantic -Wall -Wno-overlength-strings -Os ${INCS} ${STATIC} ${CPPFLAGS} ${EXTRACFLAGS}
 LDFLAGS  += ${LIBS}
