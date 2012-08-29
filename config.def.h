@@ -22,6 +22,11 @@ int verbosity = 0;
 int word_wrap = False;
 int line_height = 0;   /* a line height < font height will be raised to font height */
 
+int separator_enabled = False;
+float separator_width = 0.7; /* width in relation to window width */
+float separator_height = 0.1; /* height in relation to line_height */
+enum separator_color sep_color = AUTO; /* AUTO or FOREGROUND */
+
 
 /* monitor to display notifications on */
 int monitor = 0;

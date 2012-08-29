@@ -507,6 +507,52 @@ int calculate_x_offset(int line_width, int text_width)
         }
 }
 
+unsigned long calculate_foreground_color(unsigned long source_color)
+{
+        Colormap cmap = DefaultColormap(dc->dpy, DefaultScreen(dc->dpy));
+        XColor color;
+
+        color.pixel = source_color;
+        XQueryColor(dc->dpy, cmap, &color);
+
+        int c_delta = 10000;
+
+        /* do we need to darken or brighten the colors? */
+        int darken = (color.red + color.green + color.blue) / 3 > 65535 / 2;
+
+        if (darken) {
+                if (color.red - c_delta < 0)
+                        color.red = 0;
+                else
+                        color.red -= c_delta;
+                if (color.green - c_delta < 0)
+                        color.green = 0;
+                else
+                        color.green -= c_delta;
+                if (color.blue - c_delta < 0)
+                        color.blue = 0;
+                else
+                        color.blue -= c_delta;
+        } else {
+                if (color.red + c_delta > 65535)
+                        color.red = 65535;
+                else
+                        color.red += c_delta;
+                if (color.green + c_delta > 65535)
+                        color.green = 65535;
+                else
+                        color.green += c_delta;
+                if (color.blue + c_delta > 65535)
+                        color.green = 65535;
+                else
+                        color.green += c_delta;
+        }
+
+        color.pixel = 0;
+        XAllocColor(dc->dpy, cmap, &color);
+        return color.pixel;
+}
+
 void draw_win(void)
 {
         int width, x, y, height;
@@ -534,6 +580,12 @@ void draw_win(void)
                 notification *n = (notification *) iter->data;
                 update_draw_txt_buf(n, width);
                 line_cnt += n->draw_txt_buf.line_count;
+        }
+
+        if (separator_enabled) {
+                line_cnt += l_length(displayed_notifications) - 1;
+                if (indicate_hidden && !l_is_empty(notification_queue))
+                        line_cnt++;
         }
 
         /* if we have a dynamic width, calculate the actual width */
@@ -618,6 +670,27 @@ void draw_win(void)
                         dc->y += (line_height - font_h) / 2;
                         drawtextn(dc, line, strlen(line), n->colors);
                         dc->y += line_height - ((line_height - font_h) / 2);
+                }
+
+                /* draw separator */
+                if (separator_enabled && line_cnt > 1) {
+                        dc->x = 0;
+                        drawrect(dc, 0, 0, width, line_height, True, n->colors->BG);
+
+                        double color;
+                        if (sep_color == AUTO)
+                                color = calculate_foreground_color(n->colors->BG);
+                        else
+                                color = n->colors->FG;
+
+                        int new_y = dc->y + line_height;
+                        int sep_height = line_height * separator_height;
+                        sep_height = sep_height < 1 ? 1 : sep_height;
+                        int sep_width = width * separator_width;
+                        dc->y = dc->y + (line_height - sep_height) / 2;
+                        dc->x = (width - sep_width) / 2;
+                        drawrect(dc, 0, 0, sep_width, sep_height, True, color);
+                        dc->y = new_y;
                 }
         }
 
@@ -1490,7 +1563,6 @@ dunst_ini_handle(void *user_data, const char *section,
                         close_all_ks.str = dunst_ini_get_string(value);
                 } else if (strcmp(name, "history_key") == 0) {
                         history_ks.str = dunst_ini_get_string(value);
-
                 } else if (strcmp(name, "alignment") == 0) {
                         if (strcmp(value, "left") == 0)
                                 align = left;
@@ -1504,6 +1576,24 @@ dunst_ini_handle(void *user_data, const char *section,
                 else if (strcmp(name, "sticky_history") == 0)
                         sticky_history = dunst_ini_get_boolean(value);
 
+
+        } else if (strcmp(section, "separator") == 0) {
+                if (strcmp(name, "enable") == 0)
+                        separator_enabled = dunst_ini_get_boolean(value);
+                if (strcmp(name, "width") == 0)
+                        separator_width = strtod(value, NULL);
+                if (strcmp(name, "height") == 0)
+                        separator_height = strtod(value, NULL);
+                if (strcmp(name, "color") == 0) {
+                        char *str = dunst_ini_get_string(value);
+                        if (strcmp(str, "auto") == 0)
+                                sep_color = AUTO;
+                        else if (strcmp(str, "foreground") == 0)
+                                sep_color = FOREGROUND;
+                        else
+                                fprintf(stderr, "Warning: Unknown separator color\n");
+                        free(str);
+                }
         } else if (strcmp(section, "urgency_low") == 0) {
                 if (strcmp(name, "background") == 0)
                         lowbgcolor = dunst_ini_get_string(value);

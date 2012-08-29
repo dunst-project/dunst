@@ -14,6 +14,7 @@
 
 
 enum alignment { left, center, right };
+enum separator_color { FOREGROUND, AUTO };
 
 typedef struct _rule_t {
         char *name;

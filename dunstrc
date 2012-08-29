@@ -66,6 +66,20 @@
     # it will get raised to the font height.
     line_height = 0
 
+[separator]
+
+    #enable drawing of separator line
+    enable = no
+
+    #width of separator line in relation to window width
+    width = 0.8
+    #height of separator line in relation to line height
+    height = 0.3
+
+    # color can either be "foreground" to use the foreground color or
+    # "auto" to generate a fitting color depending on the background color
+    color = auto
+
 [shortcuts]
     # shortcuts are specified as [modifier+][modifier+]...key
     # available modifiers are 'ctrl', 'mod1' (the alt-key), 'mod2', 'mod3'
