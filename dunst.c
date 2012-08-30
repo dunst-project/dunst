@@ -40,18 +40,6 @@
 #define INFO 2
 #define DEBUG 3
 
-enum follow_mode { FOLLOW_NONE, FOLLOW_MOUSE, FOLLOW_KEYBOARD };
-
-/* structs */
-typedef struct _screen_info {
-        int scr;
-        dimension_t dim;
-} screen_info;
-
-typedef struct _notification_buffer {
-        char txt[BUFSIZ];
-        notification *n;
-} notification_buffer;
 
 /* global variables */
 

@@ -15,23 +15,20 @@
 
 enum alignment { left, center, right };
 enum separator_color { FOREGROUND, AUTO };
+enum follow_mode { FOLLOW_NONE, FOLLOW_MOUSE, FOLLOW_KEYBOARD };
 
-typedef struct _rule_t {
-        char *name;
-        /* filters */
-        char *appname;
-        char *summary;
-        char *body;
-        char *icon;
+typedef struct _dimension_t {
+        int x;
+        int y;
+        unsigned int h;
+        unsigned int w;
+        int mask;
+} dimension_t;
 
-        /* actions */
-        int timeout;
-        int urgency;
-        char *fg;
-        char *bg;
-        const char *format;
-
-} rule_t;
+typedef struct _screen_info {
+        int scr;
+        dimension_t dim;
+} screen_info;
 
 typedef struct _draw_txt {
         char *txt;
@@ -59,13 +56,27 @@ typedef struct _notification {
         char *color_strings[2];
 } notification;
 
-typedef struct _dimension_t {
-        int x;
-        int y;
-        unsigned int h;
-        unsigned int w;
-        int mask;
-} dimension_t;
+typedef struct _notification_buffer {
+        char txt[BUFSIZ];
+        notification *n;
+} notification_buffer;
+
+typedef struct _rule_t {
+        char *name;
+        /* filters */
+        char *appname;
+        char *summary;
+        char *body;
+        char *icon;
+
+        /* actions */
+        int timeout;
+        int urgency;
+        char *fg;
+        char *bg;
+        const char *format;
+
+} rule_t;
 
 typedef struct _keyboard_shortcut {
         const char *str;
@@ -74,7 +85,6 @@ typedef struct _keyboard_shortcut {
         KeySym mask;
         int is_valid;
 } keyboard_shortcut;
-
 
 extern int verbosity;
 
