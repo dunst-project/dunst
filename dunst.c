@@ -966,7 +966,12 @@ int init_notification(notification * n, int id)
                 close_notification_by_id(id, -1);
         }
 
-        l_push(notification_queue, n);
+        if(strlen(n->msg) == 0) {
+                close_notification(n, 2);
+                printf("skipping notification: %s %s\n", n->body, n->summary);
+        } else {
+                l_push(notification_queue, n);
+        }
 
         return n->id;
 }

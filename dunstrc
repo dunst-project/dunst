@@ -120,6 +120,13 @@
 # and you can override the 'timeout', 'urgency', 'foreground', 'background'
 # and 'format'.
 # Shell-like globbing will get expanded.
+#
+# NOTE: if you don't want a notification to be displayed, set the format to ""
+
+#[ignore]
+## This notification will not be displayed
+#    summary = "foobar"
+#    format = ""
 
 #[signed_on]
 #    appname = Pidgin
@@ -140,3 +147,4 @@
 #    appname = Pidgin
 #    summary = *twitter.com*
 #    urgency = normal
+#
