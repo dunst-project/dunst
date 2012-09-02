@@ -133,6 +133,8 @@ static int tear_down_error_handler(void)
 
 int grab_key(keyboard_shortcut * ks)
 {
+        if (!ks->is_valid)
+            return 1;
         Window root;
         root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
 
@@ -144,6 +146,7 @@ int grab_key(keyboard_shortcut * ks)
 
         if (tear_down_error_handler()) {
                 fprintf(stderr, "Unable to grab key \"%s\"\n", ks->str);
+                ks->is_valid = False;
                 return 1;
         }
         return 0;
@@ -1725,6 +1728,13 @@ int main(int argc, char *argv[])
         init_shortcut(&close_ks);
         init_shortcut(&close_all_ks);
         init_shortcut(&history_ks);
+
+        grab_key(&close_ks);
+        ungrab_key(&close_ks);
+        grab_key(&close_all_ks);
+        ungrab_key(&close_all_ks);
+        grab_key(&history_ks);
+        ungrab_key(&history_ks);
 
         geometry.mask = XParseGeometry(geom,
                                        &geometry.x, &geometry.y,
