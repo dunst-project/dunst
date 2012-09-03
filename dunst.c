@@ -65,8 +65,8 @@ int dunst_grab_errored = False;
 
 int next_notification_id = 1;
 
-int depricated_mod = False;
-int depricated_dunstrc_shortcuts = False;
+int deprecated_mod = False;
+int deprecated_dunstrc_shortcuts = False;
 
 /* notification lists */
 list *notification_queue = NULL;        /* all new notifications get into here */
@@ -1414,7 +1414,7 @@ void parse_cmdline(int argc, char *argv[])
                         format = optarg;
                         break;
                 case 'M':
-                        depricated_mod = True;
+                        deprecated_mod = True;
                         mod = string_to_mask(optarg);
                         close_ks.mask = mod;
                         close_all_ks.mask = mod;
@@ -1546,7 +1546,7 @@ dunst_ini_handle(void *user_data, const char *section,
                 else if (strcmp(name, "line_height") == 0)
                         line_height = atoi(value);
                 else if (strcmp(name, "modifier") == 0) {
-                        depricated_dunstrc_shortcuts = True;
+                        deprecated_dunstrc_shortcuts = True;
                         char *c = dunst_ini_get_string(value);
                         KeySym mod = string_to_mask(c);
                         free(c);
@@ -1757,11 +1757,11 @@ int main(int argc, char *argv[])
         color_strings[ColBG][CRIT] = critbgcolor;
         setup();
 
-        if (depricated_mod)
-                warn("-mod is depricated. Use \"-key mod+key\" instead\n",
+        if (deprecated_mod)
+                warn("-mod is deprecated. Use \"-key mod+key\" instead\n",
                      CRIT);
-        if (depricated_dunstrc_shortcuts)
-                warn("You are using depricated settings. Please update your dunstrc. SEE [shortcuts]", CRIT);
+        if (deprecated_dunstrc_shortcuts)
+                warn("You are using deprecated settings. Please update your dunstrc. SEE [shortcuts]", CRIT);
         run();
         return 0;
 }
