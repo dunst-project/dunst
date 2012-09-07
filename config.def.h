@@ -20,7 +20,7 @@ enum alignment align = left;    /* text alignment [left/center/right] */
 int sticky_history = True;
 int verbosity = 0;
 int word_wrap = False;
-int line_height = 0;   /* a line height < font height will be raised to font height */
+int line_height = 0;   /* if line height < font height, it will be raised to font height */
 
 int separator_enabled = False;
 float separator_width = 0.7; /* width in relation to window width */
