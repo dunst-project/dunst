@@ -573,12 +573,6 @@ void draw_win(void)
                 line_cnt += n->draw_txt_buf.line_count;
         }
 
-        if (separator_enabled) {
-                line_cnt += l_length(displayed_notifications) - 1;
-                if (indicate_hidden && !l_is_empty(notification_queue))
-                        line_cnt++;
-        }
-
         /* if we have a dynamic width, calculate the actual width */
         if (width == 0) {
                 for (l_node * iter = displayed_notifications->head; iter;
@@ -600,6 +594,9 @@ void draw_win(void)
         } else {
                 height = MAX(geometry.h, (line_cnt * line_height));
         }
+
+        height += (l_length(displayed_notifications) - 1) * separator_height;
+
 
         /* add "(x more)" */
         draw_txt x_more;
@@ -664,24 +661,16 @@ void draw_win(void)
                 }
 
                 /* draw separator */
-                if (separator_enabled && line_cnt > 1) {
-                        dc->x = 0;
-                        drawrect(dc, 0, 0, width, line_height, True, n->colors->BG);
-
+                if (separator_height > 0) {
+                        dc -> x = 0;
                         double color;
                         if (sep_color == AUTO)
                                 color = calculate_foreground_color(n->colors->BG);
                         else
                                 color = n->colors->FG;
 
-                        int new_y = dc->y + line_height;
-                        int sep_height = line_height * separator_height;
-                        sep_height = sep_height < 1 ? 1 : sep_height;
-                        int sep_width = width * separator_width;
-                        dc->y = dc->y + (line_height - sep_height) / 2;
-                        dc->x = (width - sep_width) / 2;
-                        drawrect(dc, 0, 0, sep_width, sep_height, True, color);
-                        dc->y = new_y;
+                        drawrect(dc, 0, 0, width, separator_height, True, color);
+                        dc->y += separator_height;
                 }
         }
 
@@ -1571,16 +1560,9 @@ dunst_ini_handle(void *user_data, const char *section,
                         show_age_threshold = atoi(value);
                 else if (strcmp(name, "sticky_history") == 0)
                         sticky_history = dunst_ini_get_boolean(value);
-
-
-        } else if (strcmp(section, "separator") == 0) {
-                if (strcmp(name, "enable") == 0)
-                        separator_enabled = dunst_ini_get_boolean(value);
-                if (strcmp(name, "width") == 0)
-                        separator_width = strtod(value, NULL);
-                if (strcmp(name, "height") == 0)
-                        separator_height = strtod(value, NULL);
-                if (strcmp(name, "color") == 0) {
+                else if (strcmp(name, "separator_height") == 0)
+                        separator_height = atoi(value);
+                if (strcmp(name, "separator_color") == 0) {
                         char *str = dunst_ini_get_string(value);
                         if (strcmp(str, "auto") == 0)
                                 sep_color = AUTO;

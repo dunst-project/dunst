@@ -22,9 +22,7 @@ int verbosity = 0;
 int word_wrap = False;
 int line_height = 0;   /* if line height < font height, it will be raised to font height */
 
-int separator_enabled = False;
-float separator_width = 0.7; /* width in relation to window width */
-float separator_height = 0.1; /* height in relation to line_height */
+int separator_height = 2; /* height of the separator line between two notifications */
 enum separator_color sep_color = AUTO; /* AUTO or FOREGROUND */
 
 

@@ -66,19 +66,13 @@
     # it will get raised to the font height.
     line_height = 0
 
-[separator]
+    # height of the separator line in pixels (Set to 0 to disable)
+    separator_height = 2;
 
-    #enable drawing of separator line
-    enable = no
+    # This can either be "auto" or "foreground". "Auto" tries to find a color
+    # that fits nicely to the background color.
+    separator_color = auto
 
-    #width of separator line in relation to window width
-    width = 0.8
-    #height of separator line in relation to line height
-    height = 0.3
-
-    # color can either be "foreground" to use the foreground color or
-    # "auto" to generate a fitting color depending on the background color
-    color = auto
 
 [shortcuts]
     # shortcuts are specified as [modifier+][modifier+]...key
