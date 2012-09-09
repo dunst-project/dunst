@@ -68,13 +68,18 @@
 
 [separator]
 
-    #enable drawing of separator line
+    # Draw a separator between notifications?
     enable = no
 
-    #width of separator line in relation to window width
+    # total height of the separator in relation to line height
+    total_height = 0.3
+
+    # width of the separator decoration
     width = 0.8
-    #height of separator line in relation to line height
-    height = 0.3
+
+    # height of the separator decoration
+    height = 0.8
+
 
     # color can either be "foreground" to use the foreground color or
     # "auto" to generate a fitting color depending on the background color

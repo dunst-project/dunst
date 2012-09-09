@@ -23,6 +23,7 @@ int word_wrap = False;
 int line_height = 0;   /* if line height < font height, it will be raised to font height */
 
 int separator_enabled = False;
+float separator_total_height = 1; /* height of the complete separator */
 float separator_width = 0.7; /* width in relation to window width */
 float separator_height = 0.1; /* height in relation to line_height */
 enum separator_color sep_color = AUTO; /* AUTO or FOREGROUND */
