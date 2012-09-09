@@ -60,6 +60,7 @@ static screen_info scr;
 static dimension_t geometry;
 static XScreenSaverInfo *screensaver_info;
 static int font_h;
+static int print_notifications = False;
 
 int dunst_grab_errored = False;
 
@@ -99,6 +100,19 @@ void warn(const char *text, int urg);
 
 void init_shortcut(keyboard_shortcut * shortcut);
 KeySym string_to_mask(char *str);
+
+static void print_notification(notification *n)
+{
+        printf("{\n");
+        printf("\tappname: %s\n", n->appname);
+        printf("\tsummary: %s\n", n->summary);
+        printf("\tbody: %s\n", n->body);
+        printf("\ticon: %s\n", n->icon);
+        printf("\turgency: %d\n", n->urgency);
+        printf("\tformatted: %s\n", n->msg);
+        printf("\tid: %d\n", n->id);
+        printf("}\n");
+}
 
 static int GrabXErrorHandler(Display * display, XErrorEvent * e)
 {
@@ -227,31 +241,6 @@ l_node *most_important(list * l)
         }
 }
 
-void print_rule(rule_t * r)
-{
-        if (r == NULL)
-                return;
-
-        dunst_printf(DEBUG, "%s %s %s %s %s %d %d %s %s %s\n",
-                     r->name,
-                     r->appname,
-                     r->summary,
-                     r->body,
-                     r->icon, r->timeout, r->urgency, r->fg, r->bg, r->format);
-}
-
-void print_rules(void)
-{
-        dunst_printf(DEBUG, "current rules:\n");
-        if (l_is_empty(rules)) {
-                dunst_printf(DEBUG, "no rules present\n");
-                return;
-        }
-        for (l_node * iter = rules->head; iter; iter = iter->next) {
-                print_rule((rule_t *) iter->data);
-        }
-}
-
 void apply_rules(notification * n)
 {
         if (l_is_empty(rules) || n == NULL) {
@@ -265,7 +254,6 @@ void apply_rules(notification * n)
                     && (!r->summary || !fnmatch(r->summary, n->summary, 0))
                     && (!r->body || !fnmatch(r->body, n->body, 0))
                     && (!r->icon || !fnmatch(r->icon, n->icon, 0))) {
-                        dunst_printf(DEBUG, "matched rule: %s\n", r->name);
                         n->timeout = r->timeout != -1 ? r->timeout : n->timeout;
                         n->urgency = r->urgency != -1 ? r->urgency : n->urgency;
                         n->color_strings[ColFG] =
@@ -898,6 +886,7 @@ int init_notification(notification * n, int id)
 
         n->msg = fix_markup(n->msg);
 
+
         n->dup_count = 0;
         n->draw_txt_buf.txt = NULL;
 
@@ -946,12 +935,6 @@ int init_notification(notification * n, int id)
 
         n->redisplayed = False;
 
-        dunst_printf(MSG, "%s\n", n->msg);
-        dunst_printf(INFO,
-                     "{\n  appname: %s\n  summary: %s\n  body: %s\n  icon: %s\n  urgency: %d\n  timeout: %d\n}",
-                     n->appname, n->summary, n->body, n->icon,
-                     n->urgency, n->timeout);
-
         if (id == 0) {
                 n->id = ++next_notification_id;
         } else {
@@ -964,6 +947,10 @@ int init_notification(notification * n, int id)
         } else {
                 l_push(notification_queue, n);
         }
+
+        if (print_notifications)
+                print_notification(n);
+
 
         return n->id;
 }
@@ -1342,6 +1329,7 @@ void parse_cmdline(int argc, char *argv[])
                         {"follow", required_argument, NULL, 'o'},
                         {"line_height", required_argument, NULL, 'H'},
                         {"lh", required_argument, NULL, 'H'},
+                        {"print", no_argument, NULL, 'V'},
                         {"version", no_argument, NULL, 'v'},
                         {0, 0, 0, 0}
                 };
@@ -1440,6 +1428,9 @@ void parse_cmdline(int argc, char *argv[])
                 case 'v':
                         print_version();
                         break;
+                case 'V':
+                        print_notifications = True;
+                        break;
                 default:
                         usage(EXIT_FAILURE);
                         break;
@@ -1480,9 +1471,6 @@ static rule_t *dunst_rules_find_or_create(const char *section)
                         return r;
                 }
         }
-
-        /* rule not found in rules, create new one */
-        dunst_printf(DEBUG, "adding rule %s\n", section);
 
         rule = initrule();
         rule->name = strdup(section);
@@ -1672,7 +1660,6 @@ void parse_dunstrc(char *cmdline_config_path)
         fclose(config_file);
         xdgWipeHandle(&xdg);
 
-        print_rules();
 }
 #endif                          /* STATIC_CONFIG */
 

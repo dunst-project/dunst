@@ -10,9 +10,6 @@ char *string_replace(const char *needle, const char *replacement,
 /* exit with an error message */
 void die(char * msg, int exit_value);
 
-/* print depending on verbosity */
-void dunst_printf(int level, const char *fmt, ...);
-
 int digit_count(int i);
 
 #endif

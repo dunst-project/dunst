@@ -44,18 +44,6 @@ char *string_replace(const char *needle, const char *replacement,
         }
 }
 
-void dunst_printf(int level, const char *fmt, ...)
-{
-        va_list ap;
-
-        if (level > verbosity) {
-                return;
-        }
-        va_start(ap, fmt);
-        vfprintf(stderr, fmt, ap);
-        va_end(ap);
-}
-
 int digit_count(int i)
 {
         int len = 0;

@@ -88,6 +88,10 @@ see also EXAMPLES show the notification on monitor n.
 
 The height of a single line in pixel. If the height is smaller than the font height, it will get raised to the font height.
 
+=item B<-print>
+
+Print notifications to stdout. This might be useful for logging, setting up rules or using the output in other scripts.
+
 =item B<-v/--version>
 
 print version information.
