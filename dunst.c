@@ -1713,12 +1713,6 @@ int main(int argc, char *argv[])
         init_shortcut(&close_all_ks);
         init_shortcut(&history_ks);
 
-        grab_key(&close_ks);
-        ungrab_key(&close_ks);
-        grab_key(&close_all_ks);
-        ungrab_key(&close_all_ks);
-        grab_key(&history_ks);
-        ungrab_key(&history_ks);
 
         geometry.mask = XParseGeometry(geom,
                                        &geometry.x, &geometry.y,
@@ -1728,6 +1722,14 @@ int main(int argc, char *argv[])
 
         initdbus();
         initfont(dc, font);
+
+        grab_key(&close_ks);
+        ungrab_key(&close_ks);
+        grab_key(&close_all_ks);
+        ungrab_key(&close_all_ks);
+        grab_key(&history_ks);
+        ungrab_key(&history_ks);
+
         colors[LOW] = initcolor(dc, lowfgcolor, lowbgcolor);
         colors[NORM] = initcolor(dc, normfgcolor, normbgcolor);
         colors[CRIT] = initcolor(dc, critfgcolor, critbgcolor);
