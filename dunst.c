@@ -11,6 +11,7 @@
 #include <fnmatch.h>
 #include <getopt.h>
 #include <X11/Xlib.h>
+#include <X11/XKBlib.h>
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
 #ifdef XINERAMA
@@ -1049,7 +1050,21 @@ void init_shortcut(keyboard_shortcut * ks)
         strtrim_end(str);
 
         ks->sym = XStringToKeysym(str);
-        ks->code = XKeysymToKeycode(dc->dpy, ks->sym);
+        /* find matching keycode for ks->sym */
+        int min_keysym, max_keysym;
+        XDisplayKeycodes(dc->dpy, &min_keysym, &max_keysym);
+
+        ks->code = NoSymbol;
+
+        int level = ks->mask & ShiftMask ? 1 : 0;
+
+        for (int i = min_keysym; i <= max_keysym; i++) {
+                if (XkbKeycodeToKeysym(dc->dpy, i, 0, level) == ks->sym) {
+                        ks->code = i;
+                        break;
+                }
+        }
+
 
         if (ks->sym == NoSymbol || ks->code == NoSymbol) {
                 fprintf(stderr, "Warning: Unknown keyboard shortcut: %s\n",
