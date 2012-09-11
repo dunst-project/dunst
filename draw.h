@@ -70,6 +70,7 @@ unsigned long getcolor(DC * dc, const char *colstr);
 ColorSet *initcolor(DC * dc, const char *foreground, const char *background);
 DC *initdc(void);
 void initfont(DC * dc, const char *fontstr);
+void setopacity(DC *dc, Window win, unsigned long opacity);
 void mapdc(DC * dc, Window win, unsigned int w, unsigned int h);
 void resizedc(DC * dc, unsigned int w, unsigned int h);
 int textnw(DC * dc, const char *text, size_t len);

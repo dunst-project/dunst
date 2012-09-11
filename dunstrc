@@ -38,6 +38,9 @@
     # right side of the screen.  Y is measured from the top and down respectevly.
     geometry = "0x3-30+20"
 
+	# the transparency of the window. range: [0; 100]
+	transparency = 25
+
     # Don't remove messages, if the user is idle (no mouse or keyboard input)
     # for longer than idle_threshold seconds.
     # Set to 0 to disable.

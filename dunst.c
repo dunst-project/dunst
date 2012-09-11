@@ -1270,7 +1270,7 @@ void setup(void)
                           CopyFromParent, DefaultVisual(dc->dpy,
                                                         DefaultScreen(dc->dpy)),
                           CWOverrideRedirect | CWBackPixmap | CWEventMask, &wa);
-
+	setopacity(dc, win, (unsigned long)(transparency * (0xffffffff/100)));
         grab_key(&history_ks);
 }
 
@@ -1565,6 +1565,8 @@ dunst_ini_handle(void *user_data, const char *section,
                         sticky_history = dunst_ini_get_boolean(value);
                 else if (strcmp(name, "separator_height") == 0)
                         separator_height = atoi(value);
+                else if (strcmp(name, "transparency") == 0)
+                        transparency = (100 - atoi(value));
                 if (strcmp(name, "separator_color") == 0) {
                         char *str = dunst_ini_get_string(value);
                         if (strcmp(str, "auto") == 0)

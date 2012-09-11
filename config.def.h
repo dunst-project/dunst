@@ -11,6 +11,7 @@ char *format = "%s %b";         /* default format */
 
 int timeouts[] = { 10, 10, 0 }; /* low, normal, critical */
 
+unsigned int transparency = 1;  /* transparency */
 char *geom = "0x0";             /* geometry */
 int sort = True;                /* sort messages by urgency */
 int indicate_hidden = True;     /* show count of hidden messages */
