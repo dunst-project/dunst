@@ -1270,6 +1270,7 @@ void setup(void)
                           CopyFromParent, DefaultVisual(dc->dpy,
                                                         DefaultScreen(dc->dpy)),
                           CWOverrideRedirect | CWBackPixmap | CWEventMask, &wa);
+        transparency = transparency > 100 ? 100 : transparency;
 	setopacity(dc, win, (unsigned long)((100 - transparency) * (0xffffffff/100)));
         grab_key(&history_ks);
 }
