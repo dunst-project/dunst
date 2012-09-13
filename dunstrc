@@ -19,6 +19,9 @@
     # Possible values are "left", "center" and "right"
     alignment = left
 
+    # determines the bounce frequency (in hz, 0 to disable)
+    bounce_freq = 0
+
     # show age of message if message is older than show_age_threshold seconds.
     # set to -1 to disable
     show_age_threshold = 60;
