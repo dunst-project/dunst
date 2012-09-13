@@ -9,6 +9,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <fnmatch.h>
+#include <sys/time.h>
+#include <math.h>
 #include <getopt.h>
 #include <X11/Xlib.h>
 #include <X11/XKBlib.h>
@@ -474,13 +476,22 @@ char *draw_txt_get_line(draw_txt * dt, int line)
 
 int calculate_x_offset(int line_width, int text_width)
 {
+        int leftover = line_width - text_width;
+        struct timeval t;
+        float pos;
+        /* If the text is wider than the frame, bouncing is enabled and word_wrap disabled */
+        if (line_width < text_width && bounce_freq > 0.0001 && !word_wrap) {
+                gettimeofday(&t, NULL);
+                pos = ((t.tv_sec % 100) * 1e6 + t.tv_usec) / (1e6 / bounce_freq);
+                return (1 + sinf(2 * 3.14159 * pos)) * leftover / 2;
+        }
         switch (align) {
         case left:
                 return 0;
         case center:
-                return (line_width - text_width) / 2;
+                return leftover / 2;
         case right:
-                return line_width - text_width;
+                return leftover;
         default:
                 /* this can't happen */
                 return 0;
@@ -1552,6 +1563,8 @@ dunst_ini_handle(void *user_data, const char *section,
                         close_all_ks.str = dunst_ini_get_string(value);
                 } else if (strcmp(name, "history_key") == 0) {
                         history_ks.str = dunst_ini_get_string(value);
+                } else if (strcmp(name, "bounce_freq") == 0) {
+                        bounce_freq = atof(value);
                 } else if (strcmp(name, "alignment") == 0) {
                         if (strcmp(value, "left") == 0)
                                 align = left;
