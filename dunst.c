@@ -696,9 +696,9 @@ void draw_win(void)
         }
 
         /* move and map window */
+        mapdc(dc, win, width, height);
         XResizeWindow(dc->dpy, win, width, height);
         XMoveWindow(dc->dpy, win, x, y);
-        mapdc(dc, win, width, height);
 
         free(x_more.txt);
 }
