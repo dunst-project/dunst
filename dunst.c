@@ -1175,6 +1175,7 @@ Window get_focused_window(void)
         return focused;
 }
 
+#ifdef XINERAMA
 int select_screen(XineramaScreenInfo * info, int info_len)
 {
         if (f_mode == FOLLOW_NONE) {
@@ -1220,6 +1221,7 @@ int select_screen(XineramaScreenInfo * info, int info_len)
                 return scr.scr;
         }
 }
+#endif
 
 void update_screen_info()
 {
