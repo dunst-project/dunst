@@ -2,7 +2,11 @@
 PREFIX = /usr/local
 MANPREFIX = ${PREFIX}/share/man
 
-VERSION= $(shell git describe)
+# In dist tarballs, the version is stored in the VERSION files.
+VERSION := '$(shell [ -f VERSION ] && cat VERSION)'
+ifeq ('',$(VERSION))
+VERSION := $(shell git describe)
+endif
 
 X11INC = /usr/X11R6/include
 X11LIB = /usr/X11R6/lib

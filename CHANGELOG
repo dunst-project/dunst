@@ -1,5 +1,15 @@
-NEXT:
+v0.4.0:
+    - separator between notifications
+    - word wrap long lines
+    - real transparance
+    - bouncing text (alternative to word_wrap)
+    - new option for line height
+    - better multihead support
+    - don't die when keybindings can't be grabbed
+    - bugfix: forgetting geometry
     - (optional) static configuration
+v0.3.1:
+    - fix -mon option
 v0.3.0:
     - full support for Desktop Notification Specification (mandatory parts)
     - option to select monitor on which notifications are shown
