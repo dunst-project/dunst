@@ -1780,7 +1780,7 @@ void usage(int exit_status)
 
 void print_version(void)
 {
-        printf("Dunst - Dmenuish notification daemon version: %s\n", VERSION);
+        printf("Dunst - a dmenu-ish notification-daemon, version: %s\n", VERSION);
         exit(EXIT_SUCCESS);
 }
 
