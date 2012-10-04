@@ -64,6 +64,7 @@ static dimension_t geometry;
 static XScreenSaverInfo *screensaver_info;
 static int font_h;
 static int print_notifications = False;
+static dimension_t window_dim;
 
 int dunst_grab_errored = False;
 
@@ -696,9 +697,20 @@ void draw_win(void)
         }
 
         /* move and map window */
+        if (x != window_dim.x || y != window_dim.y
+                        || width != window_dim.w
+                        || height != window_dim.h) {
+
+                XResizeWindow(dc->dpy, win, width, height);
+                XMoveWindow(dc->dpy, win, x, y);
+
+                window_dim.x = x;
+                window_dim.y = y;
+                window_dim.h = height;
+                window_dim.w = width;
+        }
+
         mapdc(dc, win, width, height);
-        XResizeWindow(dc->dpy, win, width, height);
-        XMoveWindow(dc->dpy, win, x, y);
 
         free(x_more.txt);
 }
@@ -1297,11 +1309,6 @@ void map_win(void)
 
         grab_key(&close_ks);
         grab_key(&close_all_ks);
-
-        update_screen_info();
-
-        XMapRaised(dc->dpy, win);
-
         setup_error_handler();
         XGrabButton(dc->dpy, AnyButton, AnyModifier, win, False,
                     BUTTONMASK, GrabModeAsync, GrabModeSync, None, None);
@@ -1309,8 +1316,10 @@ void map_win(void)
                 fprintf(stderr, "Unable to grab mouse button(s)\n");
         }
 
-        XFlush(dc->dpy);
+        update_screen_info();
+        XMapRaised(dc->dpy, win);
         draw_win();
+        XFlush(dc->dpy);
         visible = True;
 }
 
@@ -1759,6 +1768,11 @@ int main(int argc, char *argv[])
         color_strings[ColBG][LOW] = lowbgcolor;
         color_strings[ColBG][NORM] = normbgcolor;
         color_strings[ColBG][CRIT] = critbgcolor;
+
+        window_dim.x = 0;
+        window_dim.y = 0;
+        window_dim.w = 0;
+        window_dim.h = 0;
         setup();
 
         if (deprecated_mod)
