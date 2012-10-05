@@ -620,7 +620,7 @@ void draw_win(void)
                 } else {
                         /* append "(x more)" message to notification text */
                         notification *n =
-                            (notification *) displayed_notifications->head;
+                            (notification *) displayed_notifications->head->data;
                         print_to =
                             draw_txt_get_line(&n->draw_txt_buf,
                                               n->draw_txt_buf.line_count);
