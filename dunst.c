@@ -574,19 +574,6 @@ void draw_win(void)
                 line_cnt += n->draw_txt_buf.line_count;
         }
 
-        /* if we have a dynamic width, calculate the actual width */
-        if (width == 0) {
-                for (l_node * iter = displayed_notifications->head; iter;
-                     iter = iter->next) {
-                        notification *n = (notification *) iter->data;
-                        for (int i = 0; i < n->draw_txt_buf.line_count; i++) {
-                                char *line =
-                                    draw_txt_get_line(&n->draw_txt_buf, i+1);
-                                assert(line != NULL);
-                                width = MAX(width, textw(dc, line));
-                        }
-                }
-        }
 
 
         /* calculate height */
@@ -626,8 +613,21 @@ void draw_win(void)
                                               n->draw_txt_buf.line_count);
                         for (; *print_to != '\0'; print_to++) ;
                 }
-
                 snprintf(print_to, x_more_len, "(%d more)", more);
+        }
+
+        /* if we have a dynamic width, calculate the actual width */
+        if (width == 0) {
+                for (l_node * iter = displayed_notifications->head; iter;
+                     iter = iter->next) {
+                        notification *n = (notification *) iter->data;
+                        for (int i = 0; i < n->draw_txt_buf.line_count; i++) {
+                                char *line =
+                                    draw_txt_get_line(&n->draw_txt_buf, i+1);
+                                assert(line != NULL);
+                                width = MAX(width, textw(dc, line));
+                        }
+                }
         }
 
         assert(line_height > 0);
