@@ -923,7 +923,7 @@ int init_notification(notification * n, int id)
         /* check if n is a duplicate */
         for (l_node * iter = notification_queue->head; iter; iter = iter->next) {
                 notification *orig = (notification *) iter->data;
-                if (strcmp(orig->msg, n->msg) == 0) {
+                if (strcmp(orig->appname, n->appname) == 0 && strcmp(orig->msg, n->msg) == 0) {
                         orig->dup_count++;
                         free_notification(n);
                         return orig->id;
@@ -933,7 +933,7 @@ int init_notification(notification * n, int id)
         for (l_node * iter = displayed_notifications->head; iter;
              iter = iter->next) {
                 notification *orig = (notification *) iter->data;
-                if (strcmp(orig->msg, n->msg) == 0) {
+                if (strcmp(orig->appname, n->appname) == 0 && strcmp(orig->msg, n->msg) == 0) {
                         orig->dup_count++;
                         orig->start = now;
                         free_notification(n);
