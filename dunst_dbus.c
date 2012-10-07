@@ -296,7 +296,7 @@ void notify(DBusMessage * dmsg)
         const char *fgcolor = NULL;
         const char *bgcolor = NULL;
         int urgency = 1;
-        int progress = 0;
+        int progress = -1;
         notification *n = malloc(sizeof(notification));
         dbus_uint32_t replaces_id = 0;
         dbus_int32_t expires = -1;
