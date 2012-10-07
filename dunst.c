@@ -907,6 +907,12 @@ int init_notification(notification * n, int id)
         n->msg = string_replace("%i", n->icon, n->msg);
         n->msg = string_replace("%I", basename(n->icon), n->msg);
         n->msg = string_replace("%b", n->body, n->msg);
+        if (n->progress) {
+                char pg[20];
+                sprintf(pg, "[%3d%%]", n->progress-1);
+                n->msg = string_replace("%p", pg, n->msg);
+        } else
+                n->msg = string_replace("%p", "", n->msg);
 
         n->msg = fix_markup(n->msg);
 

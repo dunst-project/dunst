@@ -54,6 +54,7 @@ typedef struct _notification {
         int dup_count;
         ColorSet *colors;
         char *color_strings[2];
+        int progress;
 } notification;
 
 typedef struct _notification_buffer {
