@@ -119,6 +119,8 @@ fmt is a string containing placeholders. The placeholders will be replaced with 
 
 =item B<%I>  iconname (without its path)
 
+=item B<%p>  progress value ([  0%] to [100%])
+
 =back
 
 =head1 COLORS
@@ -131,12 +133,15 @@ X color names.
 
 dunst is able to get different colors for a message via notify-send.
 In order to do that you have to add a hint via the -h option.
+The progress value can be set with a hint, too.
 
 =over 4
 
 =item notify-send -h string:fgcolor:#ff4444
 
 =item notify-send -h string:bgcolor:#4444ff -h string:fgcolor:#ff4444
+
+=item notify-send -h int:value:42 "Working ..."
 
 =back
 

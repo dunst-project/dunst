@@ -909,11 +909,12 @@ int init_notification(notification * n, int id)
         n->msg = string_replace("%I", basename(n->icon), n->msg);
         n->msg = string_replace("%b", n->body, n->msg);
         if (n->progress) {
-                char pg[20];
+                char pg[10];
                 sprintf(pg, "[%3d%%]", n->progress-1);
                 n->msg = string_replace("%p", pg, n->msg);
-        } else
+        } else {
                 n->msg = string_replace("%p", "", n->msg);
+        }
 
         n->msg = fix_markup(n->msg);
 
@@ -970,7 +971,7 @@ int init_notification(notification * n, int id)
                 n->id = ++next_notification_id;
         } else {
                 close_notification_by_id(id, -1);
-                n->id = ++next_notification_id;
+                n->id = id;
         }
 
         if(strlen(n->msg) == 0) {
