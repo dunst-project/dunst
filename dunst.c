@@ -193,6 +193,7 @@ void warn(const char *text, int urg)
         n->icon = "";
         n->timeout = 0;
         n->urgency = urg;
+        n->progress = 0;
         n->dbus_client = NULL;
         n->color_strings[ColFG] = NULL;
         n->color_strings[ColBG] = NULL;
