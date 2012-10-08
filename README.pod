@@ -119,7 +119,7 @@ fmt is a string containing placeholders. The placeholders will be replaced with 
 
 =item B<%I>  iconname (without its path)
 
-=item B<%p>  progress value if set ([  0%] to [100%]) or nothing
+=item B<%p>  progress value ([  0%] to [100%])
 
 =back
 
