@@ -126,6 +126,10 @@ char *next_section(char *section)
         if (section_count == 0)
                 return NULL;
 
+        if (section == NULL) {
+                return sections[0].name;
+        }
+
         for (int i = 0; i < section_count; i++) {
                 if (strcmp(section, sections[i].name) == 0) {
                         if (i + 1 >= section_count)
