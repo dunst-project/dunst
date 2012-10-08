@@ -1194,6 +1194,7 @@ int select_screen(XineramaScreenInfo * info, int info_len)
 
         } else {
                 int x, y;
+                assert(f_mode == FOLLOW_MOUSE || f_mode == FOLLOW_KEYBOARD);
                 Window root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
 
                 if (f_mode == FOLLOW_MOUSE) {
