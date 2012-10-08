@@ -7,7 +7,7 @@
 #include "dunst.h"
 
 
-void strtrim_end(char *str)
+char *rstrip(char *str)
 {
         char *end;
         end = str + strlen(str) - 1;
@@ -15,6 +15,13 @@ void strtrim_end(char *str)
                 *end = '\0';
                 end--;
         }
+        return str;
+}
+
+char *lskip(char *s)
+{
+        for(; *s && isspace(*s); s++);
+        return s;
 }
 
 char *string_replace(const char *needle, const char *replacement,
