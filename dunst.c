@@ -27,8 +27,11 @@
 #include "draw.h"
 #include "dunst_dbus.h"
 #include "list.h"
-#include "ini.h"
 #include "utils.h"
+
+#ifndef STATIC_CONFIG
+#include "options.h"
+#endif
 
 #define INRECT(x,y,rx,ry,rw,rh) ((x) >= (rx) && (x) < (rx)+(rw) && (y) >= (ry) && (y) < (ry)+(rh))
 #define LENGTH(X)               (sizeof X / sizeof X[0])
@@ -185,12 +188,12 @@ void warn(const char *text, int urg)
         if (n == NULL)
                 die("Unable to allocate memory", EXIT_FAILURE);
 
-        n->appname = "dunst";
+        n->appname = strdup("dunst");
         n->summary = strdup(text);
         if (n->summary == NULL)
                 die("Unable to allocate memory", EXIT_FAILURE);
-        n->body = "";
-        n->icon = "";
+        n->body = strdup("");
+        n->icon = strdup("");
         n->timeout = 0;
         n->urgency = urg;
         n->progress = 0;
@@ -339,7 +342,12 @@ void update_lists()
                 }
 
                 to_move = most_important(notification_queue);
+                if (!to_move) {
+                        return;
+                }
                 n = (notification *) to_move->data;
+                if (!n)
+                        return;
                 n->start = now;
 
                 /* TODO get notifications pushed back into
@@ -358,7 +366,7 @@ void update_lists()
 int do_word_wrap(char *source, int max_width)
 {
 
-        strtrim_end(source);
+        rstrip(source);
 
         if (!source || strlen(source) == 0)
                 return 0;
@@ -403,39 +411,30 @@ int do_word_wrap(char *source, int max_width)
 
 void update_draw_txt_buf(notification * n, int max_width)
 {
-        strtrim_end(n->msg);
+        rstrip(n->msg);
         char *msg = n->msg;
         while(isspace(*msg))
                 msg++;
 
-        if (!n->draw_txt_buf.txt) {
-                int dup_len = strlen(" () ") + digit_count(INT_MAX);
-                int msg_len = strlen(msg) + 2;       /* 2 == surrounding spaces */
-                int age_len = strlen(" ( h 60m 60s old ) ")
-                    + digit_count(INT_MAX);     /* could be INT_MAX hours */
-                int line_length = dup_len + msg_len + age_len;
+        if (n->draw_txt_buf.txt)
+                free(n->draw_txt_buf.txt);
 
-                line_length += sizeof(" ( more ) ") + digit_count(INT_MAX);
-
-                n->draw_txt_buf.txt = calloc(line_length, sizeof(char));
-                n->draw_txt_buf.bufsize = line_length;
-        }
-
-        char *buf = n->draw_txt_buf.txt;
-        int bufsize = n->draw_txt_buf.bufsize;
-        char *next = buf;
-
-        memset(buf, '\0', bufsize);
+        char *buf;
 
         /* print dup_count */
         if (n->dup_count > 0) {
-                snprintf(next, bufsize - strlen(buf), "(%d) ", n->dup_count);
-                next = buf + strlen(buf);
+                asprintf(&buf, "(%d)", n->dup_count);
+        } else {
+                buf = strdup("");
         }
 
         /* print msg */
-        strncat(buf, msg, bufsize - strlen(buf));
-        next = buf + strlen(buf);
+        {
+                char *new_buf;
+                asprintf(&new_buf, "%s %s", buf, msg);
+                free(buf);
+                buf = new_buf;
+        }
 
         /* print age */
         int hours, minutes, seconds;
@@ -446,20 +445,22 @@ void update_draw_txt_buf(notification * n, int max_width)
                 minutes = t_delta / 60 % 60;
                 seconds = t_delta % 60;
 
+                char *new_buf;
                 if (hours > 0) {
-                        snprintf(next, bufsize - strlen(buf),
-                                 " (%dh %dm %ds old)", hours, minutes, seconds);
+                        asprintf(&new_buf, "%s (%dh %dm %ds old)", buf, hours,
+                                        minutes, seconds);
                 } else if (minutes > 0) {
-                        snprintf(next, bufsize - strlen(buf), " (%dm %ds old)",
-                                 minutes, seconds);
+                        asprintf(&new_buf, "%s (%dm %ds old)", buf, minutes, seconds);
                 } else {
-                        snprintf(next, bufsize - strlen(buf), " (%ds old)",
-                                 seconds);
+                        asprintf(&new_buf, "%s (%ds old)", buf, seconds);
                 }
+
+                free(buf);
+                buf = new_buf;
         }
 
-        n->draw_txt_buf.line_count =
-            do_word_wrap(n->draw_txt_buf.txt, max_width);
+        n->draw_txt_buf.line_count = do_word_wrap(buf, max_width);
+        n->draw_txt_buf.txt = buf;
 }
 
 char *draw_txt_get_line(draw_txt * dt, int line)
@@ -1076,10 +1077,10 @@ void init_shortcut(keyboard_shortcut * ks)
                         str++;
                 *str = '\0';
                 str++;
-                strtrim_end(mod);
+                rstrip(mod);
                 ks->mask = ks->mask | string_to_mask(mod);
         }
-        strtrim_end(str);
+        rstrip(str);
 
         ks->sym = XStringToKeysym(str);
         /* find matching keycode for ks->sym */
@@ -1204,6 +1205,7 @@ int select_screen(XineramaScreenInfo * info, int info_len)
 
         } else {
                 int x, y;
+                assert(f_mode == FOLLOW_MOUSE || f_mode == FOLLOW_KEYBOARD);
                 Window root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
 
                 if (f_mode == FOLLOW_MOUSE) {
@@ -1248,10 +1250,9 @@ void update_screen_info()
 {
 #ifdef XINERAMA
         int n;
-        int screen = scr.scr;
         XineramaScreenInfo *info;
         if ((info = XineramaQueryScreens(dc->dpy, &n))) {
-                screen = select_screen(info, n);
+                int screen = select_screen(info, n);
                 if (screen >= n) {
                         /* invalid monitor, fallback to default */
                         screen = 0;
@@ -1486,26 +1487,6 @@ void parse_cmdline(int argc, char *argv[])
 }
 
 #ifndef STATIC_CONFIG
-static int dunst_ini_get_boolean(const char *value)
-{
-        switch (value[0]) {
-        case 'y':
-        case 'Y':
-        case 't':
-        case 'T':
-        case '1':
-                return True;
-        case 'n':
-        case 'N':
-        case 'f':
-        case 'F':
-        case '0':
-                return False;
-        default:
-                return False;
-        }
-}
-
 static rule_t *dunst_rules_find_or_create(const char *section)
 {
         l_node *iter;
@@ -1525,158 +1506,6 @@ static rule_t *dunst_rules_find_or_create(const char *section)
         l_push(rules, rule);
 
         return rule;
-}
-
-static char *dunst_ini_get_string(const char *value)
-{
-        char *s;
-
-        if (value[0] == '"')
-                s = strdup(value + 1);
-        else
-                s = strdup(value);
-
-        if (s[strlen(s) - 1] == '"')
-                s[strlen(s) - 1] = '\0';
-
-        return s;
-}
-
-static int
-dunst_ini_handle(void *user_data, const char *section,
-                 const char *name, const char *value)
-{
-        if (strcmp(section, "global") == 0) {
-                if (strcmp(name, "font") == 0)
-                        font = dunst_ini_get_string(value);
-                else if (strcmp(name, "format") == 0)
-                        format = dunst_ini_get_string(value);
-                else if (strcmp(name, "sort") == 0)
-                        sort = dunst_ini_get_boolean(value);
-                else if (strcmp(name, "indicate_hidden") == 0)
-                        indicate_hidden = dunst_ini_get_boolean(value);
-                else if (strcmp(name, "word_wrap") == 0)
-                        word_wrap = dunst_ini_get_boolean(value);
-                else if (strcmp(name, "idle_threshold") == 0)
-                        idle_threshold = atoi(value);
-                else if (strcmp(name, "monitor") == 0)
-                        scr.scr = atoi(value);
-                else if (strcmp(name, "follow") == 0) {
-                        char *c = dunst_ini_get_string(value);
-                        parse_follow_mode(c);
-                        free(c);
-                } else if (strcmp(name, "geometry") == 0)
-                        geom = dunst_ini_get_string(value);
-                else if (strcmp(name, "line_height") == 0)
-                        line_height = atoi(value);
-                else if (strcmp(name, "modifier") == 0) {
-                        deprecated_dunstrc_shortcuts = True;
-                        char *c = dunst_ini_get_string(value);
-                        KeySym mod = string_to_mask(c);
-                        free(c);
-                        close_ks.mask = mod;
-                        close_all_ks.mask = mod;
-                        history_ks.mask = mod;
-                } else if (strcmp(name, "key") == 0) {
-                        close_ks.str = dunst_ini_get_string(value);
-                } else if (strcmp(name, "all_key") == 0) {
-                        close_all_ks.str = dunst_ini_get_string(value);
-                } else if (strcmp(name, "history_key") == 0) {
-                        history_ks.str = dunst_ini_get_string(value);
-                } else if (strcmp(name, "bounce_freq") == 0) {
-                        bounce_freq = atof(value);
-                } else if (strcmp(name, "alignment") == 0) {
-                        if (strcmp(value, "left") == 0)
-                                align = left;
-                        else if (strcmp(value, "center") == 0)
-                                align = center;
-                        else if (strcmp(value, "right") == 0)
-                                align = right;
-                        /* FIXME warning on unknown alignment */
-                } else if (strcmp(name, "show_age_threshold") == 0)
-                        show_age_threshold = atoi(value);
-                else if (strcmp(name, "sticky_history") == 0)
-                        sticky_history = dunst_ini_get_boolean(value);
-                else if (strcmp(name, "separator_height") == 0)
-                        separator_height = atoi(value);
-                else if (strcmp(name, "transparency") == 0)
-                        transparency = atoi(value);
-                if (strcmp(name, "separator_color") == 0) {
-                        char *str = dunst_ini_get_string(value);
-                        if (strcmp(str, "auto") == 0)
-                                sep_color = AUTO;
-                        else if (strcmp(str, "foreground") == 0)
-                                sep_color = FOREGROUND;
-                        else
-                                fprintf(stderr, "Warning: Unknown separator color\n");
-                        free(str);
-                }
-        } else if (strcmp(section, "urgency_low") == 0) {
-                if (strcmp(name, "background") == 0)
-                        lowbgcolor = dunst_ini_get_string(value);
-                else if (strcmp(name, "foreground") == 0)
-                        lowfgcolor = dunst_ini_get_string(value);
-                else if (strcmp(name, "timeout") == 0)
-                        timeouts[LOW] = atoi(value);
-
-        } else if (strcmp(section, "urgency_normal") == 0) {
-                if (strcmp(name, "background") == 0)
-                        normbgcolor = dunst_ini_get_string(value);
-                else if (strcmp(name, "foreground") == 0)
-                        normfgcolor = dunst_ini_get_string(value);
-                else if (strcmp(name, "timeout") == 0)
-                        timeouts[NORM] = atoi(value);
-
-        } else if (strcmp(section, "urgency_critical") == 0) {
-                if (strcmp(name, "background") == 0)
-                        critbgcolor = dunst_ini_get_string(value);
-                else if (strcmp(name, "foreground") == 0)
-                        critfgcolor = dunst_ini_get_string(value);
-                else if (strcmp(name, "timeout") == 0)
-                        timeouts[CRIT] = atoi(value);
-
-        } else if (strcmp(section, "shortcuts") == 0) {
-                if (strcmp(name, "close") == 0)
-                        close_ks.str = dunst_ini_get_string(value);
-                else if (strcmp(name, "close_all") == 0)
-                        close_all_ks.str = dunst_ini_get_string(value);
-                else if (strcmp(name, "history") == 0)
-                        history_ks.str = dunst_ini_get_string(value);
-        } else {
-
-                rule_t *current_rule = dunst_rules_find_or_create(section);
-
-                if (strcmp(name, "appname") == 0)
-                        current_rule->appname = dunst_ini_get_string(value);
-                else if (strcmp(name, "summary") == 0)
-                        current_rule->summary = dunst_ini_get_string(value);
-                else if (strcmp(name, "body") == 0)
-                        current_rule->body = dunst_ini_get_string(value);
-                else if (strcmp(name, "icon") == 0)
-                        current_rule->icon = dunst_ini_get_string(value);
-                else if (strcmp(name, "timeout") == 0)
-                        current_rule->timeout = atoi(value);
-                else if (strcmp(name, "urgency") == 0) {
-                        const char *urg = value;
-
-                        if (strcmp(urg, "low") == 0)
-                                current_rule->urgency = LOW;
-                        else if (strcmp(urg, "normal") == 0)
-                                current_rule->urgency = NORM;
-                        else if (strcmp(urg, "critical") == 0)
-                                current_rule->urgency = CRIT;
-                        else
-                                fprintf(stderr,
-                                        "unknown urgency: %s, ignoring\n", urg);
-                } else if (strcmp(name, "foreground") == 0)
-                        current_rule->fg = dunst_ini_get_string(value);
-                else if (strcmp(name, "background") == 0)
-                        current_rule->bg = dunst_ini_get_string(value);
-                else if (strcmp(name, "format") == 0)
-                        current_rule->format = dunst_ini_get_string(value);
-        }
-
-        return 1;
 }
 
 void parse_dunstrc(char *cmdline_config_path)
@@ -1704,15 +1533,133 @@ void parse_dunstrc(char *cmdline_config_path)
                 }
         }
 
-        if (ini_parse_file(config_file, dunst_ini_handle, NULL) < 0) {
-                puts("dunstrc could not be parsed -> skipping\n");
+        load_ini_file(config_file);
+
+        font = ini_get_string("global", "font", font);
+        format = ini_get_string("global", "format", format);
+        sort = ini_get_bool("global", "sort", sort);
+        indicate_hidden = ini_get_bool("global", "indicate_hidden", indicate_hidden);
+        word_wrap = ini_get_bool("global", "word_wrap", word_wrap);
+        idle_threshold = ini_get_int("global", "idle_threshold", idle_threshold);
+        monitor = ini_get_int("global", "monitor", monitor);
+        {
+                char *c = ini_get_string("global", "follow", "");
+                if (strlen(c) > 0) {
+                        parse_follow_mode(c);
+                        free(c);
+                }
+        }
+        geom = ini_get_string("global", "geometry", geom);
+        line_height = ini_get_int("global", "line_height", line_height);
+        {
+                char *c = ini_get_string("global", "modifier", "");
+                if (strlen(c) > 0) {
+                        deprecated_dunstrc_shortcuts = True;
+                        KeySym mod = string_to_mask(c);
+                        close_ks.mask = mod;
+                        close_all_ks.mask = mod;
+                        close_all_ks.mask = mod;
+                        free(c);
+                }
+        }
+        close_ks.str = ini_get_string("global", "key", close_ks.str);
+        close_all_ks.str = ini_get_string("global", "key", close_all_ks.str);
+        history_ks.str = ini_get_string("global", "key", history_ks.str);
+        bounce_freq = ini_get_double("global", "bounce_freq", bounce_freq);
+        {
+                char *c = ini_get_string("global", "alignment", "");
+                if (strlen(c) > 0) {
+                        if (strcmp(c, "left") == 0)
+                                align = left;
+                        else if (strcmp(c, "center") == 0)
+                                align = center;
+                        else if (strcmp(c, "right") == 0)
+                                align = right;
+                        else
+                                fprintf(stderr, "Warning: unknown allignment\n");
+                        free(c);
+                }
+        }
+        show_age_threshold = ini_get_int("global", "show_age_threshold", show_age_threshold);
+        sticky_history = ini_get_bool("global", "sticky_history", sticky_history);
+        separator_height = ini_get_int("global", "separator_height", separator_height);
+        transparency = ini_get_int("global", "transparency", transparency);
+        {
+                char *c = ini_get_string("global", "separator_color", "");
+                if (strlen(c) > 0) {
+                        if (strcmp(c, "auto") == 0)
+                                sep_color = AUTO;
+                        else if (strcmp(c, "foreground") == 0)
+                                sep_color = FOREGROUND;
+                        else
+                                fprintf(stderr, "Warning: Unknown separator color\n");
+                        free(c);
+                }
+        }
+
+        lowbgcolor = ini_get_string("urgency_low", "background", lowbgcolor);
+        lowfgcolor = ini_get_string("urgency_low", "foreground", lowfgcolor);
+        timeouts[LOW] = ini_get_int("urgency_low", "timeout", timeouts[LOW]);
+        normbgcolor = ini_get_string("urgency_normal", "background", normbgcolor);
+        normfgcolor = ini_get_string("urgency_normal", "foreground", normfgcolor);
+        timeouts[NORM] = ini_get_int("urgency_normal", "timeout", timeouts[NORM]);
+        critbgcolor = ini_get_string("urgency_critical", "background", critbgcolor);
+        critfgcolor = ini_get_string("urgency_critical", "foreground", critfgcolor);
+        timeouts[CRIT] = ini_get_int("urgency_critical", "timeout", timeouts[CRIT]);
+
+        close_ks.str = ini_get_string("shortcuts", "close", close_ks.str);
+        close_all_ks.str = ini_get_string("shortcuts", "close_all", close_all_ks.str);
+        history_ks.str = ini_get_string("shortcuts", "history", history_ks.str);
+
+
+        char *cur_section = NULL;
+        for (; cur_section; cur_section = next_section(cur_section)) {
+                if (strcmp(cur_section, "global") == 0
+                 || strcmp(cur_section, "shortcuts") == 0
+                 || strcmp(cur_section, "urgency_low") == 0
+                 || strcmp(cur_section, "urgency_normal") == 0
+                 || strcmp(cur_section, "urgency_critical") == 0)
+                        continue;
+
+                rule_t *current_rule = dunst_rules_find_or_create(cur_section);
+                current_rule->appname = ini_get_string(
+                                cur_section, "appname", current_rule->appname);
+                current_rule->summary = ini_get_string(
+                                cur_section, "summary", current_rule->summary);
+                current_rule->body = ini_get_string(
+                                cur_section, "body", current_rule->body);
+                current_rule->icon = ini_get_string(
+                                cur_section, "icon", current_rule->icon);
+                current_rule->timeout = ini_get_int(
+                                cur_section, "timeout", current_rule->timeout);
+                {
+                        char *urg = ini_get_string(cur_section, "urgency", "");
+                        if (strlen(urg) > 0) {
+                                if (strcmp(urg, "low") == 0)
+                                        current_rule->urgency = LOW;
+                                else if (strcmp(urg, "normal") == 0)
+                                        current_rule->urgency = NORM;
+                                else if (strcmp(urg, "critical") == 0)
+                                        current_rule->urgency = CRIT;
+                                else
+                                        fprintf(stderr,
+                                                "unknown urgency: %s, ignoring\n", urg);
+                                free(urg);
+                        }
+                }
+                current_rule->fg = ini_get_string(
+                                cur_section, "foreground", current_rule->fg);
+                current_rule->bg = ini_get_string(
+                                cur_section, "background", current_rule->bg);
+                current_rule->format = ini_get_string(
+                                cur_section, "format", current_rule->format);
         }
 
         fclose(config_file);
+        free_ini();
         xdgWipeHandle(&xdg);
-
 }
-#endif                          /* STATIC_CONFIG */
+
 
 char *parse_cmdline_for_config_file(int argc, char *argv[])
 {
@@ -1727,6 +1674,7 @@ char *parse_cmdline_for_config_file(int argc, char *argv[])
         }
         return NULL;
 }
+#endif                          /* STATIC_CONFIG */
 
 int main(int argc, char *argv[])
 {
