@@ -345,6 +345,8 @@ void update_lists()
                         return;
                 }
                 n = (notification *) to_move->data;
+                if (!n)
+                        return;
                 n->start = now;
 
                 /* TODO get notifications pushed back into
