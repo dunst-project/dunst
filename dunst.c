@@ -188,12 +188,12 @@ void warn(const char *text, int urg)
         if (n == NULL)
                 die("Unable to allocate memory", EXIT_FAILURE);
 
-        n->appname = "dunst";
+        n->appname = strdup("dunst");
         n->summary = strdup(text);
         if (n->summary == NULL)
                 die("Unable to allocate memory", EXIT_FAILURE);
-        n->body = "";
-        n->icon = "";
+        n->body = strdup("");
+        n->icon = strdup("");
         n->timeout = 0;
         n->urgency = urg;
         n->dbus_client = NULL;
