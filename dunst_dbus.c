@@ -336,7 +336,7 @@ void notify(DBusMessage * dmsg)
                                 continue;
                         }
                         dbus_message_iter_get_basic(&hint, &hint_name);
-                        _extract_hint(DBUS_TYPE_STRING, "urgency", hint_name, &hint, &urgency);
+                        _extract_hint(DBUS_TYPE_BYTE, "urgency", hint_name, &hint, &urgency);
                         _extract_hint(DBUS_TYPE_STRING, "fgcolor", hint_name, &hint, &fgcolor);
                         _extract_hint(DBUS_TYPE_STRING, "bgcolor", hint_name, &hint, &bgcolor);
                         _extract_hint(DBUS_TYPE_INT32, "value", hint_name, &hint, &progress);
