@@ -907,6 +907,13 @@ int init_notification(notification * n, int id)
         n->msg = string_replace("%i", n->icon, n->msg);
         n->msg = string_replace("%I", basename(n->icon), n->msg);
         n->msg = string_replace("%b", n->body, n->msg);
+        if (n->progress) {
+                char pg[10];
+                sprintf(pg, "[%3d%%]", n->progress-1);
+                n->msg = string_replace("%p", pg, n->msg);
+        } else {
+                n->msg = string_replace("%p", "", n->msg);
+        }
 
         n->msg = fix_markup(n->msg);
 
@@ -917,7 +924,7 @@ int init_notification(notification * n, int id)
         /* check if n is a duplicate */
         for (l_node * iter = notification_queue->head; iter; iter = iter->next) {
                 notification *orig = (notification *) iter->data;
-                if (strcmp(orig->msg, n->msg) == 0) {
+                if (strcmp(orig->appname, n->appname) == 0 && strcmp(orig->msg, n->msg) == 0) {
                         orig->dup_count++;
                         free_notification(n);
                         return orig->id;
@@ -927,7 +934,7 @@ int init_notification(notification * n, int id)
         for (l_node * iter = displayed_notifications->head; iter;
              iter = iter->next) {
                 notification *orig = (notification *) iter->data;
-                if (strcmp(orig->msg, n->msg) == 0) {
+                if (strcmp(orig->appname, n->appname) == 0 && strcmp(orig->msg, n->msg) == 0) {
                         orig->dup_count++;
                         orig->start = now;
                         free_notification(n);
@@ -963,6 +970,7 @@ int init_notification(notification * n, int id)
                 n->id = ++next_notification_id;
         } else {
                 close_notification_by_id(id, -1);
+                n->id = id;
         }
 
         if(strlen(n->msg) == 0) {
@@ -1296,7 +1304,7 @@ void setup(void)
                                                         DefaultScreen(dc->dpy)),
                           CWOverrideRedirect | CWBackPixmap | CWEventMask, &wa);
         transparency = transparency > 100 ? 100 : transparency;
-	setopacity(dc, win, (unsigned long)((100 - transparency) * (0xffffffff/100)));
+        setopacity(dc, win, (unsigned long)((100 - transparency) * (0xffffffff/100)));
         grab_key(&history_ks);
 }
 
