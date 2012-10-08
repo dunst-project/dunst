@@ -410,34 +410,25 @@ void update_draw_txt_buf(notification * n, int max_width)
         while(isspace(*msg))
                 msg++;
 
-        if (!n->draw_txt_buf.txt) {
-                int dup_len = strlen(" () ") + digit_count(INT_MAX);
-                int msg_len = strlen(msg) + 2;       /* 2 == surrounding spaces */
-                int age_len = strlen(" ( h 60m 60s old ) ")
-                    + digit_count(INT_MAX);     /* could be INT_MAX hours */
-                int line_length = dup_len + msg_len + age_len;
+        if (n->draw_txt_buf.txt)
+                free(n->draw_txt_buf.txt);
 
-                line_length += sizeof(" ( more ) ") + digit_count(INT_MAX);
-
-                n->draw_txt_buf.txt = calloc(line_length, sizeof(char));
-                n->draw_txt_buf.bufsize = line_length;
-        }
-
-        char *buf = n->draw_txt_buf.txt;
-        int bufsize = n->draw_txt_buf.bufsize;
-        char *next = buf;
-
-        memset(buf, '\0', bufsize);
+        char *buf;
 
         /* print dup_count */
         if (n->dup_count > 0) {
-                snprintf(next, bufsize - strlen(buf), "(%d) ", n->dup_count);
-                next = buf + strlen(buf);
+                asprintf(&buf, "(%d)", n->dup_count);
+        } else {
+                buf = strdup("");
         }
 
         /* print msg */
-        strncat(buf, msg, bufsize - strlen(buf));
-        next = buf + strlen(buf);
+        {
+                char *new_buf;
+                asprintf(&new_buf, "%s %s", buf, msg);
+                free(buf);
+                buf = new_buf;
+        }
 
         /* print age */
         int hours, minutes, seconds;
@@ -448,20 +439,22 @@ void update_draw_txt_buf(notification * n, int max_width)
                 minutes = t_delta / 60 % 60;
                 seconds = t_delta % 60;
 
+                char *new_buf;
                 if (hours > 0) {
-                        snprintf(next, bufsize - strlen(buf),
-                                 " (%dh %dm %ds old)", hours, minutes, seconds);
+                        asprintf(&new_buf, "%s (%dh %dm %ds old)", buf, hours,
+                                        minutes, seconds);
                 } else if (minutes > 0) {
-                        snprintf(next, bufsize - strlen(buf), " (%dm %ds old)",
-                                 minutes, seconds);
+                        asprintf(&new_buf, "%s (%dm %ds old)", buf, minutes, seconds);
                 } else {
-                        snprintf(next, bufsize - strlen(buf), " (%ds old)",
-                                 seconds);
+                        asprintf(&new_buf, "%s (%ds old)", buf, seconds);
                 }
+
+                free(buf);
+                buf = new_buf;
         }
 
-        n->draw_txt_buf.line_count =
-            do_word_wrap(n->draw_txt_buf.txt, max_width);
+        n->draw_txt_buf.line_count = do_word_wrap(buf, max_width);
+        n->draw_txt_buf.txt = buf;
 }
 
 char *draw_txt_get_line(draw_txt * dt, int line)
