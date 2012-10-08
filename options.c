@@ -50,6 +50,7 @@ void free_ini(void)
                         free(sections[i].entries[j].value);
                 }
                 free(sections[i].entries);
+                free(sections[i].name);
         }
         free(sections);
 }
@@ -204,7 +205,7 @@ int load_ini_file(FILE *fp)
                         if (current_section)
                                 free(current_section);
                         current_section = (strdup(start+1));
-                        new_section(strdup(current_section));
+                        new_section(current_section);
                         continue;
                 }
 
@@ -246,6 +247,8 @@ int load_ini_file(FILE *fp)
 
                 add_entry(current_section, key, value);
         }
+        if (current_section)
+                free(current_section);
         return 0;
 }
 /* vim: set ts=8 sw=8 tw=0: */
