@@ -1235,10 +1235,9 @@ void update_screen_info()
 {
 #ifdef XINERAMA
         int n;
-        int screen = scr.scr;
         XineramaScreenInfo *info;
         if ((info = XineramaQueryScreens(dc->dpy, &n))) {
-                screen = select_screen(info, n);
+                int screen = select_screen(info, n);
                 if (screen >= n) {
                         /* invalid monitor, fallback to default */
                         screen = 0;
