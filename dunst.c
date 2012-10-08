@@ -341,6 +341,9 @@ void update_lists()
                 }
 
                 to_move = most_important(notification_queue);
+                if (!to_move) {
+                        return;
+                }
                 n = (notification *) to_move->data;
                 n->start = now;
 
@@ -1641,10 +1644,10 @@ void parse_dunstrc(char *cmdline_config_path)
         }
 
         fclose(config_file);
+        free_ini();
         xdgWipeHandle(&xdg);
 }
 
-#endif                          /* STATIC_CONFIG */
 
 char *parse_cmdline_for_config_file(int argc, char *argv[])
 {
@@ -1659,6 +1662,7 @@ char *parse_cmdline_for_config_file(int argc, char *argv[])
         }
         return NULL;
 }
+#endif                          /* STATIC_CONFIG */
 
 int main(int argc, char *argv[])
 {

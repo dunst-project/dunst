@@ -42,6 +42,18 @@ section_t *new_section(char *name)
         return &sections[section_count -1];
 }
 
+void free_ini(void)
+{
+        for(int i = 0; i < section_count; i++) {
+                for (int j = 0; j < sections[i].entry_count; j++) {
+                        free(sections[i].entries[j].key);
+                        free(sections[i].entries[j].value);
+                }
+                free(sections[i].entries);
+        }
+        free(sections);
+}
+
 section_t *get_section(char *name)
 {
         for (int i = 0; i < section_count; i++) {
