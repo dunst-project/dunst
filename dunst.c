@@ -970,7 +970,7 @@ int init_notification(notification * n, int id)
                 n->id = ++next_notification_id;
         } else {
                 close_notification_by_id(id, -1);
-                n->id = ++next_notification_id;
+                n->id = id;
         }
 
         if(strlen(n->msg) == 0) {
