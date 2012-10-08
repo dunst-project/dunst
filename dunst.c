@@ -1617,7 +1617,6 @@ void parse_dunstrc(char *cmdline_config_path)
                 cur_section = next_section(cur_section);
                 if (!cur_section)
                         break;
-                printf("%s\n", cur_section);
                 if (strcmp(cur_section, "global") == 0
                  || strcmp(cur_section, "shortcuts") == 0
                  || strcmp(cur_section, "urgency_low") == 0
