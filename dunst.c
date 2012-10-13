@@ -1084,22 +1084,9 @@ void init_shortcut(keyboard_shortcut * ks)
 
         ks->sym = XStringToKeysym(str);
         /* find matching keycode for ks->sym */
-        int min_keysym, max_keysym;
-        XDisplayKeycodes(dc->dpy, &min_keysym, &max_keysym);
+        ks->code = XKeysymToKeycode(dc->dpy, ks->sym);
 
-        ks->code = NoSymbol;
-
-        int level = ks->mask & ShiftMask ? 1 : 0;
-
-        for (int i = min_keysym; i <= max_keysym; i++) {
-                if (XkbKeycodeToKeysym(dc->dpy, i, 0, level) == ks->sym) {
-                        ks->code = i;
-                        break;
-                }
-        }
-
-
-        if (ks->sym == NoSymbol || ks->code == NoSymbol) {
+        if (ks->sym == NoSymbol || ks->code == 0) {
                 fprintf(stderr, "Warning: Unknown keyboard shortcut: %s\n",
                         ks->str);
                 ks->is_valid = False;
