@@ -34,6 +34,7 @@ clean:
 	@rm -f dunst
 	@rm -f dunst.1
 	@rm -f org.knopwob.dunst.service
+	@rm -f core
 
 doc: dunst.1
 dunst.1: README.pod
