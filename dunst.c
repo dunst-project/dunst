@@ -1089,10 +1089,9 @@ void init_shortcut(keyboard_shortcut * ks)
 
         ks->code = NoSymbol;
 
-        int level = ks->mask & ShiftMask ? 1 : 0;
-
         for (int i = min_keysym; i <= max_keysym; i++) {
-                if (XkbKeycodeToKeysym(dc->dpy, i, 0, level) == ks->sym) {
+                if (XkbKeycodeToKeysym(dc->dpy, i, 0, 0) == ks->sym
+                    || XkbKeycodeToKeysym(dc->dpy, i, 0, 1) == ks->sym) {
                         ks->code = i;
                         break;
                 }
