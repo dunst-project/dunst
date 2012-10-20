@@ -305,13 +305,13 @@ int cmdline_find_option(char *key)
 char *cmdline_get_string(char *key, char *def)
 {
         int idx = cmdline_find_option(key);
-        if (idx == 0) {
+        if (idx < 0) {
                 return def;
         }
 
-        if (idx + 1 <= cmdline_argc || cmdline_argv[idx+1][0] == '-') {
+        if (idx + 1 >= cmdline_argc || cmdline_argv[idx+1][0] == '-') {
                 /* the argument is missing */
-                fprintf(stderr, "Warning: %s, missing argument. Ignoring", key);
+                fprintf(stderr, "Warning: %s, missing argument. Ignoring\n", key);
                 return def;
         }
 
