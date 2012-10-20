@@ -9,7 +9,7 @@ char *string_replace(const char *needle, const char *replacement,
                      char *haystack);
 
 /* exit with an error message */
-void die(char * msg, int exit_value);
+void die(char *msg, int exit_value);
 
 int digit_count(int i);
 

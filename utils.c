@@ -6,7 +6,6 @@
 #include "utils.h"
 #include "dunst.h"
 
-
 char *rstrip(char *str)
 {
         char *end;
@@ -20,7 +19,7 @@ char *rstrip(char *str)
 
 char *lskip(char *s)
 {
-        for(; *s && isspace(*s); s++);
+        for (; *s && isspace(*s); s++) ;
         return s;
 }
 
@@ -54,7 +53,7 @@ char *string_replace(const char *needle, const char *replacement,
 int digit_count(int i)
 {
         int len = 0;
-        if ( i == 0) {
+        if (i == 0) {
                 return 1;
         }
 

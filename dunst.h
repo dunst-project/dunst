@@ -14,7 +14,6 @@
 #define ColFG 1
 #define ColBG 0
 
-
 enum alignment { left, center, right };
 enum separator_color { FOREGROUND, AUTO };
 enum follow_mode { FOLLOW_NONE, FOLLOW_MOUSE, FOLLOW_KEYBOARD };
@@ -51,7 +50,7 @@ typedef struct _notification {
         time_t timestamp;
         int timeout;
         int urgency;
-        bool redisplayed;        /* has been displayed before? */
+        bool redisplayed;       /* has been displayed before? */
         int id;
         int dup_count;
         ColorSet *colors;

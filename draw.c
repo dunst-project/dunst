@@ -235,12 +235,12 @@ void initfont(DC * dc, const char *fontstr)
         return;
 }
 
-void
-setopacity(DC *dc, Window win, unsigned long opacity)
+void setopacity(DC * dc, Window win, unsigned long opacity)
 {
-	Atom _NET_WM_WINDOW_OPACITY = XInternAtom(dc->dpy, "_NET_WM_WINDOW_OPACITY", false);
-	XChangeProperty(dc->dpy, win, _NET_WM_WINDOW_OPACITY, XA_CARDINAL, 32, PropModeReplace,
-			(unsigned char *)&opacity, 1L);
+        Atom _NET_WM_WINDOW_OPACITY =
+            XInternAtom(dc->dpy, "_NET_WM_WINDOW_OPACITY", false);
+        XChangeProperty(dc->dpy, win, _NET_WM_WINDOW_OPACITY, XA_CARDINAL, 32,
+                        PropModeReplace, (unsigned char *)&opacity, 1L);
 }
 
 void mapdc(DC * dc, Window win, unsigned int w, unsigned int h)

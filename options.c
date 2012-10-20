@@ -11,19 +11,15 @@
 #include "utils.h"
 
 typedef struct _entry_t {
-    char *key;
-    char *value;
+        char *key;
+        char *value;
 } entry_t;
 
 typedef struct _section_t {
-    char *name;
-    int entry_count;
-    entry_t *entries;
+        char *name;
+        int entry_count;
+        entry_t *entries;
 } section_t;
-
-
-
-
 
 static int section_count = 0;
 static section_t *sections;
@@ -45,16 +41,16 @@ static int cmdline_find_option(char *key);
 section_t *new_section(char *name)
 {
         section_count++;
-        sections = realloc(sections, sizeof(section_t) *section_count);
+        sections = realloc(sections, sizeof(section_t) * section_count);
         sections[section_count - 1].name = strdup(name);
         sections[section_count - 1].entries = NULL;
         sections[section_count - 1].entry_count = 0;
-        return &sections[section_count -1];
+        return &sections[section_count - 1];
 }
 
 void free_ini(void)
 {
-        for(int i = 0; i < section_count; i++) {
+        for (int i = 0; i < section_count; i++) {
                 for (int j = 0; j < sections[i].entry_count; j++) {
                         free(sections[i].entries[j].key);
                         free(sections[i].entries[j].value);
@@ -145,7 +141,7 @@ char *next_section(char *section)
                         if (i + 1 >= section_count)
                                 return NULL;
                         else
-                                return sections[i+1].name;
+                                return sections[i + 1].name;
                 }
         }
         return NULL;
@@ -192,7 +188,7 @@ char *clean_value(char *value)
 
 }
 
-int load_ini_file(FILE *fp)
+int load_ini_file(FILE * fp)
 {
         char line[BUFSIZ];
 
@@ -209,7 +205,9 @@ int load_ini_file(FILE *fp)
                 if (*start == '[') {
                         char *end = strstr(start + 1, "]");
                         if (!end) {
-                                printf("Warning: invalid config file at line %d\n", line_num);
+                                printf
+                                    ("Warning: invalid config file at line %d\n",
+                                     line_num);
                                 printf("Missing ']'\n");
                                 continue;
                         }
@@ -218,27 +216,30 @@ int load_ini_file(FILE *fp)
 
                         if (current_section)
                                 free(current_section);
-                        current_section = (strdup(start+1));
+                        current_section = (strdup(start + 1));
                         new_section(current_section);
                         continue;
                 }
 
                 char *equal = strstr(start + 1, "=");
                 if (!equal) {
-                        printf("Warning: invalid config file at line %d\n", line_num);
+                        printf("Warning: invalid config file at line %d\n",
+                               line_num);
                         printf("Missing '='\n");
                         continue;
                 }
 
                 *equal = '\0';
                 char *key = rstrip(start);
-                char *value = lskip(equal+1);
+                char *value = lskip(equal + 1);
 
                 char *quote = strstr(value, "\"");
                 if (quote) {
                         char *closing_quote = strstr(quote + 1, "\"");
                         if (!closing_quote) {
-                                printf("Warning: invalid config file at line %d\n", line_num);
+                                printf
+                                    ("Warning: invalid config file at line %d\n",
+                                     line_num);
                                 printf("Missing '\"'\n");
                                 continue;
                         }
@@ -254,7 +255,8 @@ int load_ini_file(FILE *fp)
                 value = rstrip(value);
 
                 if (!current_section) {
-                        printf("Warning: invalid config file at line: %d\n", line_num);
+                        printf("Warning: invalid config file at line: %d\n",
+                               line_num);
                         printf("Key value pair without a section\n");
                         continue;
                 }
@@ -314,12 +316,13 @@ static char *cmdline_get_value(char *key)
                 return NULL;
         }
 
-        if (idx + 1 >= cmdline_argc || cmdline_argv[idx+1][0] == '-') {
+        if (idx + 1 >= cmdline_argc || cmdline_argv[idx + 1][0] == '-') {
                 /* the argument is missing */
-                fprintf(stderr, "Warning: %s, missing argument. Ignoring\n", key);
+                fprintf(stderr, "Warning: %s, missing argument. Ignoring\n",
+                        key);
                 return NULL;
         }
-        return cmdline_argv[idx+1];
+        return cmdline_argv[idx + 1];
 }
 
 char *cmdline_get_string(char *key, char *def, char *description)
@@ -364,7 +367,8 @@ int cmdline_get_bool(char *key, int def, char *description)
                 return def;
 }
 
-char *option_get_string(char *ini_section, char *ini_key, char *cmdline_key, char *def, char *description)
+char *option_get_string(char *ini_section, char *ini_key, char *cmdline_key,
+                        char *def, char *description)
 {
         char *val = NULL;
 
@@ -380,7 +384,8 @@ char *option_get_string(char *ini_section, char *ini_key, char *cmdline_key, cha
 
 }
 
-int option_get_int(char *ini_section, char *ini_key, char *cmdline_key, int def, char *description)
+int option_get_int(char *ini_section, char *ini_key, char *cmdline_key, int def,
+                   char *description)
 {
         /* *str is only used to check wether the cmdline option is actually set. */
         char *str = cmdline_get_value(cmdline_key);
@@ -395,7 +400,8 @@ int option_get_int(char *ini_section, char *ini_key, char *cmdline_key, int def,
                 return val;
 }
 
-double option_get_double(char *ini_section, char *ini_key, char *cmdline_key, double def, char *description)
+double option_get_double(char *ini_section, char *ini_key, char *cmdline_key,
+                         double def, char *description)
 {
         char *str = cmdline_get_value(cmdline_key);
         double val = cmdline_get_double(cmdline_key, def, description);
@@ -406,7 +412,8 @@ double option_get_double(char *ini_section, char *ini_key, char *cmdline_key, do
                 return val;
 }
 
-int option_get_bool(char *ini_section, char *ini_key, char *cmdline_key, int def, char *description)
+int option_get_bool(char *ini_section, char *ini_key, char *cmdline_key,
+                    int def, char *description)
 {
         int val;
 
@@ -449,4 +456,5 @@ char *cmdline_create_usage(void)
 {
         return strdup(usage_str);
 }
+
 /* vim: set ts=8 sw=8 tw=0: */
