@@ -1276,25 +1276,69 @@ void update_screen_info()
 
 void setup(void)
 {
-        Window root;
-        XSetWindowAttributes wa;
 
-        notification_queue = l_init();
-        notification_history = l_init();
-        displayed_notifications = l_init();
+        dc = initdc();
+
+        initfont(dc, font);
+
+
+        init_shortcut(&close_ks);
+        init_shortcut(&close_all_ks);
+        init_shortcut(&history_ks);
+
+        grab_key(&close_ks);
+        ungrab_key(&close_ks);
+        grab_key(&close_all_ks);
+        ungrab_key(&close_all_ks);
+        grab_key(&history_ks);
+        ungrab_key(&history_ks);
+
+        colors[LOW] = initcolor(dc, lowfgcolor, lowbgcolor);
+        colors[NORM] = initcolor(dc, normfgcolor, normbgcolor);
+        colors[CRIT] = initcolor(dc, critfgcolor, critbgcolor);
+
+        color_strings[ColFG][LOW] = lowfgcolor;
+        color_strings[ColFG][NORM] = normfgcolor;
+        color_strings[ColFG][CRIT] = critfgcolor;
+
+        color_strings[ColBG][LOW] = lowbgcolor;
+        color_strings[ColBG][NORM] = normbgcolor;
+        color_strings[ColBG][CRIT] = critbgcolor;
+
+        scr.scr = monitor;
+
+        if (geom[0] == '-') {
+                geometry.negative_width = true;
+                geom++;
+        } else {
+                geometry.negative_width = false;
+        }
+
+        geometry.mask = XParseGeometry(geom,
+                                       &geometry.x, &geometry.y,
+                                       &geometry.w, &geometry.h);
+
+
+        screensaver_info = XScreenSaverAllocInfo();
+
+        window_dim.x = 0;
+        window_dim.y = 0;
+        window_dim.w = 0;
+        window_dim.h = 0;
+
         if (scr.scr < 0) {
                 scr.scr = DefaultScreen(dc->dpy);
         }
+
+        /* window */
+        Window root;
+        XSetWindowAttributes wa;
+
         root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
-
         utf8 = XInternAtom(dc->dpy, "UTF8_STRING", false);
-
-        /* menu geometry */
         font_h = dc->font.height + FONT_HEIGHT_BORDER;
-
         update_screen_info();
 
-        /* menu window */
         wa.override_redirect = true;
         wa.background_pixmap = ParentRelative;
         wa.event_mask =
@@ -1536,11 +1580,14 @@ int main(int argc, char *argv[])
 {
         now = time(&now);
 
+        notification_queue = l_init();
+        notification_history = l_init();
+        displayed_notifications = l_init();
         rules = l_init();
+
         for (int i = 0; i < LENGTH(default_rules); i++) {
                 l_push(rules, &default_rules[i]);
         }
-        scr.scr = monitor;
 
         cmdline_load(argc, argv);
 
@@ -1557,53 +1604,8 @@ int main(int argc, char *argv[])
                 usage(EXIT_SUCCESS);
         }
 
-        dc = initdc();
-
-        init_shortcut(&close_ks);
-        init_shortcut(&close_all_ks);
-        init_shortcut(&history_ks);
-
-
-        if (geom[0] == '-') {
-                geometry.negative_width = true;
-                geom++;
-        } else {
-                geometry.negative_width = false;
-        }
-
-        geometry.mask = XParseGeometry(geom,
-                                       &geometry.x, &geometry.y,
-                                       &geometry.w, &geometry.h);
-
-
-        screensaver_info = XScreenSaverAllocInfo();
 
         initdbus();
-        initfont(dc, font);
-
-        grab_key(&close_ks);
-        ungrab_key(&close_ks);
-        grab_key(&close_all_ks);
-        ungrab_key(&close_all_ks);
-        grab_key(&history_ks);
-        ungrab_key(&history_ks);
-
-        colors[LOW] = initcolor(dc, lowfgcolor, lowbgcolor);
-        colors[NORM] = initcolor(dc, normfgcolor, normbgcolor);
-        colors[CRIT] = initcolor(dc, critfgcolor, critbgcolor);
-
-        color_strings[ColFG][LOW] = lowfgcolor;
-        color_strings[ColFG][NORM] = normfgcolor;
-        color_strings[ColFG][CRIT] = critfgcolor;
-
-        color_strings[ColBG][LOW] = lowbgcolor;
-        color_strings[ColBG][NORM] = normbgcolor;
-        color_strings[ColBG][CRIT] = critbgcolor;
-
-        window_dim.x = 0;
-        window_dim.y = 0;
-        window_dim.w = 0;
-        window_dim.h = 0;
         setup();
 
         if (deprecated_mod)
