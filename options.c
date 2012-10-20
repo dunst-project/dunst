@@ -38,7 +38,7 @@ static int cmdline_argc;
 static char **cmdline_argv;
 
 static char *usage_str = NULL;
-static void cmdline_usage_append(char *key, char *type);
+static void cmdline_usage_append(char *key, char *type, char *description);
 
 static int cmdline_find_option(char *key);
 
@@ -307,46 +307,56 @@ int cmdline_find_option(char *key)
         return -1;
 }
 
-char *cmdline_get_string(char *key, char *def)
+static char *cmdline_get_value(char *key)
 {
-        cmdline_usage_append(key, "string");
         int idx = cmdline_find_option(key);
         if (idx < 0) {
-                return def;
+                return NULL;
         }
 
         if (idx + 1 >= cmdline_argc || cmdline_argv[idx+1][0] == '-') {
                 /* the argument is missing */
                 fprintf(stderr, "Warning: %s, missing argument. Ignoring\n", key);
-                return def;
+                return NULL;
         }
-
         return cmdline_argv[idx+1];
 }
 
-int cmdline_get_int(char *key, int def)
+char *cmdline_get_string(char *key, char *def, char *description)
 {
-        cmdline_usage_append(key, "double");
-        char *str = cmdline_get_string(key, NULL);
+        cmdline_usage_append(key, "string", description);
+        char *str = cmdline_get_value(key);
+
+        if (str)
+                return str;
+        else
+                return def;
+}
+
+int cmdline_get_int(char *key, int def, char *description)
+{
+        cmdline_usage_append(key, "double", description);
+        char *str = cmdline_get_value(key);
+
         if (str == NULL)
                 return def;
         else
                 return atoi(str);
 }
 
-double cmdline_get_double(char *key, double def)
+double cmdline_get_double(char *key, double def, char *description)
 {
-        cmdline_usage_append(key, "double");
-        char *str = cmdline_get_string(key, NULL);
+        cmdline_usage_append(key, "double", description);
+        char *str = cmdline_get_value(key);
         if (str == NULL)
                 return def;
         else
                 return atof(str);
 }
 
-int cmdline_get_bool(char *key, int def)
+int cmdline_get_bool(char *key, int def, char *description)
 {
-        cmdline_usage_append(key, "");
+        cmdline_usage_append(key, "", description);
         int idx = cmdline_find_option(key);
         if (idx > 0)
                 return true;
@@ -354,12 +364,12 @@ int cmdline_get_bool(char *key, int def)
                 return def;
 }
 
-char *option_get_string(char *ini_section, char *ini_key, char *cmdline_key, char *def)
+char *option_get_string(char *ini_section, char *ini_key, char *cmdline_key, char *def, char *description)
 {
         char *val = NULL;
 
         if (cmdline_key) {
-                val = cmdline_get_string(cmdline_key, NULL);
+                val = cmdline_get_string(cmdline_key, NULL, description);
         }
 
         if (val) {
@@ -370,48 +380,38 @@ char *option_get_string(char *ini_section, char *ini_key, char *cmdline_key, cha
 
 }
 
-int option_get_int(char *ini_section, char *ini_key, char *cmdline_key, int def)
+int option_get_int(char *ini_section, char *ini_key, char *cmdline_key, int def, char *description)
 {
-        /* we have to get this twice in order to check wether the actual value
-         * is the same as the first default value
-         */
-        int val, val2;
-        if (cmdline_key) {
-                val = cmdline_get_int(cmdline_key, 1);
-                val2 = cmdline_get_int(cmdline_key, 0);
-        }
+        /* *str is only used to check wether the cmdline option is actually set. */
+        char *str = cmdline_get_value(cmdline_key);
 
-        if (cmdline_key && val == val2) {
-                /* the cmdline option has been set */
-                return val;
-        } else {
+        /* we call cmdline_get_int even when the option isn't set in order to
+         * add the usage info */
+        int val = cmdline_get_int(cmdline_key, def, description);
+
+        if (!str)
                 return ini_get_int(ini_section, ini_key, def);
-        }
-}
-
-double option_get_double(char *ini_section, char *ini_key, char *cmdline_key, double def)
-{
-        /* see option_get_int */
-        double val, val2;
-        if (cmdline_key) {
-                val = cmdline_get_double(cmdline_key, 1);
-                val2 = cmdline_get_double(cmdline_key, 0);
-        }
-
-        if (cmdline_key && val == val2) {
+        else
                 return val;
-        } else {
-                return ini_get_double(ini_section, ini_key, def);
-        }
-
 }
 
-int option_get_bool(char *ini_section, char *ini_key, char *cmdline_key, int def)
+double option_get_double(char *ini_section, char *ini_key, char *cmdline_key, double def, char *description)
+{
+        char *str = cmdline_get_value(cmdline_key);
+        double val = cmdline_get_double(cmdline_key, def, description);
+
+        if (!str)
+                return ini_get_int(ini_section, ini_key, def);
+        else
+                return val;
+}
+
+int option_get_bool(char *ini_section, char *ini_key, char *cmdline_key, int def, char *description)
 {
         int val;
 
         if (cmdline_key)
-                val = cmdline_get_bool(cmdline_key, false);
+                val = cmdline_get_bool(cmdline_key, false, description);
 
         if (cmdline_key && val) {
                 /* this can only be true if the value has been set,
@@ -422,24 +422,23 @@ int option_get_bool(char *ini_section, char *ini_key, char *cmdline_key, int def
         return ini_get_bool(ini_section, ini_key, def);
 }
 
-void cmdline_usage_append(char *key, char *type)
+void cmdline_usage_append(char *key, char *type, char *description)
 {
-        static int add_linebreak = 2;
-
+        char *key_type;
+        if (type && strlen(type) > 0)
+                asprintf(&key_type, "%s (%s)", key, type);
+        else
+                asprintf(&key_type, "%s", key);
 
         if (!usage_str) {
-                asprintf(&usage_str, "[%s %s]", key, type);
+                asprintf(&usage_str, "%-40s - %s\n", key_type, description);
+                free(key_type);
                 return;
         }
 
         char *tmp;
-        add_linebreak--;
-        if (add_linebreak == 0) {
-                asprintf(&tmp, "%s[%s %s]\n", usage_str, key, type);
-                add_linebreak = 3;
-        } else {
-                asprintf(&tmp, "%s[%s %s] ", usage_str, key, type);
-        }
+        asprintf(&tmp, "%s%-40s - %s\n", usage_str, key_type, description);
+        free(key_type);
 
         free(usage_str);
         usage_str = tmp;

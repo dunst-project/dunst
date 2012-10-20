@@ -13,16 +13,16 @@ void free_ini(void);
 
 void cmdline_load(int argc, char *argv[]);
 /* for all cmdline_get_* key can be either "-key" or "-key/-longkey" */
-char *cmdline_get_string(char *key, char *def);
-int cmdline_get_int(char *key, int def);
-double cmdline_get_double(char *key, double def);
-int cmdline_get_bool(char *key, int def);
+char *cmdline_get_string(char *key, char *def, char *description);
+int cmdline_get_int(char *key, int def, char *description);
+double cmdline_get_double(char *key, double def, char *description);
+int cmdline_get_bool(char *key, int def, char *description);
 char *cmdline_create_usage(void);
 
-char *option_get_string(char *ini_section, char *ini_key, char *cmdline_key, char *def);
-int option_get_int(char *ini_section, char *ini_key, char *cmdline_key, int def);
-double option_get_double(char *ini_section, char *ini_key, char *cmdline_key, double def);
-int option_get_bool(char *ini_section, char *ini_key, char *cmdline_key, int def);
+char *option_get_string(char *ini_section, char *ini_key, char *cmdline_key, char *def, char *description);
+int option_get_int(char *ini_section, char *ini_key, char *cmdline_key, int def, char *description);
+double option_get_double(char *ini_section, char *ini_key, char *cmdline_key, double def, char *description);
+int option_get_bool(char *ini_section, char *ini_key, char *cmdline_key, int def, char *description);
 
 /* returns the next known section.
  * if section == NULL returns first section.

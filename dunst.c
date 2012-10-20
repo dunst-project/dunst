@@ -1399,24 +1399,24 @@ void load_options(char *cmdline_config_path)
         load_ini_file(config_file);
 #endif
 
-        font = option_get_string("global", "font", "-fn", font);
-        format = option_get_string("global", "format", "-format", format);
-        sort = option_get_bool("global", "sort", "-sort", sort);
-        indicate_hidden = option_get_bool("global", "indicate_hidden", "-indicate_hidden", indicate_hidden);
-        word_wrap = option_get_bool("global", "word_wrap", "-word_wrap", word_wrap);
-        idle_threshold = option_get_int("global", "idle_threshold", "-idle_threshold", idle_threshold);
-        monitor = option_get_int("global", "monitor", "-mon", monitor);
+        font = option_get_string("global", "font", "-fn", font, "The font dunst should use.");
+        format = option_get_string("global", "format", "-format", format, "The format template for the notifictions");
+        sort = option_get_bool("global", "sort", "-sort", sort, "Sort notifications by urgency and date?");
+        indicate_hidden = option_get_bool("global", "indicate_hidden", "-indicate_hidden", indicate_hidden, "Show how many notificaitons are hidden?");
+        word_wrap = option_get_bool("global", "word_wrap", "-word_wrap", word_wrap, "Truncating long lines or do word wrap");
+        idle_threshold = option_get_int("global", "idle_threshold", "-idle_threshold", idle_threshold, "Don't timeout notifications if user is longer idle than threshold");
+        monitor = option_get_int("global", "monitor", "-mon", monitor, "On which monitor should the notifications be displayed");
         {
-                char *c = option_get_string("global", "follow", "-follow", "");
+                char *c = option_get_string("global", "follow", "-follow", "", "Follow mouse, keyboard or none?");
                 if (strlen(c) > 0) {
                         parse_follow_mode(c);
                         free(c);
                 }
         }
-        geom = option_get_string("global", "geometry", "-geom/-geometry", geom);
-        line_height = option_get_int("global", "line_height", "-lh/-line_height", line_height);
+        geom = option_get_string("global", "geometry", "-geom/-geometry", geom, "Geometry for the window");
+        line_height = option_get_int("global", "line_height", "-lh/-line_height", line_height, "Add additional padding above and beneath text");
         {
-                char *c = option_get_string("global", "modifier", NULL, "");
+                char *c = option_get_string("global", "modifier", NULL, "", "");
                 if (strlen(c) > 0) {
                         deprecated_dunstrc_shortcuts = True;
                         KeySym mod = string_to_mask(c);
@@ -1426,12 +1426,12 @@ void load_options(char *cmdline_config_path)
                         free(c);
                 }
         }
-        close_ks.str = option_get_string("global", "key", NULL, close_ks.str);
-        close_all_ks.str = option_get_string("global", "all_key", NULL, close_all_ks.str);
-        history_ks.str = option_get_string("global", "history_key", NULL, history_ks.str);
-        bounce_freq = option_get_double("global", "bounce_freq", "-bounce_freq", bounce_freq);
+        close_ks.str = option_get_string("global", "key", NULL, close_ks.str, "");
+        close_all_ks.str = option_get_string("global", "all_key", NULL, close_all_ks.str, "");
+        history_ks.str = option_get_string("global", "history_key", NULL, history_ks.str, "");
+        bounce_freq = option_get_double("global", "bounce_freq", "-bounce_freq", bounce_freq, "Make long text bounce from side to side");
         {
-                char *c = option_get_string("global", "alignment", "-align/-alignment", "");
+                char *c = option_get_string("global", "alignment", "-align/-alignment", "", "Align notifications left/center/right");
                 if (strlen(c) > 0) {
                         if (strcmp(c, "left") == 0)
                                 align = left;
@@ -1444,12 +1444,12 @@ void load_options(char *cmdline_config_path)
                         free(c);
                 }
         }
-        show_age_threshold = option_get_int("global", "show_age_threshold", "-show_age_threshold", show_age_threshold);
-        sticky_history = option_get_bool("global", "sticky_history", "-sticky_history", sticky_history);
-        separator_height = option_get_int("global", "separator_height", "-sep_height/-separator_height", separator_height);
-        transparency = option_get_int("global", "transparency", "-transparency", transparency);
+        show_age_threshold = option_get_int("global", "show_age_threshold", "-show_age_threshold", show_age_threshold, "When should the age of the notification be displayed?");
+        sticky_history = option_get_bool("global", "sticky_history", "-sticky_history", sticky_history, "Don't timeout notifications popped up from history");
+        separator_height = option_get_int("global", "separator_height", "-sep_height/-separator_height", separator_height, "height of the separator line");
+        transparency = option_get_int("global", "transparency", "-transparency", transparency, "Transparency. range 0-100");
         {
-                char *c = option_get_string("global", "separator_color", "-sep_color/-separator_color", "");
+                char *c = option_get_string("global", "separator_color", "-sep_color/-separator_color", "", "Color of the separator line (or 'auto')");
                 if (strlen(c) > 0) {
                         if (strcmp(c, "auto") == 0)
                                 sep_color = AUTO;
@@ -1461,21 +1461,21 @@ void load_options(char *cmdline_config_path)
                 }
         }
 
-        lowbgcolor = option_get_string("urgency_low", "background", "-lb", lowbgcolor);
-        lowfgcolor = option_get_string("urgency_low", "foreground", "-lf", lowfgcolor);
-        timeouts[LOW] = option_get_int("urgency_low", "timeout", "-lto", timeouts[LOW]);
-        normbgcolor = option_get_string("urgency_normal", "background", "-nb", normbgcolor);
-        normfgcolor = option_get_string("urgency_normal", "foreground", "-nf", normfgcolor);
-        timeouts[NORM] = option_get_int("urgency_normal", "timeout", "-nto", timeouts[NORM]);
-        critbgcolor = option_get_string("urgency_critical", "background", "-cb", critbgcolor);
-        critfgcolor = option_get_string("urgency_critical", "foreground", "-cf", critfgcolor);
-        timeouts[CRIT] = option_get_int("urgency_critical", "timeout", "-cto", timeouts[CRIT]);
+        lowbgcolor = option_get_string("urgency_low", "background", "-lb", lowbgcolor, "Background color for notifcations with low urgency");
+        lowfgcolor = option_get_string("urgency_low", "foreground", "-lf", lowfgcolor, "Foreground color for notifications with low urgency");
+        timeouts[LOW] = option_get_int("urgency_low", "timeout", "-lto", timeouts[LOW], "Timeout for notifications with low urgency");
+        normbgcolor = option_get_string("urgency_normal", "background", "-nb", normbgcolor, "Background color for notifications with normal urgency");
+        normfgcolor = option_get_string("urgency_normal", "foreground", "-nf", normfgcolor, "Foreground color for notifications with normal urgency");
+        timeouts[NORM] = option_get_int("urgency_normal", "timeout", "-nto", timeouts[NORM], "Timeout for notifications with normal urgency");
+        critbgcolor = option_get_string("urgency_critical", "background", "-cb", critbgcolor, "Background color for notifications with critical urgency");
+        critfgcolor = option_get_string("urgency_critical", "foreground", "-cf", critfgcolor, "Foreground color for notifications with ciritical urgency");
+        timeouts[CRIT] = option_get_int("urgency_critical", "timeout", "-cto", timeouts[CRIT], "Timeout for notifications with critical urgency");
 
-        close_ks.str = option_get_string("shortcuts", "close", "-key", close_ks.str);
-        close_all_ks.str = option_get_string("shortcuts", "close_all", "-all_key", close_all_ks.str);
-        history_ks.str = option_get_string("shortcuts", "history", "-history_key", history_ks.str);
+        close_ks.str = option_get_string("shortcuts", "close", "-key", close_ks.str, "Shortcut for closing one notification");
+        close_all_ks.str = option_get_string("shortcuts", "close_all", "-all_key", close_all_ks.str, "Shortcut for closing all notifications");
+        history_ks.str = option_get_string("shortcuts", "history", "-history_key", history_ks.str, "Shortcut to pop the last notification from history");
 
-        print_notifications = cmdline_get_bool("-print", False);
+        print_notifications = cmdline_get_bool("-print", False, "Print notifications to cmdline (DEBUG)");
 
         char *cur_section = NULL;
         for (;;) {
@@ -1544,15 +1544,15 @@ int main(int argc, char *argv[])
         cmdline_load(argc, argv);
 
 
-        if (cmdline_get_bool("-v/-version", False) || cmdline_get_bool("--version", False)) {
+        if (cmdline_get_bool("-v/-version", False, "Print version") || cmdline_get_bool("--version", False, "Print version")) {
                 print_version();
         }
 
         char *cmdline_config_path;
-        cmdline_config_path = cmdline_get_string("-conf/-config", NULL);
+        cmdline_config_path = cmdline_get_string("-conf/-config", NULL, "Path to configuration file");
         load_options(cmdline_config_path);
 
-        if (cmdline_get_bool("-h/-help", False) || cmdline_get_bool("--help", False)) {
+        if (cmdline_get_bool("-h/-help", False, "Print help") || cmdline_get_bool("--help", False, "Print help")) {
                 usage(EXIT_SUCCESS);
         }
 
