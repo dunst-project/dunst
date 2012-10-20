@@ -269,6 +269,9 @@ void cmdline_load(int argc, char *argv[])
 
 int cmdline_find_option(char *key)
 {
+        if (!key) {
+                return -1;
+        }
         char *key1 = strdup(key);
         char *key2 = strstr(key1, "/");
 
@@ -344,7 +347,12 @@ int cmdline_get_bool(char *key, int def)
 
 char *option_get_string(char *ini_section, char *ini_key, char *cmdline_key, char *def)
 {
-        char *val = cmdline_get_string(cmdline_key, NULL);
+        char *val = NULL;
+
+        if (cmdline_key) {
+                val = cmdline_get_string(cmdline_key, NULL);
+        }
+
         if (val) {
                 return val;
         } else {
@@ -358,10 +366,13 @@ int option_get_int(char *ini_section, char *ini_key, char *cmdline_key, int def)
         /* we have to get this twice in order to check wether the actual value
          * is the same as the first default value
          */
-        int val = cmdline_get_int(cmdline_key, 1);
-        int val2 = cmdline_get_int(cmdline_key, 0);
+        int val, val2;
+        if (cmdline_key) {
+                val = cmdline_get_int(cmdline_key, 1);
+                val2 = cmdline_get_int(cmdline_key, 0);
+        }
 
-        if (val == val2) {
+        if (cmdline_key && val == val2) {
                 /* the cmdline option has been set */
                 return val;
         } else {
@@ -372,10 +383,13 @@ int option_get_int(char *ini_section, char *ini_key, char *cmdline_key, int def)
 double option_get_double(char *ini_section, char *ini_key, char *cmdline_key, double def)
 {
         /* see option_get_int */
-        double val = cmdline_get_double(cmdline_key, 1);
-        double val2 = cmdline_get_double(cmdline_key, 0);
+        double val, val2;
+        if (cmdline_key) {
+                val = cmdline_get_double(cmdline_key, 1);
+                val2 = cmdline_get_double(cmdline_key, 0);
+        }
 
-        if (val == val2) {
+        if (cmdline_key && val == val2) {
                 return val;
         } else {
                 return ini_get_double(ini_section, ini_key, def);
@@ -385,9 +399,12 @@ double option_get_double(char *ini_section, char *ini_key, char *cmdline_key, do
 
 int option_get_bool(char *ini_section, char *ini_key, char *cmdline_key, int def)
 {
-        int val = cmdline_get_bool(cmdline_key, false);
+        int val;
 
-        if (val) {
+        if (cmdline_key)
+                val = cmdline_get_bool(cmdline_key, false);
+
+        if (cmdline_key && val) {
                 /* this can only be true if the value has been set,
                  * so we can return */
                 return true;
