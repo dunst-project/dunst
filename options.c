@@ -32,6 +32,11 @@ static void add_entry(char *section_name, char *key, char *value);
 static char *get_value(char *section, char *key);
 static char *clean_value(char *value);
 
+static int cmdline_argc;
+static char **cmdline_argv;
+
+static int cmdline_find_option(char *key);
+
 section_t *new_section(char *name)
 {
         section_count++;
@@ -255,4 +260,140 @@ int load_ini_file(FILE *fp)
                 free(current_section);
         return 0;
 }
+
+void cmdline_load(int argc, char *argv[])
+{
+        cmdline_argc = argc;
+        cmdline_argv = argv;
+}
+
+int cmdline_find_option(char *key)
+{
+        char *key1 = strdup(key);
+        char *key2 = strstr(key1, "/");
+
+        if (key2) {
+                *key2 = '\0';
+                key2++;
+        }
+
+        /* look for first key */
+        for (int i = 0; i < cmdline_argc; i++) {
+                if (strcmp(key1, cmdline_argv[i]) == 0) {
+                        free(key1);
+                        return i;
+                }
+        }
+
+        /* look for second key if one was specified */
+        if (key2) {
+                for (int i = 0; i < cmdline_argc; i++) {
+                        if (strcmp(key2, cmdline_argv[i]) == 0) {
+                                free(key1);
+                                return i;
+                        }
+                }
+        }
+
+        free(key1);
+        return -1;
+}
+
+char *cmdline_get_string(char *key, char *def)
+{
+        int idx = cmdline_find_option(key);
+        if (idx == 0) {
+                return def;
+        }
+
+        if (idx + 1 <= cmdline_argc || cmdline_argv[idx+1][0] == '-') {
+                /* the argument is missing */
+                fprintf(stderr, "Warning: %s, missing argument. Ignoring", key);
+                return def;
+        }
+
+        return cmdline_argv[idx+1];
+}
+
+int cmdline_get_int(char *key, int def)
+{
+        char *str = cmdline_get_string(key, NULL);
+        if (str == NULL)
+                return def;
+        else
+                return atoi(str);
+}
+
+double cmdline_get_double(char *key, double def)
+{
+        char *str = cmdline_get_string(key, NULL);
+        if (str == NULL)
+                return def;
+        else
+                return atof(str);
+}
+
+int cmdline_get_bool(char *key, int def)
+{
+        int idx = cmdline_find_option(key);
+        if (idx > 0)
+                return true;
+        else
+                return def;
+}
+
+char *option_get_string(char *ini_section, char *ini_key, char *cmdline_key, char *def)
+{
+        char *val = cmdline_get_string(cmdline_key, NULL);
+        if (val) {
+                return val;
+        } else {
+                return ini_get_string(ini_section, ini_key, def);
+        }
+
+}
+
+int option_get_int(char *ini_section, char *ini_key, char *cmdline_key, int def)
+{
+        /* we have to get this twice in order to check wether the actual value
+         * is the same as the first default value
+         */
+        int val = cmdline_get_int(cmdline_key, 1);
+        int val2 = cmdline_get_int(cmdline_key, 0);
+
+        if (val == val2) {
+                /* the cmdline option has been set */
+                return val;
+        } else {
+                return ini_get_int(ini_section, ini_key, def);
+        }
+}
+
+double option_get_double(char *ini_section, char *ini_key, char *cmdline_key, double def)
+{
+        /* see option_get_int */
+        double val = cmdline_get_double(cmdline_key, 1);
+        double val2 = cmdline_get_double(cmdline_key, 0);
+
+        if (val == val2) {
+                return val;
+        } else {
+                return ini_get_double(ini_section, ini_key, def);
+        }
+
+}
+
+int option_get_bool(char *ini_section, char *ini_key, char *cmdline_key, int def)
+{
+        int val = cmdline_get_bool(cmdline_key, false);
+
+        if (val) {
+                /* this can only be true if the value has been set,
+                 * so we can return */
+                return true;
+        }
+
+        return ini_get_bool(ini_section, ini_key, def);
+}
+
 /* vim: set ts=8 sw=8 tw=0: */
