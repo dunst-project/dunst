@@ -1369,6 +1369,7 @@ static rule_t *dunst_rules_find_or_create(const char *section)
 void load_options(char *cmdline_config_path)
 {
 
+#ifndef STATIC_CONFIG
         xdgHandle xdg;
         FILE *config_file = NULL;
 
@@ -1392,6 +1393,7 @@ void load_options(char *cmdline_config_path)
         }
 
         load_ini_file(config_file);
+#endif
 
         font = option_get_string("global", "font", "-fn", font);
         format = option_get_string("global", "format", "-format", format);
@@ -1517,9 +1519,11 @@ void load_options(char *cmdline_config_path)
                                 cur_section, "format", current_rule->format);
         }
 
+#ifndef STATIC_CONFIG
         fclose(config_file);
         free_ini();
         xdgWipeHandle(&xdg);
+#endif
 }
 
 
@@ -1540,12 +1544,8 @@ int main(int argc, char *argv[])
                 print_version();
         }
 
-#ifndef STATIC_CONFIG
         char *cmdline_config_path;
         cmdline_config_path = cmdline_get_string("-conf/-config", NULL);
-#else
-        cmdline_config_path = NULL;
-#endif
         load_options(cmdline_config_path);
 
         if (cmdline_get_bool("-h/-help", False) || cmdline_get_bool("--help", False)) {

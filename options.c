@@ -25,7 +25,7 @@ typedef struct _section_t {
 
 
 
-static int section_count;
+static int section_count = 0;
 static section_t *sections;
 
 static section_t *new_section(char *name);
