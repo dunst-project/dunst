@@ -20,7 +20,7 @@ static void _extract_basic(int type, DBusMessageIter * iter, void *target)
 }
 
 static void
-_extract_hint(const char *name, const char *hint_name,
+_extract_hint(int type, const char *name, const char *hint_name,
               DBusMessageIter * hint, void *target)
 {
 
@@ -30,7 +30,7 @@ _extract_hint(const char *name, const char *hint_name,
                 dbus_message_iter_next(hint);
                 dbus_message_iter_recurse(hint, &hint_value);
                 do {
-                        dbus_message_iter_get_basic(&hint_value, target);
+                        _extract_basic(type, &hint_value, target);
                 } while (dbus_message_iter_next(hint));
         }
 }
@@ -296,6 +296,7 @@ void notify(DBusMessage * dmsg)
         const char *fgcolor = NULL;
         const char *bgcolor = NULL;
         int urgency = 1;
+        int progress = -1;
         notification *n = malloc(sizeof(notification));
         dbus_uint32_t replaces_id = 0;
         dbus_int32_t expires = -1;
@@ -335,9 +336,11 @@ void notify(DBusMessage * dmsg)
                                 continue;
                         }
                         dbus_message_iter_get_basic(&hint, &hint_name);
-                        _extract_hint("urgency", hint_name, &hint, &urgency);
-                        _extract_hint("fgcolor", hint_name, &hint, &fgcolor);
-                        _extract_hint("bgcolor", hint_name, &hint, &bgcolor);
+                        _extract_hint(DBUS_TYPE_BYTE, "urgency", hint_name, &hint, &urgency);
+                        _extract_hint(DBUS_TYPE_STRING, "fgcolor", hint_name, &hint, &fgcolor);
+                        _extract_hint(DBUS_TYPE_STRING, "bgcolor", hint_name, &hint, &bgcolor);
+                        _extract_hint(DBUS_TYPE_INT32, "value", hint_name, &hint, &progress);
+                        if (!progress) _extract_hint(DBUS_TYPE_UINT32, "value", hint_name, &hint, &progress);
                         dbus_message_iter_next(&hint);
                 }
                 dbus_message_iter_next(&hints);
@@ -355,6 +358,7 @@ void notify(DBusMessage * dmsg)
         n->body = body != NULL ? strdup(body) : "";
         n->icon = icon != NULL ? strdup(icon) : "";
         n->timeout = expires;
+        n->progress = (progress < 0 || progress > 100) ? 0 : progress+1;
         n->urgency = urgency;
         n->dbus_client = strdup(dbus_message_get_sender(dmsg));
         for (i = 0; i < ColLast; i++) {

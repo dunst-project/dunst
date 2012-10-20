@@ -7,6 +7,7 @@
     #   %b  body
     #   %i  iconname (including its path)
     #   %I  iconname (without its path)
+    #   %p  progress value if set ([  0%] to [100%]) or nothing
     format = "%s %b"
 
     # Sort messages by urgency

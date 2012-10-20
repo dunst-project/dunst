@@ -33,7 +33,6 @@ typedef struct _screen_info {
 typedef struct _draw_txt {
         char *txt;
         int line_count;
-        int bufsize;
 } draw_txt;
 
 typedef struct _notification {
@@ -54,6 +53,7 @@ typedef struct _notification {
         int dup_count;
         ColorSet *colors;
         char *color_strings[2];
+        int progress;           /* percentage + 1, 0 to hide */
 } notification;
 
 typedef struct _notification_buffer {
