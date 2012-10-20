@@ -29,9 +29,7 @@
 #include "list.h"
 #include "utils.h"
 
-#ifndef STATIC_CONFIG
 #include "options.h"
-#endif
 
 #define INRECT(x,y,rx,ry,rw,rh) ((x) >= (rx) && (x) < (rx)+(rw) && (y) >= (ry) && (y) < (ry)+(rh))
 #define LENGTH(X)               (sizeof X / sizeof X[0])
@@ -1347,145 +1345,6 @@ void parse_follow_mode(const char *mode)
 
 }
 
-void parse_cmdline(int argc, char *argv[])
-{
-        int c;
-        while (1) {
-                static struct option long_options[] = {
-                        {"help", no_argument, NULL, 'h'},
-                        {"fn", required_argument, NULL, 'F'},
-                        {"nb", required_argument, NULL, 'n'},
-                        {"nf", required_argument, NULL, 'N'},
-                        {"lb", required_argument, NULL, 'l'},
-                        {"lf", required_argument, NULL, 'L'},
-                        {"cb", required_argument, NULL, 'c'},
-                        {"cf", required_argument, NULL, 'C'},
-                        {"to", required_argument, NULL, 't'},
-                        {"lto", required_argument, NULL, '0'},
-                        {"nto", required_argument, NULL, '1'},
-                        {"cto", required_argument, NULL, '2'},
-                        {"format", required_argument, NULL, 'f'},
-                        {"key", required_argument, NULL, 'k'},
-                        {"history_key", required_argument, NULL, 'K'},
-                        {"all_key", required_argument, NULL, 'A'},
-                        {"geometry", required_argument, NULL, 'g'},
-                        {"config", required_argument, NULL, 'r'},
-                        {"mod", required_argument, NULL, 'M'},
-                        {"mon", required_argument, NULL, 'm'},
-                        {"ns", no_argument, NULL, 'x'},
-                        {"follow", required_argument, NULL, 'o'},
-                        {"line_height", required_argument, NULL, 'H'},
-                        {"lh", required_argument, NULL, 'H'},
-                        {"print", no_argument, NULL, 'V'},
-                        {"version", no_argument, NULL, 'v'},
-                        {0, 0, 0, 0}
-                };
-
-                int option_index = 0;
-
-                c = getopt_long_only(argc, argv, "bhsv", long_options,
-                                     &option_index);
-
-                if (c == -1) {
-                        break;
-                }
-
-                KeySym mod = 0;
-                switch (c) {
-                case 0:
-                        break;
-                case 'h':
-                        usage(EXIT_SUCCESS);
-                        break;
-                case 'F':
-                        font = optarg;
-                        break;
-                case 'n':
-                        normbgcolor = optarg;
-                        break;
-                case 'N':
-                        normfgcolor = optarg;
-                        break;
-                case 'l':
-                        lowbgcolor = optarg;
-                        break;
-                case 'L':
-                        lowfgcolor = optarg;
-                        break;
-                case 'c':
-                        critbgcolor = optarg;
-                        break;
-                case 'C':
-                        critfgcolor = optarg;
-                        break;
-                case 't':
-                        timeouts[0] = atoi(optarg);
-                        timeouts[1] = timeouts[0];
-                        break;
-                case '0':
-                        timeouts[0] = atoi(optarg);
-                        break;
-                case '1':
-                        timeouts[1] = atoi(optarg);
-                        break;
-                case '2':
-                        timeouts[2] = atoi(optarg);
-                        break;
-                case 'm':
-                        scr.scr = atoi(optarg);
-                        break;
-                case 'f':
-                        format = optarg;
-                        break;
-                case 'M':
-                        deprecated_mod = True;
-                        mod = string_to_mask(optarg);
-                        close_ks.mask = mod;
-                        close_all_ks.mask = mod;
-                        history_ks.mask = mod;
-                        break;
-                case 'k':
-                        close_ks.str = optarg;
-                        break;
-                case 'K':
-                        history_ks.str = optarg;
-                        break;
-                case 'A':
-                        close_all_ks.str = optarg;
-                        break;
-                case 'g':
-                        geom = optarg;
-                        break;
-                case 's':
-                        sort = True;
-                        break;
-                case 'r':
-                        /* this option is parsed elsewhere. This is just to supress
-                         * error message */
-                        break;
-                case 'x':
-                        sort = False;
-                        break;
-                case 'o':
-                        parse_follow_mode(optarg);
-                        break;
-                case 'H':
-                        line_height = atoi(optarg);
-                        break;
-                case 'v':
-                        print_version();
-                        break;
-                case 'V':
-                        print_notifications = True;
-                        break;
-                default:
-                        usage(EXIT_FAILURE);
-                        break;
-                }
-        }
-}
-
-#ifndef STATIC_CONFIG
 static rule_t *dunst_rules_find_or_create(const char *section)
 {
         l_node *iter;
@@ -1507,7 +1366,7 @@ static rule_t *dunst_rules_find_or_create(const char *section)
         return rule;
 }
 
-void parse_dunstrc(char *cmdline_config_path)
+void load_options(char *cmdline_config_path)
 {
 
         xdgHandle xdg;
@@ -1534,24 +1393,24 @@ void parse_dunstrc(char *cmdline_config_path)
 
         load_ini_file(config_file);
 
-        font = ini_get_string("global", "font", font);
-        format = ini_get_string("global", "format", format);
-        sort = ini_get_bool("global", "sort", sort);
-        indicate_hidden = ini_get_bool("global", "indicate_hidden", indicate_hidden);
-        word_wrap = ini_get_bool("global", "word_wrap", word_wrap);
-        idle_threshold = ini_get_int("global", "idle_threshold", idle_threshold);
-        monitor = ini_get_int("global", "monitor", monitor);
+        font = option_get_string("global", "font", "-fn", font);
+        format = option_get_string("global", "format", "-format", format);
+        sort = option_get_bool("global", "sort", "-sort", sort);
+        indicate_hidden = option_get_bool("global", "indicate_hidden", "-indicate_hidden", indicate_hidden);
+        word_wrap = option_get_bool("global", "word_wrap", "-word_wrap", word_wrap);
+        idle_threshold = option_get_int("global", "idle_threshold", "-idle_threshold", idle_threshold);
+        monitor = option_get_int("global", "monitor", "-mon", monitor);
         {
-                char *c = ini_get_string("global", "follow", "");
+                char *c = option_get_string("global", "follow", "-follow", "");
                 if (strlen(c) > 0) {
                         parse_follow_mode(c);
                         free(c);
                 }
         }
-        geom = ini_get_string("global", "geometry", geom);
-        line_height = ini_get_int("global", "line_height", line_height);
+        geom = option_get_string("global", "geometry", "-geom/-geometry", geom);
+        line_height = option_get_int("global", "line_height", "-lh/-line_height", line_height);
         {
-                char *c = ini_get_string("global", "modifier", "");
+                char *c = option_get_string("global", "modifier", NULL, "");
                 if (strlen(c) > 0) {
                         deprecated_dunstrc_shortcuts = True;
                         KeySym mod = string_to_mask(c);
@@ -1561,12 +1420,12 @@ void parse_dunstrc(char *cmdline_config_path)
                         free(c);
                 }
         }
-        close_ks.str = ini_get_string("global", "key", close_ks.str);
-        close_all_ks.str = ini_get_string("global", "key", close_all_ks.str);
-        history_ks.str = ini_get_string("global", "key", history_ks.str);
-        bounce_freq = ini_get_double("global", "bounce_freq", bounce_freq);
+        close_ks.str = option_get_string("global", "key", NULL, close_ks.str);
+        close_all_ks.str = option_get_string("global", "all_key", NULL, close_all_ks.str);
+        history_ks.str = option_get_string("global", "history_key", NULL, history_ks.str);
+        bounce_freq = option_get_double("global", "bounce_freq", "-bounce_freq", bounce_freq);
         {
-                char *c = ini_get_string("global", "alignment", "");
+                char *c = option_get_string("global", "alignment", "-align/-alignment", "");
                 if (strlen(c) > 0) {
                         if (strcmp(c, "left") == 0)
                                 align = left;
@@ -1579,12 +1438,12 @@ void parse_dunstrc(char *cmdline_config_path)
                         free(c);
                 }
         }
-        show_age_threshold = ini_get_int("global", "show_age_threshold", show_age_threshold);
-        sticky_history = ini_get_bool("global", "sticky_history", sticky_history);
-        separator_height = ini_get_int("global", "separator_height", separator_height);
-        transparency = ini_get_int("global", "transparency", transparency);
+        show_age_threshold = option_get_int("global", "show_age_threshold", "-show_age_threshold", show_age_threshold);
+        sticky_history = option_get_bool("global", "sticky_history", "-sticky_history", sticky_history);
+        separator_height = option_get_int("global", "separator_height", "-sep_height/-separator_height", separator_height);
+        transparency = option_get_int("global", "transparency", "-transparency", transparency);
         {
-                char *c = ini_get_string("global", "separator_color", "");
+                char *c = option_get_string("global", "separator_color", "-sep_color/-separator_color", "");
                 if (strlen(c) > 0) {
                         if (strcmp(c, "auto") == 0)
                                 sep_color = AUTO;
@@ -1596,20 +1455,21 @@ void parse_dunstrc(char *cmdline_config_path)
                 }
         }
 
-        lowbgcolor = ini_get_string("urgency_low", "background", lowbgcolor);
-        lowfgcolor = ini_get_string("urgency_low", "foreground", lowfgcolor);
-        timeouts[LOW] = ini_get_int("urgency_low", "timeout", timeouts[LOW]);
-        normbgcolor = ini_get_string("urgency_normal", "background", normbgcolor);
-        normfgcolor = ini_get_string("urgency_normal", "foreground", normfgcolor);
-        timeouts[NORM] = ini_get_int("urgency_normal", "timeout", timeouts[NORM]);
-        critbgcolor = ini_get_string("urgency_critical", "background", critbgcolor);
-        critfgcolor = ini_get_string("urgency_critical", "foreground", critfgcolor);
-        timeouts[CRIT] = ini_get_int("urgency_critical", "timeout", timeouts[CRIT]);
+        lowbgcolor = option_get_string("urgency_low", "background", "-lb", lowbgcolor);
+        lowfgcolor = option_get_string("urgency_low", "foreground", "-lf", lowfgcolor);
+        timeouts[LOW] = option_get_int("urgency_low", "timeout", "-lto", timeouts[LOW]);
+        normbgcolor = option_get_string("urgency_normal", "background", "-nb", normbgcolor);
+        normfgcolor = option_get_string("urgency_normal", "foreground", "-nf", normfgcolor);
+        timeouts[NORM] = option_get_int("urgency_normal", "timeout", "-nto", timeouts[NORM]);
+        critbgcolor = option_get_string("urgency_critical", "background", "-cb", critbgcolor);
+        critfgcolor = option_get_string("urgency_critical", "foreground", "-cf", critfgcolor);
+        timeouts[CRIT] = option_get_int("urgency_critical", "timeout", "-cto", timeouts[CRIT]);
 
-        close_ks.str = ini_get_string("shortcuts", "close", close_ks.str);
-        close_all_ks.str = ini_get_string("shortcuts", "close_all", close_all_ks.str);
-        history_ks.str = ini_get_string("shortcuts", "history", history_ks.str);
+        close_ks.str = option_get_string("shortcuts", "close", "-key", close_ks.str);
+        close_all_ks.str = option_get_string("shortcuts", "close_all", "-all_key", close_all_ks.str);
+        history_ks.str = option_get_string("shortcuts", "history", "-history_key", history_ks.str);
 
+        print_notifications = cmdline_get_bool("print", False);
 
         char *cur_section = NULL;
         for (;;) {
@@ -1663,21 +1523,6 @@ void parse_dunstrc(char *cmdline_config_path)
 }
 
 
-char *parse_cmdline_for_config_file(int argc, char *argv[])
-{
-        for (int i = 0; i < argc; i++) {
-                if (strstr(argv[i], "-config") != 0) {
-                        if (i + 1 == argc) {
-                                printf
-                                    ("Invalid commandline: -config needs argument\n");
-                        }
-                        return argv[++i];
-                }
-        }
-        return NULL;
-}
-#endif                          /* STATIC_CONFIG */
-
 int main(int argc, char *argv[])
 {
         now = time(&now);
@@ -1687,12 +1532,24 @@ int main(int argc, char *argv[])
                 l_push(rules, &default_rules[i]);
         }
         scr.scr = monitor;
+
+        cmdline_load(argc, argv);
+
+        if (cmdline_get_bool("-h/-help", False) || cmdline_get_bool("--help", False)) {
+                usage(EXIT_SUCCESS);
+        }
+
+        if (cmdline_get_bool("-v/-version", False) || cmdline_get_bool("--version", False)) {
+                print_version();
+        }
+
 #ifndef STATIC_CONFIG
         char *cmdline_config_path;
-        cmdline_config_path = parse_cmdline_for_config_file(argc, argv);
-        parse_dunstrc(cmdline_config_path);
+        cmdline_config_path = cmdline_get_string("-conf/-config", NULL);
+#else
+        cmdline_config_path = NULL;
 #endif
-        parse_cmdline(argc, argv);
+        load_options(cmdline_config_path);
         dc = initdc();
 
         init_shortcut(&close_ks);
