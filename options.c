@@ -415,7 +415,7 @@ double option_get_double(char *ini_section, char *ini_key, char *cmdline_key,
 int option_get_bool(char *ini_section, char *ini_key, char *cmdline_key,
                     int def, char *description)
 {
-        int val;
+        int val = false;
 
         if (cmdline_key)
                 val = cmdline_get_bool(cmdline_key, false, description);
