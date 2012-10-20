@@ -112,7 +112,7 @@ int ini_get_int(char *section, char *key, int def)
                 return atoi(value);
 }
 
-double ini_get_double(char *section, char *key, int def)
+double ini_get_double(char *section, char *key, double def)
 {
         char *value = get_value(section, key);
         if (value == NULL)
