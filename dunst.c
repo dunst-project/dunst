@@ -1469,7 +1469,7 @@ void load_options(char *cmdline_config_path)
         close_all_ks.str = option_get_string("shortcuts", "close_all", "-all_key", close_all_ks.str);
         history_ks.str = option_get_string("shortcuts", "history", "-history_key", history_ks.str);
 
-        print_notifications = cmdline_get_bool("print", False);
+        print_notifications = cmdline_get_bool("-print", False);
 
         char *cur_section = NULL;
         for (;;) {
@@ -1535,9 +1535,6 @@ int main(int argc, char *argv[])
 
         cmdline_load(argc, argv);
 
-        if (cmdline_get_bool("-h/-help", False) || cmdline_get_bool("--help", False)) {
-                usage(EXIT_SUCCESS);
-        }
 
         if (cmdline_get_bool("-v/-version", False) || cmdline_get_bool("--version", False)) {
                 print_version();
@@ -1550,6 +1547,11 @@ int main(int argc, char *argv[])
         cmdline_config_path = NULL;
 #endif
         load_options(cmdline_config_path);
+
+        if (cmdline_get_bool("-h/-help", False) || cmdline_get_bool("--help", False)) {
+                usage(EXIT_SUCCESS);
+        }
+
         dc = initdc();
 
         init_shortcut(&close_ks);
@@ -1602,9 +1604,10 @@ int main(int argc, char *argv[])
 
 void usage(int exit_status)
 {
-        fputs
-            ("usage: dunst [-h/--help] [-v] [-geometry geom] [-lh height] [-fn font] [-format fmt]\n[-nb color] [-nf color] [-lb color] [-lf color] [-cb color] [ -cf color]\n[-to secs] [-lto secs] [-cto secs] [-nto secs] [-key key] [-history_key key] [-all_key key] [-mon n]  [-follow none/mouse/keyboard] [-config dunstrc]\n",
-             stderr);
+        fputs("usage:\n", stderr);
+        char *us = cmdline_create_usage();
+        fputs(us, stderr);
+        fputs("\n", stderr);
         exit(exit_status);
 }
 

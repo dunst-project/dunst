@@ -17,6 +17,7 @@ char *cmdline_get_string(char *key, char *def);
 int cmdline_get_int(char *key, int def);
 double cmdline_get_double(char *key, double def);
 int cmdline_get_bool(char *key, int def);
+char *cmdline_create_usage(void);
 
 char *option_get_string(char *ini_section, char *ini_key, char *cmdline_key, char *def);
 int option_get_int(char *ini_section, char *ini_key, char *cmdline_key, int def);

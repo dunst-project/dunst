@@ -1,4 +1,6 @@
 /* copyright 2012 Sascha Kruse and contributors (see LICENSE for licensing information) */
+#define _GNU_SOURCE
+
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -34,6 +36,9 @@ static char *clean_value(char *value);
 
 static int cmdline_argc;
 static char **cmdline_argv;
+
+static char *usage_str = NULL;
+static void cmdline_usage_append(char *key, char *type);
 
 static int cmdline_find_option(char *key);
 
@@ -304,6 +309,7 @@ int cmdline_find_option(char *key)
 
 char *cmdline_get_string(char *key, char *def)
 {
+        cmdline_usage_append(key, "string");
         int idx = cmdline_find_option(key);
         if (idx < 0) {
                 return def;
@@ -320,6 +326,7 @@ char *cmdline_get_string(char *key, char *def)
 
 int cmdline_get_int(char *key, int def)
 {
+        cmdline_usage_append(key, "double");
         char *str = cmdline_get_string(key, NULL);
         if (str == NULL)
                 return def;
@@ -329,6 +336,7 @@ int cmdline_get_int(char *key, int def)
 
 double cmdline_get_double(char *key, double def)
 {
+        cmdline_usage_append(key, "double");
         char *str = cmdline_get_string(key, NULL);
         if (str == NULL)
                 return def;
@@ -338,6 +346,7 @@ double cmdline_get_double(char *key, double def)
 
 int cmdline_get_bool(char *key, int def)
 {
+        cmdline_usage_append(key, "");
         int idx = cmdline_find_option(key);
         if (idx > 0)
                 return true;
@@ -413,4 +422,32 @@ int option_get_bool(char *ini_section, char *ini_key, char *cmdline_key, int def
         return ini_get_bool(ini_section, ini_key, def);
 }
 
+void cmdline_usage_append(char *key, char *type)
+{
+        static int add_linebreak = 2;
+
+
+        if (!usage_str) {
+                asprintf(&usage_str, "[%s %s]", key, type);
+                return;
+        }
+
+        char *tmp;
+        add_linebreak--;
+        if (add_linebreak == 0) {
+                asprintf(&tmp, "%s[%s %s]\n", usage_str, key, type);
+                add_linebreak = 3;
+        } else {
+                asprintf(&tmp, "%s[%s %s] ", usage_str, key, type);
+        }
+
+        free(usage_str);
+        usage_str = tmp;
+
+}
+
+char *cmdline_create_usage(void)
+{
+        return strdup(usage_str);
+}
 /* vim: set ts=8 sw=8 tw=0: */
