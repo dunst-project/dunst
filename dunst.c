@@ -1277,10 +1277,10 @@ void update_screen_info()
 void setup(void)
 {
 
+        /* initialize dc, font, keyboard, colors */
         dc = initdc();
 
         initfont(dc, font);
-
 
         init_shortcut(&close_ks);
         init_shortcut(&close_all_ks);
@@ -1305,8 +1305,8 @@ void setup(void)
         color_strings[ColBG][NORM] = normbgcolor;
         color_strings[ColBG][CRIT] = critbgcolor;
 
-        scr.scr = monitor;
 
+        /* parse and set geometry and monitor position */
         if (geom[0] == '-') {
                 geometry.negative_width = true;
                 geom++;
@@ -1318,19 +1318,19 @@ void setup(void)
                                        &geometry.x, &geometry.y,
                                        &geometry.w, &geometry.h);
 
-
-        screensaver_info = XScreenSaverAllocInfo();
-
         window_dim.x = 0;
         window_dim.y = 0;
         window_dim.w = 0;
         window_dim.h = 0;
 
+        screensaver_info = XScreenSaverAllocInfo();
+
+        scr.scr = monitor;
         if (scr.scr < 0) {
                 scr.scr = DefaultScreen(dc->dpy);
         }
 
-        /* window */
+        /* initialize window */
         Window root;
         XSetWindowAttributes wa;
 
