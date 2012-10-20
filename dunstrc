@@ -43,6 +43,8 @@
     # the window expands to the longest message displayed.
     # A positive x is measured from the left, a negative from the
     # right side of the screen.  Y is measured from the top and down respectevly.
+    # The width can be negative. In this case the actual width is the
+    # screen width minus the width defined in within the geometry option.
     geometry = "0x3-30+20"
 
     # The transparency of the window. range: [0; 100]

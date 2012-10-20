@@ -559,7 +559,11 @@ void draw_win(void)
                 width = 0;
         } else if (geometry.mask & WidthValue) {
                 /* fixed width */
-                width = geometry.w;
+                if (geometry.negative_width) {
+                        width = scr.dim.w - geometry.w;
+                } else {
+                        width = geometry.w;
+                }
         } else {
                 /* across the screen */
                 width = scr.dim.w;
@@ -1559,9 +1563,17 @@ int main(int argc, char *argv[])
         init_shortcut(&history_ks);
 
 
+        if (geom[0] == '-') {
+                geometry.negative_width = True;
+                geom++;
+        } else {
+                geometry.negative_width = False;
+        }
+
         geometry.mask = XParseGeometry(geom,
                                        &geometry.x, &geometry.y,
                                        &geometry.w, &geometry.h);
+
 
         screensaver_info = XScreenSaverAllocInfo();
 
