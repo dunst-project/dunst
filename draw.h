@@ -37,7 +37,7 @@ DEALINGS IN THE SOFTWARE.
 
 typedef struct {
         int x, y, w, h;
-        Bool invert;
+        bool invert;
         Display *dpy;
         GC gc;
         Pixmap canvas;
@@ -59,7 +59,7 @@ typedef struct {
         unsigned long BG;
 } ColorSet;
 
-void drawrect(DC * dc, int x, int y, unsigned int w, unsigned int h, Bool fill,
+void drawrect(DC * dc, int x, int y, unsigned int w, unsigned int h, bool fill,
               unsigned long color);
 void drawtext(DC * dc, const char *text, ColorSet * col);
 void drawtextn(DC * dc, const char *text, size_t n, ColorSet * col);

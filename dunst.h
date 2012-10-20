@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <stdbool.h>
+
 #include "draw.h"
 
 #define LOW 0
@@ -49,7 +51,7 @@ typedef struct _notification {
         time_t timestamp;
         int timeout;
         int urgency;
-        int redisplayed;        /* has been displayed before? */
+        bool redisplayed;        /* has been displayed before? */
         int id;
         int dup_count;
         ColorSet *colors;
@@ -84,7 +86,7 @@ typedef struct _keyboard_shortcut {
         KeyCode code;
         KeySym sym;
         KeySym mask;
-        int is_valid;
+        bool is_valid;
 } keyboard_shortcut;
 
 extern int verbosity;

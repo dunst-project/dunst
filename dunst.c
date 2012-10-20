@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include <fnmatch.h>
 #include <sys/time.h>
@@ -59,20 +60,20 @@ static Atom utf8;
 static DC *dc;
 static Window win;
 static time_t now;
-static int visible = False;
+static bool visible = false;
 static screen_info scr;
 static dimension_t geometry;
 static XScreenSaverInfo *screensaver_info;
 static int font_h;
-static int print_notifications = False;
+static bool print_notifications = false;
 static dimension_t window_dim;
 
-int dunst_grab_errored = False;
+bool dunst_grab_errored = false;
 
 int next_notification_id = 1;
 
-int deprecated_mod = False;
-int deprecated_dunstrc_shortcuts = False;
+bool deprecated_mod = false;
+bool deprecated_dunstrc_shortcuts = false;
 
 /* notification lists */
 list *notification_queue = NULL;        /* all new notifications get into here */
@@ -88,7 +89,7 @@ void handle_mouse_click(XEvent ev);
 void handleXEvents(void);
 void history_pop(void);
 rule_t *initrule(void);
-int is_idle(void);
+bool is_idle(void);
 void run(void);
 void setup(void);
 void update_screen_info();
@@ -121,7 +122,7 @@ static void print_notification(notification *n)
 
 static int GrabXErrorHandler(Display * display, XErrorEvent * e)
 {
-        dunst_grab_errored = True;
+        dunst_grab_errored = true;
         char err_buf[BUFSIZ];
         XGetErrorText(display, e->error_code, err_buf, BUFSIZ);
         fputs(err_buf, stderr);
@@ -136,7 +137,7 @@ static int GrabXErrorHandler(Display * display, XErrorEvent * e)
 
 static void setup_error_handler(void)
 {
-        dunst_grab_errored = False;
+        dunst_grab_errored = false;
 
         XFlush(dc->dpy);
         XSetErrorHandler(GrabXErrorHandler);
@@ -145,7 +146,7 @@ static void setup_error_handler(void)
 static int tear_down_error_handler(void)
 {
         XFlush(dc->dpy);
-        XSync(dc->dpy, False);
+        XSync(dc->dpy, false);
         XSetErrorHandler(NULL);
         return dunst_grab_errored;
 }
@@ -161,11 +162,11 @@ int grab_key(keyboard_shortcut * ks)
 
         if (ks->is_valid)
                 XGrabKey(dc->dpy, ks->code, ks->mask, root,
-                         True, GrabModeAsync, GrabModeAsync);
+                         true, GrabModeAsync, GrabModeAsync);
 
         if (tear_down_error_handler()) {
                 fprintf(stderr, "Unable to grab key \"%s\"\n", ks->str);
-                ks->is_valid = False;
+                ks->is_valid = false;
                 return 1;
         }
         return 0;
@@ -371,7 +372,7 @@ int do_word_wrap(char *source, int max_width)
 
         char *eol = source;
 
-        while (True) {
+        while (true) {
                 if (*eol == '\0')
                         return 1;
                 if (*eol == '\n') {
@@ -656,7 +657,7 @@ void draw_win(void)
 
                         char *line = draw_txt_get_line(&n->draw_txt_buf, i + 1);
                         dc->x = 0;
-                        drawrect(dc, 0, 0, width, line_height, True,
+                        drawrect(dc, 0, 0, width, line_height, true,
                                  n->colors->BG);
 
                         dc->x = calculate_x_offset(width, textw(dc, line));
@@ -674,7 +675,7 @@ void draw_win(void)
                         else
                                 color = n->colors->FG;
 
-                        drawrect(dc, 0, 0, width, separator_height, True, color);
+                        drawrect(dc, 0, 0, width, separator_height, true, color);
                         dc->y += separator_height;
                 }
         }
@@ -682,7 +683,7 @@ void draw_win(void)
         /* draw x_more */
         if (x_more.txt) {
                 dc->x = 0;
-                drawrect(dc, 0, 0, width, line_height, True, last_color->BG);
+                drawrect(dc, 0, 0, width, line_height, true, last_color->BG);
                 dc->x = calculate_x_offset(width, textw(dc, x_more.txt));
                 drawtext(dc, x_more.txt, last_color);
         }
@@ -870,7 +871,7 @@ void history_pop(void)
 
         for (iter = notification_history->head; iter->next; iter = iter->next) ;
         data = (notification *) iter->data;
-        data->redisplayed = True;
+        data->redisplayed = true;
         data->start = 0;
         if (sticky_history) {
                 data->timeout = 0;
@@ -968,7 +969,7 @@ int init_notification(notification * n, int id)
 
         n->timestamp = now;
 
-        n->redisplayed = False;
+        n->redisplayed = false;
 
         if (id == 0) {
                 n->id = ++next_notification_id;
@@ -1063,7 +1064,7 @@ void init_shortcut(keyboard_shortcut * ks)
                 return;
 
         if (!strcmp(ks->str, "none") || (!strcmp(ks->str, ""))) {
-                ks->is_valid = False;
+                ks->is_valid = false;
                 return;
         }
 
@@ -1103,9 +1104,9 @@ void init_shortcut(keyboard_shortcut * ks)
         if (ks->sym == NoSymbol || ks->code == NoSymbol) {
                 fprintf(stderr, "Warning: Unknown keyboard shortcut: %s\n",
                         ks->str);
-                ks->is_valid = False;
+                ks->is_valid = false;
         } else {
-                ks->is_valid = True;
+                ks->is_valid = true;
         }
 
         free(str_begin);
@@ -1128,19 +1129,19 @@ rule_t *initrule(void)
         return r;
 }
 
-int is_idle(void)
+bool is_idle(void)
 {
         XScreenSaverQueryInfo(dc->dpy, DefaultRootWindow(dc->dpy),
                               screensaver_info);
         if (idle_threshold == 0) {
-                return False;
+                return false;
         }
         return screensaver_info->idle / 1000 > idle_threshold;
 }
 
 void run(void)
 {
-        while (True) {
+        while (true) {
                 if (visible) {
                         dbus_poll(50);
                 } else {
@@ -1173,7 +1174,7 @@ void hide_win()
         XUngrabButton(dc->dpy, AnyButton, AnyModifier, win);
         XUnmapWindow(dc->dpy, win);
         XFlush(dc->dpy);
-        visible = False;
+        visible = false;
 }
 
 Window get_focused_window(void)
@@ -1185,10 +1186,10 @@ Window get_focused_window(void)
         unsigned char *prop_return = NULL;
         Window root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
         Atom netactivewindow =
-            XInternAtom(dc->dpy, "_NET_ACTIVE_WINDOW", False);
+            XInternAtom(dc->dpy, "_NET_ACTIVE_WINDOW", false);
 
         XGetWindowProperty(dc->dpy, root, netactivewindow, 0L,
-                           sizeof(Window), False, XA_WINDOW,
+                           sizeof(Window), false, XA_WINDOW,
                            &type, &format, &nitems, &bytes_after, &prop_return);
         if (prop_return) {
                 focused = *(Window *) prop_return;
@@ -1286,7 +1287,7 @@ void setup(void)
         }
         root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
 
-        utf8 = XInternAtom(dc->dpy, "UTF8_STRING", False);
+        utf8 = XInternAtom(dc->dpy, "UTF8_STRING", false);
 
         /* menu geometry */
         font_h = dc->font.height + FONT_HEIGHT_BORDER;
@@ -1294,7 +1295,7 @@ void setup(void)
         update_screen_info();
 
         /* menu window */
-        wa.override_redirect = True;
+        wa.override_redirect = true;
         wa.background_pixmap = ParentRelative;
         wa.event_mask =
             ExposureMask | KeyPressMask | VisibilityChangeMask |
@@ -1321,7 +1322,7 @@ void map_win(void)
         grab_key(&close_ks);
         grab_key(&close_all_ks);
         setup_error_handler();
-        XGrabButton(dc->dpy, AnyButton, AnyModifier, win, False,
+        XGrabButton(dc->dpy, AnyButton, AnyModifier, win, false,
                     BUTTONMASK, GrabModeAsync, GrabModeSync, None, None);
         if (tear_down_error_handler()) {
                 fprintf(stderr, "Unable to grab mouse button(s)\n");
@@ -1331,7 +1332,7 @@ void map_win(void)
         XMapRaised(dc->dpy, win);
         draw_win();
         XFlush(dc->dpy);
-        visible = True;
+        visible = true;
 }
 
 void parse_follow_mode(const char *mode)
@@ -1418,7 +1419,7 @@ void load_options(char *cmdline_config_path)
         {
                 char *c = option_get_string("global", "modifier", NULL, "", "");
                 if (strlen(c) > 0) {
-                        deprecated_dunstrc_shortcuts = True;
+                        deprecated_dunstrc_shortcuts = true;
                         KeySym mod = string_to_mask(c);
                         close_ks.mask = mod;
                         close_all_ks.mask = mod;
@@ -1475,7 +1476,7 @@ void load_options(char *cmdline_config_path)
         close_all_ks.str = option_get_string("shortcuts", "close_all", "-all_key", close_all_ks.str, "Shortcut for closing all notifications");
         history_ks.str = option_get_string("shortcuts", "history", "-history_key", history_ks.str, "Shortcut to pop the last notification from history");
 
-        print_notifications = cmdline_get_bool("-print", False, "Print notifications to cmdline (DEBUG)");
+        print_notifications = cmdline_get_bool("-print", false, "Print notifications to cmdline (DEBUG)");
 
         char *cur_section = NULL;
         for (;;) {
@@ -1544,7 +1545,7 @@ int main(int argc, char *argv[])
         cmdline_load(argc, argv);
 
 
-        if (cmdline_get_bool("-v/-version", False, "Print version") || cmdline_get_bool("--version", False, "Print version")) {
+        if (cmdline_get_bool("-v/-version", false, "Print version") || cmdline_get_bool("--version", false, "Print version")) {
                 print_version();
         }
 
@@ -1552,7 +1553,7 @@ int main(int argc, char *argv[])
         cmdline_config_path = cmdline_get_string("-conf/-config", NULL, "Path to configuration file");
         load_options(cmdline_config_path);
 
-        if (cmdline_get_bool("-h/-help", False, "Print help") || cmdline_get_bool("--help", False, "Print help")) {
+        if (cmdline_get_bool("-h/-help", false, "Print help") || cmdline_get_bool("--help", false, "Print help")) {
                 usage(EXIT_SUCCESS);
         }
 
@@ -1564,10 +1565,10 @@ int main(int argc, char *argv[])
 
 
         if (geom[0] == '-') {
-                geometry.negative_width = True;
+                geometry.negative_width = true;
                 geom++;
         } else {
-                geometry.negative_width = False;
+                geometry.negative_width = false;
         }
 
         geometry.mask = XParseGeometry(geom,
