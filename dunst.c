@@ -41,6 +41,10 @@
 
 #define DEFFONT "Monospace-11"
 
+#ifndef VERSION
+#define VERSION 0
+#endif
+
 #define MSG 1
 #define INFO 2
 #define DEBUG 3
