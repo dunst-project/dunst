@@ -585,8 +585,7 @@ void draw_win(void)
                 height = MAX(geometry.h, (line_cnt * line_height));
         }
 
-        height += (l_length(displayed_notifications) - 1) * separator_height;
-
+        height += (l_length(displayed_notifications) - 1 + 2) * separator_height;
 
         /* add "(x more)" */
         draw_txt x_more;
@@ -601,7 +600,7 @@ void draw_win(void)
                 if (geometry.h != 1) {
                         /* add additional line */
                         x_more.txt = calloc(x_more_len, sizeof(char));
-                        height += line_height;
+                        height += line_height + separator_height;
                         line_cnt++;
 
                         print_to = x_more.txt;
@@ -640,14 +639,29 @@ void draw_win(void)
 
         resizedc(dc, width, height);
 
-        /* draw buffers */
-        dc->y = 0;
         ColorSet *last_color;
+        l_node * iter = displayed_notifications->head;
+        notification *n = (notification*) iter->data;
+
+        dc->y = 0;
+        if (separator_height > 0) {
+                dc->x = 0;
+                double color;
+                if (sep_color == AUTO)
+                        color = calculate_foreground_color(n->colors->BG);
+                else
+                        color = n->colors->FG;
+
+                drawrect(dc, 0, 0, width, separator_height, True, color);
+                dc->y += separator_height;
+        }
+
+        /* draw buffers */
         assert(displayed_notifications->head != NULL);
-        for (l_node * iter = displayed_notifications->head; iter;
+        for (iter = displayed_notifications->head; iter;
              iter = iter->next) {
 
-                notification *n = (notification *) iter->data;
+                n = (notification *) iter->data;
                 last_color = n->colors;
 
                 for (int i = 0; i < n->draw_txt_buf.line_count; i++) {
@@ -665,7 +679,7 @@ void draw_win(void)
 
                 /* draw separator */
                 if (separator_height > 0) {
-                        dc -> x = 0;
+                        dc->x = 0;
                         double color;
                         if (sep_color == AUTO)
                                 color = calculate_foreground_color(n->colors->BG);
@@ -683,6 +697,18 @@ void draw_win(void)
                 drawrect(dc, 0, 0, width, line_height, True, last_color->BG);
                 dc->x = calculate_x_offset(width, textw(dc, x_more.txt));
                 drawtext(dc, x_more.txt, last_color);
+                dc->y += line_height;
+
+                if (separator_height > 0) {
+                        dc->x = 0;
+                        double color;
+                        if (sep_color == AUTO)
+                                color = calculate_foreground_color(n->colors->BG);
+                        else
+                                color = n->colors->FG;
+
+                        drawrect(dc, 0, 0, width, separator_height, True, color);
+                }
         }
 
         /* calculate window position */
