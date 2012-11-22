@@ -86,7 +86,6 @@ list *notification_history = NULL;      /* history of displayed notifications */
 /* misc funtions */
 void apply_rules(notification * n);
 void check_timeouts(void);
-void draw_notifications(void);
 char *fix_markup(char *str);
 void handle_mouse_click(XEvent ev);
 void handleXEvents(void);
@@ -97,7 +96,6 @@ void run(void);
 void setup(void);
 void update_screen_info();
 void usage(int exit_status);
-void hide_window();
 l_node *most_important(list * l);
 void draw_win(void);
 void hide_win(void);
