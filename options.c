@@ -103,10 +103,13 @@ char *get_value(char *section, char *key)
 char *ini_get_string(char *section, char *key, const char *def)
 {
         char *value = get_value(section, key);
-        if (value == NULL)
-                return def;
-        else
+        if (value)
                 return strdup(value);
+
+        if (def == NULL)
+                return NULL;
+        else
+                return strdup(def);
 }
 
 int ini_get_int(char *section, char *key, int def)
@@ -325,15 +328,17 @@ static char *cmdline_get_value(char *key)
         return cmdline_argv[idx + 1];
 }
 
-char *cmdline_get_string(char *key, char *def, char *description)
+char *cmdline_get_string(char *key, const char *def, char *description)
 {
         cmdline_usage_append(key, "string", description);
         char *str = cmdline_get_value(key);
 
         if (str)
-                return str;
+                return strdup(str);
+        if (def == NULL)
+                return NULL;
         else
-                return def;
+                return strdup(def);
 }
 
 int cmdline_get_int(char *key, int def, char *description)
@@ -368,7 +373,7 @@ int cmdline_get_bool(char *key, int def, char *description)
 }
 
 char *option_get_string(char *ini_section, char *ini_key, char *cmdline_key,
-                        char *def, char *description)
+                        const char *def, char *description)
 {
         char *val = NULL;
 
