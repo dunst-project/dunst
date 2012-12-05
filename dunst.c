@@ -70,6 +70,7 @@ static XScreenSaverInfo *screensaver_info;
 static int font_h;
 static bool print_notifications = false;
 static dimension_t window_dim;
+static bool pause_display = false;
 
 bool dunst_grab_errored = false;
 
@@ -323,6 +324,13 @@ void update_lists()
 
         check_timeouts();
 
+        if (pause_display) {
+                while (!l_is_empty(displayed_notifications)) {
+                        l_move(displayed_notifications, notification_queue, displayed_notifications->head);
+                }
+                return;
+        }
+
         if (geometry.h == 0) {
                 limit = 0;
         } else if (geometry.h == 1) {
@@ -332,6 +340,7 @@ void update_lists()
         } else {
                 limit = geometry.h;
         }
+
 
         /* move notifications from queue to displayed */
         while (!l_is_empty(notification_queue)) {
@@ -906,6 +915,17 @@ int init_notification(notification * n, int id)
 
         if (n == NULL)
                 return -1;
+
+        if (strcmp("DUNST_COMMAND_PAUSE", n->summary) == 0) {
+                pause_display = true;
+                return 0;
+        }
+
+        if (strcmp("DUNST_COMMAND_RESUME", n->summary) == 0) {
+                pause_display = false;
+                return 0;
+        }
+
         n->format = format;
 
         apply_rules(n);

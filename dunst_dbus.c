@@ -372,8 +372,10 @@ void notify(DBusMessage * dmsg)
         }
         n->color_strings[ColFG] = fgcolor == NULL ? NULL : strdup(fgcolor);
         n->color_strings[ColBG] = bgcolor == NULL ? NULL : strdup(bgcolor);
+
         id = init_notification(n, replaces_id);
-        map_win();
+        if (id > 0)
+                map_win();
 
         reply = dbus_message_new_method_return(dmsg);
 
