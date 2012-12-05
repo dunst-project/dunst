@@ -804,9 +804,10 @@ void handleXEvents(void)
                 XNextEvent(dc->dpy, &ev);
                 switch (ev.type) {
                 case Expose:
-                        if (ev.xexpose.count == 0)
+                        if (ev.xexpose.count == 0 && visible) {
                                 draw_win();
-                        mapdc(dc, win, scr.dim.w, font_h);
+                                mapdc(dc, win, scr.dim.w, font_h);
+                        }
                         break;
                 case SelectionNotify:
                         if (ev.xselection.property == utf8)
