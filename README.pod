@@ -145,6 +145,14 @@ The progress value can be set with a hint, too.
 
 =back
 
+=head1 MISCELLANEOUS
+
+Dunst can be paused by sending a notification with a summary of "DUNST_COMMAND_PAUSE"
+and resumed with a summary of "DUNST_COMMAND_RESUME".
+When paused dunst will not display any notifications but keep all notifications in a queue.
+This can for example be wrapped around a screen locker (i3lock, slock) to prevent flickering
+of notifications through the lock and to read all missed notifications after returning to the computer.
+
 =head1 CONFIGURATION
 
 An example configuration file is included (usually /usr/share/dunst/dunstrc).
