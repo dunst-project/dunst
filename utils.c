@@ -43,11 +43,7 @@ char *string_replace(const char *needle, const char *replacement,
         sprintf(tmp + strlen(tmp), "%s%s", replacement, start + strlen(needle));
         free(haystack);
 
-        if (strstr(tmp, needle)) {
-                return string_replace(needle, replacement, tmp);
-        } else {
-                return tmp;
-        }
+        return tmp;
 }
 
 int digit_count(int i)
