@@ -12,6 +12,7 @@
 #include <fnmatch.h>
 #include <sys/time.h>
 #include <math.h>
+#include <signal.h>
 #include <X11/Xlib.h>
 #include <X11/XKBlib.h>
 #include <X11/Xatom.h>
@@ -107,6 +108,18 @@ void warn(const char *text, int urg);
 
 void init_shortcut(keyboard_shortcut * shortcut);
 KeySym string_to_mask(char *str);
+
+void pause_signal_handler(int sig)
+{
+        if (sig == SIGUSR1) {
+                pause_display = true;
+        }
+        if (sig == SIGUSR2) {
+                pause_display = false;
+        }
+
+        signal (sig, pause_signal_handler);
+}
 
 static void print_notification(notification * n)
 {
@@ -1714,6 +1727,8 @@ int main(int argc, char *argv[])
 
         initdbus();
         setup();
+        signal (SIGUSR1, pause_signal_handler);
+        signal (SIGUSR2, pause_signal_handler);
 
         if (deprecated_mod)
                 warn("-mod is deprecated. Use \"-key mod+key\" instead\n",
