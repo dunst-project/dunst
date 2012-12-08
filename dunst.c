@@ -12,7 +12,6 @@
 #include <fnmatch.h>
 #include <sys/time.h>
 #include <math.h>
-#include <getopt.h>
 #include <X11/Xlib.h>
 #include <X11/XKBlib.h>
 #include <X11/Xatom.h>
