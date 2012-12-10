@@ -621,18 +621,42 @@ int calculate_width(void)
         }
 }
 
-
-void draw_win(void)
+void move_and_map(int width, int height)
 {
 
-        r_line_cache_reset(&line_cache);
-        update_screen_info();
-        int width = calculate_width();
+        int x,y;
+        /* calculate window position */
+        if (geometry.mask & XNegative) {
+                x = (scr.dim.x + (scr.dim.w - width)) + geometry.x;
+        } else {
+                x = scr.dim.x + geometry.x;
+        }
 
+        if (geometry.mask & YNegative) {
+                y = scr.dim.y + (scr.dim.h + geometry.y) - height;
+        } else {
+                y = scr.dim.y + geometry.y;
+        }
 
-        line_height = MAX(line_height, font_h);
+        /* move and map window */
+        if (x != window_dim.x || y != window_dim.y
+            || width != window_dim.w || height != window_dim.h) {
 
+                XResizeWindow(dc->dpy, win, width, height);
+                XMoveWindow(dc->dpy, win, x, y);
 
+                window_dim.x = x;
+                window_dim.y = y;
+                window_dim.h = height;
+                window_dim.w = width;
+        }
+
+        mapdc(dc, win, width, height);
+
+}
+
+void fill_line_cache(int width)
+{
         /* create cache with all lines */
         for (l_node * iter = displayed_notifications->head; iter;
              iter = iter->next) {
@@ -660,6 +684,21 @@ void draw_win(void)
                         line_cache.lines[0].str = new;
                 }
         }
+}
+
+
+void draw_win(void)
+{
+
+        r_line_cache_reset(&line_cache);
+        update_screen_info();
+        int width = calculate_width();
+
+
+        line_height = MAX(line_height, font_h);
+
+
+        fill_line_cache(width);
 
 
         /* if we have a dynamic width, calculate the actual width */
@@ -709,35 +748,7 @@ void draw_win(void)
 
         }
 
-
-        int x,y;
-        /* calculate window position */
-        if (geometry.mask & XNegative) {
-                x = (scr.dim.x + (scr.dim.w - width)) + geometry.x;
-        } else {
-                x = scr.dim.x + geometry.x;
-        }
-
-        if (geometry.mask & YNegative) {
-                y = scr.dim.y + (scr.dim.h + geometry.y) - height;
-        } else {
-                y = scr.dim.y + geometry.y;
-        }
-
-        /* move and map window */
-        if (x != window_dim.x || y != window_dim.y
-            || width != window_dim.w || height != window_dim.h) {
-
-                XResizeWindow(dc->dpy, win, width, height);
-                XMoveWindow(dc->dpy, win, x, y);
-
-                window_dim.x = x;
-                window_dim.y = y;
-                window_dim.h = height;
-                window_dim.w = width;
-        }
-
-        mapdc(dc, win, width, height);
+        move_and_map(width, height);
 }
 
 char
