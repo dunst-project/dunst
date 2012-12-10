@@ -33,6 +33,8 @@ DEALINGS IN THE SOFTWARE.
 #ifndef DRAW_H
 #define DRAW_H
 
+#include <stdbool.h>
+
 #include <X11/Xft/Xft.h>
 
 typedef struct {
