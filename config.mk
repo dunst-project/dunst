@@ -1,3 +1,17 @@
+OS := $(shell uname -o)
+ifeq ($(OS), GNU/Linux)
+	X11INC = /usr/include/X11
+	X11LIB = /usr/lib/X11
+else ifeq ($(OS), FreeBSD)
+	X11INC = /usr/local/include
+	X11LIB = /usr/local/lib
+	XFTINC = -I${X11INC}/freetype2
+else ifeq ($(OS), OpenBSD)
+	X11INC = /usr/X11R6/include
+	X11LIB = /usr/X11R6/lib
+	XFTINC = -I/usr/include/freetype2
+endif
+
 # paths
 PREFIX = /usr/local
 MANPREFIX = ${PREFIX}/share/man
@@ -8,10 +22,6 @@ ifeq ('',$(VERSION))
 VERSION := $(shell git describe)
 endif
 
-X11INC = /usr/X11R6/include
-X11LIB = /usr/X11R6/lib
-
-XFTINC = -I/usr/include/freetype2
 XFTLIBS  = -lXft
 
 # Xinerama, comment if you don't want it
