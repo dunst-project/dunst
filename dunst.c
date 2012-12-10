@@ -106,7 +106,7 @@ void move_all_to_history(void);
 void print_version(void);
 
 void r_line_cache_init(r_line_cache *c);
-void r_line_cache_append(r_line_cache *c, const char *s, ColorSet *col);
+void r_line_cache_append(r_line_cache *c, const char *s, ColorSet *col, bool continues);
 void r_line_cache_reset(r_line_cache *c);
 
 /* show warning notification */
@@ -396,7 +396,7 @@ void r_line_cache_init(r_line_cache *c)
     c->lines = NULL;
 }
 
-void r_line_cache_append(r_line_cache *c, const char *s, ColorSet *col)
+void r_line_cache_append(r_line_cache *c, const char *s, ColorSet *col, bool continues)
 {
     if (!c || !s)
         return;
@@ -410,6 +410,7 @@ void r_line_cache_append(r_line_cache *c, const char *s, ColorSet *col)
     c->count++;
     c->lines[c->count-1].colors = col;
     c->lines[c->count-1].str = strdup(s);
+    c->lines[c->count-1].continues = continues;
 }
 
 void r_line_cache_reset(r_line_cache *c)
@@ -523,7 +524,7 @@ void add_notification_to_line_cache(notification *n, int max_width)
         n->line_count = linecnt;
         char *cur = buf;
         for (int i = 0; i < linecnt; i++) {
-                r_line_cache_append(&line_cache, cur, n->colors);
+                r_line_cache_append(&line_cache, cur, n->colors, i+1 != linecnt);
 
                 while (*cur != '\0')
                         cur++;
@@ -674,7 +675,7 @@ void fill_line_cache(int width)
                         asprintf(&tmp, "(%d more)", queue_cnt);
                         ColorSet *last_colors =
                                 line_cache.lines[line_cache.count-1].colors;
-                        r_line_cache_append(&line_cache, strdup(tmp), last_colors);
+                        r_line_cache_append(&line_cache, strdup(tmp), last_colors, false);
                         free(tmp);
                 } else {
                         char *old = line_cache.lines[0].str;
@@ -735,7 +736,7 @@ void draw_win(void)
                 dc->y += line_height - ((line_height - font_h) / 2);
 
                 /* draw separator */
-                if (separator_height > 0 && i < line_cache.count - 1) {
+                if (separator_height > 0 && i < line_cache.count - 1 && !line.continues) {
                         dc->x = 0;
                         double color;
                         if (sep_color == AUTO)

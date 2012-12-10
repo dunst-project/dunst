@@ -86,6 +86,7 @@ typedef struct _keyboard_shortcut {
 typedef struct _r_line {
     ColorSet *colors;
     char *str;
+    bool continues;
 } r_line;
 
 typedef struct r_line_cache {
