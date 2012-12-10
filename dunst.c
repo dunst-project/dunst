@@ -72,6 +72,8 @@ static bool print_notifications = false;
 static dimension_t window_dim;
 static bool pause_display = false;
 
+static r_line_cache line_cache;
+
 bool dunst_grab_errored = false;
 
 int next_notification_id = 1;
@@ -102,6 +104,10 @@ void draw_win(void);
 void hide_win(void);
 void move_all_to_history(void);
 void print_version(void);
+
+void r_line_cache_init(r_line_cache *c);
+void r_line_cache_append(r_line_cache *c, const char *s, ColorSet *col);
+void r_line_cache_reset(r_line_cache *c);
 
 /* show warning notification */
 void warn(const char *text, int urg);
@@ -383,6 +389,40 @@ void update_lists()
         }
 }
 
+void r_line_cache_init(r_line_cache *c)
+{
+    c->count = 0;
+    c->size = 0;
+    c->lines = NULL;
+}
+
+void r_line_cache_append(r_line_cache *c, const char *s, ColorSet *col)
+{
+    if (!c || !s)
+        return;
+
+    /* resize cache if it's too small */
+    if (c->count >= c->size) {
+        c->size++;
+        c->lines = realloc(c->lines, c->size * sizeof(r_line));
+    }
+
+    c->count++;
+    c->lines[c->count-1].colors = col;
+    c->lines[c->count-1].str = strdup(s);
+}
+
+void r_line_cache_reset(r_line_cache *c)
+{
+    for (int i = 0; i < c->count; i++) {
+        if (c->lines[i].str)
+            free(c->lines[i].str);
+        c->lines[i].str = NULL;
+        c->lines[i].colors = NULL;
+    }
+    c->count = 0;
+}
+
 /* TODO get draw_txt_buf as argument */
 int do_word_wrap(char *source, int max_width)
 {
@@ -430,15 +470,12 @@ int do_word_wrap(char *source, int max_width)
         }
 }
 
-void update_draw_txt_buf(notification * n, int max_width)
+void add_notification_to_line_cache(notification *n, int max_width)
 {
         rstrip(n->msg);
         char *msg = n->msg;
         while (isspace(*msg))
                 msg++;
-
-        if (n->draw_txt_buf.txt)
-                free(n->draw_txt_buf.txt);
 
         char *buf;
 
@@ -481,22 +518,18 @@ void update_draw_txt_buf(notification * n, int max_width)
                 buf = new_buf;
         }
 
-        n->draw_txt_buf.line_count = do_word_wrap(buf, max_width);
-        n->draw_txt_buf.txt = buf;
-}
 
-char *draw_txt_get_line(draw_txt * dt, int line)
-{
-        if (line > dt->line_count) {
-                return NULL;
+        int linecnt = do_word_wrap(buf, max_width);
+        n->line_count = linecnt;
+        char *cur = buf;
+        for (int i = 0; i < linecnt; i++) {
+                r_line_cache_append(&line_cache, cur, n->colors);
+
+                while (*cur != '\0')
+                        cur++;
+                cur++;
         }
-
-        char *begin = dt->txt;
-        for (int i = 1; i < line; i++) {
-                begin += strlen(begin) + 1;
-        }
-
-        return begin;
+        free(buf);
 }
 
 int calculate_x_offset(int line_width, int text_width)
@@ -570,148 +603,114 @@ unsigned long calculate_foreground_color(unsigned long source_color)
         return color.pixel;
 }
 
-void draw_win(void)
+int calculate_width(void)
 {
-        int width, x, y, height;
-
-        line_height = MAX(line_height, font_h);
-
-        update_screen_info();
-
-        /* calculate width */
         if (geometry.mask & WidthValue && geometry.w == 0) {
                 /* dynamic width */
-                width = 0;
+                return 0;
         } else if (geometry.mask & WidthValue) {
                 /* fixed width */
                 if (geometry.negative_width) {
-                        width = scr.dim.w - geometry.w;
+                        return scr.dim.w - geometry.w;
                 } else {
-                        width = geometry.w;
+                        return geometry.w;
                 }
         } else {
                 /* across the screen */
-                width = scr.dim.w;
+                return scr.dim.w;
         }
+}
 
-        /* update draw_txt_bufs and line_cnt */
-        int line_cnt = 0;
+
+void draw_win(void)
+{
+
+        r_line_cache_reset(&line_cache);
+        update_screen_info();
+        int width = calculate_width();
+
+
+        line_height = MAX(line_height, font_h);
+
+
+        /* create cache with all lines */
         for (l_node * iter = displayed_notifications->head; iter;
              iter = iter->next) {
                 notification *n = (notification *) iter->data;
-                update_draw_txt_buf(n, width);
-                line_cnt += n->draw_txt_buf.line_count;
+                add_notification_to_line_cache(n, width);
         }
 
-        /* calculate height */
-        if (geometry.h == 0) {
-                height = line_cnt * line_height;
-        } else {
-                height = MAX(geometry.h, (line_cnt * line_height));
-        }
+        assert(line_cache.count > 0);
 
-        height += (l_length(displayed_notifications) - 1) * separator_height;
-
-        /* add "(x more)" */
-        draw_txt x_more;
-        x_more.txt = NULL;
-
-        char *print_to;
-        int more = l_length(notification_queue);
-        if (indicate_hidden && more > 0) {
-
-                int x_more_len = strlen(" ( more) ") + digit_count(more);
-
+        /* add (x more) */
+        int queue_cnt = l_length(notification_queue);
+        if (indicate_hidden && queue_cnt > 0) {
                 if (geometry.h != 1) {
-                        /* add additional line */
-                        x_more.txt = calloc(x_more_len, sizeof(char));
-                        height += line_height;
-                        line_cnt++;
-
-                        print_to = x_more.txt;
-
+                        char *tmp;
+                        asprintf(&tmp, "(%d more)", queue_cnt);
+                        ColorSet *last_colors =
+                                line_cache.lines[line_cache.count-1].colors;
+                        r_line_cache_append(&line_cache, strdup(tmp), last_colors);
+                        free(tmp);
                 } else {
-                        /* append "(x more)" message to notification text */
-                        notification *n =
-                            (notification *) displayed_notifications->head->
-                            data;
-                        print_to =
-                            draw_txt_get_line(&n->draw_txt_buf,
-                                              n->draw_txt_buf.line_count);
-                        for (; *print_to != '\0'; print_to++) ;
+                        char *old = line_cache.lines[0].str;
+                        char *new;
+                        asprintf(&new, "%s (%d more)", old, queue_cnt);
+                        free(old);
+                        line_cache.lines[0].str = new;
                 }
-                snprintf(print_to, x_more_len, "(%d more)", more);
         }
+
 
         /* if we have a dynamic width, calculate the actual width */
         if (width == 0) {
-                for (l_node * iter = displayed_notifications->head; iter;
-                     iter = iter->next) {
-                        notification *n = (notification *) iter->data;
-                        for (int i = 0; i < n->draw_txt_buf.line_count; i++) {
-                                char *line =
-                                    draw_txt_get_line(&n->draw_txt_buf, i + 1);
-                                assert(line != NULL);
-                                width = MAX(width, textw(dc, line));
-                        }
+                for (int i = 0; i < line_cache.count; i++) {
+                        char *line = line_cache.lines[i].str;
+                        width = MAX(width, textw(dc, line));
                 }
         }
 
-        assert(line_height > 0);
-        assert(font_h > 0);
-        assert(width > 0);
-        assert(height > 0);
-        assert(line_cnt > 0);
+        /* resize dc to correct width */
+
+        int height = (line_cache.count * line_height)
+                   + ((line_cache.count - 1) * separator_height);
+
 
         resizedc(dc, width, height);
 
-        /* draw buffers */
         dc->y = 0;
-        ColorSet *last_color;
-        assert(displayed_notifications->head != NULL);
-        for (l_node * iter = displayed_notifications->head; iter;
-             iter = iter->next) {
 
-                notification *n = (notification *) iter->data;
-                last_color = n->colors;
+        for (int i = 0; i < line_cache.count; i++) {
+                dc->x = 0;
 
-                for (int i = 0; i < n->draw_txt_buf.line_count; i++) {
+                r_line line = line_cache.lines[i];
 
-                        char *line = draw_txt_get_line(&n->draw_txt_buf, i + 1);
-                        dc->x = 0;
-                        drawrect(dc, 0, 0, width, line_height, true,
-                                 n->colors->BG);
 
-                        dc->x = calculate_x_offset(width, textw(dc, line));
-                        dc->y += (line_height - font_h) / 2;
-                        drawtextn(dc, line, strlen(line), n->colors);
-                        dc->y += line_height - ((line_height - font_h) / 2);
-                }
+                /* draw background */
+                drawrect(dc, 0, 0, width, line_height, true, line.colors->BG);
+
+                /* draw text */
+                dc->x = calculate_x_offset(width, textw(dc, line.str));
+                dc->y += (line_height - font_h) / 2;
+                drawtextn(dc, line.str, strlen(line.str), line.colors);
+                dc->y += line_height - ((line_height - font_h) / 2);
 
                 /* draw separator */
-                if (separator_height > 0) {
+                if (separator_height > 0 && i < line_cache.count - 1) {
                         dc->x = 0;
                         double color;
                         if (sep_color == AUTO)
-                                color =
-                                    calculate_foreground_color(n->colors->BG);
+                                color = calculate_foreground_color(line.colors->BG);
                         else
-                                color = n->colors->FG;
-
-                        drawrect(dc, 0, 0, width, separator_height, true,
-                                 color);
+                                color = line.colors->FG;
+                        drawrect(dc, 0, 0, width, separator_height, true, color);
                         dc->y += separator_height;
                 }
+
         }
 
-        /* draw x_more */
-        if (x_more.txt) {
-                dc->x = 0;
-                drawrect(dc, 0, 0, width, line_height, true, last_color->BG);
-                dc->x = calculate_x_offset(width, textw(dc, x_more.txt));
-                drawtext(dc, x_more.txt, last_color);
-        }
 
+        int x,y;
         /* calculate window position */
         if (geometry.mask & XNegative) {
                 x = (scr.dim.x + (scr.dim.w - width)) + geometry.x;
@@ -739,8 +738,6 @@ void draw_win(void)
         }
 
         mapdc(dc, win, width, height);
-
-        free(x_more.txt);
 }
 
 char
@@ -808,7 +805,7 @@ void handle_mouse_click(XEvent ev)
                 assert(iter);
                 for (; iter; iter = iter->next) {
                         n = (notification *) iter->data;
-                        int height = font_h * n->draw_txt_buf.line_count;
+                        int height = font_h * n->line_count;
                         if (ev.xbutton.y > y && ev.xbutton.y < y + height)
                                 break;
                         else
@@ -958,7 +955,6 @@ int init_notification(notification * n, int id)
         n->msg = fix_markup(n->msg);
 
         n->dup_count = 0;
-        n->draw_txt_buf.txt = NULL;
 
         /* check if n is a duplicate */
         for (l_node * iter = notification_queue->head; iter; iter = iter->next) {
@@ -1702,6 +1698,7 @@ int main(int argc, char *argv[])
         notification_history = l_init();
         displayed_notifications = l_init();
         rules = l_init();
+        r_line_cache_init(&line_cache);
 
         for (int i = 0; i < LENGTH(default_rules); i++) {
                 l_push(rules, &default_rules[i]);

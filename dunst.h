@@ -32,18 +32,12 @@ typedef struct _screen_info {
         dimension_t dim;
 } screen_info;
 
-typedef struct _draw_txt {
-        char *txt;
-        int line_count;
-} draw_txt;
-
 typedef struct _notification {
         char *appname;
         char *summary;
         char *body;
         char *icon;
         char *msg;
-        draw_txt draw_txt_buf;
         const char *format;
         char *dbus_client;
         time_t start;
@@ -56,6 +50,7 @@ typedef struct _notification {
         ColorSet *colors;
         char *color_strings[2];
         int progress;           /* percentage + 1, 0 to hide */
+        int line_count;
 } notification;
 
 typedef struct _notification_buffer {
@@ -87,6 +82,19 @@ typedef struct _keyboard_shortcut {
         KeySym mask;
         bool is_valid;
 } keyboard_shortcut;
+
+typedef struct _r_line {
+    ColorSet *colors;
+    char *str;
+} r_line;
+
+typedef struct r_line_cache {
+    int count;
+    int size;
+    r_line *lines;
+} r_line_cache;
+
+
 
 extern int verbosity;
 
