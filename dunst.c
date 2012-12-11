@@ -55,7 +55,7 @@
 
 int height_limit;
 
-list *rules = NULL;
+rule_array rules;
 /* index of colors fit to urgency level */
 static ColorSet *colors[3];
 static const char *color_strings[2][3];
@@ -93,7 +93,7 @@ char *fix_markup(char *str);
 void handle_mouse_click(XEvent ev);
 void handleXEvents(void);
 void history_pop(void);
-rule_t *initrule(void);
+void initrule(rule_t *r);
 bool is_idle(void);
 void run(void);
 void setup(void);
@@ -270,13 +270,9 @@ l_node *most_important(list * l)
 
 void apply_rules(notification * n)
 {
-        if (l_is_empty(rules) || n == NULL) {
-                return;
-        }
 
-        for (l_node * iter = rules->head; iter; iter = iter->next) {
-                rule_t *r = (rule_t *) iter->data;
-
+        for (int i = 0; i < rules.count; i++) {
+                rule_t *r = &(rules.rules[i]);
                 if ((!r->appname || !fnmatch(r->appname, n->appname, 0))
                     && (!r->summary || !fnmatch(r->summary, n->summary, 0))
                     && (!r->body || !fnmatch(r->body, n->body, 0))
@@ -1154,9 +1150,8 @@ void init_shortcut(keyboard_shortcut * ks)
         free(str_begin);
 }
 
-rule_t *initrule(void)
+void initrule(rule_t *r)
 {
-        rule_t *r = malloc(sizeof(rule_t));
         r->name = NULL;
         r->appname = NULL;
         r->summary = NULL;
@@ -1167,8 +1162,6 @@ rule_t *initrule(void)
         r->fg = NULL;
         r->bg = NULL;
         r->format = NULL;
-
-        return r;
 }
 
 bool is_idle(void)
@@ -1436,27 +1429,6 @@ void parse_follow_mode(const char *mode)
 
 }
 
-static rule_t *dunst_rules_find_or_create(const char *section)
-{
-        l_node *iter;
-        rule_t *rule;
-
-        /* find rule */
-        for (iter = rules->head; iter; iter = iter->next) {
-                rule_t *r = (rule_t *) iter->data;
-                if (strcmp(r->name, section) == 0) {
-                        return r;
-                }
-        }
-
-        rule = initrule();
-        rule->name = strdup(section);
-
-        l_push(rules, rule);
-
-        return rule;
-}
-
 void load_options(char *cmdline_config_path)
 {
 
@@ -1658,28 +1630,35 @@ void load_options(char *cmdline_config_path)
                     || strcmp(cur_section, "urgency_critical") == 0)
                         continue;
 
-                rule_t *current_rule = dunst_rules_find_or_create(cur_section);
-                current_rule->appname =
-                    ini_get_string(cur_section, "appname",
-                                   current_rule->appname);
-                current_rule->summary =
-                    ini_get_string(cur_section, "summary",
-                                   current_rule->summary);
-                current_rule->body =
-                    ini_get_string(cur_section, "body", current_rule->body);
-                current_rule->icon =
-                    ini_get_string(cur_section, "icon", current_rule->icon);
-                current_rule->timeout =
-                    ini_get_int(cur_section, "timeout", current_rule->timeout);
+                /* check for existing rule with same name */
+                rule_t *r = NULL;
+                for (int i = 0; i < rules.count; i++)
+                        if (rules.rules[i].name &&
+                            strcmp(rules.rules[i].name, cur_section) == 0)
+                                r = &(rules.rules[i]);
+
+                if (r == NULL) {
+                        rules.count++;
+                        rules.rules = realloc(rules.rules,
+                                        rules.count * sizeof(rule_t));
+                        r = &(rules.rules[rules.count-1]);
+                        initrule(r);
+                }
+
+                r->appname = ini_get_string(cur_section, "appname", r->appname);
+                r->summary = ini_get_string(cur_section, "summary", r->summary);
+                r->body = ini_get_string(cur_section, "body", r->body);
+                r->icon = ini_get_string(cur_section, "icon", r->icon);
+                r->timeout = ini_get_int(cur_section, "timeout", r->timeout);
                 {
                         char *urg = ini_get_string(cur_section, "urgency", "");
                         if (strlen(urg) > 0) {
                                 if (strcmp(urg, "low") == 0)
-                                        current_rule->urgency = LOW;
+                                        r->urgency = LOW;
                                 else if (strcmp(urg, "normal") == 0)
-                                        current_rule->urgency = NORM;
+                                        r->urgency = NORM;
                                 else if (strcmp(urg, "critical") == 0)
-                                        current_rule->urgency = CRIT;
+                                        r->urgency = CRIT;
                                 else
                                         fprintf(stderr,
                                                 "unknown urgency: %s, ignoring\n",
@@ -1687,12 +1666,9 @@ void load_options(char *cmdline_config_path)
                                 free(urg);
                         }
                 }
-                current_rule->fg =
-                    ini_get_string(cur_section, "foreground", current_rule->fg);
-                current_rule->bg =
-                    ini_get_string(cur_section, "background", current_rule->bg);
-                current_rule->format =
-                    ini_get_string(cur_section, "format", current_rule->format);
+                r->fg = ini_get_string(cur_section, "foreground", r->fg);
+                r->bg = ini_get_string(cur_section, "background", r->bg);
+                r->format = ini_get_string(cur_section, "format", r->format);
         }
 
 #ifndef STATIC_CONFIG
@@ -1709,12 +1685,12 @@ int main(int argc, char *argv[])
         notification_queue = l_init();
         notification_history = l_init();
         displayed_notifications = l_init();
-        rules = l_init();
         r_line_cache_init(&line_cache);
 
-        for (int i = 0; i < LENGTH(default_rules); i++) {
-                l_push(rules, &default_rules[i]);
-        }
+
+        rules.count = LENGTH(default_rules);
+        rules.rules = calloc(rules.count, sizeof(rule_t));
+        memcpy(rules.rules, default_rules, sizeof(rule_t) * rules.count);
 
         cmdline_load(argc, argv);
 

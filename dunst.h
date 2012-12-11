@@ -95,6 +95,10 @@ typedef struct r_line_cache {
     r_line *lines;
 } r_line_cache;
 
+typedef struct _rule_array {
+        int count;
+        rule_t *rules;
+} rule_array;
 
 
 extern int verbosity;
