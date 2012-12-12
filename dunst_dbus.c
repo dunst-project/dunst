@@ -131,37 +131,36 @@ void dbus_poll(int timeout)
         dbus_connection_read_write(dbus_conn, timeout);
 
         dbus_msg = dbus_connection_pop_message(dbus_conn);
-        /* we don't have a new message */
-        if (dbus_msg == NULL) {
-                return;
-        }
 
-        if (dbus_message_is_method_call
-            (dbus_msg, "org.freedesktop.DBus.Introspectable", "Introspect")) {
-                dbus_introspect(dbus_msg);
-        }
+        while (dbus_msg) {
+                if (dbus_message_is_method_call
+                    (dbus_msg, "org.freedesktop.DBus.Introspectable", "Introspect")) {
+                        dbus_introspect(dbus_msg);
+                }
 
-        if (dbus_message_is_method_call(dbus_msg,
-                                        "org.freedesktop.Notifications",
-                                        "Notify")) {
-                notify(dbus_msg);
+                if (dbus_message_is_method_call(dbus_msg,
+                                                "org.freedesktop.Notifications",
+                                                "Notify")) {
+                        notify(dbus_msg);
+                }
+                if (dbus_message_is_method_call(dbus_msg,
+                                                "org.freedesktop.Notifications",
+                                                "GetCapabilities")) {
+                        getCapabilities(dbus_msg);
+                }
+                if (dbus_message_is_method_call(dbus_msg,
+                                                "org.freedesktop.Notifications",
+                                                "GetServerInformation")) {
+                        getServerInformation(dbus_msg);
+                }
+                if (dbus_message_is_method_call(dbus_msg,
+                                                "org.freedesktop.Notifications",
+                                                "CloseNotification")) {
+                        closeNotification(dbus_msg);
+                }
+                dbus_message_unref(dbus_msg);
+                dbus_msg = dbus_connection_pop_message(dbus_conn);
         }
-        if (dbus_message_is_method_call(dbus_msg,
-                                        "org.freedesktop.Notifications",
-                                        "GetCapabilities")) {
-                getCapabilities(dbus_msg);
-        }
-        if (dbus_message_is_method_call(dbus_msg,
-                                        "org.freedesktop.Notifications",
-                                        "GetServerInformation")) {
-                getServerInformation(dbus_msg);
-        }
-        if (dbus_message_is_method_call(dbus_msg,
-                                        "org.freedesktop.Notifications",
-                                        "CloseNotification")) {
-                closeNotification(dbus_msg);
-        }
-        dbus_message_unref(dbus_msg);
 }
 
 void getCapabilities(DBusMessage * dmsg)
