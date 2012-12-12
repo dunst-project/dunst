@@ -935,7 +935,7 @@ int close_notification_by_id(int id, int reason)
         }
 
         for (n_queue *iter = queue; iter; iter = iter->next) {
-                notification *n = iter->next->n;
+                notification *n = iter->n;
                 if (n->id == id) {
                         n_queue_remove(&queue, n);
                         n_stack_push(&history, n);
