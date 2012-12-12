@@ -80,7 +80,7 @@ int next_notification_id = 1;
 
 /* notification lists */
 n_queue *queue = NULL;             /* all new notifications get into here */
-list *displayed_notifications = NULL;   /* currently displayed notifications */
+n_queue *displayed = NULL;   /* currently displayed notifications */
 n_stack *history = NULL;      /* history of displayed notifications */
 
 /* misc funtions */
@@ -96,7 +96,6 @@ void run(void);
 void setup(void);
 void update_screen_info();
 void usage(int exit_status);
-l_node *most_important(list * l);
 void draw_win(void);
 void hide_win(void);
 void move_all_to_history(void);
@@ -216,42 +215,30 @@ void apply_rules(notification * n)
 
 void check_timeouts(void)
 {
-        l_node *iter;
-        notification *current;
-        l_node *next;
-
         /* nothing to do */
-        if (l_is_empty(displayed_notifications)) {
+        if (!displayed)
                 return;
-        }
 
-        iter = displayed_notifications->head;
-        while (iter != NULL) {
-                current = (notification *) iter->data;
+        for (n_queue *iter = displayed; iter; iter = iter->next) {
+                notification *n = iter->n;
 
                 /* don't timeout when user is idle */
                 if (is_idle()) {
-                        current->start = now;
-                        iter = iter->next;
+                        n->start = now;
                         continue;
                 }
 
                 /* skip hidden and sticky messages */
-                if (current->start == 0 || current->timeout == 0) {
-                        iter = iter->next;
+                if (n->start == 0 || n->timeout == 0) {
                         continue;
                 }
 
                 /* remove old message */
-                if (difftime(now, current->start) > current->timeout) {
-                        /* l_move changes iter->next, so we need to store it beforehand */
-                        next = iter->next;
-                        close_notification(current, 1);
-                        iter = next;
-                        continue;
-
-                } else {
-                        iter = iter->next;
+                if (difftime(now, n->start) > n->timeout) {
+                        /* close_notification may conflict with iter, so restart */
+                        close_notification(n, 1);
+                        check_timeouts();
+                        return;
                 }
         }
 }
@@ -263,8 +250,8 @@ void update_lists()
         check_timeouts();
 
         if (pause_display) {
-                while (!l_is_empty(displayed_notifications)) {
-                        notification *n = (notification *) l_remove(displayed_notifications, displayed_notifications->head);
+                while (displayed) {
+                        notification *n = n_queue_dequeue(&displayed);
                         n_queue_enqueue(&queue, n);
                 }
                 return;
@@ -284,7 +271,7 @@ void update_lists()
         /* move notifications from queue to displayed */
         while (queue) {
 
-                if (limit > 0 && l_length(displayed_notifications) >= limit) {
+                if (limit > 0 && n_queue_len(&displayed) >= limit) {
                         /* the list is full */
                         break;
                 }
@@ -295,10 +282,7 @@ void update_lists()
                         return;
                 n->start = now;
 
-                l_push(displayed_notifications, n);
-
-                l_sort(displayed_notifications, cmp_notification);
-
+                n_queue_enqueue(&displayed, n);
         }
 }
 
@@ -571,10 +555,8 @@ void move_and_map(int width, int height)
 void fill_line_cache(int width)
 {
         /* create cache with all lines */
-        for (l_node * iter = displayed_notifications->head; iter;
-             iter = iter->next) {
-                notification *n = (notification *) iter->data;
-                add_notification_to_line_cache(n, width);
+        for (n_queue *iter = displayed; iter; iter = iter->next) {
+                add_notification_to_line_cache(iter->n, width);
         }
 
         assert(line_cache.count > 0);
@@ -724,18 +706,16 @@ void handle_mouse_click(XEvent ev)
 
         if (ev.xbutton.button == Button1) {
                 int y = 0;
-                notification *n;
-                l_node *iter = displayed_notifications->head;
-                assert(iter);
-                for (; iter; iter = iter->next) {
-                        n = (notification *) iter->data;
-                        int height = font_h * n->line_count;
+                notification *n = NULL;
+                for (n_queue *iter = displayed; iter; iter = iter->next) {
+                        int height = font_h *  iter->n->line_count;
                         if (ev.xbutton.y > y && ev.xbutton.y < y + height)
                                 break;
                         else
                                 y += height;
                 }
-                close_notification(n, 2);
+                if (n)
+                        close_notification(n, 2);
         }
 }
 
@@ -767,10 +747,8 @@ void handleXEvents(void)
                         if (close_ks.str
                             && XLookupKeysym(&ev.xkey, 0) == close_ks.sym
                             && close_ks.mask == ev.xkey.state) {
-                                if (!l_is_empty(displayed_notifications)) {
-                                        notification *n = (notification *)
-                                            displayed_notifications->head->data;
-                                        close_notification(n, 2);
+                                if (displayed) {
+                                        close_notification(displayed->n, 2);
                                 }
                         }
                         if (history_ks.str
@@ -789,16 +767,11 @@ void handleXEvents(void)
 
 void move_all_to_history()
 {
-        l_node *node;
-        notification *n;
-
-        while (!l_is_empty(displayed_notifications)) {
-                node = displayed_notifications->head;
-                n = (notification *) node->data;
-                close_notification(n, 2);
+        while (displayed) {
+                close_notification(displayed->n, 2);
         }
 
-        n = n_queue_dequeue(&queue);
+        notification *n = n_queue_dequeue(&queue);
         while (n) {
                 n_stack_push(&history, n);
                 n = n_queue_dequeue(&queue);
@@ -885,9 +858,8 @@ int init_notification(notification * n, int id)
                 }
         }
 
-        for (l_node * iter = displayed_notifications->head; iter;
-             iter = iter->next) {
-                notification *orig = (notification *) iter->data;
+        for (n_queue *iter = displayed; iter; iter = iter->next) {
+                notification *orig = iter->n;
                 if (strcmp(orig->appname, n->appname) == 0
                     && strcmp(orig->msg, n->msg) == 0) {
                         orig->dup_count++;
@@ -952,22 +924,20 @@ int close_notification_by_id(int id, int reason)
 {
         notification *target = NULL;
 
-        for (l_node *iter = displayed_notifications->head; iter; iter = iter->next) {
-                notification *n = (notification *) iter->data;
+        for (n_queue *iter = displayed; iter; iter = iter->next) {
+                notification *n = iter->n;
                 if (n->id == id) {
-                        l_remove(displayed_notifications, iter);
+                        n_queue_remove(&displayed, n);
                         n_stack_push(&history, n);
                         target = n;
                         break;
                 }
         }
 
-        for (n_queue *iter = queue; iter && iter->next; iter = iter->next) {
+        for (n_queue *iter = queue; iter; iter = iter->next) {
                 notification *n = iter->next->n;
                 if (n->id == id) {
-                        n_queue *tmp = iter->next;
-                        iter->next = iter->next->next;
-                        free(tmp);
+                        n_queue_remove(&queue, n);
                         n_stack_push(&history, n);
                         target = n;
                         break;
@@ -1098,7 +1068,7 @@ void run(void)
 
                 /* move messages from notification_queue to displayed_notifications */
                 update_lists();
-                if (l_length(displayed_notifications) > 0) {
+                if (displayed) {
                         if (!visible) {
                                 map_win();
                         } else {
@@ -1306,7 +1276,7 @@ void setup(void)
 void map_win(void)
 {
         /* window is already mapped or there's nothing to show */
-        if (visible || l_is_empty(displayed_notifications)) {
+        if (visible || !displayed) {
                 return;
         }
 
@@ -1576,7 +1546,6 @@ int main(int argc, char *argv[])
 {
         now = time(&now);
 
-        displayed_notifications = l_init();
         r_line_cache_init(&line_cache);
 
 
