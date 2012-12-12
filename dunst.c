@@ -844,6 +844,8 @@ int init_notification(notification * n, int id)
         }
 
         n->msg = fix_markup(n->msg);
+        n->msg = rstrip(n->msg);
+
 
         n->dup_count = 0;
 
