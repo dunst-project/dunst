@@ -3,7 +3,7 @@
 #include <dbus/dbus.h>
 
 #include "dunst.h"
-#include "list.h"
+#include "container.h"
 
 #include "dunst_dbus.h"
 

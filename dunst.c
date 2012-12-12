@@ -27,7 +27,7 @@
 #include "dunst.h"
 #include "draw.h"
 #include "dunst_dbus.h"
-#include "list.h"
+#include "container.h"
 #include "utils.h"
 
 #include "options.h"
