@@ -81,7 +81,7 @@ int next_notification_id = 1;
 /* notification lists */
 n_queue *queue = NULL;             /* all new notifications get into here */
 list *displayed_notifications = NULL;   /* currently displayed notifications */
-n_stack *n_history = NULL;      /* history of displayed notifications */
+n_stack *history = NULL;      /* history of displayed notifications */
 
 /* misc funtions */
 void apply_rules(notification * n);
@@ -800,7 +800,7 @@ void move_all_to_history()
 
         n = n_queue_dequeue(&queue);
         while (n) {
-                n_stack_push(&n_history, n);
+                n_stack_push(&history, n);
                 n = n_queue_dequeue(&queue);
         }
 }
@@ -808,10 +808,10 @@ void move_all_to_history()
 void history_pop(void)
 {
 
-        if (!n_history)
+        if (!history)
                 return;
 
-        notification *n = n_stack_pop(&n_history);
+        notification *n = n_stack_pop(&history);
         n->redisplayed = true;
         n->start = 0;
         n->timeout = sticky_history ? 0 : n->timeout;
@@ -956,7 +956,7 @@ int close_notification_by_id(int id, int reason)
                 notification *n = (notification *) iter->data;
                 if (n->id == id) {
                         l_remove(displayed_notifications, iter);
-                        n_stack_push(&n_history, n);
+                        n_stack_push(&history, n);
                         target = n;
                         break;
                 }
@@ -968,7 +968,7 @@ int close_notification_by_id(int id, int reason)
                         n_queue *tmp = iter->next;
                         iter->next = iter->next->next;
                         free(tmp);
-                        n_stack_push(&n_history, n);
+                        n_stack_push(&history, n);
                         target = n;
                         break;
                 }
