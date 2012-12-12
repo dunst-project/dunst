@@ -265,7 +265,7 @@ void l_sort(list * l, int (*f) (void *, void *))
 
 void n_stack_push(n_stack **s, notification *n)
 {
-        if (!n)
+        if (!n || !s)
                 return;
 
         n_stack *new = malloc(sizeof(n_stack));
@@ -286,6 +286,88 @@ notification *n_stack_pop(n_stack **s)
         free(head);
 
         return n;
+}
+
+int n_stack_len(n_stack **s)
+{
+        if (!s || !*s)
+                return 0;
+
+        n_stack *cur = *s;
+        int count = 0;
+
+        while (cur) {
+                cur = cur->next;
+                count++;
+        }
+
+        return count;
+}
+
+int cmp_notification(notification *a, notification *b)
+{
+        if (a == NULL && b == NULL)
+                return 0;
+        else if (a == NULL)
+                return -1;
+        else if (b == NULL)
+                return 1;
+
+        if (a->urgency != b->urgency) {
+                return a->urgency - b->urgency;
+        } else {
+                return b->timestamp - a->timestamp;
+        }
+}
+
+void n_queue_enqueue(n_queue **q, notification *n)
+{
+        if (!n || !q)
+                return;
+
+
+        n_queue *new = malloc(sizeof(n_queue));
+        new->n = n;
+        new->next = NULL;
+
+        if (!(*q)) {
+                /* queue was empty */
+                *q = new;
+                return;
+        }
+
+
+        /* new head */
+        if (cmp_notification(new->n, (*q)->n) > 0) {
+                new->next = *q;
+                *q = new;
+                return;
+        }
+
+        /* in between */
+        n_queue *cur = *q;
+        while (cur->next) {
+                if (cmp_notification(new->n, cur->next->n) > 0) {
+                        new->next = cur->next;
+                        cur->next = new;
+                        return;
+                }
+
+                cur = cur->next;
+        }
+
+        /* last */
+        cur->next = new;
+}
+
+notification *n_queue_dequeue(n_queue **q)
+{
+        return n_stack_pop(q);
+}
+
+int n_queue_len(n_queue **q)
+{
+        return n_stack_len(q);
 }
 
 /* vim: set ts=8 sw=8 tw=0: */

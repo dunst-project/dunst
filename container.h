@@ -17,6 +17,10 @@ typedef struct _n_stack {
         struct _n_stack *next;
 } n_stack;
 
+typedef n_stack n_queue;
+
+int cmp_notification(notification *a, notification *b);
+
 /* append to end of list */
 int l_push(list * l, void *data);
 
@@ -79,6 +83,35 @@ void n_stack_push(n_stack **s, notification *n);
  */
 notification *n_stack_pop(n_stack **s);
 
+/**
+ * return length of stack
+ */
+
+int n_stack_len(n_stack **s);
+
+/***************
+ * queue
+ */
+
+/**
+ * enqueue notification into queue
+ * creates a new queue if *q == NULL
+ */
+
+void n_queue_enqueue(n_queue **q, notification *n);
+
+/**
+ * dequeues the next element from the queue.
+ * returns NULL if queue is empty
+ */
+
+notification *n_queue_dequeue(n_queue **q);
+
+/**
+ * return length of queue
+ */
+
+int n_queue_len(n_queue **q);
 
 #endif
 /* vim: set ts=8 sw=8 tw=0: */
