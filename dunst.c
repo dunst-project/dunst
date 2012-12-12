@@ -569,7 +569,7 @@ void fill_line_cache(int width)
                         asprintf(&tmp, "(%d more)", queue_cnt);
                         ColorSet *last_colors =
                                 line_cache.lines[line_cache.count-1].colors;
-                        r_line_cache_append(&line_cache, strdup(tmp), last_colors, false);
+                        r_line_cache_append(&line_cache, tmp, last_colors, false);
                         free(tmp);
                 } else {
                         char *old = line_cache.lines[0].str;
