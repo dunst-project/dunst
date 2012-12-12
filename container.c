@@ -263,4 +263,29 @@ void l_sort(list * l, int (*f) (void *, void *))
         free(old_list);
 }
 
+void n_stack_push(n_stack **s, notification *n)
+{
+        if (!n)
+                return;
+
+        n_stack *new = malloc(sizeof(n_stack));
+        new->n = n;
+        new->next = *s;
+        *s = new;
+}
+
+notification *n_stack_pop(n_stack **s)
+{
+        if (!s || !*s)
+                return NULL;
+
+        n_stack *head = *s;
+        *s = (*s)->next;
+
+        notification *n = head->n;
+        free(head);
+
+        return n;
+}
+
 /* vim: set ts=8 sw=8 tw=0: */

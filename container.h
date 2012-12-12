@@ -1,6 +1,8 @@
 #ifndef _LIST_H
 #define _LIST_H
 
+#include "dunst.h"
+
 typedef struct _l_node {
         struct _l_node *next;
         void *data;
@@ -9,6 +11,11 @@ typedef struct _l_node {
 typedef struct _list {
         l_node *head;
 } list;
+
+typedef struct _n_stack {
+        notification *n;
+        struct _n_stack *next;
+} n_stack;
 
 /* append to end of list */
 int l_push(list * l, void *data);
@@ -54,6 +61,24 @@ int l_move(list * from, list * to, l_node * node);
 void l_sort(list * l, int (*f) (void *, void *));
 
 list *l_init(void);
-#endif
 
+
+/************
+ * stack
+ */
+
+/**
+ * push notification onto stack
+ * creates a new stack if *s == NULL
+ */
+void n_stack_push(n_stack **s, notification *n);
+
+/**
+ * remove and return notification from stack
+ * sets *s to NULL if stack is empty
+ */
+notification *n_stack_pop(n_stack **s);
+
+
+#endif
 /* vim: set ts=8 sw=8 tw=0: */
