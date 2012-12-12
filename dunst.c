@@ -78,9 +78,6 @@ bool dunst_grab_errored = false;
 
 int next_notification_id = 1;
 
-bool deprecated_mod = false;
-bool deprecated_dunstrc_shortcuts = false;
-
 /* notification lists */
 list *notification_queue = NULL;        /* all new notifications get into here */
 list *displayed_notifications = NULL;   /* currently displayed notifications */
@@ -108,9 +105,6 @@ void print_version(void);
 void r_line_cache_init(r_line_cache *c);
 void r_line_cache_append(r_line_cache *c, const char *s, ColorSet *col, bool continues);
 void r_line_cache_reset(r_line_cache *c);
-
-/* show warning notification */
-void warn(const char *text, int urg);
 
 void init_shortcut(keyboard_shortcut * shortcut);
 KeySym string_to_mask(char *str);
@@ -198,29 +192,6 @@ void ungrab_key(keyboard_shortcut * ks)
         root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
         if (ks->is_valid)
                 XUngrabKey(dc->dpy, ks->code, ks->mask, root);
-}
-
-void warn(const char *text, int urg)
-{
-        notification *n = malloc(sizeof(notification));
-
-        if (n == NULL)
-                die("Unable to allocate memory", EXIT_FAILURE);
-
-        n->appname = strdup("dunst");
-        n->summary = strdup(text);
-        if (n->summary == NULL)
-                die("Unable to allocate memory", EXIT_FAILURE);
-        n->body = strdup("");
-        n->icon = strdup("");
-        n->timeout = 0;
-        n->urgency = urg;
-        n->progress = 0;
-        n->dbus_client = NULL;
-        n->color_strings[ColFG] = NULL;
-        n->color_strings[ColBG] = NULL;
-        init_notification(n, 0);
-        map_win();
 }
 
 int cmp_notification(void *a, void *b)
@@ -1485,24 +1456,6 @@ void load_options(char *cmdline_config_path)
             option_get_int("global", "line_height", "-lh/-line_height",
                            line_height,
                            "Add additional padding above and beneath text");
-        {
-                char *c = option_get_string("global", "modifier", NULL, "", "");
-                if (strlen(c) > 0) {
-                        deprecated_dunstrc_shortcuts = true;
-                        KeySym mod = string_to_mask(c);
-                        close_ks.mask = mod;
-                        close_all_ks.mask = mod;
-                        close_all_ks.mask = mod;
-                        free(c);
-                }
-        }
-        close_ks.str =
-            option_get_string("global", "key", NULL, close_ks.str, "");
-        close_all_ks.str =
-            option_get_string("global", "all_key", NULL, close_all_ks.str, "");
-        history_ks.str =
-            option_get_string("global", "history_key", NULL, history_ks.str,
-                              "");
         bounce_freq =
             option_get_double("global", "bounce_freq", "-bounce_freq",
                               bounce_freq,
@@ -1702,11 +1655,6 @@ int main(int argc, char *argv[])
         signal (SIGUSR1, pause_signal_handler);
         signal (SIGUSR2, pause_signal_handler);
 
-        if (deprecated_mod)
-                warn("-mod is deprecated. Use \"-key mod+key\" instead\n",
-                     CRIT);
-        if (deprecated_dunstrc_shortcuts)
-                warn("You are using deprecated settings. Please update your dunstrc. SEE [shortcuts]", CRIT);
         run();
         return 0;
 }
