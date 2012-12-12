@@ -607,7 +607,7 @@ void draw_win(void)
         /* resize dc to correct width */
 
         int height = (line_cache.count * line_height)
-                   + ((line_cache.count - 1) * separator_height);
+                   + (separator_height * (n_queue_len(&displayed) - 1));
 
 
         resizedc(dc, width, height);
