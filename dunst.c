@@ -708,7 +708,8 @@ void handle_mouse_click(XEvent ev)
                 int y = 0;
                 notification *n = NULL;
                 for (n_queue *iter = displayed; iter; iter = iter->next) {
-                        int height = font_h *  iter->n->line_count;
+                        n = iter->n;
+                        int height = MAX(font_h, line_height) *  n->line_count;
                         if (ev.xbutton.y > y && ev.xbutton.y < y + height)
                                 break;
                         else
