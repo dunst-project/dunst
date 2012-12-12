@@ -373,11 +373,6 @@ void update_lists()
                         return;
                 n->start = now;
 
-                /* TODO get notifications pushed back into
-                 * notification_queue if there's a more important
-                 * message waiting there
-                 */
-
                 l_move(notification_queue, displayed_notifications, to_move);
 
                 l_sort(displayed_notifications, cmp_notification);
@@ -420,7 +415,6 @@ void r_line_cache_reset(r_line_cache *c)
     c->count = 0;
 }
 
-/* TODO get draw_txt_buf as argument */
 int do_word_wrap(char *source, int max_width)
 {
 
