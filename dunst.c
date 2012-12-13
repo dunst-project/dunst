@@ -1438,6 +1438,9 @@ void load_options(char *cmdline_config_path)
                 }
         }
 
+        startup_notification = option_get_bool("global", "startup_notification",
+                        "-startup_notification", false, "print notification on startup");
+
         lowbgcolor =
             option_get_string("urgency_low", "background", "-lb", lowbgcolor,
                               "Background color for notifcations with low urgency");
@@ -1580,6 +1583,20 @@ int main(int argc, char *argv[])
         setup();
         signal (SIGUSR1, pause_signal_handler);
         signal (SIGUSR2, pause_signal_handler);
+
+        if (startup_notification) {
+                notification *n = malloc(sizeof (notification));
+                n->appname = "dunst";
+                n->summary = "startup";
+                n->body = "dunst is up and running";
+                n->urgency = LOW;
+                n->icon = NULL;
+                n->msg = NULL;
+                n->dbus_client = NULL;
+                n->color_strings[0] = NULL;
+                n->color_strings[1] = NULL;
+                init_notification(n, 0);
+        }
 
         run();
         return 0;

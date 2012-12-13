@@ -27,6 +27,12 @@ int line_height = 0;   /* if line height < font height, it will be raised to fon
 int separator_height = 2; /* height of the separator line between two notifications */
 enum separator_color sep_color = AUTO; /* AUTO or FOREGROUND */
 
+/* show a notification on startup
+ * This is mainly for crash detection since dbus restarts dunst
+ * automatically after a crash, so crashes might get unnotices otherwise
+ * */
+int startup_notification = False;
+
 
 /* monitor to display notifications on */
 int monitor = 0;
