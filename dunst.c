@@ -833,8 +833,10 @@ int init_notification(notification * n, int id)
 
         n->msg = string_replace("%a", n->appname, strdup(n->format));
         n->msg = string_replace("%s", n->summary, n->msg);
-        n->msg = string_replace("%i", n->icon, n->msg);
-        n->msg = string_replace("%I", basename(n->icon), n->msg);
+        if (n->icon) {
+                n->msg = string_replace("%I", basename(n->icon), n->msg);
+                n->msg = string_replace("%i", n->icon, n->msg);
+        }
         n->msg = string_replace("%b", n->body, n->msg);
         if (n->progress) {
                 char pg[10];
