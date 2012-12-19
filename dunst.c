@@ -13,6 +13,7 @@
 #include <sys/time.h>
 #include <regex.h>
 #include <math.h>
+#include <errno.h>
 #include <signal.h>
 #include <X11/Xlib.h>
 #include <X11/XKBlib.h>
@@ -32,6 +33,7 @@
 #include "utils.h"
 
 #include "options.h"
+
 
 #define INRECT(x,y,rx,ry,rw,rh) ((x) >= (rx) && (x) < (rx)+(rw) && (y) >= (ry) && (y) < (ry)+(rh))
 #define LENGTH(X)               (sizeof X / sizeof X[0])
@@ -175,22 +177,37 @@ void context_menu(void) {
         char buf[1024];
         int child_io[2];
         int parent_io[2];
-        pipe(child_io);
-        pipe(parent_io);
+        if (pipe(child_io) != 0) {
+                PERR("pipe()", errno);
+                return;
+        }
+        if (pipe(parent_io) != 0) {
+                PERR("pipe()", errno);
+                return;
+        }
         int pid = fork();
 
     if (pid == 0) {
         close(child_io[1]);
         close(parent_io[0]);
         close(0);
-        dup(child_io[0]);
+        if (dup(child_io[0]) == -1) {
+                PERR("dup()", errno);
+                exit(EXIT_FAILURE);
+        }
         close(1);
-        dup(parent_io[1]);
+        if (dup(parent_io[1]) == -1) {
+                PERR("dup()", errno);
+                exit(EXIT_FAILURE);
+        }
         execvp(dmenu_cmd[0], dmenu_cmd);
     } else {
         close(child_io[0]);
         close(parent_io[1]);
-        write(child_io[1], dmenu_input, strlen(dmenu_input));
+        size_t wlen = strlen(dmenu_input);
+        if (write(child_io[1], dmenu_input, wlen) != wlen) {
+                PERR("write()", errno);
+        }
         close(child_io[1]);
 
         size_t len = read(parent_io[0], buf, 1023);
@@ -199,7 +216,7 @@ void context_menu(void) {
         buf[len - 1] = '\0';
     }
 
-    close(child_io[1]);
+    close(parent_io[0]);
 
     int browser_pid = fork();
 
@@ -1691,6 +1708,7 @@ void load_options(char *cmdline_config_path)
 
 int main(int argc, char *argv[])
 {
+
         now = time(&now);
 
         r_line_cache_init(&line_cache);
