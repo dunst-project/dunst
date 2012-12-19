@@ -72,6 +72,8 @@ static int font_h;
 static bool print_notifications = false;
 static dimension_t window_dim;
 static bool pause_display = false;
+static char **dmenu_cmd;
+static char **browser_cmd;
 
 static r_line_cache line_cache;
 
@@ -167,6 +169,9 @@ void context_menu(void) {
                 iter = iter->next;
         }
 
+        if (!dmenu_input)
+                return;
+
         int child_io[2];
         int parent_io[2];
         pipe(child_io);
@@ -180,7 +185,7 @@ void context_menu(void) {
         dup(child_io[0]);
         close(1);
         dup(parent_io[1]);
-        execlp(dmenu, dmenu, (char *) NULL);
+        execvp(dmenu_cmd[0], dmenu_cmd);
     } else {
         close(child_io[0]);
         close(parent_io[1]);
@@ -199,7 +204,7 @@ void context_menu(void) {
     int browser_pid = fork();
 
     if (browser_pid == 0) {
-            execlp(browser, browser, (char *) NULL);
+            execvp(browser_cmd[0], browser_cmd);
     } else {
             return;
     }
@@ -1562,7 +1567,10 @@ void load_options(char *cmdline_config_path)
 
 
         dmenu = option_get_string("global", "dmenu", "-dmenu", dmenu, "path to dmenu");
+        dmenu_cmd = string_to_argv(dmenu);
+
         browser = option_get_string("global", "browser", "-browser", browser, "path to browser");
+        browser_cmd = string_to_argv(browser);
 
         lowbgcolor =
             option_get_string("urgency_low", "background", "-lb", lowbgcolor,

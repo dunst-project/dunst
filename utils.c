@@ -64,6 +64,23 @@ char *string_append(char *a, const char *b, const char *sep)
 
 }
 
+char **string_to_argv(const char *str)
+{
+        char **argv = NULL;
+        char *p = strtok (str, " ");
+        int n_spaces = 0, i;
+
+        while (p) {
+                argv = realloc (argv, sizeof (char*) * ++n_spaces);
+                argv[n_spaces-1] = p;
+                p = strtok (NULL, " ");
+        }
+        argv = realloc (argv, sizeof (char*) * (n_spaces+1));
+        argv[n_spaces] = NULL;
+
+        return argv;
+}
+
 int digit_count(int i)
 {
         int len = 0;
