@@ -24,9 +24,9 @@ config.h:
 	@echo creating $@ from config.def.h
 	@cp config.def.h $@
 
-dunst: draw.o dunst.o container.o dunst_dbus.o utils.o options.o
+dunst: ${OBJ}
 	@echo CC -o $@
-	@${CC} ${CFLAGS} -o $@ dunst.o draw.o container.o dunst_dbus.o options.o utils.o ${LDFLAGS}
+	@${CC} ${CFLAGS} -o $@ ${OBJ} ${LDFLAGS}
 
 clean:
 	@echo cleaning
