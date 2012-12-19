@@ -28,6 +28,10 @@ dunst: ${OBJ}
 	@echo CC -o $@
 	@${CC} ${CFLAGS} -o $@ ${OBJ} ${LDFLAGS}
 
+debug: ${OBJ}
+	@echo CC -o $@
+	@${CC} ${CFLAGS} -O0 -o dunst ${OBJ} ${LDFLAGS}
+
 clean:
 	@echo cleaning
 	@rm -f ${OBJ}
