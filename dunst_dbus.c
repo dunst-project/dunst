@@ -3,7 +3,7 @@
 #include <dbus/dbus.h>
 
 #include "dunst.h"
-#include "list.h"
+#include "container.h"
 
 #include "dunst_dbus.h"
 
@@ -131,37 +131,36 @@ void dbus_poll(int timeout)
         dbus_connection_read_write(dbus_conn, timeout);
 
         dbus_msg = dbus_connection_pop_message(dbus_conn);
-        /* we don't have a new message */
-        if (dbus_msg == NULL) {
-                return;
-        }
 
-        if (dbus_message_is_method_call
-            (dbus_msg, "org.freedesktop.DBus.Introspectable", "Introspect")) {
-                dbus_introspect(dbus_msg);
-        }
+        while (dbus_msg) {
+                if (dbus_message_is_method_call
+                    (dbus_msg, "org.freedesktop.DBus.Introspectable", "Introspect")) {
+                        dbus_introspect(dbus_msg);
+                }
 
-        if (dbus_message_is_method_call(dbus_msg,
-                                        "org.freedesktop.Notifications",
-                                        "Notify")) {
-                notify(dbus_msg);
+                if (dbus_message_is_method_call(dbus_msg,
+                                                "org.freedesktop.Notifications",
+                                                "Notify")) {
+                        notify(dbus_msg);
+                }
+                if (dbus_message_is_method_call(dbus_msg,
+                                                "org.freedesktop.Notifications",
+                                                "GetCapabilities")) {
+                        getCapabilities(dbus_msg);
+                }
+                if (dbus_message_is_method_call(dbus_msg,
+                                                "org.freedesktop.Notifications",
+                                                "GetServerInformation")) {
+                        getServerInformation(dbus_msg);
+                }
+                if (dbus_message_is_method_call(dbus_msg,
+                                                "org.freedesktop.Notifications",
+                                                "CloseNotification")) {
+                        closeNotification(dbus_msg);
+                }
+                dbus_message_unref(dbus_msg);
+                dbus_msg = dbus_connection_pop_message(dbus_conn);
         }
-        if (dbus_message_is_method_call(dbus_msg,
-                                        "org.freedesktop.Notifications",
-                                        "GetCapabilities")) {
-                getCapabilities(dbus_msg);
-        }
-        if (dbus_message_is_method_call(dbus_msg,
-                                        "org.freedesktop.Notifications",
-                                        "GetServerInformation")) {
-                getServerInformation(dbus_msg);
-        }
-        if (dbus_message_is_method_call(dbus_msg,
-                                        "org.freedesktop.Notifications",
-                                        "CloseNotification")) {
-                closeNotification(dbus_msg);
-        }
-        dbus_message_unref(dbus_msg);
 }
 
 void getCapabilities(DBusMessage * dmsg)
@@ -336,11 +335,17 @@ void notify(DBusMessage * dmsg)
                                 continue;
                         }
                         dbus_message_iter_get_basic(&hint, &hint_name);
-                        _extract_hint(DBUS_TYPE_BYTE, "urgency", hint_name, &hint, &urgency);
-                        _extract_hint(DBUS_TYPE_STRING, "fgcolor", hint_name, &hint, &fgcolor);
-                        _extract_hint(DBUS_TYPE_STRING, "bgcolor", hint_name, &hint, &bgcolor);
-                        _extract_hint(DBUS_TYPE_INT32, "value", hint_name, &hint, &progress);
-                        if (!progress) _extract_hint(DBUS_TYPE_UINT32, "value", hint_name, &hint, &progress);
+                        _extract_hint(DBUS_TYPE_BYTE, "urgency", hint_name,
+                                      &hint, &urgency);
+                        _extract_hint(DBUS_TYPE_STRING, "fgcolor", hint_name,
+                                      &hint, &fgcolor);
+                        _extract_hint(DBUS_TYPE_STRING, "bgcolor", hint_name,
+                                      &hint, &bgcolor);
+                        _extract_hint(DBUS_TYPE_INT32, "value", hint_name,
+                                      &hint, &progress);
+                        if (!progress)
+                                _extract_hint(DBUS_TYPE_UINT32, "value",
+                                              hint_name, &hint, &progress);
                         dbus_message_iter_next(&hint);
                 }
                 dbus_message_iter_next(&hints);
@@ -358,7 +363,7 @@ void notify(DBusMessage * dmsg)
         n->body = body != NULL ? strdup(body) : "";
         n->icon = icon != NULL ? strdup(icon) : "";
         n->timeout = expires;
-        n->progress = (progress < 0 || progress > 100) ? 0 : progress+1;
+        n->progress = (progress < 0 || progress > 100) ? 0 : progress + 1;
         n->urgency = urgency;
         n->dbus_client = strdup(dbus_message_get_sender(dmsg));
         for (i = 0; i < ColLast; i++) {
@@ -366,8 +371,10 @@ void notify(DBusMessage * dmsg)
         }
         n->color_strings[ColFG] = fgcolor == NULL ? NULL : strdup(fgcolor);
         n->color_strings[ColBG] = bgcolor == NULL ? NULL : strdup(bgcolor);
+
         id = init_notification(n, replaces_id);
-        map_win();
+        if (id > 0)
+                map_win();
 
         reply = dbus_message_new_method_return(dmsg);
 

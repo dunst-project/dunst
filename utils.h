@@ -8,8 +8,12 @@ char *lskip(char *str);
 char *string_replace(const char *needle, const char *replacement,
                      char *haystack);
 
+char *string_append(char *a, const char *b, const char *sep);
+
+char **string_to_argv(const char *s);
+
 /* exit with an error message */
-void die(char * msg, int exit_value);
+void die(char *msg, int exit_value);
 
 int digit_count(int i);
 

@@ -3,7 +3,7 @@
 
 include config.mk
 
-SRC = draw.c dunst.c list.c dunst_dbus.c utils.c options.c
+SRC = draw.c dunst.c container.c dunst_dbus.c utils.c options.c
 OBJ = ${SRC:.c=.o}
 
 all: doc options dunst service
@@ -24,9 +24,13 @@ config.h:
 	@echo creating $@ from config.def.h
 	@cp config.def.h $@
 
-dunst: draw.o dunst.o list.o dunst_dbus.o utils.o options.o
+dunst: ${OBJ}
 	@echo CC -o $@
-	@${CC} ${CFLAGS} -o $@ dunst.o draw.o list.o dunst_dbus.o options.o utils.o ${LDFLAGS}
+	@${CC} ${CFLAGS} -o $@ ${OBJ} ${LDFLAGS}
+
+debug: ${OBJ}
+	@echo CC -o $@
+	@${CC} ${CFLAGS} -O0 -o dunst ${OBJ} ${LDFLAGS}
 
 clean:
 	@echo cleaning
@@ -34,6 +38,7 @@ clean:
 	@rm -f dunst
 	@rm -f dunst.1
 	@rm -f org.knopwob.dunst.service
+	@rm -f core
 
 doc: dunst.1
 dunst.1: README.pod

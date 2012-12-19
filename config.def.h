@@ -27,9 +27,20 @@ int line_height = 0;   /* if line height < font height, it will be raised to fon
 int separator_height = 2; /* height of the separator line between two notifications */
 enum separator_color sep_color = AUTO; /* AUTO or FOREGROUND */
 
+/* show a notification on startup
+ * This is mainly for crash detection since dbus restarts dunst
+ * automatically after a crash, so crashes might get unnotices otherwise
+ * */
+int startup_notification = False;
+
 
 /* monitor to display notifications on */
 int monitor = 0;
+
+/* path to dmenu */
+char *dmenu = "/usr/bin/dmenu";
+
+char *browser = "/usr/bin/firefox";
 
 /* follow focus to different monitor and display notifications there?
  * possible values:
@@ -52,6 +63,9 @@ keyboard_shortcut close_all_ks = {.str = "none",
                        .code = 0, .sym = NoSymbol,.is_valid = False}; /* ignore this */
 
 keyboard_shortcut history_ks = {.str = "none",
+                       .code = 0, .sym = NoSymbol,.is_valid = False}; /* ignore this */
+
+keyboard_shortcut context_ks = {.str = "none",
                        .code = 0, .sym = NoSymbol,.is_valid = False}; /* ignore this */
 
 rule_t default_rules[] = {

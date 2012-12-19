@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
@@ -5,7 +7,6 @@
 
 #include "utils.h"
 #include "dunst.h"
-
 
 char *rstrip(char *str)
 {
@@ -20,7 +21,7 @@ char *rstrip(char *str)
 
 char *lskip(char *s)
 {
-        for(; *s && isspace(*s); s++);
+        for (; *s && isspace(*s); s++) ;
         return s;
 }
 
@@ -44,17 +45,47 @@ char *string_replace(const char *needle, const char *replacement,
         sprintf(tmp + strlen(tmp), "%s%s", replacement, start + strlen(needle));
         free(haystack);
 
-        if (strstr(tmp, needle)) {
-                return string_replace(needle, replacement, tmp);
-        } else {
-                return tmp;
+        return tmp;
+}
+
+char *string_append(char *a, const char *b, const char *sep)
+{
+        if (!a)
+                return strdup(b);
+
+        char *new;
+        if (!sep)
+                asprintf(&new, "%s%s", a, b);
+        else
+                asprintf(&new, "%s%s%s", a, sep, b);
+        free(a);
+
+        return new;
+
+}
+
+char **string_to_argv(const char *s)
+{
+        char *str = strdup(s);
+        char **argv = NULL;
+        char *p = strtok (str, " ");
+        int n_spaces = 0;
+
+        while (p) {
+                argv = realloc (argv, sizeof (char*) * ++n_spaces);
+                argv[n_spaces-1] = p;
+                p = strtok (NULL, " ");
         }
+        argv = realloc (argv, sizeof (char*) * (n_spaces+1));
+        argv[n_spaces] = NULL;
+
+        return argv;
 }
 
 int digit_count(int i)
 {
         int len = 0;
-        if ( i == 0) {
+        if (i == 0) {
                 return 1;
         }
 

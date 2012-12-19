@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <stdbool.h>
+
 #include "draw.h"
 
 #define LOW 0
@@ -11,7 +13,6 @@
 #define ColLast 2
 #define ColFG 1
 #define ColBG 0
-
 
 enum alignment { left, center, right };
 enum separator_color { FOREGROUND, AUTO };
@@ -23,6 +24,7 @@ typedef struct _dimension_t {
         unsigned int h;
         unsigned int w;
         int mask;
+        int negative_width;
 } dimension_t;
 
 typedef struct _screen_info {
@@ -30,30 +32,26 @@ typedef struct _screen_info {
         dimension_t dim;
 } screen_info;
 
-typedef struct _draw_txt {
-        char *txt;
-        int line_count;
-} draw_txt;
-
 typedef struct _notification {
         char *appname;
         char *summary;
         char *body;
         char *icon;
         char *msg;
-        draw_txt draw_txt_buf;
         const char *format;
         char *dbus_client;
         time_t start;
         time_t timestamp;
         int timeout;
         int urgency;
-        int redisplayed;        /* has been displayed before? */
+        bool redisplayed;       /* has been displayed before? */
         int id;
         int dup_count;
         ColorSet *colors;
         char *color_strings[2];
         int progress;           /* percentage + 1, 0 to hide */
+        int line_count;
+        struct { int count; char **strs; } *urls;
 } notification;
 
 typedef struct _notification_buffer {
@@ -83,8 +81,26 @@ typedef struct _keyboard_shortcut {
         KeyCode code;
         KeySym sym;
         KeySym mask;
-        int is_valid;
+        bool is_valid;
 } keyboard_shortcut;
+
+typedef struct _r_line {
+    ColorSet *colors;
+    char *str;
+    bool continues;
+} r_line;
+
+typedef struct r_line_cache {
+    int count;
+    int size;
+    r_line *lines;
+} r_line_cache;
+
+typedef struct _rule_array {
+        int count;
+        rule_t *rules;
+} rule_array;
+
 
 extern int verbosity;
 

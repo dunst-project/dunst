@@ -34,6 +34,7 @@ DEALINGS IN THE SOFTWARE.
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include <X11/Xlib.h>
 #include <X11/X.h>
@@ -45,7 +46,7 @@ DEALINGS IN THE SOFTWARE.
 #define MIN(a, b)  ((a) < (b) ? (a) : (b))
 
 void
-drawrect(DC * dc, int x, int y, unsigned int w, unsigned int h, Bool fill,
+drawrect(DC * dc, int x, int y, unsigned int w, unsigned int h, bool fill,
          unsigned long color)
 {
         XSetForeground(dc->dpy, dc->gc, color);
@@ -71,7 +72,7 @@ void drawtext(DC * dc, const char *text, ColorSet * col)
         if (mn < n)
                 for (n = MAX(mn - 3, 0); n < mn; buf[n++] = '.') ;
 
-        drawrect(dc, 0, 0, dc->w, dc->h, True, col->BG);
+        drawrect(dc, 0, 0, dc->w, dc->h, true, col->BG);
         drawtextn(dc, buf, mn, col);
 }
 
@@ -234,12 +235,12 @@ void initfont(DC * dc, const char *fontstr)
         return;
 }
 
-void
-setopacity(DC *dc, Window win, unsigned long opacity)
+void setopacity(DC * dc, Window win, unsigned long opacity)
 {
-	Atom _NET_WM_WINDOW_OPACITY = XInternAtom(dc->dpy, "_NET_WM_WINDOW_OPACITY", False);
-	XChangeProperty(dc->dpy, win, _NET_WM_WINDOW_OPACITY, XA_CARDINAL, 32, PropModeReplace,
-			(unsigned char *)&opacity, 1L);
+        Atom _NET_WM_WINDOW_OPACITY =
+            XInternAtom(dc->dpy, "_NET_WM_WINDOW_OPACITY", false);
+        XChangeProperty(dc->dpy, win, _NET_WM_WINDOW_OPACITY, XA_CARDINAL, 32,
+                        PropModeReplace, (unsigned char *)&opacity, 1L);
 }
 
 void mapdc(DC * dc, Window win, unsigned int w, unsigned int h)

@@ -43,6 +43,8 @@
     # the window expands to the longest message displayed.
     # A positive x is measured from the left, a negative from the
     # right side of the screen.  Y is measured from the top and down respectevly.
+    # The width can be negative. In this case the actual width is the
+    # screen width minus the width defined in within the geometry option.
     geometry = "0x3-30+20"
 
     # The transparency of the window. range: [0; 100]
@@ -87,6 +89,17 @@
     # that fits nicely to the background color.
     separator_color = auto
 
+    # print a notification on startup
+    # This is mainly for error detection, since dbus (re-)starts dunst
+    # automatically after a crash.
+    startup_notification = false
+
+    # dmenu path
+    dmenu = /usr/bin/dmenu -p dunst:
+
+    # browser for opening urls in context menu
+    browser = /usr/bin/firefox -new-tab
+
 
 [shortcuts]
     # shortcuts are specified as [modifier+][modifier+]...key
@@ -103,6 +116,9 @@
     # redisplay last message(s)
     # On the US keyboard layout 'grave' is normally above TAB and left of '1'.
     history = ctrl+grave
+
+    # context menu
+    context = ctrl+shift+period
 
 [urgency_low]
     # IMPORTANT: colors have to be defined in quotation marks.
