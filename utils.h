@@ -17,6 +17,7 @@ void die(char *msg, int exit_value);
 
 int digit_count(int i);
 
+int sasprintf(char **strp, const char *fmt, ...);
 #endif
 
 /* vim: set ts=8 sw=8 tw=0: */

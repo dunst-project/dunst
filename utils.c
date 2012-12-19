@@ -55,9 +55,9 @@ char *string_append(char *a, const char *b, const char *sep)
 
         char *new;
         if (!sep)
-                asprintf(&new, "%s%s", a, b);
+                sasprintf(&new, "%s%s", a, b);
         else
-                asprintf(&new, "%s%s%s", a, sep, b);
+                sasprintf(&new, "%s%s%s", a, sep, b);
         free(a);
 
         return new;
@@ -106,6 +106,18 @@ void die(char *text, int exit_value)
 {
         fputs(text, stderr);
         exit(exit_value);
+}
+
+int sasprintf(char **strp, const char *fmt, ...)
+{
+        va_list args;
+        int result;
+
+        va_start(args, fmt);
+        if ((result = vasprintf(strp, fmt, args)) == -1)
+                die("asprintf failed", EXIT_FAILURE);
+        va_end(args);
+        return result;
 }
 
 /* vim: set ts=8 sw=8 tw=0: */

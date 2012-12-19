@@ -438,18 +438,18 @@ void cmdline_usage_append(char *key, char *type, char *description)
 {
         char *key_type;
         if (type && strlen(type) > 0)
-                asprintf(&key_type, "%s (%s)", key, type);
+                sasprintf(&key_type, "%s (%s)", key, type);
         else
-                asprintf(&key_type, "%s", key);
+                sasprintf(&key_type, "%s", key);
 
         if (!usage_str) {
-                asprintf(&usage_str, "%-40s - %s\n", key_type, description);
+                sasprintf(&usage_str, "%-40s - %s\n", key_type, description);
                 free(key_type);
                 return;
         }
 
         char *tmp;
-        asprintf(&tmp, "%s%-40s - %s\n", usage_str, key_type, description);
+        sasprintf(&tmp, "%s%-40s - %s\n", usage_str, key_type, description);
         free(key_type);
 
         free(usage_str);

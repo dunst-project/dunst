@@ -506,7 +506,7 @@ void add_notification_to_line_cache(notification *n, int max_width)
 
         /* print dup_count */
         if (n->dup_count > 0) {
-                asprintf(&buf, "(%d)", n->dup_count);
+                sasprintf(&buf, "(%d)", n->dup_count);
         } else {
                 buf = strdup("");
         }
@@ -514,7 +514,7 @@ void add_notification_to_line_cache(notification *n, int max_width)
         /* print msg */
         {
                 char *new_buf;
-                asprintf(&new_buf, "%s %s", buf, msg);
+                sasprintf(&new_buf, "%s %s", buf, msg);
                 free(buf);
                 buf = new_buf;
         }
@@ -530,13 +530,13 @@ void add_notification_to_line_cache(notification *n, int max_width)
 
                 char *new_buf;
                 if (hours > 0) {
-                        asprintf(&new_buf, "%s (%dh %dm %ds old)", buf, hours,
+                        sasprintf(&new_buf, "%s (%dh %dm %ds old)", buf, hours,
                                  minutes, seconds);
                 } else if (minutes > 0) {
-                        asprintf(&new_buf, "%s (%dm %ds old)", buf, minutes,
+                        sasprintf(&new_buf, "%s (%dm %ds old)", buf, minutes,
                                  seconds);
                 } else {
-                        asprintf(&new_buf, "%s (%ds old)", buf, seconds);
+                        sasprintf(&new_buf, "%s (%ds old)", buf, seconds);
                 }
 
                 free(buf);
@@ -694,7 +694,7 @@ void fill_line_cache(int width)
         if (indicate_hidden && queue_cnt > 0) {
                 if (geometry.h != 1) {
                         char *tmp;
-                        asprintf(&tmp, "(%d more)", queue_cnt);
+                        sasprintf(&tmp, "(%d more)", queue_cnt);
                         ColorSet *last_colors =
                                 line_cache.lines[line_cache.count-1].colors;
                         r_line_cache_append(&line_cache, tmp, last_colors, false);
@@ -702,7 +702,7 @@ void fill_line_cache(int width)
                 } else {
                         char *old = line_cache.lines[0].str;
                         char *new;
-                        asprintf(&new, "%s (%d more)", old, queue_cnt);
+                        sasprintf(&new, "%s (%d more)", old, queue_cnt);
                         free(old);
                         line_cache.lines[0].str = new;
                 }
@@ -1045,7 +1045,7 @@ int init_notification(notification * n, int id)
         }
 
         char *tmp;
-        asprintf(&tmp, "%s %s", n->summary, n->body);
+        sasprintf(&tmp, "%s %s", n->summary, n->body);
 
         n->urls = extract_urls(tmp);
 
