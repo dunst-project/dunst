@@ -732,7 +732,6 @@ char
         str = string_replace("&lt;", "<", str);
         str = string_replace("&gt;", ">", str);
 
-        str = string_replace("\n", " ", str);
         /* remove tags */
         str = string_replace("<b>", "", str);
         str = string_replace("</b>", "", str);
