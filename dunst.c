@@ -102,6 +102,7 @@ void hide_win(void);
 void move_all_to_history(void);
 void print_version(void);
 str_array *extract_urls(const char *str);
+void context_menu(void);
 
 void r_line_cache_init(r_line_cache *c);
 void r_line_cache_append(r_line_cache *c, const char *s, ColorSet *col, bool continues);
@@ -151,6 +152,57 @@ str_array *extract_urls( const char * to_match)
     return 0;
 
     return urls;
+}
+
+void context_menu(void) {
+        char *dmenu_input = NULL;
+
+        n_queue *iter = displayed;
+
+        while (iter) {
+                for (int i = 0; i < iter->n->urls->count; i++) {
+                        dmenu_input = string_append(dmenu_input,
+                                        (iter->n->urls->strs)[i], "\n");
+                }
+                iter = iter->next;
+        }
+
+        int child_io[2];
+        int parent_io[2];
+        pipe(child_io);
+        pipe(parent_io);
+        int pid = fork();
+
+    if (pid == 0) {
+        close(child_io[1]);
+        close(parent_io[0]);
+        close(0);
+        dup(child_io[0]);
+        close(1);
+        dup(parent_io[1]);
+        execlp(dmenu, dmenu, (char *) NULL);
+    } else {
+        close(child_io[0]);
+        close(parent_io[1]);
+        write(child_io[1], dmenu_input, strlen(dmenu_input));
+        close(child_io[1]);
+
+        char buf[1024];
+        size_t len = read(parent_io[0], buf, 1023);
+        if (len == 0)
+            return;
+        buf[len - 1] = '\0';
+    }
+
+    close(child_io[1]);
+
+    int browser_pid = fork();
+
+    if (browser_pid == 0) {
+            execlp(browser, browser, (char *) NULL);
+    } else {
+            return;
+    }
 }
 
 void pause_signal_handler(int sig)
@@ -812,6 +864,11 @@ void handleXEvents(void)
                             && close_all_ks.mask == ev.xkey.state) {
                                 move_all_to_history();
                         }
+                        if (context_ks.str
+                            && XLookupKeysym(&ev.xkey, 0) == context_ks.sym
+                            && context_ks.mask == ev.xkey.state) {
+                                context_menu();
+                        }
                 }
         }
 }
@@ -1149,6 +1206,7 @@ void hide_win()
 {
         ungrab_key(&close_ks);
         ungrab_key(&close_all_ks);
+        ungrab_key(&context_ks);
 
         XUngrabButton(dc->dpy, AnyButton, AnyModifier, win);
         XUnmapWindow(dc->dpy, win);
@@ -1264,6 +1322,7 @@ void setup(void)
         init_shortcut(&close_ks);
         init_shortcut(&close_all_ks);
         init_shortcut(&history_ks);
+        init_shortcut(&context_ks);
 
         grab_key(&close_ks);
         ungrab_key(&close_ks);
@@ -1271,6 +1330,8 @@ void setup(void)
         ungrab_key(&close_all_ks);
         grab_key(&history_ks);
         ungrab_key(&history_ks);
+        grab_key(&context_ks);
+        ungrab_key(&context_ks);
 
         colors[LOW] = initcolor(dc, lowfgcolor, lowbgcolor);
         colors[NORM] = initcolor(dc, normfgcolor, normbgcolor);
@@ -1344,6 +1405,7 @@ void map_win(void)
 
         grab_key(&close_ks);
         grab_key(&close_all_ks);
+        grab_key(&context_ks);
         setup_error_handler();
         XGrabButton(dc->dpy, AnyButton, AnyModifier, win, false,
                     BUTTONMASK, GrabModeAsync, GrabModeSync, None, None);
@@ -1498,6 +1560,10 @@ void load_options(char *cmdline_config_path)
         startup_notification = option_get_bool("global", "startup_notification",
                         "-startup_notification", false, "print notification on startup");
 
+
+        dmenu = option_get_string("global", "dmenu", "-dmenu", dmenu, "path to dmenu");
+        browser = option_get_string("global", "browser", "-browser", browser, "path to browser");
+
         lowbgcolor =
             option_get_string("urgency_low", "background", "-lb", lowbgcolor,
                               "Background color for notifcations with low urgency");
@@ -1542,6 +1608,11 @@ void load_options(char *cmdline_config_path)
             option_get_string("shortcuts", "history", "-history_key",
                               history_ks.str,
                               "Shortcut to pop the last notification from history");
+
+        context_ks.str =
+                option_get_string("shortcuts", "context", "-context_key",
+                                context_ks.str,
+                                "Shortcut for context menu");
 
         print_notifications =
             cmdline_get_bool("-print", false,

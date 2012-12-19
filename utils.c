@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
@@ -44,6 +46,22 @@ char *string_replace(const char *needle, const char *replacement,
         free(haystack);
 
         return tmp;
+}
+
+char *string_append(char *a, const char *b, const char *sep)
+{
+        if (!a)
+                return strdup(b);
+
+        char *new;
+        if (!sep)
+                asprintf(&new, "%s%s", a, b);
+        else
+                asprintf(&new, "%s%s%s", a, sep, b);
+        free(a);
+
+        return new;
+
 }
 
 int digit_count(int i)

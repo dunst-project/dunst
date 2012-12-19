@@ -8,6 +8,8 @@ char *lskip(char *str);
 char *string_replace(const char *needle, const char *replacement,
                      char *haystack);
 
+char *string_append(char *a, const char *b, const char *sep);
+
 /* exit with an error message */
 void die(char *msg, int exit_value);
 

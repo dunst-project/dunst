@@ -94,6 +94,13 @@
     # automatically after a crash.
     startup_notification = false
 
+    # dmenu path
+    dmenu = "/usr/bin/dmenu"
+
+    # browser for opening urls in context menu
+    browser = /usr/bin/firefox
+
+
 [shortcuts]
     # shortcuts are specified as [modifier+][modifier+]...key
     # available modifiers are 'ctrl', 'mod1' (the alt-key), 'mod2', 'mod3'
@@ -109,6 +116,9 @@
     # redisplay last message(s)
     # On the US keyboard layout 'grave' is normally above TAB and left of '1'.
     history = ctrl+grave
+
+    # context menu
+    context = ctrl+shift+period
 
 [urgency_low]
     # IMPORTANT: colors have to be defined in quotation marks.
