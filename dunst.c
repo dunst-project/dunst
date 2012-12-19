@@ -11,6 +11,7 @@
 #include <string.h>
 #include <fnmatch.h>
 #include <sys/time.h>
+#include <regex.h>
 #include <math.h>
 #include <signal.h>
 #include <X11/Xlib.h>
@@ -100,6 +101,7 @@ void draw_win(void);
 void hide_win(void);
 void move_all_to_history(void);
 void print_version(void);
+str_array *extract_urls(const char *str);
 
 void r_line_cache_init(r_line_cache *c);
 void r_line_cache_append(r_line_cache *c, const char *s, ColorSet *col, bool continues);
@@ -107,6 +109,49 @@ void r_line_cache_reset(r_line_cache *c);
 
 void init_shortcut(keyboard_shortcut * shortcut);
 KeySym string_to_mask(char *str);
+
+str_array *extract_urls( const char * to_match)
+{
+    static bool is_initialized = false;
+    static regex_t cregex;
+
+    if (!is_initialized) {
+        char *regex = "((http|ftp|https)(://))?(www\\.)?[[:alnum:]_-]+\\.[^[:space:]]+";
+        int ret = regcomp(&cregex, regex, REG_EXTENDED|REG_ICASE);
+        if (ret != 0) {
+            printf("failed to compile regex\n");
+            return NULL;
+        }
+    }
+
+    str_array *urls = str_array_malloc();
+
+    const char * p = to_match;
+    regmatch_t m;
+
+    while (1) {
+        int nomatch = regexec (&cregex, p, 1, &m, 0);
+        if (nomatch) {
+                return urls;
+        }
+        int start;
+        int finish;
+        if (m.rm_so == -1) {
+            break;
+        }
+        start = m.rm_so + (p - to_match);
+        finish = m.rm_eo + (p - to_match);
+
+        char *match = strndup(to_match+start, finish-start);
+
+        str_array_append(urls, match);
+
+        p += m.rm_eo;
+    }
+    return 0;
+
+    return urls;
+}
 
 void pause_signal_handler(int sig)
 {
@@ -130,6 +175,12 @@ static void print_notification(notification * n)
         printf("\turgency: %d\n", n->urgency);
         printf("\tformatted: %s\n", n->msg);
         printf("\tid: %d\n", n->id);
+        printf("urls\n");
+        printf("\t{\n");
+        for (int i = 0; i < n->urls->count; i++) {
+                printf("\t\t%s\n", (n->urls->strs)[i]);
+        }
+        printf("\t}\n");
         printf("}\n");
 }
 
@@ -910,6 +961,13 @@ int init_notification(notification * n, int id)
         } else {
                 n_queue_enqueue(&queue, n);
         }
+
+        char *tmp;
+        asprintf(&tmp, "%s %s", n->summary, n->body);
+
+        n->urls = extract_urls(tmp);
+
+        free(tmp);
 
         if (print_notifications)
                 print_notification(n);

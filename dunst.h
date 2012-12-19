@@ -51,6 +51,7 @@ typedef struct _notification {
         char *color_strings[2];
         int progress;           /* percentage + 1, 0 to hide */
         int line_count;
+        struct { int count; char **strs; } *urls;
 } notification;
 
 typedef struct _notification_buffer {
