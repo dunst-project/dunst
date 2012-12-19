@@ -172,6 +172,7 @@ void context_menu(void) {
         if (!dmenu_input)
                 return;
 
+        char buf[1024];
         int child_io[2];
         int parent_io[2];
         pipe(child_io);
@@ -192,7 +193,6 @@ void context_menu(void) {
         write(child_io[1], dmenu_input, strlen(dmenu_input));
         close(child_io[1]);
 
-        char buf[1024];
         size_t len = read(parent_io[0], buf, 1023);
         if (len == 0)
             return;
@@ -203,8 +203,11 @@ void context_menu(void) {
 
     int browser_pid = fork();
 
+
     if (browser_pid == 0) {
-            execvp(browser_cmd[0], browser_cmd);
+            browser = string_append(browser, buf, " ");
+            char **cmd = string_to_argv(browser);
+            execvp(cmd[0], cmd);
     } else {
             return;
     }
