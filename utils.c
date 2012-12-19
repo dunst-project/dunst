@@ -64,11 +64,12 @@ char *string_append(char *a, const char *b, const char *sep)
 
 }
 
-char **string_to_argv(const char *str)
+char **string_to_argv(const char *s)
 {
+        char *str = strdup(s);
         char **argv = NULL;
         char *p = strtok (str, " ");
-        int n_spaces = 0, i;
+        int n_spaces = 0;
 
         while (p) {
                 argv = realloc (argv, sizeof (char*) * ++n_spaces);
