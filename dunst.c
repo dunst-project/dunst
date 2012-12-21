@@ -15,6 +15,7 @@
 #include <math.h>
 #include <errno.h>
 #include <signal.h>
+#include <sys/wait.h>
 #include <X11/Xlib.h>
 #include <X11/XKBlib.h>
 #include <X11/Xatom.h>
@@ -214,19 +215,27 @@ void context_menu(void) {
         if (len == 0)
             return;
         buf[len - 1] = '\0';
+
+        int status;
+        waitpid(pid, &status, 0);
     }
 
     close(parent_io[0]);
 
-    int browser_pid = fork();
+    int browser_pid1 = fork();
 
-
-    if (browser_pid == 0) {
-            browser = string_append(browser, buf, " ");
-            char **cmd = string_to_argv(browser);
-            execvp(cmd[0], cmd);
+    if (browser_pid1) {
+            int status;
+            waitpid(browser_pid1, &status, 0);
     } else {
-            return;
+            int browser_pid2 = fork();
+            if (browser_pid2) {
+                    exit(0);
+            } else {
+                    browser = string_append(browser, buf, " ");
+                    char **cmd = string_to_argv(browser);
+                    execvp(cmd[0], cmd);
+            }
     }
 }
 
@@ -256,21 +265,29 @@ void run_script(notification *n)
                         break;
         }
 
-        int pid = fork();
+        int pid1 = fork();
 
-        if (pid == 0) {
-                execlp(n->script, n->script,
-                                appname,
-                                summary,
-                                body,
-                                icon,
-                                urgency,
-                                (char *) NULL
-                                );
-        } else if (pid < 0) {
-                PERR("Unable to fork", errno);
+        if (pid1) {
+                int status;
+                waitpid(pid1, &status, 0);
         } else {
-                return;
+                int pid2 = fork();
+                if (pid2) {
+                        exit(0);
+                } else {
+                        int ret = execlp(n->script, n->script,
+                                        appname,
+                                        summary,
+                                        body,
+                                        icon,
+                                        urgency,
+                                        (char *) NULL
+                                        );
+                        if (ret != 0) {
+                                PERR("Unable to run script", errno);
+                                exit(EXIT_FAILURE);
+                        }
+                }
         }
 }
 
