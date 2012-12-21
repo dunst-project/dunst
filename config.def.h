@@ -28,6 +28,8 @@ int separator_height = 2; /* height of the separator line between two notificati
 int padding = 0;
 enum separator_color sep_color = AUTO; /* AUTO or FOREGROUND */
 
+int frame_width = 0;
+char *frame_color = "#888888";
 /* show a notification on startup
  * This is mainly for crash detection since dbus restarts dunst
  * automatically after a crash, so crashes might get unnotices otherwise

@@ -76,7 +76,7 @@ static bool print_notifications = false;
 static dimension_t window_dim;
 static bool pause_display = false;
 static char **dmenu_cmd;
-
+static unsigned long framec;
 static r_line_cache line_cache;
 
 bool dunst_grab_errored = false;
@@ -306,12 +306,12 @@ void pause_signal_handler(int sig)
 static void print_notification(notification * n)
 {
         printf("{\n");
-        printf("\tappname: %s\n", n->appname);
-        printf("\tsummary: %s\n", n->summary);
-        printf("\tbody: %s\n", n->body);
-        printf("\ticon: %s\n", n->icon);
+        printf("\tappname: '%s'\n", n->appname);
+        printf("\tsummary: '%s'\n", n->summary);
+        printf("\tbody: '%s'\n", n->body);
+        printf("\ticon: '%s'\n", n->icon);
         printf("\turgency: %d\n", n->urgency);
-        printf("\tformatted: %s\n", n->msg);
+        printf("\tformatted: '%s'\n", n->msg);
         printf("\tid: %d\n", n->id);
         printf("urls\n");
         printf("\t{\n");
@@ -630,11 +630,11 @@ int calculate_x_offset(int line_width, int text_width)
         }
         switch (align) {
         case left:
-                return 0;
+                return frame_width;
         case center:
-                return leftover / 2;
+                return frame_width + (leftover / 2);
         case right:
-                return leftover;
+                return frame_width + leftover;
         default:
                 /* this can't happen */
                 return 0;
@@ -774,10 +774,16 @@ void draw_win(void)
 
         r_line_cache_reset(&line_cache);
         update_screen_info();
-        int width = calculate_width();
+        int outer_width = calculate_width();
 
 
         line_height = MAX(line_height, font_h);
+
+        int width;
+        if (outer_width == 0)
+                width = 0;
+        else
+                width = outer_width - (2 * frame_width);
 
 
         fill_line_cache(width);
@@ -789,6 +795,7 @@ void draw_win(void)
                         char *line = line_cache.lines[i].str;
                         width = MAX(width, textw(dc, line));
                 }
+                outer_width = width + (2 * frame_width);
         }
 
         /* resize dc to correct width */
@@ -796,15 +803,28 @@ void draw_win(void)
         int height = (line_cache.count * line_height)
                    + n_queue_len(&displayed) * 2 * padding
                    + ((indicate_hidden && n_queue_len(&queue) > 0) ? 2 * padding : 0)
-                   + (separator_height * (n_queue_len(&displayed) - 1));
+                   + (separator_height * (n_queue_len(&displayed) - 1))
+                   + (2 * frame_width);
 
 
-        resizedc(dc, width, height);
 
+        resizedc(dc, outer_width, height);
+
+        /* draw frame
+         * this draws a big box in the frame color which get filled with
+         * smaller boxes of the notification colors
+         */
         dc->y = 0;
+        dc->x = 0;
+        if (frame_width > 0) {
+                drawrect(dc, 0, 0, outer_width, height, true, framec);
+        }
+
+        dc->y = frame_width;
+        dc->x = frame_width;
 
         for (int i = 0; i < line_cache.count; i++) {
-                dc->x = 0;
+                dc->x = frame_width;
 
                 r_line line = line_cache.lines[i];
 
@@ -829,7 +849,7 @@ void draw_win(void)
 
                 /* draw separator */
                 if (separator_height > 0 && i < line_cache.count - 1 && line.is_end) {
-                        dc->x = 0;
+                        dc->x = frame_width;
                         double color;
                         if (sep_color == AUTO)
                                 color = calculate_foreground_color(line.colors->BG);
@@ -840,7 +860,7 @@ void draw_win(void)
                 }
         }
 
-        move_and_map(width, height);
+        move_and_map(outer_width, height);
 }
 
 char
@@ -1442,6 +1462,8 @@ void setup(void)
         color_strings[ColBG][NORM] = normbgcolor;
         color_strings[ColBG][CRIT] = critbgcolor;
 
+        framec = getcolor(dc, frame_color);
+
         /* parse and set geometry and monitor position */
         if (geom[0] == '-') {
                 geometry.negative_width = true;
@@ -1665,6 +1687,12 @@ void load_options(char *cmdline_config_path)
         dmenu_cmd = string_to_argv(dmenu);
 
         browser = option_get_string("global", "browser", "-browser", browser, "path to browser");
+
+        frame_width = option_get_int("frame", "width", "-frame_width", frame_width,
+                        "Width of frame around window");
+
+        frame_color = option_get_string("frame", "color", "-frame_color",
+                        frame_color, "Color of the frame around window");
 
         lowbgcolor =
             option_get_string("urgency_low", "background", "-lb", lowbgcolor,
