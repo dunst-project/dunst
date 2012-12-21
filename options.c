@@ -109,7 +109,7 @@ char *ini_get_string(char *section, char *key, const char *def)
         if (def == NULL)
                 return NULL;
         else
-                return strdup(def);
+                return def ?  strdup(def) : NULL;
 }
 
 int ini_get_int(char *section, char *key, int def)
