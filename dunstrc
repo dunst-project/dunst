@@ -84,6 +84,9 @@
     # Set to 0 to disable
     separator_height = 2;
 
+    # padding between text and separator
+    padding = 3
+
     # Define a color for the separator.
     # This can either be "auto" or "foreground". "Auto" tries to find a color
     # that fits nicely to the background color.

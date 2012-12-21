@@ -110,7 +110,7 @@ void context_menu(void);
 void run_script(notification *n);
 
 void r_line_cache_init(r_line_cache *c);
-void r_line_cache_append(r_line_cache *c, const char *s, ColorSet *col, bool continues);
+void r_line_cache_append(r_line_cache *c, const char *s, ColorSet *col, bool is_begin, bool is_end);
 void r_line_cache_reset(r_line_cache *c);
 
 void init_shortcut(keyboard_shortcut * shortcut);
@@ -487,7 +487,7 @@ void r_line_cache_init(r_line_cache *c)
     c->lines = NULL;
 }
 
-void r_line_cache_append(r_line_cache *c, const char *s, ColorSet *col, bool continues)
+void r_line_cache_append(r_line_cache *c, const char *s, ColorSet *col, bool is_begin, bool is_end)
 {
     if (!c || !s)
         return;
@@ -501,7 +501,8 @@ void r_line_cache_append(r_line_cache *c, const char *s, ColorSet *col, bool con
     c->count++;
     c->lines[c->count-1].colors = col;
     c->lines[c->count-1].str = strdup(s);
-    c->lines[c->count-1].continues = continues;
+    c->lines[c->count-1].is_begin = is_begin;
+    c->lines[c->count-1].is_end = is_end;
 }
 
 void r_line_cache_reset(r_line_cache *c)
@@ -614,7 +615,7 @@ void add_notification_to_line_cache(notification *n, int max_width)
         n->line_count = linecnt;
         char *cur = buf;
         for (int i = 0; i < linecnt; i++) {
-                r_line_cache_append(&line_cache, cur, n->colors, i+1 != linecnt);
+                r_line_cache_append(&line_cache, cur, n->colors,i == 0, i == linecnt-1);
 
                 while (*cur != '\0')
                         cur++;
@@ -763,7 +764,7 @@ void fill_line_cache(int width)
                         sasprintf(&tmp, "(%d more)", queue_cnt);
                         ColorSet *last_colors =
                                 line_cache.lines[line_cache.count-1].colors;
-                        r_line_cache_append(&line_cache, tmp, last_colors, false);
+                        r_line_cache_append(&line_cache, tmp, last_colors, true, true);
                         free(tmp);
                 } else {
                         char *old = line_cache.lines[0].str;
@@ -801,6 +802,7 @@ void draw_win(void)
         /* resize dc to correct width */
 
         int height = (line_cache.count * line_height)
+                   + n_queue_len(&displayed) * 2 * padding
                    + (separator_height * (n_queue_len(&displayed) - 1));
 
 
@@ -815,16 +817,25 @@ void draw_win(void)
 
 
                 /* draw background */
-                drawrect(dc, 0, 0, width, line_height, true, line.colors->BG);
+                int pad = 0;
+                pad += line.is_begin ? padding : 0;
+                pad += line.is_end ? padding : 0;
+
+                drawrect(dc, 0, 0, width, pad +  line_height, true, line.colors->BG);
 
                 /* draw text */
                 dc->x = calculate_x_offset(width, textw(dc, line.str));
-                dc->y += (line_height - font_h) / 2;
+
+                dc->y += ((line_height - font_h) / 2);
+                dc->y += line.is_begin ? padding : 0;
+
                 drawtextn(dc, line.str, strlen(line.str), line.colors);
+
                 dc->y += line_height - ((line_height - font_h) / 2);
+                dc->y += line.is_end ? padding : 0;
 
                 /* draw separator */
-                if (separator_height > 0 && i < line_cache.count - 1 && !line.continues) {
+                if (separator_height > 0 && i < line_cache.count - 1 && line.is_end) {
                         dc->x = 0;
                         double color;
                         if (sep_color == AUTO)
@@ -834,7 +845,6 @@ void draw_win(void)
                         drawrect(dc, 0, 0, width, separator_height, true, color);
                         dc->y += separator_height;
                 }
-
         }
 
         move_and_map(width, height);
@@ -1631,6 +1641,9 @@ void load_options(char *cmdline_config_path)
             option_get_int("global", "separator_height",
                            "-sep_height/-separator_height", separator_height,
                            "height of the separator line");
+        padding =
+            option_get_int("global", "padding", "-padding", padding,
+                            "Padding between text and separator");
         transparency =
             option_get_int("global", "transparency", "-transparency",
                            transparency, "Transparency. range 0-100");

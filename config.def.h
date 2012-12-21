@@ -25,6 +25,7 @@ int word_wrap = False;
 int line_height = 0;   /* if line height < font height, it will be raised to font height */
 
 int separator_height = 2; /* height of the separator line between two notifications */
+int padding = 0;
 enum separator_color sep_color = AUTO; /* AUTO or FOREGROUND */
 
 /* show a notification on startup
