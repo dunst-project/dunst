@@ -1673,6 +1673,7 @@ void load_options(char *cmdline_config_path)
                         initrule(r);
                 }
 
+                r->name = strdup(cur_section);
                 r->appname = ini_get_string(cur_section, "appname", r->appname);
                 r->summary = ini_get_string(cur_section, "summary", r->summary);
                 r->body = ini_get_string(cur_section, "body", r->body);
