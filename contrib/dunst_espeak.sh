@@ -3,4 +3,4 @@
 summary="$2"
 body="$3"
 
-echo "$summary $body" | espeak 2>&1
+echo "$summary $body" | espeak
