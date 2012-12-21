@@ -533,11 +533,6 @@ int do_word_wrap(char *source, int max_width)
                         *eol = '\0';
                         return 1 + do_word_wrap(eol + 1, max_width);
                 }
-                if (*eol == '\\' && *(eol + 1) == 'n') {
-                        *eol = ' ';
-                        *(eol + 1) = '\0';
-                        return 1 + do_word_wrap(eol + 2, max_width);
-                }
 
                 if (word_wrap && max_width > 0) {
                         if (textnw(dc, source, (eol - source) + 1) >= max_width) {
@@ -1070,6 +1065,10 @@ int init_notification(notification * n, int id)
         }
 
         n->msg = fix_markup(n->msg);
+
+        while (strstr(n->msg, "\\n") != NULL)
+                n->msg = string_replace("\\n", "\n", n->msg);
+
         n->msg = rstrip(n->msg);
 
 
