@@ -75,7 +75,6 @@ static bool print_notifications = false;
 static dimension_t window_dim;
 static bool pause_display = false;
 static char **dmenu_cmd;
-static char **browser_cmd;
 
 static r_line_cache line_cache;
 
@@ -1643,7 +1642,6 @@ void load_options(char *cmdline_config_path)
         dmenu_cmd = string_to_argv(dmenu);
 
         browser = option_get_string("global", "browser", "-browser", browser, "path to browser");
-        browser_cmd = string_to_argv(browser);
 
         lowbgcolor =
             option_get_string("urgency_low", "background", "-lb", lowbgcolor,
