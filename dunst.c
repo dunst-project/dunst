@@ -571,19 +571,11 @@ void add_notification_to_line_cache(notification *n, int max_width)
 
         char *buf;
 
-        /* print dup_count */
+        /* print dup_count and msg*/
         if (n->dup_count > 0) {
-                sasprintf(&buf, "(%d)", n->dup_count);
+                sasprintf(&buf, "(%d) %s", n->dup_count, msg);
         } else {
-                buf = strdup("");
-        }
-
-        /* print msg */
-        {
-                char *new_buf;
-                sasprintf(&new_buf, "%s %s", buf, msg);
-                free(buf);
-                buf = new_buf;
+                buf = strdup(msg);
         }
 
         /* print age */
