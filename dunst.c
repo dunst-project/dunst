@@ -803,6 +803,7 @@ void draw_win(void)
 
         int height = (line_cache.count * line_height)
                    + n_queue_len(&displayed) * 2 * padding
+                   + ((indicate_hidden && n_queue_len(&queue) > 0) ? 2 * padding : 0)
                    + (separator_height * (n_queue_len(&displayed) - 1));
 
 
