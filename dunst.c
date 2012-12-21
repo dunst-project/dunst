@@ -107,6 +107,7 @@ void move_all_to_history(void);
 void print_version(void);
 str_array *extract_urls(const char *str);
 void context_menu(void);
+void run_script(notification *n);
 
 void r_line_cache_init(r_line_cache *c);
 void r_line_cache_append(r_line_cache *c, const char *s, ColorSet *col, bool continues);
@@ -230,6 +231,50 @@ void context_menu(void) {
     }
 }
 
+void run_script(notification *n)
+{
+        if (!n->script || strlen(n->script) < 1)
+                return;
+
+        char *appname = n->appname ? n->appname : "";
+        char *summary = n->summary ? n->summary : "";
+        char *body = n->body ? n->body : "";
+        char *icon = n->icon ? n->icon : "";
+
+        char *urgency;
+        switch (n->urgency) {
+                case LOW:
+                        urgency = "LOW";
+                        break;
+                case NORM:
+                        urgency = "NORMAL";
+                        break;
+                case CRIT:
+                        urgency = "CRITICAL";
+                        break;
+                default:
+                        urgency = "NORMAL";
+                        break;
+        }
+
+        int pid = fork();
+
+        if (pid == 0) {
+                execlp(n->script, n->script,
+                                appname,
+                                summary,
+                                body,
+                                icon,
+                                urgency,
+                                (char *) NULL
+                                );
+        } else if (pid < 0) {
+                PERR("Unable to fork", errno);
+        } else {
+                return;
+        }
+}
+
 void pause_signal_handler(int sig)
 {
         if (sig == SIGUSR1) {
@@ -258,6 +303,7 @@ static void print_notification(notification * n)
                 printf("\t\t%s\n", (n->urls->strs)[i]);
         }
         printf("\t}\n");
+        printf("\tscript: %s\n", n->script);
         printf("}\n");
 }
 
@@ -337,6 +383,7 @@ void apply_rules(notification * n)
                         n->color_strings[ColBG] =
                             r->bg ? r->bg : n->color_strings[ColBG];
                         n->format = r->format ? r->format : n->format;
+                        n->script = r->script ? r->script : n->script;
                 }
         }
 }
@@ -409,6 +456,9 @@ void update_lists()
                 if (!n)
                         return;
                 n->start = now;
+                if (!n->redisplayed && n->script) {
+                        run_script(n);
+                }
 
                 n_queue_enqueue(&displayed, n);
         }
@@ -959,6 +1009,8 @@ int init_notification(notification * n, int id)
                 return 0;
         }
 
+        n->script = NULL;
+
         n->format = format;
 
         apply_rules(n);
@@ -1050,6 +1102,7 @@ int init_notification(notification * n, int id)
         n->urls = extract_urls(tmp);
 
         free(tmp);
+
 
         if (print_notifications)
                 print_notification(n);
@@ -1698,6 +1751,7 @@ void load_options(char *cmdline_config_path)
                 r->fg = ini_get_string(cur_section, "foreground", r->fg);
                 r->bg = ini_get_string(cur_section, "background", r->bg);
                 r->format = ini_get_string(cur_section, "format", r->format);
+                r->script = ini_get_string(cur_section, "script", NULL);
         }
 
 #ifndef STATIC_CONFIG

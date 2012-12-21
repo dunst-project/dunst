@@ -52,8 +52,10 @@ typedef struct _notification {
         int dup_count;
         ColorSet *colors;
         char *color_strings[2];
+
         int progress;           /* percentage + 1, 0 to hide */
         int line_count;
+        const char *script;
         struct { int count; char **strs; } *urls;
 } notification;
 
@@ -76,7 +78,7 @@ typedef struct _rule_t {
         char *fg;
         char *bg;
         const char *format;
-
+        const char *script;
 } rule_t;
 
 typedef struct _keyboard_shortcut {

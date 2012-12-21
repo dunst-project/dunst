@@ -145,9 +145,20 @@
 # and 'format'.
 # Shell-like globbing will get expanded.
 #
+# SCRIPTING
+# you can specify a script that gets run when the rule matches by setting
+# the 'script' option.
+# The script will be called as follows:
+# script appname summary body icon urgency
+# where urgency can be "LOW", "NORMAL" or "CRITICAL".
+#
 # NOTE: if you don't want a notification to be displayed, set the format to ""
 # NOTE: It might be helpful to run dunst -print in a terminal in order to find
 # fitting options for rules.
+
+#[script-test]
+#    summary = "*script*"
+#    script = dunst_test.sh
 
 #[ignore]
 ## This notification will not be displayed
