@@ -87,6 +87,9 @@
     # padding between text and separator
     padding = 3
 
+    # horizontal padding
+    horizontal_padding = 10
+
     # Define a color for the separator.
     # This can either be "auto" or "foreground". "Auto" tries to find a color
     # that fits nicely to the background color.

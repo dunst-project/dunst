@@ -630,11 +630,11 @@ int calculate_x_offset(int line_width, int text_width)
         }
         switch (align) {
         case left:
-                return frame_width;
+                return frame_width + h_padding;
         case center:
-                return frame_width + (leftover / 2);
+                return frame_width + h_padding + (leftover / 2);
         case right:
-                return frame_width + leftover;
+                return frame_width + h_padding + leftover;
         default:
                 /* this can't happen */
                 return 0;
@@ -783,7 +783,7 @@ void draw_win(void)
         if (outer_width == 0)
                 width = 0;
         else
-                width = outer_width - (2 * frame_width);
+                width = outer_width - (2 * frame_width) - (2 * h_padding);
 
 
         fill_line_cache(width);
@@ -795,7 +795,7 @@ void draw_win(void)
                         char *line = line_cache.lines[i].str;
                         width = MAX(width, textw(dc, line));
                 }
-                outer_width = width + (2 * frame_width);
+                outer_width = width + (2 * frame_width) + (2 * h_padding);
         }
 
         /* resize dc to correct width */
@@ -834,7 +834,7 @@ void draw_win(void)
                 pad += line.is_begin ? padding : 0;
                 pad += line.is_end ? padding : 0;
 
-                drawrect(dc, 0, 0, width, pad +  line_height, true, line.colors->BG);
+                drawrect(dc, 0, 0, width + (2*h_padding), pad +  line_height, true, line.colors->BG);
 
                 /* draw text */
                 dc->x = calculate_x_offset(width, textw(dc, line.str));
@@ -855,7 +855,7 @@ void draw_win(void)
                                 color = calculate_foreground_color(line.colors->BG);
                         else
                                 color = line.colors->FG;
-                        drawrect(dc, 0, 0, width, separator_height, true, color);
+                        drawrect(dc, 0, 0, width + (2*h_padding), separator_height, true, color);
                         dc->y += separator_height;
                 }
         }
@@ -1659,6 +1659,9 @@ void load_options(char *cmdline_config_path)
         padding =
             option_get_int("global", "padding", "-padding", padding,
                             "Padding between text and separator");
+        h_padding =
+            option_get_int("global", "horizontal_padding", "-horizontal_padding",
+                            h_padding, "horizontal padding");
         transparency =
             option_get_int("global", "transparency", "-transparency",
                            transparency, "Transparency. range 0-100");
