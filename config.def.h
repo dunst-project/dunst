@@ -27,7 +27,8 @@ int line_height = 0;   /* if line height < font height, it will be raised to fon
 int separator_height = 2; /* height of the separator line between two notifications */
 int padding = 0;
 int h_padding = 0; /* horizontal padding */
-enum separator_color sep_color = AUTO; /* AUTO or FOREGROUND */
+enum separator_color sep_color = AUTO; /* AUTO, FOREGROUND, FRAME, CUSTOM */
+char *sep_custom_color_str = NULL; /* custom color if sep_color is set to CUSTOM */
 
 int frame_width = 0;
 char *frame_color = "#888888";

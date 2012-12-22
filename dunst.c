@@ -77,6 +77,7 @@ static dimension_t window_dim;
 static bool pause_display = false;
 static char **dmenu_cmd;
 static unsigned long framec;
+static unsigned long sep_custom_col;
 static r_line_cache line_cache;
 
 bool dunst_grab_errored = false;
@@ -848,8 +849,14 @@ void draw_win(void)
                         double color;
                         if (sep_color == AUTO)
                                 color = calculate_foreground_color(line.colors->BG);
-                        else
+                        else if (sep_color == FOREGROUND)
                                 color = line.colors->FG;
+                        else if (sep_color == FRAME)
+                                color = framec;
+                        else {
+                                /* CUSTOM */
+                                color = sep_custom_col;
+                        }
                         drawrect(dc, 0, 0, width + (2*h_padding), separator_height, true, color);
                         dc->y += separator_height;
                 }
@@ -1463,6 +1470,12 @@ void setup(void)
 
         framec = getcolor(dc, frame_color);
 
+        if (sep_color == CUSTOM) {
+                sep_custom_col = getcolor(dc, sep_custom_color_str);
+        } else {
+                sep_custom_col = 0;
+        }
+
         /* parse and set geometry and monitor position */
         if (geom[0] == '-') {
                 geometry.negative_width = true;
@@ -1674,9 +1687,12 @@ void load_options(char *cmdline_config_path)
                                 sep_color = AUTO;
                         else if (strcmp(c, "foreground") == 0)
                                 sep_color = FOREGROUND;
-                        else
-                                fprintf(stderr,
-                                        "Warning: Unknown separator color\n");
+                        else if (strcmp(c, "frame") == 0)
+                                sep_color = FRAME;
+                        else {
+                                sep_color = CUSTOM;
+                                sep_custom_color_str = strdup(c);
+                        }
                         free(c);
                 }
         }
