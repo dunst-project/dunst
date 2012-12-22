@@ -150,6 +150,8 @@ The progress value can be set with a hint, too.
 Dunst can be paused by sending a notification with a summary of "DUNST_COMMAND_PAUSE"
 and resumed with a summary of "DUNST_COMMAND_RESUME". Alternatively you can send SIGUSR1 and SIGUSR2 to pause and unpause respectivly. For Example:
 
+=over 4
+
 =item killall -SIGUSR1 dunst # pause
 
 =item killall -SIGUSR2 dunst # resume
