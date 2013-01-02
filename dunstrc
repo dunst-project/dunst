@@ -30,8 +30,11 @@
     # set to -1 to disable
     show_age_threshold = 60;
 
-    # split long notifications into multiple lines
+    # split notifications into multiple lines if they don't fit into geometry
     word_wrap = yes
+
+    # ignore newlines '\n' in notifications
+    ignore_newline = no
 
 
     # the geometry of the window

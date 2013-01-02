@@ -22,6 +22,7 @@ float bounce_freq = 1;          /* determines the bounce frequency (if activated
 int sticky_history = True;
 int verbosity = 0;
 int word_wrap = False;
+int ignore_newline = False;
 int line_height = 0;   /* if line height < font height, it will be raised to font height */
 
 int separator_height = 2; /* height of the separator line between two notifications */

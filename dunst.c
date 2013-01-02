@@ -1078,6 +1078,10 @@ int init_notification(notification * n, int id)
         while (strstr(n->msg, "\\n") != NULL)
                 n->msg = string_replace("\\n", "\n", n->msg);
 
+        if (ignore_newline)
+                while (strstr(n->msg, "\n") != NULL)
+                        n->msg = string_replace("\n", " ", n->msg);
+
         n->msg = rstrip(n->msg);
 
 
@@ -1613,6 +1617,10 @@ void load_options(char *cmdline_config_path)
         word_wrap =
             option_get_bool("global", "word_wrap", "-word_wrap", word_wrap,
                             "Truncating long lines or do word wrap");
+
+        ignore_newline =
+            option_get_bool("global", "ignore_newline", "-ignore_newline",
+                            ignore_newline, "Ignore newline characters in notifications");
         idle_threshold =
             option_get_int("global", "idle_threshold", "-idle_threshold",
                            idle_threshold,
