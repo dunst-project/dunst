@@ -152,7 +152,7 @@ void str_array_append(str_array *a, char *str)
         if (!a)
                 return;
         a->count++;
-        a->strs = realloc(a->strs, a->count);
+        a->strs = realloc(a->strs, a->count * sizeof(char *));
         (a->strs)[a->count-1] = str;
 }
 
