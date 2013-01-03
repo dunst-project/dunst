@@ -1878,6 +1878,8 @@ int main(int argc, char *argv[])
                 n->appname = "dunst";
                 n->summary = "startup";
                 n->body = "dunst is up and running";
+                n->progress = 0;
+                n->timeout = 10;
                 n->urgency = LOW;
                 n->icon = NULL;
                 n->msg = NULL;
