@@ -923,17 +923,19 @@ void handle_mouse_click(XEvent ev)
         }
 
         if (ev.xbutton.button == Button1) {
-                int y = 0;
+                int y = separator_height;
                 notification *n = NULL;
                 for (n_queue *iter = displayed; iter; iter = iter->next) {
                         n = iter->n;
-                        int line_h = MAX(font_h, line_height);
-                        int lines = line_h * n->line_count;
-                        int height = lines + (2 * h_padding);
+                        int text_h = MAX(font_h, line_height) * n->line_count;
+                        int padding = 2 * h_padding;
+
+                        int height = text_h + padding;
+
                         if (ev.xbutton.y > y && ev.xbutton.y < y + height)
                                 break;
                         else
-                                y += height;
+                                y += height + separator_height;
                 }
                 if (n)
                         close_notification(n, 2);
