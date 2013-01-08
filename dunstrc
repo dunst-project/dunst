@@ -1,5 +1,5 @@
 [global]
-    font = Monospace-12
+    font = Monospace-10
 
     # The format of the message. Possible variables are:
     #   %a  appname
@@ -8,7 +8,7 @@
     #   %i  iconname (including its path)
     #   %I  iconname (without its path)
     #   %p  progress value if set ([  0%] to [100%]) or nothing
-    format = "%s %b"
+    format = "%s\n%b"
 
     # Sort messages by urgency
     sort = yes
@@ -28,7 +28,7 @@
 
     # show age of message if message is older than show_age_threshold seconds.
     # set to -1 to disable
-    show_age_threshold = 60;
+    show_age_threshold = 60
 
     # split notifications into multiple lines if they don't fit into geometry
     word_wrap = yes
@@ -48,7 +48,7 @@
     # right side of the screen.  Y is measured from the top and down respectevly.
     # The width can be negative. In this case the actual width is the
     # screen width minus the width defined in within the geometry option.
-    geometry = "0x3-30+20"
+    geometry = "300x5-30+20"
 
     # The transparency of the window. range: [0; 100]
     # This option will only work if a compositing windowmanager is present (e.g. xcompmgr, compiz, etc..)
@@ -72,7 +72,7 @@
     #
     # If this option is set to mouse or keyboard, the monitor option will be
     # ignored.
-    follow = none
+    follow = mouse
 
     # should a notification popped up from history be sticky or
     # timeout as if it would normally do.
@@ -88,10 +88,10 @@
     separator_height = 2;
 
     # padding between text and separator
-    padding = 3
+    padding = 8
 
     # horizontal padding
-    horizontal_padding = 10
+    horizontal_padding = 8
 
     # Define a color for the separator.
     # possible values are:
@@ -99,7 +99,7 @@
     #  * foreground: use the same color as the foreground
     #  * frame: use the same color as the frame.
     #  * anything else will be interpreted as a X color
-    separator_color = auto
+    separator_color = frame
 
     # print a notification on startup
     # This is mainly for error detection, since dbus (re-)starts dunst
@@ -114,7 +114,7 @@
 
 [frame]
     width = 3
-    color = "#888888"
+    color = "#aaaaaa"
 
 [shortcuts]
     # shortcuts are specified as [modifier+][modifier+]...key
@@ -138,18 +138,18 @@
 [urgency_low]
     # IMPORTANT: colors have to be defined in quotation marks.
     # Otherwise the '#' and following  would be interpreted as a comment.
-    background = "#aaaaff"
-    foreground = "#000000"
+    background = "#222222"
+    foreground = "#888888"
     timeout = 10
 
 [urgency_normal]
-    background = "#1793D1"
-    foreground = "#DDDDDD"
+    background = "#285577"
+    foreground = "#ffffff"
     timeout = 10
 
 [urgency_critical]
-    background = "#ffaaaa"
-    foreground = "#000000"
+    background = "#900000"
+    foreground = "#ffffff"
     timeout = 0
 
 
