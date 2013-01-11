@@ -1,0 +1,17 @@
+The following dependencies are needed:
+
+    dbus
+    libxinerama
+    libxft
+    libxss
+    libxdg-basedir
+
+On Debian and Debian-based distros you'll probably also need the *-dev packages.
+
+With all dependencies present you can build dunst with:
+
+    $ make
+
+and install with:
+
+    $ sudo make PREFIX=/usr install
