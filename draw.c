@@ -1,7 +1,7 @@
 /*
 MIT/X Consortium License
 
-© 2012 Sascha Kruse <knopwob@googlemail.com> and contributors
+© 2013 Sascha Kruse <knopwob@googlemail.com> and contributors
 © 2010-2011 Connor Lane Smith <cls@lubutu.com>
 © 2006-2011 Anselm R Garbe <anselm@garbe.us>
 © 2009 Gottox <gottox@s01.de>

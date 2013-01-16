@@ -174,7 +174,7 @@ written by Sascha Kruse <knopwob@googlemail.com>
 
 =head1 COPYRIGHT
 
-copyright 2012 Sascha Kruse and contributors (see LICENSE for licensing information)
+copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information)
 
 If you feel that copyrights are violated, please send me an email.
 

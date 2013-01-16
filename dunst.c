@@ -1,4 +1,4 @@
-/* copyright 2012 Sascha Kruse and contributors (see LICENSE for licensing information) */
+/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
 
 #define _GNU_SOURCE
 #include <assert.h>
@@ -1590,7 +1590,7 @@ void load_options(char *cmdline_config_path)
                 config_file = xdgConfigOpen("dunst/dunstrc", "r", &xdg);
         }
         if (config_file == NULL) {
-                /* Fall back to just "dunstrc", which was used before 2012-06-23
+                /* Fall back to just "dunstrc", which was used before 2013-06-23
                  * (before v0.2). */
                 config_file = xdgConfigOpen("dunstrc", "r", &xdg);
                 if (config_file == NULL) {
