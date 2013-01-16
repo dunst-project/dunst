@@ -1,6 +1,6 @@
 =head1 NAME
 
-dunst - dmenu-ish notification daemon
+dunst - A customizable and lightweight notification-daemon
 
 =head1 SYNOPSIS
 
