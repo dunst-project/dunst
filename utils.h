@@ -4,6 +4,10 @@
 char *rstrip(char *str);
 char *lskip(char *str);
 
+/* replace all occurrences of needle with replacement in haystack */
+char *string_replace_all(const char *needle, const char *replacement,
+                         char *haystack);
+
 /* replace needle with replacement in haystack */
 char *string_replace(const char *needle, const char *replacement,
                      char *haystack);
