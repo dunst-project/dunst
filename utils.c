@@ -25,6 +25,18 @@ char *lskip(char *s)
         return s;
 }
 
+char *string_replace_all(const char *needle, const char *replacement,
+                         char *haystack)
+{
+        char *start;
+        start = strstr(haystack, needle);
+        while(start != NULL) {
+                haystack = string_replace(needle, replacement, haystack);
+                start = strstr(haystack, needle);
+        }
+        return haystack;
+}
+
 char *string_replace(const char *needle, const char *replacement,
                      char *haystack)
 {

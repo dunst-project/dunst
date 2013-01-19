@@ -874,23 +874,23 @@ char
                 return NULL;
         }
 
-        str = string_replace("&quot;", "\"", str);
-        str = string_replace("&apos;", "'", str);
-        str = string_replace("&amp;", "&", str);
-        str = string_replace("&lt;", "<", str);
-        str = string_replace("&gt;", ">", str);
+        str = string_replace_all("&quot;", "\"", str);
+        str = string_replace_all("&apos;", "'", str);
+        str = string_replace_all("&amp;", "&", str);
+        str = string_replace_all("&lt;", "<", str);
+        str = string_replace_all("&gt;", ">", str);
 
         /* remove tags */
-        str = string_replace("<b>", "", str);
-        str = string_replace("</b>", "", str);
-        str = string_replace("<br>", " ", str);
-        str = string_replace("<br/>", " ", str);
-        str = string_replace("<br />", " ", str);
-        str = string_replace("<i>", "", str);
-        str = string_replace("</i>", "", str);
-        str = string_replace("<u>", "", str);
-        str = string_replace("</u>", "", str);
-        str = string_replace("</a>", "", str);
+        str = string_replace_all("<b>", "", str);
+        str = string_replace_all("</b>", "", str);
+        str = string_replace_all("<br>", " ", str);
+        str = string_replace_all("<br/>", " ", str);
+        str = string_replace_all("<br />", " ", str);
+        str = string_replace_all("<i>", "", str);
+        str = string_replace_all("</i>", "", str);
+        str = string_replace_all("<u>", "", str);
+        str = string_replace_all("</u>", "", str);
+        str = string_replace_all("</a>", "", str);
 
         start = strstr(str, "<a href");
         if (start != NULL) {
