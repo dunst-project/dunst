@@ -1,3 +1,11 @@
+v0.5.0:
+    - new default dunstrc
+    - frames for window
+    - trigger scripts on matching notifications
+    - context menu for urls (using dmenu)
+    - pause and resume function
+    - use own code for ini parsing (this removes inih)
+    - progress hints
 v0.4.0:
     - separator between notifications
     - word wrap long lines
