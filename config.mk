@@ -19,9 +19,19 @@ XINERAMAFLAGS = -DXINERAMA
 # inih flags
 INIFLAGS = -DINI_ALLOW_MULTILINE=0
 
+
+PKG_CONFIG=$(shell which pkg-config)
+ifeq (${PKG_CONFIG}, ${EMPTY})
+    $(error "Failed to find pkg-config, please make sure it is installed)
+endif
+
 # includes and libs
-INCS = $(shell pkg-config --cflags dbus-1 libxdg-basedir x11 freetype2 xext xft xscrnsaver)
-LIBS = -lm -L${X11LIB} -lXss ${XINERAMALIBS} $(shell pkg-config --libs dbus-1 libxdg-basedir x11 freetype2 xext xft xscrnsaver)
+INCS = $(shell ${PKG_CONFIG} --cflags dbus-1 libxdg-basedir x11 freetype2 xext xft xscrnsaver)
+LIBS = -lm -L${X11LIB} -lXss ${XINERAMALIBS} $(shell ${PKG_CONFIG} --libs dbus-1 libxdg-basedir x11 freetype2 xext xft xscrnsaver)
+
+ifeq (${INCS}, ${EMPTY})
+    $(error Failed to find one ore move required dependencies:  dbus-1 libxdg-basedir x11 freetype2 xext xft xscrnsaver)
+endif
 
 # flags
 CPPFLAGS += -D_BSD_SOURCE -DVERSION=\"${VERSION}\" ${XINERAMAFLAGS} ${INIFLAGS}
