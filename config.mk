@@ -1,5 +1,5 @@
 # paths
-PREFIX = /usr/local
+PREFIX ?= /usr/local
 MANPREFIX = ${PREFIX}/share/man
 
 # In dist tarballs, the version is stored in the VERSION files.
