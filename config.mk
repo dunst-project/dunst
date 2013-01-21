@@ -20,14 +20,16 @@ XINERAMAFLAGS = -DXINERAMA
 INIFLAGS = -DINI_ALLOW_MULTILINE=0
 
 
-PKG_CONFIG=$(shell which pkg-config)
+PKG_CONFIG:=$(shell which pkg-config)
 ifeq (${PKG_CONFIG}, ${EMPTY})
     $(error "Failed to find pkg-config, please make sure it is installed)
 endif
 
+pkg_config_packs:="dbus-1 libxdg-basedir x11 freetype2 xext xft xscrnsaver"
+
 # includes and libs
-INCS = $(shell ${PKG_CONFIG} --cflags dbus-1 libxdg-basedir x11 freetype2 xext xft xscrnsaver)
-LIBS = -lm -L${X11LIB} -lXss ${XINERAMALIBS} $(shell ${PKG_CONFIG} --libs dbus-1 libxdg-basedir x11 freetype2 xext xft xscrnsaver)
+INCS := $(shell ${PKG_CONFIG} --cflags ${pkg_config_packs})
+LIBS := -lm -L${X11LIB} -lXss ${XINERAMALIBS} $(shell ${PKG_CONFIG} --libs ${pkg_config_packs})
 
 ifeq (${INCS}, ${EMPTY})
     $(error "pkg-config failed, see errors above")
