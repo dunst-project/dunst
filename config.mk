@@ -30,7 +30,7 @@ INCS = $(shell ${PKG_CONFIG} --cflags dbus-1 libxdg-basedir x11 freetype2 xext x
 LIBS = -lm -L${X11LIB} -lXss ${XINERAMALIBS} $(shell ${PKG_CONFIG} --libs dbus-1 libxdg-basedir x11 freetype2 xext xft xscrnsaver)
 
 ifeq (${INCS}, ${EMPTY})
-    $(error Failed to find one ore move required dependencies:  dbus-1 libxdg-basedir x11 freetype2 xext xft xscrnsaver)
+    $(error "pkg-config failed, see errors above")
 endif
 
 # flags
