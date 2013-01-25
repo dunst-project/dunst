@@ -1906,7 +1906,7 @@ void usage(int exit_status)
 
 void print_version(void)
 {
-        printf("Dunst - A customizable and lightweight notification-daemon%s\n",
+        printf("Dunst - A customizable and lightweight notification-daemon %s\n",
                VERSION);
         exit(EXIT_SUCCESS);
 }
