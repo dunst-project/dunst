@@ -8,23 +8,6 @@
 #include "utils.h"
 #include "dunst.h"
 
-char *rstrip(char *str)
-{
-        char *end;
-        end = str + strlen(str) - 1;
-        while (isspace(*end)) {
-                *end = '\0';
-                end--;
-        }
-        return str;
-}
-
-char *lskip(char *s)
-{
-        for (; *s && isspace(*s); s++) ;
-        return s;
-}
-
 char *string_replace_all(const char *needle, const char *replacement,
                          char *haystack)
 {

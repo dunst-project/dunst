@@ -16,6 +16,7 @@
 #include <errno.h>
 #include <signal.h>
 #include <sys/wait.h>
+#include <glib.h>
 #include <X11/Xlib.h>
 #include <X11/XKBlib.h>
 #include <X11/Xatom.h>
@@ -38,8 +39,6 @@
 
 #define INRECT(x,y,rx,ry,rw,rh) ((x) >= (rx) && (x) < (rx)+(rw) && (y) >= (ry) && (y) < (ry)+(rh))
 #define LENGTH(X)               (sizeof X / sizeof X[0])
-#define MIN(a,b)                ((a) < (b) ? (a) : (b))
-#define MAX(a,b)                ((a) > (b) ? (a) : (b))
 #define BUTTONMASK              (ButtonPressMask|ButtonReleaseMask)
 #define FONT_HEIGHT_BORDER 2
 
@@ -522,7 +521,7 @@ void r_line_cache_reset(r_line_cache *c)
 int do_word_wrap(char *source, int max_width)
 {
 
-        rstrip(source);
+        g_strstrip(source);
 
         if (!source || strlen(source) == 0)
                 return 0;
@@ -562,10 +561,7 @@ int do_word_wrap(char *source, int max_width)
 
 void add_notification_to_line_cache(notification *n, int max_width)
 {
-        rstrip(n->msg);
-        char *msg = n->msg;
-        while (isspace(*msg))
-                msg++;
+        char *msg = g_strstrip(n->msg);
 
         char *buf;
 
@@ -1086,7 +1082,7 @@ int init_notification(notification * n, int id)
                 while (strstr(n->msg, "\n") != NULL)
                         n->msg = string_replace("\n", " ", n->msg);
 
-        n->msg = rstrip(n->msg);
+        n->msg = g_strstrip(n->msg);
 
 
         n->dup_count = 0;
@@ -1253,10 +1249,10 @@ void init_shortcut(keyboard_shortcut * ks)
                         str++;
                 *str = '\0';
                 str++;
-                rstrip(mod);
+                g_strchomp(mod);
                 ks->mask = ks->mask | string_to_mask(mod);
         }
-        rstrip(str);
+        g_strstrip(str);
 
         ks->sym = XStringToKeysym(str);
         /* find matching keycode for ks->sym */

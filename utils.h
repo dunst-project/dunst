@@ -1,9 +1,5 @@
 #ifndef UTIL_H
 #define UTIL_H
-/* remove spaces before and after str */
-char *rstrip(char *str);
-char *lskip(char *str);
-
 /* replace all occurrences of needle with replacement in haystack */
 char *string_replace_all(const char *needle, const char *replacement,
                          char *haystack);

@@ -25,7 +25,7 @@ ifeq (${PKG_CONFIG}, ${EMPTY})
     $(error "Failed to find pkg-config, please make sure it is installed)
 endif
 
-pkg_config_packs:="dbus-1 libxdg-basedir x11 freetype2 xext xft xscrnsaver"
+pkg_config_packs:="dbus-1 libxdg-basedir x11 freetype2 xext xft xscrnsaver glib-2.0"
 
 # includes and libs
 INCS := $(shell ${PKG_CONFIG} --cflags ${pkg_config_packs})

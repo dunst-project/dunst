@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <glib.h>
 
 #include "options.h"
 #include "utils.h"
@@ -200,7 +201,7 @@ int load_ini_file(FILE * fp)
         while (fgets(line, sizeof(line), fp) != NULL) {
                 line_num++;
 
-                char *start = lskip(rstrip(line));
+                char *start = g_strstrip(line);
 
                 if (*start == ';' || *start == '#' || strlen(start) == 0)
                         continue;
@@ -233,8 +234,8 @@ int load_ini_file(FILE * fp)
                 }
 
                 *equal = '\0';
-                char *key = rstrip(start);
-                char *value = lskip(equal + 1);
+                char *key = g_strstrip(start);
+                char *value = g_strstrip(equal + 1);
 
                 char *quote = strstr(value, "\"");
                 if (quote) {
@@ -255,7 +256,7 @@ int load_ini_file(FILE * fp)
                         if (comment)
                                 comment = '\0';
                 }
-                value = rstrip(value);
+                value = g_strstrip(value);
 
                 if (!current_section) {
                         printf("Warning: invalid config file at line: %d\n",
