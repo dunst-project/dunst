@@ -128,6 +128,8 @@ str_array *extract_urls( const char * to_match)
         if (ret != 0) {
             printf("failed to compile regex\n");
             return NULL;
+        } else {
+            is_initialized = true;
         }
     }
 
