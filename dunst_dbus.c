@@ -1,5 +1,6 @@
 /* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
 
+#include <glib.h>
 #include <dbus/dbus.h>
 
 #include "dunst.h"
@@ -358,19 +359,19 @@ void notify(DBusMessage * dmsg)
                         expires = 1;
                 }
         }
-        n->appname = appname != NULL ? strdup(appname) : "";
-        n->summary = summary != NULL ? strdup(summary) : "";
-        n->body = body != NULL ? strdup(body) : "";
-        n->icon = icon != NULL ? strdup(icon) : "";
+        n->appname = appname != NULL ? g_strdup(appname) : "";
+        n->summary = summary != NULL ? g_strdup(summary) : "";
+        n->body = body != NULL ? g_strdup(body) : "";
+        n->icon = icon != NULL ? g_strdup(icon) : "";
         n->timeout = expires;
         n->progress = (progress < 0 || progress > 100) ? 0 : progress + 1;
         n->urgency = urgency;
-        n->dbus_client = strdup(dbus_message_get_sender(dmsg));
+        n->dbus_client = g_strdup(dbus_message_get_sender(dmsg));
         for (i = 0; i < ColLast; i++) {
                 n->color_strings[i] = NULL;
         }
-        n->color_strings[ColFG] = fgcolor == NULL ? NULL : strdup(fgcolor);
-        n->color_strings[ColBG] = bgcolor == NULL ? NULL : strdup(bgcolor);
+        n->color_strings[ColFG] = fgcolor == NULL ? NULL : g_strdup(fgcolor);
+        n->color_strings[ColBG] = bgcolor == NULL ? NULL : g_strdup(bgcolor);
 
         id = init_notification(n, replaces_id);
         if (id > 0)

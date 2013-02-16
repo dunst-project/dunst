@@ -26,7 +26,7 @@ void str_array_dup_append(str_array *a, const char *str)
 {
         if (!a)
                 return;
-        char *dup = strdup(str);
+        char *dup = g_strdup(str);
         str_array_append(a, dup);
 }
 

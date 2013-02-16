@@ -43,7 +43,7 @@ section_t *new_section(char *name)
 {
         section_count++;
         sections = realloc(sections, sizeof(section_t) * section_count);
-        sections[section_count - 1].name = strdup(name);
+        sections[section_count - 1].name = g_strdup(name);
         sections[section_count - 1].entries = NULL;
         sections[section_count - 1].entry_count = 0;
         return &sections[section_count - 1];
@@ -82,7 +82,7 @@ void add_entry(char *section_name, char *key, char *value)
         s->entry_count++;
         int len = s->entry_count;
         s->entries = realloc(s->entries, sizeof(entry_t) * len);
-        s->entries[s->entry_count - 1].key = strdup(key);
+        s->entries[s->entry_count - 1].key = g_strdup(key);
         s->entries[s->entry_count - 1].value = clean_value(value);
 }
 
@@ -105,12 +105,12 @@ char *ini_get_string(char *section, char *key, const char *def)
 {
         char *value = get_value(section, key);
         if (value)
-                return strdup(value);
+                return g_strdup(value);
 
         if (def == NULL)
                 return NULL;
         else
-                return def ?  strdup(def) : NULL;
+                return def ?  g_strdup(def) : NULL;
 }
 
 int ini_get_int(char *section, char *key, int def)
@@ -181,9 +181,9 @@ char *clean_value(char *value)
         char *s;
 
         if (value[0] == '"')
-                s = strdup(value + 1);
+                s = g_strdup(value + 1);
         else
-                s = strdup(value);
+                s = g_strdup(value);
 
         if (s[strlen(s) - 1] == '"')
                 s[strlen(s) - 1] = '\0';
@@ -220,7 +220,7 @@ int load_ini_file(FILE * fp)
 
                         if (current_section)
                                 free(current_section);
-                        current_section = (strdup(start + 1));
+                        current_section = (g_strdup(start + 1));
                         new_section(current_section);
                         continue;
                 }
@@ -283,7 +283,7 @@ int cmdline_find_option(char *key)
         if (!key) {
                 return -1;
         }
-        char *key1 = strdup(key);
+        char *key1 = g_strdup(key);
         char *key2 = strstr(key1, "/");
 
         if (key2) {
@@ -335,11 +335,11 @@ char *cmdline_get_string(char *key, const char *def, char *description)
         char *str = cmdline_get_value(key);
 
         if (str)
-                return strdup(str);
+                return g_strdup(str);
         if (def == NULL)
                 return NULL;
         else
-                return strdup(def);
+                return g_strdup(def);
 }
 
 int cmdline_get_int(char *key, int def, char *description)
@@ -460,7 +460,7 @@ void cmdline_usage_append(char *key, char *type, char *description)
 
 char *cmdline_create_usage(void)
 {
-        return strdup(usage_str);
+        return g_strdup(usage_str);
 }
 
 /* vim: set ts=8 sw=8 tw=0: */

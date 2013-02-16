@@ -528,7 +528,7 @@ void r_line_cache_append(r_line_cache *c, const char *s, ColorSet *col, bool is_
 
     c->count++;
     c->lines[c->count-1].colors = col;
-    c->lines[c->count-1].str = strdup(s);
+    c->lines[c->count-1].str = g_strdup(s);
     c->lines[c->count-1].is_begin = is_begin;
     c->lines[c->count-1].is_end = is_end;
 }
@@ -595,7 +595,7 @@ void add_notification_to_line_cache(notification *n, int max_width)
         if (n->dup_count > 0) {
                 buf = g_strdup_printf("(%d) %s", n->dup_count, msg);
         } else {
-                buf = strdup(msg);
+                buf = g_strdup(msg);
         }
 
         /* print age */
@@ -1083,7 +1083,7 @@ int init_notification(notification * n, int id)
 
         apply_rules(n);
 
-        n->msg = string_replace("%a", n->appname, strdup(n->format));
+        n->msg = string_replace("%a", n->appname, g_strdup(n->format));
         n->msg = string_replace("%s", n->summary, n->msg);
         if (n->icon) {
                 n->msg = string_replace("%I", basename(n->icon), n->msg);
@@ -1261,7 +1261,7 @@ void init_shortcut(keyboard_shortcut * ks)
                 return;
         }
 
-        char *str = strdup(ks->str);
+        char *str = g_strdup(ks->str);
         char *str_begin = str;
 
         if (str == NULL)
@@ -1725,7 +1725,7 @@ void load_options(char *cmdline_config_path)
                                 sep_color = FRAME;
                         else {
                                 sep_color = CUSTOM;
-                                sep_custom_color_str = strdup(c);
+                                sep_custom_color_str = g_strdup(c);
                         }
                         free(c);
                 }
@@ -1827,7 +1827,7 @@ void load_options(char *cmdline_config_path)
                         initrule(r);
                 }
 
-                r->name = strdup(cur_section);
+                r->name = g_strdup(cur_section);
                 r->appname = ini_get_string(cur_section, "appname", r->appname);
                 r->summary = ini_get_string(cur_section, "summary", r->summary);
                 r->body = ini_get_string(cur_section, "body", r->body);
