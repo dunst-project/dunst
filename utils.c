@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <glib.h>
 
 #include "utils.h"
 #include "dunst.h"
@@ -50,9 +51,9 @@ char *string_append(char *a, const char *b, const char *sep)
 
         char *new;
         if (!sep)
-                sasprintf(&new, "%s%s", a, b);
+                new = g_strconcat(a,b, NULL);
         else
-                sasprintf(&new, "%s%s%s", a, sep, b);
+                new = g_strconcat(a, sep, b, NULL);
         free(a);
 
         return new;
@@ -101,18 +102,6 @@ void die(char *text, int exit_value)
 {
         fputs(text, stderr);
         exit(exit_value);
-}
-
-int sasprintf(char **strp, const char *fmt, ...)
-{
-        va_list args;
-        int result;
-
-        va_start(args, fmt);
-        if ((result = vasprintf(strp, fmt, args)) == -1)
-                die("asprintf failed", EXIT_FAILURE);
-        va_end(args);
-        return result;
 }
 
 /* vim: set ts=8 sw=8 tw=0: */

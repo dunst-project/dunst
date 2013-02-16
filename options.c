@@ -439,18 +439,18 @@ void cmdline_usage_append(char *key, char *type, char *description)
 {
         char *key_type;
         if (type && strlen(type) > 0)
-                sasprintf(&key_type, "%s (%s)", key, type);
+                key_type = g_strdup_printf("%s (%s)", key, type);
         else
-                sasprintf(&key_type, "%s", key);
+                key_type = g_strdup(key);
 
         if (!usage_str) {
-                sasprintf(&usage_str, "%-40s - %s\n", key_type, description);
+                usage_str = g_strdup_printf("%-40s - %s\n", key_type, description);
                 free(key_type);
                 return;
         }
 
         char *tmp;
-        sasprintf(&tmp, "%s%-40s - %s\n", usage_str, key_type, description);
+        tmp = g_strdup_printf("%s%-40s - %s\n", usage_str, key_type, description);
         free(key_type);
 
         free(usage_str);
