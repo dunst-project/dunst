@@ -235,7 +235,7 @@ void context_menu(void) {
                     exit(0);
             } else {
                     browser = string_append(browser, buf, " ");
-                    char **cmd = string_to_argv(browser);
+                    char **cmd = g_strsplit(browser, " ", 0);
                     execvp(cmd[0], cmd);
             }
     }
@@ -1711,7 +1711,7 @@ void load_options(char *cmdline_config_path)
 
 
         dmenu = option_get_string("global", "dmenu", "-dmenu", dmenu, "path to dmenu");
-        dmenu_cmd = string_to_argv(dmenu);
+        dmenu_cmd = g_strsplit(dmenu, " ", 0);
 
         browser = option_get_string("global", "browser", "-browser", browser, "path to browser");
 

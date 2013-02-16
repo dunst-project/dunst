@@ -10,8 +10,6 @@ char *string_replace(const char *needle, const char *replacement,
 
 char *string_append(char *a, const char *b, const char *sep);
 
-char **string_to_argv(const char *s);
-
 /* exit with an error message */
 void die(char *msg, int exit_value);
 
