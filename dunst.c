@@ -125,13 +125,6 @@ int cmp_notification(const void *va, const void *vb)
         if (!sort)
                 return 1;
 
-        if (a == NULL && b == NULL)
-                return 1;
-        else if (a == NULL)
-                return 1;
-        else if (b == NULL)
-                return -1;
-
         if (a->urgency != b->urgency) {
                 return b->urgency - a->urgency;
         } else {
