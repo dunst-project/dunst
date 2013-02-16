@@ -59,11 +59,6 @@ typedef struct _notification {
         struct { int count; char **strs; } *urls;
 } notification;
 
-typedef struct _notification_buffer {
-        char txt[BUFSIZ];
-        notification *n;
-} notification_buffer;
-
 typedef struct _rule_t {
         char *name;
         /* filters */
@@ -101,12 +96,6 @@ typedef struct r_line_cache {
     int size;
     r_line *lines;
 } r_line_cache;
-
-typedef struct _rule_array {
-        int count;
-        rule_t *rules;
-} rule_array;
-
 
 extern int verbosity;
 

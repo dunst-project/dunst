@@ -58,7 +58,6 @@
 
 int height_limit;
 
-rule_array rules;
 /* index of colors fit to urgency level */
 static ColorSet *colors[3];
 static const char *color_strings[2][3];
@@ -87,6 +86,7 @@ int next_notification_id = 1;
 GQueue *queue = NULL;             /* all new notifications get into here */
 GQueue *displayed = NULL;   /* currently displayed notifications */
 GQueue *history = NULL;      /* history of displayed notifications */
+GSList *rules = NULL;
 
 /* misc funtions */
 void apply_rules(notification * n);
@@ -408,8 +408,8 @@ void ungrab_key(keyboard_shortcut * ks)
 void apply_rules(notification * n)
 {
 
-        for (int i = 0; i < rules.count; i++) {
-                rule_t *r = &(rules.rules[i]);
+        for (GSList *iter = rules; iter; iter = iter->next) {
+                rule_t *r = iter->data;
                 if ((!r->appname || !fnmatch(r->appname, n->appname, 0))
                     && (!r->summary || !fnmatch(r->summary, n->summary, 0))
                     && (!r->body || !fnmatch(r->body, n->body, 0))
@@ -1807,17 +1807,17 @@ void load_options(char *cmdline_config_path)
 
                 /* check for existing rule with same name */
                 rule_t *r = NULL;
-                for (int i = 0; i < rules.count; i++)
-                        if (rules.rules[i].name &&
-                            strcmp(rules.rules[i].name, cur_section) == 0)
-                                r = &(rules.rules[i]);
+                for (GSList *iter = rules; iter; iter = iter->next) {
+                        rule_t *match = iter->data;
+                        if (match->name &&
+                            strcmp(match->name, cur_section) == 0)
+                                r = match;
+                }
 
                 if (r == NULL) {
-                        rules.count++;
-                        rules.rules = realloc(rules.rules,
-                                        rules.count * sizeof(rule_t));
-                        r = &(rules.rules[rules.count-1]);
+                        r = g_malloc(sizeof(rule_t));
                         initrule(r);
+                        rules = g_slist_insert(rules, r, 0);
                 }
 
                 r->name = g_strdup(cur_section);
@@ -1865,9 +1865,9 @@ int main(int argc, char *argv[])
         displayed = g_queue_new();
         queue = g_queue_new();
 
-        rules.count = LENGTH(default_rules);
-        rules.rules = calloc(rules.count, sizeof(rule_t));
-        memcpy(rules.rules, default_rules, sizeof(rule_t) * rules.count);
+        for (int i = 0; i < LENGTH(default_rules); i++) {
+                rules = g_slist_insert(rules, &(default_rules[i]), 0);
+        }
 
         cmdline_load(argc, argv);
 
