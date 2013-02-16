@@ -62,15 +62,8 @@ char *string_append(char *a, const char *b, const char *sep)
 
 int digit_count(int i)
 {
-        int len = 0;
-        if (i == 0) {
-                return 1;
-        }
-
-        if (i < 0) {
-                len++;
-                i *= -1;
-        }
+        i = ABS(i);
+        int len = 1;
 
         while (i > 0) {
                 len++;
