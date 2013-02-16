@@ -84,12 +84,14 @@ bool dunst_grab_errored = false;
 int next_notification_id = 1;
 
 /* notification lists */
-n_queue *queue = NULL;             /* all new notifications get into here */
-n_queue *displayed = NULL;   /* currently displayed notifications */
-n_stack *history = NULL;      /* history of displayed notifications */
+GQueue *queue = NULL;             /* all new notifications get into here */
+GQueue *displayed = NULL;   /* currently displayed notifications */
+GQueue *history = NULL;      /* history of displayed notifications */
 
 /* misc funtions */
 void apply_rules(notification * n);
+int cmp_notification(const void *a, const void *b);
+int cmp_notification_data(const void *va, const void *vb, void *data);
 void check_timeouts(void);
 char *fix_markup(char *str);
 void handle_mouse_click(XEvent ev);
@@ -115,6 +117,33 @@ void r_line_cache_reset(r_line_cache *c);
 
 void init_shortcut(keyboard_shortcut * shortcut);
 KeySym string_to_mask(char *str);
+
+int cmp_notification(const void *va, const void *vb)
+{
+        notification *a = (notification*) va;
+        notification *b = (notification*) vb;
+        if (!sort)
+                return 1;
+
+        if (a == NULL && b == NULL)
+                return 1;
+        else if (a == NULL)
+                return 1;
+        else if (b == NULL)
+                return -1;
+
+        if (a->urgency != b->urgency) {
+                return b->urgency - a->urgency;
+        } else {
+                return a->timestamp - b->timestamp;
+        }
+}
+
+int cmp_notification_data(const void *va, const void *vb, void *data)
+{
+        return cmp_notification(va, vb);
+}
+
 
 str_array *extract_urls( const char * to_match)
 {
@@ -164,15 +193,13 @@ str_array *extract_urls( const char * to_match)
 void context_menu(void) {
         char *dmenu_input = NULL;
 
-        n_queue *iter = displayed;
-
-        while (iter) {
-                for (int i = 0; i < iter->n->urls->count; i++) {
+        for (GList *iter = g_queue_peek_head_link(displayed); iter; iter = iter->next) {
+                for (int i = 0; i < ((notification*)iter->data)->urls->count; i++) {
                         dmenu_input = string_append(dmenu_input,
-                                        (iter->n->urls->strs)[i], "\n");
+                                        (((notification*)iter->data)->urls->strs)[i], "\n");
                 }
-                iter = iter->next;
         }
+
 
         if (!dmenu_input)
                 return;
@@ -409,11 +436,11 @@ void apply_rules(notification * n)
 void check_timeouts(void)
 {
         /* nothing to do */
-        if (!displayed)
+        if (displayed->length == 0)
                 return;
 
-        for (n_queue *iter = displayed; iter; iter = iter->next) {
-                notification *n = iter->n;
+        for (GList *iter = g_queue_peek_head_link(displayed); iter; iter = iter->next) {
+                notification *n = iter->data;
 
                 /* don't timeout when user is idle */
                 if (is_idle()) {
@@ -443,9 +470,8 @@ void update_lists()
         check_timeouts();
 
         if (pause_display) {
-                while (displayed) {
-                        notification *n = n_queue_dequeue(&displayed);
-                        n_queue_enqueue(&queue, n);
+                while (displayed->length > 0) {
+                        g_queue_insert_sorted(queue, g_queue_pop_head(queue), cmp_notification_data, NULL);
                 }
                 return;
         }
@@ -462,14 +488,14 @@ void update_lists()
 
 
         /* move notifications from queue to displayed */
-        while (queue) {
+        while (queue->length > 0) {
 
-                if (limit > 0 && n_queue_len(&displayed) >= limit) {
+                if (limit > 0 && displayed->length >= limit) {
                         /* the list is full */
                         break;
                 }
 
-                notification *n = n_queue_dequeue(&queue);
+                notification *n = g_queue_pop_head(queue);
 
                 if (!n)
                         return;
@@ -478,7 +504,7 @@ void update_lists()
                         run_script(n);
                 }
 
-                n_queue_enqueue(&displayed, n);
+                g_queue_insert_sorted(displayed, n, cmp_notification_data, NULL);
         }
 }
 
@@ -736,18 +762,17 @@ void move_and_map(int width, int height)
 void fill_line_cache(int width)
 {
         /* create cache with all lines */
-        for (n_queue *iter = displayed; iter; iter = iter->next) {
-                add_notification_to_line_cache(iter->n, width);
+        for (GList *iter = g_queue_peek_head_link(displayed); iter; iter = iter->next) {
+                add_notification_to_line_cache(iter->data, width);
         }
 
         assert(line_cache.count > 0);
 
         /* add (x more) */
-        int queue_cnt = n_queue_len(&queue);
-        if (indicate_hidden && queue_cnt > 0) {
+        if (indicate_hidden && queue->length > 0) {
                 if (geometry.h != 1) {
                         char *tmp;
-                        tmp = g_strdup_printf("(%d more)", queue_cnt);
+                        tmp = g_strdup_printf("(%d more)", queue->length);
                         ColorSet *last_colors =
                                 line_cache.lines[line_cache.count-1].colors;
                         r_line_cache_append(&line_cache, tmp, last_colors, true, true);
@@ -755,7 +780,7 @@ void fill_line_cache(int width)
                 } else {
                         char *old = line_cache.lines[0].str;
                         char *new;
-                        new = g_strdup_printf("%s (%d more)", old, queue_cnt);
+                        new = g_strdup_printf("%s (%d more)", old, queue->length);
                         free(old);
                         line_cache.lines[0].str = new;
                 }
@@ -795,9 +820,9 @@ void draw_win(void)
         /* resize dc to correct width */
 
         int height = (line_cache.count * line_height)
-                   + n_queue_len(&displayed) * 2 * padding
-                   + ((indicate_hidden && n_queue_len(&queue) > 0) ? 2 * padding : 0)
-                   + (separator_height * (n_queue_len(&displayed) - 1))
+                   + displayed->length * 2 * padding
+                   + ((indicate_hidden && queue->length > 0) ? 2 * padding : 0)
+                   + (separator_height * (displayed->length - 1))
                    + (2 * frame_width);
 
 
@@ -923,8 +948,8 @@ void handle_mouse_click(XEvent ev)
         if (ev.xbutton.button == Button1) {
                 int y = separator_height;
                 notification *n = NULL;
-                for (n_queue *iter = displayed; iter; iter = iter->next) {
-                        n = iter->n;
+                for (GList *iter = g_queue_peek_head_link(displayed); iter; iter = iter->next) {
+                        n = iter->data;
                         int text_h = MAX(font_h, line_height) * n->line_count;
                         int padding = 2 * h_padding;
 
@@ -969,7 +994,7 @@ void handleXEvents(void)
                             && XLookupKeysym(&ev.xkey, 0) == close_ks.sym
                             && close_ks.mask == ev.xkey.state) {
                                 if (displayed) {
-                                        close_notification(displayed->n, 2);
+                                        close_notification(g_queue_peek_head_link(displayed)->data, 2);
                                 }
                         }
                         if (history_ks.str
@@ -993,28 +1018,28 @@ void handleXEvents(void)
 
 void move_all_to_history()
 {
-        while (displayed) {
-                close_notification(displayed->n, 2);
+        while (displayed->length > 0) {
+                close_notification(g_queue_peek_head_link(displayed)->data, 2);
         }
 
-        notification *n = n_queue_dequeue(&queue);
+        notification *n = g_queue_pop_head(queue);
         while (n) {
-                n_stack_push(&history, n);
-                n = n_queue_dequeue(&queue);
+                g_queue_push_tail(history, n);
+                n = g_queue_pop_head(queue);
         }
 }
 
 void history_pop(void)
 {
 
-        if (!history)
+        if (g_queue_is_empty(history))
                 return;
 
-        notification *n = n_stack_pop(&history);
+        notification *n = g_queue_pop_tail(history);
         n->redisplayed = true;
         n->start = 0;
         n->timeout = sticky_history ? 0 : n->timeout;
-        n_queue_enqueue(&queue, n);
+        g_queue_push_head(queue, n);
 
         if (!visible) {
                 map_win();
@@ -1088,8 +1113,8 @@ int init_notification(notification * n, int id)
         n->dup_count = 0;
 
         /* check if n is a duplicate */
-        for (n_queue *iter = queue; iter; iter = iter->next) {
-                notification *orig = iter->n;
+        for (GList *iter = g_queue_peek_head_link(queue); iter; iter = iter->next) {
+                notification *orig = iter->data;
                 if (strcmp(orig->appname, n->appname) == 0
                     && strcmp(orig->msg, n->msg) == 0) {
                         orig->dup_count++;
@@ -1098,8 +1123,8 @@ int init_notification(notification * n, int id)
                 }
         }
 
-        for (n_queue *iter = displayed; iter; iter = iter->next) {
-                notification *orig = iter->n;
+        for (GList *iter = g_queue_peek_head_link(displayed); iter; iter = iter->next) {
+                notification *orig = iter->data;
                 if (strcmp(orig->appname, n->appname) == 0
                     && strcmp(orig->msg, n->msg) == 0) {
                         orig->dup_count++;
@@ -1144,7 +1169,7 @@ int init_notification(notification * n, int id)
                 close_notification(n, 2);
                 printf("skipping notification: %s %s\n", n->body, n->summary);
         } else {
-                n_queue_enqueue(&queue, n);
+                g_queue_insert_sorted(queue, n, cmp_notification_data, NULL);
         }
 
         char *tmp = g_strconcat(n->summary, " ", n->body, NULL);
@@ -1171,21 +1196,21 @@ int close_notification_by_id(int id, int reason)
 {
         notification *target = NULL;
 
-        for (n_queue *iter = displayed; iter; iter = iter->next) {
-                notification *n = iter->n;
+        for (GList *iter = g_queue_peek_head_link(displayed); iter; iter = iter->next) {
+                notification *n = iter->data;
                 if (n->id == id) {
-                        n_queue_remove(&displayed, n);
-                        n_stack_push(&history, n);
+                        g_queue_remove(displayed, n);
+                        g_queue_push_tail(history, n);
                         target = n;
                         break;
                 }
         }
 
-        for (n_queue *iter = queue; iter; iter = iter->next) {
-                notification *n = iter->n;
+        for (GList *iter = g_queue_peek_head_link(queue); iter; iter = iter->next) {
+                notification *n = iter->data;
                 if (n->id == id) {
-                        n_queue_remove(&queue, n);
-                        n_stack_push(&history, n);
+                        g_queue_remove(queue, n);
+                        g_queue_push_tail(history, n);
                         target = n;
                         break;
                 }
@@ -1315,7 +1340,7 @@ void run(void)
 
                 /* move messages from notification_queue to displayed_notifications */
                 update_lists();
-                if (displayed) {
+                if (displayed->length > 0) {
                         if (!visible) {
                                 map_win();
                         } else {
@@ -1535,7 +1560,7 @@ void setup(void)
 void map_win(void)
 {
         /* window is already mapped or there's nothing to show */
-        if (visible || !displayed) {
+        if (visible || g_queue_is_empty(displayed)) {
                 return;
         }
 
@@ -1843,7 +1868,9 @@ int main(int argc, char *argv[])
         now = time(&now);
 
         r_line_cache_init(&line_cache);
-
+        history = g_queue_new();
+        displayed = g_queue_new();
+        queue = g_queue_new();
 
         rules.count = LENGTH(default_rules);
         rules.rules = calloc(rules.count, sizeof(rule_t));
