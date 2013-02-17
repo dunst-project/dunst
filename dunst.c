@@ -76,7 +76,6 @@ static bool pause_display = false;
 static char **dmenu_cmd;
 static unsigned long framec;
 static unsigned long sep_custom_col;
-static r_line_cache line_cache;
 
 bool dunst_grab_errored = false;
 
@@ -110,10 +109,6 @@ void print_version(void);
 str_array *extract_urls(const char *str);
 void context_menu(void);
 void run_script(notification *n);
-
-void r_line_cache_init(r_line_cache *c);
-void r_line_cache_append(r_line_cache *c, const char *s, ColorSet *col, bool is_begin, bool is_end);
-void r_line_cache_reset(r_line_cache *c);
 
 void init_shortcut(keyboard_shortcut * shortcut);
 KeySym string_to_mask(char *str);
@@ -501,87 +496,52 @@ void update_lists()
         }
 }
 
-void r_line_cache_init(r_line_cache *c)
-{
-    c->count = 0;
-    c->size = 0;
-    c->lines = NULL;
-}
 
-void r_line_cache_append(r_line_cache *c, const char *s, ColorSet *col, bool is_begin, bool is_end)
-{
-    if (!c || !s)
-        return;
-
-    /* resize cache if it's too small */
-    if (c->count >= c->size) {
-        c->size++;
-        c->lines = realloc(c->lines, c->size * sizeof(r_line));
-    }
-
-    c->count++;
-    c->lines[c->count-1].colors = col;
-    c->lines[c->count-1].str = g_strdup(s);
-    c->lines[c->count-1].is_begin = is_begin;
-    c->lines[c->count-1].is_end = is_end;
-}
-
-void r_line_cache_reset(r_line_cache *c)
-{
-    for (int i = 0; i < c->count; i++) {
-        if (c->lines[i].str)
-            free(c->lines[i].str);
-        c->lines[i].str = NULL;
-        c->lines[i].colors = NULL;
-    }
-    c->count = 0;
-}
-
-int do_word_wrap(char *source, int max_width)
+GSList *do_word_wrap(char *text, int max_width)
 {
 
-        g_strstrip(source);
+        GSList *result = NULL;
+        g_strstrip(text);
 
-        if (!source || strlen(source) == 0)
+        if (!text || strlen(text) == 0)
                 return 0;
 
-        char *eol = source;
+        char *begin = text;
+        char *end = text;
 
         while (true) {
-                if (*eol == '\0')
-                        return 1;
-                if (*eol == '\n') {
-                        *eol = '\0';
-                        return 1 + do_word_wrap(eol + 1, max_width);
+                if (*end == '\0') {
+                        result = g_slist_append(result, g_strdup(begin));
+                        break;
+                }
+                if (*end == '\n') {
+                        *end = ' ';
+                        result = g_slist_append(result, g_strndup(begin, end - begin));
+                        begin = ++end;
                 }
 
-                if (word_wrap && max_width > 0) {
-                        if (textnw(dc, source, (eol - source) + 1) >= max_width) {
-                                /* go back to previous space */
-                                char *space = eol;
-                                while (space > source && !isspace(*space))
-                                        space--;
+                if (word_wrap && max_width > 0 && textnw(dc, begin, (end - begin)) > max_width) {
+                        /* find previous space */
+                        char *space = end;
+                        while (space > begin && !isspace(*space))
+                                space--;
 
-                                if (space <= source) {
-                                        /* whe have a word longer than width, so we
-                                         * split mid-word. That one letter is
-                                         * collateral damage */
-                                        space = eol;
-                                }
-                                *space = '\0';
-                                if (*(space + 1) == '\0')
-                                        return 1;
-                                return 1 + do_word_wrap(space + 1, max_width);
+                        if (space > begin) {
+                                end = space;
                         }
+                        result = g_slist_append(result, g_strndup(begin, end - begin));
+                        begin = ++end;
                 }
-                eol++;
+                end++;
         }
+
+        return result;
 }
 
-void add_notification_to_line_cache(notification *n, int max_width)
+
+char *generate_final_text(notification *n)
 {
         char *msg = g_strstrip(n->msg);
-
         char *buf;
 
         /* print dup_count and msg*/
@@ -615,18 +575,7 @@ void add_notification_to_line_cache(notification *n, int max_width)
                 buf = new_buf;
         }
 
-
-        int linecnt = do_word_wrap(buf, max_width);
-        n->line_count = linecnt;
-        char *cur = buf;
-        for (int i = 0; i < linecnt; i++) {
-                r_line_cache_append(&line_cache, cur, n->colors,i == 0, i == linecnt-1);
-
-                while (*cur != '\0')
-                        cur++;
-                cur++;
-        }
-        free(buf);
+        return buf;
 }
 
 int calculate_x_offset(int line_width, int text_width)
@@ -752,39 +701,52 @@ void move_and_map(int width, int height)
 
 }
 
-void fill_line_cache(int width)
+GSList *generate_render_texts(int width)
 {
-        /* create cache with all lines */
-        for (GList *iter = g_queue_peek_head_link(displayed); iter; iter = iter->next) {
-                add_notification_to_line_cache(iter->data, width);
-        }
+        GSList *render_texts = NULL;
 
-        assert(line_cache.count > 0);
+        for (GList *iter = g_queue_peek_head_link(displayed); iter; iter = iter->next) {
+                render_text *rt = g_malloc(sizeof(render_text));
+
+                rt->colors = ((notification*)iter->data)->colors;
+                char *text = generate_final_text(iter->data);
+                rt->lines = do_word_wrap(text, width);
+                free(text);
+                render_texts = g_slist_append(render_texts, rt);
+        }
 
         /* add (x more) */
         if (indicate_hidden && queue->length > 0) {
                 if (geometry.h != 1) {
-                        char *tmp;
-                        tmp = g_strdup_printf("(%d more)", queue->length);
-                        ColorSet *last_colors =
-                                line_cache.lines[line_cache.count-1].colors;
-                        r_line_cache_append(&line_cache, tmp, last_colors, true, true);
-                        free(tmp);
+                        render_text *rt = g_malloc(sizeof(render_text));
+                        rt->colors = ((render_text *) g_slist_last(render_texts)->data)->colors;
+                        rt->lines = g_slist_append(NULL, g_strdup_printf("%d more)", queue->length));
+                        render_texts = g_slist_append(render_texts, rt);
                 } else {
-                        char *old = line_cache.lines[0].str;
-                        char *new;
-                        new = g_strdup_printf("%s (%d more)", old, queue->length);
+                        GSList *last_lines = ((render_text *) g_slist_last(render_texts)->data)->lines;
+                        GSList *last_line = g_slist_last(last_lines);
+                        char *old = last_line->data;
+                        char *new = g_strdup_printf("%s (%d more)", old, queue->length);
                         free(old);
-                        line_cache.lines[0].str = new;
+                        last_line->data = new;
                 }
         }
+
+        return render_texts;
+}
+
+void free_render_text(void *data) {
+        g_slist_free_full(((render_text *) data)->lines, g_free);
+}
+
+void free_render_texts(GSList *texts) {
+        g_slist_free_full(texts, free_render_text);
 }
 
 
 void draw_win(void)
 {
 
-        r_line_cache_reset(&line_cache);
         update_screen_info();
         int outer_width = calculate_width();
 
@@ -798,27 +760,30 @@ void draw_win(void)
                 width = outer_width - (2 * frame_width) - (2 * h_padding);
 
 
-        fill_line_cache(width);
-
+        GSList *texts = generate_render_texts(width);
+        int line_count = 0;
+        for (GSList *iter = texts; iter; iter = iter->next) {
+                render_text *tmp = iter->data;
+                line_count += g_slist_length(tmp->lines);
+        }
 
         /* if we have a dynamic width, calculate the actual width */
         if (width == 0) {
-                for (int i = 0; i < line_cache.count; i++) {
-                        char *line = line_cache.lines[i].str;
-                        width = MAX(width, textw(dc, line));
+                for (GSList *iter = texts; iter; iter = iter->next) {
+                        GSList *lines = ((render_text *) iter->data)->lines;
+                        for (GSList *iiter = lines; iiter; iiter = iiter->next)
+                                width = MAX(width, textw(dc, iiter->data));
                 }
                 outer_width = width + (2 * frame_width) + (2 * h_padding);
         }
 
         /* resize dc to correct width */
 
-        int height = (line_cache.count * line_height)
+        int height = (line_count * line_height)
                    + displayed->length * 2 * padding
-                   + ((indicate_hidden && queue->length > 0) ? 2 * padding : 0)
+                   + ((indicate_hidden && queue->length > 0 && geometry.h != 1) ? 2 * padding : 0)
                    + (separator_height * (displayed->length - 1))
                    + (2 * frame_width);
-
-
 
         resizedc(dc, outer_width, height);
 
@@ -835,38 +800,53 @@ void draw_win(void)
         dc->y = frame_width;
         dc->x = frame_width;
 
-        for (int i = 0; i < line_cache.count; i++) {
-                dc->x = frame_width;
+        for (GSList *iter = texts; iter; iter = iter->next) {
 
-                r_line line = line_cache.lines[i];
+                render_text *cur = iter->data;
+                ColorSet *colors = cur->colors;
 
 
-                /* draw background */
-                int pad = 0;
-                pad += line.is_begin ? padding : 0;
-                pad += line.is_end ? padding : 0;
+                int line_count = 0;
+                bool first_line = true;
+                for (GSList *iiter = cur->lines; iiter; iiter = iiter->next) {
+                        char *line = iiter->data;
+                        line_count++;
 
-                drawrect(dc, 0, 0, width + (2*h_padding), pad +  line_height, true, line.colors->BG);
+                        int pad = 0;
+                        bool last_line = iiter->next == NULL;
 
-                /* draw text */
-                dc->x = calculate_x_offset(width, textw(dc, line.str));
+                        if (first_line && last_line)
+                                pad = 2*padding;
+                        else if (first_line || last_line)
+                                pad = padding;
 
-                dc->y += ((line_height - font_h) / 2);
-                dc->y += line.is_begin ? padding : 0;
+                        dc->x = frame_width;
 
-                drawtextn(dc, line.str, strlen(line.str), line.colors);
+                        /* draw background */
+                        drawrect(dc, 0, 0, width + (2*h_padding), pad +  line_height, true, colors->BG);
 
-                dc->y += line_height - ((line_height - font_h) / 2);
-                dc->y += line.is_end ? padding : 0;
+                        /* draw text */
+                        dc->x = calculate_x_offset(width, textw(dc, line));
+
+                        dc->y += ((line_height - font_h) / 2);
+                        dc->y += first_line ? padding : 0;
+
+                        drawtextn(dc, line, strlen(line), colors);
+
+                        dc->y += line_height - ((line_height - font_h) / 2);
+                        dc->y += last_line ? padding : 0;
+
+                        first_line = false;
+                }
 
                 /* draw separator */
-                if (separator_height > 0 && i < line_cache.count - 1 && line.is_end) {
+                if (separator_height > 0 && iter->next) {
                         dc->x = frame_width;
                         double color;
                         if (sep_color == AUTO)
-                                color = calculate_foreground_color(line.colors->BG);
+                                color = calculate_foreground_color(colors->BG);
                         else if (sep_color == FOREGROUND)
-                                color = line.colors->FG;
+                                color = colors->FG;
                         else if (sep_color == FRAME)
                                 color = framec;
                         else {
@@ -879,6 +859,8 @@ void draw_win(void)
         }
 
         move_and_map(outer_width, height);
+
+        free_render_texts(texts);
 }
 
 char
@@ -1860,7 +1842,6 @@ int main(int argc, char *argv[])
 
         now = time(&now);
 
-        r_line_cache_init(&line_cache);
         history = g_queue_new();
         displayed = g_queue_new();
         queue = g_queue_new();

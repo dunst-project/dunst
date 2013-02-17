@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <glib.h>
 #include <stdbool.h>
 
 #include "draw.h"
@@ -84,18 +85,10 @@ typedef struct _keyboard_shortcut {
         bool is_valid;
 } keyboard_shortcut;
 
-typedef struct _r_line {
-    ColorSet *colors;
-    char *str;
-    bool is_begin;
-    bool is_end;
-} r_line;
-
-typedef struct r_line_cache {
-    int count;
-    int size;
-    r_line *lines;
-} r_line_cache;
+typedef struct _render_text {
+        ColorSet *colors;
+        GSList *lines;
+} render_text;
 
 extern int verbosity;
 
