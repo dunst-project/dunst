@@ -57,7 +57,7 @@ typedef struct _notification {
         int progress;           /* percentage + 1, 0 to hide */
         int line_count;
         const char *script;
-        struct { int count; char **strs; } *urls;
+        char *urls;
 } notification;
 
 typedef struct _rule_t {

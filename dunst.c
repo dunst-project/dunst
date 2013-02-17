@@ -31,7 +31,6 @@
 #include "dunst.h"
 #include "draw.h"
 #include "dunst_dbus.h"
-#include "container.h"
 #include "utils.h"
 
 #include "options.h"
@@ -108,7 +107,7 @@ void draw_win(void);
 void hide_win(void);
 void move_all_to_history(void);
 void print_version(void);
-str_array *extract_urls(const char *str);
+char *extract_urls(const char *str);
 void context_menu(void);
 void run_script(notification *n);
 
@@ -135,7 +134,7 @@ int cmp_notification_data(const void *va, const void *vb, void *data)
 }
 
 
-str_array *extract_urls( const char * to_match)
+char *extract_urls( const char * to_match)
 {
     static bool is_initialized = false;
     static regex_t cregex;
@@ -151,7 +150,7 @@ str_array *extract_urls( const char * to_match)
         }
     }
 
-    str_array *urls = str_array_malloc();
+    char *urls = NULL;
 
     const char * p = to_match;
     regmatch_t m;
@@ -171,12 +170,10 @@ str_array *extract_urls( const char * to_match)
 
         char *match = strndup(to_match+start, finish-start);
 
-        str_array_append(urls, match);
+        urls = string_append(urls, match, "\n");
 
         p += m.rm_eo;
     }
-    return 0;
-
     return urls;
 }
 
@@ -184,10 +181,8 @@ void context_menu(void) {
         char *dmenu_input = NULL;
 
         for (GList *iter = g_queue_peek_head_link(displayed); iter; iter = iter->next) {
-                for (int i = 0; i < ((notification*)iter->data)->urls->count; i++) {
-                        dmenu_input = string_append(dmenu_input,
-                                        (((notification*)iter->data)->urls->strs)[i], "\n");
-                }
+                notification *n = iter->data;
+                dmenu_input = string_append(dmenu_input, n->urls, "\n");
         }
 
 
@@ -332,12 +327,12 @@ static void print_notification(notification * n)
         printf("\turgency: %d\n", n->urgency);
         printf("\tformatted: '%s'\n", n->msg);
         printf("\tid: %d\n", n->id);
-        printf("urls\n");
-        printf("\t{\n");
-        for (int i = 0; i < n->urls->count; i++) {
-                printf("\t\t%s\n", (n->urls->strs)[i]);
+        if (n->urls) {
+                printf("\turls\n");
+                printf("\t{\n");
+                printf("%s\n", n->urls);
+                printf("\t}\n");
         }
-        printf("\t}\n");
         printf("\tscript: %s\n", n->script);
         printf("}\n");
 }

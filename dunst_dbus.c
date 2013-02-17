@@ -4,7 +4,6 @@
 #include <dbus/dbus.h>
 
 #include "dunst.h"
-#include "container.h"
 
 #include "dunst_dbus.h"
 

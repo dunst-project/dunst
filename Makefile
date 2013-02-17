@@ -3,7 +3,7 @@
 
 include config.mk
 
-SRC = draw.c dunst.c container.c dunst_dbus.c utils.c options.c
+SRC = draw.c dunst.c dunst_dbus.c utils.c options.c
 OBJ = ${SRC:.c=.o}
 
 all: doc options dunst service
