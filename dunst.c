@@ -77,6 +77,8 @@ static char **dmenu_cmd;
 static unsigned long framec;
 static unsigned long sep_custom_col;
 
+bool force_redraw = false;
+
 bool dunst_grab_errored = false;
 
 int next_notification_id = 1;
@@ -493,6 +495,7 @@ void update_lists()
                 }
 
                 g_queue_insert_sorted(displayed, n, cmp_notification_data, NULL);
+                force_redraw = true;
         }
 }
 
@@ -948,8 +951,7 @@ void handleXEvents(void)
                 switch (ev.type) {
                 case Expose:
                         if (ev.xexpose.count == 0 && visible) {
-                                draw_win();
-                                mapdc(dc, win, scr.dim.w, font_h);
+                                force_redraw = true;
                         }
                         break;
                 case SelectionNotify:
@@ -962,6 +964,7 @@ void handleXEvents(void)
                 case ButtonPress:
                         if (ev.xbutton.window == win) {
                                 handle_mouse_click(ev);
+                                force_redraw = true;
                         }
                         break;
                 case KeyPress:
@@ -987,6 +990,8 @@ void handleXEvents(void)
                             && context_ks.mask == ev.xkey.state) {
                                 context_menu();
                         }
+                        force_redraw = true;
+                        break;
                 }
         }
 }
@@ -1305,6 +1310,7 @@ bool is_idle(void)
 
 void run(void)
 {
+        time_t last_time = time(&last_time);
         while (true) {
                 if (visible) {
                         dbus_poll(50);
@@ -1312,21 +1318,21 @@ void run(void)
                         dbus_poll(200);
                 }
                 now = time(&now);
+                time_t delta = now - last_time;
+                last_time = now;
 
                 /* move messages from notification_queue to displayed_notifications */
                 update_lists();
-                if (displayed->length > 0) {
-                        if (!visible) {
-                                map_win();
-                        } else {
-                                draw_win();
-                        }
-                } else {
-                        if (visible) {
-                                hide_win();
-                        }
-                }
+                if (displayed->length > 0 && ! visible)
+                        map_win();
+                if (displayed->length == 0 && visible)
+                        hide_win();
+
                 handleXEvents();
+
+                if (visible && (force_redraw || delta > 0))
+                        draw_win();
+                force_redraw = false;
         }
 }
 
@@ -1551,9 +1557,8 @@ void map_win(void)
 
         update_screen_info();
         XMapRaised(dc->dpy, win);
-        draw_win();
-        XFlush(dc->dpy);
         visible = true;
+        force_redraw = true;
 }
 
 void parse_follow_mode(const char *mode)
