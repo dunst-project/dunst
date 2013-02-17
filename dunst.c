@@ -1,6 +1,8 @@
 /* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
 
 #define _GNU_SOURCE
+#define XLIB_ILLEGAL_ACCESS
+
 #include <assert.h>
 #include <unistd.h>
 #include <time.h>
@@ -51,6 +53,12 @@
 #define INFO 2
 #define DEBUG 3
 
+typedef struct _x11_source {
+        GSource source;
+        Display *dpy;
+        Window w;
+} x11_source_t;
+
 /* global variables */
 
 #include "config.h"
@@ -99,7 +107,6 @@ void handleXEvents(void);
 void history_pop(void);
 void initrule(rule_t *r);
 bool is_idle(void);
-void run(void);
 void setup(void);
 void update_screen_info();
 void usage(int exit_status);
@@ -113,6 +120,82 @@ void run_script(notification *n);
 
 void init_shortcut(keyboard_shortcut * shortcut);
 KeySym string_to_mask(char *str);
+
+/*******
+ *
+ * MainLoop functions for xlib
+ */
+
+static gboolean x11_fd_prepare(GSource *source, gint *timeout)
+{
+        *timeout = -1;
+        return false;
+}
+
+static gboolean x11_fd_check(GSource *source)
+{
+        return XPending(dc->dpy) > 0;
+}
+
+static gboolean
+x11_fd_dispatch(GSource *source, GSourceFunc callback, gpointer user_data)
+{
+        Display *dpy = ((x11_source_t*)source)->dpy;
+        Window win = ((x11_source_t*)source)->w;
+
+
+        XEvent ev;
+        while (XPending(dpy) > 0) {
+                printf("in while\n");
+                XNextEvent(dpy, &ev);
+                switch (ev.type) {
+                case Expose:
+                        if (ev.xexpose.count == 0 && visible) {
+                                force_redraw = true;
+                        }
+                        break;
+                case SelectionNotify:
+                        if (ev.xselection.property == utf8)
+                                break;
+                case VisibilityNotify:
+                        if (ev.xvisibility.state != VisibilityUnobscured)
+                                XRaiseWindow(dpy, win);
+                        break;
+                case ButtonPress:
+                        if (ev.xbutton.window == win) {
+                                handle_mouse_click(ev);
+                                force_redraw = true;
+                        }
+                        break;
+                case KeyPress:
+                        if (close_ks.str
+                            && XLookupKeysym(&ev.xkey, 0) == close_ks.sym
+                            && close_ks.mask == ev.xkey.state) {
+                                if (displayed) {
+                                        close_notification(g_queue_peek_head_link(displayed)->data, 2);
+                                }
+                        }
+                        if (history_ks.str
+                            && XLookupKeysym(&ev.xkey, 0) == history_ks.sym
+                            && history_ks.mask == ev.xkey.state) {
+                                history_pop();
+                        }
+                        if (close_all_ks.str
+                            && XLookupKeysym(&ev.xkey, 0) == close_all_ks.sym
+                            && close_all_ks.mask == ev.xkey.state) {
+                                move_all_to_history();
+                        }
+                        if (context_ks.str
+                            && XLookupKeysym(&ev.xkey, 0) == context_ks.sym
+                            && context_ks.mask == ev.xkey.state) {
+                                context_menu();
+                        }
+                        force_redraw = true;
+                        break;
+                }
+        }
+        return true;
+}
 
 int cmp_notification(const void *va, const void *vb)
 {
@@ -938,58 +1021,6 @@ void handle_mouse_click(XEvent ev)
         }
 }
 
-void handleXEvents(void)
-{
-        XEvent ev;
-        while (XPending(dc->dpy) > 0) {
-                XNextEvent(dc->dpy, &ev);
-                switch (ev.type) {
-                case Expose:
-                        if (ev.xexpose.count == 0 && visible) {
-                                force_redraw = true;
-                        }
-                        break;
-                case SelectionNotify:
-                        if (ev.xselection.property == utf8)
-                                break;
-                case VisibilityNotify:
-                        if (ev.xvisibility.state != VisibilityUnobscured)
-                                XRaiseWindow(dc->dpy, win);
-                        break;
-                case ButtonPress:
-                        if (ev.xbutton.window == win) {
-                                handle_mouse_click(ev);
-                                force_redraw = true;
-                        }
-                        break;
-                case KeyPress:
-                        if (close_ks.str
-                            && XLookupKeysym(&ev.xkey, 0) == close_ks.sym
-                            && close_ks.mask == ev.xkey.state) {
-                                if (displayed) {
-                                        close_notification(g_queue_peek_head_link(displayed)->data, 2);
-                                }
-                        }
-                        if (history_ks.str
-                            && XLookupKeysym(&ev.xkey, 0) == history_ks.sym
-                            && history_ks.mask == ev.xkey.state) {
-                                history_pop();
-                        }
-                        if (close_all_ks.str
-                            && XLookupKeysym(&ev.xkey, 0) == close_all_ks.sym
-                            && close_all_ks.mask == ev.xkey.state) {
-                                move_all_to_history();
-                        }
-                        if (context_ks.str
-                            && XLookupKeysym(&ev.xkey, 0) == context_ks.sym
-                            && context_ks.mask == ev.xkey.state) {
-                                context_menu();
-                        }
-                        force_redraw = true;
-                        break;
-                }
-        }
-}
 
 void move_all_to_history()
 {
@@ -1303,32 +1334,28 @@ bool is_idle(void)
         return screensaver_info->idle / 1000 > idle_threshold;
 }
 
-void run(void)
+static gboolean run(gpointer data)
 {
+        printf("running\n");
         time_t last_time = time(&last_time);
-        while (true) {
-                if (visible) {
-                        dbus_poll(50);
-                } else {
-                        dbus_poll(200);
-                }
-                now = time(&now);
-                time_t delta = now - last_time;
-                last_time = now;
+        dbus_poll(1);
 
-                /* move messages from notification_queue to displayed_notifications */
-                update_lists();
-                if (displayed->length > 0 && ! visible)
-                        map_win();
-                if (displayed->length == 0 && visible)
-                        hide_win();
+        now = time(&now);
+        time_t delta = now - last_time;
+        last_time = now;
 
-                handleXEvents();
+        /* move messages from notification_queue to displayed_notifications */
+        update_lists();
+        if (displayed->length > 0 && ! visible)
+                map_win();
+        if (displayed->length == 0 && visible)
+                hide_win();
 
-                if (visible && (force_redraw || delta > 0))
-                        draw_win();
-                force_redraw = false;
-        }
+        if (visible && (force_redraw || delta > 0))
+                draw_win();
+        force_redraw = false;
+
+        return true;
 }
 
 void hide_win()
@@ -1889,7 +1916,33 @@ int main(int argc, char *argv[])
                 init_notification(n, 0);
         }
 
-        run();
+        GMainLoop *mainloop = NULL;
+        mainloop = g_main_loop_new(NULL, FALSE);
+
+        /* FIXME */
+        g_timeout_add(5000, run, mainloop);
+
+        GPollFD dpy_pollfd = {dc->dpy->fd,
+                G_IO_IN | G_IO_HUP | G_IO_ERR, 0 };
+
+        GSourceFuncs x11_source_funcs = {
+                x11_fd_prepare,
+                x11_fd_check,
+                x11_fd_dispatch,
+                NULL,
+                NULL,
+                NULL };
+
+        GSource *x11_source =
+                g_source_new(&x11_source_funcs, sizeof(x11_source_t));
+                ((x11_source_t*)x11_source)->dpy = dc->dpy;
+                ((x11_source_t*)x11_source)->w = win;
+                g_source_add_poll(x11_source, &dpy_pollfd);
+
+      g_source_attach(x11_source, NULL);
+
+      g_main_loop_run(mainloop);
+
         return 0;
 }
 
