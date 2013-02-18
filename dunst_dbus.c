@@ -236,6 +236,8 @@ static void onCloseNotification(GDBusConnection *connection,
         guint32 id;
         g_variant_get(parameters, "(u)", &id);
         close_notification_by_id(id, 3);
+        g_dbus_method_invocation_return_value(invocation, NULL);
+        g_dbus_connection_flush(connection, NULL, NULL, NULL);
 }
 
 static void onGetServerInformation(GDBusConnection *connection,
