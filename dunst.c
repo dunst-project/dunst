@@ -414,6 +414,15 @@ static void print_notification(notification * n)
                 printf("%s\n", n->urls);
                 printf("\t}\n");
         }
+
+        if (n->actions->count > 0) {
+                printf("\tactions:\n");
+                printf("\t{\n");
+                for (int i = 0; i < n->actions->count; i += 2) {
+                        printf("\t\t [%s,%s]\n", n->actions->actions[i], n->actions->actions[i+1]);
+                }
+                printf("\t]\n");
+        }
         printf("\tscript: %s\n", n->script);
         printf("}\n");
 }
@@ -1944,6 +1953,9 @@ int main(int argc, char *argv[])
                 n->dbus_client = NULL;
                 n->color_strings[0] = NULL;
                 n->color_strings[1] = NULL;
+                n->actions = malloc(sizeof(Actions));
+                n->actions->count = 0;
+                n->actions->actions = NULL;
                 init_notification(n, 0);
         }
 
