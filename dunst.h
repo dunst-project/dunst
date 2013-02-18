@@ -38,6 +38,7 @@ typedef struct _screen_info {
 
 typedef struct _actions {
         char **actions;
+        char *dmenu_str;
         gsize count;
 } Actions;
 

@@ -202,7 +202,12 @@ static void onNotify(GDBusConnection *connection,
         n->progress = (progress < 0 || progress > 100) ? 0 : progress + 1;
         n->urgency = urgency;
         n->dbus_client = strdup(sender);
-        n->actions = actions;
+        if (actions->count > 0) {
+            n->actions = actions;
+        } else {
+            n->actions = NULL;
+            free(actions);
+        }
 
         for (int i = 0; i < ColLast; i++) {
                 n->color_strings[i] = NULL;
@@ -263,6 +268,25 @@ void notificationClosed(notification * n, int reason)
                 printf("notificationClosed ERROR\n");
         }
 
+}
+
+void actionInvoked(notification *n, const char *identifier)
+{
+        GVariant *body = g_variant_new ("(us)", n->id, identifier);
+        GError *err = NULL;
+
+        g_dbus_connection_emit_signal(
+                        dbus_conn,
+                        n->dbus_client,
+                        "/org/freedesktop/Notifications",
+                        "org.freedesktop.Notifications",
+                        "ActionInvoked",
+                        body,
+                        &err);
+
+        if (err) {
+                printf("ActionInvoked ERROR\n");
+        }
 }
 
 static const GDBusInterfaceVTable interface_vtable =

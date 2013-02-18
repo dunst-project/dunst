@@ -258,12 +258,82 @@ char *extract_urls( const char * to_match)
     return urls;
 }
 
+
+void open_browser(const char *url)
+{
+    int browser_pid1 = fork();
+
+    if (browser_pid1) {
+            int status;
+            waitpid(browser_pid1, &status, 0);
+    } else {
+            int browser_pid2 = fork();
+            if (browser_pid2) {
+                    exit(0);
+            } else {
+                    browser = string_append(browser, url, " ");
+                    char **cmd = g_strsplit(browser, " ", 0);
+                    execvp(cmd[0], cmd);
+            }
+    }
+}
+
+void invoke_action(const char *action)
+{
+        notification *invoked = NULL;
+        char *action_identifier = NULL;
+
+        char *name_begin = strstr(action, "(");
+        if (!name_begin) {
+                printf("invalid action: %s\n", action);
+                return;
+        }
+        name_begin++;
+
+
+        for (GList *iter = g_queue_peek_head_link(displayed); iter; iter = iter->next) {
+                notification *n = iter->data;
+                if (g_str_has_prefix(action, n->appname)) {
+                        if (! n->actions)
+                                continue;
+
+                        for (int i = 0; i < n->actions->count; i += 2) {
+                                char *a_identifier = n->actions->actions[i];
+                                char *name = n->actions->actions[i+1];
+                                if (g_str_has_prefix(name_begin, name)) {
+                                        invoked = n;
+                                        action_identifier = a_identifier;
+                                        break;
+                                }
+                        }
+                }
+        }
+
+        if (invoked && action_identifier) {
+                actionInvoked(invoked, action_identifier);
+        }
+}
+
+void dispatch_menu_result(const char *input)
+{
+        char *maybe_url = extract_urls(input);
+        if (maybe_url) {
+                open_browser(maybe_url);
+                free(maybe_url);
+                return;
+        }
+
+        invoke_action(input);
+}
+
 void context_menu(void) {
         char *dmenu_input = NULL;
 
         for (GList *iter = g_queue_peek_head_link(displayed); iter; iter = iter->next) {
                 notification *n = iter->data;
                 dmenu_input = string_append(dmenu_input, n->urls, "\n");
+                if (n->actions)
+                        dmenu_input = string_append(dmenu_input, n->actions->dmenu_str, "\n");
         }
 
 
@@ -317,22 +387,10 @@ void context_menu(void) {
 
     close(parent_io[0]);
 
-    int browser_pid1 = fork();
 
-    if (browser_pid1) {
-            int status;
-            waitpid(browser_pid1, &status, 0);
-    } else {
-            int browser_pid2 = fork();
-            if (browser_pid2) {
-                    exit(0);
-            } else {
-                    browser = string_append(browser, buf, " ");
-                    char **cmd = g_strsplit(browser, " ", 0);
-                    execvp(cmd[0], cmd);
-            }
-    }
+    dispatch_menu_result(buf);
 }
+
 
 void run_script(notification *n)
 {
@@ -415,12 +473,13 @@ static void print_notification(notification * n)
                 printf("\t}\n");
         }
 
-        if (n->actions->count > 0) {
+        if (n->actions) {
                 printf("\tactions:\n");
                 printf("\t{\n");
                 for (int i = 0; i < n->actions->count; i += 2) {
                         printf("\t\t [%s,%s]\n", n->actions->actions[i], n->actions->actions[i+1]);
                 }
+                printf("actions_dmenu: %s\n", n->actions->dmenu_str);
                 printf("\t]\n");
         }
         printf("\tscript: %s\n", n->script);
@@ -1192,6 +1251,23 @@ int init_notification(notification * n, int id)
         char *tmp = g_strconcat(n->summary, " ", n->body, NULL);
 
         n->urls = extract_urls(tmp);
+
+
+        if (n->actions) {
+                n->actions->dmenu_str = NULL;
+                for (int i = 0; i < n->actions->count; i += 2) {
+                        char *human_readable = n->actions->actions[i+1];
+                        printf("debug: %s\n", n->appname);
+                        printf("debug: %s\n", human_readable);
+                        char *tmp = g_strdup_printf("%s %s", n->appname, human_readable);
+                        printf("debug: %s\n", tmp);
+
+                        n->actions->dmenu_str = string_append(n->actions->dmenu_str,
+                                        g_strdup_printf("%s(%s)",
+                                        n->appname,
+                                        human_readable), "\n");
+                }
+        }
 
         free(tmp);
 
