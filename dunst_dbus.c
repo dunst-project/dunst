@@ -88,9 +88,9 @@ void handle_method_call(GDBusConnection *connection,
                 onGetServerInformation(connection, sender, parameters, invocation);
         } else {
                 g_object_unref(invocation);
+                printf("WARNING: sender: %s; unknown method_name: %s\n", sender, method_name);
         }
 
-        printf("sender: %s\nmethod_name: %s\n", sender, method_name);
 }
 
 static void onGetCapabilities(GDBusConnection *connection,
@@ -98,7 +98,6 @@ static void onGetCapabilities(GDBusConnection *connection,
                 const GVariant *parameters,
                 GDBusMethodInvocation *invocation)
 {
-        printf("GetCapabilities\n");
         GVariantBuilder *builder;
         GVariant *value;
 
@@ -118,8 +117,6 @@ static void onNotify(GDBusConnection *connection,
                 GVariant *parameters,
                 GDBusMethodInvocation *invocation)
 {
-
-        printf("Notify\n");
 
         gchar *appname = NULL;
         guint replaces_id = 0;
@@ -238,14 +235,12 @@ static void onGetServerInformation(GDBusConnection *connection,
                 const GVariant *parameters,
                 GDBusMethodInvocation *invocation)
 {
-        printf("GetServerInformation\n");
         GVariant *value;
 
         value = g_variant_new ("(ssss)", "dunst", "knopwob", VERSION, "2013");
         g_dbus_method_invocation_return_value(invocation, value);
 
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
-        printf("End GetServerInformation\n");
 }
 
 void notificationClosed(notification * n, int reason)
