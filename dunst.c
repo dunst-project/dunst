@@ -148,7 +148,6 @@ x11_fd_dispatch(GSource *source, GSourceFunc callback, gpointer user_data)
 
         XEvent ev;
         while (XPending(dpy) > 0) {
-                printf("dispatching xevent\n");
                 XNextEvent(dpy, &ev);
                 switch (ev.type) {
                 case Expose:
@@ -1346,8 +1345,6 @@ void update(void)
 
         now = time(&now);
 
-        printf("updating (%d)\n", now);
-
         /* move messages from notification_queue to displayed_notifications */
         update_lists();
         if (displayed->length > 0 && ! visible) {
@@ -1358,10 +1355,6 @@ void update(void)
         }
 
         if (visible && (force_redraw || now - last_redraw > 0)) {
-                if (force_redraw)
-                        printf("forced_redraw\n");
-                if (now - last_redraw > 0)
-                        printf("last_redraw too old\n");
                 draw_win();
                 force_redraw = false;
                 last_redraw = now;
