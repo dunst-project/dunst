@@ -1334,11 +1334,10 @@ bool is_idle(void)
         return screensaver_info->idle / 1000 > idle_threshold;
 }
 
-static gboolean run(gpointer data)
+gboolean run(gpointer data)
 {
         printf("running\n");
         time_t last_time = time(&last_time);
-        dbus_poll(1);
 
         now = time(&now);
         time_t delta = now - last_time;
@@ -1895,7 +1894,7 @@ int main(int argc, char *argv[])
                 usage(EXIT_SUCCESS);
         }
 
-        initdbus();
+        int owner_id = initdbus();
         setup();
         signal (SIGUSR1, pause_signal_handler);
         signal (SIGUSR2, pause_signal_handler);
@@ -1942,6 +1941,8 @@ int main(int argc, char *argv[])
       g_source_attach(x11_source, NULL);
 
       g_main_loop_run(mainloop);
+
+      g_bus_unown_name(owner_id);
 
         return 0;
 }

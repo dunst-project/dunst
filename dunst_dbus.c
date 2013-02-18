@@ -1,41 +1,13 @@
 /* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
 
 #include <glib.h>
-#include <dbus/dbus.h>
-
+#include <gio/gio.h>
 #include "dunst.h"
-
 #include "dunst_dbus.h"
 
-DBusError dbus_err;
-DBusConnection *dbus_conn;
-dbus_uint32_t dbus_serial = 0;
+static GDBusNodeInfo *introspection_data = NULL;
 
-static void _extract_basic(int type, DBusMessageIter * iter, void *target)
-{
-        int iter_type = dbus_message_iter_get_arg_type(iter);
-        if (iter_type == type) {
-                dbus_message_iter_get_basic(iter, target);
-        }
-}
-
-static void
-_extract_hint(int type, const char *name, const char *hint_name,
-              DBusMessageIter * hint, void *target)
-{
-
-        DBusMessageIter hint_value;
-
-        if (!strcmp(hint_name, name)) {
-                dbus_message_iter_next(hint);
-                dbus_message_iter_recurse(hint, &hint_value);
-                do {
-                        _extract_basic(type, &hint_value, target);
-                } while (dbus_message_iter_next(hint));
-        }
-}
-
-static const char *introspect = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+static const char *introspection_xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
     "<node name=\"/org/freedesktop/Notifications\">"
     "    <interface name=\"org.freedesktop.Notifications\">"
     "        "
@@ -76,313 +48,267 @@ static const char *introspect = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
     "    <interface name=\"org.xfce.Notifyd\">"
     "        <method name=\"Quit\"/>" "    </interface>" "</node>";
 
-void dbus_introspect(DBusMessage * dmsg)
+
+static void onGetCapabilities(GDBusConnection *connection,
+                const gchar *sender,
+                const GVariant *parameters,
+                GDBusMethodInvocation *invocation);
+static void onNotify(GDBusConnection *connection,
+                const gchar *sender,
+                GVariant *parameters,
+                GDBusMethodInvocation *invocation);
+static void onCloseNotification(GDBusConnection *connection,
+                const gchar *sender,
+                const GVariant *parameters,
+                GDBusMethodInvocation *invocation);
+static void onGetServerInformation(GDBusConnection *connection,
+                const gchar *sender,
+                const GVariant *parameters,
+                GDBusMethodInvocation *invocation);
+
+void handle_method_call(GDBusConnection *connection,
+                const gchar *sender,
+                const gchar *object_path,
+                const gchar *interface_name,
+                const gchar *method_name,
+                GVariant *parameters,
+                GDBusMethodInvocation *invocation,
+                gpointer user_data)
 {
-        DBusMessage *reply;
-        DBusMessageIter args;
-
-        reply = dbus_message_new_method_return(dmsg);
-
-        dbus_message_iter_init_append(reply, &args);
-        dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING, &introspect);
-        dbus_connection_send(dbus_conn, reply, &dbus_serial);
-
-        dbus_message_unref(reply);
-}
-
-void initdbus(void)
-{
-        int ret;
-        dbus_error_init(&dbus_err);
-        dbus_conn = dbus_bus_get(DBUS_BUS_SESSION, &dbus_err);
-        if (dbus_error_is_set(&dbus_err)) {
-                fprintf(stderr, "Connection Error (%s)\n", dbus_err.message);
-                dbus_error_free(&dbus_err);
+        if (g_strcmp0(method_name, "GetCapabilities") == 0) {
+                onGetCapabilities(connection, sender, parameters, invocation);
         }
-        if (dbus_conn == NULL) {
-                fprintf(stderr, "dbus_con == NULL\n");
-                exit(EXIT_FAILURE);
+        else if (g_strcmp0(method_name, "Notify") == 0) {
+                onNotify(connection, sender, parameters, invocation);
         }
-
-        ret = dbus_bus_request_name(dbus_conn, "org.freedesktop.Notifications",
-                                    DBUS_NAME_FLAG_REPLACE_EXISTING, &dbus_err);
-        if (dbus_error_is_set(&dbus_err)) {
-                fprintf(stderr, "Name Error (%s)\n", dbus_err.message);
+        else if (g_strcmp0(method_name, "CloseNotification") == 0) {
+                onCloseNotification(connection, sender, parameters, invocation);
         }
-        if (DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER != ret) {
-                fprintf(stderr,
-                        "There's already another notification-daemon running\n");
-                exit(EXIT_FAILURE);
-        }
-
-        dbus_bus_add_match(dbus_conn,
-                           "type='signal',interface='org.freedesktop.Notifications'",
-                           &dbus_err);
-        if (dbus_error_is_set(&dbus_err)) {
-                fprintf(stderr, "Match error (%s)\n", dbus_err.message);
-                exit(EXIT_FAILURE);
-        }
-}
-
-void dbus_poll(int timeout)
-{
-        DBusMessage *dbus_msg;
-
-        dbus_connection_read_write(dbus_conn, timeout);
-
-        dbus_msg = dbus_connection_pop_message(dbus_conn);
-
-        while (dbus_msg) {
-                if (dbus_message_is_method_call
-                    (dbus_msg, "org.freedesktop.DBus.Introspectable", "Introspect")) {
-                        dbus_introspect(dbus_msg);
-                }
-
-                if (dbus_message_is_method_call(dbus_msg,
-                                                "org.freedesktop.Notifications",
-                                                "Notify")) {
-                        notify(dbus_msg);
-                }
-                if (dbus_message_is_method_call(dbus_msg,
-                                                "org.freedesktop.Notifications",
-                                                "GetCapabilities")) {
-                        getCapabilities(dbus_msg);
-                }
-                if (dbus_message_is_method_call(dbus_msg,
-                                                "org.freedesktop.Notifications",
-                                                "GetServerInformation")) {
-                        getServerInformation(dbus_msg);
-                }
-                if (dbus_message_is_method_call(dbus_msg,
-                                                "org.freedesktop.Notifications",
-                                                "CloseNotification")) {
-                        closeNotification(dbus_msg);
-                }
-                dbus_message_unref(dbus_msg);
-                dbus_msg = dbus_connection_pop_message(dbus_conn);
-        }
-}
-
-void getCapabilities(DBusMessage * dmsg)
-{
-        DBusMessage *reply;
-        DBusMessageIter args;
-        DBusMessageIter subargs;
-
-        const char *caps[1] = { "body" };
-        dbus_serial++;
-
-        reply = dbus_message_new_method_return(dmsg);
-        if (!reply) {
-                return;
-        }
-
-        dbus_message_iter_init_append(reply, &args);
-
-        if (!dbus_message_iter_open_container
-            (&args, DBUS_TYPE_ARRAY, DBUS_TYPE_STRING_AS_STRING, &subargs)
-            || !dbus_message_iter_append_basic(&subargs, DBUS_TYPE_STRING, caps)
-            || !dbus_message_iter_close_container(&args, &subargs)
-            || !dbus_connection_send(dbus_conn, reply, &dbus_serial)) {
-                fprintf(stderr, "Unable to reply");
-                return;
-        }
-
-        dbus_connection_flush(dbus_conn);
-        dbus_message_unref(reply);
-}
-
-void closeNotification(DBusMessage * dmsg)
-{
-        DBusMessage *reply;
-        DBusMessageIter args;
-        int id = 0;
-
-        reply = dbus_message_new_method_return(dmsg);
-        if (!reply) {
-                return;
-        }
-        dbus_message_iter_init(dmsg, &args);
-
-        _extract_basic(DBUS_TYPE_UINT32, &args, &id);
-
-        close_notification_by_id(id, 3);
-
-        dbus_connection_send(dbus_conn, reply, &dbus_serial);
-        dbus_connection_flush(dbus_conn);
-}
-
-void getServerInformation(DBusMessage * dmsg)
-{
-        DBusMessage *reply;
-        DBusMessageIter args;
-        char *param = "";
-        const char *info[4] = { "dunst", "dunst", "2011", "2011" };
-
-        if (!dbus_message_iter_init(dmsg, &args)) {
-        } else if (DBUS_TYPE_STRING != dbus_message_iter_get_arg_type(&args)) {
+        else if (g_strcmp0(method_name, "GetServerInformation") == 0) {
+                onGetServerInformation(connection, sender, parameters, invocation);
         } else {
-                dbus_message_iter_get_basic(&args, &param);
+                g_object_unref(invocation);
         }
 
-        reply = dbus_message_new_method_return(dmsg);
+        printf("sender: %s\nmethod_name: %s\n", sender, method_name);
+}
 
-        dbus_message_iter_init_append(reply, &args);
-        if (!dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING, &info[0])
-            || !dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING,
-                                               &info[1])
-            || !dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING,
-                                               &info[2])
-            || !dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING,
-                                               &info[3])) {
-                fprintf(stderr, "Unable to fill arguments");
-                return;
+static void onGetCapabilities(GDBusConnection *connection,
+                const gchar *sender,
+                const GVariant *parameters,
+                GDBusMethodInvocation *invocation)
+{
+        printf("GetCapabilities\n");
+        GVariantBuilder *builder;
+        GVariant *value;
+
+        builder = g_variant_builder_new (G_VARIANT_TYPE ("as"));
+        g_variant_builder_add (builder, "s", "actions");
+        g_variant_builder_add (builder, "s", "body");
+        value = g_variant_new ("as", builder);
+        g_variant_builder_unref (builder);
+        g_dbus_method_invocation_return_value(invocation, value);
+
+        g_dbus_connection_flush(connection, NULL, NULL, NULL);
+        g_variant_unref(value);
+}
+
+static void onNotify(GDBusConnection *connection,
+                const gchar *sender,
+                GVariant *parameters,
+                GDBusMethodInvocation *invocation)
+{
+
+        printf("Notify\n");
+
+        gchar *appname = NULL;
+        guint replaces_id = 0;
+        gchar *icon = NULL;
+        gchar *summary = NULL;
+        gchar *body = NULL;
+        Actions *actions = malloc(sizeof(actions));
+        gint timeout = -1;
+
+        /* hints */
+        gint urgency = 0;
+        gint progress = 0;
+        gchar *fgcolor = NULL;
+        gchar *bgcolor = NULL;
+
+        actions->actions = NULL;
+        actions->count = 0;
+
+        {
+                GVariantIter *iter = g_variant_iter_new(parameters);
+                GVariant *content;
+                GVariant *dict_value;
+                int idx = 0;
+                while ((content = g_variant_iter_next_value(iter))) {
+
+                        switch (idx) {
+                                case 0:
+                                        appname = g_variant_dup_string(content, NULL);
+                                        break;
+                                case 1:
+                                        replaces_id = g_variant_get_uint32(content);
+                                        break;
+                                case 2:
+                                        icon = g_variant_dup_string(content, NULL);
+                                        break;
+                                case 3:
+                                        summary = g_variant_dup_string(content, NULL);
+                                        break;
+                                case 4:
+                                        body = g_variant_dup_string(content, NULL);
+                                        break;
+                                case 5:
+                                        actions->actions = g_variant_dup_strv(content, &(actions->count));
+                                        break;
+                                case 6:
+                                        dict_value = g_variant_lookup_value(content, "urgency", G_VARIANT_TYPE_BYTE);
+                                        urgency = g_variant_get_byte(dict_value);
+                                        break;
+                                case 7:
+                                        timeout = g_variant_get_int32(content);
+                                        break;
+                        }
+
+
+                        idx++;
+                }
+
+                g_variant_iter_free(iter);
         }
 
-        dbus_serial++;
-        if (!dbus_connection_send(dbus_conn, reply, &dbus_serial)) {
-                fprintf(stderr, "Out Of Memory!\n");
-                exit(EXIT_FAILURE);
-        }
-        dbus_connection_flush(dbus_conn);
+        printf("appname: %s\n", appname);
+        printf("replaces_id: %i\n", replaces_id);
+        printf("icon: %s\n", icon);
+        printf("summary: %s\n", summary);
+        printf("body: %s\n", body);
+        printf("timeout: %i\n", timeout);
+        printf("nactions: %d\n", actions->count);
 
-        dbus_message_unref(reply);
+        fflush(stdout);
+
+        if (timeout > 0) {
+                /* do some rounding */
+                timeout = (timeout + 500) / 1000;
+                if (timeout < 1) {
+                        timeout = 1;
+                }
+        }
+
+        notification *n = malloc(sizeof (notification));
+        n->appname = appname;
+        n->summary = summary;
+        n->body = body;
+        n->icon = icon;
+        n->timeout = timeout;
+        n->progress = (progress < 0 || progress > 100) ? 0 : progress + 1;
+        n->urgency = urgency;
+        n->dbus_client = strdup(sender);
+        n->actions = actions;
+
+        for (int i = 0; i < ColLast; i++) {
+                n->color_strings[i] = NULL;
+        }
+        n->color_strings[ColFG] = fgcolor;
+        n->color_strings[ColBG] = bgcolor;
+
+        int id = init_notification(n, replaces_id);
+
+        GVariant *reply = g_variant_new ("(u)", id);
+        g_dbus_method_invocation_return_value(invocation, reply);
+        g_dbus_connection_flush(connection, NULL, NULL, NULL);
+
+        g_variant_unref(reply);
+        run(NULL);
+}
+
+static void onCloseNotification(GDBusConnection *connection,
+                const gchar *sender,
+                const GVariant *parameters,
+                GDBusMethodInvocation *invocation)
+{
+        printf("CloseNotification\n");
+}
+
+static void onGetServerInformation(GDBusConnection *connection,
+                const gchar *sender,
+                const GVariant *parameters,
+                GDBusMethodInvocation *invocation)
+{
+        printf("GetServerInformation\n");
+        GVariant *value;
+
+        value = g_variant_new ("(ssss)", "dunst", "knopwob", VERSION, "2013");
+        g_dbus_method_invocation_return_value(invocation, value);
+
+        g_dbus_connection_flush(connection, NULL, NULL, NULL);
+        printf("End GetServerInformation\n");
 }
 
 void notificationClosed(notification * n, int reason)
 {
-        DBusMessage *dmsg;
-        DBusMessageIter args;
-        int id;
-
-        if (n == NULL || n->dbus_client == NULL) {
-                return;
-        }
-
-        id = n->id;
-
-        dmsg =
-            dbus_message_new_signal("/org/freedesktop/Notifications",
-                                    "org.freedesktop.Notifications",
-                                    "NotificationClosed");
-        dbus_message_iter_init_append(dmsg, &args);
-        dbus_message_iter_append_basic(&args, DBUS_TYPE_UINT32, &id);
-        dbus_message_iter_append_basic(&args, DBUS_TYPE_UINT32, &reason);
-
-        dbus_message_set_destination(dmsg, n->dbus_client);
-
-        dbus_connection_send(dbus_conn, dmsg, &dbus_serial);
-
-        dbus_message_unref(dmsg);
-
-        dbus_connection_flush(dbus_conn);
+        printf("notificationClosed\n");
 }
 
-void notify(DBusMessage * dmsg)
+static const GDBusInterfaceVTable interface_vtable =
 {
-        DBusMessage *reply;
-        DBusMessageIter args;
-        DBusMessageIter hints;
-        DBusMessageIter hint;
-        char *hint_name;
+        handle_method_call
+};
 
-        int i;
-        int id;
-        const char *appname = NULL;
-        const char *summary = NULL;
-        const char *body = NULL;
-        const char *icon = NULL;
-        const char *fgcolor = NULL;
-        const char *bgcolor = NULL;
-        int urgency = 1;
-        int progress = -1;
-        notification *n = malloc(sizeof(notification));
-        dbus_uint32_t replaces_id = 0;
-        dbus_int32_t expires = -1;
+static void on_bus_acquired(GDBusConnection *connection,
+                const gchar *name,
+                gpointer user_data)
+{
+        guint registration_id;
 
-        dbus_serial++;
-        dbus_message_iter_init(dmsg, &args);
+        registration_id = g_dbus_connection_register_object( connection,
+                        "/org/freedesktop/Notifications",
+                        introspection_data->interfaces[0],
+                        &interface_vtable,
+                        NULL,
+                        NULL,
+                        NULL);
 
-        _extract_basic(DBUS_TYPE_STRING, &args, &appname);
-
-        dbus_message_iter_next(&args);
-        _extract_basic(DBUS_TYPE_UINT32, &args, &replaces_id);
-
-        dbus_message_iter_next(&args);
-        _extract_basic(DBUS_TYPE_STRING, &args, &icon);
-
-        dbus_message_iter_next(&args);
-        _extract_basic(DBUS_TYPE_STRING, &args, &summary);
-
-        dbus_message_iter_next(&args);
-        _extract_basic(DBUS_TYPE_STRING, &args, &body);
-
-        dbus_message_iter_next(&args);
-        dbus_message_iter_next(&args);
-
-        dbus_message_iter_recurse(&args, &hints);
-        dbus_message_iter_next(&args);
-
-        _extract_basic(DBUS_TYPE_INT32, &args, &expires);
-
-        while (dbus_message_iter_get_arg_type(&hints) != DBUS_TYPE_INVALID) {
-                dbus_message_iter_recurse(&hints, &hint);
-                while (dbus_message_iter_get_arg_type(&hint) !=
-                       DBUS_TYPE_INVALID) {
-                        if (dbus_message_iter_get_arg_type(&hint) !=
-                            DBUS_TYPE_STRING) {
-                                dbus_message_iter_next(&hint);
-                                continue;
-                        }
-                        dbus_message_iter_get_basic(&hint, &hint_name);
-                        _extract_hint(DBUS_TYPE_BYTE, "urgency", hint_name,
-                                      &hint, &urgency);
-                        _extract_hint(DBUS_TYPE_STRING, "fgcolor", hint_name,
-                                      &hint, &fgcolor);
-                        _extract_hint(DBUS_TYPE_STRING, "bgcolor", hint_name,
-                                      &hint, &bgcolor);
-                        _extract_hint(DBUS_TYPE_INT32, "value", hint_name,
-                                      &hint, &progress);
-                        if (!progress)
-                                _extract_hint(DBUS_TYPE_UINT32, "value",
-                                              hint_name, &hint, &progress);
-                        dbus_message_iter_next(&hint);
-                }
-                dbus_message_iter_next(&hints);
+        if (! registration_id > 0) {
+                fprintf(stderr, "Unable to register\n");
+                exit(1);
         }
-
-        if (expires > 0) {
-                /* do some rounding */
-                expires = (expires + 500) / 1000;
-                if (expires < 1) {
-                        expires = 1;
-                }
-        }
-        n->appname = appname != NULL ? g_strdup(appname) : "";
-        n->summary = summary != NULL ? g_strdup(summary) : "";
-        n->body = body != NULL ? g_strdup(body) : "";
-        n->icon = icon != NULL ? g_strdup(icon) : "";
-        n->timeout = expires;
-        n->progress = (progress < 0 || progress > 100) ? 0 : progress + 1;
-        n->urgency = urgency;
-        n->dbus_client = g_strdup(dbus_message_get_sender(dmsg));
-        for (i = 0; i < ColLast; i++) {
-                n->color_strings[i] = NULL;
-        }
-        n->color_strings[ColFG] = fgcolor == NULL ? NULL : g_strdup(fgcolor);
-        n->color_strings[ColBG] = bgcolor == NULL ? NULL : g_strdup(bgcolor);
-
-        id = init_notification(n, replaces_id);
-        if (id > 0)
-                map_win();
-
-        reply = dbus_message_new_method_return(dmsg);
-
-        dbus_message_iter_init_append(reply, &args);
-        dbus_message_iter_append_basic(&args, DBUS_TYPE_UINT32, &id);
-        dbus_connection_send(dbus_conn, reply, &dbus_serial);
-
-        dbus_message_unref(reply);
 }
 
-/* vim: set ts=8 sw=8 tw=0: */
+static void on_name_acquired(GDBusConnection *connection,
+                const gchar *name,
+                gpointer user_data)
+{
+}
+
+static void on_name_lost(GDBusConnection *connection,
+                const gchar *name,
+                gpointer user_data)
+{
+        fprintf(stderr, "Name Lost\n");
+        exit(1);
+}
+
+int initdbus(void)
+{
+        guint owner_id;
+
+        g_type_init();
+
+        introspection_data = g_dbus_node_info_new_for_xml(introspection_xml,
+                        NULL);
+
+        owner_id = g_bus_own_name (G_BUS_TYPE_SESSION,
+                        "org.freedesktop.Notifications",
+                        G_BUS_NAME_OWNER_FLAGS_NONE,
+                        on_bus_acquired,
+                        on_name_acquired,
+                        on_name_lost,
+                        NULL,
+                        NULL);
+
+        return owner_id;
+}

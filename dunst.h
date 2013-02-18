@@ -36,6 +36,11 @@ typedef struct _screen_info {
         dimension_t dim;
 } screen_info;
 
+typedef struct _actions {
+        char **actions;
+        int count;
+} Actions;
+
 typedef struct _notification {
         char *appname;
         char *summary;
@@ -58,6 +63,7 @@ typedef struct _notification {
         int line_count;
         const char *script;
         char *urls;
+        Actions *actions;
 } notification;
 
 typedef struct _rule_t {
@@ -97,5 +103,6 @@ int init_notification(notification * n, int id);
 int close_notification(notification * n, int reason);
 int close_notification_by_id(int id, int reason);
 void map_win(void);
+gboolean run(void *data);
 
 /* vim: set ts=8 sw=8 tw=0: */

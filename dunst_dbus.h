@@ -5,12 +5,8 @@
 
 #include <dbus/dbus.h>
 
-void initdbus(void);
-void dbus_poll(int timeout);
-void notify(DBusMessage * msg);
-void getCapabilities(DBusMessage * dmsg);
-void closeNotification(DBusMessage * dmsg);
-void getServerInformation(DBusMessage * dmsg);
+int initdbus(void);
+/* void dbus_poll(int timeout); */
 void notificationClosed(notification * n, int reason);
 
 #endif
