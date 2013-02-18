@@ -669,7 +669,7 @@ GSList *do_word_wrap(char *text, int max_width)
                         begin = ++end;
                 }
 
-                if (word_wrap && max_width > 0 && textnw(dc, begin, (end - begin)) > max_width) {
+                if (word_wrap && max_width > 0 && textnw(dc, begin, (end - begin) + 1) > max_width) {
                         /* find previous space */
                         char *space = end;
                         while (space > begin && !isspace(*space))
