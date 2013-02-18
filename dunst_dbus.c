@@ -164,6 +164,10 @@ static void onNotify(GDBusConnection *connection,
                                 case 6:
                                         dict_value = g_variant_lookup_value(content, "urgency", G_VARIANT_TYPE_BYTE);
                                         urgency = g_variant_get_byte(dict_value);
+                                        dict_value = g_variant_lookup_value(content, "fgcolor", G_VARIANT_TYPE_STRING);
+                                        fgcolor = g_variant_dup_string(dict_value, NULL);
+                                        dict_value = g_variant_lookup_value(content, "bgcolor", G_VARIANT_TYPE_STRING);
+                                        bgcolor = g_variant_dup_string(dict_value, NULL);
                                         break;
                                 case 7:
                                         timeout = g_variant_get_int32(content);
