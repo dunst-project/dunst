@@ -84,9 +84,11 @@ static char **dmenu_cmd;
 static unsigned long framec;
 static unsigned long sep_custom_col;
 
-bool force_redraw = false;
+GMainLoop *mainloop = NULL;
+bool timer_active = false;
 
 bool dunst_grab_errored = false;
+bool force_redraw = false;
 
 int next_notification_id = 1;
 
@@ -103,7 +105,6 @@ int cmp_notification_data(const void *va, const void *vb, void *data);
 void check_timeouts(void);
 char *fix_markup(char *str);
 void handle_mouse_click(XEvent ev);
-void handleXEvents(void);
 void history_pop(void);
 void initrule(rule_t *r);
 bool is_idle(void);
@@ -117,6 +118,7 @@ void print_version(void);
 char *extract_urls(const char *str);
 void context_menu(void);
 void run_script(notification *n);
+void wake_up(void);
 
 void init_shortcut(keyboard_shortcut * shortcut);
 KeySym string_to_mask(char *str);
@@ -146,12 +148,11 @@ x11_fd_dispatch(GSource *source, GSourceFunc callback, gpointer user_data)
 
         XEvent ev;
         while (XPending(dpy) > 0) {
-                printf("in while\n");
+                printf("dispatching xevent\n");
                 XNextEvent(dpy, &ev);
                 switch (ev.type) {
                 case Expose:
                         if (ev.xexpose.count == 0 && visible) {
-                                force_redraw = true;
                         }
                         break;
                 case SelectionNotify:
@@ -164,7 +165,6 @@ x11_fd_dispatch(GSource *source, GSourceFunc callback, gpointer user_data)
                 case ButtonPress:
                         if (ev.xbutton.window == win) {
                                 handle_mouse_click(ev);
-                                force_redraw = true;
                         }
                         break;
                 case KeyPress:
@@ -190,7 +190,6 @@ x11_fd_dispatch(GSource *source, GSourceFunc callback, gpointer user_data)
                             && context_ks.mask == ev.xkey.state) {
                                 context_menu();
                         }
-                        force_redraw = true;
                         break;
                 }
         }
@@ -523,6 +522,7 @@ void check_timeouts(void)
 
                 /* remove old message */
                 if (difftime(now, n->start) > n->timeout) {
+                        force_redraw = true;
                         /* close_notification may conflict with iter, so restart */
                         close_notification(n, 1);
                         check_timeouts();
@@ -563,6 +563,8 @@ void update_lists()
                         break;
                 }
 
+                force_redraw = true;
+
                 notification *n = g_queue_pop_head(queue);
 
                 if (!n)
@@ -573,7 +575,6 @@ void update_lists()
                 }
 
                 g_queue_insert_sorted(displayed, n, cmp_notification_data, NULL);
-                force_redraw = true;
         }
 }
 
@@ -1125,6 +1126,7 @@ int init_notification(notification * n, int id)
                     && strcmp(orig->msg, n->msg) == 0) {
                         orig->dup_count++;
                         free_notification(n);
+                        wake_up();
                         return orig->id;
                 }
         }
@@ -1136,6 +1138,7 @@ int init_notification(notification * n, int id)
                         orig->dup_count++;
                         orig->start = now;
                         free_notification(n);
+                        wake_up();
                         return orig->id;
                 }
         }
@@ -1188,6 +1191,7 @@ int init_notification(notification * n, int id)
         if (print_notifications)
                 print_notification(n);
 
+        wake_up();
         return n->id;
 }
 
@@ -1226,7 +1230,8 @@ int close_notification_by_id(int id, int reason)
                 notificationClosed(target, reason);
         }
 
-        return target == NULL;
+        wake_up();
+        return reason;
 }
 
 int close_notification(notification * n, int reason)
@@ -1334,25 +1339,60 @@ bool is_idle(void)
         return screensaver_info->idle / 1000 > idle_threshold;
 }
 
-gboolean run(gpointer data)
+void update(void)
 {
-        printf("running\n");
         time_t last_time = time(&last_time);
+        static time_t last_redraw = 0;
 
         now = time(&now);
-        time_t delta = now - last_time;
-        last_time = now;
+
+        printf("updating (%d)\n", now);
 
         /* move messages from notification_queue to displayed_notifications */
         update_lists();
-        if (displayed->length > 0 && ! visible)
+        if (displayed->length > 0 && ! visible) {
                 map_win();
-        if (displayed->length == 0 && visible)
+        }
+        if (displayed->length == 0 && visible) {
                 hide_win();
+        }
 
-        if (visible && (force_redraw || delta > 0))
+        if (visible && (force_redraw || now - last_redraw > 0)) {
+                if (force_redraw)
+                        printf("forced_redraw\n");
+                if (now - last_redraw > 0)
+                        printf("last_redraw too old\n");
                 draw_win();
-        force_redraw = false;
+                force_redraw = false;
+                last_redraw = now;
+        }
+}
+
+void wake_up(void)
+{
+        force_redraw = true;
+        update();
+        if (!timer_active) {
+                timer_active = true;
+                g_timeout_add(1000, run, mainloop);
+        }
+}
+
+gboolean run(void *data)
+{
+
+        update();
+
+        if (visible && !timer_active) {
+                g_timeout_add(200, run, mainloop);
+                timer_active = true;
+        }
+
+        if (!visible && timer_active) {
+                timer_active = false;
+                /* returning false disables timeout */
+                return false;
+        }
 
         return true;
 }
@@ -1579,7 +1619,6 @@ void map_win(void)
         update_screen_info();
         XMapRaised(dc->dpy, win);
         visible = true;
-        force_redraw = true;
 }
 
 void parse_follow_mode(const char *mode)
@@ -1915,11 +1954,7 @@ int main(int argc, char *argv[])
                 init_notification(n, 0);
         }
 
-        GMainLoop *mainloop = NULL;
         mainloop = g_main_loop_new(NULL, FALSE);
-
-        /* FIXME */
-        g_timeout_add(5000, run, mainloop);
 
         GPollFD dpy_pollfd = {dc->dpy->fd,
                 G_IO_IN | G_IO_HUP | G_IO_ERR, 0 };
@@ -1940,6 +1975,7 @@ int main(int argc, char *argv[])
 
       g_source_attach(x11_source, NULL);
 
+      run(NULL);
       g_main_loop_run(mainloop);
 
       g_bus_unown_name(owner_id);
