@@ -1971,7 +1971,7 @@ int main(int argc, char *argv[])
       run(NULL);
       g_main_loop_run(mainloop);
 
-      g_bus_unown_name(owner_id);
+      dbus_tear_down(owner_id);
 
         return 0;
 }

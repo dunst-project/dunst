@@ -325,3 +325,8 @@ int initdbus(void)
 
         return owner_id;
 }
+
+void dbus_tear_down(int owner_id)
+{
+      g_bus_unown_name(owner_id);
+}

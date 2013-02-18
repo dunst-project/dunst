@@ -6,6 +6,7 @@
 #include <dbus/dbus.h>
 
 int initdbus(void);
+void dbus_tear_down(int id);
 /* void dbus_poll(int timeout); */
 void notificationClosed(notification * n, int reason);
 

@@ -38,7 +38,7 @@ typedef struct _screen_info {
 
 typedef struct _actions {
         char **actions;
-        int count;
+        gsize count;
 } Actions;
 
 typedef struct _notification {
