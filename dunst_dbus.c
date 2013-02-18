@@ -59,7 +59,7 @@ static void onNotify(GDBusConnection *connection,
                 GDBusMethodInvocation *invocation);
 static void onCloseNotification(GDBusConnection *connection,
                 const gchar *sender,
-                const GVariant *parameters,
+                GVariant *parameters,
                 GDBusMethodInvocation *invocation);
 static void onGetServerInformation(GDBusConnection *connection,
                 const gchar *sender,
@@ -228,10 +228,11 @@ static void onNotify(GDBusConnection *connection,
 
 static void onCloseNotification(GDBusConnection *connection,
                 const gchar *sender,
-                const GVariant *parameters,
+                GVariant *parameters,
                 GDBusMethodInvocation *invocation)
 {
-        printf("CloseNotification\n");
+        int id = g_variant_get_int32(parameters);
+        close_notification_by_id(id, 3);
 }
 
 static void onGetServerInformation(GDBusConnection *connection,
