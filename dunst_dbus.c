@@ -183,14 +183,6 @@ static void onNotify(GDBusConnection *connection,
                 g_variant_iter_free(iter);
         }
 
-        printf("appname: %s\n", appname);
-        printf("replaces_id: %i\n", replaces_id);
-        printf("icon: %s\n", icon);
-        printf("summary: %s\n", summary);
-        printf("body: %s\n", body);
-        printf("timeout: %i\n", timeout);
-        printf("nactions: %d\n", actions->count);
-
         fflush(stdout);
 
         if (timeout > 0) {
