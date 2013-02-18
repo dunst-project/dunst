@@ -106,7 +106,7 @@ static void onGetCapabilities(GDBusConnection *connection,
         builder = g_variant_builder_new (G_VARIANT_TYPE ("as"));
         g_variant_builder_add (builder, "s", "actions");
         g_variant_builder_add (builder, "s", "body");
-        value = g_variant_new ("as", builder);
+        value = g_variant_new ("(as)", builder);
         g_variant_builder_unref (builder);
         g_dbus_method_invocation_return_value(invocation, value);
 
