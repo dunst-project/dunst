@@ -5,6 +5,7 @@ The following dependencies are needed:
     libxft
     libxss
     libxdg-basedir
+    glib
 
 On Debian and Debian-based distros you'll probably also need the *-dev packages.
 
