@@ -5,6 +5,8 @@
 #include "dunst.h"
 #include "dunst_dbus.h"
 
+GDBusConnection *dbus_conn;
+
 static GDBusNodeInfo *introspection_data = NULL;
 
 static const char *introspection_xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
@@ -231,7 +233,8 @@ static void onCloseNotification(GDBusConnection *connection,
                 GVariant *parameters,
                 GDBusMethodInvocation *invocation)
 {
-        int id = g_variant_get_int32(parameters);
+        guint32 id;
+        g_variant_get(parameters, "(u)", &id);
         close_notification_by_id(id, 3);
 }
 
@@ -250,7 +253,22 @@ static void onGetServerInformation(GDBusConnection *connection,
 
 void notificationClosed(notification * n, int reason)
 {
-        printf("notificationClosed\n");
+        GVariant *body = g_variant_new ("(uu)", n->id, reason);
+        GError *err = NULL;
+
+        g_dbus_connection_emit_signal(
+                        dbus_conn,
+                        n->dbus_client,
+                        "/org/freedesktop/Notifications",
+                        "org.freedesktop.Notifications",
+                        "NotificationClosed",
+                        body,
+                        &err);
+
+        if (err) {
+                printf("notificationClosed ERROR\n");
+        }
+
 }
 
 static const GDBusInterfaceVTable interface_vtable =
@@ -282,6 +300,7 @@ static void on_name_acquired(GDBusConnection *connection,
                 const gchar *name,
                 gpointer user_data)
 {
+        dbus_conn = connection;
 }
 
 static void on_name_lost(GDBusConnection *connection,
