@@ -71,7 +71,6 @@ static const char *color_strings[2][3];
 static Atom utf8;
 static DC *dc;
 static Window win;
-static time_t now;
 static bool visible = false;
 static screen_info scr;
 static dimension_t geometry;
@@ -574,7 +573,7 @@ void check_timeouts(void)
 
                 /* don't timeout when user is idle */
                 if (is_idle()) {
-                        n->start = now;
+                        n->start = time(NULL);
                         continue;
                 }
 
@@ -584,7 +583,7 @@ void check_timeouts(void)
                 }
 
                 /* remove old message */
-                if (difftime(now, n->start) > n->timeout) {
+                if (difftime(time(NULL), n->start) > n->timeout) {
                         force_redraw = true;
                         /* close_notification may conflict with iter, so restart */
                         close_notification(n, 1);
@@ -632,7 +631,7 @@ void update_lists()
 
                 if (!n)
                         return;
-                n->start = now;
+                n->start = time(NULL);
                 if (!n->redisplayed && n->script) {
                         run_script(n);
                 }
@@ -698,7 +697,7 @@ char *generate_final_text(notification *n)
 
         /* print age */
         int hours, minutes, seconds;
-        time_t t_delta = now - n->timestamp;
+        time_t t_delta = time(NULL) - n->timestamp;
 
         if (show_age_threshold >= 0 && t_delta >= show_age_threshold) {
                 hours = t_delta / 3600;
@@ -1199,7 +1198,7 @@ int init_notification(notification * n, int id)
                 if (strcmp(orig->appname, n->appname) == 0
                     && strcmp(orig->msg, n->msg) == 0) {
                         orig->dup_count++;
-                        orig->start = now;
+                        orig->start = time(NULL);
                         free_notification(n);
                         wake_up();
                         return orig->id;
@@ -1226,7 +1225,7 @@ int init_notification(notification * n, int id)
         n->timeout = n->timeout == -1 ? timeouts[n->urgency] : n->timeout;
         n->start = 0;
 
-        n->timestamp = now;
+        n->timestamp = time(NULL);
 
         n->redisplayed = false;
 
@@ -1423,8 +1422,6 @@ void update(void)
         time_t last_time = time(&last_time);
         static time_t last_redraw = 0;
 
-        now = time(&now);
-
         /* move messages from notification_queue to displayed_notifications */
         update_lists();
         if (displayed->length > 0 && ! visible) {
@@ -1434,10 +1431,10 @@ void update(void)
                 hide_win();
         }
 
-        if (visible && (force_redraw || now - last_redraw > 0)) {
+        if (visible && (force_redraw || time(NULL) - last_redraw > 0)) {
                 draw_win();
                 force_redraw = false;
-                last_redraw = now;
+                last_redraw = time(NULL);
         }
 }
 
@@ -1977,8 +1974,6 @@ void load_options(char *cmdline_config_path)
 
 int main(int argc, char *argv[])
 {
-
-        now = time(&now);
 
         history = g_queue_new();
         displayed = g_queue_new();
