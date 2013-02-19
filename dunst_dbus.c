@@ -259,7 +259,7 @@ static void onGetServerInformation(GDBusConnection *connection,
 {
         GVariant *value;
 
-        value = g_variant_new ("(ssss)", "dunst", "knopwob", VERSION, "2013");
+        value = g_variant_new ("(ssss)", "dunst", "knopwob", VERSION, "1.2");
         g_dbus_method_invocation_return_value(invocation, value);
 
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
