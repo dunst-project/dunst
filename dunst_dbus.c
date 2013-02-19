@@ -146,33 +146,48 @@ static void onNotify(GDBusConnection *connection,
 
                         switch (idx) {
                                 case 0:
-                                        appname = g_variant_dup_string(content, NULL);
+                                        if (g_variant_is_of_type(content, G_VARIANT_TYPE_STRING))
+                                            appname = g_variant_dup_string(content, NULL);
                                         break;
                                 case 1:
-                                        replaces_id = g_variant_get_uint32(content);
+                                        if (g_variant_is_of_type(content, G_VARIANT_TYPE_UINT32))
+                                            replaces_id = g_variant_get_uint32(content);
                                         break;
                                 case 2:
-                                        icon = g_variant_dup_string(content, NULL);
+                                        if (g_variant_is_of_type(content, G_VARIANT_TYPE_STRING))
+                                            icon = g_variant_dup_string(content, NULL);
                                         break;
                                 case 3:
-                                        summary = g_variant_dup_string(content, NULL);
+                                        if (g_variant_is_of_type(content, G_VARIANT_TYPE_STRING))
+                                            summary = g_variant_dup_string(content, NULL);
                                         break;
                                 case 4:
-                                        body = g_variant_dup_string(content, NULL);
+                                        if (g_variant_is_of_type(content, G_VARIANT_TYPE_STRING))
+                                            body = g_variant_dup_string(content, NULL);
                                         break;
                                 case 5:
-                                        actions->actions = g_variant_dup_strv(content, &(actions->count));
+                                        if (g_variant_is_of_type(content, G_VARIANT_TYPE_STRING_ARRAY))
+                                            actions->actions = g_variant_dup_strv(content, &(actions->count));
                                         break;
                                 case 6:
-                                        dict_value = g_variant_lookup_value(content, "urgency", G_VARIANT_TYPE_BYTE);
-                                        urgency = g_variant_get_byte(dict_value);
-                                        dict_value = g_variant_lookup_value(content, "fgcolor", G_VARIANT_TYPE_STRING);
-                                        fgcolor = g_variant_dup_string(dict_value, NULL);
-                                        dict_value = g_variant_lookup_value(content, "bgcolor", G_VARIANT_TYPE_STRING);
-                                        bgcolor = g_variant_dup_string(dict_value, NULL);
+                                        if (g_variant_is_of_type(content, G_VARIANT_TYPE_DICTIONARY)) {
+
+                                            dict_value = g_variant_lookup_value(content, "urgency", G_VARIANT_TYPE_BYTE);
+                                            if (dict_value)
+                                                urgency = g_variant_get_byte(dict_value);
+
+                                            dict_value = g_variant_lookup_value(content, "fgcolor", G_VARIANT_TYPE_STRING);
+                                            if (dict_value)
+                                                fgcolor = g_variant_dup_string(dict_value, NULL);
+
+                                            dict_value = g_variant_lookup_value(content, "bgcolor", G_VARIANT_TYPE_STRING);
+                                            if(dict_value)
+                                                bgcolor = g_variant_dup_string(dict_value, NULL);
+                                        }
                                         break;
                                 case 7:
-                                        timeout = g_variant_get_int32(content);
+                                        if (g_variant_is_of_type(content, G_VARIANT_TYPE_INT32))
+                                            timeout = g_variant_get_int32(content);
                                         break;
                         }
 
@@ -221,7 +236,6 @@ static void onNotify(GDBusConnection *connection,
         g_dbus_method_invocation_return_value(invocation, reply);
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
 
-        g_variant_unref(reply);
         run(NULL);
 }
 
@@ -252,6 +266,11 @@ static void onGetServerInformation(GDBusConnection *connection,
 
 void notificationClosed(notification * n, int reason)
 {
+        if (!dbus_conn) {
+            printf("DEBUG: notificationClosed but not (yet) connected\n");
+            return;
+        }
+
         GVariant *body = g_variant_new ("(uu)", n->id, reason);
         GError *err = NULL;
 
