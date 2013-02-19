@@ -142,13 +142,9 @@ static gboolean x11_fd_check(GSource *source)
 static gboolean
 x11_fd_dispatch(GSource *source, GSourceFunc callback, gpointer user_data)
 {
-        Display *dpy = ((x11_source_t*)source)->dpy;
-        Window win = ((x11_source_t*)source)->w;
-
-
         XEvent ev;
-        while (XPending(dpy) > 0) {
-                XNextEvent(dpy, &ev);
+        while (XPending(dc->dpy) > 0) {
+                XNextEvent(dc->dpy, &ev);
                 switch (ev.type) {
                 case Expose:
                         if (ev.xexpose.count == 0 && visible) {
@@ -159,7 +155,7 @@ x11_fd_dispatch(GSource *source, GSourceFunc callback, gpointer user_data)
                                 break;
                 case VisibilityNotify:
                         if (ev.xvisibility.state != VisibilityUnobscured)
-                                XRaiseWindow(dpy, win);
+                                XRaiseWindow(dc->dpy, win);
                         break;
                 case ButtonPress:
                         if (ev.xbutton.window == win) {
