@@ -105,5 +105,6 @@ int close_notification(notification * n, int reason);
 int close_notification_by_id(int id, int reason);
 void map_win(void);
 gboolean run(void *data);
+void wake_up(void);
 
 /* vim: set ts=8 sw=8 tw=0: */

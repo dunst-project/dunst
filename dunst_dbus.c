@@ -231,6 +231,7 @@ static void onNotify(GDBusConnection *connection,
         n->color_strings[ColBG] = bgcolor;
 
         int id = init_notification(n, replaces_id);
+        wake_up();
 
         GVariant *reply = g_variant_new ("(u)", id);
         g_dbus_method_invocation_return_value(invocation, reply);

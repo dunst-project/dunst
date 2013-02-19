@@ -1271,7 +1271,6 @@ int init_notification(notification * n, int id)
         if (print_notifications)
                 print_notification(n);
 
-        wake_up();
         return n->id;
 }
 
