@@ -1120,7 +1120,7 @@ void history_pop(void)
         g_queue_push_head(queue, n);
 
         if (!visible) {
-                map_win();
+                wake_up();
         }
 }
 
