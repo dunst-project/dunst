@@ -689,8 +689,17 @@ char *generate_final_text(notification *n)
         char *buf;
 
         /* print dup_count and msg*/
-        if (n->dup_count > 0) {
-                buf = g_strdup_printf("(%d) %s", n->dup_count, msg);
+        if (n->dup_count > 0 && (n->actions || n->urls)) {
+                buf = g_strdup_printf("(%d%s%s) %s",
+                                n->dup_count,
+                                n->actions ? "A" : "",
+                                n->urls ? "U" : "",
+                                msg);
+        } else if (n->actions || n->urls) {
+                buf = g_strdup_printf("(%s%s) %s",
+                                n->actions ? "A" : "",
+                                n->urls ? "U" : "",
+                                msg);
         } else {
                 buf = g_strdup(msg);
         }
@@ -2019,9 +2028,8 @@ int main(int argc, char *argv[])
                 n->dbus_client = NULL;
                 n->color_strings[0] = NULL;
                 n->color_strings[1] = NULL;
-                n->actions = malloc(sizeof(Actions));
-                n->actions->count = 0;
-                n->actions->actions = NULL;
+                n->actions = NULL;
+                n->urls = NULL;
                 init_notification(n, 0);
         }
 
