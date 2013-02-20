@@ -843,9 +843,12 @@ bool rule_matches_notification(rule_t *r, notification *n)
 
 
 // {{{ X
-/* TODO comments and rename to x_mainloop_* namingscheme */
 // {{{ X_MAINLOOP
 
+        /*
+         * Helper function to use glib's mainloop mechanic
+         * with Xlib
+         */
 static gboolean x_mainloop_fd_prepare(GSource *source, gint *timeout)
 { // {{{
         *timeout = -1;
@@ -854,6 +857,10 @@ static gboolean x_mainloop_fd_prepare(GSource *source, gint *timeout)
 // }}}
 
 
+        /*
+         * Helper function to use glib's mainloop mechanic
+         * with Xlib
+         */
 static gboolean x_mainloop_fd_check(GSource *source)
 { // {{{
         return XPending(dc->dpy) > 0;
@@ -861,6 +868,9 @@ static gboolean x_mainloop_fd_check(GSource *source)
 // }}}
 
 
+        /*
+         * Main Dispatcher for XEvents
+         */
 static gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer user_data)
 { // {{{
         XEvent ev;
@@ -917,8 +927,11 @@ static gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gp
 
 // {{{ X_MISC
 
+        /*
+         * Check whether the user is currently idle.
+         */
 bool x_is_idle(void)
-{
+{ // {{{
         XScreenSaverQueryInfo(dc->dpy, DefaultRootWindow(dc->dpy),
                               screensaver_info);
         if (idle_threshold == 0) {
@@ -926,9 +939,14 @@ bool x_is_idle(void)
         }
         return screensaver_info->idle / 1000 > idle_threshold;
 }
+// }}}
 
+/* TODO move to x_mainloop_* */
+        /*
+         * Handle incoming mouse click events
+         */
 void x_handle_click(XEvent ev)
-{
+{ // {{{
         if (ev.xbutton.button == Button3) {
                 move_all_to_history();
 
@@ -954,21 +972,16 @@ void x_handle_click(XEvent ev)
                         notification_close(n, 2);
         }
 }
+// }}}
 
-void x_win_hide()
-{
-        x_shortcut_ungrab(&close_ks);
-        x_shortcut_ungrab(&close_all_ks);
-        x_shortcut_ungrab(&context_ks);
 
-        XUngrabButton(dc->dpy, AnyButton, AnyModifier, win);
-        XUnmapWindow(dc->dpy, win);
-        XFlush(dc->dpy);
-        visible = false;
-}
 
+        /*
+         * Return the window that currently has
+         * the keyboard focus.
+         */
 Window get_focused_window(void)
-{
+{ // {{{
         Window focused = 0;
         Atom type;
         int format;
@@ -988,10 +1001,15 @@ Window get_focused_window(void)
 
         return focused;
 }
+// }}}
 
 #ifdef XINERAMA
+        /*
+         * Select the screen on which the Window
+         * should be displayed.
+         */
 int select_screen(XineramaScreenInfo * info, int info_len)
-{
+{ // {{{
         if (f_mode == FOLLOW_NONE) {
                 return scr.scr;
 
@@ -1036,10 +1054,15 @@ int select_screen(XineramaScreenInfo * info, int info_len)
                 return scr.scr;
         }
 }
+// }}}
 #endif
 
+        /*
+         * Update the information about the monitor
+         * geometry.
+         */
 void x_screen_update_info()
-{
+{ // {{{
 #ifdef XINERAMA
         int n;
         XineramaScreenInfo *info;
@@ -1063,42 +1086,14 @@ void x_screen_update_info()
                 scr.dim.h = DisplayHeight(dc->dpy, scr.scr);
         }
 }
+// }}}
 
-void x_win_setup(void)
-{
 
-        Window root;
-        XSetWindowAttributes wa;
-
-        window_dim.x = 0;
-        window_dim.y = 0;
-        window_dim.w = 0;
-        window_dim.h = 0;
-
-        root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
-        utf8 = XInternAtom(dc->dpy, "UTF8_STRING", false);
-        font_h = dc->font.height + FONT_HEIGHT_BORDER;
-        x_screen_update_info();
-
-        wa.override_redirect = true;
-        wa.background_pixmap = ParentRelative;
-        wa.event_mask =
-            ExposureMask | KeyPressMask | VisibilityChangeMask |
-            ButtonPressMask;
-        win =
-            XCreateWindow(dc->dpy, root, scr.dim.x, scr.dim.y, scr.dim.w,
-                          font_h, 0, DefaultDepth(dc->dpy,
-                                                  DefaultScreen(dc->dpy)),
-                          CopyFromParent, DefaultVisual(dc->dpy,
-                                                        DefaultScreen(dc->dpy)),
-                          CWOverrideRedirect | CWBackPixmap | CWEventMask, &wa);
-        transparency = transparency > 100 ? 100 : transparency;
-        setopacity(dc, win,
-                   (unsigned long)((100 - transparency) * (0xffffffff / 100)));
-}
-
+        /*
+         * Setup X11 stuff
+         */
 void x_setup(void)
-{
+{ // {{{
 
         /* initialize dc, font, keyboard, colors */
         dc = initdc();
@@ -1162,29 +1157,8 @@ void x_setup(void)
         x_win_setup();
         x_shortcut_grab(&history_ks);
 }
+// }}}
 
-void x_win_show(void)
-{
-        /* window is already mapped or there's nothing to show */
-        if (visible || g_queue_is_empty(displayed)) {
-                return;
-        }
-
-        x_shortcut_grab(&close_ks);
-        x_shortcut_grab(&close_all_ks);
-        x_shortcut_grab(&context_ks);
-
-        x_shortcut_setup_error_handler();
-        XGrabButton(dc->dpy, AnyButton, AnyModifier, win, false,
-                    BUTTONMASK, GrabModeAsync, GrabModeSync, None, None);
-        if (x_shortcut_tear_down_error_handler()) {
-                fprintf(stderr, "Unable to grab mouse button(s)\n");
-        }
-
-        x_screen_update_info();
-        XMapRaised(dc->dpy, win);
-        visible = true;
-}
 
 // }}}
 
@@ -1453,6 +1427,12 @@ void free_render_texts(GSList *texts) {
         g_slist_free_full(texts, free_render_text);
 }
 
+
+// }}}
+
+
+// {{{ X_WIN
+
 void x_win_draw(void)
 { // {{{
 
@@ -1573,11 +1553,94 @@ void x_win_draw(void)
 }
 // }}}
 
+        /*
+         * Setup the window
+         */
+void x_win_setup(void)
+{ // {{{
+
+        Window root;
+        XSetWindowAttributes wa;
+
+        window_dim.x = 0;
+        window_dim.y = 0;
+        window_dim.w = 0;
+        window_dim.h = 0;
+
+        root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
+        utf8 = XInternAtom(dc->dpy, "UTF8_STRING", false);
+        font_h = dc->font.height + FONT_HEIGHT_BORDER;
+        x_screen_update_info();
+
+        wa.override_redirect = true;
+        wa.background_pixmap = ParentRelative;
+        wa.event_mask =
+            ExposureMask | KeyPressMask | VisibilityChangeMask |
+            ButtonPressMask;
+        win =
+            XCreateWindow(dc->dpy, root, scr.dim.x, scr.dim.y, scr.dim.w,
+                          font_h, 0, DefaultDepth(dc->dpy,
+                                                  DefaultScreen(dc->dpy)),
+                          CopyFromParent, DefaultVisual(dc->dpy,
+                                                        DefaultScreen(dc->dpy)),
+                          CWOverrideRedirect | CWBackPixmap | CWEventMask, &wa);
+        transparency = transparency > 100 ? 100 : transparency;
+        setopacity(dc, win,
+                   (unsigned long)((100 - transparency) * (0xffffffff / 100)));
+}
 // }}}
 
-/* TODO comments */
+        /*
+         * Show the window and grab shortcuts.
+         */
+void x_win_show(void)
+{ // {{{
+        /* window is already mapped or there's nothing to show */
+        if (visible || g_queue_is_empty(displayed)) {
+                return;
+        }
+
+        x_shortcut_grab(&close_ks);
+        x_shortcut_grab(&close_all_ks);
+        x_shortcut_grab(&context_ks);
+
+        x_shortcut_setup_error_handler();
+        XGrabButton(dc->dpy, AnyButton, AnyModifier, win, false,
+                    BUTTONMASK, GrabModeAsync, GrabModeSync, None, None);
+        if (x_shortcut_tear_down_error_handler()) {
+                fprintf(stderr, "Unable to grab mouse button(s)\n");
+        }
+
+        x_screen_update_info();
+        XMapRaised(dc->dpy, win);
+        visible = true;
+}
+// }}}
+
+        /*
+         * Hide the window and ungrab unused keyboard_shortcuts
+         */
+void x_win_hide()
+{ // {{{
+        x_shortcut_ungrab(&close_ks);
+        x_shortcut_ungrab(&close_all_ks);
+        x_shortcut_ungrab(&context_ks);
+
+        XUngrabButton(dc->dpy, AnyButton, AnyModifier, win);
+        XUnmapWindow(dc->dpy, win);
+        XFlush(dc->dpy);
+        visible = false;
+}
+// }}}
+
+// }}}
+
+
 // {{{ X_SHORTCUT
 
+        /*
+         * Parse a string into a modifier mask.
+         */
 KeySym x_shortcut_string_to_mask(const char *str)
 { // {{{
         if (!strcmp(str, "ctrl")) {
@@ -1600,6 +1663,9 @@ KeySym x_shortcut_string_to_mask(const char *str)
 }
 // }}}
 
+        /*
+         * Error handler for grabbing mouse and keyboard errors.
+         */
 static int GrabXErrorHandler(Display * display, XErrorEvent * e)
 { // {{{
         dunst_grab_errored = true;
@@ -1616,6 +1682,9 @@ static int GrabXErrorHandler(Display * display, XErrorEvent * e)
 }
 // }}}
 
+        /*
+         * Setup the Error handler.
+         */
 static void x_shortcut_setup_error_handler(void)
 { // {{{
         dunst_grab_errored = false;
@@ -1625,6 +1694,9 @@ static void x_shortcut_setup_error_handler(void)
 }
 // }}}
 
+        /*
+         * Tear down the Error handler.
+         */
 static int x_shortcut_tear_down_error_handler(void)
 { // {{{
         XFlush(dc->dpy);
@@ -1634,6 +1706,9 @@ static int x_shortcut_tear_down_error_handler(void)
 }
 // }}}
 
+        /*
+         * Grab the given keyboard shortcut.
+         */
 int x_shortcut_grab(keyboard_shortcut *ks)
 { // {{{
         if (!ks->is_valid)
@@ -1656,6 +1731,9 @@ int x_shortcut_grab(keyboard_shortcut *ks)
 }
 // }}}
 
+        /*
+         * Ungrab the given keyboard shortcut.
+         */
 void x_shortcut_ungrab(keyboard_shortcut *ks)
 { // {{{
         Window root;
@@ -1665,6 +1743,9 @@ void x_shortcut_ungrab(keyboard_shortcut *ks)
 }
 // }}}
 
+        /*
+         * Initialize the keyboard shortcut.
+         */
 void x_shortcut_init(keyboard_shortcut *ks)
 { // {{{
         if (ks == NULL || ks->str == NULL)
