@@ -138,6 +138,11 @@ void x_screen_update_info();
 bool x_is_idle(void);
 void x_setup(void);
 
+/* X mainloop */
+static gboolean x_mainloop_fd_prepare(GSource *source, gint *timeout);
+static gboolean x_mainloop_fd_check(GSource *source);
+static gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer user_data);
+
 /* misc funtions */
 void check_timeouts(void);
 void history_pop(void);
@@ -841,7 +846,7 @@ bool rule_matches_notification(rule_t *r, notification *n)
 /* TODO comments and rename to x_mainloop_* namingscheme */
 // {{{ X_MAINLOOP
 
-static gboolean x11_fd_prepare(GSource *source, gint *timeout)
+static gboolean x_mainloop_fd_prepare(GSource *source, gint *timeout)
 { // {{{
         *timeout = -1;
         return false;
@@ -849,14 +854,14 @@ static gboolean x11_fd_prepare(GSource *source, gint *timeout)
 // }}}
 
 
-static gboolean x11_fd_check(GSource *source)
+static gboolean x_mainloop_fd_check(GSource *source)
 { // {{{
         return XPending(dc->dpy) > 0;
 }
 // }}}
 
 
-static gboolean x11_fd_dispatch(GSource *source, GSourceFunc callback, gpointer user_data)
+static gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer user_data)
 { // {{{
         XEvent ev;
         while (XPending(dc->dpy) > 0) {
@@ -2235,9 +2240,9 @@ int main(int argc, char *argv[])
                 G_IO_IN | G_IO_HUP | G_IO_ERR, 0 };
 
         GSourceFuncs x11_source_funcs = {
-                x11_fd_prepare,
-                x11_fd_check,
-                x11_fd_dispatch,
+                x_mainloop_fd_prepare,
+                x_mainloop_fd_check,
+                x_mainloop_fd_dispatch,
                 NULL,
                 NULL,
                 NULL };
