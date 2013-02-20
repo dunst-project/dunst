@@ -374,3 +374,4 @@ void dbus_tear_down(int owner_id)
 {
       g_bus_unown_name(owner_id);
 }
+/* vim: set ts=8 sw=8 tw=0: */

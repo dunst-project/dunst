@@ -46,7 +46,7 @@
 #define DEFFONT "Monospace-11"
 
 #ifndef VERSION
-#define VERSION 0
+#define VERSION "version info needed"
 #endif
 
 #define MSG 1
