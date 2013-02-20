@@ -108,6 +108,12 @@ int notification_cmp_data(const void *a, const void *b, void *data);
 void notification_run_script(notification *n);
 int notification_close(notification * n, int reason);
 
+/* window */
+void win_draw(void);
+void win_hide(void);
+void win_show(void);
+
+
 /* misc funtions */
 void check_timeouts(void);
 char *fix_markup(char *str);
@@ -117,8 +123,6 @@ bool is_idle(void);
 void setup(void);
 void update_screen_info();
 void usage(int exit_status);
-void draw_win(void);
-void hide_win(void);
 void move_all_to_history(void);
 void print_version(void);
 char *extract_urls(const char *str);
@@ -913,7 +917,7 @@ void free_render_texts(GSList *texts) {
 }
 
 
-void draw_win(void)
+void win_draw(void)
 {
 
         update_screen_info();
@@ -1458,14 +1462,14 @@ void update(void)
         /* move messages from notification_queue to displayed_notifications */
         update_lists();
         if (displayed->length > 0 && ! visible) {
-                map_win();
+                win_show();
         }
         if (displayed->length == 0 && visible) {
-                hide_win();
+                win_hide();
         }
 
         if (visible && (force_redraw || time(NULL) - last_redraw > 0)) {
-                draw_win();
+                win_draw();
                 force_redraw = false;
                 last_redraw = time(NULL);
         }
@@ -1500,7 +1504,7 @@ gboolean run(void *data)
         return true;
 }
 
-void hide_win()
+void win_hide()
 {
         ungrab_key(&close_ks);
         ungrab_key(&close_all_ks);
@@ -1702,7 +1706,7 @@ void setup(void)
         grab_key(&history_ks);
 }
 
-void map_win(void)
+void win_show(void)
 {
         /* window is already mapped or there's nothing to show */
         if (visible || g_queue_is_empty(displayed)) {

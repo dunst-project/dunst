@@ -101,9 +101,7 @@ extern int verbosity;
 
 /* return id of notification */
 int notification_init(notification * n, int id);
-int notification_close(notification * n, int reason);
 int notification_close_by_id(int id, int reason);
-void map_win(void);
 gboolean run(void *data);
 void wake_up(void);
 
