@@ -109,19 +109,22 @@ void notification_run_script(notification *n);
 int notification_close(notification * n, int reason);
 
 /* window */
-void win_draw(void);
-void win_hide(void);
-void win_show(void);
+void x_win_draw(void);
+void x_win_hide(void);
+void x_win_show(void);
 
+/* X misc */
+void x_handle_click(XEvent ev);
+void x_shortcut_init(keyboard_shortcut *shortcut);
+void x_screen_update_info();
+KeySym x_string_to_mask(const char *str);
+bool x_is_idle(void);
 
 /* misc funtions */
 void check_timeouts(void);
 char *fix_markup(char *str);
-void handle_mouse_click(XEvent ev);
 void history_pop(void);
-bool is_idle(void);
 void setup(void);
-void update_screen_info();
 void usage(int exit_status);
 void move_all_to_history(void);
 void print_version(void);
@@ -129,8 +132,6 @@ char *extract_urls(const char *str);
 void context_menu(void);
 void wake_up(void);
 
-void init_shortcut(keyboard_shortcut * shortcut);
-KeySym string_to_mask(char *str);
 
 /*******
  *
@@ -168,7 +169,7 @@ x11_fd_dispatch(GSource *source, GSourceFunc callback, gpointer user_data)
                         break;
                 case ButtonPress:
                         if (ev.xbutton.window == win) {
-                                handle_mouse_click(ev);
+                                x_handle_click(ev);
                         }
                         break;
                 case KeyPress:
@@ -592,7 +593,7 @@ void check_timeouts(void)
                 notification *n = iter->data;
 
                 /* don't timeout when user is idle */
-                if (is_idle()) {
+                if (x_is_idle()) {
                         n->start = time(NULL);
                         continue;
                 }
@@ -917,10 +918,10 @@ void free_render_texts(GSList *texts) {
 }
 
 
-void win_draw(void)
+void x_win_draw(void)
 {
 
-        update_screen_info();
+        x_screen_update_info();
         int outer_width = calculate_width();
 
 
@@ -1085,7 +1086,7 @@ char
 
 }
 
-void handle_mouse_click(XEvent ev)
+void x_handle_click(XEvent ev)
 {
         if (ev.xbutton.button == Button3) {
                 move_all_to_history();
@@ -1444,7 +1445,7 @@ void init_shortcut(keyboard_shortcut * ks)
 }
 
 
-bool is_idle(void)
+bool x_is_idle(void)
 {
         XScreenSaverQueryInfo(dc->dpy, DefaultRootWindow(dc->dpy),
                               screensaver_info);
@@ -1462,14 +1463,14 @@ void update(void)
         /* move messages from notification_queue to displayed_notifications */
         update_lists();
         if (displayed->length > 0 && ! visible) {
-                win_show();
+                x_win_show();
         }
         if (displayed->length == 0 && visible) {
-                win_hide();
+                x_win_hide();
         }
 
         if (visible && (force_redraw || time(NULL) - last_redraw > 0)) {
-                win_draw();
+                x_win_draw();
                 force_redraw = false;
                 last_redraw = time(NULL);
         }
@@ -1504,7 +1505,7 @@ gboolean run(void *data)
         return true;
 }
 
-void win_hide()
+void x_win_hide()
 {
         ungrab_key(&close_ks);
         ungrab_key(&close_all_ks);
@@ -1587,7 +1588,7 @@ int select_screen(XineramaScreenInfo * info, int info_len)
 }
 #endif
 
-void update_screen_info()
+void x_screen_update_info()
 {
 #ifdef XINERAMA
         int n;
@@ -1686,7 +1687,7 @@ void setup(void)
         root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
         utf8 = XInternAtom(dc->dpy, "UTF8_STRING", false);
         font_h = dc->font.height + FONT_HEIGHT_BORDER;
-        update_screen_info();
+        x_screen_update_info();
 
         wa.override_redirect = true;
         wa.background_pixmap = ParentRelative;
@@ -1706,7 +1707,7 @@ void setup(void)
         grab_key(&history_ks);
 }
 
-void win_show(void)
+void x_win_show(void)
 {
         /* window is already mapped or there's nothing to show */
         if (visible || g_queue_is_empty(displayed)) {
@@ -1723,7 +1724,7 @@ void win_show(void)
                 fprintf(stderr, "Unable to grab mouse button(s)\n");
         }
 
-        update_screen_info();
+        x_screen_update_info();
         XMapRaised(dc->dpy, win);
         visible = true;
 }
