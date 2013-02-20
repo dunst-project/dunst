@@ -113,11 +113,15 @@ void x_win_draw(void);
 void x_win_hide(void);
 void x_win_show(void);
 
+/* shortcut */
+void x_shortcut_init(keyboard_shortcut *shortcut);
+void x_shortcut_ungrab(keyboard_shortcut *ks);
+int x_shortcut_grab(keyboard_shortcut *ks);
+KeySym x_shortcut_string_to_mask(const char *str);
+
 /* X misc */
 void x_handle_click(XEvent ev);
-void x_shortcut_init(keyboard_shortcut *shortcut);
 void x_screen_update_info();
-KeySym x_string_to_mask(const char *str);
 bool x_is_idle(void);
 
 /* misc funtions */
@@ -504,7 +508,7 @@ static int tear_down_error_handler(void)
         return dunst_grab_errored;
 }
 
-int grab_key(keyboard_shortcut * ks)
+int x_shortcut_grab(keyboard_shortcut *ks)
 {
         if (!ks->is_valid)
                 return 1;
@@ -525,7 +529,7 @@ int grab_key(keyboard_shortcut * ks)
         return 0;
 }
 
-void ungrab_key(keyboard_shortcut * ks)
+void x_shortcut_ungrab(keyboard_shortcut *ks)
 {
         Window root;
         root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
@@ -1370,7 +1374,7 @@ int notification_close(notification * n, int reason)
         return notification_close_by_id(n->id, reason);
 }
 
-KeySym string_to_mask(char *str)
+KeySym x_shortcut_string_to_mask(const char *str)
 {
         if (!strcmp(str, "ctrl")) {
                 return ControlMask;
@@ -1391,7 +1395,7 @@ KeySym string_to_mask(char *str)
 
 }
 
-void init_shortcut(keyboard_shortcut * ks)
+void x_shortcut_init(keyboard_shortcut *ks)
 {
         if (ks == NULL || ks->str == NULL)
                 return;
@@ -1414,7 +1418,7 @@ void init_shortcut(keyboard_shortcut * ks)
                 *str = '\0';
                 str++;
                 g_strchomp(mod);
-                ks->mask = ks->mask | string_to_mask(mod);
+                ks->mask = ks->mask | x_shortcut_string_to_mask(mod);
         }
         g_strstrip(str);
 
@@ -1507,9 +1511,9 @@ gboolean run(void *data)
 
 void x_win_hide()
 {
-        ungrab_key(&close_ks);
-        ungrab_key(&close_all_ks);
-        ungrab_key(&context_ks);
+        x_shortcut_ungrab(&close_ks);
+        x_shortcut_ungrab(&close_all_ks);
+        x_shortcut_ungrab(&context_ks);
 
         XUngrabButton(dc->dpy, AnyButton, AnyModifier, win);
         XUnmapWindow(dc->dpy, win);
@@ -1622,19 +1626,19 @@ void setup(void)
 
         initfont(dc, font);
 
-        init_shortcut(&close_ks);
-        init_shortcut(&close_all_ks);
-        init_shortcut(&history_ks);
-        init_shortcut(&context_ks);
+        x_shortcut_init(&close_ks);
+        x_shortcut_init(&close_all_ks);
+        x_shortcut_init(&history_ks);
+        x_shortcut_init(&context_ks);
 
-        grab_key(&close_ks);
-        ungrab_key(&close_ks);
-        grab_key(&close_all_ks);
-        ungrab_key(&close_all_ks);
-        grab_key(&history_ks);
-        ungrab_key(&history_ks);
-        grab_key(&context_ks);
-        ungrab_key(&context_ks);
+        x_shortcut_grab(&close_ks);
+        x_shortcut_ungrab(&close_ks);
+        x_shortcut_grab(&close_all_ks);
+        x_shortcut_ungrab(&close_all_ks);
+        x_shortcut_grab(&history_ks);
+        x_shortcut_ungrab(&history_ks);
+        x_shortcut_grab(&context_ks);
+        x_shortcut_ungrab(&context_ks);
 
         colors[LOW] = initcolor(dc, lowfgcolor, lowbgcolor);
         colors[NORM] = initcolor(dc, normfgcolor, normbgcolor);
@@ -1704,7 +1708,7 @@ void setup(void)
         transparency = transparency > 100 ? 100 : transparency;
         setopacity(dc, win,
                    (unsigned long)((100 - transparency) * (0xffffffff / 100)));
-        grab_key(&history_ks);
+        x_shortcut_grab(&history_ks);
 }
 
 void x_win_show(void)
@@ -1714,9 +1718,9 @@ void x_win_show(void)
                 return;
         }
 
-        grab_key(&close_ks);
-        grab_key(&close_all_ks);
-        grab_key(&context_ks);
+        x_shortcut_grab(&close_ks);
+        x_shortcut_grab(&close_all_ks);
+        x_shortcut_grab(&context_ks);
         setup_error_handler();
         XGrabButton(dc->dpy, AnyButton, AnyModifier, win, false,
                     BUTTONMASK, GrabModeAsync, GrabModeSync, None, None);
