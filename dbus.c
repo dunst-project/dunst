@@ -3,7 +3,7 @@
 #include <glib.h>
 #include <gio/gio.h>
 #include "dunst.h"
-#include "dunst_dbus.h"
+#include "dbus.h"
 
 GDBusConnection *dbus_conn;
 

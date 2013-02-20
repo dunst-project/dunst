@@ -1,4 +1,4 @@
-/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
+/* copyright 2012 Sascha Kruse and contributors (see LICENSE for licensing information) */
 
 #define _GNU_SOURCE
 #define XLIB_ILLEGAL_ACCESS
@@ -32,11 +32,10 @@
 
 #include "dunst.h"
 #include "draw.h"
-#include "dunst_dbus.h"
+#include "dbus.h"
 #include "utils.h"
 
 #include "options.h"
-
 
 #define INRECT(x,y,rx,ry,rw,rh) ((x) >= (rx) && (x) < (rx)+(rw) && (y) >= (ry) && (y) < (ry)+(rh))
 #define LENGTH(X)               (sizeof X / sizeof X[0])
@@ -194,6 +193,7 @@ int cmp_notification(const void *va, const void *vb)
 {
         notification *a = (notification*) va;
         notification *b = (notification*) vb;
+
         if (!sort)
                 return 1;
 
