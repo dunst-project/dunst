@@ -112,6 +112,7 @@ int notification_close(notification * n, int reason);
 void x_win_draw(void);
 void x_win_hide(void);
 void x_win_show(void);
+void x_win_setup(void);
 
 /* shortcut */
 void x_shortcut_init(keyboard_shortcut *shortcut);
@@ -123,12 +124,12 @@ KeySym x_shortcut_string_to_mask(const char *str);
 void x_handle_click(XEvent ev);
 void x_screen_update_info();
 bool x_is_idle(void);
+void x_setup(void);
 
 /* misc funtions */
 void check_timeouts(void);
 char *fix_markup(char *str);
 void history_pop(void);
-void setup(void);
 void usage(int exit_status);
 void move_all_to_history(void);
 void print_version(void);
@@ -1618,7 +1619,40 @@ void x_screen_update_info()
         }
 }
 
-void setup(void)
+void x_win_setup(void)
+{
+
+        Window root;
+        XSetWindowAttributes wa;
+
+        window_dim.x = 0;
+        window_dim.y = 0;
+        window_dim.w = 0;
+        window_dim.h = 0;
+
+        root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
+        utf8 = XInternAtom(dc->dpy, "UTF8_STRING", false);
+        font_h = dc->font.height + FONT_HEIGHT_BORDER;
+        x_screen_update_info();
+
+        wa.override_redirect = true;
+        wa.background_pixmap = ParentRelative;
+        wa.event_mask =
+            ExposureMask | KeyPressMask | VisibilityChangeMask |
+            ButtonPressMask;
+        win =
+            XCreateWindow(dc->dpy, root, scr.dim.x, scr.dim.y, scr.dim.w,
+                          font_h, 0, DefaultDepth(dc->dpy,
+                                                  DefaultScreen(dc->dpy)),
+                          CopyFromParent, DefaultVisual(dc->dpy,
+                                                        DefaultScreen(dc->dpy)),
+                          CWOverrideRedirect | CWBackPixmap | CWEventMask, &wa);
+        transparency = transparency > 100 ? 100 : transparency;
+        setopacity(dc, win,
+                   (unsigned long)((100 - transparency) * (0xffffffff / 100)));
+}
+
+void x_setup(void)
 {
 
         /* initialize dc, font, keyboard, colors */
@@ -1672,10 +1706,6 @@ void setup(void)
                                        &geometry.x, &geometry.y,
                                        &geometry.w, &geometry.h);
 
-        window_dim.x = 0;
-        window_dim.y = 0;
-        window_dim.w = 0;
-        window_dim.h = 0;
 
         screensaver_info = XScreenSaverAllocInfo();
 
@@ -1684,30 +1714,7 @@ void setup(void)
                 scr.scr = DefaultScreen(dc->dpy);
         }
 
-        /* initialize window */
-        Window root;
-        XSetWindowAttributes wa;
-
-        root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
-        utf8 = XInternAtom(dc->dpy, "UTF8_STRING", false);
-        font_h = dc->font.height + FONT_HEIGHT_BORDER;
-        x_screen_update_info();
-
-        wa.override_redirect = true;
-        wa.background_pixmap = ParentRelative;
-        wa.event_mask =
-            ExposureMask | KeyPressMask | VisibilityChangeMask |
-            ButtonPressMask;
-        win =
-            XCreateWindow(dc->dpy, root, scr.dim.x, scr.dim.y, scr.dim.w,
-                          font_h, 0, DefaultDepth(dc->dpy,
-                                                  DefaultScreen(dc->dpy)),
-                          CopyFromParent, DefaultVisual(dc->dpy,
-                                                        DefaultScreen(dc->dpy)),
-                          CWOverrideRedirect | CWBackPixmap | CWEventMask, &wa);
-        transparency = transparency > 100 ? 100 : transparency;
-        setopacity(dc, win,
-                   (unsigned long)((100 - transparency) * (0xffffffff / 100)));
+        x_win_setup();
         x_shortcut_grab(&history_ks);
 }
 
@@ -2044,7 +2051,9 @@ int main(int argc, char *argv[])
         }
 
         int owner_id = initdbus();
-        setup();
+
+        x_setup();
+
         signal (SIGUSR1, pause_signal_handler);
         signal (SIGUSR2, pause_signal_handler);
 
