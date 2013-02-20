@@ -1,5 +1,6 @@
 /* copyright 2012 Sascha Kruse and contributors (see LICENSE for licensing information) */
 
+// {{{ INCLUDES
 #define _GNU_SOURCE
 #define XLIB_ILLEGAL_ACCESS
 
@@ -37,6 +38,9 @@
 
 #include "options.h"
 
+// }}}
+
+// {{{ DEFINES
 #define INRECT(x,y,rx,ry,rw,rh) ((x) >= (rx) && (x) < (rx)+(rw) && (y) >= (ry) && (y) < (ry)+(rh))
 #define LENGTH(X)               (sizeof X / sizeof X[0])
 #define BUTTONMASK              (ButtonPressMask|ButtonReleaseMask)
@@ -51,17 +55,19 @@
 #define MSG 1
 #define INFO 2
 #define DEBUG 3
+//}}}
 
+// {{{ STRUCTS
 typedef struct _x11_source {
         GSource source;
         Display *dpy;
         Window w;
 } x11_source_t;
-
-/* global variables */
+// }}}
 
 #include "config.h"
 
+// {{{ GLOBALS
 int height_limit;
 
 /* index of colors fit to urgency level */
@@ -95,7 +101,9 @@ GQueue *queue = NULL;             /* all new notifications get into here */
 GQueue *displayed = NULL;   /* currently displayed notifications */
 GQueue *history = NULL;      /* history of displayed notifications */
 GSList *rules = NULL;
+// }}}
 
+// {{{ FUNCTION DEFINITIONS
 /* rules */
 void rule_apply(rule_t *r, notification *n);
 void rule_apply_all(notification *n);
@@ -107,6 +115,8 @@ int notification_cmp(const void *a, const void *b);
 int notification_cmp_data(const void *a, const void *b, void *data);
 void notification_run_script(notification *n);
 int notification_close(notification * n, int reason);
+void notification_print(notification *n);
+char *notification_fix_markup(char *str);
 
 /* window */
 void x_win_draw(void);
@@ -119,6 +129,8 @@ void x_shortcut_init(keyboard_shortcut *shortcut);
 void x_shortcut_ungrab(keyboard_shortcut *ks);
 int x_shortcut_grab(keyboard_shortcut *ks);
 KeySym x_shortcut_string_to_mask(const char *str);
+static void x_shortcut_setup_error_handler(void);
+static int x_shortcut_tear_down_error_handler(void);
 
 /* X misc */
 void x_handle_click(XEvent ev);
@@ -128,7 +140,6 @@ void x_setup(void);
 
 /* misc funtions */
 void check_timeouts(void);
-char *fix_markup(char *str);
 void history_pop(void);
 void usage(int exit_status);
 void move_all_to_history(void);
@@ -136,79 +147,23 @@ void print_version(void);
 char *extract_urls(const char *str);
 void context_menu(void);
 void wake_up(void);
+void pause_signal_handler(int sig);
+
+// }}}
 
 
-/*******
- *
- * MainLoop functions for xlib
- */
-
-static gboolean x11_fd_prepare(GSource *source, gint *timeout)
-{
-        *timeout = -1;
-        return false;
-}
-
-static gboolean x11_fd_check(GSource *source)
-{
-        return XPending(dc->dpy) > 0;
-}
-
-static gboolean
-x11_fd_dispatch(GSource *source, GSourceFunc callback, gpointer user_data)
-{
-        XEvent ev;
-        while (XPending(dc->dpy) > 0) {
-                XNextEvent(dc->dpy, &ev);
-                switch (ev.type) {
-                case Expose:
-                        if (ev.xexpose.count == 0 && visible) {
-                        }
-                        break;
-                case SelectionNotify:
-                        if (ev.xselection.property == utf8)
-                                break;
-                case VisibilityNotify:
-                        if (ev.xvisibility.state != VisibilityUnobscured)
-                                XRaiseWindow(dc->dpy, win);
-                        break;
-                case ButtonPress:
-                        if (ev.xbutton.window == win) {
-                                x_handle_click(ev);
-                        }
-                        break;
-                case KeyPress:
-                        if (close_ks.str
-                            && XLookupKeysym(&ev.xkey, 0) == close_ks.sym
-                            && close_ks.mask == ev.xkey.state) {
-                                if (displayed) {
-                                        notification_close(g_queue_peek_head_link(displayed)->data, 2);
-                                }
-                        }
-                        if (history_ks.str
-                            && XLookupKeysym(&ev.xkey, 0) == history_ks.sym
-                            && history_ks.mask == ev.xkey.state) {
-                                history_pop();
-                        }
-                        if (close_all_ks.str
-                            && XLookupKeysym(&ev.xkey, 0) == close_all_ks.sym
-                            && close_all_ks.mask == ev.xkey.state) {
-                                move_all_to_history();
-                        }
-                        if (context_ks.str
-                            && XLookupKeysym(&ev.xkey, 0) == context_ks.sym
-                            && context_ks.mask == ev.xkey.state) {
-                                context_menu();
-                        }
-                        break;
-                }
-        }
-        return true;
-}
 
 
+// {{{ CONTEXT_MENU
+
+        /*
+         * Exctract all urls from a given string.
+         *
+         * Return: a string of urls separated by \n
+         *
+         */
 char *extract_urls( const char * to_match)
-{
+{ // {{{
     static bool is_initialized = false;
     static regex_t cregex;
 
@@ -250,9 +205,15 @@ char *extract_urls( const char * to_match)
     return urls;
 }
 
+//      }}}
 
+
+        /*
+         * Open url in browser.
+         *
+         */
 void open_browser(const char *url)
-{
+{ // {{{
     int browser_pid1 = fork();
 
     if (browser_pid1) {
@@ -269,9 +230,15 @@ void open_browser(const char *url)
             }
     }
 }
+// }}}
 
+
+        /*
+         * Notify the corresponding client
+         * that an action has been invoked
+         */
 void invoke_action(const char *action)
-{
+{ // {{{
         notification *invoked = NULL;
         char *action_identifier = NULL;
 
@@ -305,9 +272,14 @@ void invoke_action(const char *action)
                 actionInvoked(invoked, action_identifier);
         }
 }
+// }}}
 
+        /*
+         * Dispatch whatever has been returned
+         * by the menu.
+         */
 void dispatch_menu_result(const char *input)
-{
+{ // {{{
         char *maybe_url = extract_urls(input);
         if (maybe_url) {
                 open_browser(maybe_url);
@@ -317,8 +289,14 @@ void dispatch_menu_result(const char *input)
 
         invoke_action(input);
 }
+// }}}
 
-void context_menu(void) {
+        /*
+         * Open the context menu that let's the user
+         * select urls/actions/etc
+         */
+void context_menu(void)
+{ // {{{
         char *dmenu_input = NULL;
 
         for (GList *iter = g_queue_peek_head_link(displayed); iter; iter = iter->next) {
@@ -382,10 +360,55 @@ void context_menu(void) {
 
     dispatch_menu_result(buf);
 }
+// }}}
 
 
-void run_script(notification *n)
-{
+// }}}
+
+
+// {{{ NOTIFICATION
+
+        /*
+         * print a human readable representation
+         * of the given notification to stdout.
+         */
+void notification_print(notification * n)
+{ // {{{
+        printf("{\n");
+        printf("\tappname: '%s'\n", n->appname);
+        printf("\tsummary: '%s'\n", n->summary);
+        printf("\tbody: '%s'\n", n->body);
+        printf("\ticon: '%s'\n", n->icon);
+        printf("\turgency: %d\n", n->urgency);
+        printf("\tformatted: '%s'\n", n->msg);
+        printf("\tid: %d\n", n->id);
+        if (n->urls) {
+                printf("\turls\n");
+                printf("\t{\n");
+                printf("%s\n", n->urls);
+                printf("\t}\n");
+        }
+
+        if (n->actions) {
+                printf("\tactions:\n");
+                printf("\t{\n");
+                for (int i = 0; i < n->actions->count; i += 2) {
+                        printf("\t\t [%s,%s]\n", n->actions->actions[i], n->actions->actions[i+1]);
+                }
+                printf("actions_dmenu: %s\n", n->actions->dmenu_str);
+                printf("\t]\n");
+        }
+        printf("\tscript: %s\n", n->script);
+        printf("}\n");
+}
+// }}}
+
+        /*
+         * Run the script associated with the
+         * given notification.
+         */
+void notification_run_script(notification *n)
+{ // {{{
         if (!n->script || strlen(n->script) < 1)
                 return;
 
@@ -435,616 +458,62 @@ void run_script(notification *n)
                 }
         }
 }
-
-void pause_signal_handler(int sig)
-{
-        if (sig == SIGUSR1) {
-                pause_display = true;
-        }
-        if (sig == SIGUSR2) {
-                pause_display = false;
-        }
-
-        signal (sig, pause_signal_handler);
-}
-
-static void print_notification(notification * n)
-{
-        printf("{\n");
-        printf("\tappname: '%s'\n", n->appname);
-        printf("\tsummary: '%s'\n", n->summary);
-        printf("\tbody: '%s'\n", n->body);
-        printf("\ticon: '%s'\n", n->icon);
-        printf("\turgency: %d\n", n->urgency);
-        printf("\tformatted: '%s'\n", n->msg);
-        printf("\tid: %d\n", n->id);
-        if (n->urls) {
-                printf("\turls\n");
-                printf("\t{\n");
-                printf("%s\n", n->urls);
-                printf("\t}\n");
-        }
-
-        if (n->actions) {
-                printf("\tactions:\n");
-                printf("\t{\n");
-                for (int i = 0; i < n->actions->count; i += 2) {
-                        printf("\t\t [%s,%s]\n", n->actions->actions[i], n->actions->actions[i+1]);
-                }
-                printf("actions_dmenu: %s\n", n->actions->dmenu_str);
-                printf("\t]\n");
-        }
-        printf("\tscript: %s\n", n->script);
-        printf("}\n");
-}
-
-static int GrabXErrorHandler(Display * display, XErrorEvent * e)
-{
-        dunst_grab_errored = true;
-        char err_buf[BUFSIZ];
-        XGetErrorText(display, e->error_code, err_buf, BUFSIZ);
-        fputs(err_buf, stderr);
-        fputs("\n", stderr);
-
-        if (e->error_code != BadAccess) {
-                exit(EXIT_FAILURE);
-        }
-
-        return 0;
-}
-
-static void setup_error_handler(void)
-{
-        dunst_grab_errored = false;
-
-        XFlush(dc->dpy);
-        XSetErrorHandler(GrabXErrorHandler);
-}
-
-static int tear_down_error_handler(void)
-{
-        XFlush(dc->dpy);
-        XSync(dc->dpy, false);
-        XSetErrorHandler(NULL);
-        return dunst_grab_errored;
-}
-
-int x_shortcut_grab(keyboard_shortcut *ks)
-{
-        if (!ks->is_valid)
-                return 1;
-        Window root;
-        root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
-
-        setup_error_handler();
-
-        if (ks->is_valid)
-                XGrabKey(dc->dpy, ks->code, ks->mask, root,
-                         true, GrabModeAsync, GrabModeAsync);
-
-        if (tear_down_error_handler()) {
-                fprintf(stderr, "Unable to grab key \"%s\"\n", ks->str);
-                ks->is_valid = false;
-                return 1;
-        }
-        return 0;
-}
-
-void x_shortcut_ungrab(keyboard_shortcut *ks)
-{
-        Window root;
-        root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
-        if (ks->is_valid)
-                XUngrabKey(dc->dpy, ks->code, ks->mask, root);
-}
-
-
-void rule_apply(rule_t *r, notification *n)
-{
-        if (r->timeout != -1)
-                n->timeout = r->timeout;
-        if (r->urgency != -1)
-                n->urgency = r->urgency;
-        if (r->fg)
-                n->color_strings[ColFG] = r->fg;
-        if (r->bg)
-                n->color_strings[ColBG] = r->bg;
-        if (r->format)
-                n->format = r->format;
-        if (r->script)
-                n->script = r->script;
-}
-
-void rule_apply_all(notification *n)
-{
-        for (GSList *iter = rules; iter; iter = iter->next) {
-                rule_t *r = iter->data;
-                if (rule_matches_notification(r, n)) {
-                        rule_apply(r, n);
-                }
-        }
-}
-
-void rule_init(rule_t *r)
-{
-        r->name = NULL;
-        r->appname = NULL;
-        r->summary = NULL;
-        r->body = NULL;
-        r->icon = NULL;
-        r->timeout = -1;
-        r->urgency = -1;
-        r->fg = NULL;
-        r->bg = NULL;
-        r->format = NULL;
-}
-
-bool rule_matches_notification(rule_t *r, notification *n)
-{
-
-                return ((!r->appname || !fnmatch(r->appname, n->appname, 0))
-                    && (!r->summary || !fnmatch(r->summary, n->summary, 0))
-                    && (!r->body || !fnmatch(r->body, n->body, 0))
-                    && (!r->icon || !fnmatch(r->icon, n->icon, 0)));
-}
-
-void check_timeouts(void)
-{
-        /* nothing to do */
-        if (displayed->length == 0)
-                return;
-
-        for (GList *iter = g_queue_peek_head_link(displayed); iter; iter = iter->next) {
-                notification *n = iter->data;
-
-                /* don't timeout when user is idle */
-                if (x_is_idle()) {
-                        n->start = time(NULL);
-                        continue;
-                }
-
-                /* skip hidden and sticky messages */
-                if (n->start == 0 || n->timeout == 0) {
-                        continue;
-                }
-
-                /* remove old message */
-                if (difftime(time(NULL), n->start) > n->timeout) {
-                        force_redraw = true;
-                        /* close_notification may conflict with iter, so restart */
-                        notification_close(n, 1);
-                        check_timeouts();
-                        return;
-                }
-        }
-}
-
-void update_lists()
-{
-        int limit;
-
-        check_timeouts();
-
-        if (pause_display) {
-                while (displayed->length > 0) {
-                        g_queue_insert_sorted(queue, g_queue_pop_head(queue), notification_cmp_data, NULL);
-                }
-                return;
-        }
-
-        if (geometry.h == 0) {
-                limit = 0;
-        } else if (geometry.h == 1) {
-                limit = 1;
-        } else if (indicate_hidden) {
-                limit = geometry.h - 1;
-        } else {
-                limit = geometry.h;
-        }
-
-
-        /* move notifications from queue to displayed */
-        while (queue->length > 0) {
-
-                if (limit > 0 && displayed->length >= limit) {
-                        /* the list is full */
-                        break;
-                }
-
-                force_redraw = true;
-
-                notification *n = g_queue_pop_head(queue);
-
-                if (!n)
-                        return;
-                n->start = time(NULL);
-                if (!n->redisplayed && n->script) {
-                        run_script(n);
-                }
-
-                g_queue_insert_sorted(displayed, n, notification_cmp_data, NULL);
-        }
-}
-
-
-GSList *do_word_wrap(char *text, int max_width)
-{
-
-        GSList *result = NULL;
-        g_strstrip(text);
-
-        if (!text || strlen(text) == 0)
-                return 0;
-
-        char *begin = text;
-        char *end = text;
-
-        while (true) {
-                if (*end == '\0') {
-                        result = g_slist_append(result, g_strdup(begin));
-                        break;
-                }
-                if (*end == '\n') {
-                        *end = ' ';
-                        result = g_slist_append(result, g_strndup(begin, end - begin));
-                        begin = ++end;
-                }
-
-                if (word_wrap && max_width > 0 && textnw(dc, begin, (end - begin) + 1) > max_width) {
-                        /* find previous space */
-                        char *space = end;
-                        while (space > begin && !isspace(*space))
-                                space--;
-
-                        if (space > begin) {
-                                end = space;
-                        }
-                        result = g_slist_append(result, g_strndup(begin, end - begin));
-                        begin = ++end;
-                }
-                end++;
-        }
-
-        return result;
-}
-
-
-char *generate_final_text(notification *n)
-{
-        char *msg = g_strstrip(n->msg);
-        char *buf;
-
-        /* print dup_count and msg*/
-        if (n->dup_count > 0 && (n->actions || n->urls)) {
-                buf = g_strdup_printf("(%d%s%s) %s",
-                                n->dup_count,
-                                n->actions ? "A" : "",
-                                n->urls ? "U" : "",
-                                msg);
-        } else if (n->actions || n->urls) {
-                buf = g_strdup_printf("(%s%s) %s",
-                                n->actions ? "A" : "",
-                                n->urls ? "U" : "",
-                                msg);
-        } else {
-                buf = g_strdup(msg);
-        }
-
-        /* print age */
-        int hours, minutes, seconds;
-        time_t t_delta = time(NULL) - n->timestamp;
-
-        if (show_age_threshold >= 0 && t_delta >= show_age_threshold) {
-                hours = t_delta / 3600;
-                minutes = t_delta / 60 % 60;
-                seconds = t_delta % 60;
-
-                char *new_buf;
-                if (hours > 0) {
-                        new_buf = g_strdup_printf("%s (%dh %dm %ds old)", buf, hours,
-                                 minutes, seconds);
-                } else if (minutes > 0) {
-                        new_buf = g_strdup_printf("%s (%dm %ds old)", buf, minutes,
-                                 seconds);
-                } else {
-                        new_buf = g_strdup_printf("%s (%ds old)", buf, seconds);
-                }
-
-                free(buf);
-                buf = new_buf;
-        }
-
-        return buf;
-}
-
-int calculate_x_offset(int line_width, int text_width)
-{
-        int leftover = line_width - text_width;
-        struct timeval t;
-        float pos;
-        /* If the text is wider than the frame, bouncing is enabled and word_wrap disabled */
-        if (line_width < text_width && bounce_freq > 0.0001 && !word_wrap) {
-                gettimeofday(&t, NULL);
-                pos =
-                    ((t.tv_sec % 100) * 1e6 + t.tv_usec) / (1e6 / bounce_freq);
-                return (1 + sinf(2 * 3.14159 * pos)) * leftover / 2;
-        }
-        switch (align) {
-        case left:
-                return frame_width + h_padding;
-        case center:
-                return frame_width + h_padding + (leftover / 2);
-        case right:
-                return frame_width + h_padding + leftover;
-        default:
-                /* this can't happen */
-                return 0;
-        }
-}
-
-unsigned long calculate_foreground_color(unsigned long source_color)
-{
-        Colormap cmap = DefaultColormap(dc->dpy, DefaultScreen(dc->dpy));
-        XColor color;
-
-        color.pixel = source_color;
-        XQueryColor(dc->dpy, cmap, &color);
-
-        int c_delta = 10000;
-
-        /* do we need to darken or brighten the colors? */
-        int darken = (color.red + color.green + color.blue) / 3 > 65535 / 2;
-
-        if (darken) {
-                if (color.red - c_delta < 0)
-                        color.red = 0;
-                else
-                        color.red -= c_delta;
-                if (color.green - c_delta < 0)
-                        color.green = 0;
-                else
-                        color.green -= c_delta;
-                if (color.blue - c_delta < 0)
-                        color.blue = 0;
-                else
-                        color.blue -= c_delta;
-        } else {
-                if (color.red + c_delta > 65535)
-                        color.red = 65535;
-                else
-                        color.red += c_delta;
-                if (color.green + c_delta > 65535)
-                        color.green = 65535;
-                else
-                        color.green += c_delta;
-                if (color.blue + c_delta > 65535)
-                        color.green = 65535;
-                else
-                        color.green += c_delta;
-        }
-
-        color.pixel = 0;
-        XAllocColor(dc->dpy, cmap, &color);
-        return color.pixel;
-}
-
-int calculate_width(void)
-{
-        if (geometry.mask & WidthValue && geometry.w == 0) {
-                /* dynamic width */
-                return 0;
-        } else if (geometry.mask & WidthValue) {
-                /* fixed width */
-                if (geometry.negative_width) {
-                        return scr.dim.w - geometry.w;
-                } else {
-                        return geometry.w;
-                }
-        } else {
-                /* across the screen */
-                return scr.dim.w;
-        }
-}
-
-void move_and_map(int width, int height)
-{
-
-        int x,y;
-        /* calculate window position */
-        if (geometry.mask & XNegative) {
-                x = (scr.dim.x + (scr.dim.w - width)) + geometry.x;
-        } else {
-                x = scr.dim.x + geometry.x;
-        }
-
-        if (geometry.mask & YNegative) {
-                y = scr.dim.y + (scr.dim.h + geometry.y) - height;
-        } else {
-                y = scr.dim.y + geometry.y;
-        }
-
-        /* move and map window */
-        if (x != window_dim.x || y != window_dim.y
-            || width != window_dim.w || height != window_dim.h) {
-
-                XResizeWindow(dc->dpy, win, width, height);
-                XMoveWindow(dc->dpy, win, x, y);
-
-                window_dim.x = x;
-                window_dim.y = y;
-                window_dim.h = height;
-                window_dim.w = width;
-        }
-
-        mapdc(dc, win, width, height);
-
-}
-
-GSList *generate_render_texts(int width)
-{
-        GSList *render_texts = NULL;
-
-        for (GList *iter = g_queue_peek_head_link(displayed); iter; iter = iter->next) {
-                render_text *rt = g_malloc(sizeof(render_text));
-
-                rt->colors = ((notification*)iter->data)->colors;
-                char *text = generate_final_text(iter->data);
-                rt->lines = do_word_wrap(text, width);
-                free(text);
-                render_texts = g_slist_append(render_texts, rt);
-        }
-
-        /* add (x more) */
-        if (indicate_hidden && queue->length > 0) {
-                if (geometry.h != 1) {
-                        render_text *rt = g_malloc(sizeof(render_text));
-                        rt->colors = ((render_text *) g_slist_last(render_texts)->data)->colors;
-                        rt->lines = g_slist_append(NULL, g_strdup_printf("%d more)", queue->length));
-                        render_texts = g_slist_append(render_texts, rt);
-                } else {
-                        GSList *last_lines = ((render_text *) g_slist_last(render_texts)->data)->lines;
-                        GSList *last_line = g_slist_last(last_lines);
-                        char *old = last_line->data;
-                        char *new = g_strdup_printf("%s (%d more)", old, queue->length);
-                        free(old);
-                        last_line->data = new;
-                }
-        }
-
-        return render_texts;
-}
-
-void free_render_text(void *data) {
-        g_slist_free_full(((render_text *) data)->lines, g_free);
-}
-
-void free_render_texts(GSList *texts) {
-        g_slist_free_full(texts, free_render_text);
-}
-
-
-void x_win_draw(void)
-{
-
-        x_screen_update_info();
-        int outer_width = calculate_width();
-
-
-        line_height = MAX(line_height, font_h);
-
-        int width;
-        if (outer_width == 0)
-                width = 0;
-        else
-                width = outer_width - (2 * frame_width) - (2 * h_padding);
-
-
-        GSList *texts = generate_render_texts(width);
-        int line_count = 0;
-        for (GSList *iter = texts; iter; iter = iter->next) {
-                render_text *tmp = iter->data;
-                line_count += g_slist_length(tmp->lines);
-        }
-
-        /* if we have a dynamic width, calculate the actual width */
-        if (width == 0) {
-                for (GSList *iter = texts; iter; iter = iter->next) {
-                        GSList *lines = ((render_text *) iter->data)->lines;
-                        for (GSList *iiter = lines; iiter; iiter = iiter->next)
-                                width = MAX(width, textw(dc, iiter->data));
-                }
-                outer_width = width + (2 * frame_width) + (2 * h_padding);
-        }
-
-        /* resize dc to correct width */
-
-        int height = (line_count * line_height)
-                   + displayed->length * 2 * padding
-                   + ((indicate_hidden && queue->length > 0 && geometry.h != 1) ? 2 * padding : 0)
-                   + (separator_height * (displayed->length - 1))
-                   + (2 * frame_width);
-
-        resizedc(dc, outer_width, height);
-
-        /* draw frame
-         * this draws a big box in the frame color which get filled with
-         * smaller boxes of the notification colors
+// }}}
+
+        /*
+         * Helper function to compare to given
+         * notifications.
          */
-        dc->y = 0;
-        dc->x = 0;
-        if (frame_width > 0) {
-                drawrect(dc, 0, 0, outer_width, height, true, framec);
+int notification_cmp(const void *va, const void *vb)
+{ // {{{
+        notification *a = (notification*) va;
+        notification *b = (notification*) vb;
+
+        if (!sort)
+                return 1;
+
+        if (a->urgency != b->urgency) {
+                return b->urgency - a->urgency;
+        } else {
+                return a->timestamp - b->timestamp;
         }
-
-        dc->y = frame_width;
-        dc->x = frame_width;
-
-        for (GSList *iter = texts; iter; iter = iter->next) {
-
-                render_text *cur = iter->data;
-                ColorSet *colors = cur->colors;
-
-
-                int line_count = 0;
-                bool first_line = true;
-                for (GSList *iiter = cur->lines; iiter; iiter = iiter->next) {
-                        char *line = iiter->data;
-                        line_count++;
-
-                        int pad = 0;
-                        bool last_line = iiter->next == NULL;
-
-                        if (first_line && last_line)
-                                pad = 2*padding;
-                        else if (first_line || last_line)
-                                pad = padding;
-
-                        dc->x = frame_width;
-
-                        /* draw background */
-                        drawrect(dc, 0, 0, width + (2*h_padding), pad +  line_height, true, colors->BG);
-
-                        /* draw text */
-                        dc->x = calculate_x_offset(width, textw(dc, line));
-
-                        dc->y += ((line_height - font_h) / 2);
-                        dc->y += first_line ? padding : 0;
-
-                        drawtextn(dc, line, strlen(line), colors);
-
-                        dc->y += line_height - ((line_height - font_h) / 2);
-                        dc->y += last_line ? padding : 0;
-
-                        first_line = false;
-                }
-
-                /* draw separator */
-                if (separator_height > 0 && iter->next) {
-                        dc->x = frame_width;
-                        double color;
-                        if (sep_color == AUTO)
-                                color = calculate_foreground_color(colors->BG);
-                        else if (sep_color == FOREGROUND)
-                                color = colors->FG;
-                        else if (sep_color == FRAME)
-                                color = framec;
-                        else {
-                                /* CUSTOM */
-                                color = sep_custom_col;
-                        }
-                        drawrect(dc, 0, 0, width + (2*h_padding), separator_height, true, color);
-                        dc->y += separator_height;
-                }
-        }
-
-        move_and_map(outer_width, height);
-
-        free_render_texts(texts);
 }
+// }}}
 
-char
-*fix_markup(char *str)
-{
+        /*
+         * Wrapper for notification_cmp to match glib's
+         * compare functions signature.
+         */
+int notification_cmp_data(const void *va, const void *vb, void *data)
+{ // {{{
+        return notification_cmp(va, vb);
+}
+// }}}
+
+
+        /*
+         * Free the memory used by the given notification.
+         */
+void notification_free(notification * n)
+{ // {{{
+        if (n == NULL)
+                return;
+        free(n->appname);
+        free(n->summary);
+        free(n->body);
+        free(n->icon);
+        free(n->msg);
+        free(n->dbus_client);
+        free(n);
+}
+// }}}
+
+        /*
+         * Strip any markup from text
+         */
+
+char *notification_fix_markup(char *str)
+{ // {{{
         char *replace_buf, *start, *end;
 
         if (str == NULL) {
@@ -1090,102 +559,14 @@ char
         return str;
 
 }
+// }}}
 
-void x_handle_click(XEvent ev)
-{
-        if (ev.xbutton.button == Button3) {
-                move_all_to_history();
-
-                return;
-        }
-
-        if (ev.xbutton.button == Button1) {
-                int y = separator_height;
-                notification *n = NULL;
-                for (GList *iter = g_queue_peek_head_link(displayed); iter; iter = iter->next) {
-                        n = iter->data;
-                        int text_h = MAX(font_h, line_height) * n->line_count;
-                        int padding = 2 * h_padding;
-
-                        int height = text_h + padding;
-
-                        if (ev.xbutton.y > y && ev.xbutton.y < y + height)
-                                break;
-                        else
-                                y += height + separator_height;
-                }
-                if (n)
-                        notification_close(n, 2);
-        }
-}
-
-
-void move_all_to_history()
-{
-        while (displayed->length > 0) {
-                notification_close(g_queue_peek_head_link(displayed)->data, 2);
-        }
-
-        notification *n = g_queue_pop_head(queue);
-        while (n) {
-                g_queue_push_tail(history, n);
-                n = g_queue_pop_head(queue);
-        }
-}
-
-void history_pop(void)
-{
-
-        if (g_queue_is_empty(history))
-                return;
-
-        notification *n = g_queue_pop_tail(history);
-        n->redisplayed = true;
-        n->start = 0;
-        n->timeout = sticky_history ? 0 : n->timeout;
-        g_queue_push_head(queue, n);
-
-        if (!visible) {
-                wake_up();
-        }
-}
-
-int notification_cmp(const void *va, const void *vb)
-{
-        notification *a = (notification*) va;
-        notification *b = (notification*) vb;
-
-        if (!sort)
-                return 1;
-
-        if (a->urgency != b->urgency) {
-                return b->urgency - a->urgency;
-        } else {
-                return a->timestamp - b->timestamp;
-        }
-}
-
-int notification_cmp_data(const void *va, const void *vb, void *data)
-{
-        return notification_cmp(va, vb);
-}
-
-
-void notification_free(notification * n)
-{
-        if (n == NULL)
-                return;
-        free(n->appname);
-        free(n->summary);
-        free(n->body);
-        free(n->icon);
-        free(n->msg);
-        free(n->dbus_client);
-        free(n);
-}
-
+        /*
+         * Initialize the given notification and add it to
+         * the queue. Replace notification with id if id > 0.
+         */
 int notification_init(notification * n, int id)
-{
+{ // {{{
         const char *fg = NULL;
         const char *bg = NULL;
 
@@ -1223,7 +604,7 @@ int notification_init(notification * n, int id)
                 n->msg = string_replace("%p", "", n->msg);
         }
 
-        n->msg = fix_markup(n->msg);
+        n->msg = notification_fix_markup(n->msg);
 
         while (strstr(n->msg, "\\n") != NULL)
                 n->msg = string_replace("\\n", "\n", n->msg);
@@ -1324,20 +705,23 @@ int notification_init(notification * n, int id)
 
 
         if (print_notifications)
-                print_notification(n);
+                notification_print(n);
 
         return n->id;
 }
+// }}}
 
-/*
- * reasons:
- * -1 -> notification is a replacement, no NotificationClosed signal emitted
- *  1 -> the notification expired
- *  2 -> the notification was dismissed by the user_data
- *  3 -> The notification was closed by a call to CloseNotification
- */
+        /*
+         * Close the notification that has id.
+         *
+         * reasons:
+         * -1 -> notification is a replacement, no NotificationClosed signal emitted
+         *  1 -> the notification expired
+         *  2 -> the notification was dismissed by the user_data
+         *  3 -> The notification was closed by a call to CloseNotification
+         */
 int notification_close_by_id(int id, int reason)
-{
+{ // {{{
         notification *target = NULL;
 
         for (GList *iter = g_queue_peek_head_link(displayed); iter; iter = iter->next) {
@@ -1367,88 +751,166 @@ int notification_close_by_id(int id, int reason)
         wake_up();
         return reason;
 }
+// }}}
 
+        /*
+         * Close the given notification. SEE notification_close_by_id.
+         */
 int notification_close(notification * n, int reason)
-{
+{ // {{{
         if (n == NULL)
                 return -1;
         return notification_close_by_id(n->id, reason);
 }
+// }}}
 
-KeySym x_shortcut_string_to_mask(const char *str)
-{
-        if (!strcmp(str, "ctrl")) {
-                return ControlMask;
-        } else if (!strcmp(str, "mod4")) {
-                return Mod4Mask;
-        } else if (!strcmp(str, "mod3")) {
-                return Mod3Mask;
-        } else if (!strcmp(str, "mod2")) {
-                return Mod2Mask;
-        } else if (!strcmp(str, "mod1")) {
-                return Mod1Mask;
-        } else if (!strcmp(str, "shift")) {
-                return ShiftMask;
-        } else {
-                fprintf(stderr, "Warning: Unknown Modifier: %s\n", str);
-                return 0;
-        }
+// }}}
 
+
+// {{{ RULE
+
+        /*
+         * Apply rule to notification.
+         */
+void rule_apply(rule_t *r, notification *n)
+{ // {{{
+        if (r->timeout != -1)
+                n->timeout = r->timeout;
+        if (r->urgency != -1)
+                n->urgency = r->urgency;
+        if (r->fg)
+                n->color_strings[ColFG] = r->fg;
+        if (r->bg)
+                n->color_strings[ColBG] = r->bg;
+        if (r->format)
+                n->format = r->format;
+        if (r->script)
+                n->script = r->script;
 }
+// }}}
 
-void x_shortcut_init(keyboard_shortcut *ks)
-{
-        if (ks == NULL || ks->str == NULL)
-                return;
-
-        if (!strcmp(ks->str, "none") || (!strcmp(ks->str, ""))) {
-                ks->is_valid = false;
-                return;
+        /*
+         * Check all rules if they match n and apply.
+         */
+void rule_apply_all(notification *n)
+{ // {{{
+        for (GSList *iter = rules; iter; iter = iter->next) {
+                rule_t *r = iter->data;
+                if (rule_matches_notification(r, n)) {
+                        rule_apply(r, n);
+                }
         }
+}
+// }}}
 
-        char *str = g_strdup(ks->str);
-        char *str_begin = str;
+        /*
+         * Initialize rule with default values.
+         */
+void rule_init(rule_t *r)
+{ // {{{
+        r->name = NULL;
+        r->appname = NULL;
+        r->summary = NULL;
+        r->body = NULL;
+        r->icon = NULL;
+        r->timeout = -1;
+        r->urgency = -1;
+        r->fg = NULL;
+        r->bg = NULL;
+        r->format = NULL;
+}
+// }}}
 
-        if (str == NULL)
-                die("Unable to allocate memory", EXIT_FAILURE);
+        /*
+         * Check whether rule should be applied to n.
+         */
+bool rule_matches_notification(rule_t *r, notification *n)
+{ // {{{
 
-        while (strstr(str, "+")) {
-                char *mod = str;
-                while (*str != '+')
-                        str++;
-                *str = '\0';
-                str++;
-                g_strchomp(mod);
-                ks->mask = ks->mask | x_shortcut_string_to_mask(mod);
-        }
-        g_strstrip(str);
+                return ((!r->appname || !fnmatch(r->appname, n->appname, 0))
+                    && (!r->summary || !fnmatch(r->summary, n->summary, 0))
+                    && (!r->body || !fnmatch(r->body, n->body, 0))
+                    && (!r->icon || !fnmatch(r->icon, n->icon, 0)));
+}
+// }}}
 
-        ks->sym = XStringToKeysym(str);
-        /* find matching keycode for ks->sym */
-        int min_keysym, max_keysym;
-        XDisplayKeycodes(dc->dpy, &min_keysym, &max_keysym);
+// }}}
 
-        ks->code = NoSymbol;
 
-        for (int i = min_keysym; i <= max_keysym; i++) {
-                if (XkbKeycodeToKeysym(dc->dpy, i, 0, 0) == ks->sym
-                    || XkbKeycodeToKeysym(dc->dpy, i, 0, 1) == ks->sym) {
-                        ks->code = i;
+// {{{ X
+/* TODO comments and rename to x_mainloop_* namingscheme */
+// {{{ X_MAINLOOP
+
+static gboolean x11_fd_prepare(GSource *source, gint *timeout)
+{ // {{{
+        *timeout = -1;
+        return false;
+}
+// }}}
+
+
+static gboolean x11_fd_check(GSource *source)
+{ // {{{
+        return XPending(dc->dpy) > 0;
+}
+// }}}
+
+
+static gboolean x11_fd_dispatch(GSource *source, GSourceFunc callback, gpointer user_data)
+{ // {{{
+        XEvent ev;
+        while (XPending(dc->dpy) > 0) {
+                XNextEvent(dc->dpy, &ev);
+                switch (ev.type) {
+                case Expose:
+                        if (ev.xexpose.count == 0 && visible) {
+                        }
+                        break;
+                case SelectionNotify:
+                        if (ev.xselection.property == utf8)
+                                break;
+                case VisibilityNotify:
+                        if (ev.xvisibility.state != VisibilityUnobscured)
+                                XRaiseWindow(dc->dpy, win);
+                        break;
+                case ButtonPress:
+                        if (ev.xbutton.window == win) {
+                                x_handle_click(ev);
+                        }
+                        break;
+                case KeyPress:
+                        if (close_ks.str
+                            && XLookupKeysym(&ev.xkey, 0) == close_ks.sym
+                            && close_ks.mask == ev.xkey.state) {
+                                if (displayed) {
+                                        notification_close(g_queue_peek_head_link(displayed)->data, 2);
+                                }
+                        }
+                        if (history_ks.str
+                            && XLookupKeysym(&ev.xkey, 0) == history_ks.sym
+                            && history_ks.mask == ev.xkey.state) {
+                                history_pop();
+                        }
+                        if (close_all_ks.str
+                            && XLookupKeysym(&ev.xkey, 0) == close_all_ks.sym
+                            && close_all_ks.mask == ev.xkey.state) {
+                                move_all_to_history();
+                        }
+                        if (context_ks.str
+                            && XLookupKeysym(&ev.xkey, 0) == context_ks.sym
+                            && context_ks.mask == ev.xkey.state) {
+                                context_menu();
+                        }
                         break;
                 }
         }
-
-        if (ks->sym == NoSymbol || ks->code == NoSymbol) {
-                fprintf(stderr, "Warning: Unknown keyboard shortcut: %s\n",
-                        ks->str);
-                ks->is_valid = false;
-        } else {
-                ks->is_valid = true;
-        }
-
-        free(str_begin);
+        return true;
 }
+// }}}
 
+// }}}
+
+// {{{ X_MISC
 
 bool x_is_idle(void)
 {
@@ -1460,54 +922,32 @@ bool x_is_idle(void)
         return screensaver_info->idle / 1000 > idle_threshold;
 }
 
-void update(void)
+void x_handle_click(XEvent ev)
 {
-        time_t last_time = time(&last_time);
-        static time_t last_redraw = 0;
+        if (ev.xbutton.button == Button3) {
+                move_all_to_history();
 
-        /* move messages from notification_queue to displayed_notifications */
-        update_lists();
-        if (displayed->length > 0 && ! visible) {
-                x_win_show();
-        }
-        if (displayed->length == 0 && visible) {
-                x_win_hide();
+                return;
         }
 
-        if (visible && (force_redraw || time(NULL) - last_redraw > 0)) {
-                x_win_draw();
-                force_redraw = false;
-                last_redraw = time(NULL);
+        if (ev.xbutton.button == Button1) {
+                int y = separator_height;
+                notification *n = NULL;
+                for (GList *iter = g_queue_peek_head_link(displayed); iter; iter = iter->next) {
+                        n = iter->data;
+                        int text_h = MAX(font_h, line_height) * n->line_count;
+                        int padding = 2 * h_padding;
+
+                        int height = text_h + padding;
+
+                        if (ev.xbutton.y > y && ev.xbutton.y < y + height)
+                                break;
+                        else
+                                y += height + separator_height;
+                }
+                if (n)
+                        notification_close(n, 2);
         }
-}
-
-void wake_up(void)
-{
-        force_redraw = true;
-        update();
-        if (!timer_active) {
-                timer_active = true;
-                g_timeout_add(1000, run, mainloop);
-        }
-}
-
-gboolean run(void *data)
-{
-
-        update();
-
-        if (visible && !timer_active) {
-                g_timeout_add(200, run, mainloop);
-                timer_active = true;
-        }
-
-        if (!visible && timer_active) {
-                timer_active = false;
-                /* returning false disables timeout */
-                return false;
-        }
-
-        return true;
 }
 
 void x_win_hide()
@@ -1728,10 +1168,11 @@ void x_win_show(void)
         x_shortcut_grab(&close_ks);
         x_shortcut_grab(&close_all_ks);
         x_shortcut_grab(&context_ks);
-        setup_error_handler();
+
+        x_shortcut_setup_error_handler();
         XGrabButton(dc->dpy, AnyButton, AnyModifier, win, false,
                     BUTTONMASK, GrabModeAsync, GrabModeSync, None, None);
-        if (tear_down_error_handler()) {
+        if (x_shortcut_tear_down_error_handler()) {
                 fprintf(stderr, "Unable to grab mouse button(s)\n");
         }
 
@@ -1740,8 +1181,716 @@ void x_win_show(void)
         visible = true;
 }
 
+// }}}
+
+/* TODO comments and naming */
+// {{{ X_RENDER
+
+GSList *do_word_wrap(char *text, int max_width)
+{ // {{{
+
+        GSList *result = NULL;
+        g_strstrip(text);
+
+        if (!text || strlen(text) == 0)
+                return 0;
+
+        char *begin = text;
+        char *end = text;
+
+        while (true) {
+                if (*end == '\0') {
+                        result = g_slist_append(result, g_strdup(begin));
+                        break;
+                }
+                if (*end == '\n') {
+                        *end = ' ';
+                        result = g_slist_append(result, g_strndup(begin, end - begin));
+                        begin = ++end;
+                }
+
+                if (word_wrap && max_width > 0 && textnw(dc, begin, (end - begin) + 1) > max_width) {
+                        /* find previous space */
+                        char *space = end;
+                        while (space > begin && !isspace(*space))
+                                space--;
+
+                        if (space > begin) {
+                                end = space;
+                        }
+                        result = g_slist_append(result, g_strndup(begin, end - begin));
+                        begin = ++end;
+                }
+                end++;
+        }
+
+        return result;
+}
+// }}}
+
+
+char *generate_final_text(notification *n)
+{ // {{{
+        char *msg = g_strstrip(n->msg);
+        char *buf;
+
+        /* print dup_count and msg*/
+        if (n->dup_count > 0 && (n->actions || n->urls)) {
+                buf = g_strdup_printf("(%d%s%s) %s",
+                                n->dup_count,
+                                n->actions ? "A" : "",
+                                n->urls ? "U" : "",
+                                msg);
+        } else if (n->actions || n->urls) {
+                buf = g_strdup_printf("(%s%s) %s",
+                                n->actions ? "A" : "",
+                                n->urls ? "U" : "",
+                                msg);
+        } else {
+                buf = g_strdup(msg);
+        }
+
+        /* print age */
+        int hours, minutes, seconds;
+        time_t t_delta = time(NULL) - n->timestamp;
+
+        if (show_age_threshold >= 0 && t_delta >= show_age_threshold) {
+                hours = t_delta / 3600;
+                minutes = t_delta / 60 % 60;
+                seconds = t_delta % 60;
+
+                char *new_buf;
+                if (hours > 0) {
+                        new_buf = g_strdup_printf("%s (%dh %dm %ds old)", buf, hours,
+                                 minutes, seconds);
+                } else if (minutes > 0) {
+                        new_buf = g_strdup_printf("%s (%dm %ds old)", buf, minutes,
+                                 seconds);
+                } else {
+                        new_buf = g_strdup_printf("%s (%ds old)", buf, seconds);
+                }
+
+                free(buf);
+                buf = new_buf;
+        }
+
+        return buf;
+}
+// }}}
+
+int calculate_x_offset(int line_width, int text_width)
+{ // {{{
+        int leftover = line_width - text_width;
+        struct timeval t;
+        float pos;
+        /* If the text is wider than the frame, bouncing is enabled and word_wrap disabled */
+        if (line_width < text_width && bounce_freq > 0.0001 && !word_wrap) {
+                gettimeofday(&t, NULL);
+                pos =
+                    ((t.tv_sec % 100) * 1e6 + t.tv_usec) / (1e6 / bounce_freq);
+                return (1 + sinf(2 * 3.14159 * pos)) * leftover / 2;
+        }
+        switch (align) {
+        case left:
+                return frame_width + h_padding;
+        case center:
+                return frame_width + h_padding + (leftover / 2);
+        case right:
+                return frame_width + h_padding + leftover;
+        default:
+                /* this can't happen */
+                return 0;
+        }
+}
+// }}}
+
+unsigned long calculate_foreground_color(unsigned long source_color)
+{ // {{{
+        Colormap cmap = DefaultColormap(dc->dpy, DefaultScreen(dc->dpy));
+        XColor color;
+
+        color.pixel = source_color;
+        XQueryColor(dc->dpy, cmap, &color);
+
+        int c_delta = 10000;
+
+        /* do we need to darken or brighten the colors? */
+        int darken = (color.red + color.green + color.blue) / 3 > 65535 / 2;
+
+        if (darken) {
+                if (color.red - c_delta < 0)
+                        color.red = 0;
+                else
+                        color.red -= c_delta;
+                if (color.green - c_delta < 0)
+                        color.green = 0;
+                else
+                        color.green -= c_delta;
+                if (color.blue - c_delta < 0)
+                        color.blue = 0;
+                else
+                        color.blue -= c_delta;
+        } else {
+                if (color.red + c_delta > 65535)
+                        color.red = 65535;
+                else
+                        color.red += c_delta;
+                if (color.green + c_delta > 65535)
+                        color.green = 65535;
+                else
+                        color.green += c_delta;
+                if (color.blue + c_delta > 65535)
+                        color.green = 65535;
+                else
+                        color.green += c_delta;
+        }
+
+        color.pixel = 0;
+        XAllocColor(dc->dpy, cmap, &color);
+        return color.pixel;
+}
+// }}}
+
+int calculate_width(void)
+{ // {{{
+        if (geometry.mask & WidthValue && geometry.w == 0) {
+                /* dynamic width */
+                return 0;
+        } else if (geometry.mask & WidthValue) {
+                /* fixed width */
+                if (geometry.negative_width) {
+                        return scr.dim.w - geometry.w;
+                } else {
+                        return geometry.w;
+                }
+        } else {
+                /* across the screen */
+                return scr.dim.w;
+        }
+}
+// }}}
+
+void move_and_map(int width, int height)
+{ // {{{
+
+        int x,y;
+        /* calculate window position */
+        if (geometry.mask & XNegative) {
+                x = (scr.dim.x + (scr.dim.w - width)) + geometry.x;
+        } else {
+                x = scr.dim.x + geometry.x;
+        }
+
+        if (geometry.mask & YNegative) {
+                y = scr.dim.y + (scr.dim.h + geometry.y) - height;
+        } else {
+                y = scr.dim.y + geometry.y;
+        }
+
+        /* move and map window */
+        if (x != window_dim.x || y != window_dim.y
+            || width != window_dim.w || height != window_dim.h) {
+
+                XResizeWindow(dc->dpy, win, width, height);
+                XMoveWindow(dc->dpy, win, x, y);
+
+                window_dim.x = x;
+                window_dim.y = y;
+                window_dim.h = height;
+                window_dim.w = width;
+        }
+
+        mapdc(dc, win, width, height);
+
+}
+// }}}
+
+GSList *generate_render_texts(int width)
+{ // {{{
+        GSList *render_texts = NULL;
+
+        for (GList *iter = g_queue_peek_head_link(displayed); iter; iter = iter->next) {
+                render_text *rt = g_malloc(sizeof(render_text));
+
+                rt->colors = ((notification*)iter->data)->colors;
+                char *text = generate_final_text(iter->data);
+                rt->lines = do_word_wrap(text, width);
+                free(text);
+                render_texts = g_slist_append(render_texts, rt);
+        }
+
+        /* add (x more) */
+        if (indicate_hidden && queue->length > 0) {
+                if (geometry.h != 1) {
+                        render_text *rt = g_malloc(sizeof(render_text));
+                        rt->colors = ((render_text *) g_slist_last(render_texts)->data)->colors;
+                        rt->lines = g_slist_append(NULL, g_strdup_printf("%d more)", queue->length));
+                        render_texts = g_slist_append(render_texts, rt);
+                } else {
+                        GSList *last_lines = ((render_text *) g_slist_last(render_texts)->data)->lines;
+                        GSList *last_line = g_slist_last(last_lines);
+                        char *old = last_line->data;
+                        char *new = g_strdup_printf("%s (%d more)", old, queue->length);
+                        free(old);
+                        last_line->data = new;
+                }
+        }
+
+        return render_texts;
+}
+// }}}
+
+void free_render_text(void *data) {
+        g_slist_free_full(((render_text *) data)->lines, g_free);
+}
+
+void free_render_texts(GSList *texts) {
+        g_slist_free_full(texts, free_render_text);
+}
+
+void x_win_draw(void)
+{ // {{{
+
+        x_screen_update_info();
+        int outer_width = calculate_width();
+
+
+        line_height = MAX(line_height, font_h);
+
+        int width;
+        if (outer_width == 0)
+                width = 0;
+        else
+                width = outer_width - (2 * frame_width) - (2 * h_padding);
+
+
+        GSList *texts = generate_render_texts(width);
+        int line_count = 0;
+        for (GSList *iter = texts; iter; iter = iter->next) {
+                render_text *tmp = iter->data;
+                line_count += g_slist_length(tmp->lines);
+        }
+
+        /* if we have a dynamic width, calculate the actual width */
+        if (width == 0) {
+                for (GSList *iter = texts; iter; iter = iter->next) {
+                        GSList *lines = ((render_text *) iter->data)->lines;
+                        for (GSList *iiter = lines; iiter; iiter = iiter->next)
+                                width = MAX(width, textw(dc, iiter->data));
+                }
+                outer_width = width + (2 * frame_width) + (2 * h_padding);
+        }
+
+        /* resize dc to correct width */
+
+        int height = (line_count * line_height)
+                   + displayed->length * 2 * padding
+                   + ((indicate_hidden && queue->length > 0 && geometry.h != 1) ? 2 * padding : 0)
+                   + (separator_height * (displayed->length - 1))
+                   + (2 * frame_width);
+
+        resizedc(dc, outer_width, height);
+
+        /* draw frame
+         * this draws a big box in the frame color which get filled with
+         * smaller boxes of the notification colors
+         */
+        dc->y = 0;
+        dc->x = 0;
+        if (frame_width > 0) {
+                drawrect(dc, 0, 0, outer_width, height, true, framec);
+        }
+
+        dc->y = frame_width;
+        dc->x = frame_width;
+
+        for (GSList *iter = texts; iter; iter = iter->next) {
+
+                render_text *cur = iter->data;
+                ColorSet *colors = cur->colors;
+
+
+                int line_count = 0;
+                bool first_line = true;
+                for (GSList *iiter = cur->lines; iiter; iiter = iiter->next) {
+                        char *line = iiter->data;
+                        line_count++;
+
+                        int pad = 0;
+                        bool last_line = iiter->next == NULL;
+
+                        if (first_line && last_line)
+                                pad = 2*padding;
+                        else if (first_line || last_line)
+                                pad = padding;
+
+                        dc->x = frame_width;
+
+                        /* draw background */
+                        drawrect(dc, 0, 0, width + (2*h_padding), pad +  line_height, true, colors->BG);
+
+                        /* draw text */
+                        dc->x = calculate_x_offset(width, textw(dc, line));
+
+                        dc->y += ((line_height - font_h) / 2);
+                        dc->y += first_line ? padding : 0;
+
+                        drawtextn(dc, line, strlen(line), colors);
+
+                        dc->y += line_height - ((line_height - font_h) / 2);
+                        dc->y += last_line ? padding : 0;
+
+                        first_line = false;
+                }
+
+                /* draw separator */
+                if (separator_height > 0 && iter->next) {
+                        dc->x = frame_width;
+                        double color;
+                        if (sep_color == AUTO)
+                                color = calculate_foreground_color(colors->BG);
+                        else if (sep_color == FOREGROUND)
+                                color = colors->FG;
+                        else if (sep_color == FRAME)
+                                color = framec;
+                        else {
+                                /* CUSTOM */
+                                color = sep_custom_col;
+                        }
+                        drawrect(dc, 0, 0, width + (2*h_padding), separator_height, true, color);
+                        dc->y += separator_height;
+                }
+        }
+
+        move_and_map(outer_width, height);
+
+        free_render_texts(texts);
+}
+// }}}
+
+// }}}
+
+/* TODO comments */
+// {{{ X_SHORTCUT
+
+KeySym x_shortcut_string_to_mask(const char *str)
+{ // {{{
+        if (!strcmp(str, "ctrl")) {
+                return ControlMask;
+        } else if (!strcmp(str, "mod4")) {
+                return Mod4Mask;
+        } else if (!strcmp(str, "mod3")) {
+                return Mod3Mask;
+        } else if (!strcmp(str, "mod2")) {
+                return Mod2Mask;
+        } else if (!strcmp(str, "mod1")) {
+                return Mod1Mask;
+        } else if (!strcmp(str, "shift")) {
+                return ShiftMask;
+        } else {
+                fprintf(stderr, "Warning: Unknown Modifier: %s\n", str);
+                return 0;
+        }
+
+}
+// }}}
+
+static int GrabXErrorHandler(Display * display, XErrorEvent * e)
+{ // {{{
+        dunst_grab_errored = true;
+        char err_buf[BUFSIZ];
+        XGetErrorText(display, e->error_code, err_buf, BUFSIZ);
+        fputs(err_buf, stderr);
+        fputs("\n", stderr);
+
+        if (e->error_code != BadAccess) {
+                exit(EXIT_FAILURE);
+        }
+
+        return 0;
+}
+// }}}
+
+static void x_shortcut_setup_error_handler(void)
+{ // {{{
+        dunst_grab_errored = false;
+
+        XFlush(dc->dpy);
+        XSetErrorHandler(GrabXErrorHandler);
+}
+// }}}
+
+static int x_shortcut_tear_down_error_handler(void)
+{ // {{{
+        XFlush(dc->dpy);
+        XSync(dc->dpy, false);
+        XSetErrorHandler(NULL);
+        return dunst_grab_errored;
+}
+// }}}
+
+int x_shortcut_grab(keyboard_shortcut *ks)
+{ // {{{
+        if (!ks->is_valid)
+                return 1;
+        Window root;
+        root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
+
+        x_shortcut_setup_error_handler();
+
+        if (ks->is_valid)
+                XGrabKey(dc->dpy, ks->code, ks->mask, root,
+                         true, GrabModeAsync, GrabModeAsync);
+
+        if (x_shortcut_tear_down_error_handler()) {
+                fprintf(stderr, "Unable to grab key \"%s\"\n", ks->str);
+                ks->is_valid = false;
+                return 1;
+        }
+        return 0;
+}
+// }}}
+
+void x_shortcut_ungrab(keyboard_shortcut *ks)
+{ // {{{
+        Window root;
+        root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
+        if (ks->is_valid)
+                XUngrabKey(dc->dpy, ks->code, ks->mask, root);
+}
+// }}}
+
+void x_shortcut_init(keyboard_shortcut *ks)
+{ // {{{
+        if (ks == NULL || ks->str == NULL)
+                return;
+
+        if (!strcmp(ks->str, "none") || (!strcmp(ks->str, ""))) {
+                ks->is_valid = false;
+                return;
+        }
+
+        char *str = g_strdup(ks->str);
+        char *str_begin = str;
+
+        if (str == NULL)
+                die("Unable to allocate memory", EXIT_FAILURE);
+
+        while (strstr(str, "+")) {
+                char *mod = str;
+                while (*str != '+')
+                        str++;
+                *str = '\0';
+                str++;
+                g_strchomp(mod);
+                ks->mask = ks->mask | x_shortcut_string_to_mask(mod);
+        }
+        g_strstrip(str);
+
+        ks->sym = XStringToKeysym(str);
+        /* find matching keycode for ks->sym */
+        int min_keysym, max_keysym;
+        XDisplayKeycodes(dc->dpy, &min_keysym, &max_keysym);
+
+        ks->code = NoSymbol;
+
+        for (int i = min_keysym; i <= max_keysym; i++) {
+                if (XkbKeycodeToKeysym(dc->dpy, i, 0, 0) == ks->sym
+                    || XkbKeycodeToKeysym(dc->dpy, i, 0, 1) == ks->sym) {
+                        ks->code = i;
+                        break;
+                }
+        }
+
+        if (ks->sym == NoSymbol || ks->code == NoSymbol) {
+                fprintf(stderr, "Warning: Unknown keyboard shortcut: %s\n",
+                        ks->str);
+                ks->is_valid = false;
+        } else {
+                ks->is_valid = true;
+        }
+
+        free(str_begin);
+}
+// }}}
+
+// }}}
+// }}}
+
+
+// {{{ RUN
+void check_timeouts(void)
+{ // {{{
+        /* nothing to do */
+        if (displayed->length == 0)
+                return;
+
+        for (GList *iter = g_queue_peek_head_link(displayed); iter; iter = iter->next) {
+                notification *n = iter->data;
+
+                /* don't timeout when user is idle */
+                if (x_is_idle()) {
+                        n->start = time(NULL);
+                        continue;
+                }
+
+                /* skip hidden and sticky messages */
+                if (n->start == 0 || n->timeout == 0) {
+                        continue;
+                }
+
+                /* remove old message */
+                if (difftime(time(NULL), n->start) > n->timeout) {
+                        force_redraw = true;
+                        /* close_notification may conflict with iter, so restart */
+                        notification_close(n, 1);
+                        check_timeouts();
+                        return;
+                }
+        }
+}
+// }}}
+
+void update_lists()
+{ // {{{
+        int limit;
+
+        check_timeouts();
+
+        if (pause_display) {
+                while (displayed->length > 0) {
+                        g_queue_insert_sorted(queue, g_queue_pop_head(queue), notification_cmp_data, NULL);
+                }
+                return;
+        }
+
+        if (geometry.h == 0) {
+                limit = 0;
+        } else if (geometry.h == 1) {
+                limit = 1;
+        } else if (indicate_hidden) {
+                limit = geometry.h - 1;
+        } else {
+                limit = geometry.h;
+        }
+
+
+        /* move notifications from queue to displayed */
+        while (queue->length > 0) {
+
+                if (limit > 0 && displayed->length >= limit) {
+                        /* the list is full */
+                        break;
+                }
+
+                force_redraw = true;
+
+                notification *n = g_queue_pop_head(queue);
+
+                if (!n)
+                        return;
+                n->start = time(NULL);
+                if (!n->redisplayed && n->script) {
+                        notification_run_script(n);
+                }
+
+                g_queue_insert_sorted(displayed, n, notification_cmp_data, NULL);
+        }
+}
+// }}}
+
+
+void move_all_to_history()
+{ // {{{
+        while (displayed->length > 0) {
+                notification_close(g_queue_peek_head_link(displayed)->data, 2);
+        }
+
+        notification *n = g_queue_pop_head(queue);
+        while (n) {
+                g_queue_push_tail(history, n);
+                n = g_queue_pop_head(queue);
+        }
+}
+// }}}
+
+void history_pop(void)
+{ // {{{
+
+        if (g_queue_is_empty(history))
+                return;
+
+        notification *n = g_queue_pop_tail(history);
+        n->redisplayed = true;
+        n->start = 0;
+        n->timeout = sticky_history ? 0 : n->timeout;
+        g_queue_push_head(queue, n);
+
+        if (!visible) {
+                wake_up();
+        }
+}
+// }}}
+
+void update(void)
+{ // {{{
+        time_t last_time = time(&last_time);
+        static time_t last_redraw = 0;
+
+        /* move messages from notification_queue to displayed_notifications */
+        update_lists();
+        if (displayed->length > 0 && ! visible) {
+                x_win_show();
+        }
+        if (displayed->length == 0 && visible) {
+                x_win_hide();
+        }
+
+        if (visible && (force_redraw || time(NULL) - last_redraw > 0)) {
+                x_win_draw();
+                force_redraw = false;
+                last_redraw = time(NULL);
+        }
+}
+// }}}
+
+void wake_up(void)
+{ // {{{
+        force_redraw = true;
+        update();
+        if (!timer_active) {
+                timer_active = true;
+                g_timeout_add(1000, run, mainloop);
+        }
+}
+// }}}
+
+gboolean run(void *data)
+{ // {{{
+
+        update();
+
+        if (visible && !timer_active) {
+                g_timeout_add(200, run, mainloop);
+                timer_active = true;
+        }
+
+        if (!visible && timer_active) {
+                timer_active = false;
+                /* returning false disables timeout */
+                return false;
+        }
+
+        return true;
+}
+// }}}
+
+//}}}
+
+
+// {{{ OPTIONS
 void parse_follow_mode(const char *mode)
-{
+{ // {{{
         if (strcmp(mode, "mouse") == 0)
                 f_mode = FOLLOW_MOUSE;
         else if (strcmp(mode, "keyboard") == 0)
@@ -1754,9 +1903,10 @@ void parse_follow_mode(const char *mode)
         }
 
 }
+// }}}
 
 void load_options(char *cmdline_config_path)
-{
+{ // {{{
 
 #ifndef STATIC_CONFIG
         xdgHandle xdg;
@@ -2020,9 +2170,13 @@ void load_options(char *cmdline_config_path)
         xdgWipeHandle(&xdg);
 #endif
 }
+// }}}
+// }}}
 
+
+// {{{ MAIN
 int main(int argc, char *argv[])
-{
+{ // {{{
 
         history = g_queue_new();
         displayed = g_queue_new();
@@ -2103,21 +2257,38 @@ int main(int argc, char *argv[])
 
         return 0;
 }
+// }}}
+
+void pause_signal_handler(int sig)
+{ // {{{
+        if (sig == SIGUSR1) {
+                pause_display = true;
+        }
+        if (sig == SIGUSR2) {
+                pause_display = false;
+        }
+
+        signal (sig, pause_signal_handler);
+}
+// }}}
 
 void usage(int exit_status)
-{
+{ // {{{
         fputs("usage:\n", stderr);
         char *us = cmdline_create_usage();
         fputs(us, stderr);
         fputs("\n", stderr);
         exit(exit_status);
 }
+// }}}
 
 void print_version(void)
-{
+{ // {{{
         printf("Dunst - A customizable and lightweight notification-daemon %s\n",
                VERSION);
         exit(EXIT_SUCCESS);
 }
+// }}}
+// }}}
 
 /* vim: set ts=8 sw=8 tw=0: */
