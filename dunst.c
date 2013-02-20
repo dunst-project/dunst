@@ -102,9 +102,13 @@ void rule_apply_all(notification *n);
 bool rule_matches_notification(rule_t *r, notification *n);
 void rule_init(rule_t *r);
 
+/* notifications */
+int notification_cmp(const void *a, const void *b);
+int notification_cmp_data(const void *a, const void *b, void *data);
+void notification_run_script(notification *n);
+int notification_close(notification * n, int reason);
+
 /* misc funtions */
-int cmp_notification(const void *a, const void *b);
-int cmp_notification_data(const void *va, const void *vb, void *data);
 void check_timeouts(void);
 char *fix_markup(char *str);
 void handle_mouse_click(XEvent ev);
@@ -119,7 +123,6 @@ void move_all_to_history(void);
 void print_version(void);
 char *extract_urls(const char *str);
 void context_menu(void);
-void run_script(notification *n);
 void wake_up(void);
 
 void init_shortcut(keyboard_shortcut * shortcut);
@@ -169,7 +172,7 @@ x11_fd_dispatch(GSource *source, GSourceFunc callback, gpointer user_data)
                             && XLookupKeysym(&ev.xkey, 0) == close_ks.sym
                             && close_ks.mask == ev.xkey.state) {
                                 if (displayed) {
-                                        close_notification(g_queue_peek_head_link(displayed)->data, 2);
+                                        notification_close(g_queue_peek_head_link(displayed)->data, 2);
                                 }
                         }
                         if (history_ks.str
@@ -191,26 +194,6 @@ x11_fd_dispatch(GSource *source, GSourceFunc callback, gpointer user_data)
                 }
         }
         return true;
-}
-
-int cmp_notification(const void *va, const void *vb)
-{
-        notification *a = (notification*) va;
-        notification *b = (notification*) vb;
-
-        if (!sort)
-                return 1;
-
-        if (a->urgency != b->urgency) {
-                return b->urgency - a->urgency;
-        } else {
-                return a->timestamp - b->timestamp;
-        }
-}
-
-int cmp_notification_data(const void *va, const void *vb, void *data)
-{
-        return cmp_notification(va, vb);
 }
 
 
@@ -619,7 +602,7 @@ void check_timeouts(void)
                 if (difftime(time(NULL), n->start) > n->timeout) {
                         force_redraw = true;
                         /* close_notification may conflict with iter, so restart */
-                        close_notification(n, 1);
+                        notification_close(n, 1);
                         check_timeouts();
                         return;
                 }
@@ -634,7 +617,7 @@ void update_lists()
 
         if (pause_display) {
                 while (displayed->length > 0) {
-                        g_queue_insert_sorted(queue, g_queue_pop_head(queue), cmp_notification_data, NULL);
+                        g_queue_insert_sorted(queue, g_queue_pop_head(queue), notification_cmp_data, NULL);
                 }
                 return;
         }
@@ -669,7 +652,7 @@ void update_lists()
                         run_script(n);
                 }
 
-                g_queue_insert_sorted(displayed, n, cmp_notification_data, NULL);
+                g_queue_insert_sorted(displayed, n, notification_cmp_data, NULL);
         }
 }
 
@@ -1122,7 +1105,7 @@ void handle_mouse_click(XEvent ev)
                                 y += height + separator_height;
                 }
                 if (n)
-                        close_notification(n, 2);
+                        notification_close(n, 2);
         }
 }
 
@@ -1130,7 +1113,7 @@ void handle_mouse_click(XEvent ev)
 void move_all_to_history()
 {
         while (displayed->length > 0) {
-                close_notification(g_queue_peek_head_link(displayed)->data, 2);
+                notification_close(g_queue_peek_head_link(displayed)->data, 2);
         }
 
         notification *n = g_queue_pop_head(queue);
@@ -1157,7 +1140,28 @@ void history_pop(void)
         }
 }
 
-void free_notification(notification * n)
+int notification_cmp(const void *va, const void *vb)
+{
+        notification *a = (notification*) va;
+        notification *b = (notification*) vb;
+
+        if (!sort)
+                return 1;
+
+        if (a->urgency != b->urgency) {
+                return b->urgency - a->urgency;
+        } else {
+                return a->timestamp - b->timestamp;
+        }
+}
+
+int notification_cmp_data(const void *va, const void *vb, void *data)
+{
+        return notification_cmp(va, vb);
+}
+
+
+void notification_free(notification * n)
 {
         if (n == NULL)
                 return;
@@ -1170,7 +1174,7 @@ void free_notification(notification * n)
         free(n);
 }
 
-int init_notification(notification * n, int id)
+int notification_init(notification * n, int id)
 {
         const char *fg = NULL;
         const char *bg = NULL;
@@ -1229,7 +1233,7 @@ int init_notification(notification * n, int id)
                 if (strcmp(orig->appname, n->appname) == 0
                     && strcmp(orig->msg, n->msg) == 0) {
                         orig->dup_count++;
-                        free_notification(n);
+                        notification_free(n);
                         wake_up();
                         return orig->id;
                 }
@@ -1241,7 +1245,7 @@ int init_notification(notification * n, int id)
                     && strcmp(orig->msg, n->msg) == 0) {
                         orig->dup_count++;
                         orig->start = time(NULL);
-                        free_notification(n);
+                        notification_free(n);
                         wake_up();
                         return orig->id;
                 }
@@ -1274,15 +1278,15 @@ int init_notification(notification * n, int id)
         if (id == 0) {
                 n->id = ++next_notification_id;
         } else {
-                close_notification_by_id(id, -1);
+                notification_close_by_id(id, -1);
                 n->id = id;
         }
 
         if (strlen(n->msg) == 0) {
-                close_notification(n, 2);
+                notification_close(n, 2);
                 printf("skipping notification: %s %s\n", n->body, n->summary);
         } else {
-                g_queue_insert_sorted(queue, n, cmp_notification_data, NULL);
+                g_queue_insert_sorted(queue, n, notification_cmp_data, NULL);
         }
 
         char *tmp = g_strconcat(n->summary, " ", n->body, NULL);
@@ -1322,7 +1326,7 @@ int init_notification(notification * n, int id)
  *  2 -> the notification was dismissed by the user_data
  *  3 -> The notification was closed by a call to CloseNotification
  */
-int close_notification_by_id(int id, int reason)
+int notification_close_by_id(int id, int reason)
 {
         notification *target = NULL;
 
@@ -1354,11 +1358,11 @@ int close_notification_by_id(int id, int reason)
         return reason;
 }
 
-int close_notification(notification * n, int reason)
+int notification_close(notification * n, int reason)
 {
         if (n == NULL)
                 return -1;
-        return close_notification_by_id(n->id, reason);
+        return notification_close_by_id(n->id, reason);
 }
 
 KeySym string_to_mask(char *str)
@@ -2050,7 +2054,7 @@ int main(int argc, char *argv[])
                 n->color_strings[1] = NULL;
                 n->actions = NULL;
                 n->urls = NULL;
-                init_notification(n, 0);
+                notification_init(n, 0);
         }
 
         mainloop = g_main_loop_new(NULL, FALSE);
