@@ -96,15 +96,19 @@ GQueue *displayed = NULL;   /* currently displayed notifications */
 GQueue *history = NULL;      /* history of displayed notifications */
 GSList *rules = NULL;
 
+/* rules */
+void rule_apply(rule_t *r, notification *n);
+void rule_apply_all(notification *n);
+bool rule_matches_notification(rule_t *r, notification *n);
+void rule_init(rule_t *r);
+
 /* misc funtions */
-void apply_rules(notification * n);
 int cmp_notification(const void *a, const void *b);
 int cmp_notification_data(const void *va, const void *vb, void *data);
 void check_timeouts(void);
 char *fix_markup(char *str);
 void handle_mouse_click(XEvent ev);
 void history_pop(void);
-void initrule(rule_t *r);
 bool is_idle(void);
 void setup(void);
 void update_screen_info();
@@ -541,25 +545,54 @@ void ungrab_key(keyboard_shortcut * ks)
                 XUngrabKey(dc->dpy, ks->code, ks->mask, root);
 }
 
-void apply_rules(notification * n)
-{
 
+void rule_apply(rule_t *r, notification *n)
+{
+        if (r->timeout != -1)
+                n->timeout = r->timeout;
+        if (r->urgency != -1)
+                n->urgency = r->urgency;
+        if (r->fg)
+                n->color_strings[ColFG] = r->fg;
+        if (r->bg)
+                n->color_strings[ColBG] = r->bg;
+        if (r->format)
+                n->format = r->format;
+        if (r->script)
+                n->script = r->script;
+}
+
+void rule_apply_all(notification *n)
+{
         for (GSList *iter = rules; iter; iter = iter->next) {
                 rule_t *r = iter->data;
-                if ((!r->appname || !fnmatch(r->appname, n->appname, 0))
-                    && (!r->summary || !fnmatch(r->summary, n->summary, 0))
-                    && (!r->body || !fnmatch(r->body, n->body, 0))
-                    && (!r->icon || !fnmatch(r->icon, n->icon, 0))) {
-                        n->timeout = r->timeout != -1 ? r->timeout : n->timeout;
-                        n->urgency = r->urgency != -1 ? r->urgency : n->urgency;
-                        n->color_strings[ColFG] =
-                            r->fg ? r->fg : n->color_strings[ColFG];
-                        n->color_strings[ColBG] =
-                            r->bg ? r->bg : n->color_strings[ColBG];
-                        n->format = r->format ? r->format : n->format;
-                        n->script = r->script ? r->script : n->script;
+                if (rule_matches_notification(r, n)) {
+                        rule_apply(r, n);
                 }
         }
+}
+
+void rule_init(rule_t *r)
+{
+        r->name = NULL;
+        r->appname = NULL;
+        r->summary = NULL;
+        r->body = NULL;
+        r->icon = NULL;
+        r->timeout = -1;
+        r->urgency = -1;
+        r->fg = NULL;
+        r->bg = NULL;
+        r->format = NULL;
+}
+
+bool rule_matches_notification(rule_t *r, notification *n)
+{
+
+                return ((!r->appname || !fnmatch(r->appname, n->appname, 0))
+                    && (!r->summary || !fnmatch(r->summary, n->summary, 0))
+                    && (!r->body || !fnmatch(r->body, n->body, 0))
+                    && (!r->icon || !fnmatch(r->icon, n->icon, 0)));
 }
 
 void check_timeouts(void)
@@ -1159,7 +1192,7 @@ int init_notification(notification * n, int id)
 
         n->format = format;
 
-        apply_rules(n);
+        rule_apply_all(n);
 
         n->msg = string_replace("%a", n->appname, g_strdup(n->format));
         n->msg = string_replace("%s", n->summary, n->msg);
@@ -1402,19 +1435,6 @@ void init_shortcut(keyboard_shortcut * ks)
         free(str_begin);
 }
 
-void initrule(rule_t *r)
-{
-        r->name = NULL;
-        r->appname = NULL;
-        r->summary = NULL;
-        r->body = NULL;
-        r->icon = NULL;
-        r->timeout = -1;
-        r->urgency = -1;
-        r->fg = NULL;
-        r->bg = NULL;
-        r->format = NULL;
-}
 
 bool is_idle(void)
 {
@@ -1942,7 +1962,7 @@ void load_options(char *cmdline_config_path)
 
                 if (r == NULL) {
                         r = g_malloc(sizeof(rule_t));
-                        initrule(r);
+                        rule_init(r);
                         rules = g_slist_insert(rules, r, 0);
                 }
 
