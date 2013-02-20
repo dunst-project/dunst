@@ -129,7 +129,7 @@ static void onNotify(GDBusConnection *connection,
         gint timeout = -1;
 
         /* hints */
-        gint urgency = 0;
+        gint urgency = 1;
         gint progress = 0;
         gchar *fgcolor = NULL;
         gchar *bgcolor = NULL;
