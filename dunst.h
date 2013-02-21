@@ -11,9 +11,6 @@
 #define PERR(msg, errnum) printf("(%d) %s : %s\n", __LINE__, (msg), (strerror(errnum)))
 #define LENGTH(X)               (sizeof X / sizeof X[0])
 
-#define LOW 0
-#define NORM 1
-#define CRIT 2
 
 #define ColLast 2
 #define ColFG 1
@@ -37,36 +34,7 @@ typedef struct _screen_info {
         dimension_t dim;
 } screen_info;
 
-typedef struct _actions {
-        char **actions;
-        char *dmenu_str;
-        gsize count;
-} Actions;
 
-typedef struct _notification {
-        char *appname;
-        char *summary;
-        char *body;
-        char *icon;
-        char *msg;
-        const char *format;
-        char *dbus_client;
-        time_t start;
-        time_t timestamp;
-        int timeout;
-        int urgency;
-        bool redisplayed;       /* has been displayed before? */
-        int id;
-        int dup_count;
-        ColorSet *colors;
-        char *color_strings[2];
-
-        int progress;           /* percentage + 1, 0 to hide */
-        int line_count;
-        const char *script;
-        char *urls;
-        Actions *actions;
-} notification;
 
 
 typedef struct _keyboard_shortcut {
@@ -83,11 +51,17 @@ typedef struct _render_text {
 } render_text;
 
 extern int verbosity;
+extern GQueue *queue;
 extern GQueue *displayed;
+extern GQueue *history;
+extern GSList *rules;
+extern bool pause_display;
+extern const char *color_strings[2][3];
+extern DC *dc;
+
+
 
 /* return id of notification */
-int notification_init(notification * n, int id);
-int notification_close_by_id(int id, int reason);
 gboolean run(void *data);
 void wake_up(void);
 

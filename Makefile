@@ -10,7 +10,8 @@ SRC = draw.c  \
 	  option_parser.c \
 	  settings.c \
 	  rules.c \
-	  menu.c
+	  menu.c \
+	  notification.c
 OBJ = ${SRC:.c=.o}
 
 all: doc options dunst service

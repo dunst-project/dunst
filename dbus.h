@@ -5,6 +5,8 @@
 
 #include <dbus/dbus.h>
 
+#include "notification.h"
+
 int initdbus(void);
 void dbus_tear_down(int id);
 /* void dbus_poll(int timeout); */

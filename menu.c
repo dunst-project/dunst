@@ -74,80 +74,80 @@ char *extract_urls( const char * to_match)
          */
 void open_browser(const char *url)
 { // {{{
-    int browser_pid1 = fork();
+int browser_pid1 = fork();
 
-    if (browser_pid1) {
-            int status;
-            waitpid(browser_pid1, &status, 0);
-    } else {
-            int browser_pid2 = fork();
-            if (browser_pid2) {
-                    exit(0);
-            } else {
-                    char *browser_cmd = string_append(settings.browser, url, " ");
-                    char **cmd = g_strsplit(browser_cmd, " ", 0);
-                    execvp(cmd[0], cmd);
+if (browser_pid1) {
+        int status;
+        waitpid(browser_pid1, &status, 0);
+} else {
+        int browser_pid2 = fork();
+        if (browser_pid2) {
+                exit(0);
+        } else {
+                char *browser_cmd = string_append(settings.browser, url, " ");
+                char **cmd = g_strsplit(browser_cmd, " ", 0);
+                execvp(cmd[0], cmd);
+        }
+}
+}
+// }}}
+
+
+    /*
+     * Notify the corresponding client
+     * that an action has been invoked
+     */
+void invoke_action(const char *action)
+{ // {{{
+    notification *invoked = NULL;
+    char *action_identifier = NULL;
+
+    char *name_begin = strstr(action, "(");
+    if (!name_begin) {
+            printf("invalid action: %s\n", action);
+            return;
+    }
+    name_begin++;
+
+
+    for (GList *iter = g_queue_peek_head_link(displayed); iter; iter = iter->next) {
+            notification *n = iter->data;
+            if (g_str_has_prefix(action, n->appname)) {
+                    if (! n->actions)
+                            continue;
+
+                    for (int i = 0; i < n->actions->count; i += 2) {
+                            char *a_identifier = n->actions->actions[i];
+                            char *name = n->actions->actions[i+1];
+                            if (g_str_has_prefix(name_begin, name)) {
+                                    invoked = n;
+                                    action_identifier = a_identifier;
+                                    break;
+                            }
+                    }
             }
+    }
+
+    if (invoked && action_identifier) {
+            actionInvoked(invoked, action_identifier);
     }
 }
 // }}}
 
-
-        /*
-         * Notify the corresponding client
-         * that an action has been invoked
-         */
-void invoke_action(const char *action)
-{ // {{{
-        notification *invoked = NULL;
-        char *action_identifier = NULL;
-
-        char *name_begin = strstr(action, "(");
-        if (!name_begin) {
-                printf("invalid action: %s\n", action);
-                return;
-        }
-        name_begin++;
-
-
-        for (GList *iter = g_queue_peek_head_link(displayed); iter; iter = iter->next) {
-                notification *n = iter->data;
-                if (g_str_has_prefix(action, n->appname)) {
-                        if (! n->actions)
-                                continue;
-
-                        for (int i = 0; i < n->actions->count; i += 2) {
-                                char *a_identifier = n->actions->actions[i];
-                                char *name = n->actions->actions[i+1];
-                                if (g_str_has_prefix(name_begin, name)) {
-                                        invoked = n;
-                                        action_identifier = a_identifier;
-                                        break;
-                                }
-                        }
-                }
-        }
-
-        if (invoked && action_identifier) {
-                actionInvoked(invoked, action_identifier);
-        }
-}
-// }}}
-
-        /*
-         * Dispatch whatever has been returned
-         * by the menu.
-         */
+    /*
+     * Dispatch whatever has been returned
+     * by the menu.
+     */
 void dispatch_menu_result(const char *input)
 { // {{{
-        char *maybe_url = extract_urls(input);
-        if (maybe_url) {
-                open_browser(maybe_url);
-                free(maybe_url);
-                return;
-        }
+    char *maybe_url = extract_urls(input);
+    if (maybe_url) {
+            open_browser(maybe_url);
+            free(maybe_url);
+            return;
+    }
 
-        invoke_action(input);
+    invoke_action(input);
 }
 // }}}
 

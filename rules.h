@@ -4,6 +4,7 @@
 #include <glib.h>
 
 #include "dunst.h"
+#include "notification.h"
 // }}}
 
 // {{{ STRUCTS

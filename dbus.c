@@ -4,6 +4,7 @@
 #include <gio/gio.h>
 #include "dunst.h"
 #include "dbus.h"
+#include "notification.h"
 
 GDBusConnection *dbus_conn;
 
