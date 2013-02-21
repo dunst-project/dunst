@@ -71,7 +71,6 @@ typedef struct _x11_source {
 int height_limit;
 
 /* index of colors fit to urgency level */
-static ColorSet *colors[3];
 static const char *color_strings[2][3];
 static Atom utf8;
 static DC *dc;
@@ -1119,10 +1118,6 @@ void x_setup(void)
         x_shortcut_ungrab(&history_ks);
         x_shortcut_grab(&context_ks);
         x_shortcut_ungrab(&context_ks);
-
-        colors[LOW] = initcolor(dc, lowfgcolor, lowbgcolor);
-        colors[NORM] = initcolor(dc, normfgcolor, normbgcolor);
-        colors[CRIT] = initcolor(dc, critfgcolor, critbgcolor);
 
         color_strings[ColFG][LOW] = lowfgcolor;
         color_strings[ColFG][NORM] = normfgcolor;
