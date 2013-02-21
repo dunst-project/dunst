@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <glib.h>
 
-#include "options.h"
+#include "option_parser.h"
 #include "utils.h"
 
 typedef struct _entry_t {

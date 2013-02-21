@@ -34,7 +34,7 @@
 #include "dbus.h"
 #include "utils.h"
 
-#include "options.h"
+#include "option_parser.h"
 #include "settings.h"
 
 // }}}
