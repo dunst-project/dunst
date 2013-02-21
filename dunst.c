@@ -28,8 +28,6 @@
 #include <X11/extensions/Xinerama.h>
 #endif
 #include <X11/extensions/scrnsaver.h>
-#include <basedir.h>
-#include <basedir_fs.h>
 
 #include "dunst.h"
 #include "draw.h"
@@ -37,6 +35,7 @@
 #include "utils.h"
 
 #include "options.h"
+#include "settings.h"
 
 // }}}
 
@@ -65,10 +64,10 @@ typedef struct _x11_source {
 } x11_source_t;
 // }}}
 
-#include "config.h"
 
 // {{{ GLOBALS
 int height_limit;
+int font_h;
 
 /* index of colors fit to urgency level */
 static const char *color_strings[2][3];
@@ -78,11 +77,8 @@ static Window win;
 static bool visible = false;
 static dimension_t geometry;
 static XScreenSaverInfo *screensaver_info;
-static int font_h;
-static bool print_notifications = false;
 static dimension_t window_dim;
 static bool pause_display = false;
-static char **dmenu_cmd;
 static unsigned long framec;
 static unsigned long sep_custom_col;
 
@@ -106,7 +102,6 @@ GSList *rules = NULL;
 void rule_apply(rule_t *r, notification *n);
 void rule_apply_all(notification *n);
 bool rule_matches_notification(rule_t *r, notification *n);
-void rule_init(rule_t *r);
 
 /* notifications */
 int notification_cmp(const void *a, const void *b);
@@ -227,8 +222,8 @@ void open_browser(const char *url)
             if (browser_pid2) {
                     exit(0);
             } else {
-                    browser = string_append(browser, url, " ");
-                    char **cmd = g_strsplit(browser, " ", 0);
+                    char *browser_cmd = string_append(settings.browser, url, " ");
+                    char **cmd = g_strsplit(browser_cmd, " ", 0);
                     execvp(cmd[0], cmd);
             }
     }
@@ -339,7 +334,7 @@ void context_menu(void)
                 PERR("dup()", errno);
                 exit(EXIT_FAILURE);
         }
-        execvp(dmenu_cmd[0], dmenu_cmd);
+        execvp(settings.dmenu_cmd[0], settings.dmenu_cmd);
     } else {
         close(child_io[0]);
         close(parent_io[1]);
@@ -472,7 +467,7 @@ int notification_cmp(const void *va, const void *vb)
         notification *a = (notification*) va;
         notification *b = (notification*) vb;
 
-        if (!sort)
+        if (!settings.sort)
                 return 1;
 
         if (a->urgency != b->urgency) {
@@ -588,7 +583,7 @@ int notification_init(notification * n, int id)
 
         n->script = NULL;
 
-        n->format = format;
+        n->format = settings.format;
 
         rule_apply_all(n);
 
@@ -612,7 +607,7 @@ int notification_init(notification * n, int id)
         while (strstr(n->msg, "\\n") != NULL)
                 n->msg = string_replace("\\n", "\n", n->msg);
 
-        if (ignore_newline)
+        if (settings.ignore_newline)
                 while (strstr(n->msg, "\n") != NULL)
                         n->msg = string_replace("\n", " ", n->msg);
 
@@ -662,7 +657,7 @@ int notification_init(notification * n, int id)
 
         n->colors = initcolor(dc, fg, bg);
 
-        n->timeout = n->timeout == -1 ? timeouts[n->urgency] : n->timeout;
+        n->timeout = n->timeout == -1 ? settings.timeouts[n->urgency] : n->timeout;
         n->start = 0;
 
         n->timestamp = time(NULL);
@@ -707,7 +702,7 @@ int notification_init(notification * n, int id)
         free(tmp);
 
 
-        if (print_notifications)
+        if (settings.print_notifications)
                 notification_print(n);
 
         return n->id;
@@ -892,26 +887,26 @@ static gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gp
                         }
                         break;
                 case KeyPress:
-                        if (close_ks.str
-                            && XLookupKeysym(&ev.xkey, 0) == close_ks.sym
-                            && close_ks.mask == ev.xkey.state) {
+                        if (settings.close_ks.str
+                            && XLookupKeysym(&ev.xkey, 0) == settings.close_ks.sym
+                            && settings.close_ks.mask == ev.xkey.state) {
                                 if (displayed) {
                                         notification_close(g_queue_peek_head_link(displayed)->data, 2);
                                 }
                         }
-                        if (history_ks.str
-                            && XLookupKeysym(&ev.xkey, 0) == history_ks.sym
-                            && history_ks.mask == ev.xkey.state) {
+                        if (settings.history_ks.str
+                            && XLookupKeysym(&ev.xkey, 0) == settings.history_ks.sym
+                            && settings.history_ks.mask == ev.xkey.state) {
                                 history_pop();
                         }
-                        if (close_all_ks.str
-                            && XLookupKeysym(&ev.xkey, 0) == close_all_ks.sym
-                            && close_all_ks.mask == ev.xkey.state) {
+                        if (settings.close_all_ks.str
+                            && XLookupKeysym(&ev.xkey, 0) == settings.close_all_ks.sym
+                            && settings.close_all_ks.mask == ev.xkey.state) {
                                 move_all_to_history();
                         }
-                        if (context_ks.str
-                            && XLookupKeysym(&ev.xkey, 0) == context_ks.sym
-                            && context_ks.mask == ev.xkey.state) {
+                        if (settings.context_ks.str
+                            && XLookupKeysym(&ev.xkey, 0) == settings.context_ks.sym
+                            && settings.context_ks.mask == ev.xkey.state) {
                                 context_menu();
                         }
                         break;
@@ -932,10 +927,10 @@ bool x_is_idle(void)
 { // {{{
         XScreenSaverQueryInfo(dc->dpy, DefaultRootWindow(dc->dpy),
                               screensaver_info);
-        if (idle_threshold == 0) {
+        if (settings.idle_threshold == 0) {
                 return false;
         }
-        return screensaver_info->idle / 1000 > idle_threshold;
+        return screensaver_info->idle / 1000 > settings.idle_threshold;
 }
 // }}}
 
@@ -952,19 +947,19 @@ void x_handle_click(XEvent ev)
         }
 
         if (ev.xbutton.button == Button1) {
-                int y = separator_height;
+                int y = settings.separator_height;
                 notification *n = NULL;
                 for (GList *iter = g_queue_peek_head_link(displayed); iter; iter = iter->next) {
                         n = iter->data;
-                        int text_h = MAX(font_h, line_height) * n->line_count;
-                        int padding = 2 * h_padding;
+                        int text_h = MAX(font_h, settings.line_height) * n->line_count;
+                        int padding = 2 * settings.h_padding;
 
                         int height = text_h + padding;
 
                         if (ev.xbutton.y > y && ev.xbutton.y < y + height)
                                 break;
                         else
-                                y += height + separator_height;
+                                y += height + settings.separator_height;
                 }
                 if (n)
                         notification_close(n, 2);
@@ -1008,15 +1003,15 @@ Window get_focused_window(void)
          */
 int select_screen(XineramaScreenInfo * info, int info_len)
 { // {{{
-        if (f_mode == FOLLOW_NONE) {
-                return monitor >= 0 ? monitor : XDefaultScreen(dc->dpy);
+        if (settings.f_mode == FOLLOW_NONE) {
+                return settings.monitor >= 0 ? settings.monitor : XDefaultScreen(dc->dpy);
 
         } else {
                 int x, y;
-                assert(f_mode == FOLLOW_MOUSE || f_mode == FOLLOW_KEYBOARD);
+                assert(settings.f_mode == FOLLOW_MOUSE || settings.f_mode == FOLLOW_KEYBOARD);
                 Window root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
 
-                if (f_mode == FOLLOW_MOUSE) {
+                if (settings.f_mode == FOLLOW_MOUSE) {
                         int dummy;
                         unsigned int dummy_ui;
                         Window dummy_win;
@@ -1026,13 +1021,13 @@ int select_screen(XineramaScreenInfo * info, int info_len)
                                       &dummy, &dummy_ui);
                 }
 
-                if (f_mode == FOLLOW_KEYBOARD) {
+                if (settings.f_mode == FOLLOW_KEYBOARD) {
 
                         Window focused = get_focused_window();
 
                         if (focused == 0) {
                                 /* something went wrong. Fallback to default */
-                                return monitor >= 0 ? monitor : XDefaultScreen(dc->dpy);
+                                return settings.monitor >= 0 ? settings.monitor : XDefaultScreen(dc->dpy);
                         }
 
                         Window child_return;
@@ -1049,7 +1044,7 @@ int select_screen(XineramaScreenInfo * info, int info_len)
                 }
 
                 /* something seems to be wrong. Fallback to default */
-                return monitor >= 0 ? monitor : XDefaultScreen(dc->dpy);
+                return settings.monitor >= 0 ? settings.monitor : XDefaultScreen(dc->dpy);
         }
 }
 // }}}
@@ -1082,8 +1077,8 @@ void x_screen_info(screen_info *scr)
                 scr->dim.y = 0;
 
                 int screen;
-                if (monitor >= 0)
-                        screen = monitor;
+                if (settings.monitor >= 0)
+                        screen = settings.monitor;
                 else
                         screen = DefaultScreen(dc->dpy);
 
@@ -1103,47 +1098,47 @@ void x_setup(void)
         /* initialize dc, font, keyboard, colors */
         dc = initdc();
 
-        initfont(dc, font);
+        initfont(dc, settings.font);
 
-        x_shortcut_init(&close_ks);
-        x_shortcut_init(&close_all_ks);
-        x_shortcut_init(&history_ks);
-        x_shortcut_init(&context_ks);
+        x_shortcut_init(&settings.close_ks);
+        x_shortcut_init(&settings.close_all_ks);
+        x_shortcut_init(&settings.history_ks);
+        x_shortcut_init(&settings.context_ks);
 
-        x_shortcut_grab(&close_ks);
-        x_shortcut_ungrab(&close_ks);
-        x_shortcut_grab(&close_all_ks);
-        x_shortcut_ungrab(&close_all_ks);
-        x_shortcut_grab(&history_ks);
-        x_shortcut_ungrab(&history_ks);
-        x_shortcut_grab(&context_ks);
-        x_shortcut_ungrab(&context_ks);
+        x_shortcut_grab(&settings.close_ks);
+        x_shortcut_ungrab(&settings.close_ks);
+        x_shortcut_grab(&settings.close_all_ks);
+        x_shortcut_ungrab(&settings.close_all_ks);
+        x_shortcut_grab(&settings.history_ks);
+        x_shortcut_ungrab(&settings.history_ks);
+        x_shortcut_grab(&settings.context_ks);
+        x_shortcut_ungrab(&settings.context_ks);
 
-        color_strings[ColFG][LOW] = lowfgcolor;
-        color_strings[ColFG][NORM] = normfgcolor;
-        color_strings[ColFG][CRIT] = critfgcolor;
+        color_strings[ColFG][LOW] = settings.lowfgcolor;
+        color_strings[ColFG][NORM] = settings.normfgcolor;
+        color_strings[ColFG][CRIT] = settings.critfgcolor;
 
-        color_strings[ColBG][LOW] = lowbgcolor;
-        color_strings[ColBG][NORM] = normbgcolor;
-        color_strings[ColBG][CRIT] = critbgcolor;
+        color_strings[ColBG][LOW] = settings.lowbgcolor;
+        color_strings[ColBG][NORM] = settings.normbgcolor;
+        color_strings[ColBG][CRIT] = settings.critbgcolor;
 
-        framec = getcolor(dc, frame_color);
+        framec = getcolor(dc, settings.frame_color);
 
-        if (sep_color == CUSTOM) {
-                sep_custom_col = getcolor(dc, sep_custom_color_str);
+        if (settings.sep_color == CUSTOM) {
+                sep_custom_col = getcolor(dc, settings.sep_custom_color_str);
         } else {
                 sep_custom_col = 0;
         }
 
         /* parse and set geometry and monitor position */
-        if (geom[0] == '-') {
+        if (settings.geom[0] == '-') {
                 geometry.negative_width = true;
-                geom++;
+                settings.geom++;
         } else {
                 geometry.negative_width = false;
         }
 
-        geometry.mask = XParseGeometry(geom,
+        geometry.mask = XParseGeometry(settings.geom,
                                        &geometry.x, &geometry.y,
                                        &geometry.w, &geometry.h);
 
@@ -1152,7 +1147,7 @@ void x_setup(void)
 
 
         x_win_setup();
-        x_shortcut_grab(&history_ks);
+        x_shortcut_grab(&settings.history_ks);
 }
 // }}}
 
@@ -1185,7 +1180,7 @@ GSList *do_word_wrap(char *text, int max_width)
                         begin = ++end;
                 }
 
-                if (word_wrap && max_width > 0 && textnw(dc, begin, (end - begin) + 1) > max_width) {
+                if (settings.word_wrap && max_width > 0 && textnw(dc, begin, (end - begin) + 1) > max_width) {
                         /* find previous space */
                         char *space = end;
                         while (space > begin && !isspace(*space))
@@ -1230,7 +1225,7 @@ char *generate_final_text(notification *n)
         int hours, minutes, seconds;
         time_t t_delta = time(NULL) - n->timestamp;
 
-        if (show_age_threshold >= 0 && t_delta >= show_age_threshold) {
+        if (settings.show_age_threshold >= 0 && t_delta >= settings.show_age_threshold) {
                 hours = t_delta / 3600;
                 minutes = t_delta / 60 % 60;
                 seconds = t_delta % 60;
@@ -1260,19 +1255,19 @@ int calculate_x_offset(int line_width, int text_width)
         struct timeval t;
         float pos;
         /* If the text is wider than the frame, bouncing is enabled and word_wrap disabled */
-        if (line_width < text_width && bounce_freq > 0.0001 && !word_wrap) {
+        if (line_width < text_width && settings.bounce_freq > 0.0001 && !settings.word_wrap) {
                 gettimeofday(&t, NULL);
                 pos =
-                    ((t.tv_sec % 100) * 1e6 + t.tv_usec) / (1e6 / bounce_freq);
+                    ((t.tv_sec % 100) * 1e6 + t.tv_usec) / (1e6 / settings.bounce_freq);
                 return (1 + sinf(2 * 3.14159 * pos)) * leftover / 2;
         }
-        switch (align) {
+        switch (settings.align) {
         case left:
-                return frame_width + h_padding;
+                return settings.frame_width + settings.h_padding;
         case center:
-                return frame_width + h_padding + (leftover / 2);
+                return settings.frame_width + settings.h_padding + (leftover / 2);
         case right:
-                return frame_width + h_padding + leftover;
+                return settings.frame_width + settings.h_padding + leftover;
         default:
                 /* this can't happen */
                 return 0;
@@ -1400,7 +1395,7 @@ GSList *generate_render_texts(int width)
         }
 
         /* add (x more) */
-        if (indicate_hidden && queue->length > 0) {
+        if (settings.indicate_hidden && queue->length > 0) {
                 if (geometry.h != 1) {
                         render_text *rt = g_malloc(sizeof(render_text));
                         rt->colors = ((render_text *) g_slist_last(render_texts)->data)->colors;
@@ -1442,13 +1437,13 @@ void x_win_draw(void)
         x_screen_info(&scr);
 
 
-        line_height = MAX(line_height, font_h);
+        settings.line_height = MAX(settings.line_height, font_h);
 
         int width;
         if (outer_width == 0)
                 width = 0;
         else
-                width = outer_width - (2 * frame_width) - (2 * h_padding);
+                width = outer_width - (2 * settings.frame_width) - (2 * settings.h_padding);
 
 
         GSList *texts = generate_render_texts(width);
@@ -1465,16 +1460,16 @@ void x_win_draw(void)
                         for (GSList *iiter = lines; iiter; iiter = iiter->next)
                                 width = MAX(width, textw(dc, iiter->data));
                 }
-                outer_width = width + (2 * frame_width) + (2 * h_padding);
+                outer_width = width + (2 * settings.frame_width) + (2 * settings.h_padding);
         }
 
         /* resize dc to correct width */
 
-        int height = (line_count * line_height)
-                   + displayed->length * 2 * padding
-                   + ((indicate_hidden && queue->length > 0 && geometry.h != 1) ? 2 * padding : 0)
-                   + (separator_height * (displayed->length - 1))
-                   + (2 * frame_width);
+        int height = (line_count * settings.line_height)
+                   + displayed->length * 2 * settings.padding
+                   + ((settings.indicate_hidden && queue->length > 0 && geometry.h != 1) ? 2 * settings.padding : 0)
+                   + (settings.separator_height * (displayed->length - 1))
+                   + (2 * settings.frame_width);
 
         resizedc(dc, outer_width, height);
 
@@ -1484,12 +1479,12 @@ void x_win_draw(void)
          */
         dc->y = 0;
         dc->x = 0;
-        if (frame_width > 0) {
+        if (settings.frame_width > 0) {
                 drawrect(dc, 0, 0, outer_width, height, true, framec);
         }
 
-        dc->y = frame_width;
-        dc->x = frame_width;
+        dc->y = settings.frame_width;
+        dc->x = settings.frame_width;
 
         for (GSList *iter = texts; iter; iter = iter->next) {
 
@@ -1507,45 +1502,45 @@ void x_win_draw(void)
                         bool last_line = iiter->next == NULL;
 
                         if (first_line && last_line)
-                                pad = 2*padding;
+                                pad = 2*settings.padding;
                         else if (first_line || last_line)
-                                pad = padding;
+                                pad = settings.padding;
 
-                        dc->x = frame_width;
+                        dc->x = settings.frame_width;
 
                         /* draw background */
-                        drawrect(dc, 0, 0, width + (2*h_padding), pad +  line_height, true, colors->BG);
+                        drawrect(dc, 0, 0, width + (2*settings.h_padding), pad +  settings.line_height, true, colors->BG);
 
                         /* draw text */
                         dc->x = calculate_x_offset(width, textw(dc, line));
 
-                        dc->y += ((line_height - font_h) / 2);
-                        dc->y += first_line ? padding : 0;
+                        dc->y += ((settings.line_height - font_h) / 2);
+                        dc->y += first_line ? settings.padding : 0;
 
                         drawtextn(dc, line, strlen(line), colors);
 
-                        dc->y += line_height - ((line_height - font_h) / 2);
-                        dc->y += last_line ? padding : 0;
+                        dc->y += settings.line_height - ((settings.line_height - font_h) / 2);
+                        dc->y += last_line ? settings.padding : 0;
 
                         first_line = false;
                 }
 
                 /* draw separator */
-                if (separator_height > 0 && iter->next) {
-                        dc->x = frame_width;
+                if (settings.separator_height > 0 && iter->next) {
+                        dc->x = settings.frame_width;
                         double color;
-                        if (sep_color == AUTO)
+                        if (settings.sep_color == AUTO)
                                 color = calculate_foreground_color(colors->BG);
-                        else if (sep_color == FOREGROUND)
+                        else if (settings.sep_color == FOREGROUND)
                                 color = colors->FG;
-                        else if (sep_color == FRAME)
+                        else if (settings.sep_color == FRAME)
                                 color = framec;
                         else {
                                 /* CUSTOM */
                                 color = sep_custom_col;
                         }
-                        drawrect(dc, 0, 0, width + (2*h_padding), separator_height, true, color);
-                        dc->y += separator_height;
+                        drawrect(dc, 0, 0, width + (2*settings.h_padding), settings.separator_height, true, color);
+                        dc->y += settings.separator_height;
                 }
         }
 
@@ -1588,9 +1583,9 @@ void x_win_setup(void)
                           CopyFromParent, DefaultVisual(dc->dpy,
                                                         DefaultScreen(dc->dpy)),
                           CWOverrideRedirect | CWBackPixmap | CWEventMask, &wa);
-        transparency = transparency > 100 ? 100 : transparency;
+        settings.transparency = settings.transparency > 100 ? 100 : settings.transparency;
         setopacity(dc, win,
-                   (unsigned long)((100 - transparency) * (0xffffffff / 100)));
+                   (unsigned long)((100 - settings.transparency) * (0xffffffff / 100)));
 }
 // }}}
 
@@ -1604,9 +1599,9 @@ void x_win_show(void)
                 return;
         }
 
-        x_shortcut_grab(&close_ks);
-        x_shortcut_grab(&close_all_ks);
-        x_shortcut_grab(&context_ks);
+        x_shortcut_grab(&settings.close_ks);
+        x_shortcut_grab(&settings.close_all_ks);
+        x_shortcut_grab(&settings.context_ks);
 
         x_shortcut_setup_error_handler();
         XGrabButton(dc->dpy, AnyButton, AnyModifier, win, false,
@@ -1625,9 +1620,9 @@ void x_win_show(void)
          */
 void x_win_hide()
 { // {{{
-        x_shortcut_ungrab(&close_ks);
-        x_shortcut_ungrab(&close_all_ks);
-        x_shortcut_ungrab(&context_ks);
+        x_shortcut_ungrab(&settings.close_ks);
+        x_shortcut_ungrab(&settings.close_all_ks);
+        x_shortcut_ungrab(&settings.context_ks);
 
         XUngrabButton(dc->dpy, AnyButton, AnyModifier, win);
         XUnmapWindow(dc->dpy, win);
@@ -1857,7 +1852,7 @@ void update_lists()
                 limit = 0;
         } else if (geometry.h == 1) {
                 limit = 1;
-        } else if (indicate_hidden) {
+        } else if (settings.indicate_hidden) {
                 limit = geometry.h - 1;
         } else {
                 limit = geometry.h;
@@ -1912,7 +1907,7 @@ void history_pop(void)
         notification *n = g_queue_pop_tail(history);
         n->redisplayed = true;
         n->start = 0;
-        n->timeout = sticky_history ? 0 : n->timeout;
+        n->timeout = settings.sticky_history ? 0 : n->timeout;
         g_queue_push_head(queue, n);
 
         if (!visible) {
@@ -1977,290 +1972,6 @@ gboolean run(void *data)
 //}}}
 
 
-// {{{ OPTIONS
-void parse_follow_mode(const char *mode)
-{ // {{{
-        if (strcmp(mode, "mouse") == 0)
-                f_mode = FOLLOW_MOUSE;
-        else if (strcmp(mode, "keyboard") == 0)
-                f_mode = FOLLOW_KEYBOARD;
-        else if (strcmp(mode, "none") == 0)
-                f_mode = FOLLOW_NONE;
-        else {
-                fprintf(stderr, "Warning: unknown follow mode: \"%s\"\n", mode);
-                f_mode = FOLLOW_NONE;
-        }
-
-}
-// }}}
-
-void load_options(char *cmdline_config_path)
-{ // {{{
-
-#ifndef STATIC_CONFIG
-        xdgHandle xdg;
-        FILE *config_file = NULL;
-
-        xdgInitHandle(&xdg);
-
-        if (cmdline_config_path != NULL) {
-                config_file = fopen(cmdline_config_path, "r");
-        }
-        if (config_file == NULL) {
-                config_file = xdgConfigOpen("dunst/dunstrc", "r", &xdg);
-        }
-        if (config_file == NULL) {
-                /* Fall back to just "dunstrc", which was used before 2013-06-23
-                 * (before v0.2). */
-                config_file = xdgConfigOpen("dunstrc", "r", &xdg);
-                if (config_file == NULL) {
-                        puts("no dunstrc found -> skipping\n");
-                        xdgWipeHandle(&xdg);
-                        return;
-                }
-        }
-
-        load_ini_file(config_file);
-#endif
-
-        font =
-            option_get_string("global", "font", "-fn", font,
-                              "The font dunst should use.");
-        format =
-            option_get_string("global", "format", "-format", format,
-                              "The format template for the notifictions");
-        sort =
-            option_get_bool("global", "sort", "-sort", sort,
-                            "Sort notifications by urgency and date?");
-        indicate_hidden =
-            option_get_bool("global", "indicate_hidden", "-indicate_hidden",
-                            indicate_hidden,
-                            "Show how many notificaitons are hidden?");
-        word_wrap =
-            option_get_bool("global", "word_wrap", "-word_wrap", word_wrap,
-                            "Truncating long lines or do word wrap");
-
-        ignore_newline =
-            option_get_bool("global", "ignore_newline", "-ignore_newline",
-                            ignore_newline, "Ignore newline characters in notifications");
-        idle_threshold =
-            option_get_int("global", "idle_threshold", "-idle_threshold",
-                           idle_threshold,
-                           "Don't timeout notifications if user is longer idle than threshold");
-        monitor =
-            option_get_int("global", "monitor", "-mon", monitor,
-                           "On which monitor should the notifications be displayed");
-        {
-                char *c =
-                    option_get_string("global", "follow", "-follow", "",
-                                      "Follow mouse, keyboard or none?");
-                if (strlen(c) > 0) {
-                        parse_follow_mode(c);
-                        free(c);
-                }
-        }
-        geom =
-            option_get_string("global", "geometry", "-geom/-geometry", geom,
-                              "Geometry for the window");
-        line_height =
-            option_get_int("global", "line_height", "-lh/-line_height",
-                           line_height,
-                           "Add additional padding above and beneath text");
-        bounce_freq =
-            option_get_double("global", "bounce_freq", "-bounce_freq",
-                              bounce_freq,
-                              "Make long text bounce from side to side");
-        {
-                char *c =
-                    option_get_string("global", "alignment",
-                                      "-align/-alignment", "",
-                                      "Align notifications left/center/right");
-                if (strlen(c) > 0) {
-                        if (strcmp(c, "left") == 0)
-                                align = left;
-                        else if (strcmp(c, "center") == 0)
-                                align = center;
-                        else if (strcmp(c, "right") == 0)
-                                align = right;
-                        else
-                                fprintf(stderr,
-                                        "Warning: unknown allignment\n");
-                        free(c);
-                }
-        }
-        show_age_threshold =
-            option_get_int("global", "show_age_threshold",
-                           "-show_age_threshold", show_age_threshold,
-                           "When should the age of the notification be displayed?");
-        sticky_history =
-            option_get_bool("global", "sticky_history", "-sticky_history",
-                            sticky_history,
-                            "Don't timeout notifications popped up from history");
-        separator_height =
-            option_get_int("global", "separator_height",
-                           "-sep_height/-separator_height", separator_height,
-                           "height of the separator line");
-        padding =
-            option_get_int("global", "padding", "-padding", padding,
-                            "Padding between text and separator");
-        h_padding =
-            option_get_int("global", "horizontal_padding", "-horizontal_padding",
-                            h_padding, "horizontal padding");
-        transparency =
-            option_get_int("global", "transparency", "-transparency",
-                           transparency, "Transparency. range 0-100");
-        {
-                char *c =
-                    option_get_string("global", "separator_color",
-                                      "-sep_color/-separator_color", "",
-                                      "Color of the separator line (or 'auto')");
-                if (strlen(c) > 0) {
-                        if (strcmp(c, "auto") == 0)
-                                sep_color = AUTO;
-                        else if (strcmp(c, "foreground") == 0)
-                                sep_color = FOREGROUND;
-                        else if (strcmp(c, "frame") == 0)
-                                sep_color = FRAME;
-                        else {
-                                sep_color = CUSTOM;
-                                sep_custom_color_str = g_strdup(c);
-                        }
-                        free(c);
-                }
-        }
-
-        startup_notification = option_get_bool("global", "startup_notification",
-                        "-startup_notification", false, "print notification on startup");
-
-
-        dmenu = option_get_string("global", "dmenu", "-dmenu", dmenu, "path to dmenu");
-        dmenu_cmd = g_strsplit(dmenu, " ", 0);
-
-        browser = option_get_string("global", "browser", "-browser", browser, "path to browser");
-
-        frame_width = option_get_int("frame", "width", "-frame_width", frame_width,
-                        "Width of frame around window");
-
-        frame_color = option_get_string("frame", "color", "-frame_color",
-                        frame_color, "Color of the frame around window");
-
-        lowbgcolor =
-            option_get_string("urgency_low", "background", "-lb", lowbgcolor,
-                              "Background color for notifcations with low urgency");
-        lowfgcolor =
-            option_get_string("urgency_low", "foreground", "-lf", lowfgcolor,
-                              "Foreground color for notifications with low urgency");
-        timeouts[LOW] =
-            option_get_int("urgency_low", "timeout", "-lto", timeouts[LOW],
-                           "Timeout for notifications with low urgency");
-        normbgcolor =
-            option_get_string("urgency_normal", "background", "-nb",
-                              normbgcolor,
-                              "Background color for notifications with normal urgency");
-        normfgcolor =
-            option_get_string("urgency_normal", "foreground", "-nf",
-                              normfgcolor,
-                              "Foreground color for notifications with normal urgency");
-        timeouts[NORM] =
-            option_get_int("urgency_normal", "timeout", "-nto", timeouts[NORM],
-                           "Timeout for notifications with normal urgency");
-        critbgcolor =
-            option_get_string("urgency_critical", "background", "-cb",
-                              critbgcolor,
-                              "Background color for notifications with critical urgency");
-        critfgcolor =
-            option_get_string("urgency_critical", "foreground", "-cf",
-                              critfgcolor,
-                              "Foreground color for notifications with ciritical urgency");
-        timeouts[CRIT] =
-            option_get_int("urgency_critical", "timeout", "-cto",
-                           timeouts[CRIT],
-                           "Timeout for notifications with critical urgency");
-
-        close_ks.str =
-            option_get_string("shortcuts", "close", "-key", close_ks.str,
-                              "Shortcut for closing one notification");
-        close_all_ks.str =
-            option_get_string("shortcuts", "close_all", "-all_key",
-                              close_all_ks.str,
-                              "Shortcut for closing all notifications");
-        history_ks.str =
-            option_get_string("shortcuts", "history", "-history_key",
-                              history_ks.str,
-                              "Shortcut to pop the last notification from history");
-
-        context_ks.str =
-                option_get_string("shortcuts", "context", "-context_key",
-                                context_ks.str,
-                                "Shortcut for context menu");
-
-        print_notifications =
-            cmdline_get_bool("-print", false,
-                             "Print notifications to cmdline (DEBUG)");
-
-        char *cur_section = NULL;
-        for (;;) {
-                cur_section = next_section(cur_section);
-                if (!cur_section)
-                        break;
-                if (strcmp(cur_section, "global") == 0
-                    || strcmp(cur_section, "shortcuts") == 0
-                    || strcmp(cur_section, "urgency_low") == 0
-                    || strcmp(cur_section, "urgency_normal") == 0
-                    || strcmp(cur_section, "urgency_critical") == 0)
-                        continue;
-
-                /* check for existing rule with same name */
-                rule_t *r = NULL;
-                for (GSList *iter = rules; iter; iter = iter->next) {
-                        rule_t *match = iter->data;
-                        if (match->name &&
-                            strcmp(match->name, cur_section) == 0)
-                                r = match;
-                }
-
-                if (r == NULL) {
-                        r = g_malloc(sizeof(rule_t));
-                        rule_init(r);
-                        rules = g_slist_insert(rules, r, 0);
-                }
-
-                r->name = g_strdup(cur_section);
-                r->appname = ini_get_string(cur_section, "appname", r->appname);
-                r->summary = ini_get_string(cur_section, "summary", r->summary);
-                r->body = ini_get_string(cur_section, "body", r->body);
-                r->icon = ini_get_string(cur_section, "icon", r->icon);
-                r->timeout = ini_get_int(cur_section, "timeout", r->timeout);
-                {
-                        char *urg = ini_get_string(cur_section, "urgency", "");
-                        if (strlen(urg) > 0) {
-                                if (strcmp(urg, "low") == 0)
-                                        r->urgency = LOW;
-                                else if (strcmp(urg, "normal") == 0)
-                                        r->urgency = NORM;
-                                else if (strcmp(urg, "critical") == 0)
-                                        r->urgency = CRIT;
-                                else
-                                        fprintf(stderr,
-                                                "unknown urgency: %s, ignoring\n",
-                                                urg);
-                                free(urg);
-                        }
-                }
-                r->fg = ini_get_string(cur_section, "foreground", r->fg);
-                r->bg = ini_get_string(cur_section, "background", r->bg);
-                r->format = ini_get_string(cur_section, "format", r->format);
-                r->script = ini_get_string(cur_section, "script", NULL);
-        }
-
-#ifndef STATIC_CONFIG
-        fclose(config_file);
-        free_ini();
-        xdgWipeHandle(&xdg);
-#endif
-}
-// }}}
-// }}}
 
 
 // {{{ MAIN
@@ -2271,9 +1982,6 @@ int main(int argc, char *argv[])
         displayed = g_queue_new();
         queue = g_queue_new();
 
-        for (int i = 0; i < LENGTH(default_rules); i++) {
-                rules = g_slist_insert(rules, &(default_rules[i]), 0);
-        }
 
         cmdline_load(argc, argv);
 
@@ -2286,7 +1994,7 @@ int main(int argc, char *argv[])
         cmdline_config_path =
             cmdline_get_string("-conf/-config", NULL,
                                "Path to configuration file");
-        load_options(cmdline_config_path);
+        load_settings(cmdline_config_path);
 
         if (cmdline_get_bool("-h/-help", false, "Print help")
             || cmdline_get_bool("--help", false, "Print help")) {
@@ -2300,7 +2008,7 @@ int main(int argc, char *argv[])
         signal (SIGUSR1, pause_signal_handler);
         signal (SIGUSR2, pause_signal_handler);
 
-        if (startup_notification) {
+        if (settings.startup_notification) {
                 notification *n = malloc(sizeof (notification));
                 n->appname = "dunst";
                 n->summary = "startup";

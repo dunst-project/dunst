@@ -9,6 +9,7 @@
 
 #define ERR(msg) printf("%s : %d\n", (msg), __LINE__)
 #define PERR(msg, errnum) printf("(%d) %s : %s\n", __LINE__, (msg), (strerror(errnum)))
+#define LENGTH(X)               (sizeof X / sizeof X[0])
 
 #define LOW 0
 #define NORM 1
@@ -98,11 +99,13 @@ typedef struct _render_text {
 } render_text;
 
 extern int verbosity;
+extern GSList *rules;
 
 /* return id of notification */
 int notification_init(notification * n, int id);
 int notification_close_by_id(int id, int reason);
 gboolean run(void *data);
 void wake_up(void);
+void rule_init(rule_t *r);
 
 /* vim: set ts=8 sw=8 tw=0: */
