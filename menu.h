@@ -1,7 +1,5 @@
-// {{{ INCLUDES
 #include "dunst.h"
 #include <regex.h>
-// }}}
 
 char *extract_urls(const char *to_match);
 void open_browser(const char *url);

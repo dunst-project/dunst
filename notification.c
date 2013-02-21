@@ -23,14 +23,13 @@ int next_notification_id = 1;
 
 
 
-// {{{ NOTIFICATION
 
         /*
          * print a human readable representation
          * of the given notification to stdout.
          */
 void notification_print(notification * n)
-{ // {{{
+{
         printf("{\n");
         printf("\tappname: '%s'\n", n->appname);
         printf("\tsummary: '%s'\n", n->summary);
@@ -58,14 +57,13 @@ void notification_print(notification * n)
         printf("\tscript: %s\n", n->script);
         printf("}\n");
 }
-// }}}
 
         /*
          * Run the script associated with the
          * given notification.
          */
 void notification_run_script(notification *n)
-{ // {{{
+{
         if (!n->script || strlen(n->script) < 1)
                 return;
 
@@ -115,14 +113,13 @@ void notification_run_script(notification *n)
                 }
         }
 }
-// }}}
 
         /*
          * Helper function to compare to given
          * notifications.
          */
 int notification_cmp(const void *va, const void *vb)
-{ // {{{
+{
         notification *a = (notification*) va;
         notification *b = (notification*) vb;
 
@@ -135,24 +132,22 @@ int notification_cmp(const void *va, const void *vb)
                 return a->timestamp - b->timestamp;
         }
 }
-// }}}
 
         /*
          * Wrapper for notification_cmp to match glib's
          * compare functions signature.
          */
 int notification_cmp_data(const void *va, const void *vb, void *data)
-{ // {{{
+{
         return notification_cmp(va, vb);
 }
-// }}}
 
 
         /*
          * Free the memory used by the given notification.
          */
 void notification_free(notification * n)
-{ // {{{
+{
         if (n == NULL)
                 return;
         free(n->appname);
@@ -163,14 +158,13 @@ void notification_free(notification * n)
         free(n->dbus_client);
         free(n);
 }
-// }}}
 
         /*
          * Strip any markup from text
          */
 
 char *notification_fix_markup(char *str)
-{ // {{{
+{
         char *replace_buf, *start, *end;
 
         if (str == NULL) {
@@ -216,14 +210,13 @@ char *notification_fix_markup(char *str)
         return str;
 
 }
-// }}}
 
         /*
          * Initialize the given notification and add it to
          * the queue. Replace notification with id if id > 0.
          */
 int notification_init(notification * n, int id)
-{ // {{{
+{
         const char *fg = NULL;
         const char *bg = NULL;
 
@@ -366,7 +359,6 @@ int notification_init(notification * n, int id)
 
         return n->id;
 }
-// }}}
 
         /*
          * Close the notification that has id.
@@ -378,7 +370,7 @@ int notification_init(notification * n, int id)
          *  3 -> The notification was closed by a call to CloseNotification
          */
 int notification_close_by_id(int id, int reason)
-{ // {{{
+{
         notification *target = NULL;
 
         for (GList *iter = g_queue_peek_head_link(displayed); iter; iter = iter->next) {
@@ -408,17 +400,14 @@ int notification_close_by_id(int id, int reason)
         wake_up();
         return reason;
 }
-// }}}
 
         /*
          * Close the given notification. SEE notification_close_by_id.
          */
 int notification_close(notification * n, int reason)
-{ // {{{
+{
         if (n == NULL)
                 return -1;
         return notification_close_by_id(n->id, reason);
 }
-// }}}
 
-// }}}

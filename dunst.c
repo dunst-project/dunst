@@ -1,6 +1,5 @@
 /* copyright 2012 Sascha Kruse and contributors (see LICENSE for licensing information) */
 
-// {{{ INCLUDES
 #define _GNU_SOURCE
 #define XLIB_ILLEGAL_ACCESS
 
@@ -38,9 +37,7 @@
 #include "option_parser.h"
 #include "settings.h"
 
-// }}}
 
-// {{{ DEFINES
 #define LENGTH(X)               (sizeof X / sizeof X[0])
 
 #ifndef VERSION
@@ -50,19 +47,15 @@
 #define MSG 1
 #define INFO 2
 #define DEBUG 3
-//}}}
 
-// {{{ STRUCTS
 typedef struct _x11_source {
         GSource source;
         Display *dpy;
         Window w;
 } x11_source_t;
 
-// }}}
 
 
-// {{{ GLOBALS
 
 /* index of colors fit to urgency level */
 bool pause_display = false;
@@ -78,15 +71,12 @@ GQueue *queue = NULL;             /* all new notifications get into here */
 GQueue *displayed = NULL;   /* currently displayed notifications */
 GQueue *history = NULL;      /* history of displayed notifications */
 GSList *rules = NULL;
-// }}}
 
-// {{{ FUNCTION DEFINITIONS
 
 
 
 /* misc funtions */
 
-// }}}
 
 
 
@@ -99,9 +89,8 @@ GSList *rules = NULL;
 
 
 
-// {{{ RUN
 void check_timeouts(void)
-{ // {{{
+{
         /* nothing to do */
         if (displayed->length == 0)
                 return;
@@ -130,10 +119,9 @@ void check_timeouts(void)
                 }
         }
 }
-// }}}
 
 void update_lists()
-{ // {{{
+{
         int limit;
 
         check_timeouts();
@@ -178,11 +166,10 @@ void update_lists()
                 g_queue_insert_sorted(displayed, n, notification_cmp_data, NULL);
         }
 }
-// }}}
 
 
 void move_all_to_history()
-{ // {{{
+{
         while (displayed->length > 0) {
                 notification_close(g_queue_peek_head_link(displayed)->data, 2);
         }
@@ -193,10 +180,9 @@ void move_all_to_history()
                 n = g_queue_pop_head(queue);
         }
 }
-// }}}
 
 void history_pop(void)
-{ // {{{
+{
 
         if (g_queue_is_empty(history))
                 return;
@@ -211,10 +197,9 @@ void history_pop(void)
                 wake_up();
         }
 }
-// }}}
 
 void update(void)
-{ // {{{
+{
         time_t last_time = time(&last_time);
         static time_t last_redraw = 0;
 
@@ -233,10 +218,9 @@ void update(void)
                 last_redraw = time(NULL);
         }
 }
-// }}}
 
 void wake_up(void)
-{ // {{{
+{
         force_redraw = true;
         update();
         if (!timer_active) {
@@ -244,10 +228,9 @@ void wake_up(void)
                 g_timeout_add(1000, run, mainloop);
         }
 }
-// }}}
 
 gboolean run(void *data)
-{ // {{{
+{
 
         update();
 
@@ -264,16 +247,13 @@ gboolean run(void *data)
 
         return true;
 }
-// }}}
-
-//}}}
 
 
 
 
-// {{{ MAIN
+
 int main(int argc, char *argv[])
-{ // {{{
+{
 
         history = g_queue_new();
         displayed = g_queue_new();
@@ -351,10 +331,9 @@ int main(int argc, char *argv[])
 
         return 0;
 }
-// }}}
 
 void pause_signal_handler(int sig)
-{ // {{{
+{
         if (sig == SIGUSR1) {
                 pause_display = true;
         }
@@ -364,25 +343,21 @@ void pause_signal_handler(int sig)
 
         signal (sig, pause_signal_handler);
 }
-// }}}
 
 void usage(int exit_status)
-{ // {{{
+{
         fputs("usage:\n", stderr);
         char *us = cmdline_create_usage();
         fputs(us, stderr);
         fputs("\n", stderr);
         exit(exit_status);
 }
-// }}}
 
 void print_version(void)
-{ // {{{
+{
         printf("Dunst - A customizable and lightweight notification-daemon %s\n",
                VERSION);
         exit(EXIT_SUCCESS);
 }
-// }}}
-// }}}
 
 /* vim: set ts=8 sw=8 tw=0: */

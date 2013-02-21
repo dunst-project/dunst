@@ -301,19 +301,16 @@ int textw(DC * dc, const char *text)
         return textnw(dc, text, strlen(text)) + dc->font.height;
 }
 
-// {{{ X
-// {{{ X_MAINLOOP
 
         /*
          * Helper function to use glib's mainloop mechanic
          * with Xlib
          */
 gboolean x_mainloop_fd_prepare(GSource *source, gint *timeout)
-{ // {{{
+{
         *timeout = -1;
         return false;
 }
-// }}}
 
 
         /*
@@ -321,17 +318,16 @@ gboolean x_mainloop_fd_prepare(GSource *source, gint *timeout)
          * with Xlib
          */
 gboolean x_mainloop_fd_check(GSource *source)
-{ // {{{
+{
         return XPending(xctx.dc->dpy) > 0;
 }
-// }}}
 
 
         /*
          * Main Dispatcher for XEvents
          */
 gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer user_data)
-{ // {{{
+{
         XEvent ev;
         while (XPending(xctx.dc->dpy) > 0) {
                 XNextEvent(xctx.dc->dpy, &ev);
@@ -380,17 +376,14 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer 
         }
         return true;
 }
-// }}}
 
-// }}}
 
-// {{{ X_MISC
 
         /*
          * Check whether the user is currently idle.
          */
 bool x_is_idle(void)
-{ // {{{
+{
         XScreenSaverQueryInfo(xctx.dc->dpy, DefaultRootWindow(xctx.dc->dpy),
                               xctx.screensaver_info);
         if (settings.idle_threshold == 0) {
@@ -398,14 +391,13 @@ bool x_is_idle(void)
         }
         return xctx.screensaver_info->idle / 1000 > settings.idle_threshold;
 }
-// }}}
 
 /* TODO move to x_mainloop_* */
         /*
          * Handle incoming mouse click events
          */
 void x_handle_click(XEvent ev)
-{ // {{{
+{
         if (ev.xbutton.button == Button3) {
                 move_all_to_history();
 
@@ -431,7 +423,6 @@ void x_handle_click(XEvent ev)
                         notification_close(n, 2);
         }
 }
-// }}}
 
 
 
@@ -440,7 +431,7 @@ void x_handle_click(XEvent ev)
          * the keyboard focus.
          */
 Window get_focused_window(void)
-{ // {{{
+{
         Window focused = 0;
         Atom type;
         int format;
@@ -460,7 +451,6 @@ Window get_focused_window(void)
 
         return focused;
 }
-// }}}
 
 #ifdef XINERAMA
         /*
@@ -468,7 +458,7 @@ Window get_focused_window(void)
          * should be displayed.
          */
 int select_screen(XineramaScreenInfo * info, int info_len)
-{ // {{{
+{
         if (settings.f_mode == FOLLOW_NONE) {
                 return settings.monitor >= 0 ? settings.monitor : XDefaultScreen(xctx.dc->dpy);
 
@@ -513,7 +503,6 @@ int select_screen(XineramaScreenInfo * info, int info_len)
                 return settings.monitor >= 0 ? settings.monitor : XDefaultScreen(xctx.dc->dpy);
         }
 }
-// }}}
 #endif
 
         /*
@@ -521,7 +510,7 @@ int select_screen(XineramaScreenInfo * info, int info_len)
          * geometry.
          */
 void x_screen_info(screen_info *scr)
-{ // {{{
+{
 #ifdef XINERAMA
         int n;
         XineramaScreenInfo *info;
@@ -552,14 +541,13 @@ void x_screen_info(screen_info *scr)
                 scr->dim.h = DisplayHeight(xctx.dc->dpy, screen);
         }
 }
-// }}}
 
 
         /*
          * Setup X11 stuff
          */
 void x_setup(void)
-{ // {{{
+{
 
         /* initialize xctx.dc, font, keyboard, colors */
         xctx.dc = initdc();
@@ -615,16 +603,13 @@ void x_setup(void)
         x_win_setup();
         x_shortcut_grab(&settings.history_ks);
 }
-// }}}
 
 
-// }}}
 
 /* TODO comments and naming */
-// {{{ X_RENDER
 
 GSList *do_word_wrap(char *text, int max_width)
-{ // {{{
+{
 
         GSList *result = NULL;
         g_strstrip(text);
@@ -663,11 +648,10 @@ GSList *do_word_wrap(char *text, int max_width)
 
         return result;
 }
-// }}}
 
 
 char *generate_final_text(notification *n)
-{ // {{{
+{
         char *msg = g_strstrip(n->msg);
         char *buf;
 
@@ -713,10 +697,9 @@ char *generate_final_text(notification *n)
 
         return buf;
 }
-// }}}
 
 int calculate_x_offset(int line_width, int text_width)
-{ // {{{
+{
         int leftover = line_width - text_width;
         struct timeval t;
         float pos;
@@ -739,10 +722,9 @@ int calculate_x_offset(int line_width, int text_width)
                 return 0;
         }
 }
-// }}}
 
 unsigned long calculate_foreground_color(unsigned long source_color)
-{ // {{{
+{
         Colormap cmap = DefaultColormap(xctx.dc->dpy, DefaultScreen(xctx.dc->dpy));
         XColor color;
 
@@ -786,10 +768,9 @@ unsigned long calculate_foreground_color(unsigned long source_color)
         XAllocColor(xctx.dc->dpy, cmap, &color);
         return color.pixel;
 }
-// }}}
 
 int calculate_width(void)
-{ // {{{
+{
         screen_info scr;
         x_screen_info(&scr);
         if (xctx.geometry.mask & WidthValue && xctx.geometry.w == 0) {
@@ -807,10 +788,9 @@ int calculate_width(void)
                 return scr.dim.w;
         }
 }
-// }}}
 
 void move_and_map(int width, int height)
-{ // {{{
+{
 
         int x,y;
         screen_info scr;
@@ -844,10 +824,9 @@ void move_and_map(int width, int height)
         mapdc(xctx.dc, xctx.win, width, height);
 
 }
-// }}}
 
 GSList *generate_render_texts(int width)
-{ // {{{
+{
         GSList *render_texts = NULL;
 
         for (GList *iter = g_queue_peek_head_link(displayed); iter; iter = iter->next) {
@@ -879,7 +858,6 @@ GSList *generate_render_texts(int width)
 
         return render_texts;
 }
-// }}}
 
 void free_render_text(void *data) {
         g_slist_free_full(((render_text *) data)->lines, g_free);
@@ -890,13 +868,11 @@ void free_render_texts(GSList *texts) {
 }
 
 
-// }}}
 
 
-// {{{ X_WIN
 
 void x_win_draw(void)
-{ // {{{
+{
 
         int outer_width = calculate_width();
         screen_info scr;
@@ -1014,13 +990,12 @@ void x_win_draw(void)
 
         free_render_texts(texts);
 }
-// }}}
 
         /*
          * Setup the window
          */
 void x_win_setup(void)
-{ // {{{
+{
 
         Window root;
         XSetWindowAttributes wa;
@@ -1053,13 +1028,12 @@ void x_win_setup(void)
         setopacity(xctx.dc, xctx.win,
                    (unsigned long)((100 - settings.transparency) * (0xffffffff / 100)));
 }
-// }}}
 
         /*
          * Show the window and grab shortcuts.
          */
 void x_win_show(void)
-{ // {{{
+{
         /* window is already mapped or there's nothing to show */
         if (xctx.visible || g_queue_is_empty(displayed)) {
                 return;
@@ -1079,13 +1053,12 @@ void x_win_show(void)
         XMapRaised(xctx.dc->dpy, xctx.win);
         xctx.visible = true;
 }
-// }}}
 
         /*
          * Hide the window and ungrab unused keyboard_shortcuts
          */
 void x_win_hide()
-{ // {{{
+{
         x_shortcut_ungrab(&settings.close_ks);
         x_shortcut_ungrab(&settings.close_all_ks);
         x_shortcut_ungrab(&settings.context_ks);
@@ -1095,18 +1068,15 @@ void x_win_hide()
         XFlush(xctx.dc->dpy);
         xctx.visible = false;
 }
-// }}}
-
-// }}}
 
 
-// {{{ X_SHORTCUT
+
 
         /*
          * Parse a string into a modifier mask.
          */
 KeySym x_shortcut_string_to_mask(const char *str)
-{ // {{{
+{
         if (!strcmp(str, "ctrl")) {
                 return ControlMask;
         } else if (!strcmp(str, "mod4")) {
@@ -1125,13 +1095,12 @@ KeySym x_shortcut_string_to_mask(const char *str)
         }
 
 }
-// }}}
 
         /*
          * Error handler for grabbing mouse and keyboard errors.
          */
 static int GrabXErrorHandler(Display * display, XErrorEvent * e)
-{ // {{{
+{
         dunst_grab_errored = true;
         char err_buf[BUFSIZ];
         XGetErrorText(display, e->error_code, err_buf, BUFSIZ);
@@ -1144,37 +1113,34 @@ static int GrabXErrorHandler(Display * display, XErrorEvent * e)
 
         return 0;
 }
-// }}}
 
         /*
          * Setup the Error handler.
          */
 static void x_shortcut_setup_error_handler(void)
-{ // {{{
+{
         dunst_grab_errored = false;
 
         XFlush(xctx.dc->dpy);
         XSetErrorHandler(GrabXErrorHandler);
 }
-// }}}
 
         /*
          * Tear down the Error handler.
          */
 static int x_shortcut_tear_down_error_handler(void)
-{ // {{{
+{
         XFlush(xctx.dc->dpy);
         XSync(xctx.dc->dpy, false);
         XSetErrorHandler(NULL);
         return dunst_grab_errored;
 }
-// }}}
 
         /*
          * Grab the given keyboard shortcut.
          */
 int x_shortcut_grab(keyboard_shortcut *ks)
-{ // {{{
+{
         if (!ks->is_valid)
                 return 1;
         Window root;
@@ -1193,25 +1159,23 @@ int x_shortcut_grab(keyboard_shortcut *ks)
         }
         return 0;
 }
-// }}}
 
         /*
          * Ungrab the given keyboard shortcut.
          */
 void x_shortcut_ungrab(keyboard_shortcut *ks)
-{ // {{{
+{
         Window root;
         root = RootWindow(xctx.dc->dpy, DefaultScreen(xctx.dc->dpy));
         if (ks->is_valid)
                 XUngrabKey(xctx.dc->dpy, ks->code, ks->mask, root);
 }
-// }}}
 
         /*
          * Initialize the keyboard shortcut.
          */
 void x_shortcut_init(keyboard_shortcut *ks)
-{ // {{{
+{
         if (ks == NULL || ks->str == NULL)
                 return;
 
@@ -1262,8 +1226,5 @@ void x_shortcut_init(keyboard_shortcut *ks)
 
         free(str_begin);
 }
-// }}}
 
-// }}}
-// }}}
 /* vim: set ts=8 sw=8 tw=0: */

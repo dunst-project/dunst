@@ -1,4 +1,3 @@
-/// {{{ INCLUDES
 #define _GNU_SOURCE
 #include <stdbool.h>
 #include <regex.h>
@@ -12,9 +11,7 @@
 #include "utils.h"
 #include "settings.h"
 #include "dbus.h"
-// }}}
 
-// {{{ CONTEXT_MENU
 
         /*
          * Exctract all urls from a given string.
@@ -23,7 +20,7 @@
          *
          */
 char *extract_urls( const char * to_match)
-{ // {{{
+{
     static bool is_initialized = false;
     static regex_t cregex;
 
@@ -65,7 +62,6 @@ char *extract_urls( const char * to_match)
     return urls;
 }
 
-//      }}}
 
 
         /*
@@ -73,7 +69,7 @@ char *extract_urls( const char * to_match)
          *
          */
 void open_browser(const char *url)
-{ // {{{
+{
 int browser_pid1 = fork();
 
 if (browser_pid1) {
@@ -90,7 +86,6 @@ if (browser_pid1) {
         }
 }
 }
-// }}}
 
 
     /*
@@ -98,7 +93,7 @@ if (browser_pid1) {
      * that an action has been invoked
      */
 void invoke_action(const char *action)
-{ // {{{
+{
     notification *invoked = NULL;
     char *action_identifier = NULL;
 
@@ -132,14 +127,13 @@ void invoke_action(const char *action)
             actionInvoked(invoked, action_identifier);
     }
 }
-// }}}
 
     /*
      * Dispatch whatever has been returned
      * by the menu.
      */
 void dispatch_menu_result(const char *input)
-{ // {{{
+{
     char *maybe_url = extract_urls(input);
     if (maybe_url) {
             open_browser(maybe_url);
@@ -149,14 +143,13 @@ void dispatch_menu_result(const char *input)
 
     invoke_action(input);
 }
-// }}}
 
         /*
          * Open the context menu that let's the user
          * select urls/actions/etc
          */
 void context_menu(void)
-{ // {{{
+{
         char *dmenu_input = NULL;
 
         for (GList *iter = g_queue_peek_head_link(displayed); iter; iter = iter->next) {
@@ -220,7 +213,5 @@ void context_menu(void)
 
     dispatch_menu_result(buf);
 }
-// }}}
 
 
-// }}}

@@ -1,10 +1,8 @@
-// {{{ INVLUDES
 #include <glib.h>
 #include <fnmatch.h>
 
 #include "dunst.h"
 #include "rules.h"
-// }}}
 
 /*
  * Apply rule to notification.

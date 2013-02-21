@@ -1,4 +1,3 @@
-// {{{ INCLUDES
 
 #include <glib.h>
 #include <basedir.h>
@@ -9,7 +8,6 @@
 #include "option_parser.h"
 #include "settings.h"
 #include "config.h"
-// }}}
 
 settings_t settings;
 
