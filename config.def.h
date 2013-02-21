@@ -23,13 +23,13 @@ int sticky_history = True;
 int verbosity = 0;
 int word_wrap = False;
 int ignore_newline = False;
-int line_height = 0;   /* if line height < font height, it will be raised to font height */
+int line_height = 0;            /* if line height < font height, it will be raised to font height */
 
-int separator_height = 2; /* height of the separator line between two notifications */
+int separator_height = 2;       /* height of the separator line between two notifications */
 int padding = 0;
-int h_padding = 0; /* horizontal padding */
-enum separator_color sep_color = AUTO; /* AUTO, FOREGROUND, FRAME, CUSTOM */
-char *sep_custom_color_str = NULL; /* custom color if sep_color is set to CUSTOM */
+int h_padding = 0;              /* horizontal padding */
+enum separator_color sep_color = AUTO;  /* AUTO, FOREGROUND, FRAME, CUSTOM */
+char *sep_custom_color_str = NULL;      /* custom color if sep_color is set to CUSTOM */
 
 int frame_width = 0;
 char *frame_color = "#888888";
@@ -38,7 +38,6 @@ char *frame_color = "#888888";
  * automatically after a crash, so crashes might get unnotices otherwise
  * */
 int startup_notification = False;
-
 
 /* monitor to display notifications on */
 int monitor = 0;
@@ -63,25 +62,29 @@ enum follow_mode f_mode = FOLLOW_NONE;
  * use "none" to disable
  */
 keyboard_shortcut close_ks = {.str = "none",
-                       .code = 0, .sym = NoSymbol,.is_valid = False}; /* ignore this */
+        .code = 0,.sym = NoSymbol,.is_valid = False
+};                              /* ignore this */
 
 keyboard_shortcut close_all_ks = {.str = "none",
-                       .code = 0, .sym = NoSymbol,.is_valid = False}; /* ignore this */
+        .code = 0,.sym = NoSymbol,.is_valid = False
+};                              /* ignore this */
 
 keyboard_shortcut history_ks = {.str = "none",
-                       .code = 0, .sym = NoSymbol,.is_valid = False}; /* ignore this */
+        .code = 0,.sym = NoSymbol,.is_valid = False
+};                              /* ignore this */
 
 keyboard_shortcut context_ks = {.str = "none",
-                       .code = 0, .sym = NoSymbol,.is_valid = False}; /* ignore this */
+        .code = 0,.sym = NoSymbol,.is_valid = False
+};                              /* ignore this */
 
 rule_t default_rules[] = {
-     /* name can be any unique string. It is used to identify the rule in dunstrc to override it there */
+        /* name can be any unique string. It is used to identify the rule in dunstrc to override it there */
 
-     /*   name,     appname,       summary,         body,  icon,  timeout,  urgency,  fg,    bg, format, script */
-        { "empty", NULL,           NULL,            NULL,  NULL,  -1,       -1,       NULL,  NULL, NULL, NULL},
-     /* { "rule1", "notify-send",  NULL,            NULL,  NULL,  -1,       -1,       NULL,  NULL, "%s %b", NULL }, */
-     /* { "rule2", "Pidgin",       "*says*,         NULL,  NULL,  -1,       CRITICAL, NULL,  NULL, NULL, NULL    }, */
-     /* { "rule3", "Pidgin",       "*signed on*",   NULL,  NULL,  -1,       LOW,      NULL,  NULL, NULL, NULL    }, */
-     /* { "rule4", "Pidgin",       "*signed off*",  NULL,  NULL,  -1,       LOW,      NULL,  NULL, NULL, NULL    }, */
-     /* { "rule5", NULL,           "*foobar*",      NULL,  NULL,  -1,       -1,       NULL,  "#00FF00", NULL, NULL }, */
- };
+        /*   name,     appname,       summary,         body,  icon,  timeout,  urgency,  fg,    bg, format, script */
+        {"empty", NULL, NULL, NULL, NULL, -1, -1, NULL, NULL, NULL, NULL},
+        /* { "rule1", "notify-send",  NULL,            NULL,  NULL,  -1,       -1,       NULL,  NULL, "%s %b", NULL }, */
+        /* { "rule2", "Pidgin",       "*says*,         NULL,  NULL,  -1,       CRITICAL, NULL,  NULL, NULL, NULL    }, */
+        /* { "rule3", "Pidgin",       "*signed on*",   NULL,  NULL,  -1,       LOW,      NULL,  NULL, NULL, NULL    }, */
+        /* { "rule4", "Pidgin",       "*signed off*",  NULL,  NULL,  -1,       LOW,      NULL,  NULL, NULL, NULL    }, */
+        /* { "rule5", NULL,           "*foobar*",      NULL,  NULL,  -1,       -1,       NULL,  "#00FF00", NULL, NULL }, */
+};

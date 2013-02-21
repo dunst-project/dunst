@@ -110,7 +110,7 @@ char *ini_get_string(char *section, char *key, const char *def)
         if (def == NULL)
                 return NULL;
         else
-                return def ?  g_strdup(def) : NULL;
+                return def ? g_strdup(def) : NULL;
 }
 
 int ini_get_int(char *section, char *key, int def)
@@ -444,13 +444,15 @@ void cmdline_usage_append(char *key, char *type, char *description)
                 key_type = g_strdup(key);
 
         if (!usage_str) {
-                usage_str = g_strdup_printf("%-40s - %s\n", key_type, description);
+                usage_str =
+                    g_strdup_printf("%-40s - %s\n", key_type, description);
                 free(key_type);
                 return;
         }
 
         char *tmp;
-        tmp = g_strdup_printf("%s%-40s - %s\n", usage_str, key_type, description);
+        tmp =
+            g_strdup_printf("%s%-40s - %s\n", usage_str, key_type, description);
         free(key_type);
 
         free(usage_str);

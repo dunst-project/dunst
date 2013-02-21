@@ -74,7 +74,8 @@ void load_settings(char *cmdline_config_path)
 
         settings.ignore_newline =
             option_get_bool("global", "ignore_newline", "-ignore_newline",
-                            ignore_newline, "Ignore newline characters in notifications");
+                            ignore_newline,
+                            "Ignore newline characters in notifications");
         settings.idle_threshold =
             option_get_int("global", "idle_threshold", "-idle_threshold",
                            idle_threshold,
@@ -83,9 +84,8 @@ void load_settings(char *cmdline_config_path)
             option_get_int("global", "monitor", "-mon", monitor,
                            "On which monitor should the notifications be displayed");
         {
-                char *c =
-                    option_get_string("global", "follow", "-follow", "",
-                                      "Follow mouse, keyboard or none?");
+                char *c = option_get_string("global", "follow", "-follow", "",
+                                            "Follow mouse, keyboard or none?");
                 if (strlen(c) > 0) {
                         parse_follow_mode(c);
                         free(c);
@@ -103,10 +103,9 @@ void load_settings(char *cmdline_config_path)
                               bounce_freq,
                               "Make long text bounce from side to side");
         {
-                char *c =
-                    option_get_string("global", "alignment",
-                                      "-align/-alignment", "",
-                                      "Align notifications left/center/right");
+                char *c = option_get_string("global", "alignment",
+                                            "-align/-alignment", "",
+                                            "Align notifications left/center/right");
                 if (strlen(c) > 0) {
                         if (strcmp(c, "left") == 0)
                                 settings.align = left;
@@ -134,18 +133,18 @@ void load_settings(char *cmdline_config_path)
                            "height of the separator line");
         settings.padding =
             option_get_int("global", "padding", "-padding", padding,
-                            "Padding between text and separator");
+                           "Padding between text and separator");
         settings.h_padding =
-            option_get_int("global", "horizontal_padding", "-horizontal_padding",
-                            h_padding, "horizontal padding");
+            option_get_int("global", "horizontal_padding",
+                           "-horizontal_padding", h_padding,
+                           "horizontal padding");
         settings.transparency =
             option_get_int("global", "transparency", "-transparency",
                            transparency, "Transparency. range 0-100");
         {
-                char *c =
-                    option_get_string("global", "separator_color",
-                                      "-sep_color/-separator_color", "",
-                                      "Color of the separator line (or 'auto')");
+                char *c = option_get_string("global", "separator_color",
+                                            "-sep_color/-separator_color", "",
+                                            "Color of the separator line (or 'auto')");
                 if (strlen(c) > 0) {
                         if (strcmp(c, "auto") == 0)
                                 settings.sep_color = AUTO;
@@ -161,20 +160,27 @@ void load_settings(char *cmdline_config_path)
                 }
         }
 
-        settings.startup_notification = option_get_bool("global", "startup_notification",
-                        "-startup_notification", false, "print notification on startup");
+        settings.startup_notification =
+            option_get_bool("global", "startup_notification",
+                            "-startup_notification", false,
+                            "print notification on startup");
 
-
-        settings.dmenu = option_get_string("global", "dmenu", "-dmenu", dmenu, "path to dmenu");
+        settings.dmenu =
+            option_get_string("global", "dmenu", "-dmenu", dmenu,
+                              "path to dmenu");
         settings.dmenu_cmd = g_strsplit(dmenu, " ", 0);
 
-        settings.browser = option_get_string("global", "browser", "-browser", browser, "path to browser");
+        settings.browser =
+            option_get_string("global", "browser", "-browser", browser,
+                              "path to browser");
 
-        settings.frame_width = option_get_int("frame", "width", "-frame_width", frame_width,
-                        "Width of frame around window");
+        settings.frame_width =
+            option_get_int("frame", "width", "-frame_width", frame_width,
+                           "Width of frame around window");
 
-        settings.frame_color = option_get_string("frame", "color", "-frame_color",
-                        frame_color, "Color of the frame around window");
+        settings.frame_color =
+            option_get_string("frame", "color", "-frame_color", frame_color,
+                              "Color of the frame around window");
 
         settings.lowbgcolor =
             option_get_string("urgency_low", "background", "-lb", lowbgcolor,
@@ -222,9 +228,8 @@ void load_settings(char *cmdline_config_path)
                               "Shortcut to pop the last notification from history");
 
         settings.context_ks.str =
-                option_get_string("shortcuts", "context", "-context_key",
-                                context_ks.str,
-                                "Shortcut for context menu");
+            option_get_string("shortcuts", "context", "-context_key",
+                              context_ks.str, "Shortcut for context menu");
 
         settings.print_notifications =
             cmdline_get_bool("-print", false,
@@ -249,7 +254,7 @@ void load_settings(char *cmdline_config_path)
 
                 /* check for existing rule with same name */
                 rule_t *r = NULL;
-                for (GSList *iter = rules; iter; iter = iter->next) {
+                for (GSList * iter = rules; iter; iter = iter->next) {
                         rule_t *match = iter->data;
                         if (match->name &&
                             strcmp(match->name, cur_section) == 0)
@@ -289,7 +294,6 @@ void load_settings(char *cmdline_config_path)
                 r->format = ini_get_string(cur_section, "format", r->format);
                 r->script = ini_get_string(cur_section, "script", NULL);
         }
-
 
 #ifndef STATIC_CONFIG
         fclose(config_file);

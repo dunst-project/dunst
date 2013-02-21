@@ -37,12 +37,11 @@ typedef struct _notification {
         Actions *actions;
 } notification;
 
-
 int notification_init(notification * n, int id);
 int notification_close_by_id(int id, int reason);
 int notification_cmp(const void *a, const void *b);
 int notification_cmp_data(const void *a, const void *b, void *data);
-void notification_run_script(notification *n);
+void notification_run_script(notification * n);
 int notification_close(notification * n, int reason);
-void notification_print(notification *n);
+void notification_print(notification * n);
 char *notification_fix_markup(char *str);

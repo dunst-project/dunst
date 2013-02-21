@@ -301,32 +301,30 @@ int textw(DC * dc, const char *text)
         return textnw(dc, text, strlen(text)) + dc->font.height;
 }
 
-
         /*
          * Helper function to use glib's mainloop mechanic
          * with Xlib
          */
-gboolean x_mainloop_fd_prepare(GSource *source, gint *timeout)
+gboolean x_mainloop_fd_prepare(GSource * source, gint * timeout)
 {
         *timeout = -1;
         return false;
 }
 
-
         /*
          * Helper function to use glib's mainloop mechanic
          * with Xlib
          */
-gboolean x_mainloop_fd_check(GSource *source)
+gboolean x_mainloop_fd_check(GSource * source)
 {
         return XPending(xctx.dc->dpy) > 0;
 }
 
-
         /*
          * Main Dispatcher for XEvents
          */
-gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer user_data)
+gboolean x_mainloop_fd_dispatch(GSource * source, GSourceFunc callback,
+                                gpointer user_data)
 {
         XEvent ev;
         while (XPending(xctx.dc->dpy) > 0) {
@@ -350,24 +348,30 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer 
                         break;
                 case KeyPress:
                         if (settings.close_ks.str
-                            && XLookupKeysym(&ev.xkey, 0) == settings.close_ks.sym
+                            && XLookupKeysym(&ev.xkey,
+                                             0) == settings.close_ks.sym
                             && settings.close_ks.mask == ev.xkey.state) {
                                 if (displayed) {
-                                        notification_close(g_queue_peek_head_link(displayed)->data, 2);
+                                        notification_close
+                                            (g_queue_peek_head_link(displayed)->
+                                             data, 2);
                                 }
                         }
                         if (settings.history_ks.str
-                            && XLookupKeysym(&ev.xkey, 0) == settings.history_ks.sym
+                            && XLookupKeysym(&ev.xkey,
+                                             0) == settings.history_ks.sym
                             && settings.history_ks.mask == ev.xkey.state) {
                                 history_pop();
                         }
                         if (settings.close_all_ks.str
-                            && XLookupKeysym(&ev.xkey, 0) == settings.close_all_ks.sym
+                            && XLookupKeysym(&ev.xkey,
+                                             0) == settings.close_all_ks.sym
                             && settings.close_all_ks.mask == ev.xkey.state) {
                                 move_all_to_history();
                         }
                         if (settings.context_ks.str
-                            && XLookupKeysym(&ev.xkey, 0) == settings.context_ks.sym
+                            && XLookupKeysym(&ev.xkey,
+                                             0) == settings.context_ks.sym
                             && settings.context_ks.mask == ev.xkey.state) {
                                 context_menu();
                         }
@@ -376,8 +380,6 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer 
         }
         return true;
 }
-
-
 
         /*
          * Check whether the user is currently idle.
@@ -407,9 +409,12 @@ void x_handle_click(XEvent ev)
         if (ev.xbutton.button == Button1) {
                 int y = settings.separator_height;
                 notification *n = NULL;
-                for (GList *iter = g_queue_peek_head_link(displayed); iter; iter = iter->next) {
+                for (GList * iter = g_queue_peek_head_link(displayed); iter;
+                     iter = iter->next) {
                         n = iter->data;
-                        int text_h = MAX(xctx.font_h, settings.line_height) * n->line_count;
+                        int text_h =
+                            MAX(xctx.font_h,
+                                settings.line_height) * n->line_count;
                         int padding = 2 * settings.h_padding;
 
                         int height = text_h + padding;
@@ -423,8 +428,6 @@ void x_handle_click(XEvent ev)
                         notification_close(n, 2);
         }
 }
-
-
 
         /*
          * Return the window that currently has
@@ -460,12 +463,15 @@ Window get_focused_window(void)
 int select_screen(XineramaScreenInfo * info, int info_len)
 {
         if (settings.f_mode == FOLLOW_NONE) {
-                return settings.monitor >= 0 ? settings.monitor : XDefaultScreen(xctx.dc->dpy);
+                return settings.monitor >=
+                    0 ? settings.monitor : XDefaultScreen(xctx.dc->dpy);
 
         } else {
                 int x, y;
-                assert(settings.f_mode == FOLLOW_MOUSE || settings.f_mode == FOLLOW_KEYBOARD);
-                Window root = RootWindow(xctx.dc->dpy, DefaultScreen(xctx.dc->dpy));
+                assert(settings.f_mode == FOLLOW_MOUSE
+                       || settings.f_mode == FOLLOW_KEYBOARD);
+                Window root =
+                    RootWindow(xctx.dc->dpy, DefaultScreen(xctx.dc->dpy));
 
                 if (settings.f_mode == FOLLOW_MOUSE) {
                         int dummy;
@@ -483,7 +489,10 @@ int select_screen(XineramaScreenInfo * info, int info_len)
 
                         if (focused == 0) {
                                 /* something went wrong. Fallback to default */
-                                return settings.monitor >= 0 ? settings.monitor : XDefaultScreen(xctx.dc->dpy);
+                                return settings.monitor >=
+                                    0 ? settings.monitor : XDefaultScreen(xctx.
+                                                                          dc->
+                                                                          dpy);
                         }
 
                         Window child_return;
@@ -500,7 +509,8 @@ int select_screen(XineramaScreenInfo * info, int info_len)
                 }
 
                 /* something seems to be wrong. Fallback to default */
-                return settings.monitor >= 0 ? settings.monitor : XDefaultScreen(xctx.dc->dpy);
+                return settings.monitor >=
+                    0 ? settings.monitor : XDefaultScreen(xctx.dc->dpy);
         }
 }
 #endif
@@ -509,7 +519,7 @@ int select_screen(XineramaScreenInfo * info, int info_len)
          * Update the information about the monitor
          * geometry.
          */
-void x_screen_info(screen_info *scr)
+void x_screen_info(screen_info * scr)
 {
 #ifdef XINERAMA
         int n;
@@ -541,7 +551,6 @@ void x_screen_info(screen_info *scr)
                 scr->dim.h = DisplayHeight(xctx.dc->dpy, screen);
         }
 }
-
 
         /*
          * Setup X11 stuff
@@ -579,7 +588,8 @@ void x_setup(void)
         xctx.framec = getcolor(xctx.dc, settings.frame_color);
 
         if (settings.sep_color == CUSTOM) {
-                xctx.sep_custom_col = getcolor(xctx.dc, settings.sep_custom_color_str);
+                xctx.sep_custom_col =
+                    getcolor(xctx.dc, settings.sep_custom_color_str);
         } else {
                 xctx.sep_custom_col = 0;
         }
@@ -593,18 +603,14 @@ void x_setup(void)
         }
 
         xctx.geometry.mask = XParseGeometry(settings.geom,
-                                       &xctx.geometry.x, &xctx.geometry.y,
-                                       &xctx.geometry.w, &xctx.geometry.h);
-
+                                            &xctx.geometry.x, &xctx.geometry.y,
+                                            &xctx.geometry.w, &xctx.geometry.h);
 
         xctx.screensaver_info = XScreenSaverAllocInfo();
-
 
         x_win_setup();
         x_shortcut_grab(&settings.history_ks);
 }
-
-
 
 /* TODO comments and naming */
 
@@ -627,11 +633,14 @@ GSList *do_word_wrap(char *text, int max_width)
                 }
                 if (*end == '\n') {
                         *end = ' ';
-                        result = g_slist_append(result, g_strndup(begin, end - begin));
+                        result =
+                            g_slist_append(result,
+                                           g_strndup(begin, end - begin));
                         begin = ++end;
                 }
 
-                if (settings.word_wrap && max_width > 0 && textnw(xctx.dc, begin, (end - begin) + 1) > max_width) {
+                if (settings.word_wrap && max_width > 0
+                    && textnw(xctx.dc, begin, (end - begin) + 1) > max_width) {
                         /* find previous space */
                         char *space = end;
                         while (space > begin && !isspace(*space))
@@ -640,7 +649,9 @@ GSList *do_word_wrap(char *text, int max_width)
                         if (space > begin) {
                                 end = space;
                         }
-                        result = g_slist_append(result, g_strndup(begin, end - begin));
+                        result =
+                            g_slist_append(result,
+                                           g_strndup(begin, end - begin));
                         begin = ++end;
                 }
                 end++;
@@ -649,24 +660,21 @@ GSList *do_word_wrap(char *text, int max_width)
         return result;
 }
 
-
-char *generate_final_text(notification *n)
+char *generate_final_text(notification * n)
 {
         char *msg = g_strstrip(n->msg);
         char *buf;
 
-        /* print dup_count and msg*/
+        /* print dup_count and msg */
         if (n->dup_count > 0 && (n->actions || n->urls)) {
                 buf = g_strdup_printf("(%d%s%s) %s",
-                                n->dup_count,
-                                n->actions ? "A" : "",
-                                n->urls ? "U" : "",
-                                msg);
+                                      n->dup_count,
+                                      n->actions ? "A" : "",
+                                      n->urls ? "U" : "", msg);
         } else if (n->actions || n->urls) {
                 buf = g_strdup_printf("(%s%s) %s",
-                                n->actions ? "A" : "",
-                                n->urls ? "U" : "",
-                                msg);
+                                      n->actions ? "A" : "",
+                                      n->urls ? "U" : "", msg);
         } else {
                 buf = g_strdup(msg);
         }
@@ -675,18 +683,21 @@ char *generate_final_text(notification *n)
         int hours, minutes, seconds;
         time_t t_delta = time(NULL) - n->timestamp;
 
-        if (settings.show_age_threshold >= 0 && t_delta >= settings.show_age_threshold) {
+        if (settings.show_age_threshold >= 0
+            && t_delta >= settings.show_age_threshold) {
                 hours = t_delta / 3600;
                 minutes = t_delta / 60 % 60;
                 seconds = t_delta % 60;
 
                 char *new_buf;
                 if (hours > 0) {
-                        new_buf = g_strdup_printf("%s (%dh %dm %ds old)", buf, hours,
-                                 minutes, seconds);
+                        new_buf =
+                            g_strdup_printf("%s (%dh %dm %ds old)", buf, hours,
+                                            minutes, seconds);
                 } else if (minutes > 0) {
-                        new_buf = g_strdup_printf("%s (%dm %ds old)", buf, minutes,
-                                 seconds);
+                        new_buf =
+                            g_strdup_printf("%s (%dm %ds old)", buf, minutes,
+                                            seconds);
                 } else {
                         new_buf = g_strdup_printf("%s (%ds old)", buf, seconds);
                 }
@@ -704,17 +715,20 @@ int calculate_x_offset(int line_width, int text_width)
         struct timeval t;
         float pos;
         /* If the text is wider than the frame, bouncing is enabled and word_wrap disabled */
-        if (line_width < text_width && settings.bounce_freq > 0.0001 && !settings.word_wrap) {
+        if (line_width < text_width && settings.bounce_freq > 0.0001
+            && !settings.word_wrap) {
                 gettimeofday(&t, NULL);
                 pos =
-                    ((t.tv_sec % 100) * 1e6 + t.tv_usec) / (1e6 / settings.bounce_freq);
+                    ((t.tv_sec % 100) * 1e6 +
+                     t.tv_usec) / (1e6 / settings.bounce_freq);
                 return (1 + sinf(2 * 3.14159 * pos)) * leftover / 2;
         }
         switch (settings.align) {
         case left:
                 return settings.frame_width + settings.h_padding;
         case center:
-                return settings.frame_width + settings.h_padding + (leftover / 2);
+                return settings.frame_width + settings.h_padding +
+                    (leftover / 2);
         case right:
                 return settings.frame_width + settings.h_padding + leftover;
         default:
@@ -725,7 +739,8 @@ int calculate_x_offset(int line_width, int text_width)
 
 unsigned long calculate_foreground_color(unsigned long source_color)
 {
-        Colormap cmap = DefaultColormap(xctx.dc->dpy, DefaultScreen(xctx.dc->dpy));
+        Colormap cmap =
+            DefaultColormap(xctx.dc->dpy, DefaultScreen(xctx.dc->dpy));
         XColor color;
 
         color.pixel = source_color;
@@ -792,7 +807,7 @@ int calculate_width(void)
 void move_and_map(int width, int height)
 {
 
-        int x,y;
+        int x, y;
         screen_info scr;
         x_screen_info(&scr);
         /* calculate window position */
@@ -829,10 +844,11 @@ GSList *generate_render_texts(int width)
 {
         GSList *render_texts = NULL;
 
-        for (GList *iter = g_queue_peek_head_link(displayed); iter; iter = iter->next) {
+        for (GList * iter = g_queue_peek_head_link(displayed); iter;
+             iter = iter->next) {
                 render_text *rt = g_malloc(sizeof(render_text));
 
-                rt->colors = ((notification*)iter->data)->colors;
+                rt->colors = ((notification *) iter->data)->colors;
                 char *text = generate_final_text(iter->data);
                 rt->lines = do_word_wrap(text, width);
                 free(text);
@@ -843,14 +859,22 @@ GSList *generate_render_texts(int width)
         if (settings.indicate_hidden && queue->length > 0) {
                 if (xctx.geometry.h != 1) {
                         render_text *rt = g_malloc(sizeof(render_text));
-                        rt->colors = ((render_text *) g_slist_last(render_texts)->data)->colors;
-                        rt->lines = g_slist_append(NULL, g_strdup_printf("%d more)", queue->length));
+                        rt->colors =
+                            ((render_text *) g_slist_last(render_texts)->data)->
+                            colors;
+                        rt->lines =
+                            g_slist_append(NULL,
+                                           g_strdup_printf("%d more)",
+                                                           queue->length));
                         render_texts = g_slist_append(render_texts, rt);
                 } else {
-                        GSList *last_lines = ((render_text *) g_slist_last(render_texts)->data)->lines;
+                        GSList *last_lines =
+                            ((render_text *) g_slist_last(render_texts)->data)->
+                            lines;
                         GSList *last_line = g_slist_last(last_lines);
                         char *old = last_line->data;
-                        char *new = g_strdup_printf("%s (%d more)", old, queue->length);
+                        char *new =
+                            g_strdup_printf("%s (%d more)", old, queue->length);
                         free(old);
                         last_line->data = new;
                 }
@@ -859,17 +883,15 @@ GSList *generate_render_texts(int width)
         return render_texts;
 }
 
-void free_render_text(void *data) {
+void free_render_text(void *data)
+{
         g_slist_free_full(((render_text *) data)->lines, g_free);
 }
 
-void free_render_texts(GSList *texts) {
+void free_render_texts(GSList * texts)
+{
         g_slist_free_full(texts, free_render_text);
 }
-
-
-
-
 
 void x_win_draw(void)
 {
@@ -878,40 +900,44 @@ void x_win_draw(void)
         screen_info scr;
         x_screen_info(&scr);
 
-
         settings.line_height = MAX(settings.line_height, xctx.font_h);
 
         int width;
         if (outer_width == 0)
                 width = 0;
         else
-                width = outer_width - (2 * settings.frame_width) - (2 * settings.h_padding);
-
+                width =
+                    outer_width - (2 * settings.frame_width) -
+                    (2 * settings.h_padding);
 
         GSList *texts = generate_render_texts(width);
         int line_count = 0;
-        for (GSList *iter = texts; iter; iter = iter->next) {
+        for (GSList * iter = texts; iter; iter = iter->next) {
                 render_text *tmp = iter->data;
                 line_count += g_slist_length(tmp->lines);
         }
 
         /* if we have a dynamic width, calculate the actual width */
         if (width == 0) {
-                for (GSList *iter = texts; iter; iter = iter->next) {
+                for (GSList * iter = texts; iter; iter = iter->next) {
                         GSList *lines = ((render_text *) iter->data)->lines;
-                        for (GSList *iiter = lines; iiter; iiter = iiter->next)
+                        for (GSList * iiter = lines; iiter; iiter = iiter->next)
                                 width = MAX(width, textw(xctx.dc, iiter->data));
                 }
-                outer_width = width + (2 * settings.frame_width) + (2 * settings.h_padding);
+                outer_width =
+                    width + (2 * settings.frame_width) +
+                    (2 * settings.h_padding);
         }
 
         /* resize xctx.dc to correct width */
 
         int height = (line_count * settings.line_height)
-                   + displayed->length * 2 * settings.padding
-                   + ((settings.indicate_hidden && queue->length > 0 && xctx.geometry.h != 1) ? 2 * settings.padding : 0)
-                   + (settings.separator_height * (displayed->length - 1))
-                   + (2 * settings.frame_width);
+            + displayed->length * 2 * settings.padding
+            +
+            ((settings.indicate_hidden && queue->length > 0
+              && xctx.geometry.h != 1) ? 2 * settings.padding : 0)
+            + (settings.separator_height * (displayed->length - 1))
+            + (2 * settings.frame_width);
 
         resizedc(xctx.dc, outer_width, height);
 
@@ -928,15 +954,14 @@ void x_win_draw(void)
         xctx.dc->y = settings.frame_width;
         xctx.dc->x = settings.frame_width;
 
-        for (GSList *iter = texts; iter; iter = iter->next) {
+        for (GSList * iter = texts; iter; iter = iter->next) {
 
                 render_text *cur = iter->data;
                 ColorSet *colors = cur->colors;
 
-
                 int line_count = 0;
                 bool first_line = true;
-                for (GSList *iiter = cur->lines; iiter; iiter = iiter->next) {
+                for (GSList * iiter = cur->lines; iiter; iiter = iiter->next) {
                         char *line = iiter->data;
                         line_count++;
 
@@ -944,24 +969,30 @@ void x_win_draw(void)
                         bool last_line = iiter->next == NULL;
 
                         if (first_line && last_line)
-                                pad = 2*settings.padding;
+                                pad = 2 * settings.padding;
                         else if (first_line || last_line)
                                 pad = settings.padding;
 
                         xctx.dc->x = settings.frame_width;
 
                         /* draw background */
-                        drawrect(xctx.dc, 0, 0, width + (2*settings.h_padding), pad +  settings.line_height, true, colors->BG);
+                        drawrect(xctx.dc, 0, 0,
+                                 width + (2 * settings.h_padding),
+                                 pad + settings.line_height, true, colors->BG);
 
                         /* draw text */
-                        xctx.dc->x = calculate_x_offset(width, textw(xctx.dc, line));
+                        xctx.dc->x =
+                            calculate_x_offset(width, textw(xctx.dc, line));
 
-                        xctx.dc->y += ((settings.line_height - xctx.font_h) / 2);
+                        xctx.dc->y +=
+                            ((settings.line_height - xctx.font_h) / 2);
                         xctx.dc->y += first_line ? settings.padding : 0;
 
                         drawtextn(xctx.dc, line, strlen(line), colors);
 
-                        xctx.dc->y += settings.line_height - ((settings.line_height - xctx.font_h) / 2);
+                        xctx.dc->y +=
+                            settings.line_height -
+                            ((settings.line_height - xctx.font_h) / 2);
                         xctx.dc->y += last_line ? settings.padding : 0;
 
                         first_line = false;
@@ -981,7 +1012,9 @@ void x_win_draw(void)
                                 /* CUSTOM */
                                 color = xctx.sep_custom_col;
                         }
-                        drawrect(xctx.dc, 0, 0, width + (2*settings.h_padding), settings.separator_height, true, color);
+                        drawrect(xctx.dc, 0, 0,
+                                 width + (2 * settings.h_padding),
+                                 settings.separator_height, true, color);
                         xctx.dc->y += settings.separator_height;
                 }
         }
@@ -1020,13 +1053,17 @@ void x_win_setup(void)
         xctx.win =
             XCreateWindow(xctx.dc->dpy, root, scr.dim.x, scr.dim.y, scr.dim.w,
                           xctx.font_h, 0, DefaultDepth(xctx.dc->dpy,
-                                                  DefaultScreen(xctx.dc->dpy)),
+                                                       DefaultScreen(xctx.dc->
+                                                                     dpy)),
                           CopyFromParent, DefaultVisual(xctx.dc->dpy,
-                                                        DefaultScreen(xctx.dc->dpy)),
+                                                        DefaultScreen(xctx.dc->
+                                                                      dpy)),
                           CWOverrideRedirect | CWBackPixmap | CWEventMask, &wa);
-        settings.transparency = settings.transparency > 100 ? 100 : settings.transparency;
+        settings.transparency =
+            settings.transparency > 100 ? 100 : settings.transparency;
         setopacity(xctx.dc, xctx.win,
-                   (unsigned long)((100 - settings.transparency) * (0xffffffff / 100)));
+                   (unsigned long)((100 - settings.transparency) *
+                                   (0xffffffff / 100)));
 }
 
         /*
@@ -1068,9 +1105,6 @@ void x_win_hide()
         XFlush(xctx.dc->dpy);
         xctx.visible = false;
 }
-
-
-
 
         /*
          * Parse a string into a modifier mask.
@@ -1139,7 +1173,7 @@ static int x_shortcut_tear_down_error_handler(void)
         /*
          * Grab the given keyboard shortcut.
          */
-int x_shortcut_grab(keyboard_shortcut *ks)
+int x_shortcut_grab(keyboard_shortcut * ks)
 {
         if (!ks->is_valid)
                 return 1;
@@ -1163,7 +1197,7 @@ int x_shortcut_grab(keyboard_shortcut *ks)
         /*
          * Ungrab the given keyboard shortcut.
          */
-void x_shortcut_ungrab(keyboard_shortcut *ks)
+void x_shortcut_ungrab(keyboard_shortcut * ks)
 {
         Window root;
         root = RootWindow(xctx.dc->dpy, DefaultScreen(xctx.dc->dpy));
@@ -1174,7 +1208,7 @@ void x_shortcut_ungrab(keyboard_shortcut *ks)
         /*
          * Initialize the keyboard shortcut.
          */
-void x_shortcut_init(keyboard_shortcut *ks)
+void x_shortcut_init(keyboard_shortcut * ks)
 {
         if (ks == NULL || ks->str == NULL)
                 return;

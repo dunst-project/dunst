@@ -46,7 +46,6 @@ DEALINGS IN THE SOFTWARE.
 
 #include <X11/Xft/Xft.h>
 
-
 #define BUTTONMASK              (ButtonPressMask|ButtonReleaseMask)
 #define FONT_HEIGHT_BORDER 2
 #define DEFFONT "Monospace-11"
@@ -144,20 +143,21 @@ void x_win_show(void);
 void x_win_setup(void);
 
 /* shortcut */
-void x_shortcut_init(keyboard_shortcut *shortcut);
-void x_shortcut_ungrab(keyboard_shortcut *ks);
-int x_shortcut_grab(keyboard_shortcut *ks);
+void x_shortcut_init(keyboard_shortcut * shortcut);
+void x_shortcut_ungrab(keyboard_shortcut * ks);
+int x_shortcut_grab(keyboard_shortcut * ks);
 KeySym x_shortcut_string_to_mask(const char *str);
 
 /* X misc */
 void x_handle_click(XEvent ev);
-void x_screen_info(screen_info *scr);
+void x_screen_info(screen_info * scr);
 bool x_is_idle(void);
 void x_setup(void);
 
-gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer user_data);
-gboolean x_mainloop_fd_check(GSource *source);
-gboolean x_mainloop_fd_prepare(GSource *source, gint *timeout);
+gboolean x_mainloop_fd_dispatch(GSource * source, GSourceFunc callback,
+                                gpointer user_data);
+gboolean x_mainloop_fd_check(GSource * source);
+gboolean x_mainloop_fd_prepare(GSource * source, gint * timeout);
 
 #endif
 /* vim: set ts=8 sw=8 tw=0: */

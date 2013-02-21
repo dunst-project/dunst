@@ -10,14 +10,13 @@ GDBusConnection *dbus_conn;
 
 static GDBusNodeInfo *introspection_data = NULL;
 
-static const char *introspection_xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+static const char *introspection_xml =
+    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
     "<node name=\"/org/freedesktop/Notifications\">"
-    "    <interface name=\"org.freedesktop.Notifications\">"
-    "        "
+    "    <interface name=\"org.freedesktop.Notifications\">" "        "
     "        <method name=\"GetCapabilities\">"
     "            <arg direction=\"out\" name=\"capabilities\" type=\"as\"/>"
-    "        </method>"
-    "        <method name=\"Notify\">"
+    "        </method>" "        <method name=\"Notify\">"
     "            <arg direction=\"in\" name=\"app_name\" type=\"s\"/>"
     "            <arg direction=\"in\" name=\"replaces_id\" type=\"u\"/>"
     "            <arg direction=\"in\" name=\"app_icon\" type=\"s\"/>"
@@ -27,98 +26,85 @@ static const char *introspection_xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"
     "            <arg direction=\"in\" name=\"hints\" type=\"a{sv}\"/>"
     "            <arg direction=\"in\" name=\"expire_timeout\" type=\"i\"/>"
     "            <arg direction=\"out\" name=\"id\" type=\"u\"/>"
-    "        </method>"
-    "        "
-    "        <method name=\"CloseNotification\">"
+    "        </method>" "        " "        <method name=\"CloseNotification\">"
     "            <arg direction=\"in\" name=\"id\" type=\"u\"/>"
-    "        </method>"
-    "        <method name=\"GetServerInformation\">"
+    "        </method>" "        <method name=\"GetServerInformation\">"
     "            <arg direction=\"out\" name=\"name\" type=\"s\"/>"
     "            <arg direction=\"out\" name=\"vendor\" type=\"s\"/>"
     "            <arg direction=\"out\" name=\"version\" type=\"s\"/>"
     "            <arg direction=\"out\" name=\"spec_version\" type=\"s\"/>"
-    "        </method>"
-    "        <signal name=\"NotificationClosed\">"
+    "        </method>" "        <signal name=\"NotificationClosed\">"
     "            <arg name=\"id\" type=\"u\"/>"
-    "            <arg name=\"reason\" type=\"u\"/>"
-    "        </signal>"
+    "            <arg name=\"reason\" type=\"u\"/>" "        </signal>"
     "        <signal name=\"ActionInvoked\">"
     "            <arg name=\"id\" type=\"u\"/>"
-    "            <arg name=\"action_key\" type=\"s\"/>"
-    "        </signal>"
-    "    </interface>"
-    "    "
-    "    <interface name=\"org.xfce.Notifyd\">"
+    "            <arg name=\"action_key\" type=\"s\"/>" "        </signal>"
+    "    </interface>" "    " "    <interface name=\"org.xfce.Notifyd\">"
     "        <method name=\"Quit\"/>" "    </interface>" "</node>";
 
+static void onGetCapabilities(GDBusConnection * connection,
+                              const gchar * sender,
+                              const GVariant * parameters,
+                              GDBusMethodInvocation * invocation);
+static void onNotify(GDBusConnection * connection,
+                     const gchar * sender,
+                     GVariant * parameters, GDBusMethodInvocation * invocation);
+static void onCloseNotification(GDBusConnection * connection,
+                                const gchar * sender,
+                                GVariant * parameters,
+                                GDBusMethodInvocation * invocation);
+static void onGetServerInformation(GDBusConnection * connection,
+                                   const gchar * sender,
+                                   const GVariant * parameters,
+                                   GDBusMethodInvocation * invocation);
 
-static void onGetCapabilities(GDBusConnection *connection,
-                const gchar *sender,
-                const GVariant *parameters,
-                GDBusMethodInvocation *invocation);
-static void onNotify(GDBusConnection *connection,
-                const gchar *sender,
-                GVariant *parameters,
-                GDBusMethodInvocation *invocation);
-static void onCloseNotification(GDBusConnection *connection,
-                const gchar *sender,
-                GVariant *parameters,
-                GDBusMethodInvocation *invocation);
-static void onGetServerInformation(GDBusConnection *connection,
-                const gchar *sender,
-                const GVariant *parameters,
-                GDBusMethodInvocation *invocation);
-
-void handle_method_call(GDBusConnection *connection,
-                const gchar *sender,
-                const gchar *object_path,
-                const gchar *interface_name,
-                const gchar *method_name,
-                GVariant *parameters,
-                GDBusMethodInvocation *invocation,
-                gpointer user_data)
+void handle_method_call(GDBusConnection * connection,
+                        const gchar * sender,
+                        const gchar * object_path,
+                        const gchar * interface_name,
+                        const gchar * method_name,
+                        GVariant * parameters,
+                        GDBusMethodInvocation * invocation, gpointer user_data)
 {
         if (g_strcmp0(method_name, "GetCapabilities") == 0) {
                 onGetCapabilities(connection, sender, parameters, invocation);
-        }
-        else if (g_strcmp0(method_name, "Notify") == 0) {
+        } else if (g_strcmp0(method_name, "Notify") == 0) {
                 onNotify(connection, sender, parameters, invocation);
-        }
-        else if (g_strcmp0(method_name, "CloseNotification") == 0) {
+        } else if (g_strcmp0(method_name, "CloseNotification") == 0) {
                 onCloseNotification(connection, sender, parameters, invocation);
-        }
-        else if (g_strcmp0(method_name, "GetServerInformation") == 0) {
-                onGetServerInformation(connection, sender, parameters, invocation);
+        } else if (g_strcmp0(method_name, "GetServerInformation") == 0) {
+                onGetServerInformation(connection, sender, parameters,
+                                       invocation);
         } else {
                 g_object_unref(invocation);
-                printf("WARNING: sender: %s; unknown method_name: %s\n", sender, method_name);
+                printf("WARNING: sender: %s; unknown method_name: %s\n", sender,
+                       method_name);
         }
 
 }
 
-static void onGetCapabilities(GDBusConnection *connection,
-                const gchar *sender,
-                const GVariant *parameters,
-                GDBusMethodInvocation *invocation)
+static void onGetCapabilities(GDBusConnection * connection,
+                              const gchar * sender,
+                              const GVariant * parameters,
+                              GDBusMethodInvocation * invocation)
 {
         GVariantBuilder *builder;
         GVariant *value;
 
-        builder = g_variant_builder_new (G_VARIANT_TYPE ("as"));
-        g_variant_builder_add (builder, "s", "actions");
-        g_variant_builder_add (builder, "s", "body");
-        value = g_variant_new ("(as)", builder);
-        g_variant_builder_unref (builder);
+        builder = g_variant_builder_new(G_VARIANT_TYPE("as"));
+        g_variant_builder_add(builder, "s", "actions");
+        g_variant_builder_add(builder, "s", "body");
+        value = g_variant_new("(as)", builder);
+        g_variant_builder_unref(builder);
         g_dbus_method_invocation_return_value(invocation, value);
 
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
         g_variant_unref(value);
 }
 
-static void onNotify(GDBusConnection *connection,
-                const gchar *sender,
-                GVariant *parameters,
-                GDBusMethodInvocation *invocation)
+static void onNotify(GDBusConnection * connection,
+                     const gchar * sender,
+                     GVariant * parameters, GDBusMethodInvocation * invocation)
 {
 
         gchar *appname = NULL;
@@ -146,52 +132,82 @@ static void onNotify(GDBusConnection *connection,
                 while ((content = g_variant_iter_next_value(iter))) {
 
                         switch (idx) {
-                                case 0:
-                                        if (g_variant_is_of_type(content, G_VARIANT_TYPE_STRING))
-                                            appname = g_variant_dup_string(content, NULL);
-                                        break;
-                                case 1:
-                                        if (g_variant_is_of_type(content, G_VARIANT_TYPE_UINT32))
-                                            replaces_id = g_variant_get_uint32(content);
-                                        break;
-                                case 2:
-                                        if (g_variant_is_of_type(content, G_VARIANT_TYPE_STRING))
-                                            icon = g_variant_dup_string(content, NULL);
-                                        break;
-                                case 3:
-                                        if (g_variant_is_of_type(content, G_VARIANT_TYPE_STRING))
-                                            summary = g_variant_dup_string(content, NULL);
-                                        break;
-                                case 4:
-                                        if (g_variant_is_of_type(content, G_VARIANT_TYPE_STRING))
-                                            body = g_variant_dup_string(content, NULL);
-                                        break;
-                                case 5:
-                                        if (g_variant_is_of_type(content, G_VARIANT_TYPE_STRING_ARRAY))
-                                            actions->actions = g_variant_dup_strv(content, &(actions->count));
-                                        break;
-                                case 6:
-                                        if (g_variant_is_of_type(content, G_VARIANT_TYPE_DICTIONARY)) {
+                        case 0:
+                                if (g_variant_is_of_type
+                                    (content, G_VARIANT_TYPE_STRING))
+                                        appname =
+                                            g_variant_dup_string(content, NULL);
+                                break;
+                        case 1:
+                                if (g_variant_is_of_type
+                                    (content, G_VARIANT_TYPE_UINT32))
+                                        replaces_id =
+                                            g_variant_get_uint32(content);
+                                break;
+                        case 2:
+                                if (g_variant_is_of_type
+                                    (content, G_VARIANT_TYPE_STRING))
+                                        icon =
+                                            g_variant_dup_string(content, NULL);
+                                break;
+                        case 3:
+                                if (g_variant_is_of_type
+                                    (content, G_VARIANT_TYPE_STRING))
+                                        summary =
+                                            g_variant_dup_string(content, NULL);
+                                break;
+                        case 4:
+                                if (g_variant_is_of_type
+                                    (content, G_VARIANT_TYPE_STRING))
+                                        body =
+                                            g_variant_dup_string(content, NULL);
+                                break;
+                        case 5:
+                                if (g_variant_is_of_type
+                                    (content, G_VARIANT_TYPE_STRING_ARRAY))
+                                        actions->actions =
+                                            g_variant_dup_strv(content,
+                                                               &(actions->
+                                                                 count));
+                                break;
+                        case 6:
+                                if (g_variant_is_of_type
+                                    (content, G_VARIANT_TYPE_DICTIONARY)) {
 
-                                            dict_value = g_variant_lookup_value(content, "urgency", G_VARIANT_TYPE_BYTE);
-                                            if (dict_value)
-                                                urgency = g_variant_get_byte(dict_value);
+                                        dict_value =
+                                            g_variant_lookup_value(content,
+                                                                   "urgency",
+                                                                   G_VARIANT_TYPE_BYTE);
+                                        if (dict_value)
+                                                urgency =
+                                                    g_variant_get_byte
+                                                    (dict_value);
 
-                                            dict_value = g_variant_lookup_value(content, "fgcolor", G_VARIANT_TYPE_STRING);
-                                            if (dict_value)
-                                                fgcolor = g_variant_dup_string(dict_value, NULL);
+                                        dict_value =
+                                            g_variant_lookup_value(content,
+                                                                   "fgcolor",
+                                                                   G_VARIANT_TYPE_STRING);
+                                        if (dict_value)
+                                                fgcolor =
+                                                    g_variant_dup_string
+                                                    (dict_value, NULL);
 
-                                            dict_value = g_variant_lookup_value(content, "bgcolor", G_VARIANT_TYPE_STRING);
-                                            if(dict_value)
-                                                bgcolor = g_variant_dup_string(dict_value, NULL);
-                                        }
-                                        break;
-                                case 7:
-                                        if (g_variant_is_of_type(content, G_VARIANT_TYPE_INT32))
-                                            timeout = g_variant_get_int32(content);
-                                        break;
+                                        dict_value =
+                                            g_variant_lookup_value(content,
+                                                                   "bgcolor",
+                                                                   G_VARIANT_TYPE_STRING);
+                                        if (dict_value)
+                                                bgcolor =
+                                                    g_variant_dup_string
+                                                    (dict_value, NULL);
+                                }
+                                break;
+                        case 7:
+                                if (g_variant_is_of_type
+                                    (content, G_VARIANT_TYPE_INT32))
+                                        timeout = g_variant_get_int32(content);
+                                break;
                         }
-
 
                         idx++;
                 }
@@ -209,7 +225,7 @@ static void onNotify(GDBusConnection *connection,
                 }
         }
 
-        notification *n = malloc(sizeof (notification));
+        notification *n = malloc(sizeof(notification));
         n->appname = appname;
         n->summary = summary;
         n->body = body;
@@ -219,10 +235,10 @@ static void onNotify(GDBusConnection *connection,
         n->urgency = urgency;
         n->dbus_client = strdup(sender);
         if (actions->count > 0) {
-            n->actions = actions;
+                n->actions = actions;
         } else {
-            n->actions = NULL;
-            free(actions);
+                n->actions = NULL;
+                free(actions);
         }
 
         for (int i = 0; i < ColLast; i++) {
@@ -234,17 +250,17 @@ static void onNotify(GDBusConnection *connection,
         int id = notification_init(n, replaces_id);
         wake_up();
 
-        GVariant *reply = g_variant_new ("(u)", id);
+        GVariant *reply = g_variant_new("(u)", id);
         g_dbus_method_invocation_return_value(invocation, reply);
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
 
         run(NULL);
 }
 
-static void onCloseNotification(GDBusConnection *connection,
-                const gchar *sender,
-                GVariant *parameters,
-                GDBusMethodInvocation *invocation)
+static void onCloseNotification(GDBusConnection * connection,
+                                const gchar * sender,
+                                GVariant * parameters,
+                                GDBusMethodInvocation * invocation)
 {
         guint32 id;
         g_variant_get(parameters, "(u)", &id);
@@ -253,14 +269,14 @@ static void onCloseNotification(GDBusConnection *connection,
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
 }
 
-static void onGetServerInformation(GDBusConnection *connection,
-                const gchar *sender,
-                const GVariant *parameters,
-                GDBusMethodInvocation *invocation)
+static void onGetServerInformation(GDBusConnection * connection,
+                                   const gchar * sender,
+                                   const GVariant * parameters,
+                                   GDBusMethodInvocation * invocation)
 {
         GVariant *value;
 
-        value = g_variant_new ("(ssss)", "dunst", "knopwob", VERSION, "1.2");
+        value = g_variant_new("(ssss)", "dunst", "knopwob", VERSION, "1.2");
         g_dbus_method_invocation_return_value(invocation, value);
 
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
@@ -269,21 +285,18 @@ static void onGetServerInformation(GDBusConnection *connection,
 void notificationClosed(notification * n, int reason)
 {
         if (!dbus_conn) {
-            printf("DEBUG: notificationClosed but not (yet) connected\n");
-            return;
+                printf("DEBUG: notificationClosed but not (yet) connected\n");
+                return;
         }
 
-        GVariant *body = g_variant_new ("(uu)", n->id, reason);
+        GVariant *body = g_variant_new("(uu)", n->id, reason);
         GError *err = NULL;
 
-        g_dbus_connection_emit_signal(
-                        dbus_conn,
-                        n->dbus_client,
-                        "/org/freedesktop/Notifications",
-                        "org.freedesktop.Notifications",
-                        "NotificationClosed",
-                        body,
-                        &err);
+        g_dbus_connection_emit_signal(dbus_conn,
+                                      n->dbus_client,
+                                      "/org/freedesktop/Notifications",
+                                      "org.freedesktop.Notifications",
+                                      "NotificationClosed", body, &err);
 
         if (err) {
                 printf("notificationClosed ERROR\n");
@@ -291,60 +304,52 @@ void notificationClosed(notification * n, int reason)
 
 }
 
-void actionInvoked(notification *n, const char *identifier)
+void actionInvoked(notification * n, const char *identifier)
 {
-        GVariant *body = g_variant_new ("(us)", n->id, identifier);
+        GVariant *body = g_variant_new("(us)", n->id, identifier);
         GError *err = NULL;
 
-        g_dbus_connection_emit_signal(
-                        dbus_conn,
-                        n->dbus_client,
-                        "/org/freedesktop/Notifications",
-                        "org.freedesktop.Notifications",
-                        "ActionInvoked",
-                        body,
-                        &err);
+        g_dbus_connection_emit_signal(dbus_conn,
+                                      n->dbus_client,
+                                      "/org/freedesktop/Notifications",
+                                      "org.freedesktop.Notifications",
+                                      "ActionInvoked", body, &err);
 
         if (err) {
                 printf("ActionInvoked ERROR\n");
         }
 }
 
-static const GDBusInterfaceVTable interface_vtable =
-{
+static const GDBusInterfaceVTable interface_vtable = {
         handle_method_call
 };
 
-static void on_bus_acquired(GDBusConnection *connection,
-                const gchar *name,
-                gpointer user_data)
+static void on_bus_acquired(GDBusConnection * connection,
+                            const gchar * name, gpointer user_data)
 {
         guint registration_id;
 
-        registration_id = g_dbus_connection_register_object( connection,
-                        "/org/freedesktop/Notifications",
-                        introspection_data->interfaces[0],
-                        &interface_vtable,
-                        NULL,
-                        NULL,
-                        NULL);
+        registration_id = g_dbus_connection_register_object(connection,
+                                                            "/org/freedesktop/Notifications",
+                                                            introspection_data->
+                                                            interfaces[0],
+                                                            &interface_vtable,
+                                                            NULL, NULL, NULL);
 
-        if (! registration_id > 0) {
+        if (!registration_id > 0) {
                 fprintf(stderr, "Unable to register\n");
                 exit(1);
         }
 }
 
-static void on_name_acquired(GDBusConnection *connection,
-                const gchar *name,
-                gpointer user_data)
+static void on_name_acquired(GDBusConnection * connection,
+                             const gchar * name, gpointer user_data)
 {
         dbus_conn = connection;
 }
 
-static void on_name_lost(GDBusConnection *connection,
-                const gchar *name,
-                gpointer user_data)
+static void on_name_lost(GDBusConnection * connection,
+                         const gchar * name, gpointer user_data)
 {
         fprintf(stderr, "Name Lost\n");
         exit(1);
@@ -357,22 +362,20 @@ int initdbus(void)
         g_type_init();
 
         introspection_data = g_dbus_node_info_new_for_xml(introspection_xml,
-                        NULL);
+                                                          NULL);
 
-        owner_id = g_bus_own_name (G_BUS_TYPE_SESSION,
-                        "org.freedesktop.Notifications",
-                        G_BUS_NAME_OWNER_FLAGS_NONE,
-                        on_bus_acquired,
-                        on_name_acquired,
-                        on_name_lost,
-                        NULL,
-                        NULL);
+        owner_id = g_bus_own_name(G_BUS_TYPE_SESSION,
+                                  "org.freedesktop.Notifications",
+                                  G_BUS_NAME_OWNER_FLAGS_NONE,
+                                  on_bus_acquired,
+                                  on_name_acquired, on_name_lost, NULL, NULL);
 
         return owner_id;
 }
 
 void dbus_tear_down(int owner_id)
 {
-      g_bus_unown_name(owner_id);
+        g_bus_unown_name(owner_id);
 }
+
 /* vim: set ts=8 sw=8 tw=0: */

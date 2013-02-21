@@ -14,7 +14,7 @@ char *string_replace_all(const char *needle, const char *replacement,
 {
         char *start;
         start = strstr(haystack, needle);
-        while(start != NULL) {
+        while (start != NULL) {
                 haystack = string_replace(needle, replacement, haystack);
                 start = strstr(haystack, needle);
         }
@@ -51,7 +51,7 @@ char *string_append(char *a, const char *b, const char *sep)
 
         char *new;
         if (!sep)
-                new = g_strconcat(a,b, NULL);
+                new = g_strconcat(a, b, NULL);
         else
                 new = g_strconcat(a, sep, b, NULL);
         free(a);

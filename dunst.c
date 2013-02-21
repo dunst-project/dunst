@@ -37,7 +37,6 @@
 #include "option_parser.h"
 #include "settings.h"
 
-
 #define LENGTH(X)               (sizeof X / sizeof X[0])
 
 #ifndef VERSION
@@ -54,9 +53,6 @@ typedef struct _x11_source {
         Window w;
 } x11_source_t;
 
-
-
-
 /* index of colors fit to urgency level */
 bool pause_display = false;
 
@@ -65,29 +61,13 @@ bool timer_active = false;
 
 bool force_redraw = false;
 
-
 /* notification lists */
-GQueue *queue = NULL;             /* all new notifications get into here */
-GQueue *displayed = NULL;   /* currently displayed notifications */
-GQueue *history = NULL;      /* history of displayed notifications */
+GQueue *queue = NULL;           /* all new notifications get into here */
+GQueue *displayed = NULL;       /* currently displayed notifications */
+GQueue *history = NULL;         /* history of displayed notifications */
 GSList *rules = NULL;
 
-
-
-
 /* misc funtions */
-
-
-
-
-
-
-
-
-
-
-
-
 
 void check_timeouts(void)
 {
@@ -95,7 +75,8 @@ void check_timeouts(void)
         if (displayed->length == 0)
                 return;
 
-        for (GList *iter = g_queue_peek_head_link(displayed); iter; iter = iter->next) {
+        for (GList * iter = g_queue_peek_head_link(displayed); iter;
+             iter = iter->next) {
                 notification *n = iter->data;
 
                 /* don't timeout when user is idle */
@@ -128,7 +109,8 @@ void update_lists()
 
         if (pause_display) {
                 while (displayed->length > 0) {
-                        g_queue_insert_sorted(queue, g_queue_pop_head(queue), notification_cmp_data, NULL);
+                        g_queue_insert_sorted(queue, g_queue_pop_head(queue),
+                                              notification_cmp_data, NULL);
                 }
                 return;
         }
@@ -142,7 +124,6 @@ void update_lists()
         } else {
                 limit = xctx.geometry.h;
         }
-
 
         /* move notifications from queue to displayed */
         while (queue->length > 0) {
@@ -163,10 +144,10 @@ void update_lists()
                         notification_run_script(n);
                 }
 
-                g_queue_insert_sorted(displayed, n, notification_cmp_data, NULL);
+                g_queue_insert_sorted(displayed, n, notification_cmp_data,
+                                      NULL);
         }
 }
-
 
 void move_all_to_history()
 {
@@ -205,7 +186,7 @@ void update(void)
 
         /* move messages from notification_queue to displayed_notifications */
         update_lists();
-        if (displayed->length > 0 && ! xctx.visible) {
+        if (displayed->length > 0 && !xctx.visible) {
                 x_win_show();
         }
         if (displayed->length == 0 && xctx.visible) {
@@ -248,17 +229,12 @@ gboolean run(void *data)
         return true;
 }
 
-
-
-
-
 int main(int argc, char *argv[])
 {
 
         history = g_queue_new();
         displayed = g_queue_new();
         queue = g_queue_new();
-
 
         cmdline_load(argc, argv);
 
@@ -282,11 +258,11 @@ int main(int argc, char *argv[])
 
         x_setup();
 
-        signal (SIGUSR1, pause_signal_handler);
-        signal (SIGUSR2, pause_signal_handler);
+        signal(SIGUSR1, pause_signal_handler);
+        signal(SIGUSR2, pause_signal_handler);
 
         if (settings.startup_notification) {
-                notification *n = malloc(sizeof (notification));
+                notification *n = malloc(sizeof(notification));
                 n->appname = "dunst";
                 n->summary = "startup";
                 n->body = "dunst is up and running";
@@ -305,8 +281,9 @@ int main(int argc, char *argv[])
 
         mainloop = g_main_loop_new(NULL, FALSE);
 
-        GPollFD dpy_pollfd = {xctx.dc->dpy->fd,
-                G_IO_IN | G_IO_HUP | G_IO_ERR, 0 };
+        GPollFD dpy_pollfd = { xctx.dc->dpy->fd,
+                G_IO_IN | G_IO_HUP | G_IO_ERR, 0
+        };
 
         GSourceFuncs x11_source_funcs = {
                 x_mainloop_fd_prepare,
@@ -314,20 +291,21 @@ int main(int argc, char *argv[])
                 x_mainloop_fd_dispatch,
                 NULL,
                 NULL,
-                NULL };
+                NULL
+        };
 
         GSource *x11_source =
-                g_source_new(&x11_source_funcs, sizeof(x11_source_t));
-                ((x11_source_t*)x11_source)->dpy = xctx.dc->dpy;
-                ((x11_source_t*)x11_source)->w = xctx.win;
-                g_source_add_poll(x11_source, &dpy_pollfd);
+            g_source_new(&x11_source_funcs, sizeof(x11_source_t));
+        ((x11_source_t *) x11_source)->dpy = xctx.dc->dpy;
+        ((x11_source_t *) x11_source)->w = xctx.win;
+        g_source_add_poll(x11_source, &dpy_pollfd);
 
-      g_source_attach(x11_source, NULL);
+        g_source_attach(x11_source, NULL);
 
-      run(NULL);
-      g_main_loop_run(mainloop);
+        run(NULL);
+        g_main_loop_run(mainloop);
 
-      dbus_tear_down(owner_id);
+        dbus_tear_down(owner_id);
 
         return 0;
 }
@@ -341,7 +319,7 @@ void pause_signal_handler(int sig)
                 pause_display = false;
         }
 
-        signal (sig, pause_signal_handler);
+        signal(sig, pause_signal_handler);
 }
 
 void usage(int exit_status)
@@ -355,8 +333,9 @@ void usage(int exit_status)
 
 void print_version(void)
 {
-        printf("Dunst - A customizable and lightweight notification-daemon %s\n",
-               VERSION);
+        printf
+            ("Dunst - A customizable and lightweight notification-daemon %s\n",
+             VERSION);
         exit(EXIT_SUCCESS);
 }
 

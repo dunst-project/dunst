@@ -18,11 +18,7 @@
 #include "rules.h"
 #include "menu.h"
 
-
 int next_notification_id = 1;
-
-
-
 
         /*
          * print a human readable representation
@@ -49,7 +45,8 @@ void notification_print(notification * n)
                 printf("\tactions:\n");
                 printf("\t{\n");
                 for (int i = 0; i < n->actions->count; i += 2) {
-                        printf("\t\t [%s,%s]\n", n->actions->actions[i], n->actions->actions[i+1]);
+                        printf("\t\t [%s,%s]\n", n->actions->actions[i],
+                               n->actions->actions[i + 1]);
                 }
                 printf("actions_dmenu: %s\n", n->actions->dmenu_str);
                 printf("\t]\n");
@@ -62,7 +59,7 @@ void notification_print(notification * n)
          * Run the script associated with the
          * given notification.
          */
-void notification_run_script(notification *n)
+void notification_run_script(notification * n)
 {
         if (!n->script || strlen(n->script) < 1)
                 return;
@@ -74,18 +71,18 @@ void notification_run_script(notification *n)
 
         char *urgency;
         switch (n->urgency) {
-                case LOW:
-                        urgency = "LOW";
-                        break;
-                case NORM:
-                        urgency = "NORMAL";
-                        break;
-                case CRIT:
-                        urgency = "CRITICAL";
-                        break;
-                default:
-                        urgency = "NORMAL";
-                        break;
+        case LOW:
+                urgency = "LOW";
+                break;
+        case NORM:
+                urgency = "NORMAL";
+                break;
+        case CRIT:
+                urgency = "CRITICAL";
+                break;
+        default:
+                urgency = "NORMAL";
+                break;
         }
 
         int pid1 = fork();
@@ -99,13 +96,12 @@ void notification_run_script(notification *n)
                         exit(0);
                 } else {
                         int ret = execlp(n->script, n->script,
-                                        appname,
-                                        summary,
-                                        body,
-                                        icon,
-                                        urgency,
-                                        (char *) NULL
-                                        );
+                                         appname,
+                                         summary,
+                                         body,
+                                         icon,
+                                         urgency,
+                                         (char *)NULL);
                         if (ret != 0) {
                                 PERR("Unable to run script", errno);
                                 exit(EXIT_FAILURE);
@@ -120,8 +116,8 @@ void notification_run_script(notification *n)
          */
 int notification_cmp(const void *va, const void *vb)
 {
-        notification *a = (notification*) va;
-        notification *b = (notification*) vb;
+        notification *a = (notification *) va;
+        notification *b = (notification *) vb;
 
         if (!settings.sort)
                 return 1;
@@ -141,7 +137,6 @@ int notification_cmp_data(const void *va, const void *vb, void *data)
 {
         return notification_cmp(va, vb);
 }
-
 
         /*
          * Free the memory used by the given notification.
@@ -265,11 +260,11 @@ int notification_init(notification * n, int id)
 
         n->msg = g_strstrip(n->msg);
 
-
         n->dup_count = 0;
 
         /* check if n is a duplicate */
-        for (GList *iter = g_queue_peek_head_link(queue); iter; iter = iter->next) {
+        for (GList * iter = g_queue_peek_head_link(queue); iter;
+             iter = iter->next) {
                 notification *orig = iter->data;
                 if (strcmp(orig->appname, n->appname) == 0
                     && strcmp(orig->msg, n->msg) == 0) {
@@ -280,7 +275,8 @@ int notification_init(notification * n, int id)
                 }
         }
 
-        for (GList *iter = g_queue_peek_head_link(displayed); iter; iter = iter->next) {
+        for (GList * iter = g_queue_peek_head_link(displayed); iter;
+             iter = iter->next) {
                 notification *orig = iter->data;
                 if (strcmp(orig->appname, n->appname) == 0
                     && strcmp(orig->msg, n->msg) == 0) {
@@ -309,7 +305,8 @@ int notification_init(notification * n, int id)
 
         n->colors = initcolor(xctx.dc, fg, bg);
 
-        n->timeout = n->timeout == -1 ? settings.timeouts[n->urgency] : n->timeout;
+        n->timeout =
+            n->timeout == -1 ? settings.timeouts[n->urgency] : n->timeout;
         n->start = 0;
 
         n->timestamp = time(NULL);
@@ -334,25 +331,26 @@ int notification_init(notification * n, int id)
 
         n->urls = extract_urls(tmp);
 
-
         if (n->actions) {
                 n->actions->dmenu_str = NULL;
                 for (int i = 0; i < n->actions->count; i += 2) {
-                        char *human_readable = n->actions->actions[i+1];
+                        char *human_readable = n->actions->actions[i + 1];
                         printf("debug: %s\n", n->appname);
                         printf("debug: %s\n", human_readable);
-                        char *tmp = g_strdup_printf("%s %s", n->appname, human_readable);
+                        char *tmp =
+                            g_strdup_printf("%s %s", n->appname,
+                                            human_readable);
                         printf("debug: %s\n", tmp);
 
-                        n->actions->dmenu_str = string_append(n->actions->dmenu_str,
-                                        g_strdup_printf("%s(%s)",
-                                        n->appname,
-                                        human_readable), "\n");
+                        n->actions->dmenu_str =
+                            string_append(n->actions->dmenu_str,
+                                          g_strdup_printf("%s(%s)", n->appname,
+                                                          human_readable),
+                                          "\n");
                 }
         }
 
         free(tmp);
-
 
         if (settings.print_notifications)
                 notification_print(n);
@@ -373,7 +371,8 @@ int notification_close_by_id(int id, int reason)
 {
         notification *target = NULL;
 
-        for (GList *iter = g_queue_peek_head_link(displayed); iter; iter = iter->next) {
+        for (GList * iter = g_queue_peek_head_link(displayed); iter;
+             iter = iter->next) {
                 notification *n = iter->data;
                 if (n->id == id) {
                         g_queue_remove(displayed, n);
@@ -383,7 +382,8 @@ int notification_close_by_id(int id, int reason)
                 }
         }
 
-        for (GList *iter = g_queue_peek_head_link(queue); iter; iter = iter->next) {
+        for (GList * iter = g_queue_peek_head_link(queue); iter;
+             iter = iter->next) {
                 notification *n = iter->data;
                 if (n->id == id) {
                         g_queue_remove(queue, n);
@@ -410,4 +410,3 @@ int notification_close(notification * n, int reason)
                 return -1;
         return notification_close_by_id(n->id, reason);
 }
-
