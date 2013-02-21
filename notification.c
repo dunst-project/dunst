@@ -305,16 +305,16 @@ int notification_init(notification * n, int id)
         if (n->color_strings[ColFG]) {
                 fg = n->color_strings[ColFG];
         } else {
-                fg = color_strings[ColFG][n->urgency];
+                fg = xctx.color_strings[ColFG][n->urgency];
         }
 
         if (n->color_strings[ColBG]) {
                 bg = n->color_strings[ColBG];
         } else {
-                bg = color_strings[ColBG][n->urgency];
+                bg = xctx.color_strings[ColBG][n->urgency];
         }
 
-        n->colors = initcolor(dc, fg, bg);
+        n->colors = initcolor(xctx.dc, fg, bg);
 
         n->timeout = n->timeout == -1 ? settings.timeouts[n->urgency] : n->timeout;
         n->start = 0;

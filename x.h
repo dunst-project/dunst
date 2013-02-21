@@ -34,6 +34,15 @@ DEALINGS IN THE SOFTWARE.
 #define DRAW_H
 
 #include <stdbool.h>
+#include "glib.h"
+#include <X11/Xlib.h>
+#include <X11/XKBlib.h>
+#include <X11/Xatom.h>
+#include <X11/Xutil.h>
+#ifdef XINERAMA
+#include <X11/extensions/Xinerama.h>
+#endif
+#include <X11/extensions/scrnsaver.h>
 
 #include <X11/Xft/Xft.h>
 
@@ -60,6 +69,50 @@ typedef struct {
         XftColor FG_xft;
         unsigned long BG;
 } ColorSet;
+
+typedef struct _dimension_t {
+        int x;
+        int y;
+        unsigned int h;
+        unsigned int w;
+        int mask;
+        int negative_width;
+} dimension_t;
+
+typedef struct _screen_info {
+        int scr;
+        dimension_t dim;
+} screen_info;
+
+typedef struct _keyboard_shortcut {
+        const char *str;
+        KeyCode code;
+        KeySym sym;
+        KeySym mask;
+        bool is_valid;
+} keyboard_shortcut;
+
+typedef struct _render_text {
+        ColorSet *colors;
+        GSList *lines;
+} render_text;
+
+typedef struct _xctx {
+        int height_limit;
+        int font_h;
+        Atom utf8;
+        DC *dc;
+        Window win;
+        bool visible;
+        dimension_t geometry;
+        const char *color_strings[2][3];
+        XScreenSaverInfo *screensaver_info;
+        dimension_t window_dim;
+        unsigned long framec;
+        unsigned long sep_custom_col;
+} xctx_t;
+
+extern xctx_t xctx;
 
 void drawrect(DC * dc, int x, int y, unsigned int w, unsigned int h, bool fill,
               unsigned long color);

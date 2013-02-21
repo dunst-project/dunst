@@ -42,8 +42,7 @@ DEALINGS IN THE SOFTWARE.
 
 #include "x.h"
 
-#define MAX(a, b)  ((a) > (b) ? (a) : (b))
-#define MIN(a, b)  ((a) < (b) ? (a) : (b))
+xctx_t xctx;
 
 void
 drawrect(DC * dc, int x, int y, unsigned int w, unsigned int h, bool fill,
