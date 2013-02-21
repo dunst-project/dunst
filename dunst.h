@@ -5,7 +5,7 @@
 #include <glib.h>
 #include <stdbool.h>
 
-#include "draw.h"
+#include "x.h"
 
 #define ERR(msg) printf("%s : %d\n", (msg), __LINE__)
 #define PERR(msg, errnum) printf("(%d) %s : %s\n", __LINE__, (msg), (strerror(errnum)))

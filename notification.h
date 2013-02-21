@@ -1,6 +1,6 @@
 #pragma once
 
-#include "draw.h"
+#include "x.h"
 
 #define LOW 0
 #define NORM 1

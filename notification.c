@@ -10,7 +10,7 @@
 #include <sys/wait.h>
 
 #include "dbus.h"
-#include "draw.h"
+#include "x.h"
 #include "notification.h"
 #include "dunst.h"
 #include "utils.h"

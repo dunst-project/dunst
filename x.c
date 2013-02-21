@@ -40,7 +40,7 @@ DEALINGS IN THE SOFTWARE.
 #include <X11/X.h>
 #include <X11/Xatom.h>
 
-#include "draw.h"
+#include "x.h"
 
 #define MAX(a, b)  ((a) > (b) ? (a) : (b))
 #define MIN(a, b)  ((a) < (b) ? (a) : (b))

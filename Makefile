@@ -3,7 +3,7 @@
 
 include config.mk
 
-SRC = draw.c  \
+SRC = x.c  \
 	  dunst.c \
 	  dbus.c  \
 	  utils.c \

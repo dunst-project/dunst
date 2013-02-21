@@ -29,7 +29,7 @@
 #include <X11/extensions/scrnsaver.h>
 
 #include "dunst.h"
-#include "draw.h"
+#include "x.h"
 #include "dbus.h"
 #include "utils.h"
 #include "rules.h"
