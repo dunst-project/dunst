@@ -46,6 +46,12 @@ DEALINGS IN THE SOFTWARE.
 
 #include <X11/Xft/Xft.h>
 
+
+#define BUTTONMASK              (ButtonPressMask|ButtonReleaseMask)
+#define FONT_HEIGHT_BORDER 2
+#define DEFFONT "Monospace-11"
+#define INRECT(x,y,rx,ry,rw,rh) ((x) >= (rx) && (x) < (rx)+(rw) && (y) >= (ry) && (y) < (ry)+(rh))
+
 typedef struct {
         int x, y, w, h;
         bool invert;
@@ -130,6 +136,28 @@ void mapdc(DC * dc, Window win, unsigned int w, unsigned int h);
 void resizedc(DC * dc, unsigned int w, unsigned int h);
 int textnw(DC * dc, const char *text, size_t len);
 int textw(DC * dc, const char *text);
+
+/* window */
+void x_win_draw(void);
+void x_win_hide(void);
+void x_win_show(void);
+void x_win_setup(void);
+
+/* shortcut */
+void x_shortcut_init(keyboard_shortcut *shortcut);
+void x_shortcut_ungrab(keyboard_shortcut *ks);
+int x_shortcut_grab(keyboard_shortcut *ks);
+KeySym x_shortcut_string_to_mask(const char *str);
+
+/* X misc */
+void x_handle_click(XEvent ev);
+void x_screen_info(screen_info *scr);
+bool x_is_idle(void);
+void x_setup(void);
+
+gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer user_data);
+gboolean x_mainloop_fd_check(GSource *source);
+gboolean x_mainloop_fd_prepare(GSource *source, gint *timeout);
 
 #endif
 /* vim: set ts=8 sw=8 tw=0: */

@@ -36,4 +36,13 @@ extern DC *dc;
 gboolean run(void *data);
 void wake_up(void);
 
+void check_timeouts(void);
+void history_pop(void);
+void usage(int exit_status);
+void move_all_to_history(void);
+void print_version(void);
+char *extract_urls(const char *str);
+void context_menu(void);
+void wake_up(void);
+void pause_signal_handler(int sig);
 /* vim: set ts=8 sw=8 tw=0: */
