@@ -83,6 +83,7 @@ typedef struct _render_text {
 } render_text;
 
 extern int verbosity;
+extern GQueue *displayed;
 
 /* return id of notification */
 int notification_init(notification * n, int id);
