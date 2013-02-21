@@ -5,6 +5,7 @@
 #include <basedir_fs.h>
 
 #include "dunst.h"
+#include "rules.h"
 #include "option_parser.h"
 #include "settings.h"
 #include "config.h"

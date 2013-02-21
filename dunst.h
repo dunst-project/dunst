@@ -68,22 +68,6 @@ typedef struct _notification {
         Actions *actions;
 } notification;
 
-typedef struct _rule_t {
-        char *name;
-        /* filters */
-        char *appname;
-        char *summary;
-        char *body;
-        char *icon;
-
-        /* actions */
-        int timeout;
-        int urgency;
-        char *fg;
-        char *bg;
-        const char *format;
-        const char *script;
-} rule_t;
 
 typedef struct _keyboard_shortcut {
         const char *str;
@@ -99,13 +83,11 @@ typedef struct _render_text {
 } render_text;
 
 extern int verbosity;
-extern GSList *rules;
 
 /* return id of notification */
 int notification_init(notification * n, int id);
 int notification_close_by_id(int id, int reason);
 gboolean run(void *data);
 void wake_up(void);
-void rule_init(rule_t *r);
 
 /* vim: set ts=8 sw=8 tw=0: */
