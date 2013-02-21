@@ -77,7 +77,6 @@ static Atom utf8;
 static DC *dc;
 static Window win;
 static bool visible = false;
-static screen_info scr;
 static dimension_t geometry;
 static XScreenSaverInfo *screensaver_info;
 static int font_h;
@@ -134,7 +133,7 @@ static int x_shortcut_tear_down_error_handler(void);
 
 /* X misc */
 void x_handle_click(XEvent ev);
-void x_screen_update_info();
+void x_screen_info(screen_info *scr);
 bool x_is_idle(void);
 void x_setup(void);
 
@@ -1011,7 +1010,7 @@ Window get_focused_window(void)
 int select_screen(XineramaScreenInfo * info, int info_len)
 { // {{{
         if (f_mode == FOLLOW_NONE) {
-                return scr.scr;
+                return monitor >= 0 ? monitor : XDefaultScreen(dc->dpy);
 
         } else {
                 int x, y;
@@ -1034,7 +1033,7 @@ int select_screen(XineramaScreenInfo * info, int info_len)
 
                         if (focused == 0) {
                                 /* something went wrong. Fallback to default */
-                                return scr.scr;
+                                return monitor >= 0 ? monitor : XDefaultScreen(dc->dpy);
                         }
 
                         Window child_return;
@@ -1051,7 +1050,7 @@ int select_screen(XineramaScreenInfo * info, int info_len)
                 }
 
                 /* something seems to be wrong. Fallback to default */
-                return scr.scr;
+                return monitor >= 0 ? monitor : XDefaultScreen(dc->dpy);
         }
 }
 // }}}
@@ -1061,7 +1060,7 @@ int select_screen(XineramaScreenInfo * info, int info_len)
          * Update the information about the monitor
          * geometry.
          */
-void x_screen_update_info()
+void x_screen_info(screen_info *scr)
 { // {{{
 #ifdef XINERAMA
         int n;
@@ -1072,18 +1071,25 @@ void x_screen_update_info()
                         /* invalid monitor, fallback to default */
                         screen = 0;
                 }
-                scr.dim.x = info[screen].x_org;
-                scr.dim.y = info[screen].y_org;
-                scr.dim.h = info[screen].height;
-                scr.dim.w = info[screen].width;
+                scr->dim.x = info[screen].x_org;
+                scr->dim.y = info[screen].y_org;
+                scr->dim.h = info[screen].height;
+                scr->dim.w = info[screen].width;
                 XFree(info);
         } else
 #endif
         {
-                scr.dim.x = 0;
-                scr.dim.y = 0;
-                scr.dim.w = DisplayWidth(dc->dpy, scr.scr);
-                scr.dim.h = DisplayHeight(dc->dpy, scr.scr);
+                scr->dim.x = 0;
+                scr->dim.y = 0;
+
+                int screen;
+                if (monitor >= 0)
+                        screen = monitor;
+                else
+                        screen = DefaultScreen(dc->dpy);
+
+                scr->dim.w = DisplayWidth(dc->dpy, screen);
+                scr->dim.h = DisplayHeight(dc->dpy, screen);
         }
 }
 // }}}
@@ -1149,10 +1155,6 @@ void x_setup(void)
 
         screensaver_info = XScreenSaverAllocInfo();
 
-        scr.scr = monitor;
-        if (scr.scr < 0) {
-                scr.scr = DefaultScreen(dc->dpy);
-        }
 
         x_win_setup();
         x_shortcut_grab(&history_ks);
@@ -1332,6 +1334,8 @@ unsigned long calculate_foreground_color(unsigned long source_color)
 
 int calculate_width(void)
 { // {{{
+        screen_info scr;
+        x_screen_info(&scr);
         if (geometry.mask & WidthValue && geometry.w == 0) {
                 /* dynamic width */
                 return 0;
@@ -1353,6 +1357,8 @@ void move_and_map(int width, int height)
 { // {{{
 
         int x,y;
+        screen_info scr;
+        x_screen_info(&scr);
         /* calculate window position */
         if (geometry.mask & XNegative) {
                 x = (scr.dim.x + (scr.dim.w - width)) + geometry.x;
@@ -1436,8 +1442,9 @@ void free_render_texts(GSList *texts) {
 void x_win_draw(void)
 { // {{{
 
-        x_screen_update_info();
         int outer_width = calculate_width();
+        screen_info scr;
+        x_screen_info(&scr);
 
 
         line_height = MAX(line_height, font_h);
@@ -1570,13 +1577,15 @@ void x_win_setup(void)
         root = RootWindow(dc->dpy, DefaultScreen(dc->dpy));
         utf8 = XInternAtom(dc->dpy, "UTF8_STRING", false);
         font_h = dc->font.height + FONT_HEIGHT_BORDER;
-        x_screen_update_info();
 
         wa.override_redirect = true;
         wa.background_pixmap = ParentRelative;
         wa.event_mask =
             ExposureMask | KeyPressMask | VisibilityChangeMask |
             ButtonPressMask;
+
+        screen_info scr;
+        x_screen_info(&scr);
         win =
             XCreateWindow(dc->dpy, root, scr.dim.x, scr.dim.y, scr.dim.w,
                           font_h, 0, DefaultDepth(dc->dpy,
@@ -1611,7 +1620,6 @@ void x_win_show(void)
                 fprintf(stderr, "Unable to grab mouse button(s)\n");
         }
 
-        x_screen_update_info();
         XMapRaised(dc->dpy, win);
         visible = true;
 }
