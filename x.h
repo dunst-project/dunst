@@ -55,6 +55,12 @@ typedef struct _xctx {
         unsigned long sep_custom_col;
 } xctx_t;
 
+typedef struct _color_t {
+        double r;
+        double g;
+        double b;
+} color_t;
+
 extern xctx_t xctx;
 
 void setopacity(Window win, unsigned long opacity);

@@ -33,12 +33,96 @@ typedef struct _cairo_ctx {
         PangoFontDescription *desc;
 } cairo_ctx_t;
 
+typedef struct _colored_layout {
+        PangoLayout *l;
+        color_t fg;
+        color_t bg;
+} colored_layout;
+
 cairo_ctx_t cairo_ctx;
 
+static color_t frame_color;
 
 static void x_shortcut_setup_error_handler(void);
 static int x_shortcut_tear_down_error_handler(void);
 static void x_win_move(int width, int height);
+
+
+static color_t x_color_hex_to_double(int hexValue)
+{
+        color_t color;
+        color.r = ((hexValue >> 16) & 0xFF) / 255.0;
+        color.g = ((hexValue >> 8) & 0xFF) / 255.0;
+        color.b = ((hexValue) & 0xFF) / 255.0;
+
+  return color;
+}
+
+static color_t x_string_to_color_t(const char *str)
+{
+        char *end;
+        long int val = strtol(str+1, &end, 16);
+        if (*end != '\0' && *(end+1) != '\0') {
+                printf("WARNING: Invalid color string: \"%s\"\n", str);
+        }
+
+        return x_color_hex_to_double(val);
+}
+
+color_t calculate_foreground_color(color_t bg)
+{
+        double c_delta = 0.1;
+        color_t color = bg;
+
+        /* do we need to darken or brighten the colors? */
+        bool darken = (bg.r + bg.g + bg.b) / 3 > 0.5;
+
+        if (darken) {
+                if (color.r - c_delta < 0)
+                        color.r = 0;
+                else
+                        color.r -= c_delta;
+                if (color.g - c_delta < 0)
+                        color.g = 0;
+                else
+                        color.g -= c_delta;
+                if (color.b - c_delta < 0)
+                        color.b = 0;
+                else
+                        color.b -= c_delta;
+        } else {
+                if (color.r + c_delta > 1)
+                        color.r = 1;
+                else
+                        color.r += c_delta;
+                if (color.g + c_delta > 1)
+                        color.g = 1;
+                else
+                        color.g += c_delta;
+                if (color.b + c_delta > 1)
+                        color.g = 1;
+                else
+                        color.g += c_delta;
+        }
+
+        return color;
+}
+
+
+static color_t x_get_separator_color(color_t fg, color_t bg)
+{
+        switch (settings.sep_color) {
+                case FRAME:
+                        return x_string_to_color_t(settings.frame_color);
+                case CUSTOM:
+                        return x_string_to_color_t(settings.sep_custom_color_str);
+                case FOREGROUND:
+                        return fg;
+                case AUTO:
+                        return calculate_foreground_color(bg);
+
+        }
+}
 
 void x_cairo_setup(void)
 {
@@ -46,6 +130,8 @@ void x_cairo_setup(void)
                         xctx.win, DefaultVisual(xctx.dpy, 0), WIDTH, HEIGHT);
 
         cairo_ctx.desc = pango_font_description_from_string(settings.font);
+
+        frame_color = x_string_to_color_t(settings.frame_color);
 }
 
 void r_setup_pango_layout(PangoLayout *layout, int width)
@@ -71,25 +157,35 @@ void r_setup_pango_layout(PangoLayout *layout, int width)
 
 }
 
-PangoLayout *r_create_layout_from_notification(cairo_t *c, notification *n)
+static void free_colored_layout(void *data)
 {
-        PangoLayout *layout = pango_cairo_create_layout(c);
+        colored_layout *cl = data;
+        g_object_unref(cl->l);
+}
+
+colored_layout *r_create_layout_from_notification(cairo_t *c, notification *n)
+{
+        colored_layout *cl = malloc(sizeof(colored_layout));
+        cl->l = pango_cairo_create_layout(c);
 
         notification_update_text_to_render(n);
+
+        cl->fg = x_string_to_color_t(n->color_strings[ColFG]);
+        cl->bg = x_string_to_color_t(n->color_strings[ColBG]);
 
         int width = -1;
         if (xctx.geometry.w > 0) {
                 width = xctx.geometry.w - 2 * settings.h_padding;
                 width -= 2 * settings.frame_width;
         }
-        r_setup_pango_layout(layout, width);
+        r_setup_pango_layout(cl->l, width);
 
-        pango_layout_set_text(layout, n->text_to_render, -1);
+        pango_layout_set_text(cl->l, n->text_to_render, -1);
 
-        pango_layout_get_pixel_size(layout, NULL, &(n->displayed_height));
+        pango_layout_get_pixel_size(cl->l, NULL, &(n->displayed_height));
         n->displayed_height += 2 * settings.padding;
 
-        return layout;
+        return cl;
 }
 
 GSList *r_create_layouts(cairo_t *c)
@@ -109,7 +205,7 @@ GSList *r_create_layouts(cairo_t *c)
 
 void r_free_layouts(GSList *layouts)
 {
-        g_slist_free_full(layouts, g_object_unref);
+        g_slist_free_full(layouts, free_colored_layout);
 }
 
 void x_win_draw(void)
@@ -122,9 +218,9 @@ void x_win_draw(void)
         int text_width = 0;
 
         for (GSList *iter = layouts; iter; iter = iter->next) {
-                PangoLayout *l = iter->data;
+                colored_layout *cl = iter->data;
                 int w,h;
-                pango_layout_get_pixel_size(l, &w, &h);
+                pango_layout_get_pixel_size(cl->l, &w, &h);
                 height += h;
                 text_width = MAX(w, text_width);
         }
@@ -142,23 +238,20 @@ void x_win_draw(void)
 
         XResizeWindow(xctx.dpy, xctx.win, width, height);
 
-        /* FIXME frame color */
-        cairo_set_source_rgb(c, 0.0, 0.0, 0.8);
+        cairo_set_source_rgb(c, frame_color.r, frame_color.g, frame_color.b);
         cairo_rectangle(c, 0.0, 0.0, width, height);
         cairo_fill(c);
 
-        /* FIXME text color */
-        cairo_set_source_rgb(c, 0.8, 0.8, 0.8);
         cairo_move_to(c, 0, 0);
 
         double y = 0;
 
         bool first = true;
         for (GSList *iter = layouts; iter; iter = iter->next) {
-                PangoLayout *l = iter->data;
+                colored_layout *cl = iter->data;
 
                 int h;
-                pango_layout_get_pixel_size(l, NULL, &h);
+                pango_layout_get_pixel_size(cl->l, NULL, &h);
 
                 int bg_x = 0;
                 int bg_y = y;
@@ -175,22 +268,20 @@ void x_win_draw(void)
                 if (!iter->next)
                         bg_height -= settings.frame_width;
 
-                /* FIXME background color */
-                cairo_set_source_rgb(c, 0.2, 0.2, 0.2);
+                cairo_set_source_rgb(c, cl->bg.r, cl->bg.g, cl->bg.b);
                 cairo_rectangle(c, bg_x, bg_y, bg_width, bg_height);
                 cairo_fill(c);
 
                 y += settings.padding;
                 cairo_move_to(c, settings.h_padding, y);
-                /* FIXME text color */
-                cairo_set_source_rgb(c, 0.8, 0.8, 0.8);
-                pango_cairo_update_layout(c, l);
-                pango_cairo_show_layout(c, l);
+                cairo_set_source_rgb(c, cl->fg.r, cl->fg.g, cl->fg.b);
+                pango_cairo_update_layout(c, cl->l);
+                pango_cairo_show_layout(c, cl->l);
                 y += h + settings.padding;
+                color_t sep_color = x_get_separator_color(cl->fg, cl->bg);
                 if (settings.separator_height > 0 && iter->next) {
                         cairo_move_to(c, 0, y + settings.separator_height / 2);
-                        /* FIXME sep_color */
-                        cairo_set_source_rgb(c, 0.8, 0.0, 0.0);
+                        cairo_set_source_rgb(c, sep_color.r, sep_color.g, sep_color.b);
                         cairo_set_line_width(c, settings.separator_height);
                         cairo_line_to(c, width, y);
                         y += settings.separator_height;
@@ -562,8 +653,6 @@ void x_setup(void)
 void x_win_setup(void)
 {
 
-        printf("x_win_setup\n");
-        fflush(stdout);
         Window root;
         XSetWindowAttributes wa;
 

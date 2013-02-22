@@ -34,6 +34,8 @@ void notification_print(notification * n)
         printf("\ticon: '%s'\n", n->icon);
         printf("\turgency: %d\n", n->urgency);
         printf("\tformatted: '%s'\n", n->msg);
+        printf("\tfg: %s\n", n->color_strings[ColFG]);
+        printf("\tbg: %s\n", n->color_strings[ColBG]);
         printf("\tid: %d\n", n->id);
         if (n->urls) {
                 printf("\turls\n");
@@ -213,8 +215,6 @@ char *notification_fix_markup(char *str)
          */
 int notification_init(notification * n, int id)
 {
-        const char *fg = NULL;
-        const char *bg = NULL;
 
         if (n == NULL)
                 return -1;
@@ -293,16 +293,12 @@ int notification_init(notification * n, int id)
         /* urgency > CRIT -> array out of range */
         n->urgency = n->urgency > CRIT ? CRIT : n->urgency;
 
-        if (n->color_strings[ColFG]) {
-                fg = n->color_strings[ColFG];
-        } else {
-                fg = xctx.color_strings[ColFG][n->urgency];
+        if (!n->color_strings[ColFG]) {
+                n->color_strings[ColFG] = xctx.color_strings[ColFG][n->urgency];
         }
 
-        if (n->color_strings[ColBG]) {
-                bg = n->color_strings[ColBG];
-        } else {
-                bg = xctx.color_strings[ColBG][n->urgency];
+        if (!n->color_strings[ColBG]) {
+                n->color_strings[ColBG] = xctx.color_strings[ColBG][n->urgency];
         }
 
         n->timeout =
