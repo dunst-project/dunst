@@ -37,6 +37,8 @@ typedef struct _colored_layout {
         PangoLayout *l;
         color_t fg;
         color_t bg;
+        char *text;
+        PangoAttrList *attr;
 } colored_layout;
 
 cairo_ctx_t cairo_ctx;
@@ -161,6 +163,7 @@ static void free_colored_layout(void *data)
 {
         colored_layout *cl = data;
         g_object_unref(cl->l);
+        g_free(cl->text);
 }
 
 colored_layout *r_create_layout_from_notification(cairo_t *c, notification *n)
@@ -180,7 +183,18 @@ colored_layout *r_create_layout_from_notification(cairo_t *c, notification *n)
         }
         r_setup_pango_layout(cl->l, width);
 
-        pango_layout_set_text(cl->l, n->text_to_render, -1);
+        /* markup */
+        bool success = pango_parse_markup(n->text_to_render, -1, 0, &(cl->attr), &(cl->text), NULL, NULL);
+
+        if (success) {
+                pango_layout_set_text(cl->l, cl->text, -1);
+                pango_layout_set_attributes(cl->l, cl->attr);
+        } else {
+                cl->text = NULL;
+                cl->attr = NULL;
+                pango_layout_set_text(cl->l, n->text_to_render, -1);
+                printf("Error parsing markup\n");
+        }
 
         pango_layout_get_pixel_size(cl->l, NULL, &(n->displayed_height));
         n->displayed_height += 2 * settings.padding;

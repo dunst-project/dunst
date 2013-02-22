@@ -3,6 +3,7 @@
 
 typedef struct _settings {
         bool print_notifications;
+        bool allow_markup;
         char *font;
         char *normbgcolor;
         char *normfgcolor;

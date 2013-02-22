@@ -1,6 +1,16 @@
 [global]
     font = Monospace-10
 
+    # allow a small subset of html markup:
+    # <b>bold</b>
+    # <i>italic</i>
+    # <s>strikethrough<s/>
+    # <u>underline</u>
+    #
+    # for a complete reference see http://developer.gnome.org/pango/stable/PangoMarkupFormat.html
+    # If markup is not allowed, those tags will be stripped out of the message.
+    allow_markup = yes
+
     # The format of the message. Possible variables are:
     #   %a  appname
     #   %s  summary
@@ -8,6 +18,7 @@
     #   %i  iconname (including its path)
     #   %I  iconname (without its path)
     #   %p  progress value if set ([  0%] to [100%]) or nothing
+    # Markup is allowed
     format = "%s\n%b"
 
     # Sort messages by urgency

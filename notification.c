@@ -251,7 +251,8 @@ int notification_init(notification * n, int id)
                 n->msg = string_replace("%p", "", n->msg);
         }
 
-        n->msg = notification_fix_markup(n->msg);
+        if (!settings.allow_markup)
+                n->msg = notification_fix_markup(n->msg);
 
         while (strstr(n->msg, "\\n") != NULL)
                 n->msg = string_replace("\\n", "\n", n->msg);

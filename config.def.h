@@ -1,6 +1,7 @@
 /* see example dunstrc for additional explanations about these options */
 
 char *font = "-*-terminus-medium-r-*-*-16-*-*-*-*-*-*-*";
+bool allow_markup = false;
 char *normbgcolor = "#1793D1";
 char *normfgcolor = "#DDDDDD";
 char *critbgcolor = "#ffaaaa";

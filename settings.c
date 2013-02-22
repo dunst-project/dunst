@@ -59,6 +59,9 @@ void load_settings(char *cmdline_config_path)
         settings.font =
             option_get_string("global", "font", "-fn", font,
                               "The font dunst should use.");
+        settings.allow_markup =
+                option_get_bool("global", "allow_markup", "-markup", allow_markup,
+                                "Allow markups.");
         settings.format =
             option_get_string("global", "format", "-format", format,
                               "The format template for the notifictions");
