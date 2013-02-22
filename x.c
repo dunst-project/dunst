@@ -280,12 +280,14 @@ void x_win_draw(void)
                 y += h + settings.padding;
                 color_t sep_color = x_get_separator_color(cl->fg, cl->bg);
                 if (settings.separator_height > 0 && iter->next) {
-                        cairo_move_to(c, 0, y + settings.separator_height / 2);
                         cairo_set_source_rgb(c, sep_color.r, sep_color.g, sep_color.b);
-                        cairo_set_line_width(c, settings.separator_height);
-                        cairo_line_to(c, width, y);
+
+                        cairo_rectangle(c, settings.frame_width,y,
+                                        width - 2 * settings.frame_width
+                                        , settings.separator_height);
+
+                        cairo_fill(c);
                         y += settings.separator_height;
-                        cairo_stroke(c);
                 }
                 cairo_move_to(c, settings.h_padding, y);
                 first = false;
