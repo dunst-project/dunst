@@ -1,3 +1,4 @@
+/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
 #ifndef UTIL_H
 #define UTIL_H
 /* replace all occurrences of needle with replacement in haystack */

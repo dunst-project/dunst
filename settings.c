@@ -1,3 +1,4 @@
+/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
 
 #include <glib.h>
 #include <basedir.h>
@@ -301,3 +302,4 @@ void load_settings(char *cmdline_config_path)
         xdgWipeHandle(&xdg);
 #endif
 }
+/* vim: set ts=8 sw=8 tw=0: */

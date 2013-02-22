@@ -1,3 +1,5 @@
+/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
+
 #include <glib.h>
 #include <fnmatch.h>
 
@@ -64,3 +66,4 @@ bool rule_matches_notification(rule_t * r, notification * n)
                 && (!r->body || !fnmatch(r->body, n->body, 0))
                 && (!r->icon || !fnmatch(r->icon, n->icon, 0)));
 }
+/* vim: set ts=8 sw=8 tw=0: */

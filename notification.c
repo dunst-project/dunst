@@ -1,3 +1,4 @@
+/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
 
 #define _GNU_SOURCE
 
@@ -410,3 +411,4 @@ int notification_close(notification * n, int reason)
                 return -1;
         return notification_close_by_id(n->id, reason);
 }
+/* vim: set ts=8 sw=8 tw=0: */

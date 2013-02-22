@@ -1,3 +1,5 @@
+/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
+
 #define _GNU_SOURCE
 #include <stdbool.h>
 #include <regex.h>
@@ -212,3 +214,4 @@ void context_menu(void)
 
         dispatch_menu_result(buf);
 }
+/* vim: set ts=8 sw=8 tw=0: */
