@@ -128,7 +128,7 @@ int notification_cmp(const void *va, const void *vb)
         if (a->urgency != b->urgency) {
                 return b->urgency - a->urgency;
         } else {
-                return a->timestamp - b->timestamp;
+                return a->id - b->id;
         }
 }
 
