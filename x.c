@@ -114,7 +114,6 @@ void r_free_layouts(GSList *layouts)
 
 void x_win_draw(void)
 {
-        printf("drawing\n");
         cairo_t *c;
         c = cairo_create(cairo_ctx.surface);
 
@@ -140,8 +139,6 @@ void x_win_draw(void)
 
         height += (g_slist_length(layouts) - 1) * settings.separator_height;
         height += g_slist_length(layouts) * settings.padding * 2;
-
-        printf("(%d,%d)[%d]\n", width, height, settings.separator_height);
 
         XResizeWindow(xctx.dpy, xctx.win, width, height);
 
