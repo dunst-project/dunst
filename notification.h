@@ -18,7 +18,8 @@ typedef struct _notification {
         char *summary;
         char *body;
         char *icon;
-        char *msg;
+        char *msg;            /* formatted message */
+        char *text_to_render;
         const char *format;
         char *dbus_client;
         time_t start;
@@ -46,3 +47,4 @@ void notification_run_script(notification * n);
 int notification_close(notification * n, int reason);
 void notification_print(notification * n);
 char *notification_fix_markup(char *str);
+void notification_update_text_to_render(notification *n);

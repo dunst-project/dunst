@@ -230,6 +230,7 @@ int notification_init(notification * n, int id)
         }
 
         n->script = NULL;
+        n->text_to_render = NULL;
 
         n->format = settings.format;
 
@@ -410,5 +411,60 @@ int notification_close(notification * n, int reason)
         if (n == NULL)
                 return -1;
         return notification_close_by_id(n->id, reason);
+}
+
+void notification_update_text_to_render(notification *n)
+{
+        if (n->text_to_render) {
+                free(n->text_to_render);
+                n->text_to_render = NULL;
+        }
+
+        char *buf = NULL;
+
+        char *msg = g_strstrip(n->msg);
+
+        /* print dup_count and msg */
+        if (n->dup_count > 0 && (n->actions || n->urls)) {
+                buf = g_strdup_printf("(%d%s%s) %s",
+                                      n->dup_count,
+                                      n->actions ? "A" : "",
+                                      n->urls ? "U" : "", msg);
+        } else if (n->actions || n->urls) {
+                buf = g_strdup_printf("(%s%s) %s",
+                                      n->actions ? "A" : "",
+                                      n->urls ? "U" : "", msg);
+        } else {
+                buf = g_strdup(msg);
+        }
+
+        /* print age */
+        int hours, minutes, seconds;
+        time_t t_delta = time(NULL) - n->timestamp;
+
+        if (settings.show_age_threshold >= 0
+            && t_delta >= settings.show_age_threshold) {
+                hours = t_delta / 3600;
+                minutes = t_delta / 60 % 60;
+                seconds = t_delta % 60;
+
+                char *new_buf;
+                if (hours > 0) {
+                        new_buf =
+                            g_strdup_printf("%s (%dh %dm %ds old)", buf, hours,
+                                            minutes, seconds);
+                } else if (minutes > 0) {
+                        new_buf =
+                            g_strdup_printf("%s (%dm %ds old)", buf, minutes,
+                                            seconds);
+                } else {
+                        new_buf = g_strdup_printf("%s (%ds old)", buf, seconds);
+                }
+
+                free(buf);
+                buf = new_buf;
+        }
+
+        n->text_to_render = buf;
 }
 /* vim: set ts=8 sw=8 tw=0: */

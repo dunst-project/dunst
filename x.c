@@ -660,55 +660,6 @@ GSList *do_word_wrap(char *text, int max_width)
         return result;
 }
 
-char *generate_final_text(notification * n)
-{
-        char *msg = g_strstrip(n->msg);
-        char *buf;
-
-        /* print dup_count and msg */
-        if (n->dup_count > 0 && (n->actions || n->urls)) {
-                buf = g_strdup_printf("(%d%s%s) %s",
-                                      n->dup_count,
-                                      n->actions ? "A" : "",
-                                      n->urls ? "U" : "", msg);
-        } else if (n->actions || n->urls) {
-                buf = g_strdup_printf("(%s%s) %s",
-                                      n->actions ? "A" : "",
-                                      n->urls ? "U" : "", msg);
-        } else {
-                buf = g_strdup(msg);
-        }
-
-        /* print age */
-        int hours, minutes, seconds;
-        time_t t_delta = time(NULL) - n->timestamp;
-
-        if (settings.show_age_threshold >= 0
-            && t_delta >= settings.show_age_threshold) {
-                hours = t_delta / 3600;
-                minutes = t_delta / 60 % 60;
-                seconds = t_delta % 60;
-
-                char *new_buf;
-                if (hours > 0) {
-                        new_buf =
-                            g_strdup_printf("%s (%dh %dm %ds old)", buf, hours,
-                                            minutes, seconds);
-                } else if (minutes > 0) {
-                        new_buf =
-                            g_strdup_printf("%s (%dm %ds old)", buf, minutes,
-                                            seconds);
-                } else {
-                        new_buf = g_strdup_printf("%s (%ds old)", buf, seconds);
-                }
-
-                free(buf);
-                buf = new_buf;
-        }
-
-        return buf;
-}
-
 int calculate_x_offset(int line_width, int text_width)
 {
         int leftover = line_width - text_width;
@@ -847,11 +798,12 @@ GSList *generate_render_texts(int width)
         for (GList * iter = g_queue_peek_head_link(displayed); iter;
              iter = iter->next) {
                 render_text *rt = g_malloc(sizeof(render_text));
+                notification *n = iter->data;
 
-                rt->colors = ((notification *) iter->data)->colors;
-                char *text = generate_final_text(iter->data);
+                notification_update_text_to_render(n);
+                rt->colors = n->colors;
+                char *text = n->text_to_render;
                 rt->lines = do_word_wrap(text, width);
-                free(text);
                 render_texts = g_slist_append(render_texts, rt);
         }
 
