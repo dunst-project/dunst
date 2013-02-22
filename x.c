@@ -184,16 +184,20 @@ colored_layout *r_create_layout_from_notification(cairo_t *c, notification *n)
         r_setup_pango_layout(cl->l, width);
 
         /* markup */
-        bool success = pango_parse_markup(n->text_to_render, -1, 0, &(cl->attr), &(cl->text), NULL, NULL);
+        GError *err = NULL;
+        pango_parse_markup(n->text_to_render, -1, 0, &(cl->attr), &(cl->text), NULL, &err);
 
-        if (success) {
+        if (!err) {
                 pango_layout_set_text(cl->l, cl->text, -1);
                 pango_layout_set_attributes(cl->l, cl->attr);
         } else {
+                /* remove markup and display plain message instead */
+                n->text_to_render = notification_fix_markup(n->text_to_render);
                 cl->text = NULL;
                 cl->attr = NULL;
                 pango_layout_set_text(cl->l, n->text_to_render, -1);
-                printf("Error parsing markup\n");
+                printf("Error parsing markup: %s\n", err->message);
+                g_error_free(err);
         }
 
         pango_layout_get_pixel_size(cl->l, NULL, &(n->displayed_height));
