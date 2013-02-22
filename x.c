@@ -166,12 +166,11 @@ static void free_colored_layout(void *data)
         g_free(cl->text);
 }
 
-colored_layout *r_create_layout_from_notification(cairo_t *c, notification *n)
+static colored_layout *r_init_shared(cairo_t *c, notification *n)
 {
         colored_layout *cl = malloc(sizeof(colored_layout));
         cl->l = pango_cairo_create_layout(c);
 
-        notification_update_text_to_render(n);
 
         cl->fg = x_string_to_color_t(n->color_strings[ColFG]);
         cl->bg = x_string_to_color_t(n->color_strings[ColBG]);
@@ -182,6 +181,23 @@ colored_layout *r_create_layout_from_notification(cairo_t *c, notification *n)
                 width -= 2 * settings.frame_width;
         }
         r_setup_pango_layout(cl->l, width);
+
+        return cl;
+}
+
+static colored_layout *r_create_layout_for_xmore(cairo_t *c, notification *n, int qlen)
+{
+       colored_layout *cl = r_init_shared(c, n);
+       cl->text = g_strdup_printf("(%d more)", qlen);
+       cl->attr = NULL;
+       pango_layout_set_text(cl->l, cl->text, -1);
+       return cl;
+}
+
+colored_layout *r_create_layout_from_notification(cairo_t *c, notification *n)
+{
+
+        colored_layout *cl = r_init_shared(c, n);
 
         /* markup */
         GError *err = NULL;
@@ -200,6 +216,7 @@ colored_layout *r_create_layout_from_notification(cairo_t *c, notification *n)
                 g_error_free(err);
         }
 
+
         pango_layout_get_pixel_size(cl->l, NULL, &(n->displayed_height));
         n->displayed_height += 2 * settings.padding;
 
@@ -210,12 +227,31 @@ GSList *r_create_layouts(cairo_t *c)
 {
         GSList *layouts = NULL;
 
+        int qlen = g_list_length(g_queue_peek_head_link(queue));
+        bool xmore_is_needed = qlen > 0 && settings.indicate_hidden;
+
+        notification *last;
         for (GList *iter = g_queue_peek_head_link(displayed);
                         iter; iter = iter->next)
         {
                 notification *n = iter->data;
+                last = n;
+
+                notification_update_text_to_render(n);
+
+                if (!iter->next && xmore_is_needed && xctx.geometry.h == 1) {
+                        char *new_ttr = g_strdup_printf("%s (%d more)", n->text_to_render, qlen);
+                        g_free(n->text_to_render);
+                        n->text_to_render = new_ttr;
+                }
                 layouts = g_slist_append(layouts,
                                 r_create_layout_from_notification(c, n));
+        }
+
+                if (xmore_is_needed && xctx.geometry.h != 1) {
+                        /* append xmore message as new message */
+                        layouts = g_slist_append(layouts,
+                                r_create_layout_for_xmore(c, last, qlen));
         }
 
         return layouts;
