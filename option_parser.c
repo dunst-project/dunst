@@ -321,7 +321,7 @@ static char *cmdline_get_value(char *key)
                 return NULL;
         }
 
-        if (idx + 1 >= cmdline_argc || cmdline_argv[idx + 1][0] == '-') {
+        if (idx + 1 >= cmdline_argc) {
                 /* the argument is missing */
                 fprintf(stderr, "Warning: %s, missing argument. Ignoring\n",
                         key);
