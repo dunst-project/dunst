@@ -156,6 +156,7 @@ void x_win_draw(void)
         }
 
         height += (g_slist_length(layouts) - 1) * settings.separator_height;
+        height += g_slist_length(layouts) * settings.padding * 2;
 
         printf("(%d,%d)[%d]\n", width, height, settings.separator_height);
 
@@ -174,6 +175,7 @@ void x_win_draw(void)
 
         for (GSList *iter = layouts; iter; iter = iter->next) {
                 PangoLayout *l = iter->data;
+                y += settings.padding;
                 cairo_move_to(c, 0, y);
                 /* FIXME text color */
                 cairo_set_source_rgb(c, 0.8, 0.8, 0.8);
@@ -181,7 +183,7 @@ void x_win_draw(void)
                 pango_cairo_show_layout(c, l);
                 int h;
                 pango_layout_get_pixel_size(l, NULL, &h);
-                y += h;
+                y += h + settings.padding;
                 if (settings.separator_height > 0 && iter->next) {
                         cairo_move_to(c, 0, y + settings.separator_height / 2);
                         /* FIXME sep_color */
