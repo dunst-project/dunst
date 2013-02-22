@@ -109,7 +109,7 @@ PangoLayout *r_create_layout_from_notification(cairo_t *c, notification *n)
 
         int width = -1;
         if (xctx.geometry.w > 0)
-                width = xctx.geometry.w;
+                width = xctx.geometry.w - 2 * settings.h_padding;
         r_setup_pango_layout(layout, width);
 
         pango_layout_set_text(layout, n->text_to_render, -1);
@@ -145,15 +145,21 @@ void x_win_draw(void)
 
         GSList *layouts = r_create_layouts(c);
         int height = 0;
-        int width = xctx.geometry.w;
+        int text_width = 0;
 
         for (GSList *iter = layouts; iter; iter = iter->next) {
                 PangoLayout *l = iter->data;
                 int w,h;
                 pango_layout_get_pixel_size(l, &w, &h);
                 height += h;
-                width = MAX(w, width);
+                text_width = MAX(w, text_width);
         }
+
+        int width;
+        if (xctx.geometry.w > 0)
+                width = xctx.geometry.w;
+        else
+                width = text_width + 2 * settings.h_padding;
 
         height += (g_slist_length(layouts) - 1) * settings.separator_height;
         height += g_slist_length(layouts) * settings.padding * 2;
@@ -176,7 +182,7 @@ void x_win_draw(void)
         for (GSList *iter = layouts; iter; iter = iter->next) {
                 PangoLayout *l = iter->data;
                 y += settings.padding;
-                cairo_move_to(c, 0, y);
+                cairo_move_to(c, settings.h_padding, y);
                 /* FIXME text color */
                 cairo_set_source_rgb(c, 0.8, 0.8, 0.8);
                 pango_cairo_update_layout(c, l);
@@ -193,7 +199,7 @@ void x_win_draw(void)
                         y += settings.separator_height;
                         cairo_stroke(c);
                 }
-                cairo_move_to(c, 0, y);
+                cairo_move_to(c, settings.h_padding, y);
         }
 
         cairo_show_page(c);
