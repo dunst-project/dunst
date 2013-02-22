@@ -291,6 +291,7 @@ void x_win_draw(void)
         height += g_slist_length(layouts) * settings.padding * 2;
 
         XResizeWindow(xctx.dpy, xctx.win, width, height);
+        cairo_xlib_surface_set_size(cairo_ctx.surface, width, height);
 
         cairo_set_source_rgb(c, frame_color.r, frame_color.g, frame_color.b);
         cairo_rectangle(c, 0.0, 0.0, width, height);
