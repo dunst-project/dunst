@@ -108,8 +108,10 @@ PangoLayout *r_create_layout_from_notification(cairo_t *c, notification *n)
         notification_update_text_to_render(n);
 
         int width = -1;
-        if (xctx.geometry.w > 0)
+        if (xctx.geometry.w > 0) {
                 width = xctx.geometry.w - 2 * settings.h_padding;
+                width -= 2 * settings.frame_width;
+        }
         r_setup_pango_layout(layout, width);
 
         pango_layout_set_text(layout, n->text_to_render, -1);
@@ -158,8 +160,10 @@ void x_win_draw(void)
         int width;
         if (xctx.geometry.w > 0)
                 width = xctx.geometry.w;
-        else
+        else {
                 width = text_width + 2 * settings.h_padding;
+                width += 2 * settings.frame_width;
+        }
 
         height += (g_slist_length(layouts) - 1) * settings.separator_height;
         height += g_slist_length(layouts) * settings.padding * 2;
@@ -168,9 +172,9 @@ void x_win_draw(void)
 
         XResizeWindow(xctx.dc->dpy, xctx.win, width, height);
 
-        cairo_rectangle(c, 0.0, 0.0, width, height);
         /* FIXME frame color */
-        cairo_set_source_rgb(c, 0.2, 0.2, 0.2);
+        cairo_set_source_rgb(c, 0.0, 0.0, 0.8);
+        cairo_rectangle(c, 0.0, 0.0, width, height);
         cairo_fill(c);
 
         /* FIXME text color */
@@ -179,16 +183,39 @@ void x_win_draw(void)
 
         double y = 0;
 
+        bool first = true;
         for (GSList *iter = layouts; iter; iter = iter->next) {
                 PangoLayout *l = iter->data;
+
+                int h;
+                pango_layout_get_pixel_size(l, NULL, &h);
+
+                int bg_x = 0;
+                int bg_y = y;
+                int bg_width = width;
+                int bg_height = (2 * settings.h_padding) + h;
+
+                /* adding frame */
+                bg_x += settings.frame_width;
+                if (first) {
+                        bg_y += settings.frame_width;
+                        bg_height -= settings.frame_width;
+                }
+                bg_width -= 2 * settings.frame_width;
+                if (!iter->next)
+                        bg_height -= settings.frame_width;
+
+                /* FIXME background color */
+                cairo_set_source_rgb(c, 0.2, 0.2, 0.2);
+                cairo_rectangle(c, bg_x, bg_y, bg_width, bg_height);
+                cairo_fill(c);
+
                 y += settings.padding;
                 cairo_move_to(c, settings.h_padding, y);
                 /* FIXME text color */
                 cairo_set_source_rgb(c, 0.8, 0.8, 0.8);
                 pango_cairo_update_layout(c, l);
                 pango_cairo_show_layout(c, l);
-                int h;
-                pango_layout_get_pixel_size(l, NULL, &h);
                 y += h + settings.padding;
                 if (settings.separator_height > 0 && iter->next) {
                         cairo_move_to(c, 0, y + settings.separator_height / 2);
@@ -200,6 +227,7 @@ void x_win_draw(void)
                         cairo_stroke(c);
                 }
                 cairo_move_to(c, settings.h_padding, y);
+                first = false;
         }
 
         cairo_show_page(c);
