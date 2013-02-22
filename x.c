@@ -83,6 +83,21 @@ void r_setup_pango_layout(PangoLayout *layout, int width)
         pango_layout_set_wrap(layout, PANGO_WRAP_WORD_CHAR);
         pango_layout_set_width(layout, width * PANGO_SCALE);
         pango_layout_set_font_description(layout, cairo_ctx.desc);
+
+        PangoAlignment align;
+        switch (settings.align) {
+                case left:
+                        align = PANGO_ALIGN_LEFT;
+                        break;
+                case center:
+                        align = PANGO_ALIGN_CENTER;
+                        break;
+                case right:
+                        align = PANGO_ALIGN_RIGHT;
+                        break;
+        }
+        pango_layout_set_alignment(layout, align);
+
 }
 
 PangoLayout *r_create_layout_from_notification(cairo_t *c, notification *n)
