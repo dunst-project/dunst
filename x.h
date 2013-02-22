@@ -119,22 +119,13 @@ typedef struct _xctx {
 
 extern xctx_t xctx;
 
-void drawrect(DC * dc, int x, int y, unsigned int w, unsigned int h, bool fill,
-              unsigned long color);
-void drawtext(DC * dc, const char *text, ColorSet * col);
-void drawtextn(DC * dc, const char *text, size_t n, ColorSet * col);
 void freecol(DC * dc, ColorSet * col);
 void eprintf(const char *fmt, ...);
 void freedc(DC * dc);
 unsigned long getcolor(DC * dc, const char *colstr);
 ColorSet *initcolor(DC * dc, const char *foreground, const char *background);
 DC *initdc(void);
-void initfont(DC * dc, const char *fontstr);
 void setopacity(DC * dc, Window win, unsigned long opacity);
-void mapdc(DC * dc, Window win, unsigned int w, unsigned int h);
-void resizedc(DC * dc, unsigned int w, unsigned int h);
-int textnw(DC * dc, const char *text, size_t len);
-int textw(DC * dc, const char *text);
 
 /* window */
 void x_win_draw(void);

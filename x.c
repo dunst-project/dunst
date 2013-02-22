@@ -371,44 +371,6 @@ DC *initdc(void)
         return dc;
 }
 
-void initfont(DC * dc, const char *fontstr)
-{
-        char *def, **missing, **names;
-        int i, n;
-        XFontStruct **xfonts;
-
-        missing = NULL;
-        if ((dc->font.xfont = XLoadQueryFont(dc->dpy, fontstr))) {
-                dc->font.ascent = dc->font.xfont->ascent;
-                dc->font.descent = dc->font.xfont->descent;
-                dc->font.width = dc->font.xfont->max_bounds.width;
-        } else
-            if ((dc->font.set =
-                 XCreateFontSet(dc->dpy, fontstr, &missing, &n, &def))) {
-                n = XFontsOfFontSet(dc->font.set, &xfonts, &names);
-                for (i = 0; i < n; i++) {
-                        dc->font.ascent =
-                            MAX(dc->font.ascent, xfonts[i]->ascent);
-                        dc->font.descent =
-                            MAX(dc->font.descent, xfonts[i]->descent);
-                        dc->font.width =
-                            MAX(dc->font.width, xfonts[i]->max_bounds.width);
-                }
-        } else
-            if ((dc->font.xft_font =
-                 XftFontOpenName(dc->dpy, DefaultScreen(dc->dpy), fontstr))) {
-                dc->font.ascent = dc->font.xft_font->ascent;
-                dc->font.descent = dc->font.xft_font->descent;
-                dc->font.width = dc->font.xft_font->max_advance_width;
-        } else {
-                eprintf("cannot load font '%s'\n", fontstr);
-        }
-        if (missing)
-                XFreeStringList(missing);
-        dc->font.height = dc->font.ascent + dc->font.descent;
-        return;
-}
-
 void setopacity(DC * dc, Window win, unsigned long opacity)
 {
         Atom _NET_WM_WINDOW_OPACITY =
@@ -683,8 +645,6 @@ void x_setup(void)
 
         /* initialize xctx.dc, font, keyboard, colors */
         xctx.dc = initdc();
-
-        initfont(xctx.dc, settings.font);
 
         x_shortcut_init(&settings.close_ks);
         x_shortcut_init(&settings.close_all_ks);
