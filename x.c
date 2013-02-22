@@ -42,6 +42,8 @@ DEALINGS IN THE SOFTWARE.
 #include <X11/Xlib.h>
 #include <X11/X.h>
 #include <X11/Xatom.h>
+#include <pango/pangocairo.h>
+#include <cairo-xlib.h>
 
 #include "x.h"
 #include "utils.h"
@@ -49,64 +51,158 @@ DEALINGS IN THE SOFTWARE.
 #include "settings.h"
 #include "notification.h"
 
+#define WIDTH 400
+#define HEIGHT 400
+
 xctx_t xctx;
 bool dunst_grab_errored = false;
 
+typedef struct _cairo_ctx {
+        cairo_status_t status;
+        cairo_surface_t *surface;
+        PangoFontDescription *desc;
+} cairo_ctx_t;
+
+cairo_ctx_t cairo_ctx;
+
+
 static void x_shortcut_setup_error_handler(void);
 static int x_shortcut_tear_down_error_handler(void);
+static void x_win_move(int width, int height);
 
-void
-drawrect(DC * dc, int x, int y, unsigned int w, unsigned int h, bool fill,
-         unsigned long color)
+void x_cairo_setup(void)
 {
-        XSetForeground(dc->dpy, dc->gc, color);
-        if (fill)
-                XFillRectangle(dc->dpy, dc->canvas, dc->gc, dc->x + x,
-                               dc->y + y, w, h);
-        else
-                XDrawRectangle(dc->dpy, dc->canvas, dc->gc, dc->x + x,
-                               dc->y + y, w - 1, h - 1);
+        cairo_ctx.surface = cairo_xlib_surface_create(xctx.dc->dpy,
+                        xctx.win, DefaultVisual(xctx.dc->dpy, 0), WIDTH, HEIGHT);
+
+        cairo_ctx.desc = pango_font_description_from_string(settings.font);
 }
 
-void drawtext(DC * dc, const char *text, ColorSet * col)
+void r_setup_pango_layout(PangoLayout *layout, int width)
 {
-        char buf[BUFSIZ];
-        size_t mn, n = strlen(text);
-
-        /* shorten text if necessary */
-        for (mn = MIN(n, sizeof buf);
-             textnw(dc, text, mn) + dc->font.height / 2 > dc->w; mn--)
-                if (mn == 0)
-                        return;
-        memcpy(buf, text, mn);
-        if (mn < n)
-                for (n = MAX(mn - 3, 0); n < mn; buf[n++] = '.') ;
-
-        drawrect(dc, 0, 0, dc->w, dc->h, true, col->BG);
-        drawtextn(dc, buf, mn, col);
+        pango_layout_set_wrap(layout, PANGO_WRAP_WORD_CHAR);
+        pango_layout_set_width(layout, width * PANGO_SCALE);
+        pango_layout_set_font_description(layout, cairo_ctx.desc);
 }
 
-void drawtextn(DC * dc, const char *text, size_t n, ColorSet * col)
+PangoLayout *r_create_layout_from_notification(cairo_t *c, notification *n)
 {
-        int x = dc->x + dc->font.height / 2;
-        int y = dc->y + dc->font.ascent + 1;
+        PangoLayout *layout = pango_cairo_create_layout(c);
 
-        XSetForeground(dc->dpy, dc->gc, col->FG);
-        if (dc->font.xft_font) {
-                if (!dc->xftdraw)
-                        eprintf("error, xft drawable does not exist");
-                XftDrawStringUtf8(dc->xftdraw, &col->FG_xft,
-                                  dc->font.xft_font, x, y,
-                                  (unsigned char *)text, n);
-        } else if (dc->font.set) {
-                printf("XmbDrawString\n");
-                XmbDrawString(dc->dpy, dc->canvas, dc->font.set, dc->gc, x, y,
-                              text, n);
+        notification_update_text_to_render(n);
+
+        int width = -1;
+        if (xctx.geometry.w > 0)
+                width = xctx.geometry.w;
+        r_setup_pango_layout(layout, width);
+
+        pango_layout_set_text(layout, n->text_to_render, -1);
+
+        return layout;
+}
+
+GSList *r_create_layouts(cairo_t *c)
+{
+        GSList *layouts = NULL;
+
+        for (GList *iter = g_queue_peek_head_link(displayed);
+                        iter; iter = iter->next)
+        {
+                notification *n = iter->data;
+                layouts = g_slist_append(layouts,
+                                r_create_layout_from_notification(c, n));
+        }
+
+        return layouts;
+}
+
+void r_free_layouts(GSList *layouts)
+{
+        g_slist_free_full(layouts, g_object_unref);
+}
+
+void x_win_draw(void)
+{
+        printf("drawing\n");
+        cairo_t *c;
+        c = cairo_create(cairo_ctx.surface);
+
+        GSList *layouts = r_create_layouts(c);
+        int height = 0;
+        int width = xctx.geometry.w;
+
+        for (GSList *iter = layouts; iter; iter = iter->next) {
+                PangoLayout *l = iter->data;
+                int w,h;
+                pango_layout_get_pixel_size(l, &w, &h);
+                height += h;
+                width = MAX(w, width);
+        }
+
+        printf("(%d,%d)\n", width, height);
+
+        XResizeWindow(xctx.dc->dpy, xctx.win, width, height);
+
+        cairo_rectangle(c, 0.0, 0.0, width, height);
+        cairo_set_source_rgb(c, 0.2, 0.2, 0.2);
+        cairo_fill(c);
+
+        cairo_set_source_rgb(c, 0.8, 0.8, 0.8);
+        cairo_move_to(c, 0, 0);
+
+        double y = 0;
+
+        for (GSList *iter = layouts; iter; iter = iter->next) {
+                PangoLayout *l = iter->data;
+                cairo_move_to(c, 0, y);
+                pango_cairo_update_layout(c, l);
+                pango_cairo_show_layout(c, l);
+                int h;
+                pango_layout_get_pixel_size(l, NULL, &h);
+                y += h;
+        }
+
+        cairo_show_page(c);
+
+        x_win_move(width, height);
+
+        cairo_destroy(c);
+        r_free_layouts(layouts);
+
+}
+
+static void x_win_move(int width, int height)
+{
+
+        int x, y;
+        screen_info scr;
+        x_screen_info(&scr);
+        /* calculate window position */
+        if (xctx.geometry.mask & XNegative) {
+                x = (scr.dim.x + (scr.dim.w - width)) + xctx.geometry.x;
         } else {
-                XSetFont(dc->dpy, dc->gc, dc->font.xfont->fid);
-                XDrawString(dc->dpy, dc->canvas, dc->gc, x, y, text, n);
+                x = scr.dim.x + xctx.geometry.x;
+        }
+
+        if (xctx.geometry.mask & YNegative) {
+                y = scr.dim.y + (scr.dim.h + xctx.geometry.y) - height;
+        } else {
+                y = scr.dim.y + xctx.geometry.y;
+        }
+
+        /* move and map window */
+        if (x != xctx.window_dim.x || y != xctx.window_dim.y
+            || width != xctx.window_dim.w || height != xctx.window_dim.h) {
+
+                XMoveWindow(xctx.dc->dpy, xctx.win, x, y);
+
+                xctx.window_dim.x = x;
+                xctx.window_dim.y = y;
+                xctx.window_dim.h = height;
+                xctx.window_dim.w = width;
         }
 }
+
 
 void eprintf(const char *fmt, ...)
 {
@@ -253,53 +349,12 @@ void setopacity(DC * dc, Window win, unsigned long opacity)
                         PropModeReplace, (unsigned char *)&opacity, 1L);
 }
 
-void mapdc(DC * dc, Window win, unsigned int w, unsigned int h)
-{
-        XCopyArea(dc->dpy, dc->canvas, win, dc->gc, 0, 0, w, h, 0, 0);
-}
 
-void resizedc(DC * dc, unsigned int w, unsigned int h)
-{
-        int screen = DefaultScreen(dc->dpy);
-        if (dc->canvas)
-                XFreePixmap(dc->dpy, dc->canvas);
 
-        dc->w = w;
-        dc->h = h;
-        dc->canvas = XCreatePixmap(dc->dpy, DefaultRootWindow(dc->dpy), w, h,
-                                   DefaultDepth(dc->dpy, screen));
-        if (dc->xftdraw) {
-                XftDrawDestroy(dc->xftdraw);
-        }
-        if (dc->font.xft_font) {
-                dc->xftdraw =
-                    XftDrawCreate(dc->dpy, dc->canvas,
-                                  DefaultVisual(dc->dpy, screen),
-                                  DefaultColormap(dc->dpy, screen));
-                if (!(dc->xftdraw))
-                        eprintf("error, cannot create xft drawable\n");
-        }
-}
 
-int textnw(DC * dc, const char *text, size_t len)
-{
-        if (dc->font.xft_font) {
-                XGlyphInfo gi;
-                XftTextExtentsUtf8(dc->dpy, dc->font.xft_font,
-                                   (const FcChar8 *)text, len, &gi);
-                return gi.width;
-        } else if (dc->font.set) {
-                XRectangle r;
-                XmbTextExtents(dc->font.set, text, len, NULL, &r);
-                return r.width;
-        }
-        return XTextWidth(dc->font.xfont, text, len);
-}
 
-int textw(DC * dc, const char *text)
-{
-        return textnw(dc, text, strlen(text)) + dc->font.height;
-}
+
+
 
         /*
          * Helper function to use glib's mainloop mechanic
@@ -609,371 +664,8 @@ void x_setup(void)
         xctx.screensaver_info = XScreenSaverAllocInfo();
 
         x_win_setup();
+        x_cairo_setup();
         x_shortcut_grab(&settings.history_ks);
-}
-
-/* TODO comments and naming */
-
-GSList *do_word_wrap(char *text, int max_width)
-{
-
-        GSList *result = NULL;
-        g_strstrip(text);
-
-        if (!text || strlen(text) == 0)
-                return 0;
-
-        char *begin = text;
-        char *end = text;
-
-        while (true) {
-                if (*end == '\0') {
-                        result = g_slist_append(result, g_strdup(begin));
-                        break;
-                }
-                if (*end == '\n') {
-                        *end = ' ';
-                        result =
-                            g_slist_append(result,
-                                           g_strndup(begin, end - begin));
-                        begin = ++end;
-                }
-
-                if (settings.word_wrap && max_width > 0
-                    && textnw(xctx.dc, begin, (end - begin) + 1) > max_width) {
-                        /* find previous space */
-                        char *space = end;
-                        while (space > begin && !isspace(*space))
-                                space--;
-
-                        if (space > begin) {
-                                end = space;
-                        }
-                        result =
-                            g_slist_append(result,
-                                           g_strndup(begin, end - begin));
-                        begin = ++end;
-                }
-                end++;
-        }
-
-        return result;
-}
-
-int calculate_x_offset(int line_width, int text_width)
-{
-        int leftover = line_width - text_width;
-        struct timeval t;
-        float pos;
-        /* If the text is wider than the frame, bouncing is enabled and word_wrap disabled */
-        if (line_width < text_width && settings.bounce_freq > 0.0001
-            && !settings.word_wrap) {
-                gettimeofday(&t, NULL);
-                pos =
-                    ((t.tv_sec % 100) * 1e6 +
-                     t.tv_usec) / (1e6 / settings.bounce_freq);
-                return (1 + sinf(2 * 3.14159 * pos)) * leftover / 2;
-        }
-        switch (settings.align) {
-        case left:
-                return settings.frame_width + settings.h_padding;
-        case center:
-                return settings.frame_width + settings.h_padding +
-                    (leftover / 2);
-        case right:
-                return settings.frame_width + settings.h_padding + leftover;
-        default:
-                /* this can't happen */
-                return 0;
-        }
-}
-
-unsigned long calculate_foreground_color(unsigned long source_color)
-{
-        Colormap cmap =
-            DefaultColormap(xctx.dc->dpy, DefaultScreen(xctx.dc->dpy));
-        XColor color;
-
-        color.pixel = source_color;
-        XQueryColor(xctx.dc->dpy, cmap, &color);
-
-        int c_delta = 10000;
-
-        /* do we need to darken or brighten the colors? */
-        int darken = (color.red + color.green + color.blue) / 3 > 65535 / 2;
-
-        if (darken) {
-                if (color.red - c_delta < 0)
-                        color.red = 0;
-                else
-                        color.red -= c_delta;
-                if (color.green - c_delta < 0)
-                        color.green = 0;
-                else
-                        color.green -= c_delta;
-                if (color.blue - c_delta < 0)
-                        color.blue = 0;
-                else
-                        color.blue -= c_delta;
-        } else {
-                if (color.red + c_delta > 65535)
-                        color.red = 65535;
-                else
-                        color.red += c_delta;
-                if (color.green + c_delta > 65535)
-                        color.green = 65535;
-                else
-                        color.green += c_delta;
-                if (color.blue + c_delta > 65535)
-                        color.green = 65535;
-                else
-                        color.green += c_delta;
-        }
-
-        color.pixel = 0;
-        XAllocColor(xctx.dc->dpy, cmap, &color);
-        return color.pixel;
-}
-
-int calculate_width(void)
-{
-        screen_info scr;
-        x_screen_info(&scr);
-        if (xctx.geometry.mask & WidthValue && xctx.geometry.w == 0) {
-                /* dynamic width */
-                return 0;
-        } else if (xctx.geometry.mask & WidthValue) {
-                /* fixed width */
-                if (xctx.geometry.negative_width) {
-                        return scr.dim.w - xctx.geometry.w;
-                } else {
-                        return xctx.geometry.w;
-                }
-        } else {
-                /* across the screen */
-                return scr.dim.w;
-        }
-}
-
-void move_and_map(int width, int height)
-{
-
-        int x, y;
-        screen_info scr;
-        x_screen_info(&scr);
-        /* calculate window position */
-        if (xctx.geometry.mask & XNegative) {
-                x = (scr.dim.x + (scr.dim.w - width)) + xctx.geometry.x;
-        } else {
-                x = scr.dim.x + xctx.geometry.x;
-        }
-
-        if (xctx.geometry.mask & YNegative) {
-                y = scr.dim.y + (scr.dim.h + xctx.geometry.y) - height;
-        } else {
-                y = scr.dim.y + xctx.geometry.y;
-        }
-
-        /* move and map window */
-        if (x != xctx.window_dim.x || y != xctx.window_dim.y
-            || width != xctx.window_dim.w || height != xctx.window_dim.h) {
-
-                XResizeWindow(xctx.dc->dpy, xctx.win, width, height);
-                XMoveWindow(xctx.dc->dpy, xctx.win, x, y);
-
-                xctx.window_dim.x = x;
-                xctx.window_dim.y = y;
-                xctx.window_dim.h = height;
-                xctx.window_dim.w = width;
-        }
-
-        mapdc(xctx.dc, xctx.win, width, height);
-
-}
-
-GSList *generate_render_texts(int width)
-{
-        GSList *render_texts = NULL;
-
-        for (GList * iter = g_queue_peek_head_link(displayed); iter;
-             iter = iter->next) {
-                render_text *rt = g_malloc(sizeof(render_text));
-                notification *n = iter->data;
-
-                notification_update_text_to_render(n);
-                rt->colors = n->colors;
-                char *text = n->text_to_render;
-                rt->lines = do_word_wrap(text, width);
-                render_texts = g_slist_append(render_texts, rt);
-        }
-
-        /* add (x more) */
-        if (settings.indicate_hidden && queue->length > 0) {
-                if (xctx.geometry.h != 1) {
-                        render_text *rt = g_malloc(sizeof(render_text));
-                        rt->colors =
-                            ((render_text *) g_slist_last(render_texts)->data)->
-                            colors;
-                        rt->lines =
-                            g_slist_append(NULL,
-                                           g_strdup_printf("%d more)",
-                                                           queue->length));
-                        render_texts = g_slist_append(render_texts, rt);
-                } else {
-                        GSList *last_lines =
-                            ((render_text *) g_slist_last(render_texts)->data)->
-                            lines;
-                        GSList *last_line = g_slist_last(last_lines);
-                        char *old = last_line->data;
-                        char *new =
-                            g_strdup_printf("%s (%d more)", old, queue->length);
-                        free(old);
-                        last_line->data = new;
-                }
-        }
-
-        return render_texts;
-}
-
-void free_render_text(void *data)
-{
-        g_slist_free_full(((render_text *) data)->lines, g_free);
-}
-
-void free_render_texts(GSList * texts)
-{
-        g_slist_free_full(texts, free_render_text);
-}
-
-void x_win_draw(void)
-{
-
-        int outer_width = calculate_width();
-        screen_info scr;
-        x_screen_info(&scr);
-
-        settings.line_height = MAX(settings.line_height, xctx.font_h);
-
-        int width;
-        if (outer_width == 0)
-                width = 0;
-        else
-                width =
-                    outer_width - (2 * settings.frame_width) -
-                    (2 * settings.h_padding);
-
-        GSList *texts = generate_render_texts(width);
-        int line_count = 0;
-        for (GSList * iter = texts; iter; iter = iter->next) {
-                render_text *tmp = iter->data;
-                line_count += g_slist_length(tmp->lines);
-        }
-
-        /* if we have a dynamic width, calculate the actual width */
-        if (width == 0) {
-                for (GSList * iter = texts; iter; iter = iter->next) {
-                        GSList *lines = ((render_text *) iter->data)->lines;
-                        for (GSList * iiter = lines; iiter; iiter = iiter->next)
-                                width = MAX(width, textw(xctx.dc, iiter->data));
-                }
-                outer_width =
-                    width + (2 * settings.frame_width) +
-                    (2 * settings.h_padding);
-        }
-
-        /* resize xctx.dc to correct width */
-
-        int height = (line_count * settings.line_height)
-            + displayed->length * 2 * settings.padding
-            +
-            ((settings.indicate_hidden && queue->length > 0
-              && xctx.geometry.h != 1) ? 2 * settings.padding : 0)
-            + (settings.separator_height * (displayed->length - 1))
-            + (2 * settings.frame_width);
-
-        resizedc(xctx.dc, outer_width, height);
-
-        /* draw frame
-         * this draws a big box in the frame color which get filled with
-         * smaller boxes of the notification colors
-         */
-        xctx.dc->y = 0;
-        xctx.dc->x = 0;
-        if (settings.frame_width > 0) {
-                drawrect(xctx.dc, 0, 0, outer_width, height, true, xctx.framec);
-        }
-
-        xctx.dc->y = settings.frame_width;
-        xctx.dc->x = settings.frame_width;
-
-        for (GSList * iter = texts; iter; iter = iter->next) {
-
-                render_text *cur = iter->data;
-                ColorSet *colors = cur->colors;
-
-                int line_count = 0;
-                bool first_line = true;
-                for (GSList * iiter = cur->lines; iiter; iiter = iiter->next) {
-                        char *line = iiter->data;
-                        line_count++;
-
-                        int pad = 0;
-                        bool last_line = iiter->next == NULL;
-
-                        if (first_line && last_line)
-                                pad = 2 * settings.padding;
-                        else if (first_line || last_line)
-                                pad = settings.padding;
-
-                        xctx.dc->x = settings.frame_width;
-
-                        /* draw background */
-                        drawrect(xctx.dc, 0, 0,
-                                 width + (2 * settings.h_padding),
-                                 pad + settings.line_height, true, colors->BG);
-
-                        /* draw text */
-                        xctx.dc->x =
-                            calculate_x_offset(width, textw(xctx.dc, line));
-
-                        xctx.dc->y +=
-                            ((settings.line_height - xctx.font_h) / 2);
-                        xctx.dc->y += first_line ? settings.padding : 0;
-
-                        drawtextn(xctx.dc, line, strlen(line), colors);
-
-                        xctx.dc->y +=
-                            settings.line_height -
-                            ((settings.line_height - xctx.font_h) / 2);
-                        xctx.dc->y += last_line ? settings.padding : 0;
-
-                        first_line = false;
-                }
-
-                /* draw separator */
-                if (settings.separator_height > 0 && iter->next) {
-                        xctx.dc->x = settings.frame_width;
-                        double color;
-                        if (settings.sep_color == AUTO)
-                                color = calculate_foreground_color(colors->BG);
-                        else if (settings.sep_color == FOREGROUND)
-                                color = colors->FG;
-                        else if (settings.sep_color == FRAME)
-                                color = xctx.framec;
-                        else {
-                                /* CUSTOM */
-                                color = xctx.sep_custom_col;
-                        }
-                        drawrect(xctx.dc, 0, 0,
-                                 width + (2 * settings.h_padding),
-                                 settings.separator_height, true, color);
-                        xctx.dc->y += settings.separator_height;
-                }
-        }
-
-        move_and_map(outer_width, height);
-
-        free_render_texts(texts);
 }
 
         /*

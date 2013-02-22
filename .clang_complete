@@ -1,7 +1,10 @@
--pthread
+-DVERSION="foo"
 -I/usr/include/dbus-1.0
--I/usr/lib/dbus-1.0/include
 -I/usr/include/freetype2
 -I/usr/include/glib-2.0
--I/usr/lib/glib-2.0/include
--DVERSION="foo"
+-I/usr/include/libpng15
+-I/usr/include/pango-1.0
+-I/usr/include/pixman-1
+-I/usr/lib/dbus-1.0/include
+-I/usr/lib/glib-2.0/include 
+-pthread
