@@ -29,7 +29,7 @@ typedef struct _notification {
         bool redisplayed;       /* has been displayed before? */
         int id;
         int dup_count;
-        ColorSet *colors;
+        int displayed_height;
         char *color_strings[2];
 
         int progress;           /* percentage + 1, 0 to hide */

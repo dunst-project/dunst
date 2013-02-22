@@ -26,7 +26,6 @@ extern GQueue *history;
 extern GSList *rules;
 extern bool pause_display;
 extern const char *color_strings[2][3];
-extern DC *dc;
 
 /* return id of notification */
 gboolean run(void *data);

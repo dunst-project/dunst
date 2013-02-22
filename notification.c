@@ -305,8 +305,6 @@ int notification_init(notification * n, int id)
                 bg = xctx.color_strings[ColBG][n->urgency];
         }
 
-        n->colors = initcolor(xctx.dc, fg, bg);
-
         n->timeout =
             n->timeout == -1 ? settings.timeouts[n->urgency] : n->timeout;
         n->start = 0;

@@ -1,34 +1,4 @@
-/*
-MIT/X Consortium License
-
-© 2013 Sascha Kruse <knopwob@googlemail.com> and contributors
-© 2010-2011 Connor Lane Smith <cls@lubutu.com>
-© 2006-2011 Anselm R Garbe <anselm@garbe.us>
-© 2009 Gottox <gottox@s01.de>
-© 2009 Markus Schnalke <meillo@marmaro.de>
-© 2009 Evan Gates <evan.gates@gmail.com>
-© 2006-2008 Sander van Dijk <a dot h dot vandijk at gmail dot com>
-© 2006-2007 Michał Janeczek <janeczek at gmail dot com>
-
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the "Software"),
-to deal in the Software without restriction, including without limitation
-the rights to use, copy, modify, merge, publish, distribute, sublicense,
-and/or sell copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
-THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-DEALINGS IN THE SOFTWARE.
-
-*/
+/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
 #include <math.h>
 #include <sys/time.h>
 #include <ctype.h>
@@ -72,8 +42,8 @@ static void x_win_move(int width, int height);
 
 void x_cairo_setup(void)
 {
-        cairo_ctx.surface = cairo_xlib_surface_create(xctx.dc->dpy,
-                        xctx.win, DefaultVisual(xctx.dc->dpy, 0), WIDTH, HEIGHT);
+        cairo_ctx.surface = cairo_xlib_surface_create(xctx.dpy,
+                        xctx.win, DefaultVisual(xctx.dpy, 0), WIDTH, HEIGHT);
 
         cairo_ctx.desc = pango_font_description_from_string(settings.font);
 }
@@ -115,6 +85,9 @@ PangoLayout *r_create_layout_from_notification(cairo_t *c, notification *n)
         r_setup_pango_layout(layout, width);
 
         pango_layout_set_text(layout, n->text_to_render, -1);
+
+        pango_layout_get_pixel_size(layout, NULL, &(n->displayed_height));
+        n->displayed_height += 2 * settings.padding;
 
         return layout;
 }
@@ -170,7 +143,7 @@ void x_win_draw(void)
 
         printf("(%d,%d)[%d]\n", width, height, settings.separator_height);
 
-        XResizeWindow(xctx.dc->dpy, xctx.win, width, height);
+        XResizeWindow(xctx.dpy, xctx.win, width, height);
 
         /* FIXME frame color */
         cairo_set_source_rgb(c, 0.0, 0.0, 0.8);
@@ -262,7 +235,7 @@ static void x_win_move(int width, int height)
         if (x != xctx.window_dim.x || y != xctx.window_dim.y
             || width != xctx.window_dim.w || height != xctx.window_dim.h) {
 
-                XMoveWindow(xctx.dc->dpy, xctx.win, x, y);
+                XMoveWindow(xctx.dpy, xctx.win, x, y);
 
                 xctx.window_dim.x = x;
                 xctx.window_dim.y = y;
@@ -287,95 +260,11 @@ void eprintf(const char *fmt, ...)
         exit(EXIT_FAILURE);
 }
 
-void freecol(DC * dc, ColorSet * col)
-{
-        if (col) {
-                if (&col->FG_xft)
-                        XftColorFree(dc->dpy,
-                                     DefaultVisual(dc->dpy,
-                                                   DefaultScreen(dc->dpy)),
-                                     DefaultColormap(dc->dpy,
-                                                     DefaultScreen(dc->dpy)),
-                                     &col->FG_xft);
-                free(col);
-        }
-}
-
-void freedc(DC * dc)
-{
-        if (dc->font.xft_font) {
-                XftFontClose(dc->dpy, dc->font.xft_font);
-                XftDrawDestroy(dc->xftdraw);
-        }
-        if (dc->font.set)
-                XFreeFontSet(dc->dpy, dc->font.set);
-        if (dc->font.xfont)
-                XFreeFont(dc->dpy, dc->font.xfont);
-        if (dc->canvas)
-                XFreePixmap(dc->dpy, dc->canvas);
-        if (dc->gc)
-                XFreeGC(dc->dpy, dc->gc);
-        if (dc->dpy)
-                XCloseDisplay(dc->dpy);
-        if (dc)
-                free(dc);
-}
-
-unsigned long getcolor(DC * dc, const char *colstr)
-{
-        Colormap cmap = DefaultColormap(dc->dpy, DefaultScreen(dc->dpy));
-        XColor color;
-
-        if (!XAllocNamedColor(dc->dpy, cmap, colstr, &color, &color))
-                eprintf("cannot allocate color '%s'\n", colstr);
-        return color.pixel;
-}
-
-ColorSet *initcolor(DC * dc, const char *foreground, const char *background)
-{
-        ColorSet *col = (ColorSet *) malloc(sizeof(ColorSet));
-        if (!col) {
-                eprintf("error, cannot allocate memory for color set");
-                exit(EXIT_FAILURE);
-        }
-        col->BG = getcolor(dc, background);
-        col->FG = getcolor(dc, foreground);
-        if (dc->font.xft_font)
-                if (!XftColorAllocName
-                    (dc->dpy, DefaultVisual(dc->dpy, DefaultScreen(dc->dpy)),
-                     DefaultColormap(dc->dpy, DefaultScreen(dc->dpy)),
-                     foreground, &col->FG_xft))
-                        eprintf("error, cannot allocate xft font color '%s'\n",
-                                foreground);
-        return col;
-}
-
-DC *initdc(void)
-{
-        DC *dc;
-
-        if (!setlocale(LC_CTYPE, "") || !XSupportsLocale())
-                fputs("no locale support\n", stderr);
-        if (!(dc = calloc(1, sizeof *dc))) {
-                eprintf("cannot malloc %u bytes:", sizeof *dc);
-                exit(EXIT_FAILURE);
-        }
-
-        if (!(dc->dpy = XOpenDisplay(NULL))) {
-                eprintf("cannot open display\n");
-                exit(EXIT_FAILURE);
-        }
-
-        dc->gc = XCreateGC(dc->dpy, DefaultRootWindow(dc->dpy), 0, NULL);
-        XSetLineAttributes(dc->dpy, dc->gc, 1, LineSolid, CapButt, JoinMiter);
-        return dc;
-}
-
-void setopacity(DC * dc, Window win, unsigned long opacity)
+void setopacity(Window win, unsigned long opacity)
 {
         Atom _NET_WM_WINDOW_OPACITY =
-            XInternAtom(dc->dpy, "_NET_WM_WINDOW_OPACITY", false);
-        XChangeProperty(dc->dpy, win, _NET_WM_WINDOW_OPACITY, XA_CARDINAL, 32,
+            XInternAtom(xctx.dpy, "_NET_WM_WINDOW_OPACITY", false);
+        XChangeProperty(xctx.dpy, win, _NET_WM_WINDOW_OPACITY, XA_CARDINAL, 32,
                         PropModeReplace, (unsigned char *)&opacity, 1L);
 }
 
@@ -402,7 +291,7 @@ gboolean x_mainloop_fd_prepare(GSource * source, gint * timeout)
          */
 gboolean x_mainloop_fd_check(GSource * source)
 {
-        return XPending(xctx.dc->dpy) > 0;
+        return XPending(xctx.dpy) > 0;
 }
 
         /*
@@ -412,8 +301,8 @@ gboolean x_mainloop_fd_dispatch(GSource * source, GSourceFunc callback,
                                 gpointer user_data)
 {
         XEvent ev;
-        while (XPending(xctx.dc->dpy) > 0) {
-                XNextEvent(xctx.dc->dpy, &ev);
+        while (XPending(xctx.dpy) > 0) {
+                XNextEvent(xctx.dpy, &ev);
                 switch (ev.type) {
                 case Expose:
                         if (ev.xexpose.count == 0 && xctx.visible) {
@@ -424,7 +313,7 @@ gboolean x_mainloop_fd_dispatch(GSource * source, GSourceFunc callback,
                                 break;
                 case VisibilityNotify:
                         if (ev.xvisibility.state != VisibilityUnobscured)
-                                XRaiseWindow(xctx.dc->dpy, xctx.win);
+                                XRaiseWindow(xctx.dpy, xctx.win);
                         break;
                 case ButtonPress:
                         if (ev.xbutton.window == xctx.win) {
@@ -471,7 +360,7 @@ gboolean x_mainloop_fd_dispatch(GSource * source, GSourceFunc callback,
          */
 bool x_is_idle(void)
 {
-        XScreenSaverQueryInfo(xctx.dc->dpy, DefaultRootWindow(xctx.dc->dpy),
+        XScreenSaverQueryInfo(xctx.dpy, DefaultRootWindow(xctx.dpy),
                               xctx.screensaver_info);
         if (settings.idle_threshold == 0) {
                 return false;
@@ -494,20 +383,16 @@ void x_handle_click(XEvent ev)
         if (ev.xbutton.button == Button1) {
                 int y = settings.separator_height;
                 notification *n = NULL;
+                int first = true;
                 for (GList * iter = g_queue_peek_head_link(displayed); iter;
                      iter = iter->next) {
                         n = iter->data;
-                        int text_h =
-                            MAX(xctx.font_h,
-                                settings.line_height) * n->line_count;
-                        int padding = 2 * settings.h_padding;
-
-                        int height = text_h + padding;
-
-                        if (ev.xbutton.y > y && ev.xbutton.y < y + height)
+                        if (ev.xbutton.y > y && ev.xbutton.y < y + n->displayed_height)
                                 break;
-                        else
-                                y += height + settings.separator_height;
+
+                        y += n->displayed_height + settings.separator_height;
+                        if (first)
+                                y += settings.frame_width;
                 }
                 if (n)
                         notification_close(n, 2);
@@ -525,11 +410,11 @@ Window get_focused_window(void)
         int format;
         unsigned long nitems, bytes_after;
         unsigned char *prop_return = NULL;
-        Window root = RootWindow(xctx.dc->dpy, DefaultScreen(xctx.dc->dpy));
+        Window root = RootWindow(xctx.dpy, DefaultScreen(xctx.dpy));
         Atom netactivewindow =
-            XInternAtom(xctx.dc->dpy, "_NET_ACTIVE_WINDOW", false);
+            XInternAtom(xctx.dpy, "_NET_ACTIVE_WINDOW", false);
 
-        XGetWindowProperty(xctx.dc->dpy, root, netactivewindow, 0L,
+        XGetWindowProperty(xctx.dpy, root, netactivewindow, 0L,
                            sizeof(Window), false, XA_WINDOW,
                            &type, &format, &nitems, &bytes_after, &prop_return);
         if (prop_return) {
@@ -549,21 +434,21 @@ int select_screen(XineramaScreenInfo * info, int info_len)
 {
         if (settings.f_mode == FOLLOW_NONE) {
                 return settings.monitor >=
-                    0 ? settings.monitor : XDefaultScreen(xctx.dc->dpy);
+                    0 ? settings.monitor : XDefaultScreen(xctx.dpy);
 
         } else {
                 int x, y;
                 assert(settings.f_mode == FOLLOW_MOUSE
                        || settings.f_mode == FOLLOW_KEYBOARD);
                 Window root =
-                    RootWindow(xctx.dc->dpy, DefaultScreen(xctx.dc->dpy));
+                    RootWindow(xctx.dpy, DefaultScreen(xctx.dpy));
 
                 if (settings.f_mode == FOLLOW_MOUSE) {
                         int dummy;
                         unsigned int dummy_ui;
                         Window dummy_win;
 
-                        XQueryPointer(xctx.dc->dpy, root, &dummy_win,
+                        XQueryPointer(xctx.dpy, root, &dummy_win,
                                       &dummy_win, &x, &y, &dummy,
                                       &dummy, &dummy_ui);
                 }
@@ -575,13 +460,11 @@ int select_screen(XineramaScreenInfo * info, int info_len)
                         if (focused == 0) {
                                 /* something went wrong. Fallback to default */
                                 return settings.monitor >=
-                                    0 ? settings.monitor : XDefaultScreen(xctx.
-                                                                          dc->
-                                                                          dpy);
+                                    0 ? settings.monitor : XDefaultScreen(xctx.dpy);
                         }
 
                         Window child_return;
-                        XTranslateCoordinates(xctx.dc->dpy, focused, root,
+                        XTranslateCoordinates(xctx.dpy, focused, root,
                                               0, 0, &x, &y, &child_return);
                 }
 
@@ -595,7 +478,7 @@ int select_screen(XineramaScreenInfo * info, int info_len)
 
                 /* something seems to be wrong. Fallback to default */
                 return settings.monitor >=
-                    0 ? settings.monitor : XDefaultScreen(xctx.dc->dpy);
+                    0 ? settings.monitor : XDefaultScreen(xctx.dpy);
         }
 }
 #endif
@@ -609,7 +492,7 @@ void x_screen_info(screen_info * scr)
 #ifdef XINERAMA
         int n;
         XineramaScreenInfo *info;
-        if ((info = XineramaQueryScreens(xctx.dc->dpy, &n))) {
+        if ((info = XineramaQueryScreens(xctx.dpy, &n))) {
                 int screen = select_screen(info, n);
                 if (screen >= n) {
                         /* invalid monitor, fallback to default */
@@ -630,10 +513,10 @@ void x_screen_info(screen_info * scr)
                 if (settings.monitor >= 0)
                         screen = settings.monitor;
                 else
-                        screen = DefaultScreen(xctx.dc->dpy);
+                        screen = DefaultScreen(xctx.dpy);
 
-                scr->dim.w = DisplayWidth(xctx.dc->dpy, screen);
-                scr->dim.h = DisplayHeight(xctx.dc->dpy, screen);
+                scr->dim.w = DisplayWidth(xctx.dpy, screen);
+                scr->dim.h = DisplayHeight(xctx.dpy, screen);
         }
 }
 
@@ -644,7 +527,11 @@ void x_setup(void)
 {
 
         /* initialize xctx.dc, font, keyboard, colors */
-        xctx.dc = initdc();
+        if (!setlocale(LC_CTYPE, "") || !XSupportsLocale())
+                fputs("no locale support\n", stderr);
+        if (!(xctx.dpy = XOpenDisplay(NULL))) {
+                die("cannot open display\n", EXIT_FAILURE);
+        }
 
         x_shortcut_init(&settings.close_ks);
         x_shortcut_init(&settings.close_all_ks);
@@ -667,15 +554,6 @@ void x_setup(void)
         xctx.color_strings[ColBG][LOW] = settings.lowbgcolor;
         xctx.color_strings[ColBG][NORM] = settings.normbgcolor;
         xctx.color_strings[ColBG][CRIT] = settings.critbgcolor;
-
-        xctx.framec = getcolor(xctx.dc, settings.frame_color);
-
-        if (settings.sep_color == CUSTOM) {
-                xctx.sep_custom_col =
-                    getcolor(xctx.dc, settings.sep_custom_color_str);
-        } else {
-                xctx.sep_custom_col = 0;
-        }
 
         /* parse and set xctx.geometry and monitor position */
         if (settings.geom[0] == '-') {
@@ -702,6 +580,8 @@ void x_setup(void)
 void x_win_setup(void)
 {
 
+        printf("x_win_setup\n");
+        fflush(stdout);
         Window root;
         XSetWindowAttributes wa;
 
@@ -710,9 +590,8 @@ void x_win_setup(void)
         xctx.window_dim.w = 0;
         xctx.window_dim.h = 0;
 
-        root = RootWindow(xctx.dc->dpy, DefaultScreen(xctx.dc->dpy));
-        xctx.utf8 = XInternAtom(xctx.dc->dpy, "UTF8_STRING", false);
-        xctx.font_h = xctx.dc->font.height + FONT_HEIGHT_BORDER;
+        root = RootWindow(xctx.dpy, DefaultScreen(xctx.dpy));
+        xctx.utf8 = XInternAtom(xctx.dpy, "UTF8_STRING", false);
 
         wa.override_redirect = true;
         wa.background_pixmap = ParentRelative;
@@ -723,17 +602,15 @@ void x_win_setup(void)
         screen_info scr;
         x_screen_info(&scr);
         xctx.win =
-            XCreateWindow(xctx.dc->dpy, root, scr.dim.x, scr.dim.y, scr.dim.w,
-                          xctx.font_h, 0, DefaultDepth(xctx.dc->dpy,
-                                                       DefaultScreen(xctx.dc->
-                                                                     dpy)),
-                          CopyFromParent, DefaultVisual(xctx.dc->dpy,
-                                                        DefaultScreen(xctx.dc->
-                                                                      dpy)),
+            XCreateWindow(xctx.dpy, root, scr.dim.x, scr.dim.y, scr.dim.w,
+                          1, 0, DefaultDepth(xctx.dpy,
+                                                       DefaultScreen(xctx.dpy)),
+                          CopyFromParent, DefaultVisual(xctx.dpy,
+                                                        DefaultScreen(xctx.dpy)),
                           CWOverrideRedirect | CWBackPixmap | CWEventMask, &wa);
         settings.transparency =
             settings.transparency > 100 ? 100 : settings.transparency;
-        setopacity(xctx.dc, xctx.win,
+        setopacity(xctx.win,
                    (unsigned long)((100 - settings.transparency) *
                                    (0xffffffff / 100)));
 }
@@ -753,13 +630,13 @@ void x_win_show(void)
         x_shortcut_grab(&settings.context_ks);
 
         x_shortcut_setup_error_handler();
-        XGrabButton(xctx.dc->dpy, AnyButton, AnyModifier, xctx.win, false,
+        XGrabButton(xctx.dpy, AnyButton, AnyModifier, xctx.win, false,
                     BUTTONMASK, GrabModeAsync, GrabModeSync, None, None);
         if (x_shortcut_tear_down_error_handler()) {
                 fprintf(stderr, "Unable to grab mouse button(s)\n");
         }
 
-        XMapRaised(xctx.dc->dpy, xctx.win);
+        XMapRaised(xctx.dpy, xctx.win);
         xctx.visible = true;
 }
 
@@ -772,9 +649,9 @@ void x_win_hide()
         x_shortcut_ungrab(&settings.close_all_ks);
         x_shortcut_ungrab(&settings.context_ks);
 
-        XUngrabButton(xctx.dc->dpy, AnyButton, AnyModifier, xctx.win);
-        XUnmapWindow(xctx.dc->dpy, xctx.win);
-        XFlush(xctx.dc->dpy);
+        XUngrabButton(xctx.dpy, AnyButton, AnyModifier, xctx.win);
+        XUnmapWindow(xctx.dpy, xctx.win);
+        XFlush(xctx.dpy);
         xctx.visible = false;
 }
 
@@ -827,7 +704,7 @@ static void x_shortcut_setup_error_handler(void)
 {
         dunst_grab_errored = false;
 
-        XFlush(xctx.dc->dpy);
+        XFlush(xctx.dpy);
         XSetErrorHandler(GrabXErrorHandler);
 }
 
@@ -836,8 +713,8 @@ static void x_shortcut_setup_error_handler(void)
          */
 static int x_shortcut_tear_down_error_handler(void)
 {
-        XFlush(xctx.dc->dpy);
-        XSync(xctx.dc->dpy, false);
+        XFlush(xctx.dpy);
+        XSync(xctx.dpy, false);
         XSetErrorHandler(NULL);
         return dunst_grab_errored;
 }
@@ -850,12 +727,12 @@ int x_shortcut_grab(keyboard_shortcut * ks)
         if (!ks->is_valid)
                 return 1;
         Window root;
-        root = RootWindow(xctx.dc->dpy, DefaultScreen(xctx.dc->dpy));
+        root = RootWindow(xctx.dpy, DefaultScreen(xctx.dpy));
 
         x_shortcut_setup_error_handler();
 
         if (ks->is_valid)
-                XGrabKey(xctx.dc->dpy, ks->code, ks->mask, root,
+                XGrabKey(xctx.dpy, ks->code, ks->mask, root,
                          true, GrabModeAsync, GrabModeAsync);
 
         if (x_shortcut_tear_down_error_handler()) {
@@ -872,9 +749,9 @@ int x_shortcut_grab(keyboard_shortcut * ks)
 void x_shortcut_ungrab(keyboard_shortcut * ks)
 {
         Window root;
-        root = RootWindow(xctx.dc->dpy, DefaultScreen(xctx.dc->dpy));
+        root = RootWindow(xctx.dpy, DefaultScreen(xctx.dpy));
         if (ks->is_valid)
-                XUngrabKey(xctx.dc->dpy, ks->code, ks->mask, root);
+                XUngrabKey(xctx.dpy, ks->code, ks->mask, root);
 }
 
         /*
@@ -910,13 +787,13 @@ void x_shortcut_init(keyboard_shortcut * ks)
         ks->sym = XStringToKeysym(str);
         /* find matching keycode for ks->sym */
         int min_keysym, max_keysym;
-        XDisplayKeycodes(xctx.dc->dpy, &min_keysym, &max_keysym);
+        XDisplayKeycodes(xctx.dpy, &min_keysym, &max_keysym);
 
         ks->code = NoSymbol;
 
         for (int i = min_keysym; i <= max_keysym; i++) {
-                if (XkbKeycodeToKeysym(xctx.dc->dpy, i, 0, 0) == ks->sym
-                    || XkbKeycodeToKeysym(xctx.dc->dpy, i, 0, 1) == ks->sym) {
+                if (XkbKeycodeToKeysym(xctx.dpy, i, 0, 0) == ks->sym
+                    || XkbKeycodeToKeysym(xctx.dpy, i, 0, 1) == ks->sym) {
                         ks->code = i;
                         break;
                 }

@@ -281,7 +281,7 @@ int main(int argc, char *argv[])
 
         mainloop = g_main_loop_new(NULL, FALSE);
 
-        GPollFD dpy_pollfd = { xctx.dc->dpy->fd,
+        GPollFD dpy_pollfd = { xctx.dpy->fd,
                 G_IO_IN | G_IO_HUP | G_IO_ERR, 0
         };
 
@@ -296,7 +296,7 @@ int main(int argc, char *argv[])
 
         GSource *x11_source =
             g_source_new(&x11_source_funcs, sizeof(x11_source_t));
-        ((x11_source_t *) x11_source)->dpy = xctx.dc->dpy;
+        ((x11_source_t *) x11_source)->dpy = xctx.dpy;
         ((x11_source_t *) x11_source)->w = xctx.win;
         g_source_add_poll(x11_source, &dpy_pollfd);
 

@@ -1,35 +1,4 @@
-/*
-
-MIT/X Consortium License
-
-© 2013 Sascha Kruse <knopwob@googlemail.com> and contributors
-© 2010-2011 Connor Lane Smith <cls@lubutu.com>
-© 2006-2011 Anselm R Garbe <anselm@garbe.us>
-© 2009 Gottox <gottox@s01.de>
-© 2009 Markus Schnalke <meillo@marmaro.de>
-© 2009 Evan Gates <evan.gates@gmail.com>
-© 2006-2008 Sander van Dijk <a dot h dot vandijk at gmail dot com>
-© 2006-2007 Michał Janeczek <janeczek at gmail dot com>
-
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the "Software"),
-to deal in the Software without restriction, including without limitation
-the rights to use, copy, modify, merge, publish, distribute, sublicense,
-and/or sell copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
-THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-DEALINGS IN THE SOFTWARE.
-
- */
+/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
 #ifndef DRAW_H
 #define DRAW_H
 
@@ -50,30 +19,6 @@ DEALINGS IN THE SOFTWARE.
 #define FONT_HEIGHT_BORDER 2
 #define DEFFONT "Monospace-11"
 #define INRECT(x,y,rx,ry,rw,rh) ((x) >= (rx) && (x) < (rx)+(rw) && (y) >= (ry) && (y) < (ry)+(rh))
-
-typedef struct {
-        int x, y, w, h;
-        bool invert;
-        Display *dpy;
-        GC gc;
-        Pixmap canvas;
-        XftDraw *xftdraw;
-        struct {
-                int ascent;
-                int descent;
-                int height;
-                int width;
-                XFontSet set;
-                XFontStruct *xfont;
-                XftFont *xft_font;
-        } font;
-} DC;                           /* draw context */
-
-typedef struct {
-        unsigned long FG;
-        XftColor FG_xft;
-        unsigned long BG;
-} ColorSet;
 
 typedef struct _dimension_t {
         int x;
@@ -97,16 +42,9 @@ typedef struct _keyboard_shortcut {
         bool is_valid;
 } keyboard_shortcut;
 
-typedef struct _render_text {
-        ColorSet *colors;
-        GSList *lines;
-} render_text;
-
 typedef struct _xctx {
-        int height_limit;
-        int font_h;
         Atom utf8;
-        DC *dc;
+        Display *dpy;
         Window win;
         bool visible;
         dimension_t geometry;
@@ -119,13 +57,7 @@ typedef struct _xctx {
 
 extern xctx_t xctx;
 
-void freecol(DC * dc, ColorSet * col);
-void eprintf(const char *fmt, ...);
-void freedc(DC * dc);
-unsigned long getcolor(DC * dc, const char *colstr);
-ColorSet *initcolor(DC * dc, const char *foreground, const char *background);
-DC *initdc(void);
-void setopacity(DC * dc, Window win, unsigned long opacity);
+void setopacity(Window win, unsigned long opacity);
 
 /* window */
 void x_win_draw(void);
