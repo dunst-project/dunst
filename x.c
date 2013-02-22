@@ -83,6 +83,7 @@ void r_setup_pango_layout(PangoLayout *layout, int width)
         pango_layout_set_wrap(layout, PANGO_WRAP_WORD_CHAR);
         pango_layout_set_width(layout, width * PANGO_SCALE);
         pango_layout_set_font_description(layout, cairo_ctx.desc);
+        pango_layout_set_spacing(layout, settings.line_height * PANGO_SCALE);
 
         PangoAlignment align;
         switch (settings.align) {
