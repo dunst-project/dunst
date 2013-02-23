@@ -112,7 +112,7 @@ static void onNotify(GDBusConnection * connection,
         gchar *icon = NULL;
         gchar *summary = NULL;
         gchar *body = NULL;
-        Actions *actions = malloc(sizeof(actions));
+        Actions *actions = malloc(sizeof(Actions));
         gint timeout = -1;
 
         /* hints */
