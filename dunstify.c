@@ -26,7 +26,7 @@ static GOptionEntry entries[] =
     { "appname", 'a', 0, G_OPTION_ARG_STRING, &appname, "Name of your application", "NAME" },
     { "urgency", 'u', 0, G_OPTION_ARG_STRING, &urgency_str, "The urgency of this notification", "URG" },
     { "hints",   'h', 0, G_OPTION_ARG_STRING_ARRAY, &hint_strs, "User specified hints", "HINT" },
-    { "actions", 'a', 0, G_OPTION_ARG_STRING_ARRAY, &action_strs, "Actions the user can invoke", "ACTION" },
+    { "actions", 'A', 0, G_OPTION_ARG_STRING_ARRAY, &action_strs, "Actions the user can invoke", "ACTION" },
     { "timeout", 't', 0, G_OPTION_ARG_INT, &timeout, "The time until the notification expires", "TIMEOUT" },
     { "icon",    'i', 0, G_OPTION_ARG_STRING, &icon, "An Icon that should be displayed with the notification", "ICON" },
     { "capabilities",   'c', 0, G_OPTION_ARG_NONE, &capabilities, "Print the server capabilities and exit", NULL},
