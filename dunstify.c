@@ -1,0 +1,236 @@
+#include <glib.h>
+#include <libnotify/notify.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
+
+static gchar *appname = "dunstify";
+static gchar *summary = NULL;
+static gchar *body = NULL;
+static NotifyUrgency urgency = NOTIFY_URGENCY_NORMAL;
+static gchar *urgency_str = NULL;
+static GVariant *hints = NULL;
+static gchar *hint_strs = NULL;
+static GVariant **actions = NULL;
+static gchar **action_strs = NULL;
+static gint timeout = NOTIFY_EXPIRES_DEFAULT;
+static gchar *icon = NULL;
+static gboolean capabilities = false;
+static gboolean serverinfo = false;
+static gboolean printid = false;
+static guint32 replace_id = 0;
+static guint32 close_id = 0;
+
+static GOptionEntry entries[] =
+{
+    { "appname", 'a', 0, G_OPTION_ARG_STRING, &appname, "Name of your application", "NAME" },
+    { "urgency", 'u', 0, G_OPTION_ARG_STRING, &urgency_str, "The urgency of this notification", "URG" },
+    { "hints",   'h', 0, G_OPTION_ARG_STRING_ARRAY, &hint_strs, "User specified hints", "HINT" },
+    { "actions", 'a', 0, G_OPTION_ARG_STRING_ARRAY, &action_strs, "Actions the user can invoke", "ACTION" },
+    { "timeout", 't', 0, G_OPTION_ARG_INT, &timeout, "The time until the notification expires", "TIMEOUT" },
+    { "icon",    'i', 0, G_OPTION_ARG_STRING, &icon, "An Icon that should be displayed with the notification", "ICON" },
+    { "capabilities",   'c', 0, G_OPTION_ARG_NONE, &capabilities, "Print the server capabilities and exit", NULL},
+    { "serverinfo", 's', 0, G_OPTION_ARG_NONE, &serverinfo, "Print server information and exit", NULL},
+    { "printid", 'p', 0, G_OPTION_ARG_NONE, &printid, "Print id, which can be used to update/replace this notification", NULL},
+    { "replace", 'r', 0, G_OPTION_ARG_INT, &replace_id, "Set id of this notification.", NULL},
+    { "close", 'C', 0, G_OPTION_ARG_INT, &close_id, "Set id of this notification.", NULL},
+    { NULL }
+};
+
+void die(int exit_value)
+{
+    if (notify_is_initted())
+        notify_uninit();
+    exit(exit_value);
+}
+
+void print_capabilities(void)
+{
+    GList *caps = notify_get_server_caps();
+    for (GList *iter = caps; iter; iter = iter->next) {
+        if (strlen(iter->data) > 0) {
+            g_print("%s\n", iter->data);
+        }
+    }
+}
+
+void print_serverinfo(void)
+{
+    char *name;
+    char *vendor;
+    char *version;
+    char *spec_version;
+
+    if (!notify_get_server_info(&name, &vendor, &version, &spec_version)) {
+        g_printerr("Unable to get server information");
+        exit(1);
+    }
+
+    g_print("name:%s\nvendor:%s\nversion:%s\nspec_version:%s\n", name,
+                                                                 vendor,
+                                                                 version,
+                                                                 spec_version);
+}
+
+void parse_commandline(int argc, char *argv[])
+{
+    GError *error = NULL;
+    GOptionContext *context;
+
+    context = g_option_context_new("- Dunstify");
+    g_option_context_add_main_entries(context, entries, NULL);
+    if (!g_option_context_parse(context, &argc, &argv, &error)){
+        g_printerr("Invalid commandline: %s\n", error->message);
+        exit(1);
+    }
+
+    g_option_context_free(context);
+
+    if (capabilities) {
+        print_capabilities();
+        die(0);
+    }
+
+    if (serverinfo) {
+        print_serverinfo();
+        die(0);
+    }
+
+    if (actions)
+        g_printerr("Actions not yet implemented\n");
+
+    if (hints)
+        g_printerr("Hints not yet implemented\n");
+
+
+    if (argc < 2 && close_id < 1) {
+        g_printerr("I need at least a summary\n");
+        die(1);
+    } else if (argc < 2) {
+        summary = g_strdup("These are not the summaries you are looking for");
+    } else {
+        summary = g_strdup(argv[1]);
+    }
+
+    if (argc > 2) {
+        body = g_strdup(argv[2]);
+    }
+
+    if (urgency_str) {
+        switch (urgency_str[0]) {
+            case 'l':
+            case 'L':
+            case '0':
+                urgency = NOTIFY_URGENCY_LOW;
+                break;
+            case 'n':
+            case 'N':
+            case '1':
+                urgency = NOTIFY_URGENCY_NORMAL;
+                break;
+            case 'c':
+            case 'C':
+            case '2':
+                urgency = NOTIFY_URGENCY_CRITICAL;
+                break;
+            default:
+                g_printerr("Unknown urgency: %s\n", urgency_str);
+                g_printerr("Assuming normal urgency\n");
+                break;
+        }
+    }
+}
+
+typedef struct _NotifyNotificationPrivate
+{
+        guint32         id;
+        char           *app_name;
+        char           *summary;
+        char           *body;
+
+        /* NULL to use icon data. Anything else to have server lookup icon */
+        char           *icon_name;
+
+        /*
+         * -1   = use server default
+         *  0   = never timeout
+         *  > 0 = Number of milliseconds before we timeout
+         */
+        gint            timeout;
+
+        GSList         *actions;
+        GHashTable     *action_map;
+        GHashTable     *hints;
+
+        gboolean        has_nondefault_actions;
+        gboolean        updates_pending;
+
+        gulong          proxy_signal_handler;
+
+        gint            closed_reason;
+} knickers;
+
+int get_id(NotifyNotification *n)
+{
+    knickers *kn = n->priv;
+
+    /* I'm sorry for taking a peek */
+    return kn->id;
+}
+
+int put_id(NotifyNotification *n, guint32 id)
+{
+    knickers *kn = n->priv;
+
+    /* And know I'm putting stuff into
+     * your knickers. I'm sorry.
+     * I'm so sorry.
+     * */
+
+    kn->id = id;
+}
+
+int main(int argc, char *argv[])
+{
+
+    g_type_init();
+    parse_commandline(argc, argv);
+
+    if (!notify_init(appname)) {
+        g_printerr("Unable to initialize libnotify\n");
+        die(1);
+    }
+
+    NotifyNotification *n;
+    n = notify_notification_new(summary, body, icon);
+    notify_notification_set_timeout(n, timeout);
+    notify_notification_set_urgency(n, urgency);
+
+    GError *err = NULL;
+
+    if (close_id > 0) {
+        put_id(n, close_id);
+        notify_notification_close(n, &err);
+        if (err) {
+            g_printerr("Unable to close notification: %s\n", err->message);
+            die(1);
+        }
+        die(0);
+    }
+
+    if (replace_id > 0) {
+        put_id(n, replace_id);
+    }
+
+    notify_notification_show(n, &err);
+    if (err) {
+        g_printerr("Unable to send notification: %s\n", err->message);
+        die(1);
+    }
+
+    if (printid) {
+       g_print("%d\n", get_id(n));
+    }
+
+    die(0);
+}
