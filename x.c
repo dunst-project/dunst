@@ -166,6 +166,26 @@ static void free_colored_layout(void *data)
         g_free(cl->text);
 }
 
+static int calculate_width(void)
+{
+        screen_info scr;
+        x_screen_info(&scr);
+        if (xctx.geometry.mask & WidthValue && xctx.geometry.w == 0) {
+                /* dynamic width */
+                return 0;
+        } else if (xctx.geometry.mask & WidthValue) {
+                /* fixed width */
+                if (xctx.geometry.negative_width) {
+                        return scr.dim.w - xctx.geometry.w;
+                } else {
+                        return xctx.geometry.w;
+                }
+        } else {
+                /* across the screen */
+                return scr.dim.w;
+        }
+}
+
 static colored_layout *r_init_shared(cairo_t *c, notification *n)
 {
         colored_layout *cl = malloc(sizeof(colored_layout));
@@ -175,12 +195,14 @@ static colored_layout *r_init_shared(cairo_t *c, notification *n)
         cl->fg = x_string_to_color_t(n->color_strings[ColFG]);
         cl->bg = x_string_to_color_t(n->color_strings[ColBG]);
 
-        int width = -1;
+        int width = calculate_width();
         if (xctx.geometry.w > 0) {
                 width = xctx.geometry.w - 2 * settings.h_padding;
                 width -= 2 * settings.frame_width;
+                r_setup_pango_layout(cl->l, width);
+        } else {
+                r_setup_pango_layout(cl->l, -1);
         }
-        r_setup_pango_layout(cl->l, width);
 
         return cl;
 }
