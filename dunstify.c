@@ -9,9 +9,7 @@ static gchar *summary = NULL;
 static gchar *body = NULL;
 static NotifyUrgency urgency = NOTIFY_URGENCY_NORMAL;
 static gchar *urgency_str = NULL;
-static GVariant *hints = NULL;
 static gchar *hint_strs = NULL;
-static GVariant **actions = NULL;
 static gchar **action_strs = NULL;
 static gint timeout = NOTIFY_EXPIRES_DEFAULT;
 static gchar *icon = NULL;
@@ -20,13 +18,14 @@ static gboolean serverinfo = false;
 static gboolean printid = false;
 static guint32 replace_id = 0;
 static guint32 close_id = 0;
+static gboolean block = false;
 
 static GOptionEntry entries[] =
 {
     { "appname", 'a', 0, G_OPTION_ARG_STRING, &appname, "Name of your application", "NAME" },
     { "urgency", 'u', 0, G_OPTION_ARG_STRING, &urgency_str, "The urgency of this notification", "URG" },
     { "hints",   'h', 0, G_OPTION_ARG_STRING_ARRAY, &hint_strs, "User specified hints", "HINT" },
-    { "actions", 'A', 0, G_OPTION_ARG_STRING_ARRAY, &action_strs, "Actions the user can invoke", "ACTION" },
+    { "action", 'A', 0, G_OPTION_ARG_STRING_ARRAY, &action_strs, "Actions the user can invoke", "ACTION" },
     { "timeout", 't', 0, G_OPTION_ARG_INT, &timeout, "The time until the notification expires", "TIMEOUT" },
     { "icon",    'i', 0, G_OPTION_ARG_STRING, &icon, "An Icon that should be displayed with the notification", "ICON" },
     { "capabilities",   'c', 0, G_OPTION_ARG_NONE, &capabilities, "Print the server capabilities and exit", NULL},
@@ -34,6 +33,7 @@ static GOptionEntry entries[] =
     { "printid", 'p', 0, G_OPTION_ARG_NONE, &printid, "Print id, which can be used to update/replace this notification", NULL},
     { "replace", 'r', 0, G_OPTION_ARG_INT, &replace_id, "Set id of this notification.", NULL},
     { "close", 'C', 0, G_OPTION_ARG_INT, &close_id, "Set id of this notification.", NULL},
+    { "block", 'b', 0, G_OPTION_ARG_NONE, &block, "Block until notification is closed and print close reason", NULL},
     { NULL }
 };
 
@@ -96,10 +96,7 @@ void parse_commandline(int argc, char *argv[])
         die(0);
     }
 
-    if (actions)
-        g_printerr("Actions not yet implemented\n");
-
-    if (hints)
+    if (hint_strs)
         g_printerr("Hints not yet implemented\n");
 
 
@@ -190,6 +187,35 @@ int put_id(NotifyNotification *n, guint32 id)
     kn->id = id;
 }
 
+void actioned(NotifyNotification *n, char *a, gpointer foo)
+{
+    notify_notification_close(n, NULL);
+    g_print("%s\n", a);
+    die(0);
+}
+
+void closed(NotifyNotification *n, gpointer foo)
+{
+    g_print("%d\n", notify_notification_get_closed_reason(n));
+    die(0);
+}
+
+void add_action(NotifyNotification *n, char *str)
+{
+    char *action = str;
+    char *label = strstr(str, ",");
+
+    if (!label || *(label+1) == '\0') {
+        g_printerr("Malformed action. Excpected \"action,label\", got \"%s\"", str);
+        return;
+    }
+
+    *label = '\0';
+    label++;
+
+    notify_notification_add_action(n, action, label, actioned, NULL, NULL);
+}
+
 int main(int argc, char *argv[])
 {
 
@@ -222,11 +248,25 @@ int main(int argc, char *argv[])
         put_id(n, replace_id);
     }
 
+    GMainLoop *l = NULL;
+
+    if (block || action_strs)
+        l = g_main_loop_new(NULL, false);
+        g_signal_connect(n, "closed", G_CALLBACK(closed), NULL);
+
+    for (int i = 0; action_strs[i]; i++) {
+        add_action(n, action_strs[i]);
+    }
+
+
     notify_notification_show(n, &err);
     if (err) {
         g_printerr("Unable to send notification: %s\n", err->message);
         die(1);
     }
+
+    if (block || action_strs)
+        g_main_loop_run(l);
 
     if (printid) {
        g_print("%d\n", get_id(n));
