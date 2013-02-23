@@ -191,6 +191,10 @@ static colored_layout *r_init_shared(cairo_t *c, notification *n)
         colored_layout *cl = malloc(sizeof(colored_layout));
         cl->l = pango_cairo_create_layout(c);
 
+        if (!settings.word_wrap) {
+                pango_layout_set_ellipsize(cl->l, PANGO_ELLIPSIZE_MIDDLE);
+        }
+
 
         cl->fg = x_string_to_color_t(n->color_strings[ColFG]);
         cl->bg = x_string_to_color_t(n->color_strings[ColBG]);
