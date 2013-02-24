@@ -217,7 +217,7 @@ void context_menu(void) {
         size_t len = read(parent_io[0], buf, 1023);
         if (len == 0)
             return;
-        buf[len - 1] = '\0';
+        buf[len] = '\0';
 
         int status;
         waitpid(pid, &status, 0);
