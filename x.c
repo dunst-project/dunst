@@ -122,6 +122,9 @@ static color_t x_get_separator_color(color_t fg, color_t bg)
                         return fg;
                 case AUTO:
                         return calculate_foreground_color(bg);
+                default:
+                        printf("Unknown separator color type. Please file a Bugreport.\n");
+                        return fg;
 
         }
 }
@@ -146,6 +149,7 @@ void r_setup_pango_layout(PangoLayout *layout, int width)
         PangoAlignment align;
         switch (settings.align) {
                 case left:
+                default:
                         align = PANGO_ALIGN_LEFT;
                         break;
                 case center:
@@ -256,7 +260,7 @@ GSList *r_create_layouts(cairo_t *c)
         int qlen = g_list_length(g_queue_peek_head_link(queue));
         bool xmore_is_needed = qlen > 0 && settings.indicate_hidden;
 
-        notification *last;
+        notification *last = NULL;
         for (GList *iter = g_queue_peek_head_link(displayed);
                         iter; iter = iter->next)
         {
