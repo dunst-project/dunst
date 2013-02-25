@@ -9,7 +9,7 @@ static gchar *summary = NULL;
 static gchar *body = NULL;
 static NotifyUrgency urgency = NOTIFY_URGENCY_NORMAL;
 static gchar *urgency_str = NULL;
-static gchar *hint_strs = NULL;
+static gchar **hint_strs = NULL;
 static gchar **action_strs = NULL;
 static gint timeout = NOTIFY_EXPIRES_DEFAULT;
 static gchar *icon = NULL;
@@ -95,10 +95,6 @@ void parse_commandline(int argc, char *argv[])
         print_serverinfo();
         die(0);
     }
-
-    if (hint_strs)
-        g_printerr("Hints not yet implemented\n");
-
 
     if (argc < 2 && close_id < 1) {
         g_printerr("I need at least a summary\n");
@@ -216,6 +212,41 @@ void add_action(NotifyNotification *n, char *str)
     notify_notification_add_action(n, action, label, actioned, NULL, NULL);
 }
 
+void add_hint(NotifyNotification *n, char *str)
+{
+    char *type = str;
+    char *name = strstr(str, ":");
+    if (!name || *(name+1) == '\0') {
+        g_printerr("Malformed hint. Expected \"type:name:value\", got \"%s\"", str);
+        return;
+    }
+    *name = '\0';
+    name++;
+    char *value = strstr(name, ":");
+    if (!value || *(value+1) == '\0') {
+        g_printerr("Malformed hint. Expected \"type:name:value\", got \"%s\"", str);
+        return;
+    }
+    *value = '\0';
+    value++;
+
+    if (strcmp(type, "int") == 0)
+        notify_notification_set_hint_int32(n, name, atoi(value));
+    else if (strcmp(type, "double") == 0)
+        notify_notification_set_hint_double(n, name, atof(value));
+    else if (strcmp(type, "string") == 0)
+        notify_notification_set_hint_string(n, name, value);
+    else if (strcmp(type, "byte") == 0) {
+        gint h_byte = g_ascii_strtoull(value, NULL, 10);
+        if (h_byte < 0 || h_byte > 0xFF)
+            g_printerr("Not a byte: \"%s\"", value);
+        else 
+            notify_notification_set_hint_byte(n, name, (guchar) h_byte);
+    } else
+        g_printerr("Malformed hint. Expected a type of int, double, string or byte, got %s\n", type);
+
+}
+
 int main(int argc, char *argv[])
 {
 
@@ -257,6 +288,11 @@ int main(int argc, char *argv[])
     for (int i = 0; action_strs[i]; i++) {
         add_action(n, action_strs[i]);
     }
+
+    if (hint_strs)
+        for (int i = 0; hint_strs[i]; i++) {
+            add_hint(n, hint_strs[i]);
+        }
 
 
     notify_notification_show(n, &err);
