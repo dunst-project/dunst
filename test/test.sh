@@ -37,8 +37,8 @@ function run_script {
 function ignore_newline {
     killall dunst
     ../dunst -config dunstrc.ignore_newline_no_wrap &
-    ../.dunstify -a "dunst tester" -u c "Ignore Newline No Wrap" "There should be no newline anywhere"
-    ../.dunstify -a "dunst tester" -u c "Th\nis\n\n\n is\n fu\nll of \n" "\nnew\nlines"
+    ../dunstify -a "dunst tester" -u c "Ignore Newline No Wrap" "There should be no newline anywhere"
+    ../dunstify -a "dunst tester" -u c "Th\nis\n\n\n is\n fu\nll of \n" "\nnew\nlines"
     basic_notifications
     keypress
 
