@@ -352,7 +352,7 @@ static void on_name_acquired(GDBusConnection * connection,
 static void on_name_lost(GDBusConnection * connection,
                          const gchar * name, gpointer user_data)
 {
-        fprintf(stderr, "Name Lost\n");
+        fprintf(stderr, "Name Lost. Is Another notification daemon running?\n");
         exit(1);
 }
 
