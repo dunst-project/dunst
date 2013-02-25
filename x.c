@@ -508,8 +508,9 @@ gboolean x_mainloop_fd_dispatch(GSource * source, GSourceFunc callback,
                         break;
                 case FocusIn:
                 case FocusOut:
-                        printf("Focus Event\n");
+                case PropertyNotify:
                         wake_up();
+                        break;
                 }
         }
         return true;
@@ -755,7 +756,7 @@ void x_win_setup(void)
         wa.background_pixmap = ParentRelative;
         wa.event_mask =
             ExposureMask | KeyPressMask | VisibilityChangeMask |
-            ButtonPressMask | FocusChangeMask;
+            ButtonPressMask | FocusChangeMask| StructureNotifyMask;
 
         screen_info scr;
         x_screen_info(&scr);
@@ -772,7 +773,7 @@ void x_win_setup(void)
                    (unsigned long)((100 - settings.transparency) *
                                    (0xffffffff / 100)));
 
-        long root_event_mask = FocusChangeMask;
+        long root_event_mask = FocusChangeMask | PropertyChangeMask;
         XSelectInput(xctx.dpy, root, root_event_mask);
 }
 
