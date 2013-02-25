@@ -285,9 +285,10 @@ int main(int argc, char *argv[])
         l = g_main_loop_new(NULL, false);
         g_signal_connect(n, "closed", G_CALLBACK(closed), NULL);
 
-    for (int i = 0; action_strs[i]; i++) {
-        add_action(n, action_strs[i]);
-    }
+    if (action_strs)
+        for (int i = 0; action_strs[i]; i++) {
+            add_action(n, action_strs[i]);
+        }
 
     if (hint_strs)
         for (int i = 0; hint_strs[i]; i++) {

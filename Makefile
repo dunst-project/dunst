@@ -14,7 +14,7 @@ SRC = x.c  \
 	  notification.c
 OBJ = ${SRC:.c=.o}
 
-all: doc options dunst service
+all: doc options dunst service dunstify
 
 options:
 	@echo dunst build options:
@@ -50,6 +50,7 @@ clean:
 	@rm -f dunst.1
 	@rm -f org.knopwob.dunst.service
 	@rm -f core
+	@rm -f dunstify
 
 doc: dunst.1
 dunst.1: README.pod
