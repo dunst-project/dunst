@@ -118,7 +118,7 @@ static void onNotify(GDBusConnection * connection,
 
         /* hints */
         gint urgency = 1;
-        gint progress = 0;
+        gint progress = -1;
         gchar *fgcolor = NULL;
         gchar *bgcolor = NULL;
 
@@ -201,6 +201,25 @@ static void onNotify(GDBusConnection * connection,
                                                 bgcolor =
                                                     g_variant_dup_string
                                                     (dict_value, NULL);
+
+                                        dict_value =
+                                                g_variant_lookup_value(content,
+                                                                "value",
+                                                                G_VARIANT_TYPE_INT32);
+
+                                        if (dict_value) {
+                                                progress =
+                                                        g_variant_get_int32(dict_value);
+                                        } else {
+                                                dict_value =
+                                                        g_variant_lookup_value(content,
+                                                                        "value",
+                                                                        G_VARIANT_TYPE_UINT32);
+
+                                                if (dict_value)
+                                                        progress =
+                                                                g_variant_get_uint32(dict_value);
+                                        }
                                 }
                                 break;
                         case 7:
