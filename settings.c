@@ -49,7 +49,6 @@ void load_settings(char *cmdline_config_path)
                 if (config_file == NULL) {
                         puts("no dunstrc found -> skipping\n");
                         xdgWipeHandle(&xdg);
-                        return;
                 }
         }
 
@@ -300,9 +299,11 @@ void load_settings(char *cmdline_config_path)
         }
 
 #ifndef STATIC_CONFIG
-        fclose(config_file);
-        free_ini();
-        xdgWipeHandle(&xdg);
+        if (config_file) {
+                fclose(config_file);
+                free_ini();
+                xdgWipeHandle(&xdg);
+        }
 #endif
 }
 /* vim: set ts=8 sw=8 tw=0: */

@@ -108,10 +108,7 @@ char *ini_get_string(char *section, char *key, const char *def)
         if (value)
                 return g_strdup(value);
 
-        if (def == NULL)
-                return NULL;
-        else
-                return def ? g_strdup(def) : NULL;
+        return def ? g_strdup(def) : NULL;
 }
 
 int ini_get_int(char *section, char *key, int def)
@@ -196,6 +193,9 @@ char *clean_value(char *value)
 int load_ini_file(FILE * fp)
 {
         char line[BUFSIZ];
+
+        if (!fp)
+                return 1;
 
         int line_num = 0;
         char *current_section = NULL;
@@ -382,6 +382,7 @@ char *option_get_string(char *ini_section, char *ini_key, char *cmdline_key,
         if (cmdline_key) {
                 val = cmdline_get_string(cmdline_key, NULL, description);
         }
+
 
         if (val) {
                 return val;
