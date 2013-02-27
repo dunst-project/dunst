@@ -298,6 +298,10 @@ int notification_init(notification * n, int id)
 
         if (!settings.allow_markup)
                 n->msg = notification_fix_markup(n->msg);
+        else if (!settings.ignore_newline) {
+                n->msg = string_replace("<br>", "\n", n->msg);
+                n->msg = string_replace("<br />", "\n", n->msg);
+        }
 
         while (strstr(n->msg, "\\n") != NULL)
                 n->msg = string_replace("\\n", "\n", n->msg);
