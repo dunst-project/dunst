@@ -187,26 +187,69 @@ char *notification_fix_markup(char *str)
         str = string_replace_all("</u>", "", str);
         str = string_replace_all("</a>", "", str);
 
-        start = strstr(str, "<a href");
-        if (start != NULL) {
-                end = strstr(str, ">");
+        while ((start = strstr(str, "<a href")) != NULL) {
+                end = strstr(start, ">");
                 if (end != NULL) {
                         replace_buf = strndup(start, end - start + 1);
                         str = string_replace(replace_buf, "", str);
                         free(replace_buf);
+                } else {
+                    break;
                 }
         }
-        start = strstr(str, "<img src");
-        if (start != NULL) {
-                end = strstr(str, "/>");
+
+        while ((start = strstr(str, "<img src")) != NULL) {
+                end = strstr(start, "/>");
                 if (end != NULL) {
                         replace_buf = strndup(start, end - start + 2);
                         str = string_replace(replace_buf, "", str);
                         free(replace_buf);
+                } else {
+                    break;
                 }
         }
         return str;
 
+}
+
+
+char *notification_extract_markup_urls(char **str_ptr) {
+    char *start, *end, *replace_buf, *str, *urls = NULL, *url, *index_buf;
+    int linkno = 1;
+
+    str = *str_ptr;
+    while ((start = strstr(str, "<a href")) != NULL) {
+        end = strstr(start, ">");
+        if (end != NULL) {
+                replace_buf = strndup(start, end - start + 1);
+                url = extract_urls(replace_buf);
+                if (url != NULL) {
+                    str = string_replace(replace_buf, "[", str);
+
+                    index_buf = g_strdup_printf("[#%d]", linkno++);
+                    if (urls == NULL) {
+                        urls = g_strconcat(index_buf, " ", url, NULL);
+                    } else {
+                        char *tmp = urls;
+                        urls = g_strconcat(tmp, "\n", index_buf, " ", url, NULL);
+                        free(tmp);
+                    }
+
+                    index_buf[0] = ' ';
+                    str = string_replace("</a>", index_buf, str);
+                    free(index_buf);
+                    free(url);
+                } else {
+                    str = string_replace(replace_buf, "", str);
+                    str = string_replace("</a>", "", str);
+                }
+                free(replace_buf);
+        } else {
+            break;
+        }
+    }
+    *str_ptr = str;
+    return urls;
 }
 
         /*
@@ -235,6 +278,8 @@ int notification_init(notification * n, int id)
         n->format = settings.format;
 
         rule_apply_all(n);
+
+        n->urls = notification_extract_markup_urls(&(n->body));
 
         n->msg = string_replace("%a", n->appname, g_strdup(n->format));
         n->msg = string_replace("%s", n->summary, n->msg);
@@ -326,7 +371,15 @@ int notification_init(notification * n, int id)
 
         char *tmp = g_strconcat(n->summary, " ", n->body, NULL);
 
-        n->urls = extract_urls(tmp);
+        char *tmp_urls = extract_urls(tmp);
+        if (tmp_urls != NULL) {
+            if (n->urls != NULL) {
+                n->urls = string_append(n->urls, tmp_urls, "\n");
+                free(tmp_urls);
+            } else {
+                n->urls = tmp_urls;
+            }
+        }
 
         if (n->actions) {
                 n->actions->dmenu_str = NULL;
