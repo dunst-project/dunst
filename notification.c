@@ -332,6 +332,8 @@ int notification_init(notification * n, int id)
                 n->actions->dmenu_str = NULL;
                 for (int i = 0; i < n->actions->count; i += 2) {
                         char *human_readable = n->actions->actions[i + 1];
+                        string_replace_char('[', '(', human_readable); // kill square brackets
+                        string_replace_char(']', ')', human_readable);
                         printf("debug: %s\n", n->appname);
                         printf("debug: %s\n", human_readable);
                         char *tmp =
@@ -341,8 +343,8 @@ int notification_init(notification * n, int id)
 
                         n->actions->dmenu_str =
                             string_append(n->actions->dmenu_str,
-                                          g_strdup_printf("%s(%s)", n->appname,
-                                                          human_readable),
+                                          g_strdup_printf("#%s [%s]", human_readable,
+                                                                      n->appname),
                                           "\n");
                 }
         }

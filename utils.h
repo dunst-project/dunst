@@ -1,6 +1,10 @@
 /* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
 #ifndef UTIL_H
 #define UTIL_H
+
+/* replace all occurences of the character needle with the character replacement in haystack */
+char *string_replace_char(char needle, char replacement, char *haystack);
+
 /* replace all occurrences of needle with replacement in haystack */
 char *string_replace_all(const char *needle, const char *replacement,
                          char *haystack);

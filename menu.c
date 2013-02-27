@@ -97,24 +97,26 @@ void invoke_action(const char *action)
         notification *invoked = NULL;
         char *action_identifier = NULL;
 
-        char *name_begin = strstr(action, "(");
-        if (!name_begin) {
+        char *appname_begin = strchr(action, '[');
+        if (!appname_begin) {
                 printf("invalid action: %s\n", action);
                 return;
         }
-        name_begin++;
+        appname_begin++;
+        int appname_len = strlen(appname_begin) - 1; // remove ]
+        int action_len = strlen(action) - appname_len - 3; // remove space, [, ]
 
         for (GList * iter = g_queue_peek_head_link(displayed); iter;
              iter = iter->next) {
                 notification *n = iter->data;
-                if (g_str_has_prefix(action, n->appname)) {
+                if (g_str_has_prefix(appname_begin, n->appname) && strlen(n->appname) == appname_len) {
                         if (!n->actions)
                                 continue;
 
                         for (int i = 0; i < n->actions->count; i += 2) {
                                 char *a_identifier = n->actions->actions[i];
                                 char *name = n->actions->actions[i + 1];
-                                if (g_str_has_prefix(name_begin, name)) {
+                                if (g_str_has_prefix(action, name) && strlen(name) == action_len) {
                                         invoked = n;
                                         action_identifier = a_identifier;
                                         break;
@@ -134,14 +136,24 @@ void invoke_action(const char *action)
      */
 void dispatch_menu_result(const char *input)
 {
-        char *maybe_url = extract_urls(input);
-        if (maybe_url) {
-                open_browser(maybe_url);
-                free(maybe_url);
-                return;
+        switch (input[0]) {
+            case '#':
+                invoke_action(input + 1);
+                break;
+            case '[': // named url. skip name and continue
+                input = strchr(input, ']');
+                if (input == NULL)
+                    break;
+            default: 
+                {   // test and open url
+                    char *maybe_url = extract_urls(input);
+                    if (maybe_url) {
+                            open_browser(maybe_url);
+                            free(maybe_url);
+                            break;
+                    }
+                }
         }
-
-        invoke_action(input);
 }
 
         /*
