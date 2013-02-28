@@ -341,7 +341,7 @@ void x_win_draw(void)
                 int bg_x = 0;
                 int bg_y = y;
                 int bg_width = width;
-                int bg_height = (2 * settings.h_padding) + h;
+                int bg_height = (2 * settings.padding) + h;
 
                 /* adding frame */
                 bg_x += settings.frame_width;
