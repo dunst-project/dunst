@@ -145,7 +145,13 @@ function geometry {
 
     killall dunst
     ../dunst -config dunstrc.default -geom "-300x1-20-20" &
-    ../dunstify -a "dunst tester" -u c "-300x1-20-20" 
+    ../dunstify -a "dunst tester" -u c "-300x1-20-20"
+    basic_notifications
+    keypress
+
+    killall dunst
+    ../dunst -config dunstrc.default -geom "x1" &
+    ../dunstify -a "dunst tester" -u c "x1-20-20" "across the screen"
     basic_notifications
     keypress
 }

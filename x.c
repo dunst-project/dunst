@@ -204,7 +204,7 @@ static colored_layout *r_init_shared(cairo_t *c, notification *n)
         cl->bg = x_string_to_color_t(n->color_strings[ColBG]);
 
         int width = calculate_width();
-        if (xctx.geometry.w > 0) {
+        if (width) {
                 width -= 2 * settings.h_padding;
                 width -= 2 * settings.frame_width;
                 r_setup_pango_layout(cl->l, width);
@@ -309,10 +309,8 @@ void x_win_draw(void)
                 text_width = MAX(w, text_width);
         }
 
-        int width;
-        if (xctx.geometry.w > 0)
-                width = xctx.geometry.w;
-        else {
+        int width = calculate_width();
+        if (width <= 0) {
                 width = text_width + 2 * settings.h_padding;
                 width += 2 * settings.frame_width;
         }
