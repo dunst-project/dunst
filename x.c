@@ -72,6 +72,17 @@ static color_t x_string_to_color_t(const char *str)
         return x_color_hex_to_double(val);
 }
 
+static double _apply_delta(double base, double delta)
+{
+        base += delta;
+        if (base > 1)
+                base = 1;
+        if (base < 0)
+                base = 0;
+
+        return base;
+}
+
 color_t calculate_foreground_color(color_t bg)
 {
         double c_delta = 0.1;
@@ -80,33 +91,11 @@ color_t calculate_foreground_color(color_t bg)
         /* do we need to darken or brighten the colors? */
         bool darken = (bg.r + bg.g + bg.b) / 3 > 0.5;
 
-        if (darken) {
-                if (color.r - c_delta < 0)
-                        color.r = 0;
-                else
-                        color.r -= c_delta;
-                if (color.g - c_delta < 0)
-                        color.g = 0;
-                else
-                        color.g -= c_delta;
-                if (color.b - c_delta < 0)
-                        color.b = 0;
-                else
-                        color.b -= c_delta;
-        } else {
-                if (color.r + c_delta > 1)
-                        color.r = 1;
-                else
-                        color.r += c_delta;
-                if (color.g + c_delta > 1)
-                        color.g = 1;
-                else
-                        color.g += c_delta;
-                if (color.b + c_delta > 1)
-                        color.g = 1;
-                else
-                        color.g += c_delta;
-        }
+        int signedness = darken ? -1 : 1;
+
+        color.r = _apply_delta(color.r, c_delta * signedness);
+        color.g = _apply_delta(color.g, c_delta * signedness);
+        color.b = _apply_delta(color.b, c_delta * signedness);
 
         return color;
 }
