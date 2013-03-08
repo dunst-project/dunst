@@ -57,9 +57,6 @@ typedef struct _x11_source {
 bool pause_display = false;
 
 GMainLoop *mainloop = NULL;
-bool timer_active = false;
-
-bool force_redraw = false;
 
 /* notification lists */
 GQueue *queue = NULL;           /* all new notifications get into here */
@@ -92,7 +89,6 @@ void check_timeouts(void)
 
                 /* remove old message */
                 if (difftime(time(NULL), n->start) > n->timeout) {
-                        force_redraw = true;
                         /* close_notification may conflict with iter, so restart */
                         notification_close(n, 1);
                         check_timeouts();
@@ -132,8 +128,6 @@ void update_lists()
                         /* the list is full */
                         break;
                 }
-
-                force_redraw = true;
 
                 notification *n = g_queue_pop_head(queue);
 
@@ -181,38 +175,70 @@ void history_pop(void)
 
 void wake_up(void)
 {
-        force_redraw = true;
         run(NULL);
 }
 
 static int get_sleep_time(void)
 {
-        int sleep = 0;
+
+        if (settings.show_age_threshold == 0) {
+                /* we need to update every second */
+                return 1000;
+        }
+
+        bool have_ttl = false;
+        int min_ttl = 0;
+        int max_age = 0;
         for (GList *iter = g_queue_peek_head_link(displayed); iter;
                         iter = iter->next) {
                 notification *n = iter->data;
 
-                if (sleep == 0) {
-                        sleep = notification_get_ttl(n);
-                } else {
-                        sleep = MIN(sleep, notification_get_ttl(n));
+                max_age = MAX(max_age, notification_get_age(n));
+                int ttl = notification_get_ttl(n);
+                if (ttl > 0) {
+                        if (have_ttl) {
+                                min_ttl = MIN(min_ttl, ttl);
+                        } else {
+                                min_ttl = ttl;
+                                have_ttl = true;
+                        }
                 }
         }
 
-        sleep = MIN(sleep, settings.show_age_threshold);
+        int min_timeout;
+        int show_age_timeout = settings.show_age_threshold - max_age;
 
-        sleep = sleep * 1000;
+        if (show_age_timeout < 1) {
+                return 1000;
+        }
 
-        /* add 501 milliseconds to make sure we wake are in the second
-         * after the next notification times out. Otherwise we'll wake
-         * up, but the notification won't get closed until we get woken
-         * up again (which might be multiple seconds later */
-        return sleep + 501;
+        if (!have_ttl) {
+                min_timeout = show_age_timeout;
+        } else {
+                min_timeout = MIN(show_age_timeout, min_ttl);
+        }
+
+        /* show_age_timeout might be negative */
+        if (min_timeout < 1) {
+                return 1000;
+        } else {
+                /* add 501 milliseconds to make sure we wake are in the second
+                 * after the next notification times out. Otherwise we'll wake
+                 * up, but the notification won't get closed until we get woken
+                 * up again (which might be multiple seconds later */
+                return min_timeout * 1000 + 501;
+        }
 }
 
 gboolean run(void *data)
 {
         update_lists();
+        static int timeout_cnt = 0;
+        static int next_timeout = 0;
+
+        if (data) {
+                timeout_cnt--;
+        }
 
         if (displayed->length > 0 && !xctx.visible) {
                 x_win_show();
@@ -222,15 +248,22 @@ gboolean run(void *data)
                 x_win_hide();
         }
 
-        if (xctx.visible && force_redraw) {
+        if (xctx.visible) {
                 x_win_draw();
-                force_redraw = false;
         }
 
-        if (xctx.visible && !timer_active) {
+        if (xctx.visible) {
+                int now = time(NULL) * 1000;
                 int sleep = get_sleep_time();
-                if (sleep > 0)
-                        g_timeout_add(sleep, run, mainloop);
+
+                if (sleep > 0) {
+                        int timeout_at = now + sleep;
+                        if (timeout_cnt == 0 || timeout_at < next_timeout) {
+                                g_timeout_add(sleep, run, mainloop);
+                                next_timeout = timeout_at;
+                                timeout_cnt++;
+                        }
+                }
         }
 
         /* always return false to delete timers */

@@ -466,6 +466,14 @@ void notification_update_text_to_render(notification *n)
 }
 
 int notification_get_ttl(notification *n) {
-        return n->timeout - (time(NULL) - n->start);
+        if (n->timeout == 0) {
+                return 0;
+        } else {
+                return n->timeout - (time(NULL) - n->start);
+        }
+}
+
+int notification_get_age(notification *n) {
+        return time(NULL) - n->timestamp;
 }
 /* vim: set ts=8 sw=8 tw=0: */
