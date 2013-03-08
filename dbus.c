@@ -88,11 +88,9 @@ void handle_method_call(GDBusConnection * connection,
                 onGetServerInformation(connection, sender, parameters,
                                        invocation);
         } else {
-                g_object_unref(invocation);
                 printf("WARNING: sender: %s; unknown method_name: %s\n", sender,
                        method_name);
         }
-
 }
 
 static void onGetCapabilities(GDBusConnection * connection,
