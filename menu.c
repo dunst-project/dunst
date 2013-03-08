@@ -165,7 +165,7 @@ void context_menu(void)
         if (!dmenu_input)
                 return;
 
-        char buf[1024];
+        char buf[1024] = {0};
         int child_io[2];
         int parent_io[2];
         if (pipe(child_io) != 0) {
@@ -204,7 +204,6 @@ void context_menu(void)
                 size_t len = read(parent_io[0], buf, 1023);
                 if (len == 0)
                         return;
-                buf[len - 1] = '\0';
 
                 int status;
                 waitpid(pid, &status, 0);
