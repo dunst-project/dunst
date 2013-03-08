@@ -464,4 +464,8 @@ void notification_update_text_to_render(notification *n)
 
         n->text_to_render = buf;
 }
+
+int notification_get_ttl(notification *n) {
+        return n->timeout - (time(NULL) - n->start);
+}
 /* vim: set ts=8 sw=8 tw=0: */

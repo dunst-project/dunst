@@ -48,3 +48,4 @@ int notification_close(notification * n, int reason);
 void notification_print(notification * n);
 char *notification_fix_markup(char *str);
 void notification_update_text_to_render(notification *n);
+int notification_get_ttl(notification*n);

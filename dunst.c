@@ -179,54 +179,62 @@ void history_pop(void)
         }
 }
 
-void update(void)
-{
-        time_t last_time = time(&last_time);
-        static time_t last_redraw = 0;
-
-        /* move messages from notification_queue to displayed_notifications */
-        update_lists();
-        if (displayed->length > 0 && !xctx.visible) {
-                x_win_show();
-        }
-        if (displayed->length == 0 && xctx.visible) {
-                x_win_hide();
-        }
-
-        if (xctx.visible && (force_redraw || time(NULL) - last_redraw > 0)) {
-                x_win_draw();
-                force_redraw = false;
-                last_redraw = time(NULL);
-        }
-}
-
 void wake_up(void)
 {
         force_redraw = true;
-        update();
-        if (!timer_active) {
-                timer_active = true;
-                g_timeout_add(1000, run, mainloop);
+        run(NULL);
+}
+
+static int get_sleep_time(void)
+{
+        int sleep = 0;
+        for (GList *iter = g_queue_peek_head_link(displayed); iter;
+                        iter = iter->next) {
+                notification *n = iter->data;
+
+                if (sleep == 0) {
+                        sleep = notification_get_ttl(n);
+                } else {
+                        sleep = MIN(sleep, notification_get_ttl(n));
+                }
         }
+
+        sleep = MIN(sleep, settings.show_age_threshold);
+
+        sleep = sleep * 1000;
+
+        /* add 501 milliseconds to make sure we wake are in the second
+         * after the next notification times out. Otherwise we'll wake
+         * up, but the notification won't get closed until we get woken
+         * up again (which might be multiple seconds later */
+        return sleep + 501;
 }
 
 gboolean run(void *data)
 {
+        update_lists();
 
-        update();
+        if (displayed->length > 0 && !xctx.visible) {
+                x_win_show();
+        }
+
+        if (displayed->length == 0 && xctx.visible) {
+                x_win_hide();
+        }
+
+        if (xctx.visible && force_redraw) {
+                x_win_draw();
+                force_redraw = false;
+        }
 
         if (xctx.visible && !timer_active) {
-                g_timeout_add(200, run, mainloop);
-                timer_active = true;
+                int sleep = get_sleep_time();
+                if (sleep > 0)
+                        g_timeout_add(sleep, run, mainloop);
         }
 
-        if (!xctx.visible && timer_active) {
-                timer_active = false;
-                /* returning false disables timeout */
-                return false;
-        }
-
-        return true;
+        /* always return false to delete timers */
+        return false;
 }
 
 int main(int argc, char *argv[])
