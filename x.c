@@ -164,7 +164,9 @@ static void free_colored_layout(void *data)
 {
         colored_layout *cl = data;
         g_object_unref(cl->l);
+        pango_attr_list_unref(cl->attr);
         g_free(cl->text);
+        g_free(cl);
 }
 
 static bool have_dynamic_width(void)
