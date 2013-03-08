@@ -387,9 +387,6 @@ int notification_init(notification * n, int id)
                         char *human_readable = n->actions->actions[i + 1];
                         string_replace_char('[', '(', human_readable); // kill square brackets
                         string_replace_char(']', ')', human_readable);
-                        char *tmp =
-                            g_strdup_printf("%s %s", n->appname,
-                                            human_readable);
 
                         n->actions->dmenu_str =
                             string_append(n->actions->dmenu_str,
