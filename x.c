@@ -328,6 +328,52 @@ void r_free_layouts(GSList *layouts)
         g_slist_free_full(layouts, free_colored_layout);
 }
 
+static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, dimension_t dim, bool first, bool last)
+{
+        int h;
+        pango_layout_get_pixel_size(cl->l, NULL, &h);
+
+        int bg_x = 0;
+        int bg_y = dim.y;
+        int bg_width = dim.w;
+        int bg_height = (2 * settings.padding) + h;
+
+        /* adding frame */
+        bg_x += settings.frame_width;
+        if (first) {
+                bg_y += settings.frame_width;
+                bg_height -= settings.frame_width;
+        }
+        bg_width -= 2 * settings.frame_width;
+        if (last)
+                bg_height -= settings.frame_width;
+
+        cairo_set_source_rgb(c, cl->bg.r, cl->bg.g, cl->bg.b);
+        cairo_rectangle(c, bg_x, bg_y, bg_width, bg_height);
+        cairo_fill(c);
+
+        dim.y += settings.padding;
+        cairo_move_to(c, settings.h_padding, dim.y);
+        cairo_set_source_rgb(c, cl->fg.r, cl->fg.g, cl->fg.b);
+        pango_cairo_update_layout(c, cl->l);
+        pango_cairo_show_layout(c, cl->l);
+        dim.y += h + settings.padding;
+        color_t sep_color = x_get_separator_color(cl->fg, cl->bg);
+        if (settings.separator_height > 0 && !last) {
+                cairo_set_source_rgb(c, sep_color.r, sep_color.g, sep_color.b);
+
+                cairo_rectangle(c, settings.frame_width, dim.y,
+                                dim.w - 2 * settings.frame_width
+                                , settings.separator_height);
+
+                cairo_fill(c);
+                dim.y += settings.separator_height;
+        }
+        cairo_move_to(c, settings.h_padding, dim.y);
+
+        return dim;
+}
+
 void x_win_draw(void)
 {
 
@@ -350,52 +396,10 @@ void x_win_draw(void)
 
         cairo_move_to(c, 0, 0);
 
-        double y = 0;
-
         bool first = true;
         for (GSList *iter = layouts; iter; iter = iter->next) {
                 colored_layout *cl = iter->data;
-
-                int h;
-                pango_layout_get_pixel_size(cl->l, NULL, &h);
-
-                int bg_x = 0;
-                int bg_y = y;
-                int bg_width = width;
-                int bg_height = (2 * settings.padding) + h;
-
-                /* adding frame */
-                bg_x += settings.frame_width;
-                if (first) {
-                        bg_y += settings.frame_width;
-                        bg_height -= settings.frame_width;
-                }
-                bg_width -= 2 * settings.frame_width;
-                if (!iter->next)
-                        bg_height -= settings.frame_width;
-
-                cairo_set_source_rgb(c, cl->bg.r, cl->bg.g, cl->bg.b);
-                cairo_rectangle(c, bg_x, bg_y, bg_width, bg_height);
-                cairo_fill(c);
-
-                y += settings.padding;
-                cairo_move_to(c, settings.h_padding, y);
-                cairo_set_source_rgb(c, cl->fg.r, cl->fg.g, cl->fg.b);
-                pango_cairo_update_layout(c, cl->l);
-                pango_cairo_show_layout(c, cl->l);
-                y += h + settings.padding;
-                color_t sep_color = x_get_separator_color(cl->fg, cl->bg);
-                if (settings.separator_height > 0 && iter->next) {
-                        cairo_set_source_rgb(c, sep_color.r, sep_color.g, sep_color.b);
-
-                        cairo_rectangle(c, settings.frame_width,y,
-                                        width - 2 * settings.frame_width
-                                        , settings.separator_height);
-
-                        cairo_fill(c);
-                        y += settings.separator_height;
-                }
-                cairo_move_to(c, settings.h_padding, y);
+                dim = x_render_layout(c, cl, dim, first, iter->next == NULL);
                 first = false;
         }
 
