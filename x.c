@@ -805,8 +805,10 @@ void x_win_setup(void)
                    (unsigned long)((100 - settings.transparency) *
                                    (0xffffffff / 100)));
 
-        long root_event_mask = FocusChangeMask | PropertyChangeMask;
-        XSelectInput(xctx.dpy, root, root_event_mask);
+        if (settings.f_mode != FOLLOW_NONE) {
+                long root_event_mask = FocusChangeMask | PropertyChangeMask;
+                XSelectInput(xctx.dpy, root, root_event_mask);
+        }
 }
 
         /*
