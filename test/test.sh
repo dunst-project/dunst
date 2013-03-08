@@ -17,6 +17,9 @@ function basic_notifications {
 }
 
 function show_age {
+    echo "###################################"
+    echo "show age"
+    echo "###################################"
     killall dunst
     ../dunst -config dunstrc.show_age &
     ../dunstify -a "dunst tester"  -u c "Show Age" "These should print their age after 2 seconds"
@@ -25,6 +28,9 @@ function show_age {
 }
 
 function run_script {
+    echo "###################################"
+    echo "run script"
+    echo "###################################"
     killall dunst
     PATH=".:$PATH" ../dunst -config dunstrc.run_script &
     ../dunstify -a "dunst tester" -u c \
@@ -35,6 +41,9 @@ function run_script {
 }
 
 function ignore_newline {
+    echo "###################################"
+    echo "ignore newline"
+    echo "###################################"
     killall dunst
     ../dunst -config dunstrc.ignore_newline_no_wrap &
     ../dunstify -a "dunst tester" -u c "Ignore Newline No Wrap" "There should be no newline anywhere"
@@ -52,6 +61,9 @@ function ignore_newline {
 }
 
 function replace {
+    echo "###################################"
+    echo "replace"
+    echo "###################################"
     killall dunst
     ../dunst -config dunstrc.default &
     id=$(../dunstify -a "dunst tester" -p "Replace" "this should get replaces after keypress")
@@ -62,6 +74,9 @@ function replace {
 }
 
 function markup {
+    echo "###################################"
+    echo "markup"
+    echo "###################################"
     killall dunst
     ../dunst -config dunstrc.markup "200x0+10+10" &
     ../dunstify -a "dunst tester"  "Markup Tests" -u "c"
@@ -79,6 +94,9 @@ function markup {
 }
 
 function corners {
+    echo "###################################"
+    echo "corners"
+    echo "###################################"
     killall dunst
     ../dunst -config dunstrc.default -geom "200x0+10+10" &
     ../dunstify -a "dunst tester" -u c "upper left"
@@ -106,6 +124,9 @@ function corners {
 }
 
 function geometry {
+    echo "###################################"
+    echo "geometry"
+    echo "###################################"
     killall dunst
     ../dunst -config dunstrc.default -geom "0x0" &
     ../dunstify -a "dunst tester" -u c "0x0"
