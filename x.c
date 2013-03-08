@@ -173,24 +173,55 @@ static void free_colored_layout(void *data)
         g_free(cl->text);
 }
 
-static int calculate_width(void)
+static bool have_dynamic_width(void)
 {
+        return (xctx.geometry.mask & WidthValue && xctx.geometry.w == 0);
+}
+
+static dimension_t calculate_dimensions(GSList *layouts)
+{
+        dimension_t dim;
+        dim.w = 0;
+        dim.h = 0;
+        dim.x = 0;
+        dim.y = 0;
+        dim.mask = xctx.geometry.mask;
+
         screen_info scr;
         x_screen_info(&scr);
-        if (xctx.geometry.mask & WidthValue && xctx.geometry.w == 0) {
+        if (have_dynamic_width()) {
                 /* dynamic width */
-                return 0;
+                dim.w = 0;
         } else if (xctx.geometry.mask & WidthValue) {
                 /* fixed width */
                 if (xctx.geometry.negative_width) {
-                        return scr.dim.w - xctx.geometry.w;
+                        dim.w = scr.dim.w - xctx.geometry.w;
                 } else {
-                        return xctx.geometry.w;
+                        dim.w = xctx.geometry.w;
                 }
         } else {
                 /* across the screen */
-                return scr.dim.w;
+                dim.w = scr.dim.w;
         }
+
+        dim.h += (g_slist_length(layouts) - 1) * settings.separator_height;
+        dim.h += g_slist_length(layouts) * settings.padding * 2;
+
+        int text_width = 0;
+        for (GSList *iter = layouts; iter; iter = iter->next) {
+                colored_layout *cl = iter->data;
+                int w,h;
+                pango_layout_get_pixel_size(cl->l, &w, &h);
+                dim.h += h;
+                text_width = MAX(w, text_width);
+        }
+
+        if (dim.w <= 0) {
+                dim.w = text_width + 2 * settings.h_padding;
+                dim.w += 2 * settings.frame_width;
+        }
+
+        return dim;
 }
 
 static colored_layout *r_init_shared(cairo_t *c, notification *n)
@@ -206,13 +237,15 @@ static colored_layout *r_init_shared(cairo_t *c, notification *n)
         cl->fg = x_string_to_color_t(n->color_strings[ColFG]);
         cl->bg = x_string_to_color_t(n->color_strings[ColBG]);
 
-        int width = calculate_width();
-        if (width) {
+        dimension_t dim = calculate_dimensions(NULL);
+        int width = dim.w;
+
+        if (have_dynamic_width()) {
+                r_setup_pango_layout(cl->l, -1);
+        } else {
                 width -= 2 * settings.h_padding;
                 width -= 2 * settings.frame_width;
                 r_setup_pango_layout(cl->l, width);
-        } else {
-                r_setup_pango_layout(cl->l, -1);
         }
 
         return cl;
@@ -298,27 +331,11 @@ void r_free_layouts(GSList *layouts)
 void x_win_draw(void)
 {
 
-        int height = 0;
-        int text_width = 0;
         GSList *layouts = r_create_layouts(cairo_ctx.context);
 
-        for (GSList *iter = layouts; iter; iter = iter->next) {
-                colored_layout *cl = iter->data;
-                int w,h;
-                pango_layout_get_pixel_size(cl->l, &w, &h);
-                height += h;
-                text_width = MAX(w, text_width);
-        }
-
-        int width = calculate_width();
-        if (width <= 0) {
-                width = text_width + 2 * settings.h_padding;
-                width += 2 * settings.frame_width;
-        }
-
-        height += (g_slist_length(layouts) - 1) * settings.separator_height;
-        height += g_slist_length(layouts) * settings.padding * 2;
-
+        dimension_t dim = calculate_dimensions(layouts);
+        int width = dim.w;
+        int height = dim.h;
 
         cairo_t *c;
         cairo_surface_t *image_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
