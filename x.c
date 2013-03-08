@@ -30,6 +30,7 @@ bool dunst_grab_errored = false;
 typedef struct _cairo_ctx {
         cairo_status_t status;
         cairo_surface_t *surface;
+        cairo_t *context;
         PangoFontDescription *desc;
 } cairo_ctx_t;
 
@@ -133,6 +134,8 @@ void x_cairo_setup(void)
 {
         cairo_ctx.surface = cairo_xlib_surface_create(xctx.dpy,
                         xctx.win, DefaultVisual(xctx.dpy, 0), WIDTH, HEIGHT);
+
+        cairo_ctx.context = cairo_create(cairo_ctx.surface);
 
         cairo_ctx.desc = pango_font_description_from_string(settings.font);
 
@@ -294,12 +297,10 @@ void r_free_layouts(GSList *layouts)
 
 void x_win_draw(void)
 {
-        cairo_t *c;
-        c = cairo_create(cairo_ctx.surface);
 
-        GSList *layouts = r_create_layouts(c);
         int height = 0;
         int text_width = 0;
+        GSList *layouts = r_create_layouts(cairo_ctx.context);
 
         for (GSList *iter = layouts; iter; iter = iter->next) {
                 colored_layout *cl = iter->data;
@@ -318,7 +319,12 @@ void x_win_draw(void)
         height += (g_slist_length(layouts) - 1) * settings.separator_height;
         height += g_slist_length(layouts) * settings.padding * 2;
 
-        XResizeWindow(xctx.dpy, xctx.win, width, height);
+
+        cairo_t *c;
+        cairo_surface_t *image_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+        c = cairo_create(image_surface);
+
+        x_win_move(width, height);
         cairo_xlib_surface_set_size(cairo_ctx.surface, width, height);
 
         cairo_set_source_rgb(c, frame_color.r, frame_color.g, frame_color.b);
@@ -376,11 +382,12 @@ void x_win_draw(void)
                 first = false;
         }
 
-        cairo_show_page(c);
-
-        x_win_move(width, height);
+        cairo_set_source_surface(cairo_ctx.context, image_surface, 0, 0);
+        cairo_paint(cairo_ctx.context);
+        cairo_show_page(cairo_ctx.context);
 
         cairo_destroy(c);
+        cairo_surface_destroy(image_surface);
         r_free_layouts(layouts);
 
 }
@@ -404,17 +411,19 @@ static void x_win_move(int width, int height)
                 y = scr.dim.y + xctx.geometry.y;
         }
 
-        /* move and map window */
-        if (x != xctx.window_dim.x || y != xctx.window_dim.y
-            || width != xctx.window_dim.w || height != xctx.window_dim.h) {
-
+        /* move and resize */
+        if (x != xctx.window_dim.x || y != xctx.window_dim.y) {
                 XMoveWindow(xctx.dpy, xctx.win, x, y);
-
-                xctx.window_dim.x = x;
-                xctx.window_dim.y = y;
-                xctx.window_dim.h = height;
-                xctx.window_dim.w = width;
         }
+        if (width != xctx.window_dim.w || height != xctx.window_dim.h) {
+                XResizeWindow(xctx.dpy, xctx.win, width, height);
+        }
+
+
+        xctx.window_dim.x = x;
+        xctx.window_dim.y = y;
+        xctx.window_dim.h = height;
+        xctx.window_dim.w = width;
 }
 
 
