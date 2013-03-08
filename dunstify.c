@@ -31,8 +31,8 @@ static GOptionEntry entries[] =
     { "capabilities",   'c', 0, G_OPTION_ARG_NONE, &capabilities, "Print the server capabilities and exit", NULL},
     { "serverinfo", 's', 0, G_OPTION_ARG_NONE, &serverinfo, "Print server information and exit", NULL},
     { "printid", 'p', 0, G_OPTION_ARG_NONE, &printid, "Print id, which can be used to update/replace this notification", NULL},
-    { "replace", 'r', 0, G_OPTION_ARG_INT, &replace_id, "Set id of this notification.", NULL},
-    { "close", 'C', 0, G_OPTION_ARG_INT, &close_id, "Set id of this notification.", NULL},
+    { "replace", 'r', 0, G_OPTION_ARG_INT, &replace_id, "Set id of this notification.", "ID"},
+    { "close", 'C', 0, G_OPTION_ARG_INT, &close_id, "Set id of this notification.", "ID"},
     { "block", 'b', 0, G_OPTION_ARG_NONE, &block, "Block until notification is closed and print close reason", NULL},
     { NULL }
 };
