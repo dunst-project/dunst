@@ -63,13 +63,10 @@ typedef struct _color_t {
 
 extern xctx_t xctx;
 
-void setopacity(Window win, unsigned long opacity);
-
 /* window */
 void x_win_draw(void);
 void x_win_hide(void);
 void x_win_show(void);
-void x_win_setup(void);
 
 /* shortcut */
 void x_shortcut_init(keyboard_shortcut * shortcut);
@@ -78,8 +75,6 @@ int x_shortcut_grab(keyboard_shortcut * ks);
 KeySym x_shortcut_string_to_mask(const char *str);
 
 /* X misc */
-void x_handle_click(XEvent ev);
-void x_screen_info(screen_info * scr);
 bool x_is_idle(void);
 void x_setup(void);
 

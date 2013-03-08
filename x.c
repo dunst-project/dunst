@@ -49,6 +49,11 @@ static color_t frame_color;
 static void x_shortcut_setup_error_handler(void);
 static int x_shortcut_tear_down_error_handler(void);
 static void x_win_move(int width, int height);
+static void setopacity(Window win, unsigned long opacity);
+static void x_handle_click(XEvent ev);
+static void x_screen_info(screen_info * scr);
+static void x_win_setup(void);
+
 
 
 static color_t x_color_hex_to_double(int hexValue)
@@ -83,7 +88,7 @@ static double _apply_delta(double base, double delta)
         return base;
 }
 
-color_t calculate_foreground_color(color_t bg)
+static color_t calculate_foreground_color(color_t bg)
 {
         double c_delta = 0.1;
         color_t color = bg;
@@ -119,7 +124,7 @@ static color_t x_get_separator_color(color_t fg, color_t bg)
         }
 }
 
-void x_cairo_setup(void)
+static void x_cairo_setup(void)
 {
         cairo_ctx.surface = cairo_xlib_surface_create(xctx.dpy,
                         xctx.win, DefaultVisual(xctx.dpy, 0), WIDTH, HEIGHT);
@@ -131,7 +136,7 @@ void x_cairo_setup(void)
         frame_color = x_string_to_color_t(settings.frame_color);
 }
 
-void r_setup_pango_layout(PangoLayout *layout, int width)
+static void r_setup_pango_layout(PangoLayout *layout, int width)
 {
         pango_layout_set_wrap(layout, PANGO_WRAP_WORD_CHAR);
         pango_layout_set_width(layout, width * PANGO_SCALE);
@@ -249,7 +254,7 @@ static colored_layout *r_create_layout_for_xmore(cairo_t *c, notification *n, in
        return cl;
 }
 
-colored_layout *r_create_layout_from_notification(cairo_t *c, notification *n)
+static colored_layout *r_create_layout_from_notification(cairo_t *c, notification *n)
 {
 
         colored_layout *cl = r_init_shared(c, n);
@@ -278,7 +283,7 @@ colored_layout *r_create_layout_from_notification(cairo_t *c, notification *n)
         return cl;
 }
 
-GSList *r_create_layouts(cairo_t *c)
+static GSList *r_create_layouts(cairo_t *c)
 {
         GSList *layouts = NULL;
 
@@ -312,7 +317,7 @@ GSList *r_create_layouts(cairo_t *c)
         return layouts;
 }
 
-void r_free_layouts(GSList *layouts)
+static void r_free_layouts(GSList *layouts)
 {
         g_slist_free_full(layouts, free_colored_layout);
 }
@@ -437,7 +442,7 @@ static void x_win_move(int width, int height)
 }
 
 
-void setopacity(Window win, unsigned long opacity)
+static void setopacity(Window win, unsigned long opacity)
 {
         Atom _NET_WM_WINDOW_OPACITY =
             XInternAtom(xctx.dpy, "_NET_WM_WINDOW_OPACITY", false);
@@ -554,7 +559,7 @@ bool x_is_idle(void)
         /*
          * Handle incoming mouse click events
          */
-void x_handle_click(XEvent ev)
+static void x_handle_click(XEvent ev)
 {
         if (ev.xbutton.button == Button3) {
                 move_all_to_history();
@@ -585,7 +590,7 @@ void x_handle_click(XEvent ev)
          * Return the window that currently has
          * the keyboard focus.
          */
-Window get_focused_window(void)
+static Window get_focused_window(void)
 {
         Window focused = 0;
         Atom type;
@@ -612,7 +617,7 @@ Window get_focused_window(void)
          * Select the screen on which the Window
          * should be displayed.
          */
-int select_screen(XineramaScreenInfo * info, int info_len)
+static int select_screen(XineramaScreenInfo * info, int info_len)
 {
         if (settings.f_mode == FOLLOW_NONE) {
                 return settings.monitor >=
@@ -669,7 +674,7 @@ int select_screen(XineramaScreenInfo * info, int info_len)
          * Update the information about the monitor
          * geometry.
          */
-void x_screen_info(screen_info * scr)
+static void x_screen_info(screen_info * scr)
 {
 #ifdef XINERAMA
         int n;
@@ -759,7 +764,7 @@ void x_setup(void)
         /*
          * Setup the window
          */
-void x_win_setup(void)
+static void x_win_setup(void)
 {
 
         Window root;
