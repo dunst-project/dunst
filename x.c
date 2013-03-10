@@ -465,7 +465,10 @@ static void setopacity(Window win, unsigned long opacity)
          */
 gboolean x_mainloop_fd_prepare(GSource * source, gint * timeout)
 {
-        *timeout = -1;
+        if (timeout)
+                *timeout = -1;
+        else
+                g_print("BUG: x_mainloop_fd_prepare: timeout == NULL\n");
         return false;
 }
 
@@ -510,9 +513,9 @@ gboolean x_mainloop_fd_dispatch(GSource * source, GSourceFunc callback,
                                              0) == settings.close_ks.sym
                             && settings.close_ks.mask == ev.xkey.state) {
                                 if (displayed) {
-                                        notification_close
-                                            (g_queue_peek_head_link(displayed)->
-                                             data, 2);
+                                        notification *n = g_queue_peek_head(displayed);
+                                        if (n)
+                                                notification_close(n, 2);
                                 }
                         }
                         if (settings.history_ks.str
