@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <sys/wait.h>
+#include <glib.h>
 
 #include "dunst.h"
 #include "utils.h"
@@ -136,6 +137,7 @@ void invoke_action(const char *action)
      */
 void dispatch_menu_result(const char *input)
 {
+        g_strstrip(input);
         switch (input[0]) {
             case '#':
                 invoke_action(input + 1);
