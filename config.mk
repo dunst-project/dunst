@@ -16,10 +16,6 @@ XINERAMAFLAGS = -DXINERAMA
 # or use "CFLAGS=-DSTATIC_CONFIG make" to build
 #STATIC= -DSTATIC_CONFIG
 
-# inih flags
-INIFLAGS = -DINI_ALLOW_MULTILINE=0
-
-
 PKG_CONFIG:=$(shell which pkg-config)
 ifeq (${PKG_CONFIG}, ${EMPTY})
 	$(error "Failed to find pkg-config, please make sure it is installed")
