@@ -37,6 +37,9 @@ INCS := $(shell ${PKG_CONFIG} --cflags ${pkg_config_packs})
 CFLAGS += ${INCS}
 LDFLAGS += -lm -L${X11LIB} -lXss ${XINERAMALIBS} $(shell ${PKG_CONFIG} --libs ${pkg_config_packs})
 
+# only make this an fatal error when where not cleaning
+ifneq (clean, $(MAKECMDGOALS))
 ifeq (${INCS}, ${EMPTY})
-    $(error "pkg-config failed, see errors above")
+$(error "pkg-config failed, see errors above")
+endif
 endif
