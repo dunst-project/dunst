@@ -1,8 +1,11 @@
 /* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
 
 #include <glib.h>
+
+#ifndef STATIC_CONFIG
 #include <basedir.h>
 #include <basedir_fs.h>
+#endif
 
 #include "dunst.h"
 #include "rules.h"
