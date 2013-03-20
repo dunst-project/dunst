@@ -22,7 +22,7 @@ INIFLAGS = -DINI_ALLOW_MULTILINE=0
 
 PKG_CONFIG:=$(shell which pkg-config)
 ifeq (${PKG_CONFIG}, ${EMPTY})
-    $(error "Failed to find pkg-config, please make sure it is installed)
+	$(error "Failed to find pkg-config, please make sure it is installed")
 endif
 
 pkg_config_packs:="dbus-1 libxdg-basedir x11 freetype2 xext xft xscrnsaver glib-2.0 gio-2.0 pango cairo pangocairo"
