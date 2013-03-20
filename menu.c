@@ -137,18 +137,19 @@ void invoke_action(const char *action)
      */
 void dispatch_menu_result(const char *input)
 {
-        g_strstrip(input);
-        switch (input[0]) {
+        char *in = strdup(input);
+        g_strstrip(in);
+        switch (in[0]) {
             case '#':
-                invoke_action(input + 1);
+                invoke_action(in + 1);
                 break;
             case '[': // named url. skip name and continue
-                input = strchr(input, ']');
-                if (input == NULL)
+                in = strchr(in, ']');
+                if (in == NULL)
                     break;
             default: 
                 {   // test and open url
-                    char *maybe_url = extract_urls(input);
+                    char *maybe_url = extract_urls(in);
                     if (maybe_url) {
                             open_browser(maybe_url);
                             free(maybe_url);
@@ -156,6 +157,7 @@ void dispatch_menu_result(const char *input)
                     }
                 }
         }
+        free(in);
 }
 
         /*
