@@ -12,6 +12,7 @@
 #include "option_parser.h"
 #include "settings.h"
 #include "config.h"
+#include "utils.h"
 
 settings_t settings;
 
@@ -174,7 +175,7 @@ void load_settings(char *cmdline_config_path)
         settings.dmenu =
             option_get_string("global", "dmenu", "-dmenu", dmenu,
                               "path to dmenu");
-        settings.dmenu_cmd = g_strsplit(dmenu, " ", 0);
+        settings.dmenu_cmd = string_to_argv(settings.dmenu);
 
         settings.browser =
             option_get_string("global", "browser", "-browser", browser,
