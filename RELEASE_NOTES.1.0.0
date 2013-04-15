@@ -1,9 +1,12 @@
-DRAFT DRAFT DRAFT
+PACKAGE MAINTAINERS:
+    There are new dependencies introduced with this version:
+        *glib
+        *pango/cairo
 
 * The drawing backend was moved from Xlib to Cairo/Pango.
     This change requires some user intervention since Pango
     uses different font strings. For example "Monospace-12"
-    becoms "Monospace 12". Font sizes might also get interpreted
+    becomes "Monospace 12". Font sizes might also get interpreted
     differently.
 
 * Markup
