@@ -1,3 +1,13 @@
+vNEXT:
+    - added changelog for v1.0.0 (whoops)
+
+v1.0.0:
+    - use pango/cairo as drawing backend
+    - make use of pangos ability to parse markup
+    - support for actions via context menu
+    - indicator for actions/urls found
+    - use blocking I/O. No more waking up the CPU multiple times per second to check for new dbus messages
+
 v0.5.0:
     - new default dunstrc
     - frames for window
