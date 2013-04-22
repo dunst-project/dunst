@@ -105,7 +105,7 @@ void update_lists()
 
         if (pause_display) {
                 while (displayed->length > 0) {
-                        g_queue_insert_sorted(queue, g_queue_pop_head(queue),
+                        g_queue_insert_sorted(queue, g_queue_pop_head(displayed),
                                               notification_cmp_data, NULL);
                 }
                 return;
@@ -240,16 +240,16 @@ gboolean run(void *data)
                 timeout_cnt--;
         }
 
-        if (displayed->length > 0 && !xctx.visible) {
-                x_win_show();
+        if (displayed->length > 0 && !xctx.visible && !pause_display) {
+            x_win_show();
         }
 
-        if (displayed->length == 0 && xctx.visible) {
-                x_win_hide();
+        if (xctx.visible && (pause_display || displayed->length == 0)) {
+            x_win_hide(); 
         }
 
         if (xctx.visible) {
-                x_win_draw();
+            x_win_draw();
         }
 
         if (xctx.visible) {
@@ -355,9 +355,11 @@ void pause_signal_handler(int sig)
 {
         if (sig == SIGUSR1) {
                 pause_display = true;
+                wake_up();
         }
         if (sig == SIGUSR2) {
                 pause_display = false;
+                wake_up();
         }
 
         signal(sig, pause_signal_handler);
