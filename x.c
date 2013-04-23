@@ -210,6 +210,28 @@ static dimension_t calculate_dimensions(GSList *layouts)
                 pango_layout_get_pixel_size(cl->l, &w, &h);
                 dim.h += h;
                 text_width = MAX(w, text_width);
+
+                if (dim.w <= 0) {
+                        /* dynamic width */
+                        if ((text_width + 2 * settings.h_padding) > scr.dim.w) {
+                                /* it's bigger than the screen */
+                                /* subtract height from the unwrapped text */
+                                dim.h -= h;
+                                /* set width to screen width */
+                                dim.w = scr.dim.w - xctx.geometry.y * 2;
+
+                                /* re-setup the layout */
+                                int width = dim.w;
+                                width -= 2 * settings.h_padding;
+                                width -= 2 * settings.frame_width;
+                                r_setup_pango_layout(cl->l, width);
+
+                                /* re-read information */
+                                pango_layout_get_pixel_size(cl->l, &w, &h);
+                                dim.h += h;
+                                text_width = MAX(w, text_width);
+                        }
+                }
         }
 
         if (dim.w <= 0) {
