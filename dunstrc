@@ -61,7 +61,7 @@
     # screen width minus the width defined in within the geometry option.
     geometry = "300x5-30+20"
 
-    # TODO
+    # Shrink window if it's smaller than the width. Will be ignored if width is 0.
     shrink = no
 
     # The transparency of the window. range: [0; 100]

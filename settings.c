@@ -104,7 +104,7 @@ void load_settings(char *cmdline_config_path)
         settings.shrink =
             option_get_bool("global", "shrink", "-shrink",
                             shrink,
-                            ""); // TODO
+                            "Shrink window if it's smaller than the width");
         settings.line_height =
             option_get_int("global", "line_height", "-lh/-line_height",
                            line_height,

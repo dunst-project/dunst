@@ -86,7 +86,7 @@ see also EXAMPLES show the notification on monitor n.
 
 =item B<-shrink>
 
-TODO
+Shrink window if it's smaller than the width. Will be ignored if width is 0.
 
 =item B<-lh/-line_height> height
 
