@@ -14,6 +14,7 @@ int timeouts[] = { 10, 10, 0 }; /* low, normal, critical */
 
 unsigned int transparency = 0;  /* transparency */
 char *geom = "0x0";             /* geometry */
+int shrink = False;             /* shrinking */
 int sort = True;                /* sort messages by urgency */
 int indicate_hidden = True;     /* show count of hidden messages */
 int idle_threshold = 0;         /* don't timeout notifications when idle for x seconds */

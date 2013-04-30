@@ -61,6 +61,9 @@
     # screen width minus the width defined in within the geometry option.
     geometry = "300x5-30+20"
 
+    # TODO
+    shrink = no
+
     # The transparency of the window. range: [0; 100]
     # This option will only work if a compositing windowmanager is present (e.g. xcompmgr, compiz, etc..)
     transparency = 0

@@ -101,6 +101,10 @@ void load_settings(char *cmdline_config_path)
         settings.geom =
             option_get_string("global", "geometry", "-geom/-geometry", geom,
                               "Geometry for the window");
+        settings.shrink =
+            option_get_bool("global", "shrink", "-shrink",
+                            shrink,
+                            ""); // TODO
         settings.line_height =
             option_get_int("global", "line_height", "-lh/-line_height",
                            line_height,
