@@ -49,7 +49,7 @@
 
 
     # the geometry of the window
-    # geometry [{width}]x{height}][+/-{x}+/-{y}]
+    # geometry [{width}]x{height}[+/-{x}+/-{y}]
     # The geometry of the message window.
     # The height is measured in number of notifications everything else in pixels. If the width
     # is omitted but the height is given ("-geometry x2"), the message window
