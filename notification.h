@@ -30,7 +30,7 @@ typedef struct _notification {
         int id;
         int dup_count;
         int displayed_height;
-        char *color_strings[2];
+        const char *color_strings[2];
 
         int progress;           /* percentage + 1, 0 to hide */
         int line_count;

@@ -49,7 +49,7 @@
 
 
     # the geometry of the window
-    # geometry [{width}]x{height}][+/-{x}+/-{y}]
+    # geometry [{width}]x{height}[+/-{x}+/-{y}]
     # The geometry of the message window.
     # The height is measured in number of notifications everything else in pixels. If the width
     # is omitted but the height is given ("-geometry x2"), the message window
@@ -60,6 +60,9 @@
     # The width can be negative. In this case the actual width is the
     # screen width minus the width defined in within the geometry option.
     geometry = "300x5-30+20"
+
+    # Shrink window if it's smaller than the width. Will be ignored if width is 0.
+    shrink = no
 
     # The transparency of the window. range: [0; 100]
     # This option will only work if a compositing windowmanager is present (e.g. xcompmgr, compiz, etc..)
