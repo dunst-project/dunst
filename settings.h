@@ -15,6 +15,7 @@ typedef struct _settings {
         int timeouts[3];
         unsigned int transparency;
         char *geom;
+        int shrink;
         int sort;
         int indicate_hidden;
         int idle_threshold;

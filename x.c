@@ -203,13 +203,40 @@ static dimension_t calculate_dimensions(GSList *layouts)
         dim.h += (g_slist_length(layouts) - 1) * settings.separator_height;
         dim.h += g_slist_length(layouts) * settings.padding * 2;
 
-        int text_width = 0;
+        int text_width = 0, total_width = 0;
         for (GSList *iter = layouts; iter; iter = iter->next) {
                 colored_layout *cl = iter->data;
                 int w,h;
                 pango_layout_get_pixel_size(cl->l, &w, &h);
                 dim.h += h;
                 text_width = MAX(w, text_width);
+
+                if (dim.w <= 0 || settings.shrink) {
+                        /* dynamic width */
+                        total_width = MAX(text_width + 2 * settings.h_padding, total_width);
+
+                        /* subtract height from the unwrapped text */
+                        dim.h -= h;
+
+                        if (total_width > scr.dim.w) {
+                                /* set width to screen width */
+                                dim.w = scr.dim.w - xctx.geometry.x * 2;
+                        } else if (total_width < xctx.geometry.w && settings.shrink) {
+                                /* set width to text width */
+                                dim.w = total_width + 2 * settings.frame_width;
+                        }
+
+                        /* re-setup the layout */
+                        int width = dim.w;
+                        width -= 2 * settings.h_padding;
+                        width -= 2 * settings.frame_width;
+                        r_setup_pango_layout(cl->l, width);
+
+                        /* re-read information */
+                        pango_layout_get_pixel_size(cl->l, &w, &h);
+                        dim.h += h;
+                        text_width = MAX(w, text_width);
+                }
         }
 
         if (dim.w <= 0) {

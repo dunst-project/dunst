@@ -389,7 +389,9 @@ int initdbus(void)
 {
         guint owner_id;
 
-        g_type_init();
+        #if !GLIB_CHECK_VERSION(2,35,0)
+                g_type_init();
+        #endif
 
         introspection_data = g_dbus_node_info_new_for_xml(introspection_xml,
                                                           NULL);
