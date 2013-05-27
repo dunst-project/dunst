@@ -168,9 +168,7 @@ void history_pop(void)
         n->timeout = settings.sticky_history ? 0 : n->timeout;
         g_queue_push_head(queue, n);
 
-        if (!xctx.visible) {
-                wake_up();
-        }
+        wake_up();
 }
 
 void wake_up(void)
