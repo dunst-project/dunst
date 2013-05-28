@@ -193,7 +193,7 @@ static int get_sleep_time(void)
 
                 max_age = MAX(max_age, notification_get_age(n));
                 int ttl = notification_get_ttl(n);
-                if (ttl > 0) {
+                if (ttl >= 0) {
                         if (have_ttl) {
                                 min_ttl = MIN(min_ttl, ttl);
                         } else {
