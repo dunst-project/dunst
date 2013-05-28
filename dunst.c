@@ -181,7 +181,7 @@ static int get_sleep_time(void)
 
         if (settings.show_age_threshold == 0) {
                 /* we need to update every second */
-                return 1000;
+                return 1;
         }
 
         bool have_ttl = false;
@@ -207,7 +207,7 @@ static int get_sleep_time(void)
         int show_age_timeout = settings.show_age_threshold - max_age;
 
         if (show_age_timeout < 1) {
-                return 1000;
+                return 1;
         }
 
         if (!have_ttl) {
@@ -218,13 +218,9 @@ static int get_sleep_time(void)
 
         /* show_age_timeout might be negative */
         if (min_timeout < 1) {
-                return 1000;
+                return 1;
         } else {
-                /* add 501 milliseconds to make sure we wake are in the second
-                 * after the next notification times out. Otherwise we'll wake
-                 * up, but the notification won't get closed until we get woken
-                 * up again (which might be multiple seconds later */
-                return min_timeout * 1000 + 501;
+                return min_timeout;
         }
 }
 
@@ -251,13 +247,13 @@ gboolean run(void *data)
         }
 
         if (xctx.visible) {
-                int now = time(NULL) * 1000;
+                int now = time(NULL);
                 int sleep = get_sleep_time();
 
                 if (sleep > 0) {
                         int timeout_at = now + sleep;
                         if (timeout_cnt == 0 || timeout_at < next_timeout) {
-                                g_timeout_add(sleep, run, mainloop);
+                                g_timeout_add_seconds(sleep, run, mainloop);
                                 next_timeout = timeout_at;
                                 timeout_cnt++;
                         }
