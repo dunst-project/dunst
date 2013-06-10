@@ -520,7 +520,7 @@ void notification_update_text_to_render(notification *n)
 
 int notification_get_ttl(notification *n) {
         if (n->timeout == 0) {
-                return 0;
+                return -1;
         } else {
                 return n->timeout - (time(NULL) - n->start);
         }
