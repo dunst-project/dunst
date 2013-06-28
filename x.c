@@ -485,6 +485,58 @@ static void setopacity(Window win, unsigned long opacity)
 
 
 
+        /*
+         * Returns the modifier which is NumLock.
+         */
+static KeySym x_numlock_mod()
+{
+        static KeyCode nl = 0;
+        KeySym sym = 0;
+        XModifierKeymap * map = XGetModifierMapping(xctx.dpy);
+
+        if (!nl)
+                nl = XKeysymToKeycode(xctx.dpy, XStringToKeysym("Num_Lock"));
+
+        for (int mod = 0; mod < 8; mod++) {
+                for (int j = 0; j < map->max_keypermod; j++) {
+                        if (map->modifiermap[mod*map->max_keypermod+j] == nl) {
+                                /* In theory, one could use `1 << mod`, but this
+                                 * could count as 'using implementation details',
+                                 * so use this large switch. */
+                                switch (mod) {
+                                        case ShiftMapIndex:
+                                                sym = ShiftMask;
+                                                goto end;
+                                        case LockMapIndex:
+                                                sym = LockMask;
+                                                goto end;
+                                        case ControlMapIndex:
+                                                sym = ControlMask;
+                                                goto end;
+                                        case Mod1MapIndex:
+                                                sym = Mod1Mask;
+                                                goto end;
+                                        case Mod2MapIndex:
+                                                sym = Mod2Mask;
+                                                goto end;
+                                        case Mod3MapIndex:
+                                                sym = Mod3Mask;
+                                                goto end;
+                                        case Mod4MapIndex:
+                                                sym = Mod4Mask;
+                                                goto end;
+                                        case Mod5MapIndex:
+                                                sym = Mod5Mask;
+                                                goto end;
+                                }
+                        }
+                }
+        }
+
+end:
+        XFreeModifiermap(map);
+        return sym;
+}
 
         /*
          * Helper function to use glib's mainloop mechanic
@@ -515,6 +567,7 @@ gboolean x_mainloop_fd_dispatch(GSource * source, GSourceFunc callback,
                                 gpointer user_data)
 {
         XEvent ev;
+        unsigned int state;
         while (XPending(xctx.dpy) > 0) {
                 XNextEvent(xctx.dpy, &ev);
                 switch (ev.type) {
@@ -535,10 +588,13 @@ gboolean x_mainloop_fd_dispatch(GSource * source, GSourceFunc callback,
                         }
                         break;
                 case KeyPress:
+                        state = ev.xkey.state;
+                        /* NumLock is also encoded in the state. Remove it. */
+                        state &= ~x_numlock_mod();
                         if (settings.close_ks.str
                             && XLookupKeysym(&ev.xkey,
                                              0) == settings.close_ks.sym
-                            && settings.close_ks.mask == ev.xkey.state) {
+                            && settings.close_ks.mask == state) {
                                 if (displayed) {
                                         notification *n = g_queue_peek_head(displayed);
                                         if (n)
@@ -548,19 +604,19 @@ gboolean x_mainloop_fd_dispatch(GSource * source, GSourceFunc callback,
                         if (settings.history_ks.str
                             && XLookupKeysym(&ev.xkey,
                                              0) == settings.history_ks.sym
-                            && settings.history_ks.mask == ev.xkey.state) {
+                            && settings.history_ks.mask == state) {
                                 history_pop();
                         }
                         if (settings.close_all_ks.str
                             && XLookupKeysym(&ev.xkey,
                                              0) == settings.close_all_ks.sym
-                            && settings.close_all_ks.mask == ev.xkey.state) {
+                            && settings.close_all_ks.mask == state) {
                                 move_all_to_history();
                         }
                         if (settings.context_ks.str
                             && XLookupKeysym(&ev.xkey,
                                              0) == settings.context_ks.sym
-                            && settings.context_ks.mask == ev.xkey.state) {
+                            && settings.context_ks.mask == state) {
                                 context_menu();
                         }
                         break;
@@ -953,9 +1009,12 @@ int x_shortcut_grab(keyboard_shortcut * ks)
 
         x_shortcut_setup_error_handler();
 
-        if (ks->is_valid)
+        if (ks->is_valid) {
                 XGrabKey(xctx.dpy, ks->code, ks->mask, root,
                          true, GrabModeAsync, GrabModeAsync);
+                XGrabKey(xctx.dpy, ks->code, ks->mask | x_numlock_mod() , root,
+                         true, GrabModeAsync, GrabModeAsync);
+        }
 
         if (x_shortcut_tear_down_error_handler()) {
                 fprintf(stderr, "Unable to grab key \"%s\"\n", ks->str);
@@ -972,8 +1031,10 @@ void x_shortcut_ungrab(keyboard_shortcut * ks)
 {
         Window root;
         root = RootWindow(xctx.dpy, DefaultScreen(xctx.dpy));
-        if (ks->is_valid)
+        if (ks->is_valid) {
                 XUngrabKey(xctx.dpy, ks->code, ks->mask, root);
+                XUngrabKey(xctx.dpy, ks->code, ks->mask | x_numlock_mod(), root);
+        }
 }
 
         /*
