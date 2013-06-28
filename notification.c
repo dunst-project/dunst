@@ -359,6 +359,8 @@ int notification_init(notification * n, int id)
 
         n->redisplayed = false;
 
+        n->first_render = true;
+
         if (id == 0) {
                 n->id = ++next_notification_id;
         } else {

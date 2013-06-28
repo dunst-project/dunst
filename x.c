@@ -301,7 +301,9 @@ static colored_layout *r_create_layout_from_notification(cairo_t *c, notificatio
                 cl->text = NULL;
                 cl->attr = NULL;
                 pango_layout_set_text(cl->l, n->text_to_render, -1);
-                printf("Error parsing markup: %s\n", err->message);
+                if (n->first_render) {
+                        printf("Error parsing markup: %s\n", err->message);
+                }
                 g_error_free(err);
         }
 
@@ -309,6 +311,7 @@ static colored_layout *r_create_layout_from_notification(cairo_t *c, notificatio
         pango_layout_get_pixel_size(cl->l, NULL, &(n->displayed_height));
         n->displayed_height += 2 * settings.padding;
 
+        n->first_render = false;
         return cl;
 }
 
