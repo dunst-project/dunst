@@ -221,7 +221,7 @@ static dimension_t calculate_dimensions(GSList *layouts)
                         if (total_width > scr.dim.w) {
                                 /* set width to screen width */
                                 dim.w = scr.dim.w - xctx.geometry.x * 2;
-                        } else if (total_width < xctx.geometry.w && settings.shrink) {
+                        } else if (have_dynamic_width() || (total_width < xctx.geometry.w && settings.shrink)) {
                                 /* set width to text width */
                                 dim.w = total_width + 2 * settings.frame_width;
                         }
