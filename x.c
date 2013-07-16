@@ -850,6 +850,27 @@ void x_setup(void)
         x_win_setup();
         x_cairo_setup();
         x_shortcut_grab(&settings.history_ks);
+
+}
+
+
+static void x_set_win_type(Window win)
+{
+
+    long data[2];
+
+    Atom net_wm_window_type =
+            XInternAtom(xctx.dpy, "_NET_WM_WINDOW_TYPE", false);
+    Atom net_wm_window_type_notification =
+            XInternAtom(xctx.dpy, "_NET_WM_WINDOW_TYPE_NOTIFICATION", false);
+    Atom net_wm_window_type_utility =
+            XInternAtom(xctx.dpy, "_NET_WM_WINDOW_TYPE_UTILITY", false);
+
+    data[0] = net_wm_window_type_notification;
+    data[1] = net_wm_window_type_utility;
+
+    XChangeProperty(xctx.dpy, win, net_wm_window_type, XA_ATOM, 32,
+            PropModeReplace, (unsigned char *) &data, 1L);
 }
 
         /*
@@ -884,6 +905,8 @@ static void x_win_setup(void)
                           CopyFromParent, DefaultVisual(xctx.dpy,
                                                         DefaultScreen(xctx.dpy)),
                           CWOverrideRedirect | CWBackPixmap | CWEventMask, &wa);
+
+        x_set_win_type(xctx.win);
         settings.transparency =
             settings.transparency > 100 ? 100 : settings.transparency;
         setopacity(xctx.win,
