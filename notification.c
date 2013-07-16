@@ -321,7 +321,14 @@ int notification_init(notification * n, int id)
                 if (strcmp(orig->appname, n->appname) == 0
                     && strcmp(orig->summary, n->summary) == 0
                     && strcmp(orig->body, n->body) == 0) {
-                        orig->dup_count++;
+                        /* If the progress differs this was probably intended to replace the notification
+                         * but notify-send was used. So don't increment dup_count in this case
+                         */
+                        if (orig->progress == n->progress) {
+                                orig->dup_count++;
+                        } else {
+                                orig->progress = n->progress;
+                        }
                         /* notifications that differ only in progress hints should be expected equal,
                          * but we want the latest message, with the latest hint value
                          */
@@ -344,7 +351,14 @@ int notification_init(notification * n, int id)
                          */
                         free(orig->msg);
                         orig->msg = strdup(n->msg);
-                        orig->dup_count++;
+                        /* If the progress differs this was probably intended to replace the notification
+                         * but notify-send was used. So don't increment dup_count in this case
+                         */
+                        if (orig->progress == n->progress) {
+                                orig->dup_count++;
+                        } else {
+                                orig->progress = n->progress;
+                        }
                         orig->start = time(NULL);
                         notification_free(n);
                         wake_up();
