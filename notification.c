@@ -319,8 +319,14 @@ int notification_init(notification * n, int id)
              iter = iter->next) {
                 notification *orig = iter->data;
                 if (strcmp(orig->appname, n->appname) == 0
-                    && strcmp(orig->msg, n->msg) == 0) {
+                    && strcmp(orig->summary, n->summary) == 0
+                    && strcmp(orig->body, n->body) == 0) {
                         orig->dup_count++;
+                        /* notifications that differ only in progress hints should be expected equal,
+                         * but we want the latest message, with the latest hint value
+                         */
+                        free(orig->msg);
+                        orig->msg = strdup(n->msg);
                         notification_free(n);
                         wake_up();
                         return orig->id;
@@ -331,7 +337,13 @@ int notification_init(notification * n, int id)
              iter = iter->next) {
                 notification *orig = iter->data;
                 if (strcmp(orig->appname, n->appname) == 0
-                    && strcmp(orig->msg, n->msg) == 0) {
+                    && strcmp(orig->summary, n->summary) == 0
+                    && strcmp(orig->body, n->body) == 0) {
+                        /* notifications that differ only in progress hints should be expected equal,
+                         * but we want the latest message, with the latest hint value
+                         */
+                        free(orig->msg);
+                        orig->msg = strdup(n->msg);
                         orig->dup_count++;
                         orig->start = time(NULL);
                         notification_free(n);
