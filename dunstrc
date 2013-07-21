@@ -92,6 +92,9 @@
     # timeout as if it would normally do.
     sticky_history = yes
 
+    # Display indicators for URLs (U) and actions (A)
+    show_indicators = yes
+
     # The height of a single line. If the height is smaller than the font height,
     # it will get raised to the font height.
     # This adds empty space above and under the text.
