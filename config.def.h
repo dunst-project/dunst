@@ -22,6 +22,7 @@ int show_age_threshold = -1;    /* show age of notification, when notification i
 enum alignment align = left;    /* text alignment [left/center/right] */
 float bounce_freq = 1;          /* determines the bounce frequency (if activated) */
 int sticky_history = True;
+int show_indicators = True;
 int verbosity = 0;
 int word_wrap = False;
 int ignore_newline = False;
