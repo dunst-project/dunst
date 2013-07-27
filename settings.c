@@ -138,6 +138,10 @@ void load_settings(char *cmdline_config_path)
             option_get_bool("global", "sticky_history", "-sticky_history",
                             sticky_history,
                             "Don't timeout notifications popped up from history");
+        settings.show_indicators =
+            option_get_bool("global", "show_indicators", "-show_indicators",
+			    show_indicators,
+			    "Show indicators for actions \"(A)\" and URLs \"(U)\"");
         settings.separator_height =
             option_get_int("global", "separator_height",
                            "-sep_height/-separator_height", separator_height,

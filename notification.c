@@ -501,12 +501,13 @@ void notification_update_text_to_render(notification *n)
         char *msg = g_strstrip(n->msg);
 
         /* print dup_count and msg */
-        if (n->dup_count > 0 && (n->actions || n->urls)) {
+        if (n->dup_count > 0 && (n->actions || n->urls)
+            && settings.show_indicators) {
                 buf = g_strdup_printf("(%d%s%s) %s",
                                       n->dup_count,
                                       n->actions ? "A" : "",
                                       n->urls ? "U" : "", msg);
-        } else if (n->actions || n->urls) {
+        } else if ((n->actions || n->urls) && settings.show_indicators) {
                 buf = g_strdup_printf("(%s%s) %s",
                                       n->actions ? "A" : "",
                                       n->urls ? "U" : "", msg);
