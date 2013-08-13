@@ -60,6 +60,8 @@ char *extract_urls(const char *to_match)
 
                 urls = string_append(urls, match, "\n");
 
+                free(match);
+
                 p += m.rm_eo;
         }
         return urls;
