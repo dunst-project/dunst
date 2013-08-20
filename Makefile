@@ -51,6 +51,7 @@ debug: ${OBJ}
 clean:
 	@echo cleaning
 	rm -f ${OBJ}
+	rm -f config.h
 	rm -f dunst
 	rm -f dunst.1
 	rm -f org.knopwob.dunst.service
