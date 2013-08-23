@@ -14,6 +14,10 @@ With all dependencies present you can build dunst with:
 
     $ make
 
+If you're getting compilation errors after an update try compiling
+with the default config.h.
+If you didn't edit your config.h you can just delete it.
+
 and install with:
 
     $ sudo make PREFIX=/usr install
