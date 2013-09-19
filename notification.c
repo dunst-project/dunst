@@ -305,8 +305,7 @@ int notification_init(notification * n, int id)
         }
 
         if (settings.ignore_newline)
-                while (strstr(n->msg, "\n") != NULL)
-                        n->msg = string_replace("\n", " ", n->msg);
+                n->msg = string_replace_char('\n', ' ', n->msg);
 
         n->msg = g_strstrip(n->msg);
 
