@@ -281,7 +281,7 @@ int notification_init(notification * n, int id)
 
         n->urls = notification_extract_markup_urls(&(n->body));
 
-        n->msg = string_replace_all("\\n", "\n", g_strdup(n->format));
+        n->msg = g_strdup(n->format);
         n->msg = string_replace("%a", n->appname, n->msg);
         n->msg = string_replace("%s", n->summary, n->msg);
         if (n->icon) {

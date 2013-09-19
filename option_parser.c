@@ -240,11 +240,24 @@ int load_ini_file(FILE * fp)
 
                 gboolean in_quote = 0;
                 char *unparsed = value;
-                while ((unparsed = strpbrk(unparsed, "\"#;")) != NULL) {
+                while ((unparsed = strpbrk(unparsed, "\"\\#;")) != NULL) {
                         switch (*unparsed) {
                         case '"':
                                 g_memmove(unparsed, unparsed + 1, strlen(unparsed));
                                 in_quote = !in_quote;
+                                break;
+                        case '\\':
+                                g_memmove(unparsed, unparsed + 1, strlen(unparsed));
+                                switch (*unparsed) {
+                                case 'n': *unparsed = '\n'; break;
+                                case 't': *unparsed = '\t'; break;
+                                case '"': break;
+                                case '\\': break;
+                                default:
+                                        printf("Warning: invalid backslash sequence '\\%c' on line %d\n",
+                                               *unparsed, line_num);
+                                }
+                                unparsed++;
                                 break;
                         case '#':
                         case ';':
