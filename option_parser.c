@@ -238,22 +238,27 @@ int load_ini_file(FILE * fp)
                 char *key = g_strstrip(start);
                 char *value = g_strstrip(equal + 1);
 
-                char *quote = strchr(value, '"');
-                if (quote) {
-                        char *closing_quote = strchr(quote + 1, '"');
-                        if (!closing_quote) {
-                                printf
-                                    ("Warning: invalid config file at line %d\n",
-                                     line_num);
-                                printf("Missing '\"'\n");
-                                continue;
+                gboolean in_quote = 0;
+                char *unparsed = value;
+                while ((unparsed = strpbrk(unparsed, "\"#;")) != NULL) {
+                        switch (*unparsed) {
+                        case '"':
+                                g_memmove(unparsed, unparsed + 1, strlen(unparsed));
+                                in_quote = !in_quote;
+                                break;
+                        case '#':
+                        case ';':
+                                if (in_quote)
+					unparsed++;
+				else
+                                        *unparsed = '\0';
                         }
-
-                        closing_quote = '\0';
-                } else {
-                        char *comment = strpbrk(value, "#;");
-                        if (comment)
-                                comment = '\0';
+                }
+                if (in_quote) {
+                        printf("Warning: invalid config file at line %d\n",
+                               line_num);
+                        printf("Missing '\"'\n");
+                        continue;
                 }
                 value = g_strstrip(value);
 
