@@ -206,12 +206,12 @@ static dimension_t calculate_dimensions(GSList *layouts)
         int text_width = 0, total_width = 0;
         for (GSList *iter = layouts; iter; iter = iter->next) {
                 colored_layout *cl = iter->data;
-                int w,h;
+                int w=0,h=0;
                 pango_layout_get_pixel_size(cl->l, &w, &h);
                 dim.h += h;
                 text_width = MAX(w, text_width);
 
-                if (dim.w <= 0 || settings.shrink) {
+                if (have_dynamic_width() || settings.shrink) {
                         /* dynamic width */
                         total_width = MAX(text_width + 2 * settings.h_padding, total_width);
 
