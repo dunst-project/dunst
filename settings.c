@@ -175,6 +175,9 @@ void load_settings(char *cmdline_config_path)
                 }
         }
 
+        settings.stack_duplicates = option_get_bool("global", "stack_duplicates",
+                        "-stack_duplicates", true, "Merge multiple notifications with the same content");
+
         settings.startup_notification =
             option_get_bool("global", "startup_notification",
                             "-startup_notification", false,

@@ -4,6 +4,7 @@
 typedef struct _settings {
         bool print_notifications;
         bool allow_markup;
+        bool stack_duplicates;
         char *font;
         char *normbgcolor;
         char *normfgcolor;

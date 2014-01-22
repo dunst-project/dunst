@@ -315,54 +315,56 @@ int notification_init(notification * n, int id)
         n->dup_count = 0;
 
         /* check if n is a duplicate */
-        for (GList * iter = g_queue_peek_head_link(queue); iter;
-             iter = iter->next) {
-                notification *orig = iter->data;
-                if (strcmp(orig->appname, n->appname) == 0
-                    && strcmp(orig->summary, n->summary) == 0
-                    && strcmp(orig->body, n->body) == 0) {
-                        /* If the progress differs this was probably intended to replace the notification
-                         * but notify-send was used. So don't increment dup_count in this case
-                         */
-                        if (orig->progress == n->progress) {
-                                orig->dup_count++;
-                        } else {
-                                orig->progress = n->progress;
+        if (settings.stack_duplicates) {
+                for (GList * iter = g_queue_peek_head_link(queue); iter;
+                     iter = iter->next) {
+                        notification *orig = iter->data;
+                        if (strcmp(orig->appname, n->appname) == 0
+                            && strcmp(orig->summary, n->summary) == 0
+                            && strcmp(orig->body, n->body) == 0) {
+                                /* If the progress differs this was probably intended to replace the notification
+                                 * but notify-send was used. So don't increment dup_count in this case
+                                 */
+                                if (orig->progress == n->progress) {
+                                        orig->dup_count++;
+                                } else {
+                                        orig->progress = n->progress;
+                                }
+                                /* notifications that differ only in progress hints should be expected equal,
+                                 * but we want the latest message, with the latest hint value
+                                 */
+                                free(orig->msg);
+                                orig->msg = strdup(n->msg);
+                                notification_free(n);
+                                wake_up();
+                                return orig->id;
                         }
-                        /* notifications that differ only in progress hints should be expected equal,
-                         * but we want the latest message, with the latest hint value
-                         */
-                        free(orig->msg);
-                        orig->msg = strdup(n->msg);
-                        notification_free(n);
-                        wake_up();
-                        return orig->id;
                 }
-        }
 
-        for (GList * iter = g_queue_peek_head_link(displayed); iter;
-             iter = iter->next) {
-                notification *orig = iter->data;
-                if (strcmp(orig->appname, n->appname) == 0
-                    && strcmp(orig->summary, n->summary) == 0
-                    && strcmp(orig->body, n->body) == 0) {
-                        /* notifications that differ only in progress hints should be expected equal,
-                         * but we want the latest message, with the latest hint value
-                         */
-                        free(orig->msg);
-                        orig->msg = strdup(n->msg);
-                        /* If the progress differs this was probably intended to replace the notification
-                         * but notify-send was used. So don't increment dup_count in this case
-                         */
-                        if (orig->progress == n->progress) {
-                                orig->dup_count++;
-                        } else {
-                                orig->progress = n->progress;
+                for (GList * iter = g_queue_peek_head_link(displayed); iter;
+                     iter = iter->next) {
+                        notification *orig = iter->data;
+                        if (strcmp(orig->appname, n->appname) == 0
+                            && strcmp(orig->summary, n->summary) == 0
+                            && strcmp(orig->body, n->body) == 0) {
+                                /* notifications that differ only in progress hints should be expected equal,
+                                 * but we want the latest message, with the latest hint value
+                                 */
+                                free(orig->msg);
+                                orig->msg = strdup(n->msg);
+                                /* If the progress differs this was probably intended to replace the notification
+                                 * but notify-send was used. So don't increment dup_count in this case
+                                 */
+                                if (orig->progress == n->progress) {
+                                        orig->dup_count++;
+                                } else {
+                                        orig->progress = n->progress;
+                                }
+                                orig->start = time(NULL);
+                                notification_free(n);
+                                wake_up();
+                                return orig->id;
                         }
-                        orig->start = time(NULL);
-                        notification_free(n);
-                        wake_up();
-                        return orig->id;
                 }
         }
 
