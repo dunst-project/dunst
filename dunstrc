@@ -1,17 +1,19 @@
 [global]
     font = Monospace 8
-
-    # allow a small subset of html markup:
-    # <b>bold</b>
-    # <i>italic</i>
-    # <s>strikethrough<s/>
-    # <u>underline</u>
-    #
-    # for a complete reference see http://developer.gnome.org/pango/stable/PangoMarkupFormat.html
-    # If markup is not allowed, those tags will be stripped out of the message.
+    
+    # Allow a small subset of html markup:
+    #   <b>bold</b>
+    #   <i>italic</i>
+    #   <s>strikethrough</s>
+    #   <u>underline</u>
+    # 
+    # For a complete reference see
+    # <http://developer.gnome.org/pango/stable/PangoMarkupFormat.html>.
+    # If markup is not allowed, those tags will be stripped out of the
+    # message.
     allow_markup = yes
-
-    # The format of the message. Possible variables are:
+    
+    # The format of the message.  Possible variables are:
     #   %a  appname
     #   %s  summary
     #   %b  body
@@ -20,116 +22,120 @@
     #   %p  progress value if set ([  0%] to [100%]) or nothing
     # Markup is allowed
     format = "<b>%s</b>\n%b"
-
-    # Sort messages by urgency
+    
+    # Sort messages by urgency.
     sort = yes
-
-    # Show how many messages are currently hidden (because of geometry)
+    
+    # Show how many messages are currently hidden (because of geometry).
     indicate_hidden = yes
-
-    # Stack duplicate Messages or show them individually
-    stack_duplicates = yes
-
-    # alignment of message text.
-    # Possible values are "left", "center" and "right"
+    
+    # Alignment of message text.
+    # Possible values are "left", "center" and "right".
     alignment = left
-
+    
     # The frequency with wich text that is longer than the notification
     # window allows bounces back and forth.
-    # This option conflicts with 'word_wrap'.
-    # Set to 0 to disable
+    # This option conflicts with "word_wrap".
+    # Set to 0 to disable.
     bounce_freq = 0
-
-    # show age of message if message is older than show_age_threshold seconds.
-    # set to -1 to disable
+    
+    # Show age of message if message is older than show_age_threshold
+    # seconds.
+    # Set to -1 to disable.
     show_age_threshold = 60
-
-    # split notifications into multiple lines if they don't fit into geometry
+    
+    # Split notifications into multiple lines if they don't fit into
+    # geometry.
     word_wrap = yes
-
-    # ignore newlines '\n' in notifications
+    
+    # Ignore newlines '\n' in notifications.
     ignore_newline = no
-
-
-    # the geometry of the window
-    # geometry [{width}]x{height}[+/-{x}+/-{y}]
+    
+    
+    # The geometry of the window:
+    #   [{width}]x{height}[+/-{x}+/-{y}]
     # The geometry of the message window.
-    # The height is measured in number of notifications everything else in pixels. If the width
-    # is omitted but the height is given ("-geometry x2"), the message window
-    # expands over the whole screen (dmenu-like). If width is 0,
-    # the window expands to the longest message displayed.
-    # A positive x is measured from the left, a negative from the
-    # right side of the screen.  Y is measured from the top and down respectevly.
-    # The width can be negative. In this case the actual width is the
+    # The height is measured in number of notifications everything else
+    # in pixels.  If the width is omitted but the height is given
+    # ("-geometry x2"), the message window expands over the whole screen
+    # (dmenu-like).  If width is 0, the window expands to the longest
+    # message displayed.  A positive x is measured from the left, a
+    # negative from the right side of the screen.  Y is measured from
+    # the top and down respectevly.
+    # The width can be negative.  In this case the actual width is the
     # screen width minus the width defined in within the geometry option.
     geometry = "300x5-30+20"
-
-    # Shrink window if it's smaller than the width. Will be ignored if width is 0.
+    
+    # Shrink window if it's smaller than the width.  Will be ignored if
+    # width is 0.
     shrink = no
-
-    # The transparency of the window. range: [0; 100]
-    # This option will only work if a compositing windowmanager is present (e.g. xcompmgr, compiz, etc..)
+    
+    # The transparency of the window.  Range: [0; 100].
+    # This option will only work if a compositing windowmanager is
+    # present (e.g. xcompmgr, compiz, etc.).
     transparency = 0
-
+    
     # Don't remove messages, if the user is idle (no mouse or keyboard input)
     # for longer than idle_threshold seconds.
     # Set to 0 to disable.
     idle_threshold = 120
-
+    
     # Which monitor should the notifications be displayed on.
     monitor = 0
-
-    # Display notification on focused monitor. Possible modes are:
-    # mouse: follow mouse pointer
-    # keyboard: follow window with keyboard focus
-    # none: don't follow anything
-    #
-    # "keyboard" needs a windowmanager that exports the _NET_ACTIVE_WINDOW property.
+    
+    # Display notification on focused monitor.  Possible modes are:
+    #   mouse: follow mouse pointer
+    #   keyboard: follow window with keyboard focus
+    #   none: don't follow anything
+    # 
+    # "keyboard" needs a windowmanager that exports the
+    # _NET_ACTIVE_WINDOW property.
     # This should be the case for almost all modern windowmanagers.
-    #
-    # If this option is set to mouse or keyboard, the monitor option will be
-    # ignored.
+    # 
+    # If this option is set to mouse or keyboard, the monitor option
+    # will be ignored.
     follow = mouse
-
-    # should a notification popped up from history be sticky or
-    # timeout as if it would normally do.
+    
+    # Should a notification popped up from history be sticky or timeout
+    # as if it would normally do.
     sticky_history = yes
-
-    # Display indicators for URLs (U) and actions (A)
+    
+    # Display indicators for URLs (U) and actions (A).
     show_indicators = yes
-
-    # The height of a single line. If the height is smaller than the font height,
-    # it will get raised to the font height.
+    
+    # The height of a single line.  If the height is smaller than the
+    # font height, it will get raised to the font height.
     # This adds empty space above and under the text.
     line_height = 0
-
-    # Draw a line of 'separatpr_height' pixel height between two notifications.
-    # Set to 0 to disable
+    
+    # Draw a line of "separatpr_height" pixel height between two
+    # notifications.
+    # Set to 0 to disable.
     separator_height = 2
-
-    # padding between text and separator
+    
+    # Padding between text and separator.
     padding = 8
-
-    # horizontal padding
+    
+    # Horizontal padding.
     horizontal_padding = 8
-
+    
     # Define a color for the separator.
     # possible values are:
-    #  * auto: dunst tries to find a color fitting to the background
-    #  * foreground: use the same color as the foreground
-    #  * frame: use the same color as the frame.
-    #  * anything else will be interpreted as a X color
+    #  * auto: dunst tries to find a color fitting to the background;
+    #  * foreground: use the same color as the foreground;
+    #  * frame: use the same color as the frame;
+    #  * anything else will be interpreted as a X color.
     separator_color = frame
-
-    # print a notification on startup
+    
+    # Print a notification on startup.
     # This is mainly for error detection, since dbus (re-)starts dunst
     # automatically after a crash.
     startup_notification = false
-
-    # dmenu path
+    
+    # dmenu path.
     dmenu = /usr/bin/dmenu -p dunst:
-
-    # browser for opening urls in context menu
+    
+    # Browser for opening urls in context menu.
     browser = /usr/bin/firefox -new-tab
 
 [frame]
@@ -137,27 +143,29 @@
     color = "#aaaaaa"
 
 [shortcuts]
-    # shortcuts are specified as [modifier+][modifier+]...key
-    # available modifiers are 'ctrl', 'mod1' (the alt-key), 'mod2', 'mod3'
-    # and 'mod4' (windows-key)
-    # xev might be helpful to find names for keys
 
-    # close notification
+    # Shortcuts are specified as [modifier+][modifier+]...key
+    # Available modifiers are "ctrl", "mod1" (the alt-key), "mod2",
+    # "mod3" and "mod4" (windows-key).
+    # Xev might be helpful to find names for keys.
+    
+    # Close notification.
     close = ctrl+space
-
-    # close all notifications
+    
+    # Close all notifications.
     close_all = ctrl+shift+space
-
-    # redisplay last message(s)
-    # On the US keyboard layout 'grave' is normally above TAB and left of '1'.
+    
+    # Redisplay last message(s).
+    # On the US keyboard layout "grave" is normally above TAB and left
+    # of "1".
     history = ctrl+grave
-
-    # context menu
+    
+    # Context menu.
     context = ctrl+shift+period
 
 [urgency_low]
     # IMPORTANT: colors have to be defined in quotation marks.
-    # Otherwise the '#' and following  would be interpreted as a comment.
+    # Otherwise the "#" and following would be interpreted as a comment.
     background = "#222222"
     foreground = "#888888"
     timeout = 10
@@ -173,23 +181,24 @@
     timeout = 0
 
 
-# Every section that isn't one of the above is interpreted as a rules
-# to override settings for certain messages.
-# Messages can be matched by 'appname', 'summary', 'body' or 'icon'
-# and you can override the 'timeout', 'urgency', 'foreground', 'background'
-# and 'format'.
+# Every section that isn't one of the above is interpreted as a rules to
+# override settings for certain messages.
+# Messages can be matched by "appname", "summary", "body" or "icon" and
+# you can override the "timeout", "urgency", "foreground", "background"
+# and "format".
 # Shell-like globbing will get expanded.
 #
 # SCRIPTING
-# you can specify a script that gets run when the rule matches by setting
-# the 'script' option.
+# You can specify a script that gets run when the rule matches by
+# setting the "script" option.
 # The script will be called as follows:
-# script appname summary body icon urgency
+#   script appname summary body icon urgency
 # where urgency can be "LOW", "NORMAL" or "CRITICAL".
-#
-# NOTE: if you don't want a notification to be displayed, set the format to ""
-# NOTE: It might be helpful to run dunst -print in a terminal in order to find
-# fitting options for rules.
+# 
+# NOTE: if you don't want a notification to be displayed, set the format
+# to "".
+# NOTE: It might be helpful to run dunst -print in a terminal in order
+# to find fitting options for rules.
 
 #[espeak]
 #    summary = "*"
@@ -200,7 +209,7 @@
 #    script = dunst_test.sh
 
 #[ignore]
-## This notification will not be displayed
+#    # This notification will not be displayed
 #    summary = "foobar"
 #    format = ""
 
