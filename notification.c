@@ -281,6 +281,11 @@ int notification_init(notification * n, int id)
 
         n->urls = notification_extract_markup_urls(&(n->body));
 
+        /* Add icon path if relative */
+        if (strlen(n->icon) > 0 && n->icon[0] != '/' && n->icon[0] != '~') {
+                n->icon = string_replace("%s", n->icon, settings.icon_path);
+        }
+
         n->msg = string_replace("%a", n->appname, g_strdup(n->format));
         n->msg = string_replace("%s", n->summary, n->msg);
         if (n->icon) {

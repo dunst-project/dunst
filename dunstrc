@@ -138,6 +138,12 @@
     # Browser for opening urls in context menu.
     browser = /usr/bin/firefox -new-tab
 
+    # Show icons in notifications.
+    show_icons = no
+
+    # Path to default icons.
+    icon_path = /usr/share/icons/gnome/32x32/status/%s.png
+
 [frame]
     width = 3
     color = "#aaaaaa"
