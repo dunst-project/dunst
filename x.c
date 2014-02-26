@@ -268,8 +268,15 @@ static colored_layout *r_init_shared(cairo_t *c, notification *n)
         }
 
         cl->icon = NULL;
-        if (strlen(n->icon) > 0 && settings.icon_position != icons_off)
+        if (strlen(n->icon) > 0 && settings.icon_position != icons_off) {
                 cl->icon = cairo_image_surface_create_from_png(n->icon);
+                if (cairo_surface_status(cl->icon) != CAIRO_STATUS_SUCCESS) {
+                        cairo_surface_destroy(cl->icon);
+                        cl->icon = NULL;
+                        fprintf(stderr,
+                                "Could not load icon: %s\n", n->icon);
+                }
+        }
 
         cl->fg = x_string_to_color_t(n->color_strings[ColFG]);
         cl->bg = x_string_to_color_t(n->color_strings[ColBG]);
