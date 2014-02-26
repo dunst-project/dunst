@@ -51,7 +51,7 @@ char *dmenu = "/usr/bin/dmenu";
 char *browser = "/usr/bin/firefox";
 
 /* path to default icons */
-char *icon_path = "/usr/share/icons/gnome/32x32/status/";
+char *icon_path = "/usr/share/icons/gnome/16x16/status/";
 
 /* follow focus to different monitor and display notifications there?
  * possible values:
