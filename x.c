@@ -268,7 +268,7 @@ static colored_layout *r_init_shared(cairo_t *c, notification *n)
         }
 
         cl->icon = NULL;
-        if (strlen(n->icon) > 0 && settings.show_icons)
+        if (strlen(n->icon) > 0 && settings.icon_position != icons_off)
                 cl->icon = cairo_image_surface_create_from_png(n->icon);
 
         cl->fg = x_string_to_color_t(n->color_strings[ColFG]);
@@ -396,7 +396,9 @@ static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, dimension_t d
         cairo_fill(c);
 
         dim.y += settings.padding;
-        cairo_move_to(c, settings.h_padding, dim.y);
+        if (cl->icon && settings.icon_position == icons_left)
+                cairo_move_to(c, cairo_image_surface_get_width(cl->icon) + 2 * settings.h_padding, dim.y);
+        else cairo_move_to(c, settings.h_padding, dim.y);
         cairo_set_source_rgb(c, cl->fg.r, cl->fg.g, cl->fg.b);
         pango_cairo_update_layout(c, cl->l);
         pango_cairo_show_layout(c, cl->l);
@@ -417,8 +419,12 @@ static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, dimension_t d
         if (cl->icon)  {
                 unsigned int image_width = cairo_image_surface_get_width(cl->icon),
                              image_height = cairo_image_surface_get_height(cl->icon),
-                             image_x = bg_width - settings.h_padding - image_width,
+                             image_x,
                              image_y = bg_y + settings.padding;
+
+                if (settings.icon_position == icons_left) image_x = settings.h_padding;
+                else image_x = bg_width - settings.h_padding - image_width;
+
                 cairo_set_source_surface (c, cl->icon, image_x, image_y);
                 cairo_rectangle (c, image_x, image_y, image_width, image_height);
                 cairo_fill (c);

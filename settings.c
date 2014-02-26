@@ -192,10 +192,23 @@ void load_settings(char *cmdline_config_path)
             option_get_string("global", "browser", "-browser", browser,
                               "path to browser");
 
-        settings.show_icons =
-            option_get_bool("global", "show_icons",
-                            "-show_icons", false,
-                            "show icons in notifications");
+        {
+                char *c = option_get_string("global", "icon_position",
+                                            "-icon_position", "off",
+                                            "Align icons left/right/off");
+                if (strlen(c) > 0) {
+                        if (strcmp(c, "left") == 0)
+                                settings.icon_position = icons_left;
+                        else if (strcmp(c, "right") == 0)
+                                settings.icon_position = icons_right;
+                        else if (strcmp(c, "off") == 0)
+                                settings.icon_position = icons_off;
+                        else
+                                fprintf(stderr,
+                                        "Warning: unknown icon position: %s\n", c);
+                        free(c);
+                }
+        }
 
         settings.icon_path =
             option_get_string("global", "icon_path", "-icon_path", icon_path,
