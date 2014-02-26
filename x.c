@@ -205,11 +205,6 @@ static dimension_t calculate_dimensions(GSList *layouts)
         dim.h += (g_slist_length(layouts) - 1) * settings.separator_height;
         dim.h += g_slist_length(layouts) * settings.padding * 2;
 
-        /* text_width: width of the widest content so far
-         * total_width: width of the widest notification so far, with padding
-         * dim.w: width of the window, with frame
-         * Also call r_setup_pango_layout() when changing text_width.
-         */
         int text_width = 0, total_width = 0;
         for (GSList *iter = layouts; iter; iter = iter->next) {
                 colored_layout *cl = iter->data;

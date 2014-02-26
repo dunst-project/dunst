@@ -142,7 +142,7 @@
     show_icons = no
 
     # Path to default icons.
-    icon_path = /usr/share/icons/gnome/32x32/status/%s.png
+    icon_path = /usr/share/icons/gnome/32x32/status/
 
 [frame]
     width = 3

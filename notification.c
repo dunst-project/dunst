@@ -283,7 +283,9 @@ int notification_init(notification * n, int id)
 
         /* Add icon path if relative */
         if (strlen(n->icon) > 0 && n->icon[0] != '/' && n->icon[0] != '~') {
-                n->icon = string_replace("%s", n->icon, settings.icon_path);
+                char *new = g_strconcat(settings.icon_path, n->icon, ".png", NULL);
+                free(n->icon);
+                n->icon = new;
         }
 
         n->msg = string_replace("%a", n->appname, g_strdup(n->format));
