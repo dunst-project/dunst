@@ -258,6 +258,49 @@ static dimension_t calculate_dimensions(GSList *layouts)
         return dim;
 }
 
+static cairo_t *get_icon_surface(char *icon_path)
+{
+        cairo_t *icon_surface = NULL;
+        if (strlen(icon_path) > 0 && settings.icon_position != icons_off) {
+                /* absolute path? */
+                if (icon_path[0] == '/' || icon_path[0] == '~') {
+                        icon_surface = cairo_image_surface_create_from_png(icon_path);
+                        if (cairo_surface_status(icon_surface) != CAIRO_STATUS_SUCCESS) {
+                                cairo_surface_destroy(icon_surface);
+                                icon_surface = NULL;
+                        }
+                }
+                /* search in icon_folders */
+                if (icon_surface == NULL) {
+                        char *start = settings.icon_folders,
+                             *end, *current_folder, *maybe_icon_path;
+                        do {
+                                end = strchr(start, ':');
+                                if (end == NULL) end = strchr(settings.icon_folders, '\0'); /* end = end of string */
+
+                                current_folder = strndup(start, end - start);
+                                maybe_icon_path = g_strconcat(current_folder, "/", icon_path, ".png", NULL);
+                                free(current_folder);
+
+                                icon_surface = cairo_image_surface_create_from_png(maybe_icon_path);
+                                free(maybe_icon_path);
+                                if (cairo_surface_status(icon_surface) == CAIRO_STATUS_SUCCESS) {
+                                        return icon_surface;
+                                } else {
+                                        cairo_surface_destroy(icon_surface);
+                                        icon_surface = NULL;
+                                }
+
+                                start = end + 1;
+                        } while (*(end) != '\0');
+                }
+                if (icon_surface == NULL)
+                        fprintf(stderr,
+                                "Could not load icon: '%s'\n", icon_path);
+        }
+        return NULL;
+}
+
 static colored_layout *r_init_shared(cairo_t *c, notification *n)
 {
         colored_layout *cl = malloc(sizeof(colored_layout));
@@ -267,16 +310,7 @@ static colored_layout *r_init_shared(cairo_t *c, notification *n)
                 pango_layout_set_ellipsize(cl->l, PANGO_ELLIPSIZE_MIDDLE);
         }
 
-        cl->icon = NULL;
-        if (strlen(n->icon) > 0 && settings.icon_position != icons_off) {
-                cl->icon = cairo_image_surface_create_from_png(n->icon);
-                if (cairo_surface_status(cl->icon) != CAIRO_STATUS_SUCCESS) {
-                        cairo_surface_destroy(cl->icon);
-                        cl->icon = NULL;
-                        fprintf(stderr,
-                                "Could not load icon: %s\n", n->icon);
-                }
-        }
+        cl->icon = get_icon_surface(n->icon);
 
         cl->fg = x_string_to_color_t(n->color_strings[ColFG]);
         cl->bg = x_string_to_color_t(n->color_strings[ColBG]);

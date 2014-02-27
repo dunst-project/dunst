@@ -210,9 +210,9 @@ void load_settings(char *cmdline_config_path)
                 }
         }
 
-        settings.icon_path =
-            option_get_string("global", "icon_path", "-icon_path", icon_path,
-                              "path to default icons");
+        settings.icon_folders =
+            option_get_string("global", "icon_folders", "-icon_folders", icon_folders,
+                              "paths to default icons");
 
         settings.frame_width =
             option_get_int("frame", "width", "-frame_width", frame_width,
