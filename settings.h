@@ -14,6 +14,7 @@ typedef struct _settings {
         char *lowfgcolor;
         char *format;
         int timeouts[3];
+        char *icons[3];
         unsigned int transparency;
         char *geom;
         int shrink;

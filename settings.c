@@ -231,6 +231,9 @@ void load_settings(char *cmdline_config_path)
         settings.timeouts[LOW] =
             option_get_int("urgency_low", "timeout", "-lto", timeouts[LOW],
                            "Timeout for notifications with low urgency");
+        settings.icons[LOW] =
+            option_get_string("urgency_low", "icon", "-li", icons[LOW],
+                              "Icon for notifications with low urgency");
         settings.normbgcolor =
             option_get_string("urgency_normal", "background", "-nb",
                               normbgcolor,
@@ -242,6 +245,9 @@ void load_settings(char *cmdline_config_path)
         settings.timeouts[NORM] =
             option_get_int("urgency_normal", "timeout", "-nto", timeouts[NORM],
                            "Timeout for notifications with normal urgency");
+        settings.icons[NORM] =
+            option_get_string("urgency_normal", "icon", "-ni", icons[NORM],
+                              "Icon for notifications with normal urgency");
         settings.critbgcolor =
             option_get_string("urgency_critical", "background", "-cb",
                               critbgcolor,
@@ -251,9 +257,11 @@ void load_settings(char *cmdline_config_path)
                               critfgcolor,
                               "Foreground color for notifications with ciritical urgency");
         settings.timeouts[CRIT] =
-            option_get_int("urgency_critical", "timeout", "-cto",
-                           timeouts[CRIT],
+            option_get_int("urgency_critical", "timeout", "-cto", timeouts[CRIT],
                            "Timeout for notifications with critical urgency");
+        settings.icons[CRIT] =
+            option_get_string("urgency_critical", "icon", "-ci", icons[CRIT],
+                              "Icon for notifications with critical urgency");
 
         settings.close_ks.str =
             option_get_string("shortcuts", "close", "-key", close_ks.str,

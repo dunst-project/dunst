@@ -383,6 +383,14 @@ int notification_init(notification * n, int id)
             n->timeout == -1 ? settings.timeouts[n->urgency] : n->timeout;
         n->start = 0;
 
+        if (n->icon == NULL) {
+                n->icon = settings.icons[n->urgency];
+        }
+        else if (strlen(n->icon) <= 0) {
+                free(n->icon);
+                n->icon = settings.icons[n->urgency];
+        }
+
         n->timestamp = time(NULL);
 
         n->redisplayed = false;
