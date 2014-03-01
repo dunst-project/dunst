@@ -192,6 +192,28 @@ void load_settings(char *cmdline_config_path)
             option_get_string("global", "browser", "-browser", browser,
                               "path to browser");
 
+        {
+                char *c = option_get_string("global", "icon_position",
+                                            "-icon_position", "off",
+                                            "Align icons left/right/off");
+                if (strlen(c) > 0) {
+                        if (strcmp(c, "left") == 0)
+                                settings.icon_position = icons_left;
+                        else if (strcmp(c, "right") == 0)
+                                settings.icon_position = icons_right;
+                        else if (strcmp(c, "off") == 0)
+                                settings.icon_position = icons_off;
+                        else
+                                fprintf(stderr,
+                                        "Warning: unknown icon position: %s\n", c);
+                        free(c);
+                }
+        }
+
+        settings.icon_folders =
+            option_get_string("global", "icon_folders", "-icon_folders", icon_folders,
+                              "paths to default icons");
+
         settings.frame_width =
             option_get_int("frame", "width", "-frame_width", frame_width,
                            "Width of frame around window");
@@ -209,6 +231,9 @@ void load_settings(char *cmdline_config_path)
         settings.timeouts[LOW] =
             option_get_int("urgency_low", "timeout", "-lto", timeouts[LOW],
                            "Timeout for notifications with low urgency");
+        settings.icons[LOW] =
+            option_get_string("urgency_low", "icon", "-li", icons[LOW],
+                              "Icon for notifications with low urgency");
         settings.normbgcolor =
             option_get_string("urgency_normal", "background", "-nb",
                               normbgcolor,
@@ -220,6 +245,9 @@ void load_settings(char *cmdline_config_path)
         settings.timeouts[NORM] =
             option_get_int("urgency_normal", "timeout", "-nto", timeouts[NORM],
                            "Timeout for notifications with normal urgency");
+        settings.icons[NORM] =
+            option_get_string("urgency_normal", "icon", "-ni", icons[NORM],
+                              "Icon for notifications with normal urgency");
         settings.critbgcolor =
             option_get_string("urgency_critical", "background", "-cb",
                               critbgcolor,
@@ -229,9 +257,11 @@ void load_settings(char *cmdline_config_path)
                               critfgcolor,
                               "Foreground color for notifications with ciritical urgency");
         settings.timeouts[CRIT] =
-            option_get_int("urgency_critical", "timeout", "-cto",
-                           timeouts[CRIT],
+            option_get_int("urgency_critical", "timeout", "-cto", timeouts[CRIT],
                            "Timeout for notifications with critical urgency");
+        settings.icons[CRIT] =
+            option_get_string("urgency_critical", "icon", "-ci", icons[CRIT],
+                              "Icon for notifications with critical urgency");
 
         settings.close_ks.str =
             option_get_string("shortcuts", "close", "-key", close_ks.str,
@@ -307,6 +337,7 @@ void load_settings(char *cmdline_config_path)
                                 free(urg);
                         }
                 }
+                r->new_icon = ini_get_string(cur_section, "new_icon", r->new_icon);
                 r->fg = ini_get_string(cur_section, "foreground", r->fg);
                 r->bg = ini_get_string(cur_section, "background", r->bg);
                 r->format = ini_get_string(cur_section, "format", r->format);

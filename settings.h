@@ -14,6 +14,7 @@ typedef struct _settings {
         char *lowfgcolor;
         char *format;
         int timeouts[3];
+        char *icons[3];
         unsigned int transparency;
         char *geom;
         int shrink;
@@ -42,6 +43,8 @@ typedef struct _settings {
         char *dmenu;
         char **dmenu_cmd;
         char *browser;
+        enum icon_position_t icon_position;
+        char *icon_folders;
         enum follow_mode f_mode;
         keyboard_shortcut close_ks;
         keyboard_shortcut close_all_ks;

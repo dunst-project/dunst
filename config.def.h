@@ -11,6 +11,7 @@ char *lowfgcolor = "#000000";
 char *format = "%s %b";         /* default format */
 
 int timeouts[] = { 10, 10, 0 }; /* low, normal, critical */
+char *icons[] = { "info", "info", "emblem-important" }; /* low, normal, critical */
 
 unsigned int transparency = 0;  /* transparency */
 char *geom = "0x0";             /* geometry */
@@ -49,6 +50,9 @@ int monitor = 0;
 char *dmenu = "/usr/bin/dmenu";
 
 char *browser = "/usr/bin/firefox";
+
+/* paths to default icons */
+char *icon_folders = "/usr/share/icons/gnome/16x16/status/:/usr/share/icons/gnome/16x16/devices/";
 
 /* follow focus to different monitor and display notifications there?
  * possible values:

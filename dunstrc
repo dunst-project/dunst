@@ -138,6 +138,12 @@
     # Browser for opening urls in context menu.
     browser = /usr/bin/firefox -new-tab
 
+    # Align icons left/right/off
+    icon_position = off
+
+    # Paths to default icons.
+    icon_folders = /usr/share/icons/gnome/16x16/status/:/usr/share/icons/gnome/16x16/devices/
+
 [frame]
     width = 3
     color = "#aaaaaa"
@@ -184,8 +190,8 @@
 # Every section that isn't one of the above is interpreted as a rules to
 # override settings for certain messages.
 # Messages can be matched by "appname", "summary", "body" or "icon" and
-# you can override the "timeout", "urgency", "foreground", "background"
-# and "format".
+# you can override the "timeout", "urgency", "foreground", "background",
+# "new_icon", and "format".
 # Shell-like globbing will get expanded.
 #
 # SCRIPTING
@@ -217,11 +223,13 @@
 #    appname = Pidgin
 #    summary = "*signed on*"
 #    urgency = low
+#    new_icon = "/usr/share/pixmaps/pidgin/status/16/log-in.png"
 #
 #[signed_off]
 #    appname = Pidgin
 #    summary = *signed off*
 #    urgency = low
+#    new_icon = "/usr/share/pixmaps/pidgin/status/16/log-out.png"
 #
 #[says]
 #    appname = Pidgin
