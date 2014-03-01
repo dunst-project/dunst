@@ -337,6 +337,7 @@ void load_settings(char *cmdline_config_path)
                                 free(urg);
                         }
                 }
+                r->new_icon = ini_get_string(cur_section, "new_icon", r->new_icon);
                 r->fg = ini_get_string(cur_section, "foreground", r->fg);
                 r->bg = ini_get_string(cur_section, "background", r->bg);
                 r->format = ini_get_string(cur_section, "format", r->format);

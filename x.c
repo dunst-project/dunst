@@ -298,7 +298,7 @@ static cairo_t *get_icon_surface(char *icon_path)
                         fprintf(stderr,
                                 "Could not load icon: '%s'\n", icon_path);
         }
-        return NULL;
+        return icon_surface;
 }
 
 static colored_layout *r_init_shared(cairo_t *c, notification *n)
