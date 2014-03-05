@@ -83,6 +83,8 @@ char **string_to_argv(const char *s)
         argv = realloc (argv, sizeof (char*) * (n_spaces+1));
         argv[n_spaces] = NULL;
 
+        free(str);
+
         return argv;
 }
 
