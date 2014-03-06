@@ -183,9 +183,9 @@
 
 # Every section that isn't one of the above is interpreted as a rules to
 # override settings for certain messages.
-# Messages can be matched by "appname", "summary", "body" or "icon" and
-# you can override the "timeout", "urgency", "foreground", "background"
-# and "format".
+# Messages can be matched by "appname", "summary", "body", "icon",
+# "msg_urgency" and you can override the "timeout", "urgency", "foreground",
+# "background" and "format".
 # Shell-like globbing will get expanded.
 #
 # SCRIPTING
