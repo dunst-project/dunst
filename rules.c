@@ -48,6 +48,7 @@ void rule_init(rule_t * r)
         r->summary = NULL;
         r->body = NULL;
         r->icon = NULL;
+        r->msg_urgency = -1;
         r->timeout = -1;
         r->urgency = -1;
         r->fg = NULL;
@@ -64,6 +65,7 @@ bool rule_matches_notification(rule_t * r, notification * n)
         return ((!r->appname || !fnmatch(r->appname, n->appname, 0))
                 && (!r->summary || !fnmatch(r->summary, n->summary, 0))
                 && (!r->body || !fnmatch(r->body, n->body, 0))
-                && (!r->icon || !fnmatch(r->icon, n->icon, 0)));
+                && (!r->icon || !fnmatch(r->icon, n->icon, 0))
+                && (r->msg_urgency == -1 || r->msg_urgency == n->urgency));
 }
 /* vim: set ts=8 sw=8 tw=0: */
