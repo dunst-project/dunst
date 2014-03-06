@@ -28,7 +28,9 @@ char *extract_urls(const char *to_match)
 
         if (!is_initialized) {
                 char *regex =
-                    "((http[s]?|ftp[s]?)(://))?(www\\.)?[[:alnum:]._-]+\\.[^[:space:].\"<>]{2,}";
+                    "\\b(https?://|ftps?://|news://|mailto:|file://|www\\.)"
+                    "[[:alnum:]\\-\\@;/?:&=%$.+!*\x27,~#]*"
+                    "(\\([[:alnum:]\\-\\@;/?:&=%$.+!*\x27,~#]*\\)|[[:alnum:]\\-\\@;/?:&=%$+*~])+";
                 int ret = regcomp(&cregex, regex, REG_EXTENDED | REG_ICASE);
                 if (ret != 0) {
                         printf("failed to compile regex\n");
