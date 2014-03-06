@@ -581,10 +581,6 @@ gboolean x_mainloop_fd_dispatch(GSource * source, GSourceFunc callback,
                 case SelectionNotify:
                         if (ev.xselection.property == xctx.utf8)
                                 break;
-                case VisibilityNotify:
-                        if (ev.xvisibility.state != VisibilityUnobscured)
-                                XRaiseWindow(xctx.dpy, xctx.win);
-                        break;
                 case ButtonPress:
                         if (ev.xbutton.window == xctx.win) {
                                 x_handle_click(ev);
@@ -854,23 +850,29 @@ void x_setup(void)
 }
 
 
-static void x_set_win_type(Window win)
+static void x_set_wm(Window win)
 {
 
-    long data[2];
+        Atom data[2];
 
-    Atom net_wm_window_type =
-            XInternAtom(xctx.dpy, "_NET_WM_WINDOW_TYPE", false);
-    Atom net_wm_window_type_notification =
-            XInternAtom(xctx.dpy, "_NET_WM_WINDOW_TYPE_NOTIFICATION", false);
-    Atom net_wm_window_type_utility =
-            XInternAtom(xctx.dpy, "_NET_WM_WINDOW_TYPE_UTILITY", false);
+        /* set window type */
+        Atom net_wm_window_type =
+                XInternAtom(xctx.dpy, "_NET_WM_WINDOW_TYPE", false);
 
-    data[0] = net_wm_window_type_notification;
-    data[1] = net_wm_window_type_utility;
+        data[0] = XInternAtom(xctx.dpy, "_NET_WM_WINDOW_TYPE_NOTIFICATION", false);
+        data[1] = XInternAtom(xctx.dpy, "_NET_WM_WINDOW_TYPE_UTILITY", false);
 
-    XChangeProperty(xctx.dpy, win, net_wm_window_type, XA_ATOM, 32,
-            PropModeReplace, (unsigned char *) &data, 1L);
+        XChangeProperty(xctx.dpy, win, net_wm_window_type, XA_ATOM, 32,
+                PropModeReplace, (unsigned char *) data, 2L);
+
+        /* set state above */
+        Atom net_wm_state =
+                XInternAtom(xctx.dpy, "_NET_WM_STATE", false);
+
+        data[0] = XInternAtom(xctx.dpy, "_NET_WM_STATE_ABOVE", false);
+
+        XChangeProperty(xctx.dpy, win, net_wm_state, XA_ATOM, 32,
+                PropModeReplace, (unsigned char *) data, 1L);
 }
 
         /*
@@ -906,7 +908,7 @@ static void x_win_setup(void)
                                                         DefaultScreen(xctx.dpy)),
                           CWOverrideRedirect | CWBackPixmap | CWEventMask, &wa);
 
-        x_set_win_type(xctx.win);
+        x_set_wm(xctx.win);
         settings.transparency =
             settings.transparency > 100 ? 100 : settings.transparency;
         setopacity(xctx.win,
