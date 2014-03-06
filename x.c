@@ -160,6 +160,17 @@ static void r_setup_pango_layout(PangoLayout *layout, int width)
 
 }
 
+static void r_update_layouts_width(GSList *layouts, int width)
+{
+        width -= 2 * settings.h_padding;
+        width -= 2 * settings.frame_width;
+
+        for (GSList *iter = layouts; iter; iter = iter->next) {
+                colored_layout *cl = iter->data;
+                pango_layout_set_width(cl->l, width * PANGO_SCALE);
+        }
+}
+
 static void free_colored_layout(void *data)
 {
         colored_layout *cl = data;
@@ -408,6 +419,10 @@ void x_win_draw(void)
         dimension_t dim = calculate_dimensions(layouts);
         int width = dim.w;
         int height = dim.h;
+
+	if ((have_dynamic_width() || settings.shrink) && settings.align != left) {
+                r_update_layouts_width(layouts, width);
+        }
 
         cairo_t *c;
         cairo_surface_t *image_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
