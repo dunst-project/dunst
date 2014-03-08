@@ -306,7 +306,7 @@ void load_settings(char *cmdline_config_path)
 
         /* push hardcoded default rules into rules list */
         for (int i = 0; i < LENGTH(default_rules); i++) {
-                rules = g_slist_insert(rules, &(default_rules[i]), 0);
+                rules = g_slist_insert(rules, &(default_rules[i]), -1);
         }
 
         char *cur_section = NULL;
@@ -333,7 +333,7 @@ void load_settings(char *cmdline_config_path)
                 if (r == NULL) {
                         r = g_malloc(sizeof(rule_t));
                         rule_init(r);
-                        rules = g_slist_insert(rules, r, 0);
+                        rules = g_slist_insert(rules, r, -1);
                 }
 
                 r->name = g_strdup(cur_section);
