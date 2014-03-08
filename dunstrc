@@ -138,6 +138,12 @@
     # Browser for opening urls in context menu.
     browser = /usr/bin/firefox -new-tab
 
+    # Align icons left/right/off
+    icon_position = off
+
+    # Paths to default icons.
+    icon_folders = /usr/share/icons/gnome/16x16/status/:/usr/share/icons/gnome/16x16/devices/
+
 [frame]
     width = 3
     color = "#aaaaaa"
@@ -185,7 +191,7 @@
 # override settings for certain messages.
 # Messages can be matched by "appname", "summary", "body", "icon",
 # "msg_urgency" and you can override the "timeout", "urgency", "foreground",
-# "background" and "format".
+# "background", "new_icon" and "format".
 # Shell-like globbing will get expanded.
 #
 # SCRIPTING

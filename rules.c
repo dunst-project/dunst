@@ -15,6 +15,8 @@ void rule_apply(rule_t * r, notification * n)
                 n->timeout = r->timeout;
         if (r->urgency != -1)
                 n->urgency = r->urgency;
+        if (r->new_icon)
+                n->icon = r->new_icon;
         if (r->fg)
                 n->color_strings[ColFG] = r->fg;
         if (r->bg)
@@ -51,6 +53,7 @@ void rule_init(rule_t * r)
         r->msg_urgency = -1;
         r->timeout = -1;
         r->urgency = -1;
+        r->new_icon = NULL;
         r->fg = NULL;
         r->bg = NULL;
         r->format = NULL;

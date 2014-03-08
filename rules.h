@@ -18,6 +18,7 @@ typedef struct _rule_t {
         /* actions */
         int timeout;
         int urgency;
+        char *new_icon;
         char *fg;
         char *bg;
         const char *format;
