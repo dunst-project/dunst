@@ -23,7 +23,7 @@ endif
 
 # flags
 CPPFLAGS += -D_BSD_SOURCE -DVERSION=\"${VERSION}\" ${XINERAMAFLAGS} ${INIFLAGS}
-CFLAGS   += -g --std=c99 -pedantic -Wall -Wno-overlength-strings -Os ${STATIC} ${CPPFLAGS} ${EXTRACFLAGS}
+CFLAGS   += -g --std=gnu99 -pedantic -Wall -Wno-overlength-strings -Os ${STATIC} ${CPPFLAGS} ${EXTRACFLAGS}
 
 pkg_config_packs:="dbus-1 x11 freetype2 xext xft xscrnsaver glib-2.0 gio-2.0 pango cairo pangocairo"
 
