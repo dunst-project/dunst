@@ -305,6 +305,7 @@ int main(int argc, char *argv[])
                 n->timeout = 10;
                 n->urgency = LOW;
                 n->icon = NULL;
+                n->category = NULL;
                 n->msg = NULL;
                 n->dbus_client = NULL;
                 n->color_strings[0] = NULL;

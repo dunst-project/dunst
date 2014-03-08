@@ -131,6 +131,7 @@ static void onNotify(GDBusConnection * connection,
         gint progress = -1;
         gchar *fgcolor = NULL;
         gchar *bgcolor = NULL;
+        gchar *category = NULL;
 
         actions->actions = NULL;
         actions->count = 0;
@@ -214,6 +215,17 @@ static void onNotify(GDBusConnection * connection,
 
                                         dict_value =
                                                 g_variant_lookup_value(content,
+                                                                "category",
+                                                                G_VARIANT_TYPE_STRING);
+
+                                        if (dict_value) {
+                                                category =
+                                                        g_variant_dup_string(
+                                                                        dict_value, NULL);
+                                        }
+
+                                        dict_value =
+                                                g_variant_lookup_value(content,
                                                                 "value",
                                                                 G_VARIANT_TYPE_INT32);
 
@@ -263,6 +275,7 @@ static void onNotify(GDBusConnection * connection,
         n->timeout = timeout;
         n->progress = (progress < 0 || progress > 100) ? 0 : progress + 1;
         n->urgency = urgency;
+        n->category = category;
         n->dbus_client = strdup(sender);
         if (actions->count > 0) {
                 n->actions = actions;

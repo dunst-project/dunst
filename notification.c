@@ -32,6 +32,7 @@ void notification_print(notification * n)
         printf("\tsummary: '%s'\n", n->summary);
         printf("\tbody: '%s'\n", n->body);
         printf("\ticon: '%s'\n", n->icon);
+        printf("\tcategory: %s\n", n->category);
         printf("\turgency: %d\n", n->urgency);
         printf("\tformatted: '%s'\n", n->msg);
         printf("\tfg: %s\n", n->color_strings[ColFG]);
@@ -389,6 +390,10 @@ int notification_init(notification * n, int id)
         else if (strlen(n->icon) <= 0) {
                 free(n->icon);
                 n->icon = settings.icons[n->urgency];
+        }
+
+        if (n->category == NULL) {
+                n->category = "";
         }
 
         n->timestamp = time(NULL);

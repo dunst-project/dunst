@@ -19,6 +19,7 @@ typedef struct _notification {
         char *body;
         char *icon;
         char *msg;            /* formatted message */
+        char *category;
         char *text_to_render;
         const char *format;
         char *dbus_client;
