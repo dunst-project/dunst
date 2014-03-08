@@ -151,7 +151,7 @@ void dispatch_menu_result(const char *input)
                 in = strchr(in, ']');
                 if (in == NULL)
                     break;
-            default: 
+            default:
                 {   // test and open url
                     char *maybe_url = extract_urls(in);
                     if (maybe_url) {

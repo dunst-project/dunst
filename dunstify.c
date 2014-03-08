@@ -240,7 +240,7 @@ void add_hint(NotifyNotification *n, char *str)
         gint h_byte = g_ascii_strtoull(value, NULL, 10);
         if (h_byte < 0 || h_byte > 0xFF)
             g_printerr("Not a byte: \"%s\"", value);
-        else 
+        else
             notify_notification_set_hint_byte(n, name, (guchar) h_byte);
     } else
         g_printerr("Malformed hint. Expected a type of int, double, string or byte, got %s\n", type);

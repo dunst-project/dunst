@@ -239,7 +239,7 @@ gboolean run(void *data)
         }
 
         if (xctx.visible && (pause_display || displayed->length == 0)) {
-            x_win_hide(); 
+            x_win_hide();
         }
 
         if (xctx.visible) {
