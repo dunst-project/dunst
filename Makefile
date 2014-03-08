@@ -19,7 +19,7 @@ ifeq (${V}, 0)
 .SILENT:
 endif
 
-all: doc options dunst service dunstify
+all: doc options dunst service
 
 options:
 	@echo dunst build options:
