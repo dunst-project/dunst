@@ -31,6 +31,27 @@ static void parse_follow_mode(const char *mode)
 
 }
 
+static int ini_get_urgency(char *section, char *key, int def)
+{
+        int ret = def;
+        char *urg = ini_get_string(section, key, "");
+
+        if (strlen(urg) > 0) {
+                if (strcmp(urg, "low") == 0)
+                        ret = LOW;
+                else if (strcmp(urg, "normal") == 0)
+                        ret = NORM;
+                else if (strcmp(urg, "critical") == 0)
+                        ret = CRIT;
+                else
+                        fprintf(stderr,
+                                "unknown urgency: %s, ignoring\n",
+                                urg);
+                free(urg);
+        }
+        return ret;
+}
+
 void load_settings(char *cmdline_config_path)
 {
 
@@ -291,22 +312,8 @@ void load_settings(char *cmdline_config_path)
                 r->body = ini_get_string(cur_section, "body", r->body);
                 r->icon = ini_get_string(cur_section, "icon", r->icon);
                 r->timeout = ini_get_int(cur_section, "timeout", r->timeout);
-                {
-                        char *urg = ini_get_string(cur_section, "urgency", "");
-                        if (strlen(urg) > 0) {
-                                if (strcmp(urg, "low") == 0)
-                                        r->urgency = LOW;
-                                else if (strcmp(urg, "normal") == 0)
-                                        r->urgency = NORM;
-                                else if (strcmp(urg, "critical") == 0)
-                                        r->urgency = CRIT;
-                                else
-                                        fprintf(stderr,
-                                                "unknown urgency: %s, ignoring\n",
-                                                urg);
-                                free(urg);
-                        }
-                }
+                r->urgency = ini_get_urgency(cur_section, "urgency", r->urgency);
+                r->msg_urgency = ini_get_urgency(cur_section, "msg_urgency", r->msg_urgency);
                 r->fg = ini_get_string(cur_section, "foreground", r->fg);
                 r->bg = ini_get_string(cur_section, "background", r->bg);
                 r->format = ini_get_string(cur_section, "format", r->format);
