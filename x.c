@@ -269,9 +269,9 @@ static dimension_t calculate_dimensions(GSList *layouts)
         return dim;
 }
 
-static cairo_t *get_icon_surface(char *icon_path)
+static cairo_surface_t *get_icon_surface(char *icon_path)
 {
-        cairo_t *icon_surface = NULL;
+        cairo_surface_t *icon_surface = NULL;
         if (strlen(icon_path) > 0 && settings.icon_position != icons_off) {
                 /* absolute path? */
                 if (icon_path[0] == '/' || icon_path[0] == '~') {
