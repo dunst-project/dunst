@@ -26,6 +26,7 @@
 
 xctx_t xctx;
 bool dunst_grab_errored = false;
+bool dunst_follow_errored = false;
 
 typedef struct _cairo_ctx {
         cairo_status_t status;
@@ -47,6 +48,9 @@ cairo_ctx_t cairo_ctx;
 
 static color_t frame_color;
 
+/* FIXME refactor setup teardown handlers into one setup and one teardown */
+static void x_follow_setup_error_handler(void);
+static int x_follow_tear_down_error_handler(void);
 static void x_shortcut_setup_error_handler(void);
 static int x_shortcut_tear_down_error_handler(void);
 static void x_win_move(int width, int height);
@@ -795,9 +799,12 @@ static Window get_focused_window(void)
          */
 static int select_screen(XineramaScreenInfo * info, int info_len)
 {
+        int ret = 0;
+        x_follow_setup_error_handler();
         if (settings.f_mode == FOLLOW_NONE) {
-                return settings.monitor >=
+                 ret = settings.monitor >=
                     0 ? settings.monitor : XDefaultScreen(xctx.dpy);
+                 goto sc_cleanup;
 
         } else {
                 int x, y;
@@ -822,8 +829,9 @@ static int select_screen(XineramaScreenInfo * info, int info_len)
 
                         if (focused == 0) {
                                 /* something went wrong. Fallback to default */
-                                return settings.monitor >=
+                                ret = settings.monitor >=
                                     0 ? settings.monitor : XDefaultScreen(xctx.dpy);
+                                goto sc_cleanup;
                         }
 
                         Window child_return;
@@ -835,14 +843,19 @@ static int select_screen(XineramaScreenInfo * info, int info_len)
                         if (INRECT(x, y, info[i].x_org,
                                    info[i].y_org,
                                    info[i].width, info[i].height)) {
-                                return i;
+                                ret = i;
+                                goto sc_cleanup;
                         }
                 }
 
                 /* something seems to be wrong. Fallback to default */
-                return settings.monitor >=
+                ret = settings.monitor >=
                     0 ? settings.monitor : XDefaultScreen(xctx.dpy);
+                goto sc_cleanup;
         }
+sc_cleanup:
+        x_follow_tear_down_error_handler();
+        return ret;
 }
 #endif
 
@@ -1092,6 +1105,17 @@ static int GrabXErrorHandler(Display * display, XErrorEvent * e)
         return 0;
 }
 
+static int FollowXErrorHandler(Display * display, XErrorEvent * e)
+{
+        dunst_follow_errored = true;
+        char err_buf[BUFSIZ];
+        XGetErrorText(display, e->error_code, err_buf, BUFSIZ);
+        fputs(err_buf, stderr);
+        fputs("\n", stderr);
+
+        return 0;
+}
+
         /*
          * Setup the Error handler.
          */
@@ -1103,6 +1127,14 @@ static void x_shortcut_setup_error_handler(void)
         XSetErrorHandler(GrabXErrorHandler);
 }
 
+static void x_follow_setup_error_handler(void)
+{
+        dunst_follow_errored = false;
+
+        XFlush(xctx.dpy);
+        XSetErrorHandler(FollowXErrorHandler);
+}
+
         /*
          * Tear down the Error handler.
          */
@@ -1112,6 +1144,14 @@ static int x_shortcut_tear_down_error_handler(void)
         XSync(xctx.dpy, false);
         XSetErrorHandler(NULL);
         return dunst_grab_errored;
+}
+
+static int x_follow_tear_down_error_handler(void)
+{
+        XFlush(xctx.dpy);
+        XSync(xctx.dpy, false);
+        XSetErrorHandler(NULL);
+        return dunst_follow_errored;
 }
 
         /*
