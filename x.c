@@ -40,14 +40,14 @@ typedef struct _colored_layout {
         PangoLayout *l;
         color_t fg;
         color_t bg;
+        color_t frame;
         char *text;
         PangoAttrList *attr;
         cairo_surface_t *icon;
+        notification *n;
 } colored_layout;
 
 cairo_ctx_t cairo_ctx;
-
-static color_t frame_color;
 
 /* FIXME refactor setup teardown handlers into one setup and one teardown */
 static void x_follow_setup_error_handler(void);
@@ -59,8 +59,6 @@ static void setopacity(Window win, unsigned long opacity);
 static void x_handle_click(XEvent ev);
 static void x_screen_info(screen_info * scr);
 static void x_win_setup(void);
-
-
 
 static color_t x_color_hex_to_double(int hexValue)
 {
@@ -112,20 +110,23 @@ static color_t calculate_foreground_color(color_t bg)
 }
 
 
-static color_t x_get_separator_color(color_t fg, color_t bg)
+static color_t x_get_separator_color(colored_layout *cl, colored_layout *cl_next)
 {
         switch (settings.sep_color) {
                 case FRAME:
-                        return x_string_to_color_t(settings.frame_color);
+                        if (cl_next->n->urgency > cl->n->urgency)
+                                return cl_next->frame;
+                        else
+                                return cl->frame;
                 case CUSTOM:
                         return x_string_to_color_t(settings.sep_custom_color_str);
                 case FOREGROUND:
-                        return fg;
+                        return cl->fg;
                 case AUTO:
-                        return calculate_foreground_color(bg);
+                        return calculate_foreground_color(cl->bg);
                 default:
                         printf("Unknown separator color type. Please file a Bugreport.\n");
-                        return fg;
+                        return cl->fg;
 
         }
 }
@@ -138,8 +139,6 @@ static void x_cairo_setup(void)
         cairo_ctx.context = cairo_create(cairo_ctx.surface);
 
         cairo_ctx.desc = pango_font_description_from_string(settings.font);
-
-        frame_color = x_string_to_color_t(settings.frame_color);
 }
 
 static void r_setup_pango_layout(PangoLayout *layout, int width)
@@ -229,6 +228,7 @@ static dimension_t calculate_dimensions(GSList *layouts)
                 dim.w = scr.dim.w;
         }
 
+        dim.h += 2 * settings.frame_width;
         dim.h += (g_slist_length(layouts) - 1) * settings.separator_height;
 
         int text_width = 0, total_width = 0;
@@ -434,6 +434,9 @@ static colored_layout *r_init_shared(cairo_t *c, notification *n)
 
         cl->fg = x_string_to_color_t(n->color_strings[ColFG]);
         cl->bg = x_string_to_color_t(n->color_strings[ColBG]);
+        cl->frame = x_string_to_color_t(n->color_strings[ColFrame]);
+
+        cl->n = n;
 
         dimension_t dim = calculate_dimensions(NULL);
         int width = dim.w;
@@ -531,7 +534,7 @@ static void r_free_layouts(GSList *layouts)
         g_slist_free_full(layouts, free_colored_layout);
 }
 
-static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, dimension_t dim, bool first, bool last)
+static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, colored_layout *cl_next, dimension_t dim, bool first, bool last)
 {
         int h;
         pango_layout_get_pixel_size(cl->l, NULL, &h);
@@ -544,11 +547,21 @@ static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, dimension_t d
         double bg_half_height = settings.notification_height/2.0;
         int pango_offset = (int) floor(h/2.0);
 
+        if (first) bg_height += settings.frame_width;
+        if (last) bg_height += settings.frame_width;
+        else bg_height += settings.separator_height;
+
+        cairo_set_source_rgb(c, cl->frame.r, cl->frame.g, cl->frame.b);
+        cairo_rectangle(c, bg_x, bg_y, bg_width, bg_height);
+        cairo_fill(c);
+
         /* adding frame */
         bg_x += settings.frame_width;
         if (first) {
+                dim.y += settings.frame_width;
                 bg_y += settings.frame_width;
                 bg_height -= settings.frame_width;
+                if (!last) bg_height -= settings.separator_height;
         }
         bg_width -= 2 * settings.frame_width;
         if (last)
@@ -574,13 +587,18 @@ static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, dimension_t d
         else
             dim.y += (int) (floor(bg_half_height) + pango_offset);
 
-        color_t sep_color = x_get_separator_color(cl->fg, cl->bg);
         if (settings.separator_height > 0 && !last) {
+                color_t sep_color = x_get_separator_color(cl, cl_next);
                 cairo_set_source_rgb(c, sep_color.r, sep_color.g, sep_color.b);
 
-                cairo_rectangle(c, settings.frame_width, dim.y,
-                                dim.w - 2 * settings.frame_width
-                                , settings.separator_height);
+                if (settings.sep_color == FRAME)
+                        // Draw over the borders on both sides to avoid
+                        // the wrong color in the corners.
+                        cairo_rectangle(c, 0, dim.y, dim.w, settings.separator_height);
+                else
+                        cairo_rectangle(c, settings.frame_width, dim.y,
+                                        dim.w - 2 * settings.frame_width,
+                                        settings.separator_height);
 
                 cairo_fill(c);
                 dim.y += settings.separator_height;
@@ -624,16 +642,15 @@ void x_win_draw(void)
         x_win_move(width, height);
         cairo_xlib_surface_set_size(cairo_ctx.surface, width, height);
 
-        cairo_set_source_rgb(c, frame_color.r, frame_color.g, frame_color.b);
-        cairo_rectangle(c, 0.0, 0.0, width, height);
-        cairo_fill(c);
-
         cairo_move_to(c, 0, 0);
 
         bool first = true;
         for (GSList *iter = layouts; iter; iter = iter->next) {
-                colored_layout *cl = iter->data;
-                dim = x_render_layout(c, cl, dim, first, iter->next == NULL);
+                if (iter->next)
+                        dim = x_render_layout(c, iter->data, iter->next->data, dim, first, iter->next == NULL);
+                else
+                        dim = x_render_layout(c, iter->data, NULL, dim, first, iter->next == NULL);
+
                 first = false;
         }
 
@@ -1054,6 +1071,19 @@ void x_setup(void)
         xctx.color_strings[ColBG][LOW] = settings.lowbgcolor;
         xctx.color_strings[ColBG][NORM] = settings.normbgcolor;
         xctx.color_strings[ColBG][CRIT] = settings.critbgcolor;
+
+        if (settings.lowframecolor)
+                xctx.color_strings[ColFrame][LOW] = settings.lowframecolor;
+        else
+                xctx.color_strings[ColFrame][LOW] = settings.frame_color;
+        if (settings.normframecolor)
+                xctx.color_strings[ColFrame][NORM] = settings.normframecolor;
+        else
+                xctx.color_strings[ColFrame][NORM] = settings.frame_color;
+        if (settings.critframecolor)
+                xctx.color_strings[ColFrame][CRIT] = settings.critframecolor;
+        else
+                xctx.color_strings[ColFrame][CRIT] = settings.frame_color;
 
         /* parse and set xctx.geometry and monitor position */
         if (settings.geom[0] == '-') {

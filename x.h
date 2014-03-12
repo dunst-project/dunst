@@ -46,10 +46,9 @@ typedef struct _xctx {
         Window win;
         bool visible;
         dimension_t geometry;
-        const char *color_strings[2][3];
+        const char *color_strings[3][3];
         XScreenSaverInfo *screensaver_info;
         dimension_t window_dim;
-        unsigned long framec;
         unsigned long sep_custom_col;
 } xctx_t;
 
