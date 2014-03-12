@@ -37,6 +37,7 @@ void notification_print(notification * n)
         printf("\tformatted: '%s'\n", n->msg);
         printf("\tfg: %s\n", n->color_strings[ColFG]);
         printf("\tbg: %s\n", n->color_strings[ColBG]);
+        printf("\tframe: %s\n", n->color_strings[ColFrame]);
         printf("\tid: %d\n", n->id);
         if (n->urls) {
                 printf("\turls\n");
@@ -378,6 +379,10 @@ int notification_init(notification * n, int id)
 
         if (!n->color_strings[ColBG]) {
                 n->color_strings[ColBG] = xctx.color_strings[ColBG][n->urgency];
+        }
+
+        if (!n->color_strings[ColFrame]) {
+                n->color_strings[ColFrame] = xctx.color_strings[ColFrame][n->urgency];
         }
 
         n->timeout =

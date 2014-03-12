@@ -249,6 +249,9 @@ void load_settings(char *cmdline_config_path)
         settings.lowfgcolor =
             option_get_string("urgency_low", "foreground", "-lf", lowfgcolor,
                               "Foreground color for notifications with low urgency");
+        settings.lowframecolor =
+            option_get_string("urgency_low", "frame_color", "-lfr", NULL,
+                              "Frame color for notifications with low urgency");
         settings.timeouts[LOW] =
             option_get_int("urgency_low", "timeout", "-lto", timeouts[LOW],
                            "Timeout for notifications with low urgency");
@@ -263,6 +266,9 @@ void load_settings(char *cmdline_config_path)
             option_get_string("urgency_normal", "foreground", "-nf",
                               normfgcolor,
                               "Foreground color for notifications with normal urgency");
+        settings.normframecolor =
+            option_get_string("urgency_normal", "frame_color", "-nfr", NULL,
+                               "Frame color for notifications with normal urgency");
         settings.timeouts[NORM] =
             option_get_int("urgency_normal", "timeout", "-nto", timeouts[NORM],
                            "Timeout for notifications with normal urgency");
@@ -277,6 +283,9 @@ void load_settings(char *cmdline_config_path)
             option_get_string("urgency_critical", "foreground", "-cf",
                               critfgcolor,
                               "Foreground color for notifications with ciritical urgency");
+        settings.critframecolor =
+            option_get_string("urgency_critical", "frame_color", "-cfr", NULL,
+                              "Frame color for notifications with critical urgency");
         settings.timeouts[CRIT] =
             option_get_int("urgency_critical", "timeout", "-cto", timeouts[CRIT],
                            "Timeout for notifications with critical urgency");

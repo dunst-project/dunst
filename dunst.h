@@ -11,7 +11,8 @@
 #define PERR(msg, errnum) printf("(%d) %s : %s\n", __LINE__, (msg), (strerror(errnum)))
 #define LENGTH(X)               (sizeof X / sizeof X[0])
 
-#define ColLast 2
+#define ColLast 3
+#define ColFrame 2
 #define ColFG 1
 #define ColBG 0
 
@@ -26,7 +27,7 @@ extern GQueue *displayed;
 extern GQueue *history;
 extern GSList *rules;
 extern bool pause_display;
-extern const char *color_strings[2][3];
+extern const char *color_strings[3][3];
 
 /* return id of notification */
 gboolean run(void *data);
