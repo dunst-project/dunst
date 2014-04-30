@@ -17,6 +17,8 @@ typedef struct _settings {
         char *icons[3];
         unsigned int transparency;
         char *geom;
+        char *title;
+        char *class;
         int shrink;
         int sort;
         int indicate_hidden;

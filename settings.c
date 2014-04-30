@@ -119,6 +119,12 @@ void load_settings(char *cmdline_config_path)
                         free(c);
                 }
         }
+        settings.title =
+            option_get_string("global", "title", "-t/-title", title,
+                              "Define the title of windows spawned by dunst.");
+        settings.class =
+            option_get_string("global", "class", "-c/-class", class,
+                              "Define the class of windows spawned by dunst.");
         settings.geom =
             option_get_string("global", "geometry", "-geom/-geometry", geom,
                               "Geometry for the window");

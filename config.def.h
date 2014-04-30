@@ -15,6 +15,8 @@ char *icons[] = { "info", "info", "emblem-important" }; /* low, normal, critical
 
 unsigned int transparency = 0;  /* transparency */
 char *geom = "0x0";             /* geometry */
+char *title = "Dunst";          /* the title of dunst notification windows */
+char *class = "Dunst";          /* the class of dunst notification windows */
 int shrink = False;             /* shrinking */
 int sort = True;                /* sort messages by urgency */
 int indicate_hidden = True;     /* show count of hidden messages */
