@@ -219,6 +219,7 @@ static dimension_t calculate_dimensions(GSList *layouts)
 
         dim.h += (g_slist_length(layouts) - 1) * settings.separator_height;
         dim.h += g_slist_length(layouts) * settings.padding * 2;
+	dim.h += 2*settings.frame_width;
 
         int text_width = 0, total_width = 0;
         for (GSList *iter = layouts; iter; iter = iter->next) {
@@ -430,7 +431,9 @@ static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, dimension_t d
 {
         int h;
         pango_layout_get_pixel_size(cl->l, NULL, &h);
-        if (cl->icon) h = MAX(cairo_image_surface_get_height(cl->icon), h);
+        if (cl->icon) {
+	       	h = MAX(cairo_image_surface_get_height(cl->icon), h);
+	}
 
         int bg_x = 0;
         int bg_y = dim.y;
@@ -439,22 +442,22 @@ static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, dimension_t d
 
         /* adding frame */
         bg_x += settings.frame_width;
-        if (first) {
-                bg_y += settings.frame_width;
-                bg_height -= settings.frame_width;
-        }
+        bg_y += settings.frame_width;
+        bg_height -= settings.frame_width;
         bg_width -= 2 * settings.frame_width;
-        if (last)
-                bg_height -= settings.frame_width;
+        bg_height += settings.frame_width;
 
         cairo_set_source_rgb(c, cl->bg.r, cl->bg.g, cl->bg.b);
         cairo_rectangle(c, bg_x, bg_y, bg_width, bg_height);
         cairo_fill(c);
 
         dim.y += settings.padding;
-        if (cl->icon && settings.icon_position == icons_left)
-                cairo_move_to(c, cairo_image_surface_get_width(cl->icon) + 2 * settings.h_padding, dim.y);
-        else cairo_move_to(c, settings.h_padding, dim.y);
+        if (cl->icon && settings.icon_position == icons_left) {
+                cairo_move_to(c, cairo_image_surface_get_width(cl->icon) + 2 * settings.h_padding, bg_y + settings.padding );
+	}
+        else {
+		cairo_move_to(c, settings.h_padding, bg_y + settings.padding);
+	}
         cairo_set_source_rgb(c, cl->fg.r, cl->fg.g, cl->fg.b);
         pango_cairo_update_layout(c, cl->l);
         pango_cairo_show_layout(c, cl->l);
@@ -463,7 +466,7 @@ static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, dimension_t d
         if (settings.separator_height > 0 && !last) {
                 cairo_set_source_rgb(c, sep_color.r, sep_color.g, sep_color.b);
 
-                cairo_rectangle(c, settings.frame_width, dim.y,
+                cairo_rectangle(c, settings.frame_width, dim.y + settings.frame_width,
                                 dim.w - 2 * settings.frame_width
                                 , settings.separator_height);
 
