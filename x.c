@@ -430,8 +430,10 @@ static void r_free_layouts(GSList *layouts)
 static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, dimension_t dim, bool first, bool last)
 {
         int h;
+        int h_text;
         pango_layout_get_pixel_size(cl->l, NULL, &h);
         if (cl->icon) {
+		h_text = h;
 	       	h = MAX(cairo_image_surface_get_height(cl->icon), h);
 	}
 
@@ -453,7 +455,7 @@ static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, dimension_t d
 
         dim.y += settings.padding;
         if (cl->icon && settings.icon_position == icons_left) {
-                cairo_move_to(c, cairo_image_surface_get_width(cl->icon) + 2 * settings.h_padding, bg_y + settings.padding );
+                cairo_move_to(c, cairo_image_surface_get_width(cl->icon) + 2 * settings.h_padding, bg_y + settings.padding + h/2 - h_text/2);
 	}
         else {
 		cairo_move_to(c, settings.h_padding, bg_y + settings.padding);
