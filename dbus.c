@@ -250,7 +250,7 @@ static void onNotify(GDBusConnection * connection,
                                         timeout = g_variant_get_int32(content);
                                 break;
                         }
-
+                        g_variant_unref(content);
                         idx++;
                 }
 
