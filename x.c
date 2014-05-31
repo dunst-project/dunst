@@ -457,6 +457,9 @@ static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, dimension_t d
         if (cl->icon && settings.icon_position == icons_left) {
                 cairo_move_to(c, settings.frame_width + cairo_image_surface_get_width(cl->icon) + 2 * settings.h_padding, bg_y + settings.padding + h/2 - h_text/2);
 	}
+        else if (cl->icon && settings.icon_position == icons_right) {
+		cairo_move_to(c, settings.frame_width + settings.h_padding, bg_y + settings.padding + h/2 - h_text/2);
+	}
         else {
 		cairo_move_to(c, settings.frame_width + settings.h_padding, bg_y + settings.padding);
 	}
