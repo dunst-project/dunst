@@ -965,7 +965,7 @@ static void x_set_wm(Window win)
         XStoreName(xctx.dpy, win, title);
         XChangeProperty(xctx.dpy, win, _net_wm_title,
                 XInternAtom(xctx.dpy, "UTF8_STRING", False), 8,
-                PropModeReplace, (unsigned char *) settings.title, strlen(settings.title));
+                PropModeReplace, (unsigned char *) title, strlen(title));
 
         /* set window class */
         char *class = settings.class != NULL ? settings.class : "Dunst";
