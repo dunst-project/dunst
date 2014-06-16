@@ -33,9 +33,10 @@ options:
 
 ${OBJ}: config.h config.mk
 
-config.h:
-	@echo creating $@ from config.def.h
-	@cp config.def.h $@
+config.h: config.def.h
+	@if test -s $@; then echo $< is newer than $@, merge and save $@. If you haven\'t edited $@ you can just delete it	&& exit 1; fi
+	@echo creating $@ from $<
+	@cp $< $@
 
 dunst: ${OBJ}
 	@echo "${CC} ${CFLAGS} -o $@ ${OBJ} ${LDFLAGS}"
