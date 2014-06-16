@@ -149,16 +149,13 @@ void move_all_to_history()
                 notification_close(g_queue_peek_head_link(displayed)->data, 2);
         }
 
-        notification *n = g_queue_pop_head(queue);
-        while (n) {
-                g_queue_push_tail(history, n);
-                n = g_queue_pop_head(queue);
+        while (queue->length > 0) {
+                notification_close(g_queue_peek_head_link(queue)->data, 2);
         }
 }
 
 void history_pop(void)
 {
-
         if (g_queue_is_empty(history))
                 return;
 
@@ -169,6 +166,16 @@ void history_pop(void)
         g_queue_push_head(queue, n);
 
         wake_up();
+}
+
+void history_push(notification *n)
+{
+        if (settings.history_length > 0 && history->length >= settings.history_length) {
+                notification *to_free = g_queue_pop_head(history);
+                notification_free(to_free);
+        }
+
+        g_queue_push_tail(history, n);
 }
 
 void wake_up(void)
@@ -298,9 +305,9 @@ int main(int argc, char *argv[])
 
         if (settings.startup_notification) {
                 notification *n = malloc(sizeof(notification));
-                n->appname = "dunst";
-                n->summary = "startup";
-                n->body = "dunst is up and running";
+                n->appname = strdup("dunst");
+                n->summary = strdup("startup");
+                n->body = strdup("dunst is up and running");
                 n->progress = 0;
                 n->timeout = 10;
                 n->urgency = LOW;

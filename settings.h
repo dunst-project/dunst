@@ -27,6 +27,7 @@ typedef struct _settings {
         enum alignment align;
         float bounce_freq;
         int sticky_history;
+        int history_length;
 	int show_indicators;
         int verbosity;
         int word_wrap;

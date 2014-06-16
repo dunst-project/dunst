@@ -469,7 +469,7 @@ int notification_close_by_id(int id, int reason)
                 notification *n = iter->data;
                 if (n->id == id) {
                         g_queue_remove(displayed, n);
-                        g_queue_push_tail(history, n);
+                        history_push(n);
                         target = n;
                         break;
                 }
@@ -480,7 +480,7 @@ int notification_close_by_id(int id, int reason)
                 notification *n = iter->data;
                 if (n->id == id) {
                         g_queue_remove(queue, n);
-                        g_queue_push_tail(history, n);
+                        history_push(n);
                         target = n;
                         break;
                 }

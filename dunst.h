@@ -6,6 +6,7 @@
 #include <stdbool.h>
 
 #include "x.h"
+#include "notification.h"
 
 #define ERR(msg) printf("%s : %d\n", (msg), __LINE__)
 #define PERR(msg, errnum) printf("(%d) %s : %s\n", __LINE__, (msg), (strerror(errnum)))
@@ -34,6 +35,7 @@ void wake_up(void);
 
 void check_timeouts(void);
 void history_pop(void);
+void history_push(notification *n);
 void usage(int exit_status);
 void move_all_to_history(void);
 void print_version(void);
