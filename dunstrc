@@ -100,6 +100,9 @@
     # as if it would normally do.
     sticky_history = yes
     
+    # Maximum amount of notifications kept in history
+    history_length = 20
+    
     # Display indicators for URLs (U) and actions (A).
     show_indicators = yes
     
