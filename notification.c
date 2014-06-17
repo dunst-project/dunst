@@ -313,6 +313,13 @@ int notification_init(notification * n, int id)
 
         n->msg = g_strstrip(n->msg);
 
+        if (id == 0) {
+                n->id = ++next_notification_id;
+        } else {
+                notification_close_by_id(id, -1);
+                n->id = id;
+        }
+
         n->dup_count = 0;
 
         /* check if n is a duplicate */
@@ -401,13 +408,6 @@ int notification_init(notification * n, int id)
         n->redisplayed = false;
 
         n->first_render = true;
-
-        if (id == 0) {
-                n->id = ++next_notification_id;
-        } else {
-                notification_close_by_id(id, -1);
-                n->id = id;
-        }
 
         if (strlen(n->msg) == 0) {
                 notification_close(n, 2);
