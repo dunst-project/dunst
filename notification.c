@@ -318,7 +318,6 @@ int notification_init(notification * n, int id)
         } else {
                 notification_close_by_id(id, -1);
                 n->id = id;
-
         }
 
         n->dup_count = 0;
