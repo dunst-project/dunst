@@ -18,6 +18,7 @@
 #include <signal.h>
 #include <sys/wait.h>
 #include <glib.h>
+#include <glib-unix.h>
 #include <X11/Xlib.h>
 #include <X11/XKBlib.h>
 #include <X11/Xatom.h>
@@ -271,6 +272,22 @@ gboolean run(void *data)
         return false;
 }
 
+gboolean pause_signal (gpointer data)
+{
+        pause_display = true;
+        wake_up();
+
+        return G_SOURCE_CONTINUE;
+}
+
+gboolean unpause_signal (gpointer data)
+{
+        pause_display = false;
+        wake_up();
+
+        return G_SOURCE_CONTINUE;
+}
+
 int main(int argc, char *argv[])
 {
 
@@ -299,9 +316,6 @@ int main(int argc, char *argv[])
         int owner_id = initdbus();
 
         x_setup();
-
-        signal(SIGUSR1, pause_signal_handler);
-        signal(SIGUSR2, pause_signal_handler);
 
         if (settings.startup_notification) {
                 notification *n = malloc(sizeof(notification));
@@ -345,26 +359,15 @@ int main(int argc, char *argv[])
 
         g_source_attach(x11_source, NULL);
 
+        g_unix_signal_add(SIGUSR1, pause_signal, NULL);
+        g_unix_signal_add(SIGUSR2, unpause_signal, NULL);
+
         run(NULL);
         g_main_loop_run(mainloop);
 
         dbus_tear_down(owner_id);
 
         return 0;
-}
-
-void pause_signal_handler(int sig)
-{
-        if (sig == SIGUSR1) {
-                pause_display = true;
-                wake_up();
-        }
-        if (sig == SIGUSR2) {
-                pause_display = false;
-                wake_up();
-        }
-
-        signal(sig, pause_signal_handler);
 }
 
 void usage(int exit_status)
