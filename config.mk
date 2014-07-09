@@ -25,7 +25,9 @@ endif
 CPPFLAGS += -D_BSD_SOURCE -DVERSION=\"${VERSION}\" ${XINERAMAFLAGS} ${INIFLAGS}
 CFLAGS   += -g --std=gnu99 -pedantic -Wall -Wno-overlength-strings -Os ${STATIC} ${CPPFLAGS} ${EXTRACFLAGS}
 
-pkg_config_packs:="dbus-1 x11 freetype2 xext xft xscrnsaver glib-2.0 gio-2.0 pango cairo pangocairo"
+pkg_config_packs := dbus-1 x11 freetype2 xext xft xscrnsaver \
+                    "glib-2.0 >= 2.36" gio-2.0 \
+                    pango cairo pangocairo
 
 # check if we need libxdg-basedir
 ifeq (,$(findstring STATIC_CONFIG,$(CFLAGS)))
