@@ -276,7 +276,14 @@ static dimension_t calculate_dimensions(GSList *layouts)
 static cairo_surface_t *get_icon_surface(char *icon_path)
 {
         cairo_surface_t *icon_surface = NULL;
+        gchar *uri_path = NULL;
         if (strlen(icon_path) > 0 && settings.icon_position != icons_off) {
+                if (g_str_has_prefix(icon_path, "file://")) {
+                        uri_path = g_filename_from_uri(icon_path, NULL, NULL);
+                        if (uri_path != NULL) {
+                                icon_path = uri_path;
+                        }
+                }
                 /* absolute path? */
                 if (icon_path[0] == '/' || icon_path[0] == '~') {
                         icon_surface = cairo_image_surface_create_from_png(icon_path);
@@ -309,9 +316,13 @@ static cairo_surface_t *get_icon_surface(char *icon_path)
                                 start = end + 1;
                         } while (*(end) != '\0');
                 }
-                if (icon_surface == NULL)
+                if (icon_surface == NULL) {
                         fprintf(stderr,
                                 "Could not load icon: '%s'\n", icon_path);
+                }
+                if (uri_path != NULL) {
+                        g_free(uri_path);
+                }
         }
         return icon_surface;
 }
