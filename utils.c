@@ -77,7 +77,7 @@ char **string_to_argv(const char *s)
 
         while (p) {
                 argv = realloc (argv, sizeof (char*) * ++n_spaces);
-                argv[n_spaces-1] = p;
+                argv[n_spaces-1] = g_strdup(p);
                 p = strtok (NULL, " ");
         }
         argv = realloc (argv, sizeof (char*) * (n_spaces+1));
