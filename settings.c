@@ -165,7 +165,7 @@ void load_settings(char *cmdline_config_path)
             option_get_bool("global", "sticky_history", "-sticky_history",
                             sticky_history,
                             "Don't timeout notifications popped up from history");
-        settings.history_length = 
+        settings.history_length =
                 option_get_int("global", "history_length", "-history_length",
                                 history_length,
                                 "Max amount of notifications kept in history");

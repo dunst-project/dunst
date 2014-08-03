@@ -54,7 +54,7 @@ function ignore_newline {
     killall dunst
     ../dunst -config dunstrc.ignore_newline &
     ../dunstify -a "dunst tester" -u c "Ignore Newline" \
-        "The only newlines you should encounter here are wordwraps. That's why I'm so long." 
+        "The only newlines you should encounter here are wordwraps. That's why I'm so long."
     ../dunstify -a "dunst tester" -u c "Th\nis\n\n\n is\n fu\nll of \n" "\nnew\nlines"
     basic_notifications
     keypress
@@ -136,31 +136,31 @@ function geometry {
 
     killall dunst
     ../dunst -config dunstrc.default -geom "200x0" &
-    ../dunstify -a "dunst tester" -u c "200x0" 
+    ../dunstify -a "dunst tester" -u c "200x0"
     basic_notifications
     keypress
 
     killall dunst
     ../dunst -config dunstrc.default -geom "200x2" &
-    ../dunstify -a "dunst tester" -u c "200x2" 
+    ../dunstify -a "dunst tester" -u c "200x2"
     basic_notifications
     keypress
 
     killall dunst
     ../dunst -config dunstrc.default -geom "200x1" &
-    ../dunstify -a "dunst tester" -u c "200x1" 
+    ../dunstify -a "dunst tester" -u c "200x1"
     basic_notifications
     keypress
 
     killall dunst
     ../dunst -config dunstrc.default -geom "0x1" &
-    ../dunstify -a "dunst tester" -u c "0x1" 
+    ../dunstify -a "dunst tester" -u c "0x1"
     basic_notifications
     keypress
 
     killall dunst
     ../dunst -config dunstrc.default -geom "-300x1" &
-    ../dunstify -a "dunst tester" -u c "-300x1" 
+    ../dunstify -a "dunst tester" -u c "-300x1"
     basic_notifications
     keypress
 
