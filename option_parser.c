@@ -42,6 +42,12 @@ static int cmdline_find_option(char *key);
 
 section_t *new_section(char *name)
 {
+        for (int i = 0; i < section_count; i++) {
+                if(!strcmp(name, sections[i].name)) {
+                        die("Dublicate section in dunstrc detected.\n", -1);
+                }
+        }
+
         section_count++;
         sections = realloc(sections, sizeof(section_t) * section_count);
         sections[section_count - 1].name = g_strdup(name);
