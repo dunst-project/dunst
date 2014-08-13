@@ -44,7 +44,7 @@ section_t *new_section(char *name)
 {
         for (int i = 0; i < section_count; i++) {
                 if(!strcmp(name, sections[i].name)) {
-                        die("Dublicate section in dunstrc detected.\n", -1);
+                        die("Duplicated section in dunstrc detected.\n", -1);
                 }
         }
 
