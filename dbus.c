@@ -379,7 +379,7 @@ static void on_bus_acquired(GDBusConnection * connection,
                                                             &interface_vtable,
                                                             NULL, NULL, NULL);
 
-        if (!registration_id > 0) {
+        if (registration_id <= 0) {
                 fprintf(stderr, "Unable to register\n");
                 exit(1);
         }
