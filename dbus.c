@@ -1,10 +1,14 @@
 /* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
 
+#include <stdlib.h>
+#include <stdio.h>
 #include <glib.h>
+#include <string.h>
 #include <gio/gio.h>
 #include "dunst.h"
 #include "dbus.h"
 #include "notification.h"
+#include "utils.h"
 
 GDBusConnection *dbus_conn;
 
@@ -124,6 +128,9 @@ static void onNotify(GDBusConnection * connection,
         gchar *summary = NULL;
         gchar *body = NULL;
         Actions *actions = malloc(sizeof(Actions));
+        if(actions == NULL) {
+                die("Unable to allocate memory", EXIT_FAILURE);
+        }
         gint timeout = -1;
 
         /* hints */
@@ -268,6 +275,9 @@ static void onNotify(GDBusConnection * connection,
         }
 
         notification *n = malloc(sizeof(notification));
+        if(n == NULL) {
+                die("Unable to allocate memory", EXIT_FAILURE);
+        }
         n->appname = appname;
         n->summary = summary;
         n->body = body;
