@@ -330,7 +330,7 @@ static cairo_surface_t *get_icon_surface(char *icon_path)
 static colored_layout *r_init_shared(cairo_t *c, notification *n)
 {
         colored_layout *cl = malloc(sizeof(colored_layout));
-        if(cl = NULL) {
+        if(cl == NULL) {
                 die("Unable to allocate memory", EXIT_FAILURE);
         }
         cl->l = pango_cairo_create_layout(c);
