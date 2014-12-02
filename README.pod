@@ -22,7 +22,8 @@ display help message.
 
 =item B<-fn font>
 
-defines the font or font set used.
+Defines the font or font set used. Optionally set the size as a decimal number after the font name and space. 
+Multiple font options can be separated with commas. 
 
 =item B<-lb/nb/cb color>
 
