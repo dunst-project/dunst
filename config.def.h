@@ -2,6 +2,7 @@
 
 char *font = "-*-terminus-medium-r-*-*-16-*-*-*-*-*-*-*";
 bool allow_markup = false;
+bool plain_text = true;
 char *normbgcolor = "#1793D1";
 char *normfgcolor = "#DDDDDD";
 char *critbgcolor = "#ffaaaa";
@@ -90,11 +91,11 @@ keyboard_shortcut context_ks = {.str = "none",
 rule_t default_rules[] = {
         /* name can be any unique string. It is used to identify the rule in dunstrc to override it there */
 
-        /*   name,    appname,        summary,         body,  icon, category, msg_urgency, timeout,  urgency,  fg,    bg,        format,  script */
-        {    "empty", NULL,           NULL,            NULL,  NULL, NULL, -1,          -1,       -1,       NULL,  NULL,      NULL,    NULL},
-        /* { "rule1", "notify-send",  NULL,            NULL,  NULL, NULL, -1,          -1,       -1,       NULL,  NULL,      "%s %b", NULL }, */
-        /* { "rule2", "Pidgin",       "*says*,         NULL,  NULL, NULL, -1,          -1,       CRITICAL, NULL,  NULL,      NULL,    NULL    }, */
-        /* { "rule3", "Pidgin",       "*signed on*",   NULL,  NULL, NULL, -1,          -1,       LOW,      NULL,  NULL,      NULL,    NULL    }, */
-        /* { "rule4", "Pidgin",       "*signed off*",  NULL,  NULL, NULL, -1,          -1,       LOW,      NULL,  NULL,      NULL,    NULL    }, */
-        /* { "rule5", NULL,           "*foobar*",      NULL,  NULL, NULL, -1,          -1,       -1,       NULL,  "#00FF00", NULL,    NULL }, */
+        /*   name,    appname,        summary,         body,  icon, category, msg_urgency, timeout,  urgency,  allow_markup, plain_text, new_icon, fg,   bg,        format,  script */
+        {    "empty", NULL,           NULL,            NULL,  NULL, NULL,     -1,          -1,       -1,       -1,           -1,         NULL,     NULL, NULL,      NULL,    NULL},
+        /* { "rule1", "notify-send",  NULL,            NULL,  NULL, NULL,     -1,          -1,       -1,       -1,           -1,         NULL,     NULL, NULL,      "%s %b", NULL }, */
+        /* { "rule2", "Pidgin",       "*says*,         NULL,  NULL, NULL,     -1,          -1,       CRITICAL, -1,           -1,         NULL,     NULL, NULL,      NULL,    NULL    }, */
+        /* { "rule3", "Pidgin",       "*signed on*",   NULL,  NULL, NULL,     -1,          -1,       LOW,      -1,           -1,         NULL,     NULL, NULL,      NULL,    NULL    }, */
+        /* { "rule4", "Pidgin",       "*signed off*",  NULL,  NULL, NULL,     -1,          -1,       LOW,      -1,           -1,         NULL,     NULL, NULL,      NULL,    NULL    }, */
+        /* { "rule5", NULL,           "*foobar*",      NULL,  NULL, NULL,     -1,          -1,       -1,       -1,           -1,         NULL,     NULL, "#00FF00", NULL,    NULL }, */
 };

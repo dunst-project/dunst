@@ -9,6 +9,7 @@
 #include "dbus.h"
 #include "notification.h"
 #include "utils.h"
+#include "settings.h"
 
 GDBusConnection *dbus_conn;
 
@@ -283,6 +284,8 @@ static void onNotify(GDBusConnection * connection,
         n->body = body;
         n->icon = icon;
         n->timeout = timeout;
+        n->allow_markup = settings.allow_markup;
+        n->plain_text = settings.plain_text;
         n->progress = (progress < 0 || progress > 100) ? 0 : progress + 1;
         n->urgency = urgency;
         n->category = category;
