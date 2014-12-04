@@ -199,7 +199,7 @@ void closed(NotifyNotification *n, gpointer foo)
 void add_action(NotifyNotification *n, char *str)
 {
     char *action = str;
-    char *label = strstr(str, ",");
+    char *label = strchr(str, ',');
 
     if (!label || *(label+1) == '\0') {
         g_printerr("Malformed action. Excpected \"action,label\", got \"%s\"", str);
@@ -215,14 +215,14 @@ void add_action(NotifyNotification *n, char *str)
 void add_hint(NotifyNotification *n, char *str)
 {
     char *type = str;
-    char *name = strstr(str, ":");
+    char *name = strchr(str, ':');
     if (!name || *(name+1) == '\0') {
         g_printerr("Malformed hint. Expected \"type:name:value\", got \"%s\"", str);
         return;
     }
     *name = '\0';
     name++;
-    char *value = strstr(name, ":");
+    char *value = strchr(name, ':');
     if (!value || *(value+1) == '\0') {
         g_printerr("Malformed hint. Expected \"type:name:value\", got \"%s\"", str);
         return;
