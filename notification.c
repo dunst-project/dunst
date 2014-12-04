@@ -282,7 +282,8 @@ int notification_init(notification * n, int id)
 
         n->urls = notification_extract_markup_urls(&(n->body));
 
-        n->msg = string_replace("%a", n->appname, g_strdup(n->format));
+        n->msg = string_replace_all("\\n", "\n", g_strdup(n->format));
+        n->msg = string_replace("%a", n->appname, n->msg);
         n->msg = string_replace("%s", n->summary, n->msg);
         if (n->icon) {
                 n->msg = string_replace("%I", basename(n->icon), n->msg);
@@ -303,9 +304,6 @@ int notification_init(notification * n, int id)
                 n->msg = string_replace("<br>", "\n", n->msg);
                 n->msg = string_replace("<br />", "\n", n->msg);
         }
-
-        while (strstr(n->msg, "\\n") != NULL)
-                n->msg = string_replace("\\n", "\n", n->msg);
 
         if (settings.ignore_newline)
                 while (strstr(n->msg, "\n") != NULL)
