@@ -1243,7 +1243,7 @@ void x_shortcut_init(keyboard_shortcut * ks)
         if (str == NULL)
                 die("Unable to allocate memory", EXIT_FAILURE);
 
-        while (strstr(str, "+")) {
+        while (strchr(str, '+')) {
                 char *mod = str;
                 while (*str != '+')
                         str++;
