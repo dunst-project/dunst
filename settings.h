@@ -8,10 +8,13 @@ typedef struct _settings {
         char *font;
         char *normbgcolor;
         char *normfgcolor;
+        char *normframecolor;
         char *critbgcolor;
         char *critfgcolor;
+        char *critframecolor;
         char *lowbgcolor;
         char *lowfgcolor;
+        char *lowframecolor;
         char *format;
         int timeouts[3];
         char *icons[3];
