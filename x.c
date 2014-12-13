@@ -452,6 +452,7 @@ static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, dimension_t d
         int bg_width = dim.w;
         int bg_height = MAX(settings.notification_height, (2 * settings.padding) + h);
         double bg_half_height = settings.notification_height/2.0;
+        int pango_offset = (int) floor(h/2.0);
 
         /* adding frame */
         bg_x += settings.frame_width;
@@ -471,18 +472,18 @@ static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, dimension_t d
         if (use_padding)
             dim.y += settings.padding;
         else
-            dim.y += (int) (ceil(bg_half_height) - floor(h/2.0));
+            dim.y += (int) (ceil(bg_half_height) - pango_offset);
         if (cl->icon && settings.icon_position == icons_left)
                 cairo_move_to(c, cairo_image_surface_get_width(cl->icon) + 2 * settings.h_padding, dim.y);
         else cairo_move_to(c, settings.h_padding, dim.y);
         cairo_set_source_rgb(c, cl->fg.r, cl->fg.g, cl->fg.b);
         pango_cairo_update_layout(c, cl->l);
         pango_cairo_show_layout(c, cl->l);
-
         if (use_padding)
             dim.y += h + settings.padding;
         else
-            dim.y += (int) (floor(bg_half_height) + ceil(h/2.0));
+            dim.y += (int) (floor(bg_half_height) + pango_offset);
+
         color_t sep_color = x_get_separator_color(cl->fg, cl->bg);
         if (settings.separator_height > 0 && !last) {
                 cairo_set_source_rgb(c, sep_color.r, sep_color.g, sep_color.b);
