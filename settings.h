@@ -33,6 +33,7 @@ typedef struct _settings {
         int word_wrap;
         int ignore_newline;
         int line_height;
+        int notification_height;
         int separator_height;
         int padding;
         int h_padding;

@@ -134,8 +134,12 @@ void load_settings(char *cmdline_config_path)
                             "Shrink window if it's smaller than the width");
         settings.line_height =
             option_get_int("global", "line_height", "-lh/-line_height",
-                           line_height,
-                           "Add additional padding above and beneath text");
+                            line_height,
+                            "Add spacing between lines of text");
+        settings.notification_height =
+            option_get_int("global", "notification_height", "-nh/-notification_height",
+                            notification_height,
+                            "Define height of the window");
         settings.bounce_freq =
             option_get_double("global", "bounce_freq", "-bounce_freq",
                               bounce_freq,

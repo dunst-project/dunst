@@ -106,10 +106,14 @@
     # Display indicators for URLs (U) and actions (A).
     show_indicators = yes
 
-    # The height of a single line.  If the height is smaller than the
+    # The spacing between lines.  If the height is smaller than the
     # font height, it will get raised to the font height.
-    # This adds empty space above and under the text.
     line_height = 0
+
+    # The height of the entire notification.  If the height is smaller
+    # than the font height and padding combined, it will be raised
+    # to the font height and padding.
+    notification_height = 0
 
     # Draw a line of "separator_height" pixel height between two
     # notifications.
