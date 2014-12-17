@@ -17,39 +17,56 @@ char *string_replace_char(char needle, char replacement, char *haystack) {
     return haystack;
 }
 
-char *string_replace_all(const char *needle, const char *replacement,
-                         char *haystack)
+char *string_replace_at(char *buf, int pos, int len, const char *repl)
 {
-        char *start;
-        start = strstr(haystack, needle);
-        while (start != NULL) {
-                haystack = string_replace(needle, replacement, haystack);
-                start = strstr(haystack, needle);
-        }
-        return haystack;
+        char *tmp;
+        int size, buf_len, repl_len;
+
+        buf_len = strlen(buf);
+        repl_len = strlen(repl);
+        size = (buf_len - len) + repl_len + 1;
+        tmp = malloc(size);
+
+        memcpy(tmp, buf, pos);
+        memcpy(tmp + pos, repl, repl_len);
+        memcpy(tmp + pos + repl_len, buf + pos + len, buf_len - (pos + len) + 1);
+
+        free(buf);
+        return tmp;
 }
 
-char *string_replace(const char *needle, const char *replacement,
-                     char *haystack)
+char *string_replace(const char *needle, const char *replacement, char *haystack)
 {
-        char *tmp, *start;
-        int size;
+        char *start;
         start = strstr(haystack, needle);
         if (start == NULL) {
                 return haystack;
         }
 
-        size = (strlen(haystack) - strlen(needle)) + strlen(replacement) + 1;
-        tmp = calloc(sizeof(char), size);
-        memset(tmp, '\0', size);
+        return string_replace_at(haystack, (start - haystack), strlen(needle), replacement);
+}
 
-        strncpy(tmp, haystack, start - haystack);
-        tmp[start - haystack] = '\0';
+char *string_replace_all(const char *needle, const char *replacement,
+    char *haystack)
+{
+        char *start;
+        int needle_pos;
+        int needle_len, repl_len;
 
-        sprintf(tmp + strlen(tmp), "%s%s", replacement, start + strlen(needle));
-        free(haystack);
+        needle_len = strlen(needle);
+        if (needle_len == 0) {
+                return haystack;
+        }
 
-        return tmp;
+        start = strstr(haystack, needle);
+        repl_len = strlen(replacement);
+
+        while (start != NULL) {
+                needle_pos = start - haystack;
+                haystack = string_replace_at(haystack, needle_pos, needle_len, replacement);
+                start = strstr(haystack + needle_pos + repl_len, needle);
+        }
+        return haystack;
 }
 
 char *string_append(char *a, const char *b, const char *sep)

@@ -1,7 +1,7 @@
 [global]
     font = Monospace 8
 
-    # Allow a small subset of html markup:
+    # Allow a small subset of html markup in notifications and formats:
     #   <b>bold</b>
     #   <i>italic</i>
     #   <s>strikethrough</s>
@@ -12,6 +12,9 @@
     # If markup is not allowed, those tags will be stripped out of the
     # message.
     allow_markup = yes
+
+    # Treat incoming notifications as plain text
+    plain_text = no
 
     # The format of the message.  Possible variables are:
     #   %a  appname

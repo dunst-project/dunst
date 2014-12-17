@@ -15,6 +15,10 @@ void rule_apply(rule_t * r, notification * n)
                 n->timeout = r->timeout;
         if (r->urgency != -1)
                 n->urgency = r->urgency;
+        if (r->allow_markup != -1)
+                n->allow_markup = r->allow_markup;
+        if (r->plain_text != -1)
+                n->plain_text = r->plain_text;
         if (r->new_icon)
                 n->icon = r->new_icon;
         if (r->fg)
@@ -54,6 +58,8 @@ void rule_init(rule_t * r)
         r->msg_urgency = -1;
         r->timeout = -1;
         r->urgency = -1;
+        r->allow_markup = -1;
+        r->plain_text = -1;
         r->new_icon = NULL;
         r->fg = NULL;
         r->bg = NULL;
@@ -65,7 +71,6 @@ void rule_init(rule_t * r)
  */
 bool rule_matches_notification(rule_t * r, notification * n)
 {
-
         return ((!r->appname || !fnmatch(r->appname, n->appname, 0))
                 && (!r->summary || !fnmatch(r->summary, n->summary, 0))
                 && (!r->body || !fnmatch(r->body, n->body, 0))

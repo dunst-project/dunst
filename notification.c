@@ -161,8 +161,7 @@ void notification_free(notification * n)
         /*
          * Strip any markup from text
          */
-
-char *notification_fix_markup(char *str)
+char *notification_strip_markup(char *str)
 {
         char *replace_buf, *start, *end;
 
@@ -210,9 +209,62 @@ char *notification_fix_markup(char *str)
                 }
         }
         return str;
-
 }
 
+        /*
+         * Quote a text string for rendering with pango
+         */
+char *notification_quote_markup(char *str)
+{
+        if (str == NULL) {
+                return NULL;
+        }
+
+        str = string_replace_all("&", "&amp;", str);
+        str = string_replace_all("\"", "&quot;", str);
+        str = string_replace_all("'", "&apos;", str);
+        str = string_replace_all("<", "&lt;", str);
+        str = string_replace_all(">", "&gt;", str);
+
+        return str;
+}
+
+        /*
+         * Replace all occurrences of "needle" with a quoted "replacement",
+         * according to the allow_markup/plain_text settings.
+         */
+char *notification_replace_format(const char *needle, const char *replacement,
+                                  char *haystack, bool allow_markup,
+                                  bool plain_text) {
+        char* tmp;
+        char* ret;
+
+        if (plain_text) {
+                tmp = strdup(replacement);
+                tmp = string_replace_all("\\n", "\n", tmp);
+                if (settings.ignore_newline) {
+                        tmp = string_replace_all("\n", " ", tmp);
+                }
+                tmp = notification_quote_markup(tmp);
+                ret = string_replace_all(needle, tmp, haystack);
+                free(tmp);
+        } else if (!allow_markup) {
+                tmp = strdup(replacement);
+                if (!settings.ignore_newline) {
+                        tmp = string_replace_all("<br>", "\n", tmp);
+                        tmp = string_replace_all("<br/>", "\n", tmp);
+                        tmp = string_replace_all("<br />", "\n", tmp);
+                }
+                tmp = notification_strip_markup(tmp);
+                tmp = notification_quote_markup(tmp);
+                ret = string_replace_all(needle, tmp, haystack);
+                free(tmp);
+        } else {
+                ret = string_replace_all(needle, replacement, haystack);
+        }
+
+        return ret;
+}
 
 char *notification_extract_markup_urls(char **str_ptr) {
     char *start, *end, *replace_buf, *str, *urls = NULL, *url, *index_buf;
@@ -259,7 +311,6 @@ char *notification_extract_markup_urls(char **str_ptr) {
          */
 int notification_init(notification * n, int id)
 {
-
         if (n == NULL)
                 return -1;
 
@@ -282,34 +333,28 @@ int notification_init(notification * n, int id)
 
         n->urls = notification_extract_markup_urls(&(n->body));
 
-        n->msg = string_replace("%a", n->appname, g_strdup(n->format));
-        n->msg = string_replace("%s", n->summary, n->msg);
+        n->msg = string_replace_all("\\n", "\n", g_strdup(n->format));
+        n->msg = notification_replace_format("%a", n->appname, n->msg,
+                false, true);
+        n->msg = notification_replace_format("%s", n->summary, n->msg,
+                n->allow_markup, n->plain_text);
+        n->msg = notification_replace_format("%b", n->body, n->msg,
+                n->allow_markup, n->plain_text);
+
         if (n->icon) {
-                n->msg = string_replace("%I", basename(n->icon), n->msg);
-                n->msg = string_replace("%i", n->icon, n->msg);
+                n->msg = notification_replace_format("%I", basename(n->icon),
+                        n->msg, false, true);
+                n->msg = notification_replace_format("%i", n->icon,
+                        n->msg, false, true);
         }
-        n->msg = string_replace("%b", n->body, n->msg);
+
         if (n->progress) {
                 char pg[10];
                 sprintf(pg, "[%3d%%]", n->progress - 1);
-                n->msg = string_replace("%p", pg, n->msg);
+                n->msg = string_replace_all("%p", pg, n->msg);
         } else {
-                n->msg = string_replace("%p", "", n->msg);
+                n->msg = string_replace_all("%p", "", n->msg);
         }
-
-        if (!settings.allow_markup)
-                n->msg = notification_fix_markup(n->msg);
-        else if (!settings.ignore_newline) {
-                n->msg = string_replace("<br>", "\n", n->msg);
-                n->msg = string_replace("<br />", "\n", n->msg);
-        }
-
-        while (strstr(n->msg, "\\n") != NULL)
-                n->msg = string_replace("\\n", "\n", n->msg);
-
-        if (settings.ignore_newline)
-                while (strstr(n->msg, "\n") != NULL)
-                        n->msg = string_replace("\n", " ", n->msg);
 
         n->msg = g_strstrip(n->msg);
 

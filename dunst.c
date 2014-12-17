@@ -327,6 +327,8 @@ int main(int argc, char *argv[])
                 n->body = strdup("dunst is up and running");
                 n->progress = 0;
                 n->timeout = 10;
+                n->allow_markup = false;
+                n->plain_text = true;
                 n->urgency = LOW;
                 n->icon = NULL;
                 n->category = NULL;

@@ -27,6 +27,8 @@ typedef struct _notification {
         time_t timestamp;
         int timeout;
         int urgency;
+        bool allow_markup;
+        bool plain_text;
         bool redisplayed;       /* has been displayed before? */
         int id;
         int dup_count;
@@ -49,7 +51,8 @@ int notification_cmp_data(const void *a, const void *b, void *data);
 void notification_run_script(notification * n);
 int notification_close(notification * n, int reason);
 void notification_print(notification * n);
-char *notification_fix_markup(char *str);
+char *notification_strip_markup(char *str);
+char *notification_quote_markup(char *str);
 void notification_update_text_to_render(notification *n);
 int notification_get_ttl(notification *n);
 int notification_get_age(notification *n);

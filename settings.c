@@ -85,7 +85,10 @@ void load_settings(char *cmdline_config_path)
                               "The font dunst should use.");
         settings.allow_markup =
                 option_get_bool("global", "allow_markup", "-markup", allow_markup,
-                                "Allow markups.");
+                                "Allow markups in notifications/formats.");
+        settings.plain_text =
+                option_get_bool("global", "plain_text", "-plain", plain_text,
+                                "Treat incoming notifications as plain text.");
         settings.format =
             option_get_string("global", "format", "-format", format,
                               "The format template for the notifictions");
@@ -352,6 +355,8 @@ void load_settings(char *cmdline_config_path)
                 r->body = ini_get_string(cur_section, "body", r->body);
                 r->icon = ini_get_string(cur_section, "icon", r->icon);
                 r->timeout = ini_get_int(cur_section, "timeout", r->timeout);
+                r->allow_markup = ini_get_bool(cur_section, "allow_markup", r->allow_markup);
+                r->plain_text = ini_get_bool(cur_section, "plain_text", r->plain_text);
                 r->urgency = ini_get_urgency(cur_section, "urgency", r->urgency);
                 r->msg_urgency = ini_get_urgency(cur_section, "msg_urgency", r->msg_urgency);
                 r->fg = ini_get_string(cur_section, "foreground", r->fg);
