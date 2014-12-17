@@ -32,6 +32,7 @@ int verbosity = 0;
 int word_wrap = False;
 int ignore_newline = False;
 int line_height = 0;            /* if line height < font height, it will be raised to font height */
+int notification_height = 0;    /* if notification height < font height and padding, it will be raised */
 
 int separator_height = 2;       /* height of the separator line between two notifications */
 int padding = 0;

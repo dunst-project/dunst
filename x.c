@@ -218,7 +218,6 @@ static dimension_t calculate_dimensions(GSList *layouts)
         }
 
         dim.h += (g_slist_length(layouts) - 1) * settings.separator_height;
-        dim.h += g_slist_length(layouts) * settings.padding * 2;
 
         int text_width = 0, total_width = 0;
         for (GSList *iter = layouts; iter; iter = iter->next) {
@@ -229,6 +228,7 @@ static dimension_t calculate_dimensions(GSList *layouts)
                         h = MAX(cairo_image_surface_get_height(cl->icon), h);
                         w += cairo_image_surface_get_width(cl->icon) + settings.h_padding;
                 }
+                h = MAX(settings.notification_height, h + settings.padding * 2);
                 dim.h += h;
                 text_width = MAX(w, text_width);
 
@@ -260,6 +260,7 @@ static dimension_t calculate_dimensions(GSList *layouts)
                                 h = MAX(cairo_image_surface_get_height(cl->icon), h);
                                 w += cairo_image_surface_get_width(cl->icon) + settings.h_padding;
                         }
+                        h = MAX(settings.notification_height, h + settings.padding * 2);
                         dim.h += h;
                         text_width = MAX(w, text_width);
                 }
@@ -395,7 +396,7 @@ static colored_layout *r_create_layout_from_notification(cairo_t *c, notificatio
 
         pango_layout_get_pixel_size(cl->l, NULL, &(n->displayed_height));
         if (cl->icon) n->displayed_height = MAX(cairo_image_surface_get_height(cl->icon), n->displayed_height);
-        n->displayed_height += 2 * settings.padding;
+        n->displayed_height = MAX(settings.notification_height, n->displayed_height + settings.padding * 2);
 
         n->first_render = false;
         return cl;
@@ -449,7 +450,9 @@ static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, dimension_t d
         int bg_x = 0;
         int bg_y = dim.y;
         int bg_width = dim.w;
-        int bg_height = (2 * settings.padding) + h;
+        int bg_height = MAX(settings.notification_height, (2 * settings.padding) + h);
+        double bg_half_height = settings.notification_height/2.0;
+        int pango_offset = (int) floor(h/2.0);
 
         /* adding frame */
         bg_x += settings.frame_width;
@@ -465,14 +468,22 @@ static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, dimension_t d
         cairo_rectangle(c, bg_x, bg_y, bg_width, bg_height);
         cairo_fill(c);
 
-        dim.y += settings.padding;
+        bool use_padding = settings.notification_height <= (2 * settings.padding) + h;
+        if (use_padding)
+            dim.y += settings.padding;
+        else
+            dim.y += (int) (ceil(bg_half_height) - pango_offset);
         if (cl->icon && settings.icon_position == icons_left)
                 cairo_move_to(c, cairo_image_surface_get_width(cl->icon) + 2 * settings.h_padding, dim.y);
         else cairo_move_to(c, settings.h_padding, dim.y);
         cairo_set_source_rgb(c, cl->fg.r, cl->fg.g, cl->fg.b);
         pango_cairo_update_layout(c, cl->l);
         pango_cairo_show_layout(c, cl->l);
-        dim.y += h + settings.padding;
+        if (use_padding)
+            dim.y += h + settings.padding;
+        else
+            dim.y += (int) (floor(bg_half_height) + pango_offset);
+
         color_t sep_color = x_get_separator_color(cl->fg, cl->bg);
         if (settings.separator_height > 0 && !last) {
                 cairo_set_source_rgb(c, sep_color.r, sep_color.g, sep_color.b);
