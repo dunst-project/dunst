@@ -25,13 +25,21 @@ char *string_replace_at(char *buf, int pos, int len, const char *repl)
         buf_len = strlen(buf);
         repl_len = strlen(repl);
         size = (buf_len - len) + repl_len + 1;
-        tmp = malloc(size);
+
+        if (repl_len <= len) {
+                tmp = buf;
+        } else {
+                tmp = malloc(size);
+        }
 
         memcpy(tmp, buf, pos);
         memcpy(tmp + pos, repl, repl_len);
-        memcpy(tmp + pos + repl_len, buf + pos + len, buf_len - (pos + len) + 1);
+        memmove(tmp + pos + repl_len, buf + pos + len, buf_len - (pos + len) + 1);
 
-        free(buf);
+        if(tmp != buf) {
+                free(buf);
+        }
+
         return tmp;
 }
 
