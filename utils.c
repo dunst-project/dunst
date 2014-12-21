@@ -11,10 +11,10 @@
 #include "dunst.h"
 
 char *string_replace_char(char needle, char replacement, char *haystack) {
-    char *current = haystack;
-    while ((current = strchr (current, needle)) != NULL)
-        *current++ = replacement;
-    return haystack;
+        char *current = haystack;
+        while ((current = strchr (current, needle)) != NULL)
+                *current++ = replacement;
+        return haystack;
 }
 
 char *string_replace_at(char *buf, int pos, int len, const char *repl)
