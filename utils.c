@@ -105,6 +105,21 @@ char **string_to_argv(const char *s)
         return argv;
 }
 
+void string_strip_delimited(char *str, char a, char b)
+{
+        int iread=-1, iwrite=0, copen=0;
+        while (str[++iread] != 0) {
+                if (str[iread] == a) {
+                        ++copen;
+                } else if (str[iread] == b && copen > 0) {
+                        --copen;
+                } else if (copen == 0) {
+                        str[iwrite++] = str[iread];
+                }
+        }
+        str[iwrite] = 0;
+}
+
 int digit_count(int i)
 {
         i = ABS(i);

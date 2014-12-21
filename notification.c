@@ -163,23 +163,12 @@ void notification_free(notification * n)
          */
 char *notification_strip_markup(char *str)
 {
-        char *replace_buf, *start, *end;
-
         if (str == NULL) {
                 return NULL;
         }
 
         /* strip all tags */
-        while ((start = strstr(str, "<")) != NULL) {
-                end = strstr(start, ">");
-                if (end != NULL) {
-                        replace_buf = strndup(start, end - start + 1);
-                        str = string_replace(replace_buf, "", str);
-                        free(replace_buf);
-                } else {
-                    break;
-                }
-        }
+        string_strip_delimited(str, '<', '>');
 
         /* unquote the remainder */
         str = string_replace_all("&quot;", "\"", str);
