@@ -356,7 +356,7 @@ int notification_init(notification * n, int id)
                 n->msg = string_replace_all("%p", "", n->msg);
         }
 
-        n->msg = g_strstrip(n->msg);
+        n->msg = g_strchomp(n->msg);
 
         if (id == 0) {
                 n->id = ++next_notification_id;
@@ -558,7 +558,7 @@ void notification_update_text_to_render(notification *n)
 
         char *buf = NULL;
 
-        char *msg = g_strstrip(n->msg);
+        char *msg = g_strchomp(n->msg);
 
         /* print dup_count and msg */
         if (n->dup_count > 0 && (n->actions || n->urls)
