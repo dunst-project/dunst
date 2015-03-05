@@ -47,8 +47,9 @@ static int ini_get_urgency(char *section, char *key, int def)
                         fprintf(stderr,
                                 "unknown urgency: %s, ignoring\n",
                                 urg);
-                free(urg);
         }
+        if (urg)
+                free(urg);
         return ret;
 }
 

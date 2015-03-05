@@ -294,6 +294,7 @@ static void onNotify(GDBusConnection * connection,
                 n->actions = actions;
         } else {
                 n->actions = NULL;
+                g_strfreev(actions->actions);
                 free(actions);
         }
 

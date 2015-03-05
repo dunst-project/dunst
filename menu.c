@@ -190,10 +190,12 @@ void context_menu(void)
         int parent_io[2];
         if (pipe(child_io) != 0) {
                 PERR("pipe()", errno);
+                free(dmenu_input);
                 return;
         }
         if (pipe(parent_io) != 0) {
                 PERR("pipe()", errno);
+                free(dmenu_input);
                 return;
         }
         int pid = fork();
@@ -222,8 +224,10 @@ void context_menu(void)
                 close(child_io[1]);
 
                 size_t len = read(parent_io[0], buf, 1023);
-                if (len == 0)
+                if (len == 0) {
+                        free(dmenu_input);
                         return;
+                }
 
                 int status;
                 waitpid(pid, &status, 0);
@@ -232,5 +236,7 @@ void context_menu(void)
         close(parent_io[0]);
 
         dispatch_menu_result(buf);
+
+        free(dmenu_input);
 }
 /* vim: set ts=8 sw=8 tw=0: */

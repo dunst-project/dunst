@@ -155,6 +155,12 @@ void notification_free(notification * n)
         free(n->icon);
         free(n->msg);
         free(n->dbus_client);
+
+        if (n->actions) {
+                g_strfreev(n->actions->actions);
+                free(n->actions->dmenu_str);
+        }
+
         free(n);
 }
 
@@ -480,11 +486,11 @@ int notification_init(notification * n, int id)
                         string_replace_char('[', '(', human_readable); // kill square brackets
                         string_replace_char(']', ')', human_readable);
 
-                        n->actions->dmenu_str =
-                            string_append(n->actions->dmenu_str,
-                                          g_strdup_printf("#%s [%s]", human_readable,
-                                                                      n->appname),
-                                          "\n");
+                        char *act_str = g_strdup_printf("#%s [%s]", human_readable, n->appname);
+                        if (act_str) {
+                                n->actions->dmenu_str = string_append(n->actions->dmenu_str, act_str, "\n");
+                                free(act_str);
+                        }
                 }
         }
 
