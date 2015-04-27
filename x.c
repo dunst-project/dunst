@@ -14,6 +14,7 @@
 #include <X11/Xatom.h>
 #include <pango/pangocairo.h>
 #include <cairo-xlib.h>
+#include <librsvg/rsvg.h>
 
 #include "x.h"
 #include "utils.h"
@@ -191,6 +192,17 @@ static bool have_dynamic_width(void)
         return (xctx.geometry.mask & WidthValue && xctx.geometry.w == 0);
 }
 
+static bool is_readable_file(const char *filename)
+{
+        return (access(filename, R_OK) != -1);
+}
+
+const char *get_filename_ext(const char *filename) {
+    const char *dot = strrchr(filename, '.');
+    if(!dot || dot == filename) return "";
+    return dot + 1;
+}
+
 static dimension_t calculate_dimensions(GSList *layouts)
 {
         dimension_t dim;
@@ -274,6 +286,40 @@ static dimension_t calculate_dimensions(GSList *layouts)
         return dim;
 }
 
+static cairo_surface_t *get_icon_surface_from_file(const char *icon_path)
+{
+        cairo_surface_t *icon_surface = NULL;
+        if (is_readable_file(icon_path)) {
+                char *img_type;
+                img_type = get_filename_ext(icon_path);
+                if (strcmp(img_type, "png") == 0) {
+                        icon_surface = cairo_image_surface_create_from_png(icon_path);
+                } else if(strcmp(img_type, "svg") == 0) {
+                        GError *error = NULL;
+                        RsvgHandle *handle;
+                        RsvgDimensionData dim;
+                        double width, height;
+                        cairo_t *cr;
+                        handle = rsvg_handle_new_from_file (icon_path, &error);
+                        if (error == NULL) {
+                                rsvg_handle_get_dimensions (handle, &dim);
+                                width = dim.width;
+                                height = dim.height;
+                                icon_surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, width, height);
+                                cr = cairo_create (icon_surface);
+                                rsvg_handle_render_cairo (handle, cr);
+                                free(cr);
+                        }
+                        g_object_unref(handle);
+                }
+                if (cairo_surface_status(icon_surface) != CAIRO_STATUS_SUCCESS) {
+                        cairo_surface_destroy(icon_surface);
+                        icon_surface = NULL;
+                }
+        }
+        return icon_surface;
+}
+
 static cairo_surface_t *get_icon_surface(char *icon_path)
 {
         cairo_surface_t *icon_surface = NULL;
@@ -287,31 +333,27 @@ static cairo_surface_t *get_icon_surface(char *icon_path)
                 }
                 /* absolute path? */
                 if (icon_path[0] == '/' || icon_path[0] == '~') {
-                        icon_surface = cairo_image_surface_create_from_png(icon_path);
-                        if (cairo_surface_status(icon_surface) != CAIRO_STATUS_SUCCESS) {
-                                cairo_surface_destroy(icon_surface);
-                                icon_surface = NULL;
-                        }
+                        icon_surface = get_icon_surface_from_file(icon_path);
                 }
                 /* search in icon_folders */
                 if (icon_surface == NULL) {
                         char *start = settings.icon_folders,
-                             *end, *current_folder, *maybe_icon_path;
+                             *end, *current_folder;
                         do {
                                 end = strchr(start, ':');
                                 if (end == NULL) end = strchr(settings.icon_folders, '\0'); /* end = end of string */
 
                                 current_folder = strndup(start, end - start);
-                                maybe_icon_path = g_strconcat(current_folder, "/", icon_path, ".png", NULL);
+                                /* try svg */
+                                icon_surface = get_icon_surface_from_file(g_strconcat(current_folder, "/", icon_path, ".svg", NULL));
+                                if (icon_surface == NULL) {
+                                        /* fallback to png */
+                                        icon_surface = get_icon_surface_from_file(g_strconcat(current_folder, "/", icon_path, ".png", NULL));
+                                }
                                 free(current_folder);
 
-                                icon_surface = cairo_image_surface_create_from_png(maybe_icon_path);
-                                free(maybe_icon_path);
-                                if (cairo_surface_status(icon_surface) == CAIRO_STATUS_SUCCESS) {
+                                if (icon_surface != NULL) {
                                         return icon_surface;
-                                } else {
-                                        cairo_surface_destroy(icon_surface);
-                                        icon_surface = NULL;
                                 }
 
                                 start = end + 1;

@@ -10,4 +10,5 @@
 -I/usr/include/cairo
 -I/usr/include/pixman-1
 -I/usr/include/libdrm
+-I/usr/include/librsvg-2.0
 -pthread

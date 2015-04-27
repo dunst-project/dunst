@@ -7,6 +7,7 @@ The following dependencies are needed:
     libxdg-basedir
     glib
     pango/cairo
+    librsvg
 
 On Debian and Debian-based distros you'll probably also need the *-dev packages.
 
