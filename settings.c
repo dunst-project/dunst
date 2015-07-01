@@ -322,6 +322,10 @@ void load_settings(char *cmdline_config_path)
             cmdline_get_bool("-print", false,
                              "Print notifications to cmdline (DEBUG)");
 
+        settings.always_run_script =
+            option_get_bool("global", "always_run_script", "-always_run_script", true,
+                              "Always run rule-defined scripts, even if the notification is suppressed with format = \"\".");
+
         /* push hardcoded default rules into rules list */
         for (int i = 0; i < LENGTH(default_rules); i++) {
                 rules = g_slist_insert(rules, &(default_rules[i]), -1);
