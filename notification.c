@@ -462,6 +462,9 @@ int notification_init(notification * n, int id)
 
         if (strlen(n->msg) == 0) {
                 notification_close(n, 2);
+                if (settings.always_run_script) {
+                        notification_run_script(n);
+                }
                 printf("skipping notification: %s %s\n", n->body, n->summary);
         } else {
                 g_queue_insert_sorted(queue, n, notification_cmp_data, NULL);

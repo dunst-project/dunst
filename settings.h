@@ -51,6 +51,7 @@ typedef struct _settings {
         enum icon_position_t icon_position;
         char *icon_folders;
         enum follow_mode f_mode;
+        bool always_run_script;
         keyboard_shortcut close_ks;
         keyboard_shortcut close_all_ks;
         keyboard_shortcut history_ks;
