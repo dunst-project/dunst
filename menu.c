@@ -15,6 +15,37 @@
 #include "settings.h"
 #include "dbus.h"
 
+static bool is_initialized = false;
+static regex_t cregex;
+
+static int regex_init(void)
+{
+        if (is_initialized)
+                return 1;
+
+        char *regex =
+            "\\b(https?://|ftps?://|news://|mailto:|file://|www\\.)"
+            "[-[:alnum:]_\\@;/?:&=%$.+!*\x27,~#]*"
+            "(\\([-[:alnum:]_\\@;/?:&=%$.+!*\x27,~#]*\\)|[-[:alnum:]_\\@;/?:&=%$+*~])+";
+        int ret = regcomp(&cregex, regex, REG_EXTENDED | REG_ICASE);
+        if (ret != 0) {
+                fputs("failed to compile regex", stderr);
+                return 0;
+        } else {
+                is_initialized = true;
+                return 1;
+        }
+}
+
+void regex_teardown(void)
+{
+        if (is_initialized)
+        {
+                regfree(&cregex);
+                is_initialized = false;
+        }
+}
+
         /*
          * Exctract all urls from a given string.
          *
@@ -23,24 +54,10 @@
          */
 char *extract_urls(const char *to_match)
 {
-        static bool is_initialized = false;
-        static regex_t cregex;
-
-        if (!is_initialized) {
-                char *regex =
-                    "\\b(https?://|ftps?://|news://|mailto:|file://|www\\.)"
-                    "[-[:alnum:]_\\@;/?:&=%$.+!*\x27,~#]*"
-                    "(\\([-[:alnum:]_\\@;/?:&=%$.+!*\x27,~#]*\\)|[-[:alnum:]_\\@;/?:&=%$+*~])+";
-                int ret = regcomp(&cregex, regex, REG_EXTENDED | REG_ICASE);
-                if (ret != 0) {
-                        printf("failed to compile regex\n");
-                        return NULL;
-                } else {
-                        is_initialized = true;
-                }
-        }
-
         char *urls = NULL;
+
+        if (!regex_init())
+                return NULL;
 
         const char *p = to_match;
         regmatch_t m;

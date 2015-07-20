@@ -1011,6 +1011,15 @@ static void x_screen_info(screen_info * scr)
         }
 }
 
+void x_free(void)
+{
+        cairo_surface_destroy(cairo_ctx.surface);
+        cairo_destroy(cairo_ctx.context);
+
+        if (xctx.dpy)
+                XCloseDisplay(xctx.dpy);
+}
+
         /*
          * Setup X11 stuff
          */
