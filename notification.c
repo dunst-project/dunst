@@ -156,6 +156,15 @@ void notification_free(notification * n)
         free(n->msg);
         free(n->dbus_client);
 
+        if (n->category && *n->category != '\0')
+                g_free(n->category);
+
+        if (n->text_to_render)
+                g_free(n->text_to_render);
+
+        if (n->urls)
+                g_free(n->urls);
+
         if (n->actions) {
                 g_strfreev(n->actions->actions);
                 free(n->actions->dmenu_str);
