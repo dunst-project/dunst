@@ -77,6 +77,7 @@ KeySym x_shortcut_string_to_mask(const char *str);
 /* X misc */
 bool x_is_idle(void);
 void x_setup(void);
+void x_free(void);
 
 gboolean x_mainloop_fd_dispatch(GSource * source, GSourceFunc callback,
                                 gpointer user_data);
