@@ -92,7 +92,7 @@ void load_settings(char *cmdline_config_path)
                                 "Treat incoming notifications as plain text.");
         settings.format =
             option_get_string("global", "format", "-format", format,
-                              "The format template for the notifictions");
+                              "The format template for the notifications");
         settings.sort =
             option_get_bool("global", "sort", "-sort", sort,
                             "Sort notifications by urgency and date?");
