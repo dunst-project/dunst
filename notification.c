@@ -330,6 +330,11 @@ int notification_init(notification * n, int id)
                 return 0;
         }
 
+        if (strcmp("DUNST_COMMAND_CLEAR", n->summary) == 0) {
+                move_all_to_history();
+                return 0;
+        }
+
         n->script = NULL;
         n->text_to_render = NULL;
 
