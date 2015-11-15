@@ -14,6 +14,7 @@
 #include <X11/Xatom.h>
 #include <pango/pangocairo.h>
 #include <cairo-xlib.h>
+#include <gdk/gdk.h>
 
 #include "x.h"
 #include "utils.h"
@@ -191,6 +192,17 @@ static bool have_dynamic_width(void)
         return (xctx.geometry.mask & WidthValue && xctx.geometry.w == 0);
 }
 
+static bool is_readable_file(const char *filename)
+{
+        return (access(filename, R_OK) != -1);
+}
+
+const char *get_filename_ext(const char *filename) {
+        const char *dot = strrchr(filename, '.');
+        if(!dot || dot == filename) return "";
+        return dot + 1;
+}
+
 static dimension_t calculate_dimensions(GSList *layouts)
 {
         dimension_t dim;
@@ -274,6 +286,47 @@ static dimension_t calculate_dimensions(GSList *layouts)
         return dim;
 }
 
+static cairo_surface_t *get_icon_surface_from_file(const char *icon_path)
+{
+        cairo_surface_t *icon_surface = NULL;
+        if (is_readable_file(icon_path)) {
+                char *img_type;
+                img_type = get_filename_ext(icon_path);
+                if (strcmp(img_type, "png") == 0) {
+                        icon_surface = cairo_image_surface_create_from_png(icon_path);
+                } else {
+                        GdkPixbuf *pixbuf;
+                        GError *error = NULL;
+                        cairo_t *cr;
+                        cairo_format_t format;
+                        double width, height;
+                        pixbuf = gdk_pixbuf_new_from_file(icon_path, &error);
+                        if (pixbuf != NULL) {
+                                if (gdk_pixbuf_get_has_alpha(pixbuf)) {
+                                        format = CAIRO_FORMAT_ARGB32;
+                                } else {
+                                        format = CAIRO_FORMAT_RGB24;
+                                }
+                                width = gdk_pixbuf_get_width(pixbuf);
+                                height = gdk_pixbuf_get_height(pixbuf);
+                                icon_surface = cairo_image_surface_create(format, width, height);
+                                cr = cairo_create(icon_surface);
+                                gdk_cairo_set_source_pixbuf(cr, pixbuf, 0, 0);
+                                cairo_paint(cr);
+                                free(cr);
+                                g_object_unref(pixbuf);
+                        } else {
+                            g_free(error);
+                        }
+                }
+                if (cairo_surface_status(icon_surface) != CAIRO_STATUS_SUCCESS) {
+                        cairo_surface_destroy(icon_surface);
+                        icon_surface = NULL;
+                }
+        }
+        return icon_surface;
+}
+
 static cairo_surface_t *get_icon_surface(char *icon_path)
 {
         cairo_surface_t *icon_surface = NULL;
@@ -287,11 +340,7 @@ static cairo_surface_t *get_icon_surface(char *icon_path)
                 }
                 /* absolute path? */
                 if (icon_path[0] == '/' || icon_path[0] == '~') {
-                        icon_surface = cairo_image_surface_create_from_png(icon_path);
-                        if (cairo_surface_status(icon_surface) != CAIRO_STATUS_SUCCESS) {
-                                cairo_surface_destroy(icon_surface);
-                                icon_surface = NULL;
-                        }
+                        icon_surface = get_icon_surface_from_file(icon_path);
                 }
                 /* search in icon_folders */
                 if (icon_surface == NULL) {
@@ -305,13 +354,10 @@ static cairo_surface_t *get_icon_surface(char *icon_path)
                                 maybe_icon_path = g_strconcat(current_folder, "/", icon_path, ".png", NULL);
                                 free(current_folder);
 
-                                icon_surface = cairo_image_surface_create_from_png(maybe_icon_path);
+                                icon_surface = get_icon_surface_from_file(maybe_icon_path);
                                 free(maybe_icon_path);
-                                if (cairo_surface_status(icon_surface) == CAIRO_STATUS_SUCCESS) {
-                                        return icon_surface;
-                                } else {
-                                        cairo_surface_destroy(icon_surface);
-                                        icon_surface = NULL;
+                                if (icon_surface != NULL) {
+                                    return icon_surface;
                                 }
 
                                 start = end + 1;
