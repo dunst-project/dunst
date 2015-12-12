@@ -181,8 +181,11 @@ This can for example be wrapped around a screen locker (i3lock, slock) to preven
 of notifications through the lock and to read all missed notifications after returning to the computer.
 
 Sending a notification with a summary of "DUNST_COMMAND_CLOSEALL" will remove all the notifications.
+
 Sending a notification with a summary of "DUNST_COMMAND_CLOSE" will remove the most recent notification.
+
 Sending a notification with a summary of "DUNST_COMMAND_HISTORY" will redisplay the last notification.
+
 Sending a notification with a summary of "DUNST_COMMAND_REPLACE NEW TEXT" will replace the text on the current notification with the new text.
 
 =head1 CONFIGURATION
