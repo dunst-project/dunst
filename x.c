@@ -286,6 +286,24 @@ static dimension_t calculate_dimensions(GSList *layouts)
         return dim;
 }
 
+static cairo_surface_t *gdk_pixbuf_to_cairo_surface(const GdkPixbuf *pixbuf)
+{
+        cairo_surface_t *icon_surface = NULL;
+        cairo_t *cr;
+        cairo_format_t format;
+        double width, height;
+
+        format = gdk_pixbuf_get_has_alpha(pixbuf) ? CAIRO_FORMAT_ARGB32 : CAIRO_FORMAT_RGB24;
+        width = gdk_pixbuf_get_width(pixbuf);
+        height = gdk_pixbuf_get_height(pixbuf);
+        icon_surface = cairo_image_surface_create(format, width, height);
+        cr = cairo_create(icon_surface);
+        gdk_cairo_set_source_pixbuf(cr, pixbuf, 0, 0);
+        cairo_paint(cr);
+        free(cr);
+        return icon_surface;
+}
+
 static cairo_surface_t *get_icon_surface_from_file(const char *icon_path)
 {
         cairo_surface_t *icon_surface = NULL;
@@ -297,23 +315,9 @@ static cairo_surface_t *get_icon_surface_from_file(const char *icon_path)
                 } else {
                         GdkPixbuf *pixbuf;
                         GError *error = NULL;
-                        cairo_t *cr;
-                        cairo_format_t format;
-                        double width, height;
                         pixbuf = gdk_pixbuf_new_from_file(icon_path, &error);
                         if (pixbuf != NULL) {
-                                if (gdk_pixbuf_get_has_alpha(pixbuf)) {
-                                        format = CAIRO_FORMAT_ARGB32;
-                                } else {
-                                        format = CAIRO_FORMAT_RGB24;
-                                }
-                                width = gdk_pixbuf_get_width(pixbuf);
-                                height = gdk_pixbuf_get_height(pixbuf);
-                                icon_surface = cairo_image_surface_create(format, width, height);
-                                cr = cairo_create(icon_surface);
-                                gdk_cairo_set_source_pixbuf(cr, pixbuf, 0, 0);
-                                cairo_paint(cr);
-                                free(cr);
+                                icon_surface = gdk_pixbuf_to_cairo_surface(pixbuf);
                                 g_object_unref(pixbuf);
                         } else {
                             g_free(error);
@@ -327,7 +331,7 @@ static cairo_surface_t *get_icon_surface_from_file(const char *icon_path)
         return icon_surface;
 }
 
-static cairo_surface_t *get_icon_surface(char *icon_path)
+static cairo_surface_t *get_icon_surface_from_path(char *icon_path)
 {
         cairo_surface_t *icon_surface = NULL;
         gchar *uri_path = NULL;
@@ -374,6 +378,28 @@ static cairo_surface_t *get_icon_surface(char *icon_path)
         return icon_surface;
 }
 
+static cairo_surface_t *get_icon_surface_from_raw_image(const RawImage *raw_image)
+{
+        cairo_surface_t *icon_surface = NULL;
+        GdkPixbuf *pixbuf;
+
+        pixbuf = gdk_pixbuf_new_from_data(raw_image->data,
+                                          GDK_COLORSPACE_RGB,
+                                          raw_image->has_alpha,
+                                          raw_image->bits_per_sample,
+                                          raw_image->width,
+                                          raw_image->height,
+                                          raw_image->rowstride,
+                                          NULL,
+                                          NULL);
+
+        if (pixbuf != NULL) {
+                icon_surface = gdk_pixbuf_to_cairo_surface(pixbuf);
+                g_object_unref(pixbuf);
+        }
+        return icon_surface;
+}
+
 static colored_layout *r_init_shared(cairo_t *c, notification *n)
 {
         colored_layout *cl = malloc(sizeof(colored_layout));
@@ -386,7 +412,11 @@ static colored_layout *r_init_shared(cairo_t *c, notification *n)
                 pango_layout_set_ellipsize(cl->l, PANGO_ELLIPSIZE_MIDDLE);
         }
 
-        cl->icon = get_icon_surface(n->icon);
+        if (n->icon) {
+            cl->icon = get_icon_surface_from_path(n->icon);
+        } else if (n->raw_icon) {
+            cl->icon = get_icon_surface_from_raw_image(n->raw_icon);
+        }
 
         cl->fg = x_string_to_color_t(n->color_strings[ColFG]);
         cl->bg = x_string_to_color_t(n->color_strings[ColBG]);

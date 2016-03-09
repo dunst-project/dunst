@@ -161,6 +161,12 @@ void notification_free(notification * n)
                 free(n->actions->dmenu_str);
         }
 
+        if (n->raw_icon) {
+            if (n->raw_icon->data)
+                free(n->raw_icon->data);
+            free(n->raw_icon);
+        }
+
         free(n);
 }
 
@@ -442,11 +448,12 @@ int notification_init(notification * n, int id)
             n->timeout == -1 ? settings.timeouts[n->urgency] : n->timeout;
         n->start = 0;
 
-        if (n->icon == NULL) {
-                n->icon = strdup(settings.icons[n->urgency]);
-        }
-        else if (strlen(n->icon) <= 0) {
+        if (strlen(n->icon) <= 0) {
                 free(n->icon);
+                n->icon = NULL;
+        }
+
+        if (n->raw_icon == NULL && n->icon == NULL) {
                 n->icon = strdup(settings.icons[n->urgency]);
         }
 
