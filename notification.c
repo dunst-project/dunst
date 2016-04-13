@@ -2,13 +2,16 @@
 
 #define _GNU_SOURCE
 
-#include <time.h>
-#include <glib.h>
 #include <errno.h>
-#include <string.h>
+#include <glib.h>
+#include <libgen.h>
 #include <stdbool.h>
-#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/wait.h>
+#include <time.h>
+#include <unistd.h>
 
 #include "dbus.h"
 #include "x.h"
@@ -68,10 +71,10 @@ void notification_run_script(notification * n)
         if (!n->script || strlen(n->script) < 1)
                 return;
 
-        char *appname = n->appname ? n->appname : "";
-        char *summary = n->summary ? n->summary : "";
-        char *body = n->body ? n->body : "";
-        char *icon = n->icon ? n->icon : "";
+        char *appname = n->appname ? n->appname : NULL;
+        char *summary = n->summary ? n->summary : NULL;
+        char *body = n->body ? n->body : NULL;
+        char *icon = n->icon ? n->icon : NULL;
 
         char *urgency;
         switch (n->urgency) {
