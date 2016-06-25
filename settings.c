@@ -171,6 +171,10 @@ void load_settings(char *cmdline_config_path)
             option_get_int("global", "show_age_threshold",
                            "-show_age_threshold", show_age_threshold,
                            "When should the age of the notification be displayed?");
+        settings.hide_duplicates_count =
+            option_get_bool("global", "hide_duplicates_count",
+                            "-hide_duplicates_count", false,
+                            "Hide count of the merged notifications with the same content");
         settings.sticky_history =
             option_get_bool("global", "sticky_history", "-sticky_history",
                             sticky_history,
