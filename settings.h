@@ -6,6 +6,7 @@ typedef struct _settings {
         bool allow_markup;
         bool plain_text;
         bool stack_duplicates;
+        bool hide_duplicates_count;
         char *font;
         char *normbgcolor;
         char *normfgcolor;
