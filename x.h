@@ -13,8 +13,6 @@
 #endif
 #include <X11/extensions/scrnsaver.h>
 
-#include <X11/Xft/Xft.h>
-
 #define BUTTONMASK              (ButtonPressMask|ButtonReleaseMask)
 #define FONT_HEIGHT_BORDER 2
 #define DEFFONT "Monospace-11"
