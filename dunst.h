@@ -3,6 +3,7 @@
 #pragma once
 
 #include <glib.h>
+#include <stdio.h>
 #include <stdbool.h>
 
 #include "x.h"

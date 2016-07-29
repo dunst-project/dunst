@@ -1,6 +1,8 @@
 /* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
 
 #include <glib.h>
+#include <stdlib.h>
+#include <string.h>
 
 #ifndef STATIC_CONFIG
 #include <basedir.h>
