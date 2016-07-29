@@ -1,6 +1,7 @@
 /* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
 
 #define _GNU_SOURCE
+#include <stdlib.h>
 #include <stdbool.h>
 #include <regex.h>
 #include <stdio.h>
