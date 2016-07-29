@@ -43,7 +43,7 @@ dunst: ${OBJ}
 	@${CC} ${CFLAGS} -o $@ ${OBJ} ${LDFLAGS}
 
 dunstify:
-	@${CC} -o $@ dunstify.c -std=c99 $(shell pkg-config --libs --cflags glib-2.0 libnotify)
+	@${CC} ${CFLAGS} -o $@ dunstify.c -std=c99 $(shell pkg-config --libs --cflags glib-2.0 libnotify)
 
 debug: ${OBJ}
 	@echo CC -o $@
