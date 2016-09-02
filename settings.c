@@ -363,6 +363,7 @@ void load_settings(char *cmdline_config_path)
                 r->summary = ini_get_string(cur_section, "summary", r->summary);
                 r->body = ini_get_string(cur_section, "body", r->body);
                 r->icon = ini_get_string(cur_section, "icon", r->icon);
+                r->category = ini_get_string(cur_section, "category", r->category);
                 r->timeout = ini_get_int(cur_section, "timeout", r->timeout);
                 r->allow_markup = ini_get_bool(cur_section, "allow_markup", r->allow_markup);
                 r->plain_text = ini_get_bool(cur_section, "plain_text", r->plain_text);
@@ -372,7 +373,7 @@ void load_settings(char *cmdline_config_path)
                 r->bg = ini_get_string(cur_section, "background", r->bg);
                 r->format = ini_get_string(cur_section, "format", r->format);
                 r->new_icon = ini_get_string(cur_section, "new_icon", r->new_icon);
-				r->script = ini_get_string(cur_section, "script", NULL);
+                r->script = ini_get_string(cur_section, "script", NULL);
         }
 
 #ifndef STATIC_CONFIG
