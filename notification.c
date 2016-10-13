@@ -448,7 +448,7 @@ int notification_init(notification * n, int id)
             n->timeout == -1 ? settings.timeouts[n->urgency] : n->timeout;
         n->start = 0;
 
-        if (strlen(n->icon) <= 0) {
+        if (n->icon != NULL && strlen(n->icon) <= 0) {
                 free(n->icon);
                 n->icon = NULL;
         }
