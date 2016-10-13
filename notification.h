@@ -7,6 +7,16 @@
 #define NORM 1
 #define CRIT 2
 
+typedef struct _raw_image {
+        int width;
+        int height;
+        int rowstride;
+        int has_alpha;
+        int bits_per_sample;
+        int n_channels;
+        unsigned char *data;
+} RawImage;
+
 typedef struct _actions {
         char **actions;
         char *dmenu_str;
@@ -18,6 +28,7 @@ typedef struct _notification {
         char *summary;
         char *body;
         char *icon;
+        RawImage *raw_icon;
         char *msg;            /* formatted message */
         char *category;
         char *text_to_render;
