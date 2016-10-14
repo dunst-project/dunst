@@ -404,15 +404,16 @@ static colored_layout *r_init_shared(cairo_t *c, notification *n)
                 int w = gdk_pixbuf_get_width(pixbuf);
                 int h = gdk_pixbuf_get_height(pixbuf);
                 int larger = w > h ? w : h;
-                int max_size = 24;
-                if (larger > max_size) {
+                if (settings.max_icon_size && larger > settings.max_icon_size) {
                         if (w >= h) {
                                 pixbuf = gdk_pixbuf_scale_simple(pixbuf,
-                                                max_size, (int) ((double) max_size / w * h),
+                                                settings.max_icon_size,
+                                                (int) ((double) settings.max_icon_size / w * h),
                                                 GDK_INTERP_BILINEAR);
                         } else {
                                 pixbuf = gdk_pixbuf_scale_simple(pixbuf,
-                                                (int) ((double) max_size / h * w), max_size,
+                                                (int) ((double) settings.max_icon_size / h * w),
+                                                settings.max_icon_size,
                                                 GDK_INTERP_BILINEAR);
                         }
                 }

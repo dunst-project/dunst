@@ -29,7 +29,7 @@ typedef struct _settings {
         float bounce_freq;
         int sticky_history;
         int history_length;
-	int show_indicators;
+        int show_indicators;
         int verbosity;
         int word_wrap;
         int ignore_newline;
@@ -49,6 +49,7 @@ typedef struct _settings {
         char **dmenu_cmd;
         char *browser;
         enum icon_position_t icon_position;
+        int max_icon_size;
         char *icon_folders;
         enum follow_mode f_mode;
         bool always_run_script;

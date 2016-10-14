@@ -179,8 +179,8 @@ void load_settings(char *cmdline_config_path)
                                 "Max amount of notifications kept in history");
         settings.show_indicators =
             option_get_bool("global", "show_indicators", "-show_indicators",
-			    show_indicators,
-			    "Show indicators for actions \"(A)\" and URLs \"(U)\"");
+                            show_indicators,
+                            "Show indicators for actions \"(A)\" and URLs \"(U)\"");
         settings.separator_height =
             option_get_int("global", "separator_height",
                            "-sep_height/-separator_height", separator_height,
@@ -248,6 +248,10 @@ void load_settings(char *cmdline_config_path)
                         free(c);
                 }
         }
+
+        settings.max_icon_size =
+            option_get_int("global", "max_icon_size", "-max_icon_size", max_icon_size,
+                           "Scale larger icons down to this size, set to 0 to disable");
 
         settings.icon_folders =
             option_get_string("global", "icon_folders", "-icon_folders", icon_folders,
@@ -372,7 +376,7 @@ void load_settings(char *cmdline_config_path)
                 r->bg = ini_get_string(cur_section, "background", r->bg);
                 r->format = ini_get_string(cur_section, "format", r->format);
                 r->new_icon = ini_get_string(cur_section, "new_icon", r->new_icon);
-				r->script = ini_get_string(cur_section, "script", NULL);
+                r->script = ini_get_string(cur_section, "script", NULL);
         }
 
 #ifndef STATIC_CONFIG
