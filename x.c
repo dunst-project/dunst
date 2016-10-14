@@ -304,36 +304,21 @@ static cairo_surface_t *gdk_pixbuf_to_cairo_surface(const GdkPixbuf *pixbuf)
         return icon_surface;
 }
 
-static cairo_surface_t *get_icon_surface_from_file(const char *icon_path)
+static GdkPixbuf *get_pixbuf_from_file(const char *icon_path)
 {
-        cairo_surface_t *icon_surface = NULL;
+        GdkPixbuf *pixbuf;
         if (is_readable_file(icon_path)) {
-                char *img_type;
-                img_type = get_filename_ext(icon_path);
-                if (strcmp(img_type, "png") == 0) {
-                        icon_surface = cairo_image_surface_create_from_png(icon_path);
-                } else {
-                        GdkPixbuf *pixbuf;
-                        GError *error = NULL;
-                        pixbuf = gdk_pixbuf_new_from_file(icon_path, &error);
-                        if (pixbuf != NULL) {
-                                icon_surface = gdk_pixbuf_to_cairo_surface(pixbuf);
-                                g_object_unref(pixbuf);
-                        } else {
-                            g_free(error);
-                        }
-                }
-                if (cairo_surface_status(icon_surface) != CAIRO_STATUS_SUCCESS) {
-                        cairo_surface_destroy(icon_surface);
-                        icon_surface = NULL;
-                }
+                GError *error = NULL;
+                pixbuf = gdk_pixbuf_new_from_file(icon_path, &error);
+                if (pixbuf == NULL)
+                        g_free(error);
         }
-        return icon_surface;
+        return pixbuf;
 }
 
-static cairo_surface_t *get_icon_surface_from_path(char *icon_path)
+static GdkPixbuf *get_pixbuf_from_path(char *icon_path)
 {
-        cairo_surface_t *icon_surface = NULL;
+        GdkPixbuf *pixbuf = NULL;
         gchar *uri_path = NULL;
         if (strlen(icon_path) > 0 && settings.icon_position != icons_off) {
                 if (g_str_has_prefix(icon_path, "file://")) {
@@ -344,10 +329,10 @@ static cairo_surface_t *get_icon_surface_from_path(char *icon_path)
                 }
                 /* absolute path? */
                 if (icon_path[0] == '/' || icon_path[0] == '~') {
-                        icon_surface = get_icon_surface_from_file(icon_path);
+                        pixbuf = get_pixbuf_from_file(icon_path);
                 }
                 /* search in icon_folders */
-                if (icon_surface == NULL) {
+                if (pixbuf == NULL) {
                         char *start = settings.icon_folders,
                              *end, *current_folder, *maybe_icon_path;
                         do {
@@ -358,16 +343,16 @@ static cairo_surface_t *get_icon_surface_from_path(char *icon_path)
                                 maybe_icon_path = g_strconcat(current_folder, "/", icon_path, ".png", NULL);
                                 free(current_folder);
 
-                                icon_surface = get_icon_surface_from_file(maybe_icon_path);
+                                pixbuf = get_pixbuf_from_file(maybe_icon_path);
                                 free(maybe_icon_path);
-                                if (icon_surface != NULL) {
-                                    return icon_surface;
+                                if (pixbuf != NULL) {
+                                    return pixbuf;
                                 }
 
                                 start = end + 1;
                         } while (*(end) != '\0');
                 }
-                if (icon_surface == NULL) {
+                if (pixbuf == NULL) {
                         fprintf(stderr,
                                 "Could not load icon: '%s'\n", icon_path);
                 }
@@ -375,12 +360,11 @@ static cairo_surface_t *get_icon_surface_from_path(char *icon_path)
                         g_free(uri_path);
                 }
         }
-        return icon_surface;
+        return pixbuf;
 }
 
-static cairo_surface_t *get_icon_surface_from_raw_image(const RawImage *raw_image)
+static GdkPixbuf *get_pixbuf_from_raw_image(const RawImage *raw_image)
 {
-        cairo_surface_t *icon_surface = NULL;
         GdkPixbuf *pixbuf;
 
         pixbuf = gdk_pixbuf_new_from_data(raw_image->data,
@@ -393,11 +377,7 @@ static cairo_surface_t *get_icon_surface_from_raw_image(const RawImage *raw_imag
                                           NULL,
                                           NULL);
 
-        if (pixbuf != NULL) {
-                icon_surface = gdk_pixbuf_to_cairo_surface(pixbuf);
-                g_object_unref(pixbuf);
-        }
-        return icon_surface;
+        return pixbuf;
 }
 
 static colored_layout *r_init_shared(cairo_t *c, notification *n)
@@ -412,10 +392,40 @@ static colored_layout *r_init_shared(cairo_t *c, notification *n)
                 pango_layout_set_ellipsize(cl->l, PANGO_ELLIPSIZE_MIDDLE);
         }
 
-        if (n->icon) {
-            cl->icon = get_icon_surface_from_path(n->icon);
-        } else if (n->raw_icon) {
-            cl->icon = get_icon_surface_from_raw_image(n->raw_icon);
+        GdkPixbuf *pixbuf;
+
+        if (n->raw_icon) {
+                pixbuf = get_pixbuf_from_raw_image(n->raw_icon);
+        } else if (n->icon) {
+                pixbuf = get_pixbuf_from_path(n->icon);
+        }
+
+        if (pixbuf != NULL) {
+                int w = gdk_pixbuf_get_width(pixbuf);
+                int h = gdk_pixbuf_get_height(pixbuf);
+                int larger = w > h ? w : h;
+                int max_size = 24;
+                if (larger > max_size) {
+                        if (w >= h) {
+                                pixbuf = gdk_pixbuf_scale_simple(pixbuf,
+                                                max_size, (int) ((double) max_size / w * h),
+                                                GDK_INTERP_BILINEAR);
+                        } else {
+                                pixbuf = gdk_pixbuf_scale_simple(pixbuf,
+                                                (int) ((double) max_size / h * w), max_size,
+                                                GDK_INTERP_BILINEAR);
+                        }
+                }
+
+                cl->icon = gdk_pixbuf_to_cairo_surface(pixbuf);
+                g_object_unref(pixbuf);
+        } else {
+                cl->icon = NULL;
+        }
+
+        if (cairo_surface_status(cl->icon) != CAIRO_STATUS_SUCCESS) {
+                cairo_surface_destroy(cl->icon);
+                cl->icon = NULL;
         }
 
         cl->fg = x_string_to_color_t(n->color_strings[ColFG]);
@@ -599,7 +609,7 @@ void x_win_draw(void)
         int width = dim.w;
         int height = dim.h;
 
-	if ((have_dynamic_width() || settings.shrink) && settings.align != left) {
+        if ((have_dynamic_width() || settings.shrink) && settings.align != left) {
                 r_update_layouts_width(layouts, width);
         }
 
