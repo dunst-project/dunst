@@ -405,17 +405,20 @@ static colored_layout *r_init_shared(cairo_t *c, notification *n)
                 int h = gdk_pixbuf_get_height(pixbuf);
                 int larger = w > h ? w : h;
                 if (settings.max_icon_size && larger > settings.max_icon_size) {
+                        GdkPixbuf *scaled;
                         if (w >= h) {
-                                pixbuf = gdk_pixbuf_scale_simple(pixbuf,
+                                scaled = gdk_pixbuf_scale_simple(pixbuf,
                                                 settings.max_icon_size,
                                                 (int) ((double) settings.max_icon_size / w * h),
                                                 GDK_INTERP_BILINEAR);
                         } else {
-                                pixbuf = gdk_pixbuf_scale_simple(pixbuf,
+                                scaled = gdk_pixbuf_scale_simple(pixbuf,
                                                 (int) ((double) settings.max_icon_size / h * w),
                                                 settings.max_icon_size,
                                                 GDK_INTERP_BILINEAR);
                         }
+                        g_object_unref(pixbuf);
+                        pixbuf = scaled;
                 }
 
                 cl->icon = gdk_pixbuf_to_cairo_surface(pixbuf);
