@@ -306,7 +306,7 @@ static cairo_surface_t *gdk_pixbuf_to_cairo_surface(const GdkPixbuf *pixbuf)
 
 static GdkPixbuf *get_pixbuf_from_file(const char *icon_path)
 {
-        GdkPixbuf *pixbuf;
+        GdkPixbuf *pixbuf = NULL;
         if (is_readable_file(icon_path)) {
                 GError *error = NULL;
                 pixbuf = gdk_pixbuf_new_from_file(icon_path, &error);
@@ -427,7 +427,7 @@ static colored_layout *r_init_shared(cairo_t *c, notification *n)
                 cl->icon = NULL;
         }
 
-        if (cairo_surface_status(cl->icon) != CAIRO_STATUS_SUCCESS) {
+        if (cl->icon && cairo_surface_status(cl->icon) != CAIRO_STATUS_SUCCESS) {
                 cairo_surface_destroy(cl->icon);
                 cl->icon = NULL;
         }
