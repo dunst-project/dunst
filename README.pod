@@ -1,3 +1,8 @@
+=head1 UNMAINTAINED
+
+I don't have the time and motivation anymore to properly maintain this project.
+If anyone is interested in taking over please drop me a mail at dunst@knopwob.de
+
 =head1 NAME
 
 dunst - A customizable and lightweight notification-daemon
