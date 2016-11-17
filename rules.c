@@ -78,4 +78,4 @@ bool rule_matches_notification(rule_t * r, notification * n)
                 && (!r->category || !fnmatch(r->category, n->category, 0))
                 && (r->msg_urgency == -1 || r->msg_urgency == n->urgency));
 }
-/* vim: set ts=8 sw=8 tw=0: */
+/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

@@ -82,4 +82,4 @@ gboolean x_mainloop_fd_check(GSource * source);
 gboolean x_mainloop_fd_prepare(GSource * source, gint * timeout);
 
 #endif
-/* vim: set ts=8 sw=8 tw=0: */
+/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

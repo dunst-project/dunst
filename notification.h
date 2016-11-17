@@ -67,3 +67,5 @@ char *notification_quote_markup(char *str);
 void notification_update_text_to_render(notification *n);
 int notification_get_ttl(notification *n);
 int notification_get_age(notification *n);
+
+/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

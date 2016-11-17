@@ -45,4 +45,4 @@ char *extract_urls(const char *str);
 void context_menu(void);
 void wake_up(void);
 void pause_signal_handler(int sig);
-/* vim: set ts=8 sw=8 tw=0: */
+/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

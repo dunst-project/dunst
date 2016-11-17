@@ -473,4 +473,4 @@ char *cmdline_create_usage(void)
         return g_strdup(usage_str);
 }
 
-/* vim: set ts=8 sw=8 tw=0: */
+/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
