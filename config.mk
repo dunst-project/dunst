@@ -22,7 +22,7 @@ ifeq (${PKG_CONFIG}, ${EMPTY})
 endif
 
 # flags
-CPPFLAGS += -D_BSD_SOURCE -DVERSION=\"${VERSION}\" ${XINERAMAFLAGS} ${INIFLAGS}
+CPPFLAGS += -D_DEFAULT_SOURCE -DVERSION=\"${VERSION}\" ${XINERAMAFLAGS} ${INIFLAGS}
 CFLAGS   += -g --std=gnu99 -pedantic -Wall -Wno-overlength-strings -Os ${STATIC} ${CPPFLAGS} ${EXTRACFLAGS}
 
 pkg_config_packs := dbus-1 x11 freetype2 xext xft xscrnsaver \
