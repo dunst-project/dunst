@@ -47,12 +47,12 @@ void regex_teardown(void)
         }
 }
 
-        /*
-         * Exctract all urls from a given string.
-         *
-         * Return: a string of urls separated by \n
-         *
-         */
+/*
+ * Exctract all urls from a given string.
+ *
+ * Return: a string of urls separated by \n
+ *
+ */
 char *extract_urls(const char *to_match)
 {
         char *urls = NULL;
@@ -87,10 +87,10 @@ char *extract_urls(const char *to_match)
         return urls;
 }
 
-        /*
-         * Open url in browser.
-         *
-         */
+/*
+ * Open url in browser.
+ *
+ */
 void open_browser(const char *url)
 {
         int browser_pid1 = fork();
@@ -111,10 +111,10 @@ void open_browser(const char *url)
         }
 }
 
-    /*
-     * Notify the corresponding client
-     * that an action has been invoked
-     */
+/*
+ * Notify the corresponding client
+ * that an action has been invoked
+ */
 void invoke_action(const char *action)
 {
         notification *invoked = NULL;
@@ -153,10 +153,10 @@ void invoke_action(const char *action)
         }
 }
 
-    /*
-     * Dispatch whatever has been returned
-     * by the menu.
-     */
+/*
+ * Dispatch whatever has been returned
+ * by the menu.
+ */
 void dispatch_menu_result(const char *input)
 {
         char *in = strdup(input);
@@ -182,10 +182,10 @@ void dispatch_menu_result(const char *input)
         free(in);
 }
 
-        /*
-         * Open the context menu that let's the user
-         * select urls/actions/etc
-         */
+/*
+ * Open the context menu that let's the user
+ * select urls/actions/etc
+ */
 void context_menu(void)
 {
         char *dmenu_input = NULL;

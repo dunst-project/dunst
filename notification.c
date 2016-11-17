@@ -21,10 +21,10 @@
 
 int next_notification_id = 1;
 
-        /*
-         * print a human readable representation
-         * of the given notification to stdout.
-         */
+/*
+ * print a human readable representation
+ * of the given notification to stdout.
+ */
 void notification_print(notification * n)
 {
         printf("{\n");
@@ -60,10 +60,10 @@ void notification_print(notification * n)
         printf("}\n");
 }
 
-        /*
-         * Run the script associated with the
-         * given notification.
-         */
+/*
+ * Run the script associated with the
+ * given notification.
+ */
 void notification_run_script(notification * n)
 {
         if (!n->script || strlen(n->script) < 1)
@@ -115,10 +115,10 @@ void notification_run_script(notification * n)
         }
 }
 
-        /*
-         * Helper function to compare to given
-         * notifications.
-         */
+/*
+ * Helper function to compare to given
+ * notifications.
+ */
 int notification_cmp(const void *va, const void *vb)
 {
         notification *a = (notification *) va;
@@ -134,18 +134,18 @@ int notification_cmp(const void *va, const void *vb)
         }
 }
 
-        /*
-         * Wrapper for notification_cmp to match glib's
-         * compare functions signature.
-         */
+/*
+ * Wrapper for notification_cmp to match glib's
+ * compare functions signature.
+ */
 int notification_cmp_data(const void *va, const void *vb, void *data)
 {
         return notification_cmp(va, vb);
 }
 
-        /*
-         * Free the memory used by the given notification.
-         */
+/*
+ * Free the memory used by the given notification.
+ */
 void notification_free(notification * n)
 {
         if (n == NULL)
@@ -180,9 +180,9 @@ void notification_free(notification * n)
         free(n);
 }
 
-        /*
-         * Strip any markup from text
-         */
+/*
+ * Strip any markup from text
+ */
 char *notification_strip_markup(char *str)
 {
         if (str == NULL) {
@@ -202,9 +202,9 @@ char *notification_strip_markup(char *str)
         return str;
 }
 
-        /*
-         * Quote a text string for rendering with pango
-         */
+/*
+ * Quote a text string for rendering with pango
+ */
 char *notification_quote_markup(char *str)
 {
         if (str == NULL) {
@@ -220,10 +220,10 @@ char *notification_quote_markup(char *str)
         return str;
 }
 
-        /*
-         * Replace all occurrences of "needle" with a quoted "replacement",
-         * according to the allow_markup/plain_text settings.
-         */
+/*
+ * Replace all occurrences of "needle" with a quoted "replacement",
+ * according to the allow_markup/plain_text settings.
+ */
 char *notification_replace_format(const char *needle, const char *replacement,
                                   char *haystack, bool allow_markup,
                                   bool plain_text) {
@@ -302,10 +302,10 @@ char *notification_extract_markup_urls(char **str_ptr) {
     return urls;
 }
 
-        /*
-         * Initialize the given notification and add it to
-         * the queue. Replace notification with id if id > 0.
-         */
+/*
+ * Initialize the given notification and add it to
+ * the queue. Replace notification with id if id > 0.
+ */
 int notification_init(notification * n, int id)
 {
         if (n == NULL)
@@ -501,15 +501,15 @@ int notification_init(notification * n, int id)
         return n->id;
 }
 
-        /*
-         * Close the notification that has id.
-         *
-         * reasons:
-         * -1 -> notification is a replacement, no NotificationClosed signal emitted
-         *  1 -> the notification expired
-         *  2 -> the notification was dismissed by the user_data
-         *  3 -> The notification was closed by a call to CloseNotification
-         */
+/*
+ * Close the notification that has id.
+ *
+ * reasons:
+ * -1 -> notification is a replacement, no NotificationClosed signal emitted
+ *  1 -> the notification expired
+ *  2 -> the notification was dismissed by the user_data
+ *  3 -> The notification was closed by a call to CloseNotification
+ */
 int notification_close_by_id(int id, int reason)
 {
         notification *target = NULL;
@@ -544,9 +544,9 @@ int notification_close_by_id(int id, int reason)
         return reason;
 }
 
-        /*
-         * Close the given notification. SEE notification_close_by_id.
-         */
+/*
+ * Close the given notification. SEE notification_close_by_id.
+ */
 int notification_close(notification * n, int reason)
 {
         if (n == NULL)

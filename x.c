@@ -713,9 +713,9 @@ static void setopacity(Window win, unsigned long opacity)
 
 
 
-        /*
-         * Returns the modifier which is NumLock.
-         */
+/*
+ * Returns the modifier which is NumLock.
+ */
 static KeySym x_numlock_mod()
 {
         static KeyCode nl = 0;
@@ -766,10 +766,10 @@ end:
         return sym;
 }
 
-        /*
-         * Helper function to use glib's mainloop mechanic
-         * with Xlib
-         */
+/*
+ * Helper function to use glib's mainloop mechanic
+ * with Xlib
+ */
 gboolean x_mainloop_fd_prepare(GSource * source, gint * timeout)
 {
         if (timeout)
@@ -779,18 +779,18 @@ gboolean x_mainloop_fd_prepare(GSource * source, gint * timeout)
         return false;
 }
 
-        /*
-         * Helper function to use glib's mainloop mechanic
-         * with Xlib
-         */
+/*
+ * Helper function to use glib's mainloop mechanic
+ * with Xlib
+ */
 gboolean x_mainloop_fd_check(GSource * source)
 {
         return XPending(xctx.dpy) > 0;
 }
 
-        /*
-         * Main Dispatcher for XEvents
-         */
+/*
+ * Main Dispatcher for XEvents
+ */
 gboolean x_mainloop_fd_dispatch(GSource * source, GSourceFunc callback,
                                 gpointer user_data)
 {
@@ -854,9 +854,9 @@ gboolean x_mainloop_fd_dispatch(GSource * source, GSourceFunc callback,
         return true;
 }
 
-        /*
-         * Check whether the user is currently idle.
-         */
+/*
+ * Check whether the user is currently idle.
+ */
 bool x_is_idle(void)
 {
         XScreenSaverQueryInfo(xctx.dpy, DefaultRootWindow(xctx.dpy),
@@ -868,9 +868,9 @@ bool x_is_idle(void)
 }
 
 /* TODO move to x_mainloop_* */
-        /*
-         * Handle incoming mouse click events
-         */
+/*
+ * Handle incoming mouse click events
+ */
 static void x_handle_click(XEvent ev)
 {
         if (ev.xbutton.button == Button3) {
@@ -898,10 +898,10 @@ static void x_handle_click(XEvent ev)
         }
 }
 
-        /*
-         * Return the window that currently has
-         * the keyboard focus.
-         */
+/*
+ * Return the window that currently has
+ * the keyboard focus.
+ */
 static Window get_focused_window(void)
 {
         Window focused = 0;
@@ -925,10 +925,10 @@ static Window get_focused_window(void)
 }
 
 #ifdef XINERAMA
-        /*
-         * Select the screen on which the Window
-         * should be displayed.
-         */
+/*
+ * Select the screen on which the Window
+ * should be displayed.
+ */
 static int select_screen(XineramaScreenInfo * info, int info_len)
 {
         int ret = 0;
@@ -991,10 +991,10 @@ sc_cleanup:
 }
 #endif
 
-        /*
-         * Update the information about the monitor
-         * geometry.
-         */
+/*
+ * Update the information about the monitor
+ * geometry.
+ */
 static void x_screen_info(screen_info * scr)
 {
 #ifdef XINERAMA
@@ -1037,9 +1037,9 @@ void x_free(void)
                 XCloseDisplay(xctx.dpy);
 }
 
-        /*
-         * Setup X11 stuff
-         */
+/*
+ * Setup X11 stuff
+ */
 void x_setup(void)
 {
 
@@ -1147,9 +1147,9 @@ static void x_set_wm(Window win)
                 PropModeReplace, (unsigned char *) data, 1L);
 }
 
-        /*
-         * Setup the window
-         */
+/*
+ * Setup the window
+ */
 static void x_win_setup(void)
 {
 
@@ -1193,9 +1193,9 @@ static void x_win_setup(void)
         }
 }
 
-        /*
-         * Show the window and grab shortcuts.
-         */
+/*
+ * Show the window and grab shortcuts.
+ */
 void x_win_show(void)
 {
         /* window is already mapped or there's nothing to show */
@@ -1218,9 +1218,9 @@ void x_win_show(void)
         xctx.visible = true;
 }
 
-        /*
-         * Hide the window and ungrab unused keyboard_shortcuts
-         */
+/*
+ * Hide the window and ungrab unused keyboard_shortcuts
+ */
 void x_win_hide()
 {
         x_shortcut_ungrab(&settings.close_ks);
@@ -1233,9 +1233,9 @@ void x_win_hide()
         xctx.visible = false;
 }
 
-        /*
-         * Parse a string into a modifier mask.
-         */
+/*
+ * Parse a string into a modifier mask.
+ */
 KeySym x_shortcut_string_to_mask(const char *str)
 {
         if (!strcmp(str, "ctrl")) {
@@ -1257,9 +1257,9 @@ KeySym x_shortcut_string_to_mask(const char *str)
 
 }
 
-        /*
-         * Error handler for grabbing mouse and keyboard errors.
-         */
+/*
+ * Error handler for grabbing mouse and keyboard errors.
+ */
 static int GrabXErrorHandler(Display * display, XErrorEvent * e)
 {
         dunst_grab_errored = true;
@@ -1286,9 +1286,9 @@ static int FollowXErrorHandler(Display * display, XErrorEvent * e)
         return 0;
 }
 
-        /*
-         * Setup the Error handler.
-         */
+/*
+ * Setup the Error handler.
+ */
 static void x_shortcut_setup_error_handler(void)
 {
         dunst_grab_errored = false;
@@ -1305,9 +1305,9 @@ static void x_follow_setup_error_handler(void)
         XSetErrorHandler(FollowXErrorHandler);
 }
 
-        /*
-         * Tear down the Error handler.
-         */
+/*
+ * Tear down the Error handler.
+ */
 static int x_shortcut_tear_down_error_handler(void)
 {
         XFlush(xctx.dpy);
@@ -1324,9 +1324,9 @@ static int x_follow_tear_down_error_handler(void)
         return dunst_follow_errored;
 }
 
-        /*
-         * Grab the given keyboard shortcut.
-         */
+/*
+ * Grab the given keyboard shortcut.
+ */
 int x_shortcut_grab(keyboard_shortcut * ks)
 {
         if (!ks->is_valid)
@@ -1351,9 +1351,9 @@ int x_shortcut_grab(keyboard_shortcut * ks)
         return 0;
 }
 
-        /*
-         * Ungrab the given keyboard shortcut.
-         */
+/*
+ * Ungrab the given keyboard shortcut.
+ */
 void x_shortcut_ungrab(keyboard_shortcut * ks)
 {
         Window root;
@@ -1364,9 +1364,9 @@ void x_shortcut_ungrab(keyboard_shortcut * ks)
         }
 }
 
-        /*
-         * Initialize the keyboard shortcut.
-         */
+/*
+ * Initialize the keyboard shortcut.
+ */
 void x_shortcut_init(keyboard_shortcut * ks)
 {
         if (ks == NULL || ks->str == NULL)
