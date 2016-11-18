@@ -392,7 +392,7 @@ static colored_layout *r_init_shared(cairo_t *c, notification *n)
                 pango_layout_set_ellipsize(cl->l, PANGO_ELLIPSIZE_MIDDLE);
         }
 
-        GdkPixbuf *pixbuf;
+        GdkPixbuf *pixbuf = NULL;
 
         if (n->raw_icon) {
                 pixbuf = get_pixbuf_from_raw_image(n->raw_icon);
