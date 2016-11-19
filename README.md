@@ -38,7 +38,7 @@ Please use the [issue tracker][issue-tracker] provided by GitHub to send us bug 
 
 written by Sascha Kruse <knopwob@googlemail.com>
 
-
+[issue-tracker]:  https://github.com/knopwob/dunst/issues
 ## Copyright
 
 copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information)
