@@ -3,15 +3,10 @@
 
 include config.mk
 
-SRC = x.c  \
-	  dunst.c \
-	  dbus.c  \
-	  utils.c \
-	  option_parser.c \
-	  settings.c \
-	  rules.c \
-	  menu.c \
-	  notification.c
+CFLAGS += -I.
+LDFLAGS += -L.
+
+SRC = $(shell ls src/*.c)
 OBJ = ${SRC:.c=.o}
 
 V ?= 0
@@ -29,7 +24,7 @@ options:
 
 .c.o:
 	@echo CC -c $<
-	${CC} -c $< ${CFLAGS}
+	${CC} -o $@ -c $< ${CFLAGS}
 
 ${OBJ}: config.h config.mk
 
