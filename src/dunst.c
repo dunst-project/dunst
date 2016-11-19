@@ -313,7 +313,7 @@ static void teardown(void)
         x_free();
 }
 
-int main(int argc, char *argv[])
+int dunst_main(int argc, char *argv[])
 {
 
         history = g_queue_new();

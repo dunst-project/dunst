@@ -35,6 +35,8 @@ extern const char *color_strings[3][3];
 gboolean run(void *data);
 void wake_up(void);
 
+int dunst_main(int argc, char *argv[]);
+
 void check_timeouts(void);
 void history_pop(void);
 void history_push(notification *n);
