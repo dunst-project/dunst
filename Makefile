@@ -54,7 +54,7 @@ clean-dunstify:
 clean-doc:
 	rm -f dunst.1
 
-clean: clean-dunst clean-dunstify clean-doc
+clean: clean-dunst clean-dunstify clean-doc test-clean
 
 doc: dunst.1
 dunst.1: README.pod
@@ -88,5 +88,16 @@ uninstall:
 	rm -f ${DESTDIR}${PREFIX}/share/dbus-1/services/org.knopwob.dunst.service
 	@echo Removing documentation directory ${DESTDIR}${PREFIX}/share/dunst
 	rm -rf ${DESTDIR}${PREFIX}/share/dunst
+
+test: test/test
+
+TEST_SRC = $(shell ls test/*.c)
+TEST_OBJ = $(TEST_SRC:.c=.o)
+
+test/test: ${OBJ} ${TEST_OBJ}
+	${CC} ${CFLAGS} -o $@ ${TEST_OBJ} ${OBJ} ${LDFLAGS}
+
+test-clean:
+	rm -f test/test test/*.o
 
 .PHONY: all options clean dist install uninstall
