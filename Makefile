@@ -44,14 +44,17 @@ debug: ${OBJ}
 	@echo CC -o $@
 	@${CC} ${CFLAGS} -O0 -o dunst ${OBJ} ${LDFLAGS}
 
-clean:
-	@echo cleaning
-	rm -f ${OBJ}
-	rm -f dunst
-	rm -f dunst.1
+clean-dunst:
+	rm -f dunst ${OBJ}
 	rm -f org.knopwob.dunst.service
-	rm -f core
+
+clean-dunstify:
 	rm -f dunstify
+
+clean-doc:
+	rm -f dunst.1
+
+clean: clean-dunst clean-dunstify clean-doc
 
 doc: dunst.1
 dunst.1: README.pod
@@ -60,25 +63,30 @@ dunst.1: README.pod
 service:
 	@sed "s|##PREFIX##|$(PREFIX)|" org.knopwob.dunst.service.in > org.knopwob.dunst.service
 
-install: all
-	@echo installing executables to ${DESTDIR}${PREFIX}/bin
+install-dunst: dunst doc
 	mkdir -p ${DESTDIR}${PREFIX}/bin
-	cp -f dunst ${DESTDIR}${PREFIX}/bin
-	chmod 755 ${DESTDIR}${PREFIX}/bin/dunst
-	@echo installing manual pages to ${DESTDIR}${MANPREFIX}/man1
+	install -m755 dunst ${DESTDIR}${PREFIX}/bin
 	mkdir -p ${DESTDIR}${MANPREFIX}/man1
-	cp -f dunst.1 ${DESTDIR}${MANPREFIX}/man1/
-	chmod 644 ${DESTDIR}${MANPREFIX}/man1/dunst.1
-	mkdir -p "${DESTDIR}${PREFIX}/share/dunst"
-	 cp -f dunstrc ${DESTDIR}${PREFIX}/share/dunst
-	mkdir -p "${DESTDIR}${PREFIX}/share/dbus-1/services/"
-	cp -vf org.knopwob.dunst.service "${DESTDIR}${PREFIX}/share/dbus-1/services/org.knopwob.dunst.service"
+	install -m644 dunst.1 ${DESTDIR}${MANPREFIX}/man1
+
+install-doc:
+	mkdir -p ${DESTDIR}${PREFIX}/share/dunst
+	install -m644 dunstrc ${DESTDIR}${PREFIX}/share/dunst
+
+install-service: service
+	mkdir -p ${DESTDIR}${PREFIX}/share/dbus-1/services/
+	install -m644 org.knopwob.dunst.service ${DESTDIR}${PREFIX}/share/dbus-1/services
+
+install: install-dunst install-doc install-service
 
 uninstall:
-	@echo removing executables from ${DESTDIR}${PREFIX}/bin
+	@echo Removing executables from ${DESTDIR}${PREFIX}/bin
 	rm -f ${DESTDIR}${PREFIX}/bin/dunst
-	@echo removing manual page from ${DESTDIR}${MANPREFIX}/man1
-	rm -f ${DESTDIR}${MANPREFIX}/man1/dunst
-	rm -f ${DESTDIR}${PREFIX}/share/dbus-1/service/org.knopwob.dunst.service
+	@echo Removing manual page from ${DESTDIR}${MANPREFIX}/man1
+	rm -f ${DESTDIR}${MANPREFIX}/man1/dunst.1
+	@echo Removing service file from ${DESTDIR}${PREFIX}/share/dbus-1/services
+	rm -f ${DESTDIR}${PREFIX}/share/dbus-1/services/org.knopwob.dunst.service
+	@echo Removing documentation directory ${DESTDIR}${PREFIX}/share/dunst
+	rm -rf ${DESTDIR}${PREFIX}/share/dunst
 
 .PHONY: all options clean dist install uninstall
