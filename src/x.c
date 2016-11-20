@@ -568,7 +568,8 @@ static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, colored_layou
                 if (!last) bg_height -= settings.separator_height;
         }
         bg_width -= 2 * settings.frame_width;
-        bg_height += settings.frame_width;
+        if (last)
+                bg_height -= settings.frame_width;
 
         cairo_set_source_rgb(c, cl->bg.r, cl->bg.g, cl->bg.b);
         cairo_rectangle(c, bg_x, bg_y, bg_width, bg_height);
@@ -581,13 +582,13 @@ static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, colored_layou
             dim.y += (int) (ceil(bg_half_height) - pango_offset);
         if (cl->icon && settings.icon_position == icons_left) {
                 cairo_move_to(c, settings.frame_width + cairo_image_surface_get_width(cl->icon) + 2 * settings.h_padding, bg_y + settings.padding + h/2 - h_text/2);
-	}
+        }
         else if (cl->icon && settings.icon_position == icons_right) {
-		cairo_move_to(c, settings.frame_width + settings.h_padding, bg_y + settings.padding + h/2 - h_text/2);
-	}
+                cairo_move_to(c, settings.frame_width + settings.h_padding, bg_y + settings.padding + h/2 - h_text/2);
+        }
         else {
-		cairo_move_to(c, settings.frame_width + settings.h_padding, bg_y + settings.padding);
-	}
+                cairo_move_to(c, settings.frame_width + settings.h_padding, bg_y + settings.padding);
+        }
         cairo_set_source_rgb(c, cl->fg.r, cl->fg.g, cl->fg.b);
         pango_cairo_update_layout(c, cl->l);
         pango_cairo_show_layout(c, cl->l);
@@ -605,9 +606,7 @@ static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, colored_layou
                         // the wrong color in the corners.
                         cairo_rectangle(c, 0, dim.y, dim.w, settings.separator_height);
                 else
-                cairo_rectangle(c, settings.frame_width, dim.y + settings.frame_width,
-                                dim.w - 2 * settings.frame_width
-                                , settings.separator_height);
+                        cairo_rectangle(c, settings.frame_width, dim.y + settings.frame_width, dim.w - 2 * settings.frame_width, settings.separator_height);
 
                 cairo_fill(c);
                 dim.y += settings.separator_height;
