@@ -537,12 +537,12 @@ static void r_free_layouts(GSList *layouts)
 static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, colored_layout *cl_next, dimension_t dim, bool first, bool last)
 {
         int h;
-        int h_text;
+        int h_text = 0;
         pango_layout_get_pixel_size(cl->l, NULL, &h);
         if (cl->icon) {
-		h_text = h;
-	       	h = MAX(cairo_image_surface_get_height(cl->icon), h);
-	}
+                h_text = h;
+                h = MAX(cairo_image_surface_get_height(cl->icon), h);
+        }
 
         int bg_x = 0;
         int bg_y = dim.y;
@@ -580,15 +580,15 @@ static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, colored_layou
             dim.y += settings.padding;
         else
             dim.y += (int) (ceil(bg_half_height) - pango_offset);
+
         if (cl->icon && settings.icon_position == icons_left) {
                 cairo_move_to(c, settings.frame_width + cairo_image_surface_get_width(cl->icon) + 2 * settings.h_padding, bg_y + settings.padding + h/2 - h_text/2);
-        }
-        else if (cl->icon && settings.icon_position == icons_right) {
+        } else if (cl->icon && settings.icon_position == icons_right) {
                 cairo_move_to(c, settings.frame_width + settings.h_padding, bg_y + settings.padding + h/2 - h_text/2);
-        }
-        else {
+        } else {
                 cairo_move_to(c, settings.frame_width + settings.h_padding, bg_y + settings.padding);
         }
+
         cairo_set_source_rgb(c, cl->fg.r, cl->fg.g, cl->fg.b);
         pango_cairo_update_layout(c, cl->l);
         pango_cairo_show_layout(c, cl->l);
