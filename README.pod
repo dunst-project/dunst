@@ -3,6 +3,9 @@
 I don't have the time and motivation anymore to properly maintain this project.
 If anyone is interested in taking over please drop me a mail at dunst@knopwob.de
 
+edit: I've got some promising looking replies, so hopefully this message can be
+removed soon. 
+
 =head1 NAME
 
 dunst - A customizable and lightweight notification-daemon
