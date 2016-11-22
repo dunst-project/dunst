@@ -128,19 +128,6 @@ void string_strip_delimited(char *str, char a, char b)
         str[iwrite] = 0;
 }
 
-int digit_count(int i)
-{
-        i = ABS(i);
-        int len = 1;
-
-        while (i > 0) {
-                len++;
-                i /= 10;
-        }
-
-        return len;
-}
-
 void die(char *text, int exit_value)
 {
         fputs(text, stderr);
