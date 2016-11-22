@@ -320,7 +320,7 @@ static GdkPixbuf *get_pixbuf_from_path(char *icon_path)
 {
         GdkPixbuf *pixbuf = NULL;
         gchar *uri_path = NULL;
-        if (strlen(icon_path) > 0 && settings.icon_position != icons_off) {
+        if (strlen(icon_path) > 0) {
                 if (g_str_has_prefix(icon_path, "file://")) {
                         uri_path = g_filename_from_uri(icon_path, NULL, NULL);
                         if (uri_path != NULL) {
@@ -365,7 +365,7 @@ static GdkPixbuf *get_pixbuf_from_path(char *icon_path)
 
 static GdkPixbuf *get_pixbuf_from_raw_image(const RawImage *raw_image)
 {
-        GdkPixbuf *pixbuf;
+        GdkPixbuf *pixbuf = NULL;
 
         pixbuf = gdk_pixbuf_new_from_data(raw_image->data,
                                           GDK_COLORSPACE_RGB,
@@ -394,9 +394,9 @@ static colored_layout *r_init_shared(cairo_t *c, notification *n)
 
         GdkPixbuf *pixbuf = NULL;
 
-        if (n->raw_icon) {
+        if (n->raw_icon && settings.icon_position != icons_off) {
                 pixbuf = get_pixbuf_from_raw_image(n->raw_icon);
-        } else if (n->icon) {
+        } else if (n->icon && settings.icon_position != icons_off) {
                 pixbuf = get_pixbuf_from_path(n->icon);
         }
 
