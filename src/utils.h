@@ -22,8 +22,6 @@ void string_strip_delimited(char *str, char a, char b);
 
 /* exit with an error message */
 void die(char *msg, int exit_value);
-
-int digit_count(int i);
 #endif
 
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
