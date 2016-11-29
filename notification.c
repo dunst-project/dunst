@@ -153,6 +153,9 @@ void notification_free(notification * n)
         free(n->summary);
         free(n->body);
         free(n->icon);
+        if (n->category && strcmp(n->category, "")) {
+                free(n->category);
+        }
         free(n->msg);
         free(n->dbus_client);
 
@@ -335,6 +338,10 @@ int notification_init(notification * n, int id)
 
         n->format = settings.format;
 
+        if (n->category == NULL) {
+                n->category = "";
+        }
+
         rule_apply_all(n);
 
         n->urls = notification_extract_markup_urls(&(n->body));
@@ -448,10 +455,6 @@ int notification_init(notification * n, int id)
         else if (strlen(n->icon) <= 0) {
                 free(n->icon);
                 n->icon = strdup(settings.icons[n->urgency]);
-        }
-
-        if (n->category == NULL) {
-                n->category = "";
         }
 
         n->timestamp = time(NULL);
