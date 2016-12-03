@@ -4,9 +4,9 @@ dunst - A customizable and lightweight notification-daemon
 
 =head1 SYNOPSIS
 
-dunst [-geometry geom] [-shrink shrink] [-fn font] [-nf/nb/lf/lb/cf/cb color]
-[-to/nto/lto/cto secs] [-format fmt] [-key key] [-mod mod] [-mon n]
-[-t/title title] [-c/class class] [-v]
+dunst [-conf file] [-fn font] [-geometry geom] [-lf/lb/lfr/nf/nb/nfr/cf/cb/cfr color] 
+[-lto/nto/cto secs] [-lh/nh/sep_height height] [-format fmt] [-follow mode] [-mon n] 
+[-history_length n] [-t/title title] [-c/class class] [-v]
 
 =head1 DESCRIPTION
 
@@ -20,87 +20,194 @@ Dunst is a highly configurable and lightweight notification daemon.
 
 display help message.
 
+=item B<-conf/-config file>
+
+use alternative config file.
+
 =item B<-fn font>
 
-Defines the font or font set used. Optionally set the size as a decimal number after the font name and space. 
-Multiple font options can be separated with commas. 
-
-=item B<-lb/nb/cb color>
-
-defines the background color of low/normal/critical messages.
-
-=item B<-lf/nf/cf color>
-
-defines the foreground color of low/normal/critical messages.
-
-=item B<-to secs>
-
-defines the default timeout. Can be (partially) overridden by
-the following options.
-
-=item B<-lto/nto/cto secs>
-
-timeouts for low/normal/critical messages.
-
-=item B<-key key>
-
-remove notification by pressing key.
-
-=item B<-all_key key>
-
-remove all notifications by pressing key.
-
-=item B<-history_key key>
-
-redisplay last notification by pressing key.
-
-=item B<-format fmt>
-
-defines the format of the message. See FORMAT.
-
-=item B<-mon n>
-
-show the notification on monitor n.
-
-=item B<-follow mode>
-
-display notifications on focused monitor. Possible options are "mouse" to follow the mouse cursor, "keyboard" to follow the window with the keyboard focus and "none" to disable focus following. "mouse" and "keyboard" overwrite the -mon option.
-
-=item B<-s>
-
-sort messages by urgency.
-
-=item B<-ns>
-
-don't sort messages by urgency.
+Defines the font or font set used. Optionally set the size as a decimal number after the font name and space.
+Multiple font options can be separated with commas.
 
 =item B<-geometry [{width}]x{height}][+/-{x}+/-{y}]>
 
 The geometry of the message window. The height is measured
 in lines everything else in pixels. If the width is omitted
 but the height is given ("-geometry x2"), the message window
-expands over  the  whole  screen (dmenu-like).
-If  width  is  0,  the  window  expands  to  the longest
+expands over the whole screen (dmenu-like).
+If width is 0, the window expands to the longest
 message displayed. A positive x is measured from the left,
 a negative from the right side of the screen.
 Y is measured from the top and down respectively.
-see also EXAMPLES show the notification on monitor n.
+
+=item B<-lf/nf/cf color>
+
+Defines the foreground color of low/normal/critical messages.
+
+=item B<-lb/nb/cb color>
+
+Defines the background color of low/normal/critical messages.
+
+=item B<-lfr/nfr/cfr color>
+
+Defines the frame color of low/normal/critical messages.
+
+=item B<-lto/nto/cto secs>
+
+Defines timeouts for low/normal/critical messages.
+
+=item B<-lh/-line_height height>
+
+Defines the height of a single line in pixel. If the height is smaller than the font height, it will get raised to the font height.
+
+=item B<-nh/-notification_height height>
+
+Defines the height of the notification window.
+
+=item B<-sep_height/-separator_height height>
+
+Defines the height of the separator line.
+
+=item B<-format fmt>
+
+Defines the format of the message. See FORMAT.
+
+=item B<-follow mode>
+
+Display notifications on focused monitor. Possible options are "mouse" to follow the mouse cursor, "keyboard" to follow the window
+with the keyboard focus and "none" to disable focus following. "mouse" and "keyboard" overwrite the -mon option.
+
+=item B<-mon n>
+
+Show the notification on monitor n.
+
+=item B<-history_length n>
+
+Max amount of notifications kept in history.
 
 =item B<-t/-title title>
 
-Define the title of notification windows spawned by dunst.
+Defines the title of notification windows spawned by dunst.
 
 =item B<-t/-class class>
 
-Define the class of notification windows spawned by dunst.
+Defines the class of notification windows spawned by dunst.
+
+=item B<-key key>
+
+Remove notification by pressing key.
+
+=item B<-all_key key>
+
+Remove all notifications by pressing key.
+
+=item B<-history_key key>
+
+Redisplay last notification by pressing key.
+
+=item B<-context_key key>
+
+Shortcut for context menu.
+
+=item B<-alignment position>
+
+Defines the align position of notifications to left/center/right.
+
+=item B<-icon_position position>
+
+Defines the align position of icons to left/right or off to disable icons.
+
+=item B<-max_icon_size size>
+
+Defines the max size for icons to scale. If icon_position is set to off, icons won't be displayed.
+
+=item B<-icon_folders path>
+
+Defines the path to the folder with the default icons.
+
+=item B<-li/ni/ci icon>
+
+Defines the icon for low/normal/critical messages.
+
+=item B<-padding pad>
+
+Defines padding between text and separator.
+
+=item B<-horizontal_padding pad>
+
+Defines horizontal padding.
+
+=item B<-transparency range>
+
+Defines transparency range between 0-100
+
+=item B<-sep_color/-separator_color color>
+
+Defines color of the separator line.
+
+=item B<-frame_color color>
+
+Defines color of the frame around window.
+
+=item B<-frame_width width>
+
+Defines width of frame around window.
+
+=item B<-idle_threshold secs>
+
+Don't timeout notifications if user is longer idle than threshold.
+
+=item B<-show_age_threshold secs>
+
+Show age of message if message is older than show_age_threshold seconds. Set to -1 to disable.
+
+=item B<-bounce_freq freq>
+
+The frequency with wich text that is longer than the notification window allows bounces back and forth.
+
+=item B<-markup>
+
+Allow markups in notifications/formats.
+
+=item B<-plain>
+
+Treat incoming notifications as plain text.
+
+=item B<-indicate_hidden>
+
+Show how many notificaitons are hidden.
+
+=item B<-word_wrap>
+
+Truncating long lines or do word wrap.
+
+=item B<-ignore_newline>
+
+Ignore newline characters in notifications.
+
+=item B<-stack_duplicates>
+
+Merge multiple notifications with the same content.
+
+=item B<-hide_duplicates_count>
+
+Hide count of the merged notifications with the same content.
+
+=item B<-sticky_history>
+
+Don't timeout notifications popped up from history.
+
+=item B<-show_indicators>
+
+Show indicators for actions and URLs.
+
+=item B<-sort>
+
+Sort messages by urgency.
 
 =item B<-shrink>
 
 Shrink window if it's smaller than the width. Will be ignored if width is 0.
-
-=item B<-lh/-line_height> height
-
-The height of a single line in pixel. If the height is smaller than the font height, it will get raised to the font height.
 
 =item B<-print>
 
@@ -108,12 +215,7 @@ Print notifications to stdout. This might be useful for logging, setting up rule
 
 =item B<-v/--version>
 
-print version information.
-
-
-=item B<-config file>
-
-use alternative config file.
+Print version information.
 
 =item B<-always_run_script>
 
@@ -123,7 +225,8 @@ Always run rule-defined scripts, even if the notification is suppressed with for
 
 =head1 FORMAT
 
-fmt is a string containing placeholders. The placeholders will be replaced with the corresponding text, or if the text is not present, nothing. Possible placeholders are:
+fmt is a string containing placeholders.
+The placeholders will be replaced with the corresponding text, or if the text is not present, nothing. Possible placeholders are:
 
 =over 4
 
