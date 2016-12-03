@@ -421,7 +421,7 @@ double option_get_double(char *ini_section, char *ini_key, char *cmdline_key,
         double val = cmdline_get_double(cmdline_key, def, description);
 
         if (!str)
-                return ini_get_int(ini_section, ini_key, def);
+                return ini_get_double(ini_section, ini_key, def);
         else
                 return val;
 }
