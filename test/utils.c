@@ -124,7 +124,7 @@ TEST test_string_strip_delimited(void)
         PASS();
 }
 
-SUITE(utils)
+SUITE(suite_utils)
 {
         RUN_TEST(test_string_replace_char);
         RUN_TEST(test_string_replace_all);
