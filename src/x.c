@@ -300,7 +300,7 @@ static cairo_surface_t *gdk_pixbuf_to_cairo_surface(const GdkPixbuf *pixbuf)
         cr = cairo_create(icon_surface);
         gdk_cairo_set_source_pixbuf(cr, pixbuf, 0, 0);
         cairo_paint(cr);
-        free(cr);
+        cairo_destroy(cr);
         return icon_surface;
 }
 
