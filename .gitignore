@@ -6,3 +6,4 @@ config.h
 dunst.1
 org.knopwob.dunst.service
 dunstify
+test/test
