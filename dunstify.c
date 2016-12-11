@@ -49,7 +49,7 @@ void print_capabilities(void)
     GList *caps = notify_get_server_caps();
     for (GList *iter = caps; iter; iter = iter->next) {
         if (strlen(iter->data) > 0) {
-            g_print("%s\n", iter->data);
+            g_print("%s\n", (char *)iter->data);
         }
     }
 }
@@ -171,7 +171,7 @@ int get_id(NotifyNotification *n)
     return kn->id;
 }
 
-int put_id(NotifyNotification *n, guint32 id)
+void put_id(NotifyNotification *n, guint32 id)
 {
     knickers *kn = n->priv;
 
