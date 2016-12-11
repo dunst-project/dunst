@@ -67,7 +67,7 @@ static color_t x_color_hex_to_double(int hexValue)
         color.g = ((hexValue >> 8) & 0xFF) / 255.0;
         color.b = ((hexValue) & 0xFF) / 255.0;
 
-  return color;
+        return color;
 }
 
 static color_t x_string_to_color_t(const char *str)
@@ -520,10 +520,10 @@ static GSList *r_create_layouts(cairo_t *c)
                                 r_create_layout_from_notification(c, n));
         }
 
-                if (xmore_is_needed && xctx.geometry.h != 1) {
-                        /* append xmore message as new message */
-                        layouts = g_slist_append(layouts,
-                                r_create_layout_for_xmore(c, last, qlen));
+        if (xmore_is_needed && xctx.geometry.h != 1) {
+                /* append xmore message as new message */
+                layouts = g_slist_append(layouts,
+                        r_create_layout_for_xmore(c, last, qlen));
         }
 
         return layouts;
@@ -706,7 +706,6 @@ static void x_win_move(int width, int height)
         xctx.window_dim.w = width;
 }
 
-
 static void setopacity(Window win, unsigned long opacity)
 {
         Atom _NET_WM_WINDOW_OPACITY =
@@ -714,12 +713,6 @@ static void setopacity(Window win, unsigned long opacity)
         XChangeProperty(xctx.dpy, win, _NET_WM_WINDOW_OPACITY, XA_CARDINAL, 32,
                         PropModeReplace, (unsigned char *)&opacity, 1L);
 }
-
-
-
-
-
-
 
 /*
  * Returns the modifier which is NumLock.
@@ -1112,7 +1105,6 @@ void x_setup(void)
         x_shortcut_grab(&settings.history_ks);
 
 }
-
 
 static void x_set_wm(Window win)
 {
