@@ -52,12 +52,12 @@ clean-dunstify:
 	rm -f dunstify
 
 clean-doc:
-	rm -f dunst.1
+	rm -f docs/dunst.1
 
 clean: clean-dunst clean-dunstify clean-doc test-clean
 
-doc: dunst.1
-dunst.1: docs/dunst.pod
+doc: docs/dunst.1
+docs/dunst.1: docs/dunst.pod
 	pod2man --name=dunst -c "Dunst Reference" --section=1 --release=${VERSION} $< > $@
 
 service:
@@ -67,7 +67,7 @@ install-dunst: dunst doc
 	mkdir -p ${DESTDIR}${PREFIX}/bin
 	install -m755 dunst ${DESTDIR}${PREFIX}/bin
 	mkdir -p ${DESTDIR}${MANPREFIX}/man1
-	install -m644 dunst.1 ${DESTDIR}${MANPREFIX}/man1
+	install -m644 docs/dunst.1 ${DESTDIR}${MANPREFIX}/man1
 
 install-doc:
 	mkdir -p ${DESTDIR}${PREFIX}/share/dunst
