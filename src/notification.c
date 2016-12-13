@@ -326,6 +326,10 @@ int notification_init(notification * n, int id)
 
         n->format = settings.format;
 
+        if (n->category == NULL) {
+                n->category = "";
+        }
+        
         rule_apply_all(n);
 
         n->urls = notification_extract_markup_urls(&(n->body));
@@ -444,10 +448,6 @@ int notification_init(notification * n, int id)
 
         if (n->raw_icon == NULL && n->icon == NULL) {
                 n->icon = strdup(settings.icons[n->urgency]);
-        }
-
-        if (n->category == NULL) {
-                n->category = "";
         }
 
         n->timestamp = time(NULL);
