@@ -33,6 +33,7 @@ TEST test_ini_get_bool(void)
         ASSERT(ini_get_bool(bool_section, "boolbin1", false));
         ASSERT_FALSE(ini_get_bool(bool_section, "boolbin0", true));
 
+        ASSERT(ini_get_bool(bool_section, "boolinvalid", true));
         ASSERT_FALSE(ini_get_bool(bool_section, "boolinvalid", false));
 
         ASSERT(ini_get_bool(bool_section, "nonexistent", true));

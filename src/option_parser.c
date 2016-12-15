@@ -175,7 +175,7 @@ int ini_get_bool(char *section, char *key, int def)
                 case '0':
                         return false;
                 default:
-                        return false;
+                        return def;
                 }
         }
 }
