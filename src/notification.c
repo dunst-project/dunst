@@ -329,7 +329,7 @@ int notification_init(notification * n, int id)
         if (n->category == NULL) {
                 n->category = "";
         }
-        
+
         rule_apply_all(n);
 
         n->urls = notification_extract_markup_urls(&(n->body));
