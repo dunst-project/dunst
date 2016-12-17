@@ -1,3 +1,7 @@
+===================================================================================
+Release Notes For v1.0.0
+===================================================================================
+
 PACKAGE MAINTAINERS:
     There are new dependencies introduced with this version:
         *glib
@@ -53,3 +57,23 @@ PACKAGE MAINTAINERS:
 
     Please don't open bug reports when dunstify doesn't work with your
     version of libnotify
+
+===================================================================================
+Release Notes For v0.4.0
+===================================================================================
+
+Since dunst has lost its ability to show notifications independend of
+dbus/libnotify a long time ago I think it is time that the describtion reflects
+that. Even though this breaks the acronym. So if you're a packager please update
+the package description to read something like:
+
+short:
+"Dunst - a dmenu-ish notification-daemon"
+
+long:
+"Dunst is a highly configurable and lightweight notification-daemon"
+
+Release Tarballs are now available at:
+http://www.knopwob.org/public/dunst-release/
+
+For more information have a look at the CHANGELOG and the new options in dunstrc.
