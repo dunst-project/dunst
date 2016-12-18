@@ -163,7 +163,7 @@ Show age of message if message is older than show_age_threshold seconds. Set to 
 
 =item B<-bounce_freq freq>
 
-The frequency with wich text that is longer than the notification window allows bounces back and forth.
+The frequency with which text that is longer than the notification window allows bounces back and forth.
 
 =item B<-markup>
 
@@ -175,7 +175,7 @@ Treat incoming notifications as plain text.
 
 =item B<-indicate_hidden>
 
-Show how many notificaitons are hidden.
+Show how many notifications are hidden.
 
 =item B<-word_wrap>
 
