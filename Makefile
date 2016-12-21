@@ -47,6 +47,7 @@ debug: ${OBJ}
 clean-dunst:
 	rm -f dunst ${OBJ} main.o
 	rm -f org.knopwob.dunst.service
+	rm -f dunst.systemd.service
 
 clean-dunstify:
 	rm -f dunstify
@@ -62,6 +63,7 @@ docs/dunst.1: docs/dunst.pod
 
 service:
 	@sed "s|##PREFIX##|$(PREFIX)|" org.knopwob.dunst.service.in > org.knopwob.dunst.service
+	@sed "s|##PREFIX##|$(PREFIX)|" contrib/dunst.systemd.service.in > dunst.systemd.service
 
 install-dunst: dunst doc
 	mkdir -p ${DESTDIR}${PREFIX}/bin
