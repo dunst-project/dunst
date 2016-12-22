@@ -149,7 +149,7 @@ void invoke_action(const char *action)
         }
 
         if (invoked && action_identifier) {
-                actionInvoked(invoked, action_identifier);
+                action_invoked(invoked, action_identifier);
         }
 }
 

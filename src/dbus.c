@@ -59,18 +59,18 @@ static const char *introspection_xml =
     "   </interface>"
     "</node>";
 
-static void onGetCapabilities(GDBusConnection * connection,
+static void on_get_capabilities(GDBusConnection * connection,
                               const gchar * sender,
                               const GVariant * parameters,
                               GDBusMethodInvocation * invocation);
-static void onNotify(GDBusConnection * connection,
+static void on_notify(GDBusConnection * connection,
                      const gchar * sender,
                      GVariant * parameters, GDBusMethodInvocation * invocation);
-static void onCloseNotification(GDBusConnection * connection,
+static void on_close_notification(GDBusConnection * connection,
                                 const gchar * sender,
                                 GVariant * parameters,
                                 GDBusMethodInvocation * invocation);
-static void onGetServerInformation(GDBusConnection * connection,
+static void on_get_server_information(GDBusConnection * connection,
                                    const gchar * sender,
                                    const GVariant * parameters,
                                    GDBusMethodInvocation * invocation);
@@ -85,13 +85,13 @@ void handle_method_call(GDBusConnection * connection,
                         GDBusMethodInvocation * invocation, gpointer user_data)
 {
         if (g_strcmp0(method_name, "GetCapabilities") == 0) {
-                onGetCapabilities(connection, sender, parameters, invocation);
+                on_get_capabilities(connection, sender, parameters, invocation);
         } else if (g_strcmp0(method_name, "Notify") == 0) {
-                onNotify(connection, sender, parameters, invocation);
+                on_notify(connection, sender, parameters, invocation);
         } else if (g_strcmp0(method_name, "CloseNotification") == 0) {
-                onCloseNotification(connection, sender, parameters, invocation);
+                on_close_notification(connection, sender, parameters, invocation);
         } else if (g_strcmp0(method_name, "GetServerInformation") == 0) {
-                onGetServerInformation(connection, sender, parameters,
+                on_get_server_information(connection, sender, parameters,
                                        invocation);
         } else {
                 printf("WARNING: sender: %s; unknown method_name: %s\n", sender,
@@ -99,7 +99,7 @@ void handle_method_call(GDBusConnection * connection,
         }
 }
 
-static void onGetCapabilities(GDBusConnection * connection,
+static void on_get_capabilities(GDBusConnection * connection,
                               const gchar * sender,
                               const GVariant * parameters,
                               GDBusMethodInvocation * invocation)
@@ -119,7 +119,7 @@ static void onGetCapabilities(GDBusConnection * connection,
         g_variant_unref(value);
 }
 
-static void onNotify(GDBusConnection * connection,
+static void on_notify(GDBusConnection * connection,
                      const gchar * sender,
                      GVariant * parameters, GDBusMethodInvocation * invocation)
 {
@@ -335,7 +335,7 @@ static void onNotify(GDBusConnection * connection,
         run(NULL);
 }
 
-static void onCloseNotification(GDBusConnection * connection,
+static void on_close_notification(GDBusConnection * connection,
                                 const gchar * sender,
                                 GVariant * parameters,
                                 GDBusMethodInvocation * invocation)
@@ -347,7 +347,7 @@ static void onCloseNotification(GDBusConnection * connection,
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
 }
 
-static void onGetServerInformation(GDBusConnection * connection,
+static void on_get_server_information(GDBusConnection * connection,
                                    const gchar * sender,
                                    const GVariant * parameters,
                                    GDBusMethodInvocation * invocation)
@@ -360,10 +360,10 @@ static void onGetServerInformation(GDBusConnection * connection,
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
 }
 
-void notificationClosed(notification * n, int reason)
+void notification_closed(notification * n, int reason)
 {
         if (!dbus_conn) {
-                printf("DEBUG: notificationClosed but not (yet) connected\n");
+                printf("DEBUG: notification_closed but not (yet) connected\n");
                 return;
         }
 
@@ -377,12 +377,12 @@ void notificationClosed(notification * n, int reason)
                                       "NotificationClosed", body, &err);
 
         if (err) {
-                printf("notificationClosed ERROR\n");
+                printf("notification_closed ERROR\n");
         }
 
 }
 
-void actionInvoked(notification * n, const char *identifier)
+void action_invoked(notification * n, const char *identifier)
 {
         GVariant *body = g_variant_new("(us)", n->id, identifier);
         GError *err = NULL;

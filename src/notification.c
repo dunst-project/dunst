@@ -556,7 +556,7 @@ int notification_close_by_id(int id, int reason)
         }
 
         if (reason > 0 && reason < 4 && target != NULL) {
-                notificationClosed(target, reason);
+                notification_closed(target, reason);
         }
 
         wake_up();

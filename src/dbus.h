@@ -10,8 +10,8 @@
 int initdbus(void);
 void dbus_tear_down(int id);
 /* void dbus_poll(int timeout); */
-void notificationClosed(notification * n, int reason);
-void actionInvoked(notification * n, const char *identifier);
+void notification_closed(notification * n, int reason);
+void action_invoked(notification * n, const char *identifier);
 
 #endif
 
