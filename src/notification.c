@@ -143,6 +143,15 @@ int notification_cmp_data(const void *va, const void *vb, void *data)
         return notification_cmp(va, vb);
 }
 
+int notification_is_duplicate(const notification *a, const notification *b)
+{
+        return strcmp(a->appname, b->appname) == 0
+            && strcmp(a->summary, b->summary) == 0
+            && strcmp(a->body,    b->body) == 0
+            && (settings.icon_position != icons_off ? strcmp(a->icon, b->icon) == 0 : 1)
+            && a->urgency == b->urgency;
+}
+
 /*
  * Free the memory used by the given notification.
  */
@@ -373,9 +382,7 @@ int notification_init(notification * n, int id)
                 for (GList * iter = g_queue_peek_head_link(queue); iter;
                      iter = iter->next) {
                         notification *orig = iter->data;
-                        if (strcmp(orig->appname, n->appname) == 0
-                            && strcmp(orig->summary, n->summary) == 0
-                            && strcmp(orig->body, n->body) == 0) {
+                        if (notification_is_duplicate(orig, n)) {
                                 /* If the progress differs this was probably intended to replace the notification
                                  * but notify-send was used. So don't increment dup_count in this case
                                  */
@@ -398,9 +405,7 @@ int notification_init(notification * n, int id)
                 for (GList * iter = g_queue_peek_head_link(displayed); iter;
                      iter = iter->next) {
                         notification *orig = iter->data;
-                        if (strcmp(orig->appname, n->appname) == 0
-                            && strcmp(orig->summary, n->summary) == 0
-                            && strcmp(orig->body, n->body) == 0) {
+                        if (notification_is_duplicate(orig, n)) {
                                 /* notifications that differ only in progress hints should be expected equal,
                                  * but we want the latest message, with the latest hint value
                                  */
