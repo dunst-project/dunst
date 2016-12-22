@@ -343,7 +343,7 @@ int dunst_main(int argc, char *argv[])
         x_setup();
 
         if (settings.startup_notification) {
-                notification *n = malloc(sizeof(notification));
+                notification *n = notification_create();
                 if(n == NULL) {
                         die("Unable to allocate memory", EXIT_FAILURE);
                 }

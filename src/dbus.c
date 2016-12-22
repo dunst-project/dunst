@@ -295,7 +295,7 @@ static void onNotify(GDBusConnection * connection,
                 }
         }
 
-        notification *n = malloc(sizeof(notification));
+        notification *n = notification_create();
         if(n == NULL) {
                 die("Unable to allocate memory", EXIT_FAILURE);
         }

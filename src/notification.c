@@ -312,6 +312,20 @@ char *notification_extract_markup_urls(char **str_ptr) {
 }
 
 /*
+ * This is a helper function that allocates, initialises a notification and
+ * returns a pointer to it. All notifications should be created using this
+ * function. After setting all the necessary fields(i.e. appname, summary,
+ * body, icon etc) notification_init should be called to do the actual
+ * initialisation.
+ */
+notification *notification_create(void)
+{
+        notification *n = malloc(sizeof(notification));
+        memset(n, 0, sizeof(notification));
+        return n;
+}
+
+/*
  * Initialize the given notification and add it to
  * the queue. Replace notification with id if id > 0.
  */
