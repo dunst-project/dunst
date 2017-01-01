@@ -57,6 +57,11 @@ clean-doc:
 
 clean: clean-dunst clean-dunstify clean-doc test-clean
 
+distclean: clean clean-config
+
+clean-config:
+	rm config.h
+
 doc: docs/dunst.1
 docs/dunst.1: docs/dunst.pod
 	pod2man --name=dunst -c "Dunst Reference" --section=1 --release=${VERSION} $< > $@
