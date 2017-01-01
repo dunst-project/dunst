@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <assert.h>
 
 #include "dbus.h"
 #include "x.h"
@@ -157,8 +158,7 @@ int notification_is_duplicate(const notification *a, const notification *b)
  */
 void notification_free(notification * n)
 {
-        if (n == NULL)
-                return;
+        assert(n != NULL);
         free(n->appname);
         free(n->summary);
         free(n->body);
@@ -332,8 +332,7 @@ notification *notification_create(void)
  */
 int notification_init(notification * n, int id)
 {
-        if (n == NULL)
-                return -1;
+        assert(n != NULL);
 
         if (strcmp("DUNST_COMMAND_PAUSE", n->summary) == 0) {
                 pause_display = true;
@@ -569,8 +568,7 @@ int notification_close_by_id(int id, int reason)
  */
 int notification_close(notification * n, int reason)
 {
-        if (n == NULL)
-                return -1;
+        assert(n != NULL);
         return notification_close_by_id(n->id, reason);
 }
 
