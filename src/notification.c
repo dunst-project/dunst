@@ -165,9 +165,7 @@ void notification_free(notification * n)
         free(n->icon);
         free(n->msg);
         free(n->dbus_client);
-
-        if (n->category && *n->category != '\0')
-                g_free(n->category);
+        g_free(n->category);
 
         if (n->text_to_render)
                 g_free(n->text_to_render);
@@ -312,11 +310,8 @@ char *notification_extract_markup_urls(char **str_ptr) {
 }
 
 /*
- * This is a helper function that allocates, initialises a notification and
- * returns a pointer to it. All notifications should be created using this
- * function. After setting all the necessary fields(i.e. appname, summary,
- * body, icon etc) notification_init should be called to do the actual
- * initialisation.
+ * Create notification struct and initialise everything to NULL,
+ * this function is guaranteed to return a valid pointer.
  */
 notification *notification_create(void)
 {
@@ -326,13 +321,29 @@ notification *notification_create(void)
         return n;
 }
 
+void notification_init_defaults(notification *n)
+{
+        assert(n != NULL);
+        if(n->appname == NULL) n->appname = g_strdup("unknown");
+        if(n->summary == NULL) n->summary = g_strdup("");
+        if(n->body == NULL) n->body = g_strdup("");
+        if(n->category == NULL) n->category = g_strdup("");
+}
+
 /*
  * Initialize the given notification and add it to
  * the queue. Replace notification with id if id > 0.
+ *
+ * n should be a pointer to a notification allocated with
+ * notification_create, it is undefined behaviour to pass a notification
+ * allocated some other way.
  */
 int notification_init(notification * n, int id)
 {
         assert(n != NULL);
+
+        //Prevent undefined behaviour by initialising required fields
+        notification_init_defaults(n);
 
         if (strcmp("DUNST_COMMAND_PAUSE", n->summary) == 0) {
                 pause_display = true;
@@ -348,10 +359,6 @@ int notification_init(notification * n, int id)
         n->text_to_render = NULL;
 
         n->format = settings.format;
-
-        if (n->category == NULL) {
-                n->category = "";
-        }
 
         rule_apply_all(n);
 
