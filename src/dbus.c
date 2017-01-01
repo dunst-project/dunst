@@ -296,9 +296,6 @@ static void on_notify(GDBusConnection * connection,
         }
 
         notification *n = notification_create();
-        if(n == NULL) {
-                die("Unable to allocate memory", EXIT_FAILURE);
-        }
         n->appname = appname;
         n->summary = summary;
         n->body = body;

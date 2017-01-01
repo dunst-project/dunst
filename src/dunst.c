@@ -344,9 +344,6 @@ int dunst_main(int argc, char *argv[])
 
         if (settings.startup_notification) {
                 notification *n = notification_create();
-                if(n == NULL) {
-                        die("Unable to allocate memory", EXIT_FAILURE);
-                }
                 n->appname = strdup("dunst");
                 n->summary = strdup("startup");
                 n->body = strdup("dunst is up and running");

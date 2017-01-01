@@ -321,6 +321,7 @@ char *notification_extract_markup_urls(char **str_ptr) {
 notification *notification_create(void)
 {
         notification *n = malloc(sizeof(notification));
+        if(n == NULL) die("Unable to allocate memory", EXIT_FAILURE);
         memset(n, 0, sizeof(notification));
         return n;
 }
