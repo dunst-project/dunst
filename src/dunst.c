@@ -352,15 +352,6 @@ int dunst_main(int argc, char *argv[])
                 n->allow_markup = false;
                 n->plain_text = true;
                 n->urgency = LOW;
-                n->icon = NULL;
-                n->raw_icon = NULL;
-                n->category = NULL;
-                n->msg = NULL;
-                n->dbus_client = NULL;
-                n->color_strings[0] = NULL;
-                n->color_strings[1] = NULL;
-                n->actions = NULL;
-                n->urls = NULL;
                 notification_init(n, 0);
         }
 
