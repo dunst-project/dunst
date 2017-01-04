@@ -33,16 +33,12 @@ config.h: config.def.h
 	@echo creating $@ from $<
 	@cp $< $@
 
-dunst: ${OBJ} main.o
+dunst: options ${OBJ} main.o
 	@echo "${CC} ${CFLAGS} -o $@ ${OBJ} ${LDFLAGS}"
 	@${CC} ${CFLAGS} -o $@ ${OBJ} main.o ${LDFLAGS}
 
 dunstify:
 	@${CC} ${CFLAGS} -o $@ dunstify.c -std=c99 $(shell pkg-config --libs --cflags glib-2.0 libnotify)
-
-debug: ${OBJ}
-	@echo CC -o $@
-	@${CC} ${CFLAGS} -O0 -o dunst ${OBJ} ${LDFLAGS}
 
 clean-dunst:
 	rm -f dunst ${OBJ} main.o
@@ -60,7 +56,7 @@ clean: clean-dunst clean-dunstify clean-doc test-clean
 distclean: clean clean-config
 
 clean-config:
-	rm config.h
+	rm -f config.h
 
 doc: docs/dunst.1
 docs/dunst.1: docs/dunst.pod
