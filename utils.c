@@ -11,10 +11,10 @@
 #include "dunst.h"
 
 char *string_replace_char(char needle, char replacement, char *haystack) {
-    char *current = haystack;
-    while ((current = strchr (current, needle)) != NULL)
-        *current++ = replacement;
-    return haystack;
+        char *current = haystack;
+        while ((current = strchr (current, needle)) != NULL)
+                *current++ = replacement;
+        return haystack;
 }
 
 char *string_replace_at(char *buf, int pos, int len, const char *repl)
@@ -25,13 +25,21 @@ char *string_replace_at(char *buf, int pos, int len, const char *repl)
         buf_len = strlen(buf);
         repl_len = strlen(repl);
         size = (buf_len - len) + repl_len + 1;
-        tmp = malloc(size);
+
+        if (repl_len <= len) {
+                tmp = buf;
+        } else {
+                tmp = malloc(size);
+        }
 
         memcpy(tmp, buf, pos);
         memcpy(tmp + pos, repl, repl_len);
-        memcpy(tmp + pos + repl_len, buf + pos + len, buf_len - (pos + len) + 1);
+        memmove(tmp + pos + repl_len, buf + pos + len, buf_len - (pos + len) + 1);
 
-        free(buf);
+        if(tmp != buf) {
+                free(buf);
+        }
+
         return tmp;
 }
 
@@ -103,6 +111,21 @@ char **string_to_argv(const char *s)
         free(str);
 
         return argv;
+}
+
+void string_strip_delimited(char *str, char a, char b)
+{
+        int iread=-1, iwrite=0, copen=0;
+        while (str[++iread] != 0) {
+                if (str[iread] == a) {
+                        ++copen;
+                } else if (str[iread] == b && copen > 0) {
+                        --copen;
+                } else if (copen == 0) {
+                        str[iwrite++] = str[iread];
+                }
+        }
+        str[iwrite] = 0;
 }
 
 int digit_count(int i)

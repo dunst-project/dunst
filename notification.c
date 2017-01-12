@@ -169,51 +169,20 @@ void notification_free(notification * n)
          */
 char *notification_strip_markup(char *str)
 {
-        char *replace_buf, *start, *end;
-
         if (str == NULL) {
                 return NULL;
         }
 
+        /* strip all tags */
+        string_strip_delimited(str, '<', '>');
+
+        /* unquote the remainder */
         str = string_replace_all("&quot;", "\"", str);
         str = string_replace_all("&apos;", "'", str);
         str = string_replace_all("&amp;", "&", str);
         str = string_replace_all("&lt;", "<", str);
         str = string_replace_all("&gt;", ">", str);
 
-        /* remove tags */
-        str = string_replace_all("<b>", "", str);
-        str = string_replace_all("</b>", "", str);
-        str = string_replace_all("<br>", " ", str);
-        str = string_replace_all("<br/>", " ", str);
-        str = string_replace_all("<br />", " ", str);
-        str = string_replace_all("<i>", "", str);
-        str = string_replace_all("</i>", "", str);
-        str = string_replace_all("<u>", "", str);
-        str = string_replace_all("</u>", "", str);
-        str = string_replace_all("</a>", "", str);
-
-        while ((start = strstr(str, "<a href")) != NULL) {
-                end = strstr(start, ">");
-                if (end != NULL) {
-                        replace_buf = strndup(start, end - start + 1);
-                        str = string_replace(replace_buf, "", str);
-                        free(replace_buf);
-                } else {
-                    break;
-                }
-        }
-
-        while ((start = strstr(str, "<img src")) != NULL) {
-                end = strstr(start, "/>");
-                if (end != NULL) {
-                        replace_buf = strndup(start, end - start + 2);
-                        str = string_replace(replace_buf, "", str);
-                        free(replace_buf);
-                } else {
-                    break;
-                }
-        }
         return str;
 }
 
@@ -254,19 +223,25 @@ char *notification_replace_format(const char *needle, const char *replacement,
                 tmp = notification_quote_markup(tmp);
                 ret = string_replace_all(needle, tmp, haystack);
                 free(tmp);
-        } else if (!allow_markup) {
+        } else {
                 tmp = strdup(replacement);
-                if (!settings.ignore_newline) {
+                if (settings.ignore_newline) {
+                        tmp = string_replace_all("<br>", " ", tmp);
+                        tmp = string_replace_all("<br/>", " ", tmp);
+                        tmp = string_replace_all("<br />", " ", tmp);
+                } else {
                         tmp = string_replace_all("<br>", "\n", tmp);
                         tmp = string_replace_all("<br/>", "\n", tmp);
                         tmp = string_replace_all("<br />", "\n", tmp);
                 }
-                tmp = notification_strip_markup(tmp);
-                tmp = notification_quote_markup(tmp);
+
+                if (!allow_markup) {
+                        tmp = notification_strip_markup(tmp);
+                        tmp = notification_quote_markup(tmp);
+                }
+
                 ret = string_replace_all(needle, tmp, haystack);
                 free(tmp);
-        } else {
-                ret = string_replace_all(needle, replacement, haystack);
         }
 
         return ret;
@@ -304,7 +279,7 @@ char *notification_extract_markup_urls(char **str_ptr) {
                 }
                 free(replace_buf);
         } else {
-            break;
+                break;
         }
     }
     *str_ptr = str;
