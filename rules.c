@@ -71,11 +71,12 @@ void rule_init(rule_t * r)
  */
 bool rule_matches_notification(rule_t * r, notification * n)
 {
+        char *category = n->category ? n->category : "";
         return ((!r->appname || !fnmatch(r->appname, n->appname, 0))
                 && (!r->summary || !fnmatch(r->summary, n->summary, 0))
                 && (!r->body || !fnmatch(r->body, n->body, 0))
                 && (!r->icon || !fnmatch(r->icon, n->icon, 0))
-                && (!r->category || !fnmatch(r->category, n->category, 0))
+                && (!r->category || !fnmatch(r->category, category, 0))
                 && (r->msg_urgency == -1 || r->msg_urgency == n->urgency));
 }
 /* vim: set ts=8 sw=8 tw=0: */

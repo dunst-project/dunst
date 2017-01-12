@@ -152,6 +152,7 @@ void notification_free(notification * n)
         free(n->appname);
         free(n->summary);
         free(n->body);
+        free(n->category);
         free(n->icon);
         free(n->msg);
         free(n->dbus_client);

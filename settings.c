@@ -362,6 +362,7 @@ void load_settings(char *cmdline_config_path)
                 r->appname = ini_get_string(cur_section, "appname", r->appname);
                 r->summary = ini_get_string(cur_section, "summary", r->summary);
                 r->body = ini_get_string(cur_section, "body", r->body);
+                r->category = ini_get_string(cur_section, "category", r->category);
                 r->icon = ini_get_string(cur_section, "icon", r->icon);
                 r->timeout = ini_get_int(cur_section, "timeout", r->timeout);
                 r->allow_markup = ini_get_bool(cur_section, "allow_markup", r->allow_markup);
