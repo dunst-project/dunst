@@ -434,6 +434,9 @@ int initdbus(void)
 
 void dbus_tear_down(int owner_id)
 {
+        if (introspection_data)
+                g_dbus_node_info_unref(introspection_data);
+
         g_bus_unown_name(owner_id);
 }
 

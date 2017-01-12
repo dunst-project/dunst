@@ -34,6 +34,7 @@
 #include "utils.h"
 #include "rules.h"
 #include "notification.h"
+#include "menu.h"
 
 #include "option_parser.h"
 #include "settings.h"
@@ -272,7 +273,7 @@ gboolean run(void *data)
         return false;
 }
 
-gboolean pause_signal (gpointer data)
+gboolean pause_signal(gpointer data)
 {
         pause_display = true;
         wake_up();
@@ -280,12 +281,36 @@ gboolean pause_signal (gpointer data)
         return G_SOURCE_CONTINUE;
 }
 
-gboolean unpause_signal (gpointer data)
+gboolean unpause_signal(gpointer data)
 {
         pause_display = false;
         wake_up();
 
         return G_SOURCE_CONTINUE;
+}
+
+gboolean quit_signal(gpointer data)
+{
+        g_main_loop_quit(mainloop);
+
+        return G_SOURCE_CONTINUE;
+}
+
+static void teardown_notification(gpointer data)
+{
+        notification *n = data;
+        notification_free(n);
+}
+
+static void teardown(void)
+{
+        regex_teardown();
+
+        g_queue_free_full(history, teardown_notification);
+        g_queue_free_full(displayed, teardown_notification);
+        g_queue_free_full(queue, teardown_notification);
+
+        x_free();
 }
 
 int main(int argc, char *argv[])
@@ -364,13 +389,29 @@ int main(int argc, char *argv[])
 
         g_source_attach(x11_source, NULL);
 
-        g_unix_signal_add(SIGUSR1, pause_signal, NULL);
-        g_unix_signal_add(SIGUSR2, unpause_signal, NULL);
+        guint pause_src = g_unix_signal_add(SIGUSR1, pause_signal, NULL);
+        guint unpause_src = g_unix_signal_add(SIGUSR2, unpause_signal, NULL);
+
+        /* register SIGINT/SIGTERM handler for
+         * graceful termination */
+        guint term_src = g_unix_signal_add(SIGTERM, quit_signal, NULL);
+        guint int_src = g_unix_signal_add(SIGINT, quit_signal, NULL);
 
         run(NULL);
         g_main_loop_run(mainloop);
+        g_main_loop_unref(mainloop);
+
+        /* remove signal handler watches */
+        g_source_remove(pause_src);
+        g_source_remove(unpause_src);
+        g_source_remove(term_src);
+        g_source_remove(int_src);
+
+        g_source_destroy(x11_source);
 
         dbus_tear_down(owner_id);
+
+        teardown();
 
         return 0;
 }
