@@ -330,6 +330,46 @@ int notification_init(notification * n, int id)
                 return 0;
         }
 
+        if (strcmp("DUNST_COMMAND_CLOSEALL", n->summary) == 0) {
+                move_all_to_history();
+                return 0;
+        }
+
+        if (strcmp("DUNST_COMMAND_CLOSE", n->summary) == 0) {
+                if (displayed) {
+                    notification *no = g_queue_peek_head(displayed);
+                    if (no)
+                        notification_close(no, 2);
+                }
+                return 0;
+        }
+
+        if (strcmp("DUNST_COMMAND_HISTORY", n->summary) == 0) {
+                history_pop();
+                return 0;
+        }
+
+        if (strncmp("DUNST_COMMAND_REPLACE", n->summary, 21) == 0) {
+                int msglen = strlen(n->summary) - 21;
+                char* msg = (char*) malloc(msglen + 1);
+                msg = strncpy(msg, n->summary + 21, msglen);
+                msg[msglen] = '\0';
+                if (displayed) {
+                    notification *no = g_queue_peek_head(displayed);
+                    if (no && difftime(time(NULL), no->start) <= no->timeout) {
+                        no->msg = msg;
+                        notification_update_text_to_render(no);
+                        no->start = time(NULL);
+                        return 0;                           
+                    } else {
+                        n->summary = msg;
+                    }
+                } else {
+                    n->summary = msg;
+                }
+        }   
+
+
         n->script = NULL;
         n->text_to_render = NULL;
 
