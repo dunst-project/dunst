@@ -1,0 +1,8 @@
+before_install:
+    - sudo apt-get -qq update
+    - sudo apt-get -y build-dep dunst
+language: c
+script: make && make test
+compiler:
+    - clang
+    - gcc
