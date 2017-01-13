@@ -8,3 +8,10 @@ script: make && make test
 compiler:
     - clang
     - gcc
+
+notifications:
+    irc:
+        channels:
+            - "chat.freenode.net#dunst"
+        on_success: always
+        on_failure: always
