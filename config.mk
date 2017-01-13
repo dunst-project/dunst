@@ -5,7 +5,7 @@ MANPREFIX = ${PREFIX}/share/man
 # In dist tarballs, the version is stored in the VERSION files.
 VERSION := '$(shell [ -f VERSION ] && cat VERSION)'
 ifeq ('',$(VERSION))
-VERSION := $(shell git describe)
+VERSION := $(shell git describe --tags)
 endif
 
 # Xinerama, comment if you don't want it
@@ -22,12 +22,12 @@ ifeq (${PKG_CONFIG}, ${EMPTY})
 endif
 
 # flags
-CPPFLAGS += -D_BSD_SOURCE -DVERSION=\"${VERSION}\" ${XINERAMAFLAGS} ${INIFLAGS}
+CPPFLAGS += -D_DEFAULT_SOURCE -DVERSION=\"${VERSION}\" ${XINERAMAFLAGS} ${INIFLAGS}
 CFLAGS   += -g --std=gnu99 -pedantic -Wall -Wno-overlength-strings -Os ${STATIC} ${CPPFLAGS} ${EXTRACFLAGS}
 
 pkg_config_packs := dbus-1 x11 freetype2 xext xft xscrnsaver \
                     "glib-2.0 >= 2.36" gio-2.0 \
-                    pango cairo pangocairo
+                    pango cairo pangocairo gdk-2.0
 
 # check if we need libxdg-basedir
 ifeq (,$(findstring STATIC_CONFIG,$(CFLAGS)))

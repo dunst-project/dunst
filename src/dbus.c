@@ -59,21 +59,22 @@ static const char *introspection_xml =
     "   </interface>"
     "</node>";
 
-static void onGetCapabilities(GDBusConnection * connection,
+static void on_get_capabilities(GDBusConnection * connection,
                               const gchar * sender,
                               const GVariant * parameters,
                               GDBusMethodInvocation * invocation);
-static void onNotify(GDBusConnection * connection,
+static void on_notify(GDBusConnection * connection,
                      const gchar * sender,
                      GVariant * parameters, GDBusMethodInvocation * invocation);
-static void onCloseNotification(GDBusConnection * connection,
+static void on_close_notification(GDBusConnection * connection,
                                 const gchar * sender,
                                 GVariant * parameters,
                                 GDBusMethodInvocation * invocation);
-static void onGetServerInformation(GDBusConnection * connection,
+static void on_get_server_information(GDBusConnection * connection,
                                    const gchar * sender,
                                    const GVariant * parameters,
                                    GDBusMethodInvocation * invocation);
+static RawImage * get_raw_image_from_data_hint(GVariant *icon_data);
 
 void handle_method_call(GDBusConnection * connection,
                         const gchar * sender,
@@ -84,13 +85,13 @@ void handle_method_call(GDBusConnection * connection,
                         GDBusMethodInvocation * invocation, gpointer user_data)
 {
         if (g_strcmp0(method_name, "GetCapabilities") == 0) {
-                onGetCapabilities(connection, sender, parameters, invocation);
+                on_get_capabilities(connection, sender, parameters, invocation);
         } else if (g_strcmp0(method_name, "Notify") == 0) {
-                onNotify(connection, sender, parameters, invocation);
+                on_notify(connection, sender, parameters, invocation);
         } else if (g_strcmp0(method_name, "CloseNotification") == 0) {
-                onCloseNotification(connection, sender, parameters, invocation);
+                on_close_notification(connection, sender, parameters, invocation);
         } else if (g_strcmp0(method_name, "GetServerInformation") == 0) {
-                onGetServerInformation(connection, sender, parameters,
+                on_get_server_information(connection, sender, parameters,
                                        invocation);
         } else {
                 printf("WARNING: sender: %s; unknown method_name: %s\n", sender,
@@ -98,7 +99,7 @@ void handle_method_call(GDBusConnection * connection,
         }
 }
 
-static void onGetCapabilities(GDBusConnection * connection,
+static void on_get_capabilities(GDBusConnection * connection,
                               const gchar * sender,
                               const GVariant * parameters,
                               GDBusMethodInvocation * invocation)
@@ -118,7 +119,7 @@ static void onGetCapabilities(GDBusConnection * connection,
         g_variant_unref(value);
 }
 
-static void onNotify(GDBusConnection * connection,
+static void on_notify(GDBusConnection * connection,
                      const gchar * sender,
                      GVariant * parameters, GDBusMethodInvocation * invocation)
 {
@@ -140,9 +141,11 @@ static void onNotify(GDBusConnection * connection,
         gchar *fgcolor = NULL;
         gchar *bgcolor = NULL;
         gchar *category = NULL;
+        RawImage *raw_icon = NULL;
 
         actions->actions = NULL;
         actions->count = 0;
+        actions->dmenu_str = NULL;
 
         {
                 GVariantIter *iter = g_variant_iter_new(parameters);
@@ -234,6 +237,23 @@ static void onNotify(GDBusConnection * connection,
 
                                         dict_value =
                                                 g_variant_lookup_value(content,
+                                                                "image-data",
+                                                                G_VARIANT_TYPE("(iiibiiay)"));
+                                        if (!dict_value) {
+                                            dict_value =
+                                                    g_variant_lookup_value(content,
+                                                                    "icon_data",
+                                                                    G_VARIANT_TYPE("(iiibiiay)"));
+                                        }
+
+                                        if (dict_value) {
+                                                raw_icon =
+                                                        get_raw_image_from_data_hint(
+                                                                        dict_value);
+                                        }
+
+                                        dict_value =
+                                                g_variant_lookup_value(content,
                                                                 "value",
                                                                 G_VARIANT_TYPE_INT32);
 
@@ -275,14 +295,12 @@ static void onNotify(GDBusConnection * connection,
                 }
         }
 
-        notification *n = malloc(sizeof(notification));
-        if(n == NULL) {
-                die("Unable to allocate memory", EXIT_FAILURE);
-        }
+        notification *n = notification_create();
         n->appname = appname;
         n->summary = summary;
         n->body = body;
         n->icon = icon;
+        n->raw_icon = raw_icon;
         n->timeout = timeout;
         n->allow_markup = settings.allow_markup;
         n->plain_text = settings.plain_text;
@@ -314,7 +332,7 @@ static void onNotify(GDBusConnection * connection,
         run(NULL);
 }
 
-static void onCloseNotification(GDBusConnection * connection,
+static void on_close_notification(GDBusConnection * connection,
                                 const gchar * sender,
                                 GVariant * parameters,
                                 GDBusMethodInvocation * invocation)
@@ -326,7 +344,7 @@ static void onCloseNotification(GDBusConnection * connection,
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
 }
 
-static void onGetServerInformation(GDBusConnection * connection,
+static void on_get_server_information(GDBusConnection * connection,
                                    const gchar * sender,
                                    const GVariant * parameters,
                                    GDBusMethodInvocation * invocation)
@@ -339,10 +357,10 @@ static void onGetServerInformation(GDBusConnection * connection,
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
 }
 
-void notificationClosed(notification * n, int reason)
+void notification_closed(notification * n, int reason)
 {
         if (!dbus_conn) {
-                printf("DEBUG: notificationClosed but not (yet) connected\n");
+                printf("DEBUG: notification_closed but not (yet) connected\n");
                 return;
         }
 
@@ -356,12 +374,12 @@ void notificationClosed(notification * n, int reason)
                                       "NotificationClosed", body, &err);
 
         if (err) {
-                printf("notificationClosed ERROR\n");
+                printf("notification_closed ERROR\n");
         }
 
 }
 
-void actionInvoked(notification * n, const char *identifier)
+void action_invoked(notification * n, const char *identifier)
 {
         GVariant *body = g_variant_new("(us)", n->id, identifier);
         GError *err = NULL;
@@ -412,6 +430,40 @@ static void on_name_lost(GDBusConnection * connection,
         exit(1);
 }
 
+static RawImage * get_raw_image_from_data_hint(GVariant *icon_data)
+{
+    RawImage *image = malloc(sizeof(RawImage));
+    GVariant *data_variant;
+    gsize expected_len;
+
+    g_variant_get (icon_data,
+                   "(iiibii@ay)",
+                   &image->width,
+                   &image->height,
+                   &image->rowstride,
+                   &image->has_alpha,
+                   &image->bits_per_sample,
+                   &image->n_channels,
+                   &data_variant);
+
+    expected_len = (image->height - 1) * image->rowstride + image->width
+            * ((image->n_channels * image->bits_per_sample + 7) / 8);
+
+    if (expected_len != g_variant_get_size (data_variant)) {
+        fprintf(stderr, "Expected image data to be of length %" G_GSIZE_FORMAT
+               " but got a " "length of %" G_GSIZE_FORMAT,
+               expected_len,
+               g_variant_get_size (data_variant));
+        free(image);
+        return NULL;
+    }
+
+    image->data = (guchar *) g_memdup (g_variant_get_data (data_variant),
+                                g_variant_get_size (data_variant));
+
+    return image;
+}
+
 int initdbus(void)
 {
         guint owner_id;
@@ -434,7 +486,10 @@ int initdbus(void)
 
 void dbus_tear_down(int owner_id)
 {
+        if (introspection_data)
+                g_dbus_node_info_unref(introspection_data);
+
         g_bus_unown_name(owner_id);
 }
 
-/* vim: set ts=8 sw=8 tw=0: */
+/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
