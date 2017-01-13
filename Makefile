@@ -93,6 +93,7 @@ uninstall:
 	rm -rf ${DESTDIR}${PREFIX}/share/dunst
 
 test: test/test
+	cd test && ./test
 
 TEST_SRC = $(shell ls test/*.c)
 TEST_OBJ = $(TEST_SRC:.c=.o)
