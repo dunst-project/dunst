@@ -143,6 +143,7 @@ static void onNotify(GDBusConnection * connection,
 
         actions->actions = NULL;
         actions->count = 0;
+        actions->dmenu_str = NULL;
 
         {
                 GVariantIter *iter = g_variant_iter_new(parameters);
