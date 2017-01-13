@@ -1,6 +1,6 @@
 before_install:
     - sudo apt-get -qq update
-    - sudo apt-get -y build-dep dunst
+    - sudo apt-get install -y libdbus-1-dev libx11-dev libxinerama-dev libxft-dev libxss-dev libxdg-basedir-dev libglib2.0-dev libpango1.0-dev libcairo2-dev libfreetype6-dev libnotify-dev
 language: c
 script: make && make test
 compiler:
