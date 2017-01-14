@@ -14,6 +14,7 @@
 #include <X11/Xatom.h>
 #include <pango/pangocairo.h>
 #include <cairo-xlib.h>
+#include <gdk/gdk.h>
 
 #include "x.h"
 #include "utils.h"
@@ -39,14 +40,14 @@ typedef struct _colored_layout {
         PangoLayout *l;
         color_t fg;
         color_t bg;
+        color_t frame;
         char *text;
         PangoAttrList *attr;
         cairo_surface_t *icon;
+        notification *n;
 } colored_layout;
 
 cairo_ctx_t cairo_ctx;
-
-static color_t frame_color;
 
 /* FIXME refactor setup teardown handlers into one setup and one teardown */
 static void x_follow_setup_error_handler(void);
@@ -59,8 +60,6 @@ static void x_handle_click(XEvent ev);
 static void x_screen_info(screen_info * scr);
 static void x_win_setup(void);
 
-
-
 static color_t x_color_hex_to_double(int hexValue)
 {
         color_t color;
@@ -68,7 +67,7 @@ static color_t x_color_hex_to_double(int hexValue)
         color.g = ((hexValue >> 8) & 0xFF) / 255.0;
         color.b = ((hexValue) & 0xFF) / 255.0;
 
-  return color;
+        return color;
 }
 
 static color_t x_string_to_color_t(const char *str)
@@ -111,20 +110,23 @@ static color_t calculate_foreground_color(color_t bg)
 }
 
 
-static color_t x_get_separator_color(color_t fg, color_t bg)
+static color_t x_get_separator_color(colored_layout *cl, colored_layout *cl_next)
 {
         switch (settings.sep_color) {
                 case FRAME:
-                        return x_string_to_color_t(settings.frame_color);
+                        if (cl_next->n->urgency > cl->n->urgency)
+                                return cl_next->frame;
+                        else
+                                return cl->frame;
                 case CUSTOM:
                         return x_string_to_color_t(settings.sep_custom_color_str);
                 case FOREGROUND:
-                        return fg;
+                        return cl->fg;
                 case AUTO:
-                        return calculate_foreground_color(bg);
+                        return calculate_foreground_color(cl->bg);
                 default:
                         printf("Unknown separator color type. Please file a Bugreport.\n");
-                        return fg;
+                        return cl->fg;
 
         }
 }
@@ -137,8 +139,6 @@ static void x_cairo_setup(void)
         cairo_ctx.context = cairo_create(cairo_ctx.surface);
 
         cairo_ctx.desc = pango_font_description_from_string(settings.font);
-
-        frame_color = x_string_to_color_t(settings.frame_color);
 }
 
 static void r_setup_pango_layout(PangoLayout *layout, int width)
@@ -191,6 +191,17 @@ static bool have_dynamic_width(void)
         return (xctx.geometry.mask & WidthValue && xctx.geometry.w == 0);
 }
 
+static bool is_readable_file(const char *filename)
+{
+        return (access(filename, R_OK) != -1);
+}
+
+const char *get_filename_ext(const char *filename) {
+        const char *dot = strrchr(filename, '.');
+        if(!dot || dot == filename) return "";
+        return dot + 1;
+}
+
 static dimension_t calculate_dimensions(GSList *layouts)
 {
         dimension_t dim;
@@ -217,6 +228,7 @@ static dimension_t calculate_dimensions(GSList *layouts)
                 dim.w = scr.dim.w;
         }
 
+        dim.h += 2 * settings.frame_width;
         dim.h += (g_slist_length(layouts) - 1) * settings.separator_height;
 
         int text_width = 0, total_width = 0;
@@ -274,11 +286,41 @@ static dimension_t calculate_dimensions(GSList *layouts)
         return dim;
 }
 
-static cairo_surface_t *get_icon_surface(char *icon_path)
+static cairo_surface_t *gdk_pixbuf_to_cairo_surface(const GdkPixbuf *pixbuf)
 {
         cairo_surface_t *icon_surface = NULL;
+        cairo_t *cr;
+        cairo_format_t format;
+        double width, height;
+
+        format = gdk_pixbuf_get_has_alpha(pixbuf) ? CAIRO_FORMAT_ARGB32 : CAIRO_FORMAT_RGB24;
+        width = gdk_pixbuf_get_width(pixbuf);
+        height = gdk_pixbuf_get_height(pixbuf);
+        icon_surface = cairo_image_surface_create(format, width, height);
+        cr = cairo_create(icon_surface);
+        gdk_cairo_set_source_pixbuf(cr, pixbuf, 0, 0);
+        cairo_paint(cr);
+        cairo_destroy(cr);
+        return icon_surface;
+}
+
+static GdkPixbuf *get_pixbuf_from_file(const char *icon_path)
+{
+        GdkPixbuf *pixbuf = NULL;
+        if (is_readable_file(icon_path)) {
+                GError *error = NULL;
+                pixbuf = gdk_pixbuf_new_from_file(icon_path, &error);
+                if (pixbuf == NULL)
+                        g_free(error);
+        }
+        return pixbuf;
+}
+
+static GdkPixbuf *get_pixbuf_from_path(char *icon_path)
+{
+        GdkPixbuf *pixbuf = NULL;
         gchar *uri_path = NULL;
-        if (strlen(icon_path) > 0 && settings.icon_position != icons_off) {
+        if (strlen(icon_path) > 0) {
                 if (g_str_has_prefix(icon_path, "file://")) {
                         uri_path = g_filename_from_uri(icon_path, NULL, NULL);
                         if (uri_path != NULL) {
@@ -287,14 +329,10 @@ static cairo_surface_t *get_icon_surface(char *icon_path)
                 }
                 /* absolute path? */
                 if (icon_path[0] == '/' || icon_path[0] == '~') {
-                        icon_surface = cairo_image_surface_create_from_png(icon_path);
-                        if (cairo_surface_status(icon_surface) != CAIRO_STATUS_SUCCESS) {
-                                cairo_surface_destroy(icon_surface);
-                                icon_surface = NULL;
-                        }
+                        pixbuf = get_pixbuf_from_file(icon_path);
                 }
                 /* search in icon_folders */
-                if (icon_surface == NULL) {
+                if (pixbuf == NULL) {
                         char *start = settings.icon_folders,
                              *end, *current_folder, *maybe_icon_path;
                         do {
@@ -305,19 +343,16 @@ static cairo_surface_t *get_icon_surface(char *icon_path)
                                 maybe_icon_path = g_strconcat(current_folder, "/", icon_path, ".png", NULL);
                                 free(current_folder);
 
-                                icon_surface = cairo_image_surface_create_from_png(maybe_icon_path);
+                                pixbuf = get_pixbuf_from_file(maybe_icon_path);
                                 free(maybe_icon_path);
-                                if (cairo_surface_status(icon_surface) == CAIRO_STATUS_SUCCESS) {
-                                        return icon_surface;
-                                } else {
-                                        cairo_surface_destroy(icon_surface);
-                                        icon_surface = NULL;
+                                if (pixbuf != NULL) {
+                                    return pixbuf;
                                 }
 
                                 start = end + 1;
                         } while (*(end) != '\0');
                 }
-                if (icon_surface == NULL) {
+                if (pixbuf == NULL) {
                         fprintf(stderr,
                                 "Could not load icon: '%s'\n", icon_path);
                 }
@@ -325,7 +360,24 @@ static cairo_surface_t *get_icon_surface(char *icon_path)
                         g_free(uri_path);
                 }
         }
-        return icon_surface;
+        return pixbuf;
+}
+
+static GdkPixbuf *get_pixbuf_from_raw_image(const RawImage *raw_image)
+{
+        GdkPixbuf *pixbuf = NULL;
+
+        pixbuf = gdk_pixbuf_new_from_data(raw_image->data,
+                                          GDK_COLORSPACE_RGB,
+                                          raw_image->has_alpha,
+                                          raw_image->bits_per_sample,
+                                          raw_image->width,
+                                          raw_image->height,
+                                          raw_image->rowstride,
+                                          NULL,
+                                          NULL);
+
+        return pixbuf;
 }
 
 static colored_layout *r_init_shared(cairo_t *c, notification *n)
@@ -340,10 +392,51 @@ static colored_layout *r_init_shared(cairo_t *c, notification *n)
                 pango_layout_set_ellipsize(cl->l, PANGO_ELLIPSIZE_MIDDLE);
         }
 
-        cl->icon = get_icon_surface(n->icon);
+        GdkPixbuf *pixbuf = NULL;
+
+        if (n->raw_icon && settings.icon_position != icons_off) {
+                pixbuf = get_pixbuf_from_raw_image(n->raw_icon);
+        } else if (n->icon && settings.icon_position != icons_off) {
+                pixbuf = get_pixbuf_from_path(n->icon);
+        }
+
+        if (pixbuf != NULL) {
+                int w = gdk_pixbuf_get_width(pixbuf);
+                int h = gdk_pixbuf_get_height(pixbuf);
+                int larger = w > h ? w : h;
+                if (settings.max_icon_size && larger > settings.max_icon_size) {
+                        GdkPixbuf *scaled;
+                        if (w >= h) {
+                                scaled = gdk_pixbuf_scale_simple(pixbuf,
+                                                settings.max_icon_size,
+                                                (int) ((double) settings.max_icon_size / w * h),
+                                                GDK_INTERP_BILINEAR);
+                        } else {
+                                scaled = gdk_pixbuf_scale_simple(pixbuf,
+                                                (int) ((double) settings.max_icon_size / h * w),
+                                                settings.max_icon_size,
+                                                GDK_INTERP_BILINEAR);
+                        }
+                        g_object_unref(pixbuf);
+                        pixbuf = scaled;
+                }
+
+                cl->icon = gdk_pixbuf_to_cairo_surface(pixbuf);
+                g_object_unref(pixbuf);
+        } else {
+                cl->icon = NULL;
+        }
+
+        if (cl->icon && cairo_surface_status(cl->icon) != CAIRO_STATUS_SUCCESS) {
+                cairo_surface_destroy(cl->icon);
+                cl->icon = NULL;
+        }
 
         cl->fg = x_string_to_color_t(n->color_strings[ColFG]);
         cl->bg = x_string_to_color_t(n->color_strings[ColBG]);
+        cl->frame = x_string_to_color_t(n->color_strings[ColFrame]);
+
+        cl->n = n;
 
         dimension_t dim = calculate_dimensions(NULL);
         int width = dim.w;
@@ -427,10 +520,10 @@ static GSList *r_create_layouts(cairo_t *c)
                                 r_create_layout_from_notification(c, n));
         }
 
-                if (xmore_is_needed && xctx.geometry.h != 1) {
-                        /* append xmore message as new message */
-                        layouts = g_slist_append(layouts,
-                                r_create_layout_for_xmore(c, last, qlen));
+        if (xmore_is_needed && xctx.geometry.h != 1) {
+                /* append xmore message as new message */
+                layouts = g_slist_append(layouts,
+                        r_create_layout_for_xmore(c, last, qlen));
         }
 
         return layouts;
@@ -441,11 +534,15 @@ static void r_free_layouts(GSList *layouts)
         g_slist_free_full(layouts, free_colored_layout);
 }
 
-static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, dimension_t dim, bool first, bool last)
+static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, colored_layout *cl_next, dimension_t dim, bool first, bool last)
 {
         int h;
+        int h_text = 0;
         pango_layout_get_pixel_size(cl->l, NULL, &h);
-        if (cl->icon) h = MAX(cairo_image_surface_get_height(cl->icon), h);
+        if (cl->icon) {
+                h_text = h;
+                h = MAX(cairo_image_surface_get_height(cl->icon), h);
+        }
 
         int bg_x = 0;
         int bg_y = dim.y;
@@ -454,11 +551,21 @@ static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, dimension_t d
         double bg_half_height = settings.notification_height/2.0;
         int pango_offset = (int) floor(h/2.0);
 
+        if (first) bg_height += settings.frame_width;
+        if (last) bg_height += settings.frame_width;
+        else bg_height += settings.separator_height;
+
+        cairo_set_source_rgb(c, cl->frame.r, cl->frame.g, cl->frame.b);
+        cairo_rectangle(c, bg_x, bg_y, bg_width, bg_height);
+        cairo_fill(c);
+
         /* adding frame */
         bg_x += settings.frame_width;
         if (first) {
+                dim.y += settings.frame_width;
                 bg_y += settings.frame_width;
                 bg_height -= settings.frame_width;
+                if (!last) bg_height -= settings.separator_height;
         }
         bg_width -= 2 * settings.frame_width;
         if (last)
@@ -473,9 +580,15 @@ static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, dimension_t d
             dim.y += settings.padding;
         else
             dim.y += (int) (ceil(bg_half_height) - pango_offset);
-        if (cl->icon && settings.icon_position == icons_left)
-                cairo_move_to(c, cairo_image_surface_get_width(cl->icon) + 2 * settings.h_padding, dim.y);
-        else cairo_move_to(c, settings.h_padding, dim.y);
+
+        if (cl->icon && settings.icon_position == icons_left) {
+                cairo_move_to(c, settings.frame_width + cairo_image_surface_get_width(cl->icon) + 2 * settings.h_padding, bg_y + settings.padding + h/2 - h_text/2);
+        } else if (cl->icon && settings.icon_position == icons_right) {
+                cairo_move_to(c, settings.frame_width + settings.h_padding, bg_y + settings.padding + h/2 - h_text/2);
+        } else {
+                cairo_move_to(c, settings.frame_width + settings.h_padding, bg_y + settings.padding);
+        }
+
         cairo_set_source_rgb(c, cl->fg.r, cl->fg.g, cl->fg.b);
         pango_cairo_update_layout(c, cl->l);
         pango_cairo_show_layout(c, cl->l);
@@ -484,13 +597,16 @@ static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, dimension_t d
         else
             dim.y += (int) (floor(bg_half_height) + pango_offset);
 
-        color_t sep_color = x_get_separator_color(cl->fg, cl->bg);
         if (settings.separator_height > 0 && !last) {
+                color_t sep_color = x_get_separator_color(cl, cl_next);
                 cairo_set_source_rgb(c, sep_color.r, sep_color.g, sep_color.b);
 
-                cairo_rectangle(c, settings.frame_width, dim.y,
-                                dim.w - 2 * settings.frame_width
-                                , settings.separator_height);
+                if (settings.sep_color == FRAME)
+                        // Draw over the borders on both sides to avoid
+                        // the wrong color in the corners.
+                        cairo_rectangle(c, 0, dim.y, dim.w, settings.separator_height);
+                else
+                        cairo_rectangle(c, settings.frame_width, dim.y + settings.frame_width, dim.w - 2 * settings.frame_width, settings.separator_height);
 
                 cairo_fill(c);
                 dim.y += settings.separator_height;
@@ -503,8 +619,8 @@ static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, dimension_t d
                              image_x,
                              image_y = bg_y + settings.padding;
 
-                if (settings.icon_position == icons_left) image_x = settings.h_padding;
-                else image_x = bg_width - settings.h_padding - image_width;
+                if (settings.icon_position == icons_left) image_x = settings.frame_width + settings.h_padding;
+                else image_x = bg_width - settings.h_padding - image_width + settings.frame_width;
 
                 cairo_set_source_surface (c, cl->icon, image_x, image_y);
                 cairo_rectangle (c, image_x, image_y, image_width, image_height);
@@ -523,7 +639,7 @@ void x_win_draw(void)
         int width = dim.w;
         int height = dim.h;
 
-	if ((have_dynamic_width() || settings.shrink) && settings.align != left) {
+        if ((have_dynamic_width() || settings.shrink) && settings.align != left) {
                 r_update_layouts_width(layouts, width);
         }
 
@@ -534,16 +650,15 @@ void x_win_draw(void)
         x_win_move(width, height);
         cairo_xlib_surface_set_size(cairo_ctx.surface, width, height);
 
-        cairo_set_source_rgb(c, frame_color.r, frame_color.g, frame_color.b);
-        cairo_rectangle(c, 0.0, 0.0, width, height);
-        cairo_fill(c);
-
         cairo_move_to(c, 0, 0);
 
         bool first = true;
         for (GSList *iter = layouts; iter; iter = iter->next) {
-                colored_layout *cl = iter->data;
-                dim = x_render_layout(c, cl, dim, first, iter->next == NULL);
+                if (iter->next)
+                        dim = x_render_layout(c, iter->data, iter->next->data, dim, first, iter->next == NULL);
+                else
+                        dim = x_render_layout(c, iter->data, NULL, dim, first, iter->next == NULL);
+
                 first = false;
         }
 
@@ -591,7 +706,6 @@ static void x_win_move(int width, int height)
         xctx.window_dim.w = width;
 }
 
-
 static void setopacity(Window win, unsigned long opacity)
 {
         Atom _NET_WM_WINDOW_OPACITY =
@@ -600,15 +714,9 @@ static void setopacity(Window win, unsigned long opacity)
                         PropModeReplace, (unsigned char *)&opacity, 1L);
 }
 
-
-
-
-
-
-
-        /*
-         * Returns the modifier which is NumLock.
-         */
+/*
+ * Returns the modifier which is NumLock.
+ */
 static KeySym x_numlock_mod()
 {
         static KeyCode nl = 0;
@@ -659,10 +767,10 @@ end:
         return sym;
 }
 
-        /*
-         * Helper function to use glib's mainloop mechanic
-         * with Xlib
-         */
+/*
+ * Helper function to use glib's mainloop mechanic
+ * with Xlib
+ */
 gboolean x_mainloop_fd_prepare(GSource * source, gint * timeout)
 {
         if (timeout)
@@ -672,18 +780,18 @@ gboolean x_mainloop_fd_prepare(GSource * source, gint * timeout)
         return false;
 }
 
-        /*
-         * Helper function to use glib's mainloop mechanic
-         * with Xlib
-         */
+/*
+ * Helper function to use glib's mainloop mechanic
+ * with Xlib
+ */
 gboolean x_mainloop_fd_check(GSource * source)
 {
         return XPending(xctx.dpy) > 0;
 }
 
-        /*
-         * Main Dispatcher for XEvents
-         */
+/*
+ * Main Dispatcher for XEvents
+ */
 gboolean x_mainloop_fd_dispatch(GSource * source, GSourceFunc callback,
                                 gpointer user_data)
 {
@@ -747,9 +855,9 @@ gboolean x_mainloop_fd_dispatch(GSource * source, GSourceFunc callback,
         return true;
 }
 
-        /*
-         * Check whether the user is currently idle.
-         */
+/*
+ * Check whether the user is currently idle.
+ */
 bool x_is_idle(void)
 {
         XScreenSaverQueryInfo(xctx.dpy, DefaultRootWindow(xctx.dpy),
@@ -761,9 +869,9 @@ bool x_is_idle(void)
 }
 
 /* TODO move to x_mainloop_* */
-        /*
-         * Handle incoming mouse click events
-         */
+/*
+ * Handle incoming mouse click events
+ */
 static void x_handle_click(XEvent ev)
 {
         if (ev.xbutton.button == Button3) {
@@ -791,10 +899,10 @@ static void x_handle_click(XEvent ev)
         }
 }
 
-        /*
-         * Return the window that currently has
-         * the keyboard focus.
-         */
+/*
+ * Return the window that currently has
+ * the keyboard focus.
+ */
 static Window get_focused_window(void)
 {
         Window focused = 0;
@@ -818,10 +926,10 @@ static Window get_focused_window(void)
 }
 
 #ifdef XINERAMA
-        /*
-         * Select the screen on which the Window
-         * should be displayed.
-         */
+/*
+ * Select the screen on which the Window
+ * should be displayed.
+ */
 static int select_screen(XineramaScreenInfo * info, int info_len)
 {
         int ret = 0;
@@ -884,10 +992,10 @@ sc_cleanup:
 }
 #endif
 
-        /*
-         * Update the information about the monitor
-         * geometry.
-         */
+/*
+ * Update the information about the monitor
+ * geometry.
+ */
 static void x_screen_info(screen_info * scr)
 {
 #ifdef XINERAMA
@@ -921,9 +1029,18 @@ static void x_screen_info(screen_info * scr)
         }
 }
 
-        /*
-         * Setup X11 stuff
-         */
+void x_free(void)
+{
+        cairo_surface_destroy(cairo_ctx.surface);
+        cairo_destroy(cairo_ctx.context);
+
+        if (xctx.dpy)
+                XCloseDisplay(xctx.dpy);
+}
+
+/*
+ * Setup X11 stuff
+ */
 void x_setup(void)
 {
 
@@ -956,6 +1073,19 @@ void x_setup(void)
         xctx.color_strings[ColBG][NORM] = settings.normbgcolor;
         xctx.color_strings[ColBG][CRIT] = settings.critbgcolor;
 
+        if (settings.lowframecolor)
+                xctx.color_strings[ColFrame][LOW] = settings.lowframecolor;
+        else
+                xctx.color_strings[ColFrame][LOW] = settings.frame_color;
+        if (settings.normframecolor)
+                xctx.color_strings[ColFrame][NORM] = settings.normframecolor;
+        else
+                xctx.color_strings[ColFrame][NORM] = settings.frame_color;
+        if (settings.critframecolor)
+                xctx.color_strings[ColFrame][CRIT] = settings.critframecolor;
+        else
+                xctx.color_strings[ColFrame][CRIT] = settings.frame_color;
+
         /* parse and set xctx.geometry and monitor position */
         if (settings.geom[0] == '-') {
                 xctx.geometry.negative_width = true;
@@ -975,7 +1105,6 @@ void x_setup(void)
         x_shortcut_grab(&settings.history_ks);
 
 }
-
 
 static void x_set_wm(Window win)
 {
@@ -1018,9 +1147,9 @@ static void x_set_wm(Window win)
                 PropModeReplace, (unsigned char *) data, 1L);
 }
 
-        /*
-         * Setup the window
-         */
+/*
+ * Setup the window
+ */
 static void x_win_setup(void)
 {
 
@@ -1064,9 +1193,9 @@ static void x_win_setup(void)
         }
 }
 
-        /*
-         * Show the window and grab shortcuts.
-         */
+/*
+ * Show the window and grab shortcuts.
+ */
 void x_win_show(void)
 {
         /* window is already mapped or there's nothing to show */
@@ -1089,9 +1218,9 @@ void x_win_show(void)
         xctx.visible = true;
 }
 
-        /*
-         * Hide the window and ungrab unused keyboard_shortcuts
-         */
+/*
+ * Hide the window and ungrab unused keyboard_shortcuts
+ */
 void x_win_hide()
 {
         x_shortcut_ungrab(&settings.close_ks);
@@ -1104,9 +1233,9 @@ void x_win_hide()
         xctx.visible = false;
 }
 
-        /*
-         * Parse a string into a modifier mask.
-         */
+/*
+ * Parse a string into a modifier mask.
+ */
 KeySym x_shortcut_string_to_mask(const char *str)
 {
         if (!strcmp(str, "ctrl")) {
@@ -1128,9 +1257,9 @@ KeySym x_shortcut_string_to_mask(const char *str)
 
 }
 
-        /*
-         * Error handler for grabbing mouse and keyboard errors.
-         */
+/*
+ * Error handler for grabbing mouse and keyboard errors.
+ */
 static int GrabXErrorHandler(Display * display, XErrorEvent * e)
 {
         dunst_grab_errored = true;
@@ -1157,9 +1286,9 @@ static int FollowXErrorHandler(Display * display, XErrorEvent * e)
         return 0;
 }
 
-        /*
-         * Setup the Error handler.
-         */
+/*
+ * Setup the Error handler.
+ */
 static void x_shortcut_setup_error_handler(void)
 {
         dunst_grab_errored = false;
@@ -1176,9 +1305,9 @@ static void x_follow_setup_error_handler(void)
         XSetErrorHandler(FollowXErrorHandler);
 }
 
-        /*
-         * Tear down the Error handler.
-         */
+/*
+ * Tear down the Error handler.
+ */
 static int x_shortcut_tear_down_error_handler(void)
 {
         XFlush(xctx.dpy);
@@ -1195,9 +1324,9 @@ static int x_follow_tear_down_error_handler(void)
         return dunst_follow_errored;
 }
 
-        /*
-         * Grab the given keyboard shortcut.
-         */
+/*
+ * Grab the given keyboard shortcut.
+ */
 int x_shortcut_grab(keyboard_shortcut * ks)
 {
         if (!ks->is_valid)
@@ -1222,9 +1351,9 @@ int x_shortcut_grab(keyboard_shortcut * ks)
         return 0;
 }
 
-        /*
-         * Ungrab the given keyboard shortcut.
-         */
+/*
+ * Ungrab the given keyboard shortcut.
+ */
 void x_shortcut_ungrab(keyboard_shortcut * ks)
 {
         Window root;
@@ -1235,9 +1364,9 @@ void x_shortcut_ungrab(keyboard_shortcut * ks)
         }
 }
 
-        /*
-         * Initialize the keyboard shortcut.
-         */
+/*
+ * Initialize the keyboard shortcut.
+ */
 void x_shortcut_init(keyboard_shortcut * ks)
 {
         if (ks == NULL || ks->str == NULL)
@@ -1254,7 +1383,7 @@ void x_shortcut_init(keyboard_shortcut * ks)
         if (str == NULL)
                 die("Unable to allocate memory", EXIT_FAILURE);
 
-        while (strstr(str, "+")) {
+        while (strchr(str, '+')) {
                 char *mod = str;
                 while (*str != '+')
                         str++;
@@ -1291,4 +1420,4 @@ void x_shortcut_init(keyboard_shortcut * ks)
         free(str_begin);
 }
 
-/* vim: set ts=8 sw=8 tw=0: */
+/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

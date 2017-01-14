@@ -1,6 +1,8 @@
 /* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
 
 #include <glib.h>
+#include <stdlib.h>
+#include <string.h>
 
 #ifndef STATIC_CONFIG
 #include <basedir.h>
@@ -169,6 +171,10 @@ void load_settings(char *cmdline_config_path)
             option_get_int("global", "show_age_threshold",
                            "-show_age_threshold", show_age_threshold,
                            "When should the age of the notification be displayed?");
+        settings.hide_duplicates_count =
+            option_get_bool("global", "hide_duplicates_count",
+                            "-hide_duplicates_count", false,
+                            "Hide count of the merged notifications with the same content");
         settings.sticky_history =
             option_get_bool("global", "sticky_history", "-sticky_history",
                             sticky_history,
@@ -179,8 +185,8 @@ void load_settings(char *cmdline_config_path)
                                 "Max amount of notifications kept in history");
         settings.show_indicators =
             option_get_bool("global", "show_indicators", "-show_indicators",
-			    show_indicators,
-			    "Show indicators for actions \"(A)\" and URLs \"(U)\"");
+                            show_indicators,
+                            "Show indicators for actions \"(A)\" and URLs \"(U)\"");
         settings.separator_height =
             option_get_int("global", "separator_height",
                            "-sep_height/-separator_height", separator_height,
@@ -249,6 +255,10 @@ void load_settings(char *cmdline_config_path)
                 }
         }
 
+        settings.max_icon_size =
+            option_get_int("global", "max_icon_size", "-max_icon_size", max_icon_size,
+                           "Scale larger icons down to this size, set to 0 to disable");
+
         settings.icon_folders =
             option_get_string("global", "icon_folders", "-icon_folders", icon_folders,
                               "paths to default icons");
@@ -267,6 +277,9 @@ void load_settings(char *cmdline_config_path)
         settings.lowfgcolor =
             option_get_string("urgency_low", "foreground", "-lf", lowfgcolor,
                               "Foreground color for notifications with low urgency");
+        settings.lowframecolor =
+            option_get_string("urgency_low", "frame_color", "-lfr", NULL,
+                              "Frame color for notifications with low urgency");
         settings.timeouts[LOW] =
             option_get_int("urgency_low", "timeout", "-lto", timeouts[LOW],
                            "Timeout for notifications with low urgency");
@@ -281,6 +294,9 @@ void load_settings(char *cmdline_config_path)
             option_get_string("urgency_normal", "foreground", "-nf",
                               normfgcolor,
                               "Foreground color for notifications with normal urgency");
+        settings.normframecolor =
+            option_get_string("urgency_normal", "frame_color", "-nfr", NULL,
+                               "Frame color for notifications with normal urgency");
         settings.timeouts[NORM] =
             option_get_int("urgency_normal", "timeout", "-nto", timeouts[NORM],
                            "Timeout for notifications with normal urgency");
@@ -295,6 +311,9 @@ void load_settings(char *cmdline_config_path)
             option_get_string("urgency_critical", "foreground", "-cf",
                               critfgcolor,
                               "Foreground color for notifications with ciritical urgency");
+        settings.critframecolor =
+            option_get_string("urgency_critical", "frame_color", "-cfr", NULL,
+                              "Frame color for notifications with critical urgency");
         settings.timeouts[CRIT] =
             option_get_int("urgency_critical", "timeout", "-cto", timeouts[CRIT],
                            "Timeout for notifications with critical urgency");
@@ -363,6 +382,7 @@ void load_settings(char *cmdline_config_path)
                 r->summary = ini_get_string(cur_section, "summary", r->summary);
                 r->body = ini_get_string(cur_section, "body", r->body);
                 r->icon = ini_get_string(cur_section, "icon", r->icon);
+                r->category = ini_get_string(cur_section, "category", r->category);
                 r->timeout = ini_get_int(cur_section, "timeout", r->timeout);
                 r->allow_markup = ini_get_bool(cur_section, "allow_markup", r->allow_markup);
                 r->plain_text = ini_get_bool(cur_section, "plain_text", r->plain_text);
@@ -372,7 +392,7 @@ void load_settings(char *cmdline_config_path)
                 r->bg = ini_get_string(cur_section, "background", r->bg);
                 r->format = ini_get_string(cur_section, "format", r->format);
                 r->new_icon = ini_get_string(cur_section, "new_icon", r->new_icon);
-				r->script = ini_get_string(cur_section, "script", NULL);
+                r->script = ini_get_string(cur_section, "script", NULL);
         }
 
 #ifndef STATIC_CONFIG
@@ -383,4 +403,4 @@ void load_settings(char *cmdline_config_path)
         }
 #endif
 }
-/* vim: set ts=8 sw=8 tw=0: */
+/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

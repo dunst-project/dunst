@@ -56,6 +56,8 @@ char *dmenu = "/usr/bin/dmenu";
 
 char *browser = "/usr/bin/firefox";
 
+int max_icon_size = 32;
+
 /* paths to default icons */
 char *icon_folders = "/usr/share/icons/gnome/16x16/status/:/usr/share/icons/gnome/16x16/devices/";
 

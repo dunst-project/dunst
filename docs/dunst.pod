@@ -1,0 +1,304 @@
+=head1 NAME
+
+dunst - A customizable and lightweight notification-daemon
+
+=head1 SYNOPSIS
+
+dunst [-conf file] [-fn font] [-geometry geom] [-lf/lb/lfr/nf/nb/nfr/cf/cb/cfr color] 
+[-lto/nto/cto secs] [-lh/nh/sep_height height] [-format fmt] [-follow mode] [-mon n] 
+[-history_length n] [-t/title title] [-c/class class] [-v]
+
+=head1 DESCRIPTION
+
+Dunst is a highly configurable and lightweight notification daemon.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-h/--help>
+
+display help message.
+
+=item B<-conf/-config file>
+
+use alternative config file.
+
+=item B<-fn font>
+
+Defines the font or font set used. Optionally set the size as a decimal number after the font name and space.
+Multiple font options can be separated with commas.
+
+=item B<-geometry [{width}]x{height}][+/-{x}+/-{y}]>
+
+The geometry of the message window. The height is measured
+in lines everything else in pixels. If the width is omitted
+but the height is given ("-geometry x2"), the message window
+expands over the whole screen (dmenu-like).
+If width is 0, the window expands to the longest
+message displayed. A positive x is measured from the left,
+a negative from the right side of the screen.
+Y is measured from the top and down respectively.
+
+=item B<-lf/nf/cf color>
+
+Defines the foreground color of low/normal/critical messages.
+
+=item B<-lb/nb/cb color>
+
+Defines the background color of low/normal/critical messages.
+
+=item B<-lfr/nfr/cfr color>
+
+Defines the frame color of low/normal/critical messages.
+
+=item B<-lto/nto/cto secs>
+
+Defines timeouts for low/normal/critical messages.
+
+=item B<-lh/-line_height height>
+
+Defines the height of a single line in pixel. If the height is smaller than the font height, it will get raised to the font height.
+
+=item B<-nh/-notification_height height>
+
+Defines the height of the notification window.
+
+=item B<-sep_height/-separator_height height>
+
+Defines the height of the separator line.
+
+=item B<-format fmt>
+
+Defines the format of the message. See FORMAT.
+
+=item B<-follow mode>
+
+Display notifications on focused monitor. Possible options are "mouse" to follow the mouse cursor, "keyboard" to follow the window
+with the keyboard focus and "none" to disable focus following. "mouse" and "keyboard" overwrite the -mon option.
+
+=item B<-mon n>
+
+Show the notification on monitor n.
+
+=item B<-history_length n>
+
+Max amount of notifications kept in history.
+
+=item B<-t/-title title>
+
+Defines the title of notification windows spawned by dunst.
+
+=item B<-t/-class class>
+
+Defines the class of notification windows spawned by dunst.
+
+=item B<-key key>
+
+Remove notification by pressing key.
+
+=item B<-all_key key>
+
+Remove all notifications by pressing key.
+
+=item B<-history_key key>
+
+Redisplay last notification by pressing key.
+
+=item B<-context_key key>
+
+Shortcut for context menu.
+
+=item B<-alignment position>
+
+Defines the align position of notifications to left/center/right.
+
+=item B<-icon_position position>
+
+Defines the align position of icons to left/right or off to disable icons.
+
+=item B<-max_icon_size size>
+
+Defines the max size for icons to scale. If icon_position is set to off, icons won't be displayed.
+
+=item B<-icon_folders path>
+
+Defines the path to the folder with the default icons.
+
+=item B<-li/ni/ci icon>
+
+Defines the icon for low/normal/critical messages.
+
+=item B<-padding pad>
+
+Defines padding between text and separator.
+
+=item B<-horizontal_padding pad>
+
+Defines horizontal padding.
+
+=item B<-transparency range>
+
+Defines transparency range between 0-100
+
+=item B<-sep_color/-separator_color color>
+
+Defines color of the separator line.
+
+=item B<-frame_color color>
+
+Defines color of the frame around window.
+
+=item B<-frame_width width>
+
+Defines width of frame around window.
+
+=item B<-idle_threshold secs>
+
+Don't timeout notifications if user is longer idle than threshold.
+
+=item B<-show_age_threshold secs>
+
+Show age of message if message is older than show_age_threshold seconds. Set to -1 to disable.
+
+=item B<-bounce_freq freq>
+
+The frequency with which text that is longer than the notification window allows bounces back and forth.
+
+=item B<-markup>
+
+Allow markups in notifications/formats.
+
+=item B<-plain>
+
+Treat incoming notifications as plain text.
+
+=item B<-indicate_hidden>
+
+Show how many notifications are hidden.
+
+=item B<-word_wrap>
+
+Truncating long lines or do word wrap.
+
+=item B<-ignore_newline>
+
+Ignore newline characters in notifications.
+
+=item B<-stack_duplicates>
+
+Merge multiple notifications with the same content.
+
+=item B<-hide_duplicates_count>
+
+Hide count of the merged notifications with the same content.
+
+=item B<-sticky_history>
+
+Don't timeout notifications popped up from history.
+
+=item B<-show_indicators>
+
+Show indicators for actions and URLs.
+
+=item B<-sort>
+
+Sort messages by urgency.
+
+=item B<-shrink>
+
+Shrink window if it's smaller than the width. Will be ignored if width is 0.
+
+=item B<-print>
+
+Print notifications to stdout. This might be useful for logging, setting up rules or using the output in other scripts.
+
+=item B<-v/--version>
+
+Print version information.
+
+=item B<-always_run_script>
+
+Always run rule-defined scripts, even if the notification is suppressed with format = "".
+
+=back
+
+=head1 FORMAT
+
+fmt is a string containing placeholders.
+The placeholders will be replaced with the corresponding text, or if the text is not present, nothing. Possible placeholders are:
+
+=over 4
+
+=item B<%a>  appname
+
+=item B<%s>  summary
+
+=item B<%b>  body
+
+=item B<%i>  iconname (including its path)
+
+=item B<%I>  iconname (without its path)
+
+=item B<%p>  progress value ([  0%] to [100%])
+
+=back
+
+=head1 COLORS
+
+Every option that needs a color as argument accepts #RGB, #RRGGBB and
+X color names.
+
+
+=head1 NOTIFY-SEND
+
+dunst is able to get different colors for a message via notify-send.
+In order to do that you have to add a hint via the -h option.
+The progress value can be set with a hint, too.
+
+=over 4
+
+=item notify-send -h string:fgcolor:#ff4444
+
+=item notify-send -h string:bgcolor:#4444ff -h string:fgcolor:#ff4444
+
+=item notify-send -h int:value:42 "Working ..."
+
+=back
+
+=head1 MISCELLANEOUS
+
+Dunst can be paused by sending a notification with a summary of "DUNST_COMMAND_PAUSE"
+and resumed with a summary of "DUNST_COMMAND_RESUME". Alternatively you can send SIGUSR1 and SIGUSR2 to pause and unpause respectively. For Example:
+
+=over 4
+
+=item killall -SIGUSR1 dunst # pause
+
+=item killall -SIGUSR2 dunst # resume
+
+=back
+
+When paused dunst will not display any notifications but keep all notifications in a queue.
+This can for example be wrapped around a screen locker (i3lock, slock) to prevent flickering
+of notifications through the lock and to read all missed notifications after returning to the computer.
+
+=head1 CONFIGURATION
+
+An example configuration file is included (usually /usr/share/dunst/dunstrc).
+To change the configuration, copy this file to ~/.config/dunst/dunstrc and edit
+it accordingly.
+
+=head1 AUTHOR
+
+written by Sascha Kruse <knopwob@googlemail.com>
+
+=head1 COPYRIGHT
+
+copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information)
+
+If you feel that copyrights are violated, please send me an email.
+
+=head1 SEE ALSO
+
+dwm(1), dmenu(1), twmn(1), notify-send(1)

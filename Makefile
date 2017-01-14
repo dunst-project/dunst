@@ -3,15 +3,10 @@
 
 include config.mk
 
-SRC = x.c  \
-	  dunst.c \
-	  dbus.c  \
-	  utils.c \
-	  option_parser.c \
-	  settings.c \
-	  rules.c \
-	  menu.c \
-	  notification.c
+CFLAGS += -I.
+LDFLAGS += -L.
+
+SRC = $(shell ls src/*.c)
 OBJ = ${SRC:.c=.o}
 
 V ?= 0
@@ -29,7 +24,7 @@ options:
 
 .c.o:
 	@echo CC -c $<
-	${CC} -c $< ${CFLAGS}
+	${CC} -o $@ -c $< ${CFLAGS}
 
 ${OBJ}: config.h config.mk
 
@@ -38,52 +33,75 @@ config.h: config.def.h
 	@echo creating $@ from $<
 	@cp $< $@
 
-dunst: ${OBJ}
+dunst: options ${OBJ} main.o
 	@echo "${CC} ${CFLAGS} -o $@ ${OBJ} ${LDFLAGS}"
-	@${CC} ${CFLAGS} -o $@ ${OBJ} ${LDFLAGS}
+	@${CC} ${CFLAGS} -o $@ ${OBJ} main.o ${LDFLAGS}
 
 dunstify:
-	@${CC} -o $@ dunstify.c -std=c99 $(shell pkg-config --libs --cflags glib-2.0 libnotify)
+	@${CC} ${CFLAGS} -o $@ dunstify.c -std=c99 $(shell pkg-config --libs --cflags glib-2.0 libnotify)
 
-debug: ${OBJ}
-	@echo CC -o $@
-	@${CC} ${CFLAGS} -O0 -o dunst ${OBJ} ${LDFLAGS}
-
-clean:
-	@echo cleaning
-	rm -f ${OBJ}
-	rm -f dunst
-	rm -f dunst.1
+clean-dunst:
+	rm -f dunst ${OBJ} main.o
 	rm -f org.knopwob.dunst.service
-	rm -f core
+	rm -f dunst.systemd.service
+
+clean-dunstify:
 	rm -f dunstify
 
-doc: dunst.1
-dunst.1: README.pod
+clean-doc:
+	rm -f docs/dunst.1
+
+clean: clean-dunst clean-dunstify clean-doc test-clean
+
+distclean: clean clean-config
+
+clean-config:
+	rm -f config.h
+
+doc: docs/dunst.1
+docs/dunst.1: docs/dunst.pod
 	pod2man --name=dunst -c "Dunst Reference" --section=1 --release=${VERSION} $< > $@
 
 service:
 	@sed "s|##PREFIX##|$(PREFIX)|" org.knopwob.dunst.service.in > org.knopwob.dunst.service
+	@sed "s|##PREFIX##|$(PREFIX)|" contrib/dunst.systemd.service.in > dunst.systemd.service
 
-install: all
-	@echo installing executables to ${DESTDIR}${PREFIX}/bin
+install-dunst: dunst doc
 	mkdir -p ${DESTDIR}${PREFIX}/bin
-	cp -f dunst ${DESTDIR}${PREFIX}/bin
-	chmod 755 ${DESTDIR}${PREFIX}/bin/dunst
-	@echo installing manual pages to ${DESTDIR}${MANPREFIX}/man1
+	install -m755 dunst ${DESTDIR}${PREFIX}/bin
 	mkdir -p ${DESTDIR}${MANPREFIX}/man1
-	cp -f dunst.1 ${DESTDIR}${MANPREFIX}/man1/
-	chmod 644 ${DESTDIR}${MANPREFIX}/man1/dunst.1
-	mkdir -p "${DESTDIR}${PREFIX}/share/dunst"
-	 cp -f dunstrc ${DESTDIR}${PREFIX}/share/dunst
-	mkdir -p "${DESTDIR}${PREFIX}/share/dbus-1/services/"
-	cp -vf org.knopwob.dunst.service "${DESTDIR}${PREFIX}/share/dbus-1/services/org.knopwob.dunst.service"
+	install -m644 docs/dunst.1 ${DESTDIR}${MANPREFIX}/man1
+
+install-doc:
+	mkdir -p ${DESTDIR}${PREFIX}/share/dunst
+	install -m644 dunstrc ${DESTDIR}${PREFIX}/share/dunst
+
+install-service: service
+	mkdir -p ${DESTDIR}${PREFIX}/share/dbus-1/services/
+	install -m644 org.knopwob.dunst.service ${DESTDIR}${PREFIX}/share/dbus-1/services
+
+install: install-dunst install-doc install-service
 
 uninstall:
-	@echo removing executables from ${DESTDIR}${PREFIX}/bin
+	@echo Removing executables from ${DESTDIR}${PREFIX}/bin
 	rm -f ${DESTDIR}${PREFIX}/bin/dunst
-	@echo removing manual page from ${DESTDIR}${MANPREFIX}/man1
-	rm -f ${DESTDIR}${MANPREFIX}/man1/dunst
-	rm -f ${DESTDIR}${PREFIX}/share/dbus-1/service/org.knopwob.dunst.service
+	@echo Removing manual page from ${DESTDIR}${MANPREFIX}/man1
+	rm -f ${DESTDIR}${MANPREFIX}/man1/dunst.1
+	@echo Removing service file from ${DESTDIR}${PREFIX}/share/dbus-1/services
+	rm -f ${DESTDIR}${PREFIX}/share/dbus-1/services/org.knopwob.dunst.service
+	@echo Removing documentation directory ${DESTDIR}${PREFIX}/share/dunst
+	rm -rf ${DESTDIR}${PREFIX}/share/dunst
+
+test: test/test
+	cd test && ./test
+
+TEST_SRC = $(shell ls test/*.c)
+TEST_OBJ = $(TEST_SRC:.c=.o)
+
+test/test: ${OBJ} ${TEST_OBJ}
+	${CC} ${CFLAGS} -o $@ ${TEST_OBJ} ${OBJ} ${LDFLAGS}
+
+test-clean:
+	rm -f test/test test/*.o
 
 .PHONY: all options clean dist install uninstall

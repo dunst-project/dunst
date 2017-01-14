@@ -175,7 +175,7 @@ int ini_get_bool(char *section, char *key, int def)
                 case '0':
                         return false;
                 default:
-                        return false;
+                        return def;
                 }
         }
 }
@@ -214,7 +214,7 @@ int load_ini_file(FILE * fp)
                         continue;
 
                 if (*start == '[') {
-                        char *end = strstr(start + 1, "]");
+                        char *end = strchr(start + 1, ']');
                         if (!end) {
                                 printf
                                     ("Warning: invalid config file at line %d\n",
@@ -232,7 +232,7 @@ int load_ini_file(FILE * fp)
                         continue;
                 }
 
-                char *equal = strstr(start + 1, "=");
+                char *equal = strchr(start + 1, '=');
                 if (!equal) {
                         printf("Warning: invalid config file at line %d\n",
                                line_num);
@@ -244,9 +244,9 @@ int load_ini_file(FILE * fp)
                 char *key = g_strstrip(start);
                 char *value = g_strstrip(equal + 1);
 
-                char *quote = strstr(value, "\"");
+                char *quote = strchr(value, '"');
                 if (quote) {
-                        char *closing_quote = strstr(quote + 1, "\"");
+                        char *closing_quote = strchr(quote + 1, '"');
                         if (!closing_quote) {
                                 printf
                                     ("Warning: invalid config file at line %d\n",
@@ -257,9 +257,7 @@ int load_ini_file(FILE * fp)
 
                         closing_quote = '\0';
                 } else {
-                        char *comment = strstr(value, "#");
-                        if (!comment)
-                                comment = strstr(value, ";");
+                        char *comment = strpbrk(value, "#;");
                         if (comment)
                                 comment = '\0';
                 }
@@ -291,7 +289,7 @@ int cmdline_find_option(char *key)
                 return -1;
         }
         char *key1 = g_strdup(key);
-        char *key2 = strstr(key1, "/");
+        char *key2 = strchr(key1, '/');
 
         if (key2) {
                 *key2 = '\0';
@@ -421,7 +419,7 @@ double option_get_double(char *ini_section, char *ini_key, char *cmdline_key,
         double val = cmdline_get_double(cmdline_key, def, description);
 
         if (!str)
-                return ini_get_int(ini_section, ini_key, def);
+                return ini_get_double(ini_section, ini_key, def);
         else
                 return val;
 }
@@ -473,4 +471,4 @@ char *cmdline_create_usage(void)
         return g_strdup(usage_str);
 }
 
-/* vim: set ts=8 sw=8 tw=0: */
+/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

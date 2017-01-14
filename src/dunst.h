@@ -3,6 +3,7 @@
 #pragma once
 
 #include <glib.h>
+#include <stdio.h>
 #include <stdbool.h>
 
 #include "x.h"
@@ -12,7 +13,8 @@
 #define PERR(msg, errnum) printf("(%d) %s : %s\n", __LINE__, (msg), (strerror(errnum)))
 #define LENGTH(X)               (sizeof X / sizeof X[0])
 
-#define ColLast 2
+#define ColLast 3
+#define ColFrame 2
 #define ColFG 1
 #define ColBG 0
 
@@ -27,11 +29,13 @@ extern GQueue *displayed;
 extern GQueue *history;
 extern GSList *rules;
 extern bool pause_display;
-extern const char *color_strings[2][3];
+extern const char *color_strings[3][3];
 
 /* return id of notification */
 gboolean run(void *data);
 void wake_up(void);
+
+int dunst_main(int argc, char *argv[]);
 
 void check_timeouts(void);
 void history_pop(void);
@@ -43,4 +47,4 @@ char *extract_urls(const char *str);
 void context_menu(void);
 void wake_up(void);
 void pause_signal_handler(int sig);
-/* vim: set ts=8 sw=8 tw=0: */
+/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

@@ -1,0 +1,17 @@
+before_install:
+    - sudo apt-get -qq update
+    - sudo apt-get install -y libdbus-1-dev libx11-dev libxinerama-dev libxft-dev libxss-dev libxdg-basedir-dev libglib2.0-dev libpango1.0-dev libcairo2-dev libfreetype6-dev libnotify-dev libgtk2.0-dev
+dist: trusty
+sudo: required
+language: c
+script: make && make test
+compiler:
+    - clang
+    - gcc
+
+notifications:
+    irc:
+        channels:
+            - "chat.freenode.net#dunst"
+        on_success: always
+        on_failure: always

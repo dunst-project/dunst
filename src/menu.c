@@ -1,6 +1,7 @@
 /* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
 
 #define _GNU_SOURCE
+#include <stdlib.h>
 #include <stdbool.h>
 #include <regex.h>
 #include <stdio.h>
@@ -15,32 +16,49 @@
 #include "settings.h"
 #include "dbus.h"
 
-        /*
-         * Exctract all urls from a given string.
-         *
-         * Return: a string of urls separated by \n
-         *
-         */
+static bool is_initialized = false;
+static regex_t cregex;
+
+static int regex_init(void)
+{
+        if (is_initialized)
+                return 1;
+
+        char *regex =
+            "\\b(https?://|ftps?://|news://|mailto:|file://|www\\.)"
+            "[-[:alnum:]_\\@;/?:&=%$.+!*\x27,~#]*"
+            "(\\([-[:alnum:]_\\@;/?:&=%$.+!*\x27,~#]*\\)|[-[:alnum:]_\\@;/?:&=%$+*~])+";
+        int ret = regcomp(&cregex, regex, REG_EXTENDED | REG_ICASE);
+        if (ret != 0) {
+                fputs("failed to compile regex", stderr);
+                return 0;
+        } else {
+                is_initialized = true;
+                return 1;
+        }
+}
+
+void regex_teardown(void)
+{
+        if (is_initialized)
+        {
+                regfree(&cregex);
+                is_initialized = false;
+        }
+}
+
+/*
+ * Exctract all urls from a given string.
+ *
+ * Return: a string of urls separated by \n
+ *
+ */
 char *extract_urls(const char *to_match)
 {
-        static bool is_initialized = false;
-        static regex_t cregex;
-
-        if (!is_initialized) {
-                char *regex =
-                    "\\b(https?://|ftps?://|news://|mailto:|file://|www\\.)"
-                    "[-[:alnum:]_\\@;/?:&=%$.+!*\x27,~#]*"
-                    "(\\([-[:alnum:]_\\@;/?:&=%$.+!*\x27,~#]*\\)|[-[:alnum:]_\\@;/?:&=%$+*~])+";
-                int ret = regcomp(&cregex, regex, REG_EXTENDED | REG_ICASE);
-                if (ret != 0) {
-                        printf("failed to compile regex\n");
-                        return NULL;
-                } else {
-                        is_initialized = true;
-                }
-        }
-
         char *urls = NULL;
+
+        if (!regex_init())
+                return NULL;
 
         const char *p = to_match;
         regmatch_t m;
@@ -69,10 +87,10 @@ char *extract_urls(const char *to_match)
         return urls;
 }
 
-        /*
-         * Open url in browser.
-         *
-         */
+/*
+ * Open url in browser.
+ *
+ */
 void open_browser(const char *url)
 {
         int browser_pid1 = fork();
@@ -93,10 +111,10 @@ void open_browser(const char *url)
         }
 }
 
-    /*
-     * Notify the corresponding client
-     * that an action has been invoked
-     */
+/*
+ * Notify the corresponding client
+ * that an action has been invoked
+ */
 void invoke_action(const char *action)
 {
         notification *invoked = NULL;
@@ -131,14 +149,14 @@ void invoke_action(const char *action)
         }
 
         if (invoked && action_identifier) {
-                actionInvoked(invoked, action_identifier);
+                action_invoked(invoked, action_identifier);
         }
 }
 
-    /*
-     * Dispatch whatever has been returned
-     * by the menu.
-     */
+/*
+ * Dispatch whatever has been returned
+ * by the menu.
+ */
 void dispatch_menu_result(const char *input)
 {
         char *in = strdup(input);
@@ -164,10 +182,10 @@ void dispatch_menu_result(const char *input)
         free(in);
 }
 
-        /*
-         * Open the context menu that let's the user
-         * select urls/actions/etc
-         */
+/*
+ * Open the context menu that let's the user
+ * select urls/actions/etc
+ */
 void context_menu(void)
 {
         char *dmenu_input = NULL;
@@ -239,4 +257,4 @@ void context_menu(void)
 
         free(dmenu_input);
 }
-/* vim: set ts=8 sw=8 tw=0: */
+/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

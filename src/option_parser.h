@@ -33,4 +33,4 @@ int option_get_bool(char *ini_section, char *ini_key, char *cmdline_key,
  */
 char *next_section(char *section);
 
-/* vim: set ts=8 sw=8 tw=0: */
+/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

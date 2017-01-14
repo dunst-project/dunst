@@ -13,8 +13,6 @@
 #endif
 #include <X11/extensions/scrnsaver.h>
 
-#include <X11/Xft/Xft.h>
-
 #define BUTTONMASK              (ButtonPressMask|ButtonReleaseMask)
 #define FONT_HEIGHT_BORDER 2
 #define DEFFONT "Monospace-11"
@@ -48,10 +46,9 @@ typedef struct _xctx {
         Window win;
         bool visible;
         dimension_t geometry;
-        const char *color_strings[2][3];
+        const char *color_strings[3][3];
         XScreenSaverInfo *screensaver_info;
         dimension_t window_dim;
-        unsigned long framec;
         unsigned long sep_custom_col;
 } xctx_t;
 
@@ -77,6 +74,7 @@ KeySym x_shortcut_string_to_mask(const char *str);
 /* X misc */
 bool x_is_idle(void);
 void x_setup(void);
+void x_free(void);
 
 gboolean x_mainloop_fd_dispatch(GSource * source, GSourceFunc callback,
                                 gpointer user_data);
@@ -84,4 +82,4 @@ gboolean x_mainloop_fd_check(GSource * source);
 gboolean x_mainloop_fd_prepare(GSource * source, gint * timeout);
 
 #endif
-/* vim: set ts=8 sw=8 tw=0: */
+/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
