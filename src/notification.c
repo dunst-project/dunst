@@ -389,6 +389,15 @@ int notification_init(notification * n, int id)
 
         n->msg = g_strchomp(n->msg);
 
+        if (n->icon != NULL && strlen(n->icon) <= 0) {
+                free(n->icon);
+                n->icon = NULL;
+        }
+
+        if (n->raw_icon == NULL && n->icon == NULL) {
+                n->icon = strdup(settings.icons[n->urgency]);
+        }
+
         if (id == 0) {
                 n->id = ++next_notification_id;
         } else {
@@ -466,15 +475,6 @@ int notification_init(notification * n, int id)
         n->timeout =
             n->timeout == -1 ? settings.timeouts[n->urgency] : n->timeout;
         n->start = 0;
-
-        if (n->icon != NULL && strlen(n->icon) <= 0) {
-                free(n->icon);
-                n->icon = NULL;
-        }
-
-        if (n->raw_icon == NULL && n->icon == NULL) {
-                n->icon = strdup(settings.icons[n->urgency]);
-        }
 
         n->timestamp = time(NULL);
 
