@@ -191,6 +191,10 @@ static bool have_dynamic_width(void)
         return (xctx.geometry.mask & WidthValue && xctx.geometry.w == 0);
 }
 
+static bool does_file_exist(const char *filename){
+        return (access(filename, F_OK) != -1);
+}
+
 static bool is_readable_file(const char *filename)
 {
         return (access(filename, R_OK) != -1);
@@ -342,7 +346,7 @@ static GdkPixbuf *get_pixbuf_from_path(char *icon_path)
                                 current_folder = strndup(start, end - start);
                                 /* try svg */
                                 maybe_icon_path = g_strconcat(current_folder, "/", icon_path, ".svg", NULL);
-                                if (maybe_icon_path == NULL) {
+                                if (!does_file_exist(maybe_icon_path)) {
                                         /* fallback to png */
                                         maybe_icon_path = g_strconcat(current_folder, "/", icon_path, ".png", NULL);
                                 }
