@@ -340,13 +340,18 @@ static GdkPixbuf *get_pixbuf_from_path(char *icon_path)
                                 if (end == NULL) end = strchr(settings.icon_folders, '\0'); /* end = end of string */
 
                                 current_folder = strndup(start, end - start);
-                                maybe_icon_path = g_strconcat(current_folder, "/", icon_path, ".png", NULL);
+                                /* try svg */
+                                maybe_icon_path = g_strconcat(current_folder, "/", icon_path, ".svg", NULL);
+                                if (maybe_icon_path == NULL) {
+                                        /* fallback to png */
+                                        maybe_icon_path = g_strconcat(current_folder, "/", icon_path, ".png", NULL);
+                                }
                                 free(current_folder);
 
                                 pixbuf = get_pixbuf_from_file(maybe_icon_path);
-                                free(maybe_icon_path);
+                                g_free(maybe_icon_path);
                                 if (pixbuf != NULL) {
-                                    return pixbuf;
+                                        return pixbuf;
                                 }
 
                                 start = end + 1;
