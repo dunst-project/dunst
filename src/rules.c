@@ -2,8 +2,6 @@
 
 #include <glib.h>
 #include <fnmatch.h>
-#include <stdlib.h>
-#include <string.h>
 
 #include "dunst.h"
 #include "rules.h"
@@ -23,8 +21,8 @@ void rule_apply(rule_t * r, notification * n)
                 n->plain_text = r->plain_text;
         if (r->new_icon) {
                 if(n->icon)
-                        free(n->icon);
-                n->icon = strdup(r->new_icon);
+                        g_free(n->icon);
+                n->icon = g_strdup(r->new_icon);
         }
         if (r->fg)
                 n->color_strings[ColFG] = r->fg;
