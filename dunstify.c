@@ -270,11 +270,14 @@ int main(int argc, char *argv[])
     GError *err = NULL;
 
     if (raw_icon_path) {
-            notify_notification_set_image_from_pixbuf(n, gdk_pixbuf_new_from_file(raw_icon_path, &err));
+            GdkPixbuf *raw_icon = gdk_pixbuf_new_from_file(raw_icon_path, &err);
+
             if(err) {
-                g_printerr("Unable to close notification: %s\n", err->message);
+                g_printerr("Unable to get raw icon: %s\n", err->message);
                 die(1);
             }
+
+            notify_notification_set_image_from_pixbuf(n, raw_icon);
     }
 
     if (close_id > 0) {
