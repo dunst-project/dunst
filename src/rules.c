@@ -2,6 +2,8 @@
 
 #include <glib.h>
 #include <fnmatch.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "dunst.h"
 #include "rules.h"
@@ -19,8 +21,11 @@ void rule_apply(rule_t * r, notification * n)
                 n->allow_markup = r->allow_markup;
         if (r->plain_text != -1)
                 n->plain_text = r->plain_text;
-        if (r->new_icon)
-                n->icon = r->new_icon;
+        if (r->new_icon) {
+                if(n->icon)
+                        free(n->icon);
+                n->icon = strdup(r->new_icon);
+        }
         if (r->fg)
                 n->color_strings[ColFG] = r->fg;
         if (r->bg)
