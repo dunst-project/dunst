@@ -37,15 +37,13 @@ dunst: options ${OBJ} main.o
 	@echo "${CC} ${CFLAGS} -o $@ ${OBJ} ${LDFLAGS}"
 	@${CC} ${CFLAGS} -o $@ ${OBJ} main.o ${LDFLAGS}
 
-dunstify:
-	@${CC} ${CFLAGS} -o $@ dunstify.c -std=c99 $(shell pkg-config --libs --cflags glib-2.0 libnotify)
-
 clean-dunst:
 	rm -f dunst ${OBJ} main.o
 	rm -f org.knopwob.dunst.service
 	rm -f dunst.systemd.service
 
 clean-dunstify:
+	rm -f dunstify.o
 	rm -f dunstify
 
 clean-doc:
@@ -103,5 +101,8 @@ test/test: ${OBJ} ${TEST_OBJ}
 
 test-clean:
 	rm -f test/test test/*.o
+
+dunstify: dunstify.o
+	${CC} ${CFLAGS} -o $@ dunstify.o $(shell pkg-config --libs --cflags glib-2.0 libnotify gdk-2.0)
 
 .PHONY: all options clean dist install uninstall

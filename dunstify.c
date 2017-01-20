@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <gdk-pixbuf/gdk-pixbuf.h>
 
 static gchar *appname = "dunstify";
 static gchar *summary = NULL;
@@ -13,6 +14,7 @@ static gchar **hint_strs = NULL;
 static gchar **action_strs = NULL;
 static gint timeout = NOTIFY_EXPIRES_DEFAULT;
 static gchar *icon = NULL;
+static gchar *raw_icon_path = NULL;
 static gboolean capabilities = false;
 static gboolean serverinfo = false;
 static gboolean printid = false;
@@ -28,6 +30,7 @@ static GOptionEntry entries[] =
     { "action", 'A', 0, G_OPTION_ARG_STRING_ARRAY, &action_strs, "Actions the user can invoke", "ACTION" },
     { "timeout", 't', 0, G_OPTION_ARG_INT, &timeout, "The time until the notification expires", "TIMEOUT" },
     { "icon",    'i', 0, G_OPTION_ARG_STRING, &icon, "An Icon that should be displayed with the notification", "ICON" },
+    { "raw_icon", 'I', 0, G_OPTION_ARG_STRING, &raw_icon_path, "Path to the icon to be sent as raw image data", "RAW_ICON"},
     { "capabilities",   'c', 0, G_OPTION_ARG_NONE, &capabilities, "Print the server capabilities and exit", NULL},
     { "serverinfo", 's', 0, G_OPTION_ARG_NONE, &serverinfo, "Print server information and exit", NULL},
     { "printid", 'p', 0, G_OPTION_ARG_NONE, &printid, "Print id, which can be used to update/replace this notification", NULL},
@@ -265,6 +268,14 @@ int main(int argc, char *argv[])
     notify_notification_set_urgency(n, urgency);
 
     GError *err = NULL;
+
+    if (raw_icon_path) {
+            notify_notification_set_image_from_pixbuf(n, gdk_pixbuf_new_from_file(raw_icon_path, &err));
+            if(err) {
+                g_printerr("Unable to close notification: %s\n", err->message);
+                die(1);
+            }
+    }
 
     if (close_id > 0) {
         put_id(n, close_id);
