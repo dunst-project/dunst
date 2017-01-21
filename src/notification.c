@@ -149,7 +149,7 @@ int notification_is_duplicate(const notification *a, const notification *b)
         //Comparing raw icons is not supported, assume they are not identical
         if (settings.icon_position != icons_off
                 && (a->raw_icon != NULL || b->raw_icon != NULL))
-                return false
+                return false;
 
         return strcmp(a->appname, b->appname) == 0
             && strcmp(a->summary, b->summary) == 0
