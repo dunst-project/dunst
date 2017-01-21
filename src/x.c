@@ -626,10 +626,13 @@ static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, colored_layou
                 unsigned int image_width = cairo_image_surface_get_width(cl->icon),
                              image_height = cairo_image_surface_get_height(cl->icon),
                              image_x,
-                             image_y = bg_y + settings.padding;
+                             image_y = bg_y + settings.padding + h/2 - image_height/2;
 
-                if (settings.icon_position == icons_left) image_x = settings.frame_width + settings.h_padding;
-                else image_x = bg_width - settings.h_padding - image_width + settings.frame_width;
+                if (settings.icon_position == icons_left) {
+                        image_x = settings.frame_width + settings.h_padding;
+                } else {
+                        image_x = bg_width - settings.h_padding - image_width + settings.frame_width;
+                }
 
                 cairo_set_source_surface (c, cl->icon, image_x, image_y);
                 cairo_rectangle (c, image_x, image_y, image_width, image_height);
