@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/dunst-project/dunst.svg?branch=master)](https://travis-ci.org/dunst-project/dunst)
+
 ## Dunst
 
 
@@ -16,8 +18,8 @@ Dunst has a number of build dependencies that must be present before attempting 
 - libxss
 - libxdg-basedir
 - glib
-- pango
-- cairo
+- pango/cairo
+- libgtk2.0
 
 On Debian and Debian-based distros you'll probably also need the *-dev packages.
 
@@ -31,14 +33,13 @@ sudo make PREFIX=/usr install
 
 ## Bug reports
 
-Please use the [issue tracker][issue-tracker] provided by GitHub to send us bug reports or feature requests.
-
+Please use the [issue tracker][issue-tracker] provided by GitHub to send us bug reports or feature requests. You can also join us at [#dunst](irc://irc.freenode.net/#dunst) IRC channel on Freenode.
 
 ## Author
 
 written by Sascha Kruse <knopwob@googlemail.com>
 
-[issue-tracker]:  https://github.com/knopwob/dunst/issues
+[issue-tracker]:  https://github.com/dunst-project/dunst/issues
 ## Copyright
 
 copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information)
