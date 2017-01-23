@@ -33,15 +33,16 @@ sudo make PREFIX=/usr install
 
 ## Bug reports
 
-Please use the [issue tracker][issue-tracker] provided by GitHub to send us bug reports or feature requests. You can also join us at [#dunst](irc://irc.freenode.net/#dunst) IRC channel on Freenode.
+Please use the [issue tracker][issue-tracker] provided by GitHub to send us bug reports or feature requests. You can also join us at #dunst IRC channel on Freenode.
 
 ## Author
 
 written by Sascha Kruse <knopwob@googlemail.com>
 
-[issue-tracker]:  https://github.com/dunst-project/dunst/issues
 ## Copyright
 
 copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information)
 
 If you feel that copyrights are violated, please send me an email.
+
+[issue-tracker]:  https://github.com/dunst-project/dunst/issues
