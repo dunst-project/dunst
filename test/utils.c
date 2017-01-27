@@ -79,6 +79,7 @@ TEST test_string_to_argv(void)
         char **argv = string_to_argv("argv");
         ASSERT_STR_EQ("argv", argv[0]);
         ASSERT_EQ(    NULL,   argv[1]);
+        free(argv[0]);
         free(argv);
         argv = NULL;
 
@@ -86,6 +87,8 @@ TEST test_string_to_argv(void)
         ASSERT_STR_EQ("echo", argv[0]);
         ASSERT_STR_EQ("test", argv[1]);
         ASSERT_EQ(    NULL,   argv[2]);
+        free(argv[0]);
+        free(argv[1]);
         free(argv);
         argv = NULL;
 
