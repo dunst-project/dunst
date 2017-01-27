@@ -116,7 +116,6 @@ static void on_get_capabilities(GDBusConnection * connection,
         g_dbus_method_invocation_return_value(invocation, value);
 
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
-        g_variant_unref(value);
 }
 
 static void on_notify(GDBusConnection * connection,
