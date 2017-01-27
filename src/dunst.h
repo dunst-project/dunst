@@ -19,11 +19,6 @@
 #define ColFG 1
 #define ColBG 0
 
-enum alignment { left, center, right };
-enum icon_position_t { icons_left, icons_right, icons_off };
-enum separator_color { FOREGROUND, AUTO, FRAME, CUSTOM };
-enum follow_mode { FOLLOW_NONE, FOLLOW_MOUSE, FOLLOW_KEYBOARD };
-
 extern int verbosity;
 extern GQueue *queue;
 extern GQueue *displayed;

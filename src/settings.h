@@ -2,6 +2,11 @@
 #ifndef DUNST_SETTINGS_H
 #define DUNST_SETTINGS_H
 
+enum alignment { left, center, right };
+enum icon_position_t { icons_left, icons_right, icons_off };
+enum separator_color { FOREGROUND, AUTO, FRAME, CUSTOM };
+enum follow_mode { FOLLOW_NONE, FOLLOW_MOUSE, FOLLOW_KEYBOARD };
+
 typedef struct _settings {
         bool print_notifications;
         bool allow_markup;
