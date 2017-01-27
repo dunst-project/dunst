@@ -1,6 +1,6 @@
 /* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
-#ifndef DRAW_H
-#define DRAW_H
+#ifndef DUNST_X_H
+#define DUNST_X_H
 
 #include <stdbool.h>
 #include "glib.h"

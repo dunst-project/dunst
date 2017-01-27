@@ -1,7 +1,7 @@
 /* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
 
-#ifndef _DUNST_DBUS_H
-#define _DUNST_DBUS_H
+#ifndef DUNST_DBUS_H
+#define DUNST_DBUS_H
 
 #include <dbus/dbus.h>
 
@@ -14,5 +14,4 @@ void notification_closed(notification * n, int reason);
 void action_invoked(notification * n, const char *identifier);
 
 #endif
-
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

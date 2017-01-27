@@ -1,6 +1,7 @@
 /* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
 
-#pragma once
+#ifndef DUNST_DUNST_H
+#define DUNST_DUNST_H
 
 #include <glib.h>
 #include <stdio.h>
@@ -47,4 +48,6 @@ char *extract_urls(const char *str);
 void context_menu(void);
 void wake_up(void);
 void pause_signal_handler(int sig);
+
+#endif
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

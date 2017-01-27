@@ -1,5 +1,6 @@
 /* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
-#pragma once
+#ifndef DUNST_OPTION_PARSER_H
+#define DUNST_OPTION_PARSER_H
 
 #include <stdio.h>
 
@@ -33,4 +34,5 @@ int option_get_bool(char *ini_section, char *ini_key, char *cmdline_key,
  */
 char *next_section(char *section);
 
+#endif
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

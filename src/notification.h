@@ -1,5 +1,6 @@
 /* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
-#pragma once
+#ifndef DUNST_NOTIFICATION_H
+#define DUNST_NOTIFICATION_H
 
 #include "x.h"
 
@@ -70,4 +71,5 @@ void notification_update_text_to_render(notification *n);
 int notification_get_ttl(notification *n);
 int notification_get_age(notification *n);
 
+#endif
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

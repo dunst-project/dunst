@@ -1,5 +1,6 @@
 /* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
-#pragma once
+#ifndef DUNST_SETTINGS_H
+#define DUNST_SETTINGS_H
 
 typedef struct _settings {
         bool print_notifications;
@@ -67,4 +68,5 @@ extern settings_t settings;
 
 void load_settings(char *cmdline_config_path);
 
+#endif
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
