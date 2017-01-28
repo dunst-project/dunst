@@ -33,7 +33,9 @@ void notification_print(notification * n)
         printf("\tsummary: '%s'\n", n->summary);
         printf("\tbody: '%s'\n", n->body);
         printf("\ticon: '%s'\n", n->icon);
+        printf("\traw_icon set: %s\n", (n->raw_icon ? "true" : "false"));
         printf("\tcategory: %s\n", n->category);
+        printf("\ttimeout: %d\n", n->timeout);
         printf("\turgency: %d\n", n->urgency);
         printf("\tformatted: '%s'\n", n->msg);
         printf("\tfg: %s\n", n->color_strings[ColFG]);
