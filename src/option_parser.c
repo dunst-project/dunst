@@ -50,6 +50,7 @@ section_t *new_section(char *name)
 
         section_count++;
         sections = realloc(sections, sizeof(section_t) * section_count);
+        if(sections == NULL) die("Unable to allocate memory.\n", 1);
         sections[section_count - 1].name = g_strdup(name);
         sections[section_count - 1].entries = NULL;
         sections[section_count - 1].entry_count = 0;
@@ -67,6 +68,8 @@ void free_ini(void)
                 free(sections[i].name);
         }
         free(sections);
+        section_count = 0;
+        sections = NULL;
 }
 
 section_t *get_section(char *name)
