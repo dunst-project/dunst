@@ -2,6 +2,10 @@
 
 ## Dunst
 
+* [Wiki][wiki]
+* [Description](#description)
+* [Compiling](#compiling)
+* [Copyright](#copyright)
 
 ## Description
 
@@ -10,7 +14,7 @@ Dunst is a highly configurable and lightweight notification daemon.
 
 ## Compiling
 
-Dunst has a number of build dependencies that must be present before attempting configuration. The names are different depending on distribution:
+Dunst has a number of build dependencies that must be present before attempting configuration. The names are different depending on [distribution](https://github.com/dunst-project/dunst/wiki/Dependencies):
 
 - dbus
 - libxinerama
@@ -21,23 +25,21 @@ Dunst has a number of build dependencies that must be present before attempting 
 - pango/cairo
 - libgtk2.0
 
-On Debian and Debian-based distros you'll probably also need the *-dev packages.
-
-To build it:
-```bash
-cd dunst
-make
-sudo make PREFIX=/usr install
-```
-
+Checkout the [wiki][wiki] for more information.
 
 ## Bug reports
 
-Please use the [issue tracker][issue-tracker] provided by GitHub to send us bug reports or feature requests. You can also join us at #dunst IRC channel on Freenode.
+Please use the [issue tracker][issue-tracker] provided by GitHub to send us bug reports or feature requests. You can also join us on the IRC channel `#dunst` on Freenode.
+
+## Mantainers
+
+Nikos Tsipinakis <nikos@tsipinakis.com>
+
+Jonathan Lusso <jonilusso@gmail.com>
 
 ## Author
 
-written by Sascha Kruse <knopwob@googlemail.com>
+written by Sascha Kruse <dunst@knopwob.de>
 
 ## Copyright
 
@@ -46,3 +48,4 @@ copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing informat
 If you feel that copyrights are violated, please send me an email.
 
 [issue-tracker]:  https://github.com/dunst-project/dunst/issues
+[wiki]: https://github.com/dunst-project/dunst/wiki
