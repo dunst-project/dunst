@@ -170,7 +170,7 @@
     icon_folders = /usr/share/icons/gnome/16x16/status/:/usr/share/icons/gnome/16x16/devices/
 
     # Always run rule-defined scripts, even if the notification is suppressed
-    always_run_stript = true
+    always_run_script = true
 
 [frame]
     width = 3
