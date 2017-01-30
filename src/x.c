@@ -385,9 +385,6 @@ static GdkPixbuf *get_pixbuf_from_raw_image(const RawImage *raw_image)
 static colored_layout *r_init_shared(cairo_t *c, notification *n)
 {
         colored_layout *cl = g_malloc(sizeof(colored_layout));
-        if(cl == NULL) {
-                die("Unable to allocate memory", EXIT_FAILURE);
-        }
         cl->l = pango_cairo_create_layout(c);
 
         if (!settings.word_wrap) {

@@ -131,10 +131,7 @@ static void on_notify(GDBusConnection * connection,
         gchar *icon = NULL;
         gchar *summary = NULL;
         gchar *body = NULL;
-        Actions *actions = g_malloc(sizeof(Actions));
-        if(actions == NULL) {
-                die("Unable to allocate memory", EXIT_FAILURE);
-        }
+        Actions *actions = g_malloc0(sizeof(Actions));
         gint timeout = -1;
 
         /* hints */
@@ -144,10 +141,6 @@ static void on_notify(GDBusConnection * connection,
         gchar *bgcolor = NULL;
         gchar *category = NULL;
         RawImage *raw_icon = NULL;
-
-        actions->actions = NULL;
-        actions->count = 0;
-        actions->dmenu_str = NULL;
 
         {
                 GVariantIter *iter = g_variant_iter_new(parameters);
