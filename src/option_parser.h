@@ -2,6 +2,7 @@
 #ifndef DUNST_OPTION_PARSER_H
 #define DUNST_OPTION_PARSER_H
 
+#include <stdbool.h>
 #include <stdio.h>
 
 int load_ini_file(FILE *);

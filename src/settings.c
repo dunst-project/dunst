@@ -1,19 +1,21 @@
 /* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
 
+#include "settings.h"
+
 #include <glib.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #ifndef STATIC_CONFIG
 #include <basedir.h>
 #include <basedir_fs.h>
 #endif
 
-#include "dunst.h"
-#include "rules.h"
-#include "option_parser.h"
-#include "settings.h"
+#include "rules.h" // put before config.h to fix missing include
 #include "config.h"
+#include "dunst.h"
+#include "notification.h"
+#include "option_parser.h"
 #include "utils.h"
 
 settings_t settings;

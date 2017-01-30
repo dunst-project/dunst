@@ -1,14 +1,11 @@
 /* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
 #define _GNU_SOURCE
-
-#include <string.h>
-#include <ctype.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <glib.h>
-
 #include "utils.h"
-#include "dunst.h"
+
+#include <glib.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 char *string_replace_char(char needle, char replacement, char *haystack) {
         char *current = haystack;

@@ -1,20 +1,23 @@
 /* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
 
 #define _GNU_SOURCE
-#include <stdlib.h>
-#include <stdbool.h>
-#include <regex.h>
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-#include <errno.h>
-#include <sys/wait.h>
-#include <glib.h>
+#include "menu.h"
 
-#include "dunst.h"
-#include "utils.h"
-#include "settings.h"
+#include <errno.h>
+#include <glib.h>
+#include <regex.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/wait.h>
+#include <unistd.h>
+
 #include "dbus.h"
+#include "dunst.h"
+#include "settings.h"
+#include "notification.h"
+#include "utils.h"
 
 static bool is_initialized = false;
 static regex_t cregex;

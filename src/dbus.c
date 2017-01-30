@@ -1,15 +1,16 @@
 /* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
-
-#include <stdlib.h>
-#include <stdio.h>
-#include <glib.h>
-#include <string.h>
-#include <gio/gio.h>
-#include "dunst.h"
 #include "dbus.h"
+
+#include <gio/gio.h>
+#include <glib.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "dunst.h"
 #include "notification.h"
-#include "utils.h"
 #include "settings.h"
+#include "utils.h"
 
 GDBusConnection *dbus_conn;
 

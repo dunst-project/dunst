@@ -2,7 +2,10 @@
 #ifndef DUNST_NOTIFICATION_H
 #define DUNST_NOTIFICATION_H
 
-#include "x.h"
+#include <glib.h>
+#include <stdbool.h>
+#include <time.h>
+
 #include "settings.h"
 
 #define LOW 0

@@ -2,16 +2,10 @@
 #ifndef DUNST_X_H
 #define DUNST_X_H
 
-#include <stdbool.h>
-#include "glib.h"
 #include <X11/Xlib.h>
-#include <X11/XKBlib.h>
-#include <X11/Xatom.h>
-#include <X11/Xutil.h>
-#ifdef XINERAMA
-#include <X11/extensions/Xinerama.h>
-#endif
 #include <X11/extensions/scrnsaver.h>
+#include <glib.h>
+#include <stdbool.h>
 
 #define BUTTONMASK              (ButtonPressMask|ButtonReleaseMask)
 #define FONT_HEIGHT_BORDER 2

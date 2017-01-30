@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#include "x.h"
 #include "notification.h"
 
 #define ERR(msg) printf("%s : %d\n", (msg), __LINE__)

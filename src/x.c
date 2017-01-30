@@ -1,26 +1,30 @@
 /* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
-#include <math.h>
-#include <sys/time.h>
-#include <ctype.h>
-#include <assert.h>
-#include <locale.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <string.h>
-#include <X11/Xlib.h>
+#include "x.h"
+
 #include <X11/X.h>
+#include <X11/XKBlib.h>
 #include <X11/Xatom.h>
-#include <pango/pangocairo.h>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#ifdef XINERAMA
+#include <X11/extensions/Xinerama.h>
+#include <assert.h>
+#endif
 #include <cairo-xlib.h>
 #include <gdk/gdk.h>
+#include <locale.h>
+#include <math.h>
+#include <pango/pangocairo.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
-#include "x.h"
-#include "utils.h"
 #include "dunst.h"
-#include "settings.h"
 #include "notification.h"
+#include "settings.h"
+#include "utils.h"
 
 #define WIDTH 400
 #define HEIGHT 400

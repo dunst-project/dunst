@@ -3,41 +3,24 @@
 #define _GNU_SOURCE
 #define XLIB_ILLEGAL_ACCESS
 
-#include <assert.h>
-#include <unistd.h>
-#include <time.h>
-#include <stdio.h>
-#include <ctype.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <string.h>
-#include <fnmatch.h>
-#include <sys/time.h>
-#include <math.h>
-#include <errno.h>
-#include <signal.h>
-#include <sys/wait.h>
-#include <glib.h>
-#include <glib-unix.h>
-#include <X11/Xlib.h>
-#include <X11/XKBlib.h>
-#include <X11/Xatom.h>
-#include <X11/Xutil.h>
-#ifdef XINERAMA
-#include <X11/extensions/Xinerama.h>
-#endif
-#include <X11/extensions/scrnsaver.h>
-
 #include "dunst.h"
-#include "x.h"
-#include "dbus.h"
-#include "utils.h"
-#include "rules.h"
-#include "notification.h"
-#include "menu.h"
 
+#include <X11/Xlib.h>
+#include <glib-unix.h>
+#include <glib.h>
+#include <signal.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+#include "dbus.h"
+#include "menu.h"
+#include "notification.h"
 #include "option_parser.h"
 #include "settings.h"
+#include "x.h"
 
 #define LENGTH(X)               (sizeof X / sizeof X[0])
 

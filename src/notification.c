@@ -1,24 +1,26 @@
 /* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
 
 #define _GNU_SOURCE
-#include <stdlib.h>
-#include <time.h>
-#include <glib.h>
-#include <errno.h>
-#include <string.h>
-#include <stdbool.h>
-#include <unistd.h>
-#include <sys/wait.h>
+#include "notification.h"
+
 #include <assert.h>
+#include <errno.h>
+#include <glib.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/wait.h>
+#include <time.h>
+#include <unistd.h>
 
 #include "dbus.h"
-#include "x.h"
-#include "notification.h"
 #include "dunst.h"
-#include "utils.h"
-#include "settings.h"
-#include "rules.h"
 #include "menu.h"
+#include "rules.h"
+#include "settings.h"
+#include "utils.h"
+#include "x.h"
 
 int next_notification_id = 1;
 

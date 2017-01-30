@@ -1,15 +1,14 @@
 /* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
 
 #define _GNU_SOURCE
+#include "option_parser.h"
 
-#include <string.h>
-#include <stdlib.h>
-#include <unistd.h>
+#include <glib.h>
 #include <stdbool.h>
 #include <stdio.h>
-#include <glib.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include "option_parser.h"
 #include "utils.h"
 
 typedef struct _entry_t {

@@ -3,8 +3,8 @@
 #define DUNST_RULES_H
 
 #include <glib.h>
+#include <stdbool.h>
 
-#include "dunst.h"
 #include "notification.h"
 #include "settings.h"
 
