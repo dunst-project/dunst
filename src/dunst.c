@@ -12,7 +12,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <time.h>
 
 #include "dbus.h"
@@ -328,9 +327,9 @@ int dunst_main(int argc, char *argv[])
 
         if (settings.startup_notification) {
                 notification *n = notification_create();
-                n->appname = strdup("dunst");
-                n->summary = strdup("startup");
-                n->body = strdup("dunst is up and running");
+                n->appname = g_strdup("dunst");
+                n->summary = g_strdup("startup");
+                n->body = g_strdup("dunst is up and running");
                 n->progress = 0;
                 n->timeout = 10;
                 n->markup = MARKUP_NO;

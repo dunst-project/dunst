@@ -168,12 +168,12 @@ int notification_is_duplicate(const notification *a, const notification *b)
 void notification_free(notification * n)
 {
         assert(n != NULL);
-        free(n->appname);
-        free(n->summary);
-        free(n->body);
-        free(n->icon);
-        free(n->msg);
-        free(n->dbus_client);
+        g_free(n->appname);
+        g_free(n->summary);
+        g_free(n->body);
+        g_free(n->icon);
+        g_free(n->msg);
+        g_free(n->dbus_client);
         g_free(n->category);
 
         if (n->text_to_render)
@@ -184,16 +184,16 @@ void notification_free(notification * n)
 
         if (n->actions) {
                 g_strfreev(n->actions->actions);
-                free(n->actions->dmenu_str);
+                g_free(n->actions->dmenu_str);
         }
 
         if (n->raw_icon) {
             if (n->raw_icon->data)
-                free(n->raw_icon->data);
-            free(n->raw_icon);
+                g_free(n->raw_icon->data);
+            g_free(n->raw_icon);
         }
 
-        free(n);
+        g_free(n);
 }
 
 /*
@@ -246,10 +246,10 @@ char *notification_replace_format(const char *needle, const char *replacement,
         char* ret;
 
         if (markup_mode == MARKUP_NO) {
-                tmp = strdup(replacement);
+                tmp = g_strdup(replacement);
                 tmp = notification_quote_markup(tmp);
         } else {
-                tmp = strdup(replacement);
+                tmp = g_strdup(replacement);
                 if (settings.ignore_newline) {
                         tmp = string_replace_all("<br>", " ", tmp);
                         tmp = string_replace_all("<br/>", " ", tmp);
@@ -273,7 +273,7 @@ char *notification_replace_format(const char *needle, const char *replacement,
         }
 
         ret = string_replace_all(needle, tmp, haystack);
-        free(tmp);
+        g_free(tmp);
 
         return ret;
 }
@@ -286,7 +286,7 @@ char *notification_extract_markup_urls(char **str_ptr) {
     while ((start = strstr(str, "<a href")) != NULL) {
         end = strstr(start, ">");
         if (end != NULL) {
-                replace_buf = strndup(start, end - start + 1);
+                replace_buf = g_strndup(start, end - start + 1);
                 url = extract_urls(replace_buf);
                 if (url != NULL) {
                     str = string_replace(replace_buf, "[", str);
@@ -297,18 +297,18 @@ char *notification_extract_markup_urls(char **str_ptr) {
                     } else {
                         char *tmp = urls;
                         urls = g_strconcat(tmp, "\n", index_buf, " ", url, NULL);
-                        free(tmp);
+                        g_free(tmp);
                     }
 
                     index_buf[0] = ' ';
                     str = string_replace("</a>", index_buf, str);
-                    free(index_buf);
-                    free(url);
+                    g_free(index_buf);
+                    g_free(url);
                 } else {
                     str = string_replace(replace_buf, "", str);
                     str = string_replace("</a>", "", str);
                 }
-                free(replace_buf);
+                g_free(replace_buf);
         } else {
                 break;
         }
@@ -323,7 +323,7 @@ char *notification_extract_markup_urls(char **str_ptr) {
  */
 notification *notification_create(void)
 {
-        notification *n = malloc(sizeof(notification));
+        notification *n = g_malloc(sizeof(notification));
         if(n == NULL) die("Unable to allocate memory", EXIT_FAILURE);
         memset(n, 0, sizeof(notification));
         return n;
@@ -398,12 +398,12 @@ int notification_init(notification * n, int id)
         n->msg = g_strchomp(n->msg);
 
         if (n->icon != NULL && strlen(n->icon) <= 0) {
-                free(n->icon);
+                g_free(n->icon);
                 n->icon = NULL;
         }
 
         if (n->raw_icon == NULL && n->icon == NULL) {
-                n->icon = strdup(settings.icons[n->urgency]);
+                n->icon = g_strdup(settings.icons[n->urgency]);
         }
 
         if (id == 0) {
@@ -432,8 +432,8 @@ int notification_init(notification * n, int id)
                                 /* notifications that differ only in progress hints should be expected equal,
                                  * but we want the latest message, with the latest hint value
                                  */
-                                free(orig->msg);
-                                orig->msg = strdup(n->msg);
+                                g_free(orig->msg);
+                                orig->msg = g_strdup(n->msg);
                                 notification_free(n);
                                 wake_up();
                                 return orig->id;
@@ -447,8 +447,8 @@ int notification_init(notification * n, int id)
                                 /* notifications that differ only in progress hints should be expected equal,
                                  * but we want the latest message, with the latest hint value
                                  */
-                                free(orig->msg);
-                                orig->msg = strdup(n->msg);
+                                g_free(orig->msg);
+                                orig->msg = g_strdup(n->msg);
                                 /* If the progress differs this was probably intended to replace the notification
                                  * but notify-send was used. So don't increment dup_count in this case
                                  */
@@ -506,7 +506,7 @@ int notification_init(notification * n, int id)
         if (tmp_urls != NULL) {
             if (n->urls != NULL) {
                 n->urls = string_append(n->urls, tmp_urls, "\n");
-                free(tmp_urls);
+                g_free(tmp_urls);
             } else {
                 n->urls = tmp_urls;
             }
@@ -522,12 +522,12 @@ int notification_init(notification * n, int id)
                         char *act_str = g_strdup_printf("#%s [%s]", human_readable, n->appname);
                         if (act_str) {
                                 n->actions->dmenu_str = string_append(n->actions->dmenu_str, act_str, "\n");
-                                free(act_str);
+                                g_free(act_str);
                         }
                 }
         }
 
-        free(tmp);
+        g_free(tmp);
 
         if (settings.print_notifications)
                 notification_print(n);
@@ -590,7 +590,7 @@ int notification_close(notification * n, int reason)
 void notification_update_text_to_render(notification *n)
 {
         if (n->text_to_render) {
-                free(n->text_to_render);
+                g_free(n->text_to_render);
                 n->text_to_render = NULL;
         }
 
@@ -638,7 +638,7 @@ void notification_update_text_to_render(notification *n)
                         new_buf = g_strdup_printf("%s (%ds old)", buf, seconds);
                 }
 
-                free(buf);
+                g_free(buf);
                 buf = new_buf;
         }
 

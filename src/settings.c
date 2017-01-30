@@ -4,7 +4,6 @@
 
 #include <glib.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #ifndef STATIC_CONFIG
 #include <basedir.h>
@@ -66,7 +65,7 @@ static int ini_get_urgency(char *section, char *key, int def)
                                 urg);
         }
         if (urg)
-                free(urg);
+                g_free(urg);
         return ret;
 }
 
@@ -114,7 +113,7 @@ void load_settings(char *cmdline_config_path)
                         );
 
                         settings.markup = parse_markup_mode(c);
-                        free(c);
+                        g_free(c);
                 } else if (ini_is_set("global", "allow_markup")) {
                         bool allow_markup = option_get_bool(
                                 "global",
@@ -180,7 +179,7 @@ void load_settings(char *cmdline_config_path)
 
                 if (strlen(c) > 0) {
                         parse_follow_mode(c);
-                        free(c);
+                        g_free(c);
                 }
         }
 
@@ -243,7 +242,7 @@ void load_settings(char *cmdline_config_path)
                         else
                                 fprintf(stderr,
                                         "Warning: unknown alignment\n");
-                        free(c);
+                        g_free(c);
                 }
         }
 
@@ -319,7 +318,7 @@ void load_settings(char *cmdline_config_path)
                                 settings.sep_color = CUSTOM;
                                 settings.sep_custom_color_str = g_strdup(c);
                         }
-                        free(c);
+                        g_free(c);
                 }
         }
 
@@ -375,7 +374,7 @@ void load_settings(char *cmdline_config_path)
                         else
                                 fprintf(stderr,
                                         "Warning: unknown icon position: %s\n", c);
-                        free(c);
+                        g_free(c);
                 }
         }
 
@@ -576,7 +575,7 @@ void load_settings(char *cmdline_config_path)
 
                         if (strlen(c) > 0) {
                                 r->markup = parse_markup_mode(c);
-                                free(c);
+                                g_free(c);
                         }
                 }
 

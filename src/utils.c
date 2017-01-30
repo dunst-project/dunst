@@ -26,7 +26,7 @@ char *string_replace_at(char *buf, int pos, int len, const char *repl)
         if (repl_len <= len) {
                 tmp = buf;
         } else {
-                tmp = malloc(size);
+                tmp = g_malloc(size);
         }
 
         memcpy(tmp, buf, pos);
@@ -34,7 +34,7 @@ char *string_replace_at(char *buf, int pos, int len, const char *repl)
         memmove(tmp + pos + repl_len, buf + pos + len, buf_len - (pos + len) + 1);
 
         if(tmp != buf) {
-                free(buf);
+                g_free(buf);
         }
 
         return tmp;
@@ -84,7 +84,7 @@ char *string_append(char *a, const char *b, const char *sep)
                 new = g_strconcat(a, b, NULL);
         else
                 new = g_strconcat(a, sep, b, NULL);
-        free(a);
+        g_free(a);
 
         return new;
 

@@ -79,11 +79,11 @@ char *extract_urls(const char *to_match)
                 start = m.rm_so + (p - to_match);
                 finish = m.rm_eo + (p - to_match);
 
-                char *match = strndup(to_match + start, finish - start);
+                char *match = g_strndup(to_match + start, finish - start);
 
                 urls = string_append(urls, match, "\n");
 
-                free(match);
+                g_free(match);
 
                 p += m.rm_eo;
         }
@@ -162,7 +162,7 @@ void invoke_action(const char *action)
  */
 void dispatch_menu_result(const char *input)
 {
-        char *in = strdup(input);
+        char *in = g_strdup(input);
         g_strstrip(in);
         switch (in[0]) {
             case '#':
@@ -177,12 +177,12 @@ void dispatch_menu_result(const char *input)
                     char *maybe_url = extract_urls(in);
                     if (maybe_url) {
                             open_browser(maybe_url);
-                            free(maybe_url);
+                            g_free(maybe_url);
                             break;
                     }
                 }
         }
-        free(in);
+        g_free(in);
 }
 
 /*
@@ -215,12 +215,12 @@ void context_menu(void)
         int parent_io[2];
         if (pipe(child_io) != 0) {
                 PERR("pipe()", errno);
-                free(dmenu_input);
+                g_free(dmenu_input);
                 return;
         }
         if (pipe(parent_io) != 0) {
                 PERR("pipe()", errno);
-                free(dmenu_input);
+                g_free(dmenu_input);
                 return;
         }
         int pid = fork();
@@ -250,7 +250,7 @@ void context_menu(void)
 
                 size_t len = read(parent_io[0], buf, 1023);
                 if (len == 0) {
-                        free(dmenu_input);
+                        g_free(dmenu_input);
                         return;
                 }
 
@@ -262,6 +262,6 @@ void context_menu(void)
 
         dispatch_menu_result(buf);
 
-        free(dmenu_input);
+        g_free(dmenu_input);
 }
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

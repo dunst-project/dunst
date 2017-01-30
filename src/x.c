@@ -336,14 +336,14 @@ static GdkPixbuf *get_pixbuf_from_path(char *icon_path)
                                 end = strchr(start, ':');
                                 if (end == NULL) end = strchr(settings.icon_folders, '\0'); /* end = end of string */
 
-                                current_folder = strndup(start, end - start);
+                                current_folder = g_strndup(start, end - start);
                                 /* try svg */
                                 maybe_icon_path = g_strconcat(current_folder, "/", icon_path, ".svg", NULL);
                                 if (!does_file_exist(maybe_icon_path)) {
                                         /* fallback to png */
                                         maybe_icon_path = g_strconcat(current_folder, "/", icon_path, ".png", NULL);
                                 }
-                                free(current_folder);
+                                g_free(current_folder);
 
                                 pixbuf = get_pixbuf_from_file(maybe_icon_path);
                                 g_free(maybe_icon_path);
@@ -384,7 +384,7 @@ static GdkPixbuf *get_pixbuf_from_raw_image(const RawImage *raw_image)
 
 static colored_layout *r_init_shared(cairo_t *c, notification *n)
 {
-        colored_layout *cl = malloc(sizeof(colored_layout));
+        colored_layout *cl = g_malloc(sizeof(colored_layout));
         if(cl == NULL) {
                 die("Unable to allocate memory", EXIT_FAILURE);
         }
@@ -1418,7 +1418,7 @@ void x_shortcut_init(keyboard_shortcut * ks)
                 ks->is_valid = true;
         }
 
-        free(str_begin);
+        g_free(str_begin);
 }
 
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
