@@ -262,12 +262,10 @@ int load_ini_file(FILE * fp)
                                 printf("Missing '\"'\n");
                                 continue;
                         }
-
-                        closing_quote = '\0';
                 } else {
                         char *comment = strpbrk(value, "#;");
                         if (comment)
-                                comment = '\0';
+                                *comment = '\0';
                 }
                 value = g_strstrip(value);
 
