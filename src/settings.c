@@ -163,7 +163,7 @@ void load_settings(char *cmdline_config_path)
                                 settings.align = right;
                         else
                                 fprintf(stderr,
-                                        "Warning: unknown allignment\n");
+                                        "Warning: unknown alignment\n");
                         free(c);
                 }
         }
@@ -273,7 +273,7 @@ void load_settings(char *cmdline_config_path)
 
         settings.lowbgcolor =
             option_get_string("urgency_low", "background", "-lb", lowbgcolor,
-                              "Background color for notifcations with low urgency");
+                              "Background color for notifications with low urgency");
         settings.lowfgcolor =
             option_get_string("urgency_low", "foreground", "-lf", lowfgcolor,
                               "Foreground color for notifications with low urgency");
