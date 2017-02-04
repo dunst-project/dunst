@@ -349,8 +349,7 @@ int dunst_main(int argc, char *argv[])
                 n->body = strdup("dunst is up and running");
                 n->progress = 0;
                 n->timeout = 10;
-                n->allow_markup = false;
-                n->plain_text = true;
+                n->markup = MARKUP_NO;
                 n->urgency = LOW;
                 notification_init(n, 0);
         }

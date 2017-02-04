@@ -3,6 +3,7 @@
 #define DUNST_NOTIFICATION_H
 
 #include "x.h"
+#include "settings.h"
 
 #define LOW 0
 #define NORM 1
@@ -39,8 +40,7 @@ typedef struct _notification {
         time_t timestamp;
         int timeout;
         int urgency;
-        bool allow_markup;
-        bool plain_text;
+        enum markup_mode markup;
         bool redisplayed;       /* has been displayed before? */
         int id;
         int dup_count;

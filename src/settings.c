@@ -30,7 +30,20 @@ static void parse_follow_mode(const char *mode)
                 fprintf(stderr, "Warning: unknown follow mode: \"%s\"\n", mode);
                 settings.f_mode = FOLLOW_NONE;
         }
+}
 
+static enum markup_mode parse_markup_mode(const char *mode)
+{
+        if (strcmp(mode, "strip") == 0) {
+                return MARKUP_STRIP;
+        } else if (strcmp(mode, "no") == 0) {
+                return MARKUP_NO;
+        } else if (strcmp(mode, "full") == 0) {
+                return MARKUP_FULL;
+        } else {
+                fprintf(stderr, "Warning: unknown markup mode: \"%s\"\n", mode);
+                return MARKUP_NO;
+        }
 }
 
 static int ini_get_urgency(char *section, char *key, int def)
@@ -89,17 +102,16 @@ void load_settings(char *cmdline_config_path)
                 "The font dunst should use."
         );
 
-        settings.allow_markup = option_get_bool(
-                "global",
-                "allow_markup", "-markup", allow_markup,
-                "Allow markups in notifications/formats."
-        );
+        {
+                char *c = option_get_string(
+                        "global",
+                        "markup", "-markup", markup,
+                        "Specify how markup should be handled"
+                );
 
-        settings.plain_text = option_get_bool(
-                "global",
-                "plain_text", "-plain", plain_text,
-                "Treat incoming notifications as plain text."
-        );
+                settings.markup = parse_markup_mode(c);
+                free(c);
+        }
 
         settings.format = option_get_string(
                 "global",
@@ -530,8 +542,19 @@ void load_settings(char *cmdline_config_path)
                 r->icon = ini_get_string(cur_section, "icon", r->icon);
                 r->category = ini_get_string(cur_section, "category", r->category);
                 r->timeout = ini_get_int(cur_section, "timeout", r->timeout);
-                r->allow_markup = ini_get_bool(cur_section, "allow_markup", r->allow_markup);
-                r->plain_text = ini_get_bool(cur_section, "plain_text", r->plain_text);
+
+                {
+                        char *c = ini_get_string(
+                                cur_section,
+                                "markup", ""
+                        );
+
+                        if (strlen(c) > 0) {
+                                r->markup = parse_markup_mode(c);
+                                free(c);
+                        }
+                }
+
                 r->urgency = ini_get_urgency(cur_section, "urgency", r->urgency);
                 r->msg_urgency = ini_get_urgency(cur_section, "msg_urgency", r->msg_urgency);
                 r->fg = ini_get_string(cur_section, "foreground", r->fg);

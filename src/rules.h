@@ -6,6 +6,7 @@
 
 #include "dunst.h"
 #include "notification.h"
+#include "settings.h"
 
 typedef struct _rule_t {
         char *name;
@@ -20,8 +21,7 @@ typedef struct _rule_t {
         /* actions */
         int timeout;
         int urgency;
-        int allow_markup;
-        int plain_text;
+        enum markup_mode markup;
         char *new_icon;
         char *fg;
         char *bg;

@@ -110,7 +110,10 @@ static void on_get_capabilities(GDBusConnection * connection,
         builder = g_variant_builder_new(G_VARIANT_TYPE("as"));
         g_variant_builder_add(builder, "s", "actions");
         g_variant_builder_add(builder, "s", "body");
-        g_variant_builder_add(builder, "s", "body-markup");
+
+        if(settings.markup != MARKUP_NO)
+                g_variant_builder_add(builder, "s", "body-markup");
+
         value = g_variant_new("(as)", builder);
         g_variant_builder_unref(builder);
         g_dbus_method_invocation_return_value(invocation, value);
@@ -301,8 +304,7 @@ static void on_notify(GDBusConnection * connection,
         n->icon = icon;
         n->raw_icon = raw_icon;
         n->timeout = timeout;
-        n->allow_markup = settings.allow_markup;
-        n->plain_text = settings.plain_text;
+        n->markup = settings.markup;
         n->progress = (progress < 0 || progress > 100) ? 0 : progress + 1;
         n->urgency = urgency;
         n->category = category;

@@ -236,15 +236,14 @@ char *notification_quote_markup(char *str)
 
 /*
  * Replace all occurrences of "needle" with a quoted "replacement",
- * according to the allow_markup/plain_text settings.
+ * according to the markup settings.
  */
 char *notification_replace_format(const char *needle, const char *replacement,
-                                  char *haystack, bool allow_markup,
-                                  bool plain_text) {
+                                  char *haystack, enum markup_mode markup_mode) {
         char* tmp;
         char* ret;
 
-        if (plain_text) {
+        if (markup_mode == MARKUP_NO) {
                 tmp = strdup(replacement);
                 tmp = string_replace_all("\\n", "\n", tmp);
                 if (settings.ignore_newline) {
@@ -265,7 +264,7 @@ char *notification_replace_format(const char *needle, const char *replacement,
                         tmp = string_replace_all("<br />", "\n", tmp);
                 }
 
-                if (!allow_markup) {
+                if (markup_mode != MARKUP_FULL ) {
                         tmp = notification_strip_markup(tmp);
                         tmp = notification_quote_markup(tmp);
                 }
@@ -373,17 +372,17 @@ int notification_init(notification * n, int id)
 
         n->msg = string_replace_all("\\n", "\n", g_strdup(n->format));
         n->msg = notification_replace_format("%a", n->appname, n->msg,
-                false, true);
+                MARKUP_NO);
         n->msg = notification_replace_format("%s", n->summary, n->msg,
-                n->allow_markup, n->plain_text);
+                n->markup);
         n->msg = notification_replace_format("%b", n->body, n->msg,
-                n->allow_markup, n->plain_text);
+                n->markup);
 
         if (n->icon) {
                 n->msg = notification_replace_format("%I", basename(n->icon),
-                        n->msg, false, true);
+                        n->msg, MARKUP_NO);
                 n->msg = notification_replace_format("%i", n->icon,
-                        n->msg, false, true);
+                        n->msg, MARKUP_NO);
         }
 
         if (n->progress) {
