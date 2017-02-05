@@ -214,7 +214,7 @@ void load_settings(char *cmdline_config_path)
                 char *c = option_get_string(
                         "global",
                         "alignment", "-align/-alignment", "",
-                        "Align notifications left/center/right"
+                        "Text alignment left/center/right"
                 );
 
                 if (strlen(c) > 0) {

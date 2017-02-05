@@ -111,7 +111,7 @@ Shortcut for context menu.
 
 =item B<-alignment position>
 
-Defines the align position of notifications to left/center/right.
+Defines how text should be aligned, can be set to left/center/right.
 
 =item B<-icon_position position>
 
