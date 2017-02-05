@@ -74,31 +74,6 @@ TEST test_string_append(void)
         PASS();
 }
 
-TEST test_string_to_argv(void)
-{
-        char **argv = string_to_argv("argv");
-        ASSERT_STR_EQ("argv", argv[0]);
-        ASSERT_EQ(    NULL,   argv[1]);
-        free(argv[0]);
-        free(argv);
-        argv = NULL;
-
-        argv = string_to_argv("echo test");
-        ASSERT_STR_EQ("echo", argv[0]);
-        ASSERT_STR_EQ("test", argv[1]);
-        ASSERT_EQ(    NULL,   argv[2]);
-        free(argv[0]);
-        free(argv[1]);
-        free(argv);
-        argv = NULL;
-
-        argv = string_to_argv("");
-        ASSERT_EQ(    NULL,   argv[0]);
-        free(argv);
-
-        PASS();
-}
-
 TEST test_string_strip_delimited(void)
 {
         char *text = malloc(128 * sizeof(char));
@@ -133,7 +108,6 @@ SUITE(suite_utils)
         RUN_TEST(test_string_replace_all);
         RUN_TEST(test_string_replace);
         RUN_TEST(test_string_append);
-        RUN_TEST(test_string_to_argv);
         RUN_TEST(test_string_strip_delimited);
 }
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

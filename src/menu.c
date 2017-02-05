@@ -188,6 +188,10 @@ void dispatch_menu_result(const char *input)
  */
 void context_menu(void)
 {
+        if (settings.dmenu_cmd == NULL) {
+                fprintf(stderr, "dmenu command not set properly. Cowardly refusing to open the context menu.\n");
+                return;
+        }
         char *dmenu_input = NULL;
 
         for (GList * iter = g_queue_peek_head_link(displayed); iter;

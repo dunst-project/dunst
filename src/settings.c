@@ -325,7 +325,16 @@ void load_settings(char *cmdline_config_path)
                 "path to dmenu"
         );
 
-        settings.dmenu_cmd = string_to_argv(settings.dmenu);
+        {
+                GError *error = NULL;
+                if (!g_shell_parse_argv(settings.dmenu, NULL, &settings.dmenu_cmd, &error)) {
+                        fprintf(stderr, "Unable to parse dmenu command: %s\n", error->message);
+                        fprintf(stderr, "dmenu functionality will be disabled.\n");
+                        g_error_free(error);
+                        settings.dmenu_cmd = NULL;
+                }
+        }
+
 
         settings.browser = option_get_string(
                 "global",
