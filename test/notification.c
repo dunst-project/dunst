@@ -93,7 +93,7 @@ TEST test_notification_replace_format(void)
 SUITE(suite_notification)
 {
         cmdline_load(0, NULL);
-        load_settings("data/dunstrc");
+        load_settings("data/dunstrc.default");
 
         notification *a = notification_create();
         a->appname = "Test";
