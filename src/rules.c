@@ -15,7 +15,7 @@ void rule_apply(rule_t * r, notification * n)
                 n->timeout = r->timeout;
         if (r->urgency != -1)
                 n->urgency = r->urgency;
-        if (r->markup != -1)
+        if (r->markup != MARKUP_NULL)
                 n->markup = r->markup;
         if (r->new_icon) {
                 if(n->icon)
@@ -59,7 +59,7 @@ void rule_init(rule_t * r)
         r->msg_urgency = -1;
         r->timeout = -1;
         r->urgency = -1;
-        r->markup = -1;
+        r->markup = MARKUP_NULL;
         r->new_icon = NULL;
         r->fg = NULL;
         r->bg = NULL;
