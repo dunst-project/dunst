@@ -1,3 +1,12 @@
+v2.0.0:
+    - Improved vertical centering and padding
+    - Fix category missing in rules parsing
+    - Added option to hide duplicates count
+    - Fixed many memory leaks
+    - Added svg and raw image icon support
+    - Added systemd service to contrib folder (not installed by default)
+    - Added support for per-urgency frame colors
+
 v1.1.0:
     - fix nasty memory leak
     - icon support (still work in progress)

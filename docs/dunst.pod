@@ -165,13 +165,11 @@ Show age of message if message is older than show_age_threshold seconds. Set to 
 
 The frequency with which text that is longer than the notification window allows bounces back and forth.
 
-=item B<-markup>
+=item B<-markup parsing>
 
-Allow markups in notifications/formats.
-
-=item B<-plain>
-
-Treat incoming notifications as plain text.
+Defines how markup parsing should be handled in notifications. Possible options are "full" to allow a small subset of html markup,
+"strip" for compatibility with broken clients (this option is discouraged outside matching rules) or "no" to treat incoming
+notifications as plain text. Note that markup inside the format option will be parsed regardless of what this is set to.
 
 =item B<-indicate_hidden>
 
