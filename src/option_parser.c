@@ -138,6 +138,11 @@ double ini_get_double(char *section, char *key, double def)
                 return atof(value);
 }
 
+bool ini_is_set(char *ini_section, char *ini_key)
+{
+        return get_value(ini_section, ini_key) != NULL;
+}
+
 char *next_section(char *section)
 {
         if (section_count == 0)
@@ -379,6 +384,11 @@ int cmdline_get_bool(char *key, int def, char *description)
                 return true;
         else
                 return def;
+}
+
+bool cmdline_is_set(char *key)
+{
+        return cmdline_get_value(key) != NULL;
 }
 
 char *option_get_string(char *ini_section, char *ini_key, char *cmdline_key,

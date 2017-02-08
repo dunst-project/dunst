@@ -38,7 +38,7 @@ static enum markup_mode parse_markup_mode(const char *mode)
                 return MARKUP_STRIP;
         } else if (strcmp(mode, "no") == 0) {
                 return MARKUP_NO;
-        } else if (strcmp(mode, "full") == 0) {
+        } else if (strcmp(mode, "full") == 0 || strcmp(mode, "yes")) {
                 return MARKUP_FULL;
         } else {
                 fprintf(stderr, "Warning: unknown markup mode: \"%s\"\n", mode);
@@ -103,14 +103,26 @@ void load_settings(char *cmdline_config_path)
         );
 
         {
-                char *c = option_get_string(
-                        "global",
-                        "markup", "-markup", markup,
-                        "Specify how markup should be handled"
-                );
+                //If markup isn't set, fall back to allow_markup for backwards compatibility
+                if(ini_is_set("global", "markup") || cmdline_is_set("-markup")) {
+                        char *c = option_get_string(
+                                "global",
+                                "markup", "-markup", markup,
+                                "Specify how markup should be handled"
+                        );
 
-                settings.markup = parse_markup_mode(c);
-                free(c);
+                        settings.markup = parse_markup_mode(c);
+                        free(c);
+                } else if (ini_is_set("global", "allow_markup") || cmdline_is_set("-allow_markup")) {
+                        bool allow_markup = option_get_bool(
+                                "global",
+                                "allow_markup", "-allow_markup", false,
+                                "Specify how markup should be handled"
+                        );
+
+                        settings.markup = (allow_markup ? MARKUP_FULL : MARKUP_STRIP);
+                        fprintf(stderr, "Warning: 'allow_markup' is deprecated, please use 'markup' instead.\n");
+                }
         }
 
         settings.format = option_get_string(
