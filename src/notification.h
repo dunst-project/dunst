@@ -50,6 +50,7 @@ typedef struct _notification {
 
         int progress;           /* percentage + 1, 0 to hide */
         int line_count;
+        int history_ignore;
         const char *script;
         char *urls;
         Actions *actions;

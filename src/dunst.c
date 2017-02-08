@@ -177,7 +177,8 @@ void history_push(notification *n)
                 notification_free(to_free);
         }
 
-        g_queue_push_tail(history, n);
+        if (!n->history_ignore)
+                g_queue_push_tail(history, n);
 }
 
 void wake_up(void)

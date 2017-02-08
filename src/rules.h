@@ -22,6 +22,7 @@ typedef struct _rule_t {
         int timeout;
         int urgency;
         enum markup_mode markup;
+        int history_ignore;
         char *new_icon;
         char *fg;
         char *bg;

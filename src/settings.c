@@ -582,6 +582,7 @@ void load_settings(char *cmdline_config_path)
                 r->bg = ini_get_string(cur_section, "background", r->bg);
                 r->format = ini_get_string(cur_section, "format", r->format);
                 r->new_icon = ini_get_string(cur_section, "new_icon", r->new_icon);
+                r->history_ignore = ini_get_bool(cur_section, "history_ignore", r->history_ignore);
                 r->script = ini_get_string(cur_section, "script", NULL);
         }
 
