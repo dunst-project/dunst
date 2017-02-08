@@ -94,10 +94,10 @@ rule_t default_rules[] = {
         /* name can be any unique string. It is used to identify the rule in dunstrc to override it there */
 
         /*   name,    appname,        summary,         body,  icon, category, msg_urgency, timeout,  urgency,  markup,       new_icon, fg,   bg,        format,  script */
-        {    "empty", NULL,           NULL,            NULL,  NULL, NULL,     -1,          -1,       -1,       -1,           NULL,     NULL, NULL,      NULL,    NULL},
-        /* { "rule1", "notify-send",  NULL,            NULL,  NULL, NULL,     -1,          -1,       -1,       -1,           NULL,     NULL, NULL,      "%s %b", NULL }, */
-        /* { "rule2", "Pidgin",       "*says*,         NULL,  NULL, NULL,     -1,          -1,       CRITICAL, -1,           NULL,     NULL, NULL,      NULL,    NULL    }, */
-        /* { "rule3", "Pidgin",       "*signed on*",   NULL,  NULL, NULL,     -1,          -1,       LOW,      -1,           NULL,     NULL, NULL,      NULL,    NULL    }, */
-        /* { "rule4", "Pidgin",       "*signed off*",  NULL,  NULL, NULL,     -1,          -1,       LOW,      -1,           NULL,     NULL, NULL,      NULL,    NULL    }, */
-        /* { "rule5", NULL,           "*foobar*",      NULL,  NULL, NULL,     -1,          -1,       -1,       -1,           NULL,     NULL, "#00FF00", NULL,    NULL }, */
+        {    "empty", NULL,           NULL,            NULL,  NULL, NULL,     -1,          -1,       -1,       MARKUP_NULL,  NULL,     NULL, NULL,      NULL,    NULL},
+        /* { "rule1", "notify-send",  NULL,            NULL,  NULL, NULL,     -1,          -1,       -1,       MARKUP_NULL,  NULL,     NULL, NULL,      "%s %b", NULL }, */
+        /* { "rule2", "Pidgin",       "*says*,         NULL,  NULL, NULL,     -1,          -1,       CRITICAL, MARKUP_NULL,  NULL,     NULL, NULL,      NULL,    NULL    }, */
+        /* { "rule3", "Pidgin",       "*signed on*",   NULL,  NULL, NULL,     -1,          -1,       LOW,      MARKUP_NULL,  NULL,     NULL, NULL,      NULL,    NULL    }, */
+        /* { "rule4", "Pidgin",       "*signed off*",  NULL,  NULL, NULL,     -1,          -1,       LOW,      MARKUP_NULL,  NULL,     NULL, NULL,      NULL,    NULL    }, */
+        /* { "rule5", NULL,           "*foobar*",      NULL,  NULL, NULL,     -1,          -1,       -1,       MARKUP_NULL,  NULL,     NULL, "#00FF00", NULL,    NULL }, */
 };
