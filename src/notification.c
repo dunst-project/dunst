@@ -245,13 +245,7 @@ char *notification_replace_format(const char *needle, const char *replacement,
 
         if (markup_mode == MARKUP_NO) {
                 tmp = strdup(replacement);
-                tmp = string_replace_all("\\n", "\n", tmp);
-                if (settings.ignore_newline) {
-                        tmp = string_replace_all("\n", " ", tmp);
-                }
                 tmp = notification_quote_markup(tmp);
-                ret = string_replace_all(needle, tmp, haystack);
-                free(tmp);
         } else {
                 tmp = strdup(replacement);
                 if (settings.ignore_newline) {
@@ -269,9 +263,15 @@ char *notification_replace_format(const char *needle, const char *replacement,
                         tmp = notification_quote_markup(tmp);
                 }
 
-                ret = string_replace_all(needle, tmp, haystack);
-                free(tmp);
         }
+
+        tmp = string_replace_all("\\n", "\n", tmp);
+        if (settings.ignore_newline) {
+                tmp = string_replace_all("\n", " ", tmp);
+        }
+
+        ret = string_replace_all(needle, tmp, haystack);
+        free(tmp);
 
         return ret;
 }
