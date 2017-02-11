@@ -206,14 +206,15 @@ char *clean_value(char *value)
 
 int load_ini_file(FILE * fp)
 {
-        char line[BUFSIZ];
-
         if (!fp)
                 return 1;
 
+        char *line = NULL;
+        size_t line_len = 0;
+
         int line_num = 0;
         char *current_section = NULL;
-        while (fgets(line, sizeof(line), fp) != NULL) {
+        while (getline(&line, &line_len, fp) != -1) {
                 line_num++;
 
                 char *start = g_strstrip(line);
@@ -280,6 +281,7 @@ int load_ini_file(FILE * fp)
 
                 add_entry(current_section, key, value);
         }
+        free(line);
         if (current_section)
                 free(current_section);
         return 0;
