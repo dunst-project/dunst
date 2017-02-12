@@ -597,7 +597,7 @@ void notification_update_text_to_render(notification *n)
         char *msg = g_strchomp(n->msg);
 
         /* print dup_count and msg */
-        if ((n->dup_count > 0 && !settings.hide_duplicates_count)
+        if ((n->dup_count > 0 && !settings.hide_duplicate_count)
             && (n->actions || n->urls) && settings.show_indicators) {
                 buf = g_strdup_printf("(%d%s%s) %s",
                                       n->dup_count,
@@ -607,7 +607,7 @@ void notification_update_text_to_render(notification *n)
                 buf = g_strdup_printf("(%s%s) %s",
                                       n->actions ? "A" : "",
                                       n->urls ? "U" : "", msg);
-        } else if (n->dup_count > 0 && !settings.hide_duplicates_count) {
+        } else if (n->dup_count > 0 && !settings.hide_duplicate_count) {
                 buf = g_strdup_printf("(%d) %s", n->dup_count, msg);
         } else {
                 buf = g_strdup(msg);

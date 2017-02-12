@@ -12,7 +12,7 @@ typedef struct _settings {
         bool print_notifications;
         enum markup_mode markup;
         bool stack_duplicates;
-        bool hide_duplicates_count;
+        bool hide_duplicate_count;
         char *font;
         char *normbgcolor;
         char *normfgcolor;

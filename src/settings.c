@@ -249,10 +249,10 @@ void load_settings(char *cmdline_config_path)
                 "When should the age of the notification be displayed?"
         );
 
-        settings.hide_duplicates_count = option_get_bool(
+        settings.hide_duplicate_count = option_get_bool(
                 "global",
-                "hide_duplicates_count", "-hide_duplicates_count", false,
-                "Hide count of the merged notifications with the same content"
+                "hide_duplicate_count", "-hide_duplicate_count", false,
+                "Hide the count of merged notifications with the same content"
         );
 
         settings.sticky_history = option_get_bool(
