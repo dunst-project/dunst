@@ -28,19 +28,19 @@
 - Loading each line of the configuration file no longer relies on a static size buffer
 - `ignore_newline` now works regardless of the markup setting
 
-##1.1.0 2014-07-29
+##1.1.0 - 2014-07-29
 - fix nasty memory leak
 - icon support (still work in progress)
 - fix issue where keybindings aren't working when numlock is activated
 
-##1.0.0 2013-04-15
+##1.0.0 - 2013-04-15
 - use pango/cairo as drawing backend
 - make use of pangos ability to parse markup
 - support for actions via context menu
 - indicator for actions/urls found
 - use blocking I/O. No more waking up the CPU multiple times per second to check for new dbus messages
 
-##0.5.0 2013-01-26
+##0.5.0 - 2013-01-26
 - new default dunstrc
 - frames for window
 - trigger scripts on matching notifications
