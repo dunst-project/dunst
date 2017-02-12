@@ -104,7 +104,7 @@ void load_settings(char *cmdline_config_path)
 
         {
                 //If markup isn't set, fall back to allow_markup for backwards compatibility
-                if(ini_is_set("global", "markup") || cmdline_is_set("-markup")) {
+                if (ini_is_set("global", "markup") || cmdline_is_set("-markup")) {
                         char *c = option_get_string(
                                 "global",
                                 "markup", "-markup", markup,
@@ -122,6 +122,8 @@ void load_settings(char *cmdline_config_path)
 
                         settings.markup = (allow_markup ? MARKUP_FULL : MARKUP_STRIP);
                         fprintf(stderr, "Warning: 'allow_markup' is deprecated, please use 'markup' instead.\n");
+                } else {
+                        settings.markup = parse_markup_mode(markup); // None are set, parse the default value from config.h
                 }
         }
 
