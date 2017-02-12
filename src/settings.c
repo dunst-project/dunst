@@ -113,11 +113,11 @@ void load_settings(char *cmdline_config_path)
 
                         settings.markup = parse_markup_mode(c);
                         free(c);
-                } else if (ini_is_set("global", "allow_markup") || cmdline_is_set("-allow_markup")) {
+                } else if (ini_is_set("global", "allow_markup")) {
                         bool allow_markup = option_get_bool(
                                 "global",
-                                "allow_markup", "-allow_markup", false,
-                                "Specify how markup should be handled"
+                                "allow_markup", NULL, false,
+                                "Allow markup in notifications"
                         );
 
                         settings.markup = (allow_markup ? MARKUP_FULL : MARKUP_STRIP);
