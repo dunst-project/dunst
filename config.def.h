@@ -17,19 +17,19 @@ unsigned int transparency = 0;  /* transparency */
 char *geom = "0x0";             /* geometry */
 char *title = "Dunst";          /* the title of dunst notification windows */
 char *class = "Dunst";          /* the class of dunst notification windows */
-int shrink = False;             /* shrinking */
-int sort = True;                /* sort messages by urgency */
-int indicate_hidden = True;     /* show count of hidden messages */
+int shrink = false;             /* shrinking */
+int sort = true;                /* sort messages by urgency */
+int indicate_hidden = true;     /* show count of hidden messages */
 int idle_threshold = 0;         /* don't timeout notifications when idle for x seconds */
 int show_age_threshold = -1;    /* show age of notification, when notification is older than x seconds */
 enum alignment align = left;    /* text alignment [left/center/right] */
 float bounce_freq = 1;          /* determines the bounce frequency (if activated) */
-int sticky_history = True;
+int sticky_history = true;
 int history_length = 20;          /* max amount of notifications kept in history */
-int show_indicators = True;
+int show_indicators = true;
 int verbosity = 0;
-int word_wrap = False;
-int ignore_newline = False;
+int word_wrap = false;
+int ignore_newline = false;
 int line_height = 0;            /* if line height < font height, it will be raised to font height */
 int notification_height = 0;    /* if notification height < font height and padding, it will be raised */
 
@@ -45,7 +45,7 @@ char *frame_color = "#888888";
  * This is mainly for crash detection since dbus restarts dunst
  * automatically after a crash, so crashes might get unnotices otherwise
  * */
-int startup_notification = False;
+int startup_notification = false;
 
 /* monitor to display notifications on */
 int monitor = 0;
@@ -75,19 +75,19 @@ enum follow_mode f_mode = FOLLOW_NONE;
  * use "none" to disable
  */
 keyboard_shortcut close_ks = {.str = "none",
-        .code = 0,.sym = NoSymbol,.is_valid = False
+        .code = 0,.sym = NoSymbol,.is_valid = false
 };                              /* ignore this */
 
 keyboard_shortcut close_all_ks = {.str = "none",
-        .code = 0,.sym = NoSymbol,.is_valid = False
+        .code = 0,.sym = NoSymbol,.is_valid = false
 };                              /* ignore this */
 
 keyboard_shortcut history_ks = {.str = "none",
-        .code = 0,.sym = NoSymbol,.is_valid = False
+        .code = 0,.sym = NoSymbol,.is_valid = false
 };                              /* ignore this */
 
 keyboard_shortcut context_ks = {.str = "none",
-        .code = 0,.sym = NoSymbol,.is_valid = False
+        .code = 0,.sym = NoSymbol,.is_valid = false
 };                              /* ignore this */
 
 rule_t default_rules[] = {
