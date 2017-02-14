@@ -3,8 +3,6 @@
 #ifndef DUNST_DBUS_H
 #define DUNST_DBUS_H
 
-#include <dbus/dbus.h>
-
 #include "notification.h"
 
 int initdbus(void);

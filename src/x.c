@@ -1,26 +1,30 @@
 /* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
-#include <math.h>
-#include <sys/time.h>
-#include <ctype.h>
-#include <assert.h>
-#include <locale.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <string.h>
-#include <X11/Xlib.h>
+#include "x.h"
+
 #include <X11/X.h>
+#include <X11/XKBlib.h>
 #include <X11/Xatom.h>
-#include <pango/pangocairo.h>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#ifdef XINERAMA
+#include <X11/extensions/Xinerama.h>
+#include <assert.h>
+#endif
 #include <cairo-xlib.h>
 #include <gdk/gdk.h>
+#include <locale.h>
+#include <math.h>
+#include <pango/pangocairo.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
-#include "x.h"
-#include "utils.h"
 #include "dunst.h"
-#include "settings.h"
 #include "notification.h"
+#include "settings.h"
+#include "utils.h"
 
 #define WIDTH 400
 #define HEIGHT 400
@@ -332,14 +336,14 @@ static GdkPixbuf *get_pixbuf_from_path(char *icon_path)
                                 end = strchr(start, ':');
                                 if (end == NULL) end = strchr(settings.icon_folders, '\0'); /* end = end of string */
 
-                                current_folder = strndup(start, end - start);
+                                current_folder = g_strndup(start, end - start);
                                 /* try svg */
                                 maybe_icon_path = g_strconcat(current_folder, "/", icon_path, ".svg", NULL);
                                 if (!does_file_exist(maybe_icon_path)) {
                                         /* fallback to png */
                                         maybe_icon_path = g_strconcat(current_folder, "/", icon_path, ".png", NULL);
                                 }
-                                free(current_folder);
+                                g_free(current_folder);
 
                                 pixbuf = get_pixbuf_from_file(maybe_icon_path);
                                 g_free(maybe_icon_path);
@@ -380,10 +384,7 @@ static GdkPixbuf *get_pixbuf_from_raw_image(const RawImage *raw_image)
 
 static colored_layout *r_init_shared(cairo_t *c, notification *n)
 {
-        colored_layout *cl = malloc(sizeof(colored_layout));
-        if(cl == NULL) {
-                die("Unable to allocate memory", EXIT_FAILURE);
-        }
+        colored_layout *cl = g_malloc(sizeof(colored_layout));
         cl->l = pango_cairo_create_layout(c);
 
         if (!settings.word_wrap) {
@@ -1414,7 +1415,7 @@ void x_shortcut_init(keyboard_shortcut * ks)
                 ks->is_valid = true;
         }
 
-        free(str_begin);
+        g_free(str_begin);
 }
 
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

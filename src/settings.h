@@ -2,6 +2,10 @@
 #ifndef DUNST_SETTINGS_H
 #define DUNST_SETTINGS_H
 
+#include <stdbool.h>
+
+#include "x.h"
+
 enum alignment { left, center, right };
 enum icon_position_t { icons_left, icons_right, icons_off };
 enum separator_color { FOREGROUND, AUTO, FRAME, CUSTOM };

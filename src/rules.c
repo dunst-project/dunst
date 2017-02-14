@@ -1,10 +1,11 @@
 /* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
 
-#include <glib.h>
+#include "rules.h"
+
 #include <fnmatch.h>
+#include <glib.h>
 
 #include "dunst.h"
-#include "rules.h"
 
 /*
  * Apply rule to notification.

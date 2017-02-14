@@ -1,15 +1,15 @@
 /* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
-
-#include <stdlib.h>
-#include <stdio.h>
-#include <glib.h>
-#include <string.h>
-#include <gio/gio.h>
-#include "dunst.h"
 #include "dbus.h"
+
+#include <gio/gio.h>
+#include <glib.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "dunst.h"
 #include "notification.h"
-#include "utils.h"
 #include "settings.h"
+#include "utils.h"
 
 GDBusConnection *dbus_conn;
 
@@ -131,10 +131,7 @@ static void on_notify(GDBusConnection * connection,
         gchar *icon = NULL;
         gchar *summary = NULL;
         gchar *body = NULL;
-        Actions *actions = malloc(sizeof(Actions));
-        if(actions == NULL) {
-                die("Unable to allocate memory", EXIT_FAILURE);
-        }
+        Actions *actions = g_malloc0(sizeof(Actions));
         gint timeout = -1;
 
         /* hints */
@@ -144,10 +141,6 @@ static void on_notify(GDBusConnection * connection,
         gchar *bgcolor = NULL;
         gchar *category = NULL;
         RawImage *raw_icon = NULL;
-
-        actions->actions = NULL;
-        actions->count = 0;
-        actions->dmenu_str = NULL;
 
         {
                 GVariantIter *iter = g_variant_iter_new(parameters);
@@ -308,13 +301,13 @@ static void on_notify(GDBusConnection * connection,
         n->progress = (progress < 0 || progress > 100) ? 0 : progress + 1;
         n->urgency = urgency;
         n->category = category;
-        n->dbus_client = strdup(sender);
+        n->dbus_client = g_strdup(sender);
         if (actions->count > 0) {
                 n->actions = actions;
         } else {
                 n->actions = NULL;
                 g_strfreev(actions->actions);
-                free(actions);
+                g_free(actions);
         }
 
         for (int i = 0; i < ColLast; i++) {
@@ -433,7 +426,7 @@ static void on_name_lost(GDBusConnection * connection,
 
 static RawImage * get_raw_image_from_data_hint(GVariant *icon_data)
 {
-    RawImage *image = malloc(sizeof(RawImage));
+    RawImage *image = g_malloc(sizeof(RawImage));
     GVariant *data_variant;
     gsize expected_len;
 
@@ -455,7 +448,7 @@ static RawImage * get_raw_image_from_data_hint(GVariant *icon_data)
                " but got a " "length of %" G_GSIZE_FORMAT,
                expected_len,
                g_variant_get_size (data_variant));
-        free(image);
+        g_free(image);
         return NULL;
     }
 
