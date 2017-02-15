@@ -9,21 +9,9 @@ LDFLAGS += -L.
 SRC = $(shell ls src/*.c)
 OBJ = ${SRC:.c=.o}
 
-V ?= 0
-ifeq (${V}, 0)
-.SILENT:
-endif
-
-all: doc options dunst service
-
-options:
-	@echo dunst build options:
-	@echo "CFLAGS   = ${CFLAGS}"
-	@echo "LDFLAGS  = ${LDFLAGS}"
-	@echo "CC       = ${CC}"
+all: doc dunst service
 
 .c.o:
-	@echo CC -c $<
 	${CC} -o $@ -c $< ${CFLAGS}
 
 ${OBJ}: config.h config.mk
@@ -33,9 +21,8 @@ config.h: config.def.h
 	@echo creating $@ from $<
 	@cp $< $@
 
-dunst: options ${OBJ} main.o
-	@echo "${CC} ${CFLAGS} -o $@ ${OBJ} ${LDFLAGS}"
-	@${CC} ${CFLAGS} -o $@ ${OBJ} main.o ${LDFLAGS}
+dunst: ${OBJ} main.o
+	${CC} ${CFLAGS} -o $@ ${OBJ} main.o ${LDFLAGS}
 
 clean-dunst:
 	rm -f dunst ${OBJ} main.o
@@ -81,13 +68,9 @@ install-service: service
 install: install-dunst install-doc install-service
 
 uninstall:
-	@echo Removing executables from ${DESTDIR}${PREFIX}/bin
 	rm -f ${DESTDIR}${PREFIX}/bin/dunst
-	@echo Removing manual page from ${DESTDIR}${MANPREFIX}/man1
 	rm -f ${DESTDIR}${MANPREFIX}/man1/dunst.1
-	@echo Removing service file from ${DESTDIR}${PREFIX}/share/dbus-1/services
 	rm -f ${DESTDIR}${PREFIX}/share/dbus-1/services/org.knopwob.dunst.service
-	@echo Removing documentation directory ${DESTDIR}${PREFIX}/share/dunst
 	rm -rf ${DESTDIR}${PREFIX}/share/dunst
 
 test: test/test
@@ -105,4 +88,4 @@ test-clean:
 dunstify: dunstify.o
 	${CC} ${CFLAGS} -o $@ dunstify.o $(shell pkg-config --libs --cflags glib-2.0 libnotify gdk-2.0)
 
-.PHONY: all options clean dist install uninstall
+.PHONY: all clean dist install uninstall
