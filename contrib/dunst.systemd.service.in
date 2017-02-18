@@ -8,5 +8,5 @@ ExecStart=##PREFIX##/bin/dunst
 Environment=DISPLAY=:0
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target
 
