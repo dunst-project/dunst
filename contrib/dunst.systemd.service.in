@@ -1,5 +1,6 @@
 [Unit]
 Description=Dunst notification daemon
+Documentation=man:dunst(1)
 
 [Service]
 Type=dbus
