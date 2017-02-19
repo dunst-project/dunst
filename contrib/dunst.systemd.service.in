@@ -1,11 +1,13 @@
 [Unit]
 Description=Dunst notification daemon
+Documentation=man:dunst(1)
 
 [Service]
-Type=simple
+Type=dbus
+BusName=org.freedesktop.Notifications
 ExecStart=##PREFIX##/bin/dunst
 Environment=DISPLAY=:0
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target
 
