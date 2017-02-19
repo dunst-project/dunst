@@ -39,7 +39,7 @@ static enum markup_mode parse_markup_mode(const char *mode)
                 return MARKUP_STRIP;
         } else if (strcmp(mode, "no") == 0) {
                 return MARKUP_NO;
-        } else if (strcmp(mode, "full") == 0 || strcmp(mode, "yes")) {
+        } else if (strcmp(mode, "full") == 0 || strcmp(mode, "yes") == 0) {
                 return MARKUP_FULL;
         } else {
                 fprintf(stderr, "Warning: unknown markup mode: \"%s\"\n", mode);
