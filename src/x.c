@@ -6,6 +6,7 @@
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <X11/Xresource.h>
 #ifdef XINERAMA
 #include <X11/extensions/Xinerama.h>
 #include <assert.h>
@@ -136,12 +137,36 @@ static color_t x_get_separator_color(colored_layout *cl, colored_layout *cl_next
         }
 }
 
+static void set_dpi_value()
+{
+        double dpi = 0.0;
+        XrmInitialize();
+        char * xRMS = XResourceManagerString(xctx.dpy);
+
+        if ( xRMS != NULL ) {
+                XrmDatabase xDB = XrmGetStringDatabase(xRMS);
+                char * xrmType;
+                XrmValue xrmValue;
+
+                if ( XrmGetResource(xDB, "Xft.dpi", NULL, &xrmType, &xrmValue))
+                        dpi = strtod(xrmValue.addr, NULL);
+
+        }
+
+        if (dpi > 0.0) {
+                PangoFontMap *font_map = pango_cairo_font_map_get_default();
+                pango_cairo_font_map_set_resolution((PangoCairoFontMap *) font_map, dpi);
+        }
+}
+
 static void x_cairo_setup(void)
 {
         cairo_ctx.surface = cairo_xlib_surface_create(xctx.dpy,
                         xctx.win, DefaultVisual(xctx.dpy, 0), WIDTH, HEIGHT);
 
         cairo_ctx.context = cairo_create(cairo_ctx.surface);
+
+        set_dpi_value();
 
         cairo_ctx.desc = pango_font_description_from_string(settings.font);
 }
