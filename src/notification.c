@@ -267,7 +267,6 @@ char *notification_replace_format(const char *needle, const char *replacement,
 
         }
 
-        tmp = string_replace_all("\\n", "\n", tmp);
         if (settings.ignore_newline) {
                 tmp = string_replace_all("\n", " ", tmp);
         }
