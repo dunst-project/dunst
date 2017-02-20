@@ -16,6 +16,7 @@
 
 #include "dbus.h"
 #include "dunst.h"
+#include "markup.h"
 #include "menu.h"
 #include "rules.h"
 #include "settings.h"
@@ -197,46 +198,6 @@ void notification_free(notification * n)
 }
 
 /*
- * Strip any markup from text
- */
-char *notification_strip_markup(char *str)
-{
-        if (str == NULL) {
-                return NULL;
-        }
-
-        /* strip all tags */
-        string_strip_delimited(str, '<', '>');
-
-        /* unquote the remainder */
-        str = string_replace_all("&quot;", "\"", str);
-        str = string_replace_all("&apos;", "'", str);
-        str = string_replace_all("&amp;", "&", str);
-        str = string_replace_all("&lt;", "<", str);
-        str = string_replace_all("&gt;", ">", str);
-
-        return str;
-}
-
-/*
- * Quote a text string for rendering with pango
- */
-char *notification_quote_markup(char *str)
-{
-        if (str == NULL) {
-                return NULL;
-        }
-
-        str = string_replace_all("&", "&amp;", str);
-        str = string_replace_all("\"", "&quot;", str);
-        str = string_replace_all("'", "&apos;", str);
-        str = string_replace_all("<", "&lt;", str);
-        str = string_replace_all(">", "&gt;", str);
-
-        return str;
-}
-
-/*
  * Replace all occurrences of "needle" with a quoted "replacement",
  * according to the markup settings.
  */
@@ -245,32 +206,7 @@ char *notification_replace_format(const char *needle, const char *replacement,
         char* tmp;
         char* ret;
 
-        if (markup_mode == MARKUP_NO) {
-                tmp = g_strdup(replacement);
-                tmp = notification_quote_markup(tmp);
-        } else {
-                tmp = g_strdup(replacement);
-                if (settings.ignore_newline) {
-                        tmp = string_replace_all("<br>", " ", tmp);
-                        tmp = string_replace_all("<br/>", " ", tmp);
-                        tmp = string_replace_all("<br />", " ", tmp);
-                } else {
-                        tmp = string_replace_all("<br>", "\n", tmp);
-                        tmp = string_replace_all("<br/>", "\n", tmp);
-                        tmp = string_replace_all("<br />", "\n", tmp);
-                }
-
-                if (markup_mode != MARKUP_FULL ) {
-                        tmp = notification_strip_markup(tmp);
-                        tmp = notification_quote_markup(tmp);
-                }
-
-        }
-
-        if (settings.ignore_newline) {
-                tmp = string_replace_all("\n", " ", tmp);
-        }
-
+        tmp = markup_transform(g_strdup(replacement), markup_mode);
         ret = string_replace_all(needle, tmp, haystack);
         g_free(tmp);
 

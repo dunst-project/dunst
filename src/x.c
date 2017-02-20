@@ -22,6 +22,7 @@
 #include <unistd.h>
 
 #include "dunst.h"
+#include "markup.h"
 #include "notification.h"
 #include "settings.h"
 #include "utils.h"
@@ -475,7 +476,7 @@ static colored_layout *r_create_layout_from_notification(cairo_t *c, notificatio
                 pango_layout_set_attributes(cl->l, cl->attr);
         } else {
                 /* remove markup and display plain message instead */
-                n->text_to_render = notification_strip_markup(n->text_to_render);
+                n->text_to_render = markup_strip(n->text_to_render);
                 cl->text = NULL;
                 cl->attr = NULL;
                 pango_layout_set_text(cl->l, n->text_to_render, -1);
