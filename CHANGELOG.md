@@ -5,7 +5,6 @@
 - `always_run_script` option to run script even if a notification is suppressed
 - Support for svg icon files
 - Support for raw icons
-- `shrink` option to automatically scale down icons if they exceed a certain size
 - `hide_duplicate_count` option to hide the number of duplicate notifications
 - Support for per-urgency frame colours
 - `markup` setting for more fine-gained control over how markup is handled
