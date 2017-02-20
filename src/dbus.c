@@ -354,7 +354,7 @@ static void on_get_server_information(GDBusConnection * connection,
 void notification_closed(notification * n, int reason)
 {
         if (!dbus_conn) {
-                fprintf(stderr, "ERROR: notification_closed but not (yet) connected\n");
+                fprintf(stderr, "ERROR: Tried to close notification but dbus connection not set!\n");
                 return;
         }
 
@@ -368,7 +368,8 @@ void notification_closed(notification * n, int reason)
                                       "NotificationClosed", body, &err);
 
         if (err) {
-                fprintf(stderr, "notification_closed ERROR\n");
+                fprintf(stderr, "Unable to close notification: %s\n", err->message);
+                g_error_free(err);
         }
 
 }
@@ -385,7 +386,8 @@ void action_invoked(notification * n, const char *identifier)
                                       "ActionInvoked", body, &err);
 
         if (err) {
-                fprintf(stderr, "ActionInvoked ERROR\n");
+                fprintf(stderr, "Unable to invoke action: %s\n", err->message);
+                g_error_free(err);
         }
 }
 
@@ -398,15 +400,16 @@ static void on_bus_acquired(GDBusConnection * connection,
 {
         guint registration_id;
 
+        GError *err = NULL;
+
         registration_id = g_dbus_connection_register_object(connection,
                                                             "/org/freedesktop/Notifications",
-                                                            introspection_data->
-                                                            interfaces[0],
+                                                            introspection_data->interfaces[0],
                                                             &interface_vtable,
-                                                            NULL, NULL, NULL);
+                                                            NULL, NULL, &err);
 
-        if (registration_id <= 0) {
-                fprintf(stderr, "Unable to register\n");
+        if (registration_id == 0) {
+                fprintf(stderr, "Unable to register dbus connection: %s\n", err->message);
                 exit(1);
         }
 }
