@@ -94,7 +94,7 @@ void handle_method_call(GDBusConnection * connection,
                 on_get_server_information(connection, sender, parameters,
                                        invocation);
         } else {
-                printf("WARNING: sender: %s; unknown method_name: %s\n", sender,
+                fprintf(stderr, "WARNING: sender: %s; unknown method_name: %s\n", sender,
                        method_name);
         }
 }
@@ -354,7 +354,7 @@ static void on_get_server_information(GDBusConnection * connection,
 void notification_closed(notification * n, int reason)
 {
         if (!dbus_conn) {
-                printf("DEBUG: notification_closed but not (yet) connected\n");
+                fprintf(stderr, "ERROR: notification_closed but not (yet) connected\n");
                 return;
         }
 
@@ -368,7 +368,7 @@ void notification_closed(notification * n, int reason)
                                       "NotificationClosed", body, &err);
 
         if (err) {
-                printf("notification_closed ERROR\n");
+                fprintf(stderr, "notification_closed ERROR\n");
         }
 
 }
@@ -385,7 +385,7 @@ void action_invoked(notification * n, const char *identifier)
                                       "ActionInvoked", body, &err);
 
         if (err) {
-                printf("ActionInvoked ERROR\n");
+                fprintf(stderr, "ActionInvoked ERROR\n");
         }
 }
 

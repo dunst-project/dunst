@@ -223,10 +223,10 @@ int load_ini_file(FILE * fp)
                 if (*start == '[') {
                         char *end = strchr(start + 1, ']');
                         if (!end) {
-                                printf
-                                    ("Warning: invalid config file at line %d\n",
+                                fprintf(stderr,
+                                     "Warning: invalid config file at line %d\n",
                                      line_num);
-                                printf("Missing ']'\n");
+                                fprintf(stderr, "Missing ']'\n");
                                 continue;
                         }
 
@@ -241,9 +241,10 @@ int load_ini_file(FILE * fp)
 
                 char *equal = strchr(start + 1, '=');
                 if (!equal) {
-                        printf("Warning: invalid config file at line %d\n",
+                        fprintf(stderr,
+                               "Warning: invalid config file at line %d\n",
                                line_num);
-                        printf("Missing '='\n");
+                        fprintf(stderr, "Missing '='\n");
                         continue;
                 }
 
@@ -255,10 +256,10 @@ int load_ini_file(FILE * fp)
                 if (quote) {
                         char *closing_quote = strchr(quote + 1, '"');
                         if (!closing_quote) {
-                                printf
-                                    ("Warning: invalid config file at line %d\n",
+                                fprintf(stderr,
+                                     "Warning: invalid config file at line %d\n",
                                      line_num);
-                                printf("Missing '\"'\n");
+                                fprintf(stderr, "Missing '\"'\n");
                                 continue;
                         }
                 } else {
@@ -269,9 +270,10 @@ int load_ini_file(FILE * fp)
                 value = g_strstrip(value);
 
                 if (!current_section) {
-                        printf("Warning: invalid config file at line: %d\n",
+                        fprintf(stderr,
+                               "Warning: invalid config file at line: %d\n",
                                line_num);
-                        printf("Key value pair without a section\n");
+                        fprintf(stderr, "Key value pair without a section\n");
                         continue;
                 }
 
