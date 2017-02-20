@@ -391,8 +391,7 @@ void usage(int exit_status)
 {
         fputs("usage:\n", stderr);
         char *us = cmdline_create_usage();
-        fputs(us, stderr);
-        fputs("\n", stderr);
+        puts(us);
         exit(exit_status);
 }
 
