@@ -29,7 +29,7 @@ static section_t *new_section(char *name);
 static section_t *get_section(char *name);
 static void add_entry(char *section_name, char *key, char *value);
 static char *get_value(char *section, char *key);
-static char *clean_value(char *value);
+static char *clean_value(char *value, int line_num);
 
 static int cmdline_argc;
 static char **cmdline_argv;
@@ -91,7 +91,7 @@ void add_entry(char *section_name, char *key, char *value)
         int len = s->entry_count;
         s->entries = g_realloc(s->entries, sizeof(entry_t) * len);
         s->entries[s->entry_count - 1].key = g_strdup(key);
-        s->entries[s->entry_count - 1].value = clean_value(value);
+        s->entries[s->entry_count - 1].value = g_strdup(value);
 }
 
 char *get_value(char *section, char *key)
@@ -186,20 +186,50 @@ int ini_get_bool(char *section, char *key, int def)
         }
 }
 
-char *clean_value(char *value)
+char *clean_value(char *value, int line_num)
 {
-        char *s;
+        char *unparsed = value;
 
-        if (value[0] == '"')
-                s = g_strdup(value + 1);
-        else
-                s = g_strdup(value);
+        bool in_quote = false;
+        while ((unparsed = strpbrk(unparsed, "\"\\#;")) != NULL) {
+                switch (*unparsed) {
+                case '"':
+                        memmove(unparsed, unparsed + 1, strlen(unparsed));
+                        in_quote = !in_quote;
+                        break;
+                case '\\':
+                        switch (unparsed[1]) {
+                        case '\\':
+                        case '"':
+                                memmove(unparsed, unparsed + 1, strlen(unparsed));
+                                unparsed++;
+                                break;
+                        default:
+                                // Unrecognized backslash sequence;
+                                // treat the backslash as an ordinary character.
+                                // Consider issuing an error or warning here instead.
+                                unparsed++;
+                                break;
+                        }
+                        break;
+                case '#':
+                case ';':
+                        if (in_quote)
+                                unparsed++;
+                        else
+                                *unparsed = '\0';
+                        break;
+                }
+        }
+        if (in_quote) {
+                fprintf(stderr,
+                       "Warning: invalid config file at line %d\n",
+                       line_num);
+                fprintf(stderr, "Missing '\"'\n");
+                return NULL;
+        }
 
-        if (s[strlen(s) - 1] == '"')
-                s[strlen(s) - 1] = '\0';
-
-        return s;
-
+        return g_strstrip(value);
 }
 
 int load_ini_file(FILE * fp)
@@ -250,24 +280,8 @@ int load_ini_file(FILE * fp)
 
                 *equal = '\0';
                 char *key = g_strstrip(start);
-                char *value = g_strstrip(equal + 1);
-
-                char *quote = strchr(value, '"');
-                if (quote) {
-                        char *closing_quote = strchr(quote + 1, '"');
-                        if (!closing_quote) {
-                                fprintf(stderr,
-                                     "Warning: invalid config file at line %d\n",
-                                     line_num);
-                                fprintf(stderr, "Missing '\"'\n");
-                                continue;
-                        }
-                } else {
-                        char *comment = strpbrk(value, "#;");
-                        if (comment)
-                                *comment = '\0';
-                }
-                value = g_strstrip(value);
+                char *value = clean_value(equal + 1, line_num);
+                if (!value) continue;
 
                 if (!current_section) {
                         fprintf(stderr,

@@ -45,12 +45,30 @@ TEST test_ini_get_string(void)
 {
         char *string_section = "string";
         char *ptr;
+
         ASSERT_STR_EQ("A simple string", (ptr = ini_get_string(string_section, "simple", "")));
+        free(ptr);
+        ASSERT_STR_EQ("A simple string", (ptr = ini_get_string(string_section, "simple_with_hcomment", "")));
+        free(ptr);
+        ASSERT_STR_EQ("A simple string", (ptr = ini_get_string(string_section, "simple_with_scomment", "")));
         free(ptr);
 
         ASSERT_STR_EQ("A quoted string", (ptr = ini_get_string(string_section, "quoted", "")));
         free(ptr);
+        ASSERT_STR_EQ("A quoted string", (ptr = ini_get_string(string_section, "quoted_with_hcomment", "")));
+        free(ptr);
+        ASSERT_STR_EQ("A quoted string", (ptr = ini_get_string(string_section, "quoted_with_scomment", "")));
+        free(ptr);
         ASSERT_STR_EQ("A string \"with quotes\"", (ptr = ini_get_string(string_section, "quoted_with_quotes", "")));
+        free(ptr);
+        ASSERT_STR_EQ("A string \\\"with escapes\\", (ptr = ini_get_string(string_section, "quoted_with_escapes", "")));
+        free(ptr);
+        ASSERT_STR_EQ("A string; with #comment characters", (ptr = ini_get_string(string_section, "quoted_with_cchar", "")));
+        free(ptr);
+        ASSERT_STR_EQ("A string; with #comment characters", (ptr = ini_get_string(string_section, "quoted_in_middle", "")));
+        free(ptr);
+
+        ASSERT_STR_EQ("String \"with quotes\"", (ptr = ini_get_string(string_section, "escaped_quotes", "")));
         free(ptr);
 
         ASSERT_STR_EQ("default value", (ptr = ini_get_string(string_section, "nonexistent", "default value")));
