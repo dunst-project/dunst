@@ -200,7 +200,10 @@ void context_menu(void)
         for (GList * iter = g_queue_peek_head_link(displayed); iter;
              iter = iter->next) {
                 notification *n = iter->data;
-                dmenu_input = string_append(dmenu_input, n->urls, "\n");
+
+                if(n->urls)
+                        dmenu_input = string_append(dmenu_input, n->urls, "\n");
+
                 if (n->actions)
                         dmenu_input =
                             string_append(dmenu_input, n->actions->dmenu_str,
