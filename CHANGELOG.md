@@ -7,7 +7,7 @@
 - Support for raw icons
 - `hide_duplicate_count` option to hide the number of duplicate notifications
 - Support for per-urgency frame colours
-- `markup` setting for more fine-gained control over how markup is handled
+- `markup` setting for more fine-grained control over how markup is handled
 - `history_ignore` rule action to exclude a notification from being added to the history
 
 ###Changed
@@ -26,6 +26,7 @@
 - Icon alignment with dynamic width
 - Loading each line of the configuration file no longer relies on a static size buffer
 - `ignore_newline` now works regardless of the markup setting
+- dmenu process being left as a zombie if no option was selected
 
 ##1.1.0 - 2014-07-29
 - fix nasty memory leak

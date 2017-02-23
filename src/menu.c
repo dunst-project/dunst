@@ -201,7 +201,7 @@ void context_menu(void)
              iter = iter->next) {
                 notification *n = iter->data;
 
-                if(n->urls)
+                if (n->urls)
                         dmenu_input = string_append(dmenu_input, n->urls, "\n");
 
                 if (n->actions)
@@ -252,13 +252,13 @@ void context_menu(void)
                 close(child_io[1]);
 
                 size_t len = read(parent_io[0], buf, 1023);
+
+                waitpid(pid, NULL, 0);
+
                 if (len == 0) {
                         g_free(dmenu_input);
                         return;
                 }
-
-                int status;
-                waitpid(pid, &status, 0);
         }
 
         close(parent_io[0]);
