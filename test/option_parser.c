@@ -133,14 +133,14 @@ TEST test_cmdline_create_usage(void)
         cmdline_get_double("-msgdouble/-md", 0, "A double to test usage creation");
         cmdline_get_bool("-msgbool/-mb", false, "A bool to test usage creation");
         char *usage = cmdline_create_usage();
-        ASSERT_FALSE(strstr(usage, "-msgstring/-ms") == NULL);
-        ASSERT_FALSE(strstr(usage, "A string to test usage creation") == NULL);
-        ASSERT_FALSE(strstr(usage, "-msgint/-mi") == NULL);
-        ASSERT_FALSE(strstr(usage, "An int to test usage creation") == NULL);
-        ASSERT_FALSE(strstr(usage, "-msgdouble/-md") == NULL);
-        ASSERT_FALSE(strstr(usage, "A double to test usage creation") == NULL);
-        ASSERT_FALSE(strstr(usage, "-msgbool/-mb") == NULL);
-        ASSERT_FALSE(strstr(usage, "A bool to test usage creation") == NULL);
+        ASSERT(strstr(usage, "-msgstring/-ms"));
+        ASSERT(strstr(usage, "A string to test usage creation"));
+        ASSERT(strstr(usage, "-msgint/-mi"));
+        ASSERT(strstr(usage, "An int to test usage creation"));
+        ASSERT(strstr(usage, "-msgdouble/-md"));
+        ASSERT(strstr(usage, "A double to test usage creation"));
+        ASSERT(strstr(usage, "-msgbool/-mb"));
+        ASSERT(strstr(usage, "A bool to test usage creation"));
         free(usage);
         PASS();
 }
