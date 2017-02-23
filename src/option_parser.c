@@ -271,7 +271,7 @@ int load_ini_file(FILE * fp)
 
                 if (!current_section) {
                         fprintf(stderr,
-                               "Warning: invalid config file at line: %d\n",
+                               "Warning: invalid config file at line %d\n",
                                line_num);
                         fprintf(stderr, "Key value pair without a section\n");
                         continue;
