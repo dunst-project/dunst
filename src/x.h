@@ -16,6 +16,7 @@ typedef struct _dimension_t {
         int x;
         int y;
         unsigned int h;
+        unsigned int mmh;
         unsigned int w;
         int mask;
         int negative_width;

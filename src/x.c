@@ -7,7 +7,10 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xresource.h>
-#ifdef XINERAMA
+#ifdef XRANDR
+#include <X11/extensions/Xrandr.h>
+#include <assert.h>
+#elif XINERAMA
 #include <X11/extensions/Xinerama.h>
 #include <assert.h>
 #endif
@@ -137,36 +140,12 @@ static color_t x_get_separator_color(colored_layout *cl, colored_layout *cl_next
         }
 }
 
-static void set_dpi_value()
-{
-        double dpi = 0.0;
-        XrmInitialize();
-        char * xRMS = XResourceManagerString(xctx.dpy);
-
-        if ( xRMS != NULL ) {
-                XrmDatabase xDB = XrmGetStringDatabase(xRMS);
-                char * xrmType;
-                XrmValue xrmValue;
-
-                if ( XrmGetResource(xDB, "Xft.dpi", NULL, &xrmType, &xrmValue))
-                        dpi = strtod(xrmValue.addr, NULL);
-
-        }
-
-        if (dpi > 0.0) {
-                PangoFontMap *font_map = pango_cairo_font_map_get_default();
-                pango_cairo_font_map_set_resolution((PangoCairoFontMap *) font_map, dpi);
-        }
-}
-
 static void x_cairo_setup(void)
 {
         cairo_ctx.surface = cairo_xlib_surface_create(xctx.dpy,
                         xctx.win, DefaultVisual(xctx.dpy, 0), WIDTH, HEIGHT);
 
         cairo_ctx.context = cairo_create(cairo_ctx.surface);
-
-        set_dpi_value();
 
         cairo_ctx.desc = pango_font_description_from_string(settings.font);
 }
@@ -949,71 +928,135 @@ static Window get_focused_window(void)
         return focused;
 }
 
-#ifdef XINERAMA
+static double get_xft_dpi_value()
+{
+        double dpi = 0.0;
+        XrmInitialize();
+        char * xRMS = XResourceManagerString(xctx.dpy);
+
+        if ( xRMS != NULL ) {
+                XrmDatabase xDB = XrmGetStringDatabase(xRMS);
+                char * xrmType;
+                XrmValue xrmValue;
+
+                if ( XrmGetResource(xDB, "Xft.dpi", NULL, &xrmType, &xrmValue))
+                        dpi = strtod(xrmValue.addr, NULL);
+
+        }
+
+        return dpi;
+}
+static void set_dpi_value(screen_info * scr, double dpi)
+{
+        if (dpi > 0.0) {
+                PangoFontMap *font_map = pango_cairo_font_map_get_default();
+                pango_cairo_font_map_set_resolution((PangoCairoFontMap *) font_map, dpi);
+        }
+#ifdef XRANDR
+        //fallback to auto-detect method
+        else {
+                dpi = (double)scr->dim.h * 25.4 / (double)scr->dim.mmh;
+                PangoFontMap *font_map = pango_cairo_font_map_get_default();
+                pango_cairo_font_map_set_resolution((PangoCairoFontMap *) font_map, dpi);
+        }
+#endif
+}
+
+#ifdef XRANDR
+static int lookup_active_screen(XRRMonitorInfo *info, int n, int x, int y)
+{
+        int ret = -1;
+        for (int i = 0; i < n; i++) {
+                if (INRECT(x, y, info[i].x, info[i].y,
+                        info[i].width, info[i].height)) {
+                        ret = i;
+                }
+        }
+
+        return ret;
+
+}
+#elif XINERAMA
+static int lookup_active_screen(XineramaScreenInfo * info, int n, int x, int y)
+{
+        int ret = -1;
+        for (int i = 0; i < n; i++) {
+                if (INRECT(x, y, info[i].x_org, info[i].y_org,
+                        info[i].width, info[i].height)) {
+                        ret = i;
+                }
+        }
+
+        return ret;
+}
+#endif
+
+
+#ifdef XRANDR
 /*
  * Select the screen on which the Window
  * should be displayed.
  */
+static int select_screen(XRRMonitorInfo *info, int n)
+#elif XINERAMA
 static int select_screen(XineramaScreenInfo * info, int info_len)
+#endif
+#if defined(XRANDR) || defined(XINERAMA)
 {
-        int ret = 0;
-        x_follow_setup_error_handler();
-        if (settings.f_mode == FOLLOW_NONE) {
+         int ret = 0;
+         x_follow_setup_error_handler();
+         if (settings.f_mode == FOLLOW_NONE) {
+                  ret = settings.monitor >=
+                     0 ? settings.monitor : XDefaultScreen(xctx.dpy);
+                  goto sc_cleanup;
+
+         } else {
+                 int x, y;
+                 assert(settings.f_mode == FOLLOW_MOUSE
+                        || settings.f_mode == FOLLOW_KEYBOARD);
+                 Window root =
+                     RootWindow(xctx.dpy, DefaultScreen(xctx.dpy));
+
+                 if (settings.f_mode == FOLLOW_MOUSE) {
+                         int dummy;
+                         unsigned int dummy_ui;
+                         Window dummy_win;
+
+                         XQueryPointer(xctx.dpy, root, &dummy_win,
+                                       &dummy_win, &x, &y, &dummy,
+                                       &dummy, &dummy_ui);
+                 }
+
+                 if (settings.f_mode == FOLLOW_KEYBOARD) {
+
+                         Window focused = get_focused_window();
+
+                         if (focused == 0) {
+                                 /* something went wrong. Fallback to default */
+                                 ret = settings.monitor >=
+                                     0 ? settings.monitor : XDefaultScreen(xctx.dpy);
+                                 goto sc_cleanup;
+                         }
+
+                         Window child_return;
+                         XTranslateCoordinates(xctx.dpy, focused, root,
+                                               0, 0, &x, &y, &child_return);
+                 }
+
+                 ret = lookup_active_screen(info, n, x, y);
+
+                 if (ret > 0)
+                        goto sc_cleanup;
+
+                 /* something seems to be wrong. Fallback to default */
                  ret = settings.monitor >=
-                    0 ? settings.monitor : XDefaultScreen(xctx.dpy);
+                     0 ? settings.monitor : XDefaultScreen(xctx.dpy);
                  goto sc_cleanup;
-
-        } else {
-                int x, y;
-                assert(settings.f_mode == FOLLOW_MOUSE
-                       || settings.f_mode == FOLLOW_KEYBOARD);
-                Window root =
-                    RootWindow(xctx.dpy, DefaultScreen(xctx.dpy));
-
-                if (settings.f_mode == FOLLOW_MOUSE) {
-                        int dummy;
-                        unsigned int dummy_ui;
-                        Window dummy_win;
-
-                        XQueryPointer(xctx.dpy, root, &dummy_win,
-                                      &dummy_win, &x, &y, &dummy,
-                                      &dummy, &dummy_ui);
-                }
-
-                if (settings.f_mode == FOLLOW_KEYBOARD) {
-
-                        Window focused = get_focused_window();
-
-                        if (focused == 0) {
-                                /* something went wrong. Fallback to default */
-                                ret = settings.monitor >=
-                                    0 ? settings.monitor : XDefaultScreen(xctx.dpy);
-                                goto sc_cleanup;
-                        }
-
-                        Window child_return;
-                        XTranslateCoordinates(xctx.dpy, focused, root,
-                                              0, 0, &x, &y, &child_return);
-                }
-
-                for (int i = 0; i < info_len; i++) {
-                        if (INRECT(x, y, info[i].x_org,
-                                   info[i].y_org,
-                                   info[i].width, info[i].height)) {
-                                ret = i;
-                                goto sc_cleanup;
-                        }
-                }
-
-                /* something seems to be wrong. Fallback to default */
-                ret = settings.monitor >=
-                    0 ? settings.monitor : XDefaultScreen(xctx.dpy);
-                goto sc_cleanup;
-        }
-sc_cleanup:
-        x_follow_tear_down_error_handler();
-        return ret;
-}
+         }
+ sc_cleanup:
+         x_follow_tear_down_error_handler();
+         return ret;
+ }
 #endif
 
 /*
@@ -1022,7 +1065,24 @@ sc_cleanup:
  */
 static void x_screen_info(screen_info * scr)
 {
-#ifdef XINERAMA
+#ifdef XRANDR
+        int n;
+        XRRMonitorInfo	*m;
+
+        m = XRRGetMonitors(xctx.dpy, RootWindow(xctx.dpy, DefaultScreen(xctx.dpy)), true, &n);
+        int screen = select_screen(m, n);
+        if (screen >= n) {
+                /* invalid monitor, fallback to default */
+                screen = 0;
+        }
+
+        scr->dim.x = m[screen].x;
+        scr->dim.y = m[screen].y;
+        scr->dim.w = m[screen].width;
+        scr->dim.h = m[screen].height;
+        scr->dim.mmh = m[screen].mheight;
+        XRRFreeMonitors(m);
+#elif XINERAMA
         int n;
         XineramaScreenInfo *info;
         if ((info = XineramaQueryScreens(xctx.dpy, &n))) {
@@ -1051,6 +1111,12 @@ static void x_screen_info(screen_info * scr)
                 scr->dim.w = DisplayWidth(xctx.dpy, screen);
                 scr->dim.h = DisplayHeight(xctx.dpy, screen);
         }
+
+        //Update dpi
+        double dpi = 0.0;
+
+        dpi = get_xft_dpi_value();
+        set_dpi_value(scr, dpi);
 }
 
 void x_free(void)

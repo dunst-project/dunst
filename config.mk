@@ -9,8 +9,12 @@ VERSION := $(shell git describe --tags)
 endif
 
 # Xinerama, comment if you don't want it
-XINERAMALIBS  = -lXinerama
-XINERAMAFLAGS = -DXINERAMA
+#XINERAMALIBS  = -lXinerama
+#XINERAMAFLAGS = -DXINERAMA
+
+# RANDR, comment if you don't want it
+XRANDRLIBS = -lXrandr
+XRANDRFLAGS = -DXRANDR
 
 # uncomment to disable parsing of dunstrc
 # or use "CFLAGS=-DSTATIC_CONFIG make" to build
@@ -22,7 +26,7 @@ ifeq (${PKG_CONFIG}, ${EMPTY})
 endif
 
 # flags
-CPPFLAGS += -D_DEFAULT_SOURCE -DVERSION=\"${VERSION}\" ${XINERAMAFLAGS} ${INIFLAGS}
+CPPFLAGS += -D_DEFAULT_SOURCE -DVERSION=\"${VERSION}\" ${XRANDRFLAGS} ${XINERAMAFLAGS} ${INIFLAGS}
 CFLAGS   += -g --std=gnu99 -pedantic -Wall -Wno-overlength-strings -Os ${STATIC} ${CPPFLAGS} ${EXTRACFLAGS}
 
 pkg_config_packs := dbus-1 x11 xscrnsaver \
@@ -37,7 +41,7 @@ endif
 # includes and libs
 INCS := $(shell ${PKG_CONFIG} --cflags ${pkg_config_packs})
 CFLAGS += ${INCS}
-LDFLAGS += -lm -L${X11LIB} -lXss ${XINERAMALIBS} $(shell ${PKG_CONFIG} --libs ${pkg_config_packs})
+LDFLAGS += -lm -L${X11LIB} -lXss ${XRANDRLIBS} ${XINERAMALIBS} $(shell ${PKG_CONFIG} --libs ${pkg_config_packs})
 
 # only make this an fatal error when where not cleaning
 ifneq (clean, $(MAKECMDGOALS))
