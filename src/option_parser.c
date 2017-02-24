@@ -205,11 +205,14 @@ char *clean_value(char *value, int line_num)
                                 unparsed++;
                                 break;
                         default:
-                                // Unrecognized backslash sequence;
-                                // treat the backslash as an ordinary character.
-                                // Consider issuing an error or warning here instead.
                                 unparsed++;
-                                break;
+                                fprintf(stderr,
+                                       "Warning: invalid config file at line %d\n",
+                                       line_num);
+                                fprintf(stderr,
+                                       "Unrecognized backslash sequence '\\%c'\n",
+                                       *unparsed);
+                                return NULL;
                         }
                         break;
                 case '#':
