@@ -22,9 +22,11 @@
 	simple = A simple string
 	simple_with_hcomment = A simple string # a comment
 	simple_with_scomment = A simple string ; a comment
+	simple_with_nl = A simple string\nwith newline
 	quoted = "A quoted string"
 	quoted_with_hcomment = "A quoted string" # a comment
 	quoted_with_scomment = "A quoted string" ; a comment
+	quoted_with_nl = "A quoted string\nwith newline"
 	quoted_with_quotes = "A string \"with quotes\""
 	quoted_with_escapes = "A string \\\"with escapes\\"
 	quoted_with_cchar = "A string; with #comment characters" # a comment

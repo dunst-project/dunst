@@ -203,6 +203,9 @@ char *clean_value(char *value, int line_num)
                         case '\\':
                         case '"':
                                 break;
+                        case 'n':
+                                *unparsed = '\n';
+                                break;
                         default:
                                 fprintf(stderr,
                                        "Warning: invalid config file at line %d\n",

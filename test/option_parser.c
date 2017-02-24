@@ -52,12 +52,16 @@ TEST test_ini_get_string(void)
         free(ptr);
         ASSERT_STR_EQ("A simple string", (ptr = ini_get_string(string_section, "simple_with_scomment", "")));
         free(ptr);
+        ASSERT_STR_EQ("A simple string\nwith newline", (ptr = ini_get_string(string_section, "simple_with_nl", "")));
+        free(ptr);
 
         ASSERT_STR_EQ("A quoted string", (ptr = ini_get_string(string_section, "quoted", "")));
         free(ptr);
         ASSERT_STR_EQ("A quoted string", (ptr = ini_get_string(string_section, "quoted_with_hcomment", "")));
         free(ptr);
         ASSERT_STR_EQ("A quoted string", (ptr = ini_get_string(string_section, "quoted_with_scomment", "")));
+        free(ptr);
+        ASSERT_STR_EQ("A quoted string\nwith newline", (ptr = ini_get_string(string_section, "quoted_with_nl", "")));
         free(ptr);
         ASSERT_STR_EQ("A string \"with quotes\"", (ptr = ini_get_string(string_section, "quoted_with_quotes", "")));
         free(ptr);
