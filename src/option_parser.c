@@ -198,14 +198,12 @@ char *clean_value(char *value, int line_num)
                         in_quote = !in_quote;
                         break;
                 case '\\':
-                        switch (unparsed[1]) {
+                        memmove(unparsed, unparsed + 1, strlen(unparsed));
+                        switch (*unparsed) {
                         case '\\':
                         case '"':
-                                memmove(unparsed, unparsed + 1, strlen(unparsed));
-                                unparsed++;
                                 break;
                         default:
-                                unparsed++;
                                 fprintf(stderr,
                                        "Warning: invalid config file at line %d\n",
                                        line_num);
@@ -214,6 +212,7 @@ char *clean_value(char *value, int line_num)
                                        *unparsed);
                                 return NULL;
                         }
+                        unparsed++;
                         break;
                 case '#':
                 case ';':
