@@ -6,8 +6,8 @@ include config.mk
 CFLAGS += -I.
 LDFLAGS += -L.
 
-SRC = $(shell ls src/*.c)
-OBJ = ${SRC:.c=.o}
+SRC := $(shell find src/ -name '*.c')
+OBJ := ${SRC:.c=.o}
 
 all: doc dunst service
 
@@ -76,8 +76,8 @@ uninstall:
 test: test/test
 	cd test && ./test
 
-TEST_SRC = $(shell ls test/*.c)
-TEST_OBJ = $(TEST_SRC:.c=.o)
+TEST_SRC := $(shell find test/ -name '*.c')
+TEST_OBJ := $(TEST_SRC:.c=.o)
 
 test/test: ${OBJ} ${TEST_OBJ}
 	${CC} ${CFLAGS} -o $@ ${TEST_OBJ} ${OBJ} ${LDFLAGS}

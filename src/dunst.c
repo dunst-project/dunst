@@ -19,7 +19,7 @@
 #include "notification.h"
 #include "option_parser.h"
 #include "settings.h"
-#include "x.h"
+#include "x11/x.h"
 
 #define LENGTH(X)               (sizeof X / sizeof X[0])
 

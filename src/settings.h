@@ -4,7 +4,7 @@
 
 #include <stdbool.h>
 
-#include "x.h"
+#include "x11/x.h"
 
 enum alignment { left, center, right };
 enum icon_position_t { icons_left, icons_right, icons_off };
