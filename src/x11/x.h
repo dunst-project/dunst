@@ -2,6 +2,7 @@
 #ifndef DUNST_X_H
 #define DUNST_X_H
 
+#include <X11/X.h>
 #include <X11/Xlib.h>
 #include <X11/extensions/scrnsaver.h>
 #include <glib.h>

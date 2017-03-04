@@ -6,12 +6,18 @@
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-#include <X11/Xresource.h>
+#include <cairo.h>
 #include <cairo-xlib.h>
 #include <gdk/gdk.h>
+#include <gdk-pixbuf/gdk-pixbuf.h>
+#include <glib-object.h>
 #include <locale.h>
 #include <math.h>
 #include <pango/pangocairo.h>
+#include <pango/pango-attributes.h>
+#include <pango/pango-font.h>
+#include <pango/pango-layout.h>
+#include <pango/pango-types.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -204,21 +210,20 @@ static dimension_t calculate_dimensions(GSList *layouts)
         dim.y = 0;
         dim.mask = xctx.geometry.mask;
 
-        screen_info scr;
-        x_screen_info(&scr);
+        screen_info *scr = get_active_screen();
         if (have_dynamic_width()) {
                 /* dynamic width */
                 dim.w = 0;
         } else if (xctx.geometry.mask & WidthValue) {
                 /* fixed width */
                 if (xctx.geometry.negative_width) {
-                        dim.w = scr.dim.w - xctx.geometry.w;
+                        dim.w = scr->dim.w - xctx.geometry.w;
                 } else {
                         dim.w = xctx.geometry.w;
                 }
         } else {
                 /* across the screen */
-                dim.w = scr.dim.w;
+                dim.w = scr->dim.w;
         }
 
         dim.h += 2 * settings.frame_width;
@@ -244,9 +249,9 @@ static dimension_t calculate_dimensions(GSList *layouts)
                         /* subtract height from the unwrapped text */
                         dim.h -= h;
 
-                        if (total_width > scr.dim.w) {
+                        if (total_width > scr->dim.w) {
                                 /* set width to screen width */
-                                dim.w = scr.dim.w - xctx.geometry.x * 2;
+                                dim.w = scr->dim.w - xctx.geometry.x * 2;
                         } else if (have_dynamic_width() || (total_width < xctx.geometry.w && settings.shrink)) {
                                 /* set width to text width */
                                 dim.w = total_width + 2 * settings.frame_width;
@@ -378,10 +383,24 @@ static GdkPixbuf *get_pixbuf_from_raw_image(const RawImage *raw_image)
         return pixbuf;
 }
 
+static PangoLayout *create_layout(cairo_t *c)
+{
+        screen_info *screen = get_active_screen();
+
+        PangoContext *context = pango_cairo_create_context(c);
+        pango_cairo_context_set_resolution(context, get_dpi_for_screen(screen));
+
+        PangoLayout *layout = pango_layout_new(context);
+
+        g_object_unref(context);
+
+        return layout;
+}
+
 static colored_layout *r_init_shared(cairo_t *c, notification *n)
 {
         colored_layout *cl = g_malloc(sizeof(colored_layout));
-        cl->l = pango_cairo_create_layout(c);
+        cl->l = create_layout(c);
 
         if (!settings.word_wrap) {
                 pango_layout_set_ellipsize(cl->l, PANGO_ELLIPSIZE_MIDDLE);
@@ -670,19 +689,18 @@ static void x_win_move(int width, int height)
 {
 
         int x, y;
-        screen_info scr;
-        x_screen_info(&scr);
+        screen_info *scr = get_active_screen();
         /* calculate window position */
         if (xctx.geometry.mask & XNegative) {
-                x = (scr.dim.x + (scr.dim.w - width)) + xctx.geometry.x;
+                x = (scr->dim.x + (scr->dim.w - width)) + xctx.geometry.x;
         } else {
-                x = scr.dim.x + xctx.geometry.x;
+                x = scr->dim.x + xctx.geometry.x;
         }
 
         if (xctx.geometry.mask & YNegative) {
-                y = scr.dim.y + (scr.dim.h + xctx.geometry.y) - height;
+                y = scr->dim.y + (scr->dim.h + xctx.geometry.y) - height;
         } else {
-                y = scr.dim.y + xctx.geometry.y;
+                y = scr->dim.y + xctx.geometry.y;
         }
 
         /* move and resize */
@@ -844,6 +862,9 @@ gboolean x_mainloop_fd_dispatch(GSource * source, GSourceFunc callback,
                 case PropertyNotify:
                         wake_up();
                         break;
+                default:
+                        screen_check_event(ev);
+                        break;
                 }
         }
         return true;
@@ -964,6 +985,7 @@ void x_setup(void)
 
         xctx.screensaver_info = XScreenSaverAllocInfo();
 
+        init_screens();
         x_win_setup();
         x_cairo_setup();
         x_shortcut_grab(&settings.history_ks);
@@ -1034,10 +1056,9 @@ static void x_win_setup(void)
             ExposureMask | KeyPressMask | VisibilityChangeMask |
             ButtonPressMask | FocusChangeMask| StructureNotifyMask;
 
-        screen_info scr;
-        x_screen_info(&scr);
+        screen_info *scr = get_active_screen();
         xctx.win =
-            XCreateWindow(xctx.dpy, root, scr.dim.x, scr.dim.y, scr.dim.w,
+            XCreateWindow(xctx.dpy, root, scr->dim.x, scr->dim.y, scr->dim.w,
                           1, 0, DefaultDepth(xctx.dpy,
                                                        DefaultScreen(xctx.dpy)),
                           CopyFromParent, DefaultVisual(xctx.dpy,

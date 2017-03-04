@@ -2,6 +2,8 @@
 #ifndef DUNST_SCREEN_H
 #define DUNST_SCREEN_H
 
+#include <X11/Xlib.h>
+
 #define INRECT(x,y,rx,ry,rw,rh) ((x) >= (rx) && (x) < (rx)+(rw) && (y) >= (ry) && (y) < (ry)+(rh))
 
 typedef struct _dimension_t {
@@ -19,6 +21,12 @@ typedef struct _screen_info {
         dimension_t dim;
 } screen_info;
 
-void x_screen_info(screen_info * scr);
+void init_screens();
+void x_update_screens();
+void screen_check_event(XEvent event);
+
+screen_info *get_active_screen();
+double get_dpi_for_screen(screen_info *scr);
 
 #endif
+/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

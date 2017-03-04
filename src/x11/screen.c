@@ -5,24 +5,28 @@
 #include <X11/Xlib.h>
 #include <X11/Xresource.h>
 #ifdef XRANDR
+#include <X11/extensions/randr.h>
 #include <X11/extensions/Xrandr.h>
-#include <assert.h>
 #elif XINERAMA
 #include <X11/extensions/Xinerama.h>
-#include <assert.h>
 #endif
+#include <assert.h>
+#include <glib.h>
 #include <locale.h>
-#include <pango/pangocairo.h>
-#include <pango/pango-types.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "src/settings.h"
 #include "x.h"
 
+screen_info *screens;
+int screens_len;
+
 bool dunst_follow_errored = false;
 
+void x_update_screens_fallback();
 static void x_follow_setup_error_handler(void);
 static int x_follow_tear_down_error_handler(void);
 static int FollowXErrorHandler(Display *display, XErrorEvent *e);
@@ -30,193 +34,231 @@ static Window get_focused_window(void);
 
 static double get_xft_dpi_value()
 {
-        double dpi = 0.0;
-        XrmInitialize();
-        char * xRMS = XResourceManagerString(xctx.dpy);
+        static double dpi = -1;
+        //Only run this once, we don't expect dpi changes during runtime
+        if (dpi <= -1) {
+                XrmInitialize();
+                char *xRMS = XResourceManagerString(xctx.dpy);
 
-        if ( xRMS != NULL ) {
+                if (xRMS == NULL) {
+                        dpi = 0;
+                        return 0;
+                }
+
                 XrmDatabase xDB = XrmGetStringDatabase(xRMS);
-                char * xrmType;
+                char *xrmType;
                 XrmValue xrmValue;
 
-                if ( XrmGetResource(xDB, "Xft.dpi", NULL, &xrmType, &xrmValue))
+                if (XrmGetResource(xDB, "Xft.dpi", NULL, &xrmType, &xrmValue)) {
                         dpi = strtod(xrmValue.addr, NULL);
-
+                } else {
+                        dpi = 0;
+                }
+                XrmDestroyDatabase(xDB);
         }
 
         return dpi;
 }
-static void set_dpi_value(screen_info * scr, double dpi)
+
+void alloc_screen_ar(int n)
 {
-        if (dpi > 0.0) {
-                PangoFontMap *font_map = pango_cairo_font_map_get_default();
-                pango_cairo_font_map_set_resolution((PangoCairoFontMap *) font_map, dpi);
-        }
-#ifdef XRANDR
-        //fallback to auto-detect method
-        else {
-                dpi = (double)scr->dim.h * 25.4 / (double)scr->dim.mmh;
-                PangoFontMap *font_map = pango_cairo_font_map_get_default();
-                pango_cairo_font_map_set_resolution((PangoCairoFontMap *) font_map, dpi);
-        }
-#endif
+        assert(n > 0);
+        if (n <= screens_len) return;
+
+        screens = g_realloc(screens, n * sizeof(screen_info));
+
+        memset(screens, 0, n * sizeof(screen_info));
+
+        screens_len = n;
 }
 
 #ifdef XRANDR
-static int lookup_active_screen(XRRMonitorInfo *info, int n, int x, int y)
+int randr_event_base = 0;
+
+void init_screens()
 {
-        int ret = -1;
+        int randr_error_base = 0;
+        XRRQueryExtension(xctx.dpy, &randr_event_base, &randr_error_base);
+        XRRSelectInput(xctx.dpy, RootWindow(xctx.dpy, DefaultScreen(xctx.dpy)), RRScreenChangeNotifyMask);
+        x_update_screens();
+}
+
+void x_update_screens()
+{
+        int n;
+        XRRMonitorInfo *m = XRRGetMonitors(xctx.dpy, RootWindow(xctx.dpy, DefaultScreen(xctx.dpy)), true, &n);
+
+        if (n == -1) {
+                x_update_screens_fallback();
+                return;
+        }
+
+        alloc_screen_ar(n);
+
         for (int i = 0; i < n; i++) {
-                if (INRECT(x, y, info[i].x, info[i].y,
-                        info[i].width, info[i].height)) {
-                        ret = i;
-                }
+                screens[i].dim.x = m[i].x;
+                screens[i].dim.y = m[i].y;
+                screens[i].dim.w = m[i].width;
+                screens[i].dim.h = m[i].height;
+                screens[i].dim.mmh = m[i].mheight;
         }
 
-        return ret;
-
+        XRRFreeMonitors(m);
 }
+
+static double autodetect_dpi(screen_info *scr)
+{
+        return (double)scr->dim.h * 25.4 / (double)scr->dim.mmh;
+}
+
+void screen_check_event(XEvent event)
+{
+        if (event.type == randr_event_base + RRScreenChangeNotify)
+                x_update_screens();
+}
+
 #elif XINERAMA
-static int lookup_active_screen(XineramaScreenInfo * info, int n, int x, int y)
+
+void init_screens()
 {
-        int ret = -1;
-        for (int i = 0; i < n; i++) {
-                if (INRECT(x, y, info[i].x_org, info[i].y_org,
-                        info[i].width, info[i].height)) {
-                        ret = i;
-                }
+        x_update_screens();
+}
+
+void x_update_screens()
+{
+        int n;
+        XineramaScreenInfo *info = XineramaQueryScreens(xctx.dpy, &n);
+
+        if (!info) {
+                x_update_screens_fallback();
+                return;
         }
 
-        return ret;
+        alloc_screen_ar(n);
+
+        for (int i = 0; i < n; i++) {
+                screens[i].dim.x = info[i].x_org;
+                screens[i].dim.y = info[i].y_org;
+                screens[i].dim.h = info[i].height;
+                screens[i].dim.w = info[i].width;
+        }
+        XFree(info);
 }
+
+void screen_check_event(XEvent event) {} //No-op
+
+#define autodetect_dpi(x) 0
+
+#else
+
+void init_screens()
+{
+        x_update_screens_fallback();
+}
+
+void x_update_screens()
+{
+        x_update_screens_fallback();
+}
+
+void screen_check_event(XEvent event) {} //No-op
+
+#define autodetect_dpi(x) 0
+
 #endif
 
+void x_update_screens_fallback()
+{
+        alloc_screen_ar(1);
 
-#ifdef XRANDR
+        int screen;
+        if (settings.monitor >= 0)
+                screen = settings.monitor;
+        else
+                screen = DefaultScreen(xctx.dpy);
+
+        screens[0].dim.w = DisplayWidth(xctx.dpy, screen);
+        screens[0].dim.h = DisplayHeight(xctx.dpy, screen);
+
+}
+
 /*
  * Select the screen on which the Window
  * should be displayed.
  */
-static int select_screen(XRRMonitorInfo *info, int n)
-#elif XINERAMA
-static int select_screen(XineramaScreenInfo * info, int info_len)
-#endif
-#if defined(XRANDR) || defined(XINERAMA)
+screen_info *get_active_screen()
 {
-         int ret = 0;
-         x_follow_setup_error_handler();
-         if (settings.f_mode == FOLLOW_NONE) {
-                  ret = settings.monitor >=
-                     0 ? settings.monitor : XDefaultScreen(xctx.dpy);
-                  goto sc_cleanup;
+        int ret = 0;
+        if (settings.monitor > 0 && settings.monitor < screens_len) {
+                ret = settings.monitor;
+                goto sc_cleanup;
+        }
 
-         } else {
-                 int x, y;
-                 assert(settings.f_mode == FOLLOW_MOUSE
-                        || settings.f_mode == FOLLOW_KEYBOARD);
-                 Window root =
-                     RootWindow(xctx.dpy, DefaultScreen(xctx.dpy));
+        x_follow_setup_error_handler();
 
-                 if (settings.f_mode == FOLLOW_MOUSE) {
-                         int dummy;
-                         unsigned int dummy_ui;
-                         Window dummy_win;
+        if (settings.f_mode == FOLLOW_NONE) {
+                ret = XDefaultScreen(xctx.dpy);
+                goto sc_cleanup;
 
-                         XQueryPointer(xctx.dpy, root, &dummy_win,
-                                       &dummy_win, &x, &y, &dummy,
-                                       &dummy, &dummy_ui);
-                 }
+        } else {
+                int x, y;
+                assert(settings.f_mode == FOLLOW_MOUSE
+                                || settings.f_mode == FOLLOW_KEYBOARD);
+                Window root =
+                        RootWindow(xctx.dpy, DefaultScreen(xctx.dpy));
 
-                 if (settings.f_mode == FOLLOW_KEYBOARD) {
+                if (settings.f_mode == FOLLOW_MOUSE) {
+                        int dummy;
+                        unsigned int dummy_ui;
+                        Window dummy_win;
 
-                         Window focused = get_focused_window();
+                        XQueryPointer(xctx.dpy, root, &dummy_win,
+                                        &dummy_win, &x, &y, &dummy,
+                                        &dummy, &dummy_ui);
+                }
 
-                         if (focused == 0) {
-                                 /* something went wrong. Fallback to default */
-                                 ret = settings.monitor >=
-                                     0 ? settings.monitor : XDefaultScreen(xctx.dpy);
-                                 goto sc_cleanup;
-                         }
+                if (settings.f_mode == FOLLOW_KEYBOARD) {
 
-                         Window child_return;
-                         XTranslateCoordinates(xctx.dpy, focused, root,
-                                               0, 0, &x, &y, &child_return);
-                 }
+                        Window focused = get_focused_window();
 
-                 ret = lookup_active_screen(info, n, x, y);
+                        if (focused == 0) {
+                                /* something went wrong. Fallback to default */
+                                ret = XDefaultScreen(xctx.dpy);
+                                goto sc_cleanup;
+                        }
 
-                 if (ret > 0)
+                        Window child_return;
+                        XTranslateCoordinates(xctx.dpy, focused, root,
+                                        0, 0, &x, &y, &child_return);
+                }
+
+                for (int i = 0; i < screens_len; i++) {
+                        if (INRECT(x, y, screens[i].dim.x, screens[i].dim.y,
+                                         screens[i].dim.w, screens[i].dim.h)) {
+                                ret = i;
+                        }
+                }
+
+                if (ret > 0)
                         goto sc_cleanup;
 
-                 /* something seems to be wrong. Fallback to default */
-                 ret = settings.monitor >=
-                     0 ? settings.monitor : XDefaultScreen(xctx.dpy);
-                 goto sc_cleanup;
-         }
- sc_cleanup:
-         x_follow_tear_down_error_handler();
-         return ret;
- }
-#endif
+                /* something seems to be wrong. Fallback to default */
+                ret = XDefaultScreen(xctx.dpy);
+                goto sc_cleanup;
+        }
+sc_cleanup:
+        x_follow_tear_down_error_handler();
+        assert(screens);
+        assert(ret >= 0 && ret < screens_len);
+        return &screens[ret];
+}
 
-/*
- * Update the information about the monitor
- * geometry.
- */
-void x_screen_info(screen_info * scr)
+double get_dpi_for_screen(screen_info *scr)
 {
-#ifdef XRANDR
-        int n;
-        XRRMonitorInfo	*m;
-
-        m = XRRGetMonitors(xctx.dpy, RootWindow(xctx.dpy, DefaultScreen(xctx.dpy)), true, &n);
-        int screen = select_screen(m, n);
-        if (screen >= n) {
-                /* invalid monitor, fallback to default */
-                screen = 0;
-        }
-
-        scr->dim.x = m[screen].x;
-        scr->dim.y = m[screen].y;
-        scr->dim.w = m[screen].width;
-        scr->dim.h = m[screen].height;
-        scr->dim.mmh = m[screen].mheight;
-        XRRFreeMonitors(m);
-#elif XINERAMA
-        int n;
-        XineramaScreenInfo *info;
-        if ((info = XineramaQueryScreens(xctx.dpy, &n))) {
-                int screen = select_screen(info, n);
-                if (screen >= n) {
-                        /* invalid monitor, fallback to default */
-                        screen = 0;
-                }
-                scr->dim.x = info[screen].x_org;
-                scr->dim.y = info[screen].y_org;
-                scr->dim.h = info[screen].height;
-                scr->dim.w = info[screen].width;
-                XFree(info);
-        } else
-#endif
-        {
-                scr->dim.x = 0;
-                scr->dim.y = 0;
-
-                int screen;
-                if (settings.monitor >= 0)
-                        screen = settings.monitor;
-                else
-                        screen = DefaultScreen(xctx.dpy);
-
-                scr->dim.w = DisplayWidth(xctx.dpy, screen);
-                scr->dim.h = DisplayHeight(xctx.dpy, screen);
-        }
-
-        //Update dpi
-        double dpi = 0.0;
-
-        dpi = get_xft_dpi_value();
-        set_dpi_value(scr, dpi);
+        double dpi = 0;
+        if ((dpi = get_xft_dpi_value()) || (dpi = autodetect_dpi(scr)))
+                return dpi;
+        return 0;
 }
 
 /*
@@ -271,3 +313,4 @@ static int FollowXErrorHandler(Display * display, XErrorEvent * e)
 
         return 0;
 }
+/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
