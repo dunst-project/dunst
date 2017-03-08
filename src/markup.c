@@ -28,9 +28,9 @@ static char *markup_unquote(char *str)
 
         str = string_replace_all("&quot;", "\"", str);
         str = string_replace_all("&apos;", "'", str);
-        str = string_replace_all("&amp;", "&", str);
         str = string_replace_all("&lt;", "<", str);
         str = string_replace_all("&gt;", ">", str);
+        str = string_replace_all("&amp;", "&", str);
 
         return str;
 }
