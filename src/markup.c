@@ -9,14 +9,9 @@
 #include "settings.h"
 #include "utils.h"
 
-/*
- * Quote a text string for rendering with pango
- */
 static char *markup_quote(char *str)
 {
-        if (str == NULL) {
-                return NULL;
-        }
+        assert(str != NULL);
 
         str = string_replace_all("&", "&amp;", str);
         str = string_replace_all("\"", "&quot;", str);
@@ -27,8 +22,40 @@ static char *markup_quote(char *str)
         return str;
 }
 
+static char *markup_unquote(char *str)
+{
+        assert(str != NULL);
+
+        str = string_replace_all("&quot;", "\"", str);
+        str = string_replace_all("&apos;", "'", str);
+        str = string_replace_all("&amp;", "&", str);
+        str = string_replace_all("&lt;", "<", str);
+        str = string_replace_all("&gt;", ">", str);
+
+        return str;
+}
+
+static char *markup_br2nl(char *str)
+{
+        assert(str != NULL);
+
+        str = string_replace_all("<br>", "\n", str);
+        str = string_replace_all("<br/>", "\n", str);
+        str = string_replace_all("<br />", "\n", str);
+        return str;
+}
+
 /*
- * Strip any markup from text
+ * Strip any markup from text; turn it in to plain text.
+ *
+ * For well-formed markup, the following two commands should be
+ * roughly equivalent:
+ *
+ *     out = markup_strip(in);
+ *     pango_parse_markup(in, -1, 0, NULL, &out, NULL, NULL);
+ *
+ * However, `pango_parse_markup()` balks at invalid markup;
+ * `markup_strip()` shouldn't care if there is invalid markup.
  */
 char *markup_strip(char *str)
 {
@@ -40,11 +67,7 @@ char *markup_strip(char *str)
         string_strip_delimited(str, '<', '>');
 
         /* unquote the remainder */
-        str = string_replace_all("&quot;", "\"", str);
-        str = string_replace_all("&apos;", "'", str);
-        str = string_replace_all("&amp;", "&", str);
-        str = string_replace_all("&lt;", "<", str);
-        str = string_replace_all("&gt;", ">", str);
+        str = markup_unquote(str);
 
         return str;
 }
@@ -59,24 +82,22 @@ char *markup_transform(char *str, enum markup_mode markup_mode)
                 return NULL;
         }
 
-        if (markup_mode == MARKUP_NO) {
+        switch (markup_mode) {
+        case MARKUP_NULL:
+                /* `assert(false)`, but with a meaningful error message */
+                assert(markup_mode != MARKUP_NULL);
+                break;
+        case MARKUP_NO:
                 str = markup_quote(str);
-        } else {
-                if (settings.ignore_newline) {
-                        str = string_replace_all("<br>", " ", str);
-                        str = string_replace_all("<br/>", " ", str);
-                        str = string_replace_all("<br />", " ", str);
-                } else {
-                        str = string_replace_all("<br>", "\n", str);
-                        str = string_replace_all("<br/>", "\n", str);
-                        str = string_replace_all("<br />", "\n", str);
-                }
-
-                if (markup_mode != MARKUP_FULL ) {
-                        str = markup_strip(str);
-                        str = markup_quote(str);
-                }
-
+                break;
+        case MARKUP_STRIP:
+                str = markup_br2nl(str);
+                str = markup_strip(str);
+                str = markup_quote(str);
+                break;
+        case MARKUP_FULL:
+                str = markup_br2nl(str);
+                break;
         }
 
         if (settings.ignore_newline) {
