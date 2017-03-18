@@ -181,6 +181,13 @@
     # Always run rule-defined scripts, even if the notification is suppressed
     always_run_script = true
 
+# Experimental features that may or may not work correctly. Do not expect them
+# to have a consistent behaviour across releases.
+[experimental]
+    # Calculate the dpi to use on a per-monitor basis.
+    # Please note that this setting will not work if Xft.dpi X resource is set.
+    per_monitor_dpi = false
+
 [frame]
     width = 3
     color = "#aaaaaa"

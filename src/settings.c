@@ -97,6 +97,12 @@ void load_settings(char *cmdline_config_path)
         load_ini_file(config_file);
 #endif
 
+        settings.per_monitor_dpi = option_get_bool(
+                "experimental",
+                "per_monitor_dpi", NULL, false,
+                ""
+        );
+
         settings.font = option_get_string(
                 "global",
                 "font", "-fn", font,

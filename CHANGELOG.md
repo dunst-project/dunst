@@ -10,6 +10,8 @@
 - Support for per-urgency frame colours
 - `markup` setting for more fine-grained control over how markup is handled
 - `history_ignore` rule action to exclude a notification from being added to the history
+- Support for setting the dpi value dunst will use for font rendering via the `Xft.dpi` X resource
+- Experimental support for per-monitor dpi calculation
 
 ### Changed
 - Text and icons are now centred vertically

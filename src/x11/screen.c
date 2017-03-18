@@ -56,7 +56,6 @@ static double get_xft_dpi_value()
                 }
                 XrmDestroyDatabase(xDB);
         }
-
         return dpi;
 }
 
@@ -106,7 +105,7 @@ void x_update_screens()
         XRRFreeMonitors(m);
 }
 
-static double autodetect_dpi(screen_info *scr)
+static int autodetect_dpi(screen_info *scr)
 {
         return (double)scr->dim.h * 25.4 / (double)scr->dim.mmh;
 }
@@ -256,9 +255,12 @@ sc_cleanup:
 double get_dpi_for_screen(screen_info *scr)
 {
         double dpi = 0;
-        if ((dpi = get_xft_dpi_value()) || (dpi = autodetect_dpi(scr)))
+        if ((dpi = get_xft_dpi_value()))
                 return dpi;
-        return 0;
+        else if (settings.per_monitor_dpi && (dpi = autodetect_dpi(scr)))
+                return dpi;
+        else
+                return 96;
 }
 
 /*

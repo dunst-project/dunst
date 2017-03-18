@@ -14,6 +14,7 @@ enum markup_mode { MARKUP_NULL, MARKUP_NO, MARKUP_STRIP, MARKUP_FULL };
 
 typedef struct _settings {
         bool print_notifications;
+        bool per_monitor_dpi;
         enum markup_mode markup;
         bool stack_duplicates;
         bool hide_duplicate_count;
