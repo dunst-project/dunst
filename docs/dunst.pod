@@ -197,7 +197,7 @@ Don't timeout notifications popped up from history.
 
 =item B<-show_indicators>
 
-Show indicators for actions and URLs.
+Show indicators for actions and URLs. See ACTIONS below for futher details.
 
 =item B<-sort>
 
@@ -263,6 +263,22 @@ The progress value can be set with a hint, too.
 =item notify-send -h int:value:42 "Working ..."
 
 =back
+
+=head1 ACTIONS
+
+Dunst allows notifiers (i.e.: programs that send the notifications) to specify
+actions. Dunst has support for both displaying indicators for these, and
+interacting with these actions.
+
+If "show_indicators" is true and a notification has an action, an "(A)" will be
+prepended to the notification format. Likewise, an "(U)" is preneded to
+notifications with URLs. It is possible to interact with notifications that
+have actions regardless of this setting, though it may not be obvious which
+notifications HAVE actions.
+
+The "context" keybinding is used to interact with these actions, by showing a
+menu of possible actions. This feature requires "dmenu" or a dmenu drop-in
+replacement present.
 
 =head1 MISCELLANEOUS
 
