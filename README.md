@@ -18,7 +18,6 @@ Dunst has a number of build dependencies that must be present before attempting 
 
 - dbus
 - libxinerama
-- libxft
 - libxss
 - libxdg-basedir
 - glib
