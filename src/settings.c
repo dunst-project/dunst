@@ -570,10 +570,10 @@ void load_settings(char *cmdline_config_path)
                 {
                         char *c = ini_get_string(
                                 cur_section,
-                                "markup", ""
+                                "markup", NULL
                         );
 
-                        if (strlen(c) > 0) {
+                        if (c != NULL) {
                                 r->markup = parse_markup_mode(c);
                                 g_free(c);
                         }
