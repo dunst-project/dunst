@@ -49,7 +49,7 @@ static double get_xft_dpi_value()
                 char *xrmType;
                 XrmValue xrmValue;
 
-                if (XrmGetResource(xDB, "Xft.dpi", NULL, &xrmType, &xrmValue)) {
+                if (XrmGetResource(xDB, "Xft.dpi", "Xft.dpi", &xrmType, &xrmValue)) {
                         dpi = strtod(xrmValue.addr, NULL);
                 } else {
                         dpi = 0;
