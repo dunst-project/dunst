@@ -8,13 +8,14 @@ ifeq ('',$(VERSION))
 VERSION := $(shell git describe --tags)
 endif
 
-# Xinerama, comment if you don't want it
-#XINERAMALIBS  = -lXinerama
-#XINERAMAFLAGS = -DXINERAMA
-
-# RANDR, comment if you don't want it
-XRANDRLIBS = -lXrandr
-XRANDRFLAGS = -DXRANDR
+# Specifies which X extension dunst should use for multi monitor support
+# Possible values are randr, xinerama or none
+# * xrandr is the recommended/default value and should be the best option in most cases
+# * xinerama is the legacy equivalent to randr but does not support some more
+#   advanced features like per-monitor dpi calculation it should probably one
+#   be used if xrandr cannot be used for some reason.
+# * none disables multi-monitor support and dunst will assume only one monitor.
+MULTIMON ?= xrandr
 
 # uncomment to disable parsing of dunstrc
 # or use "CFLAGS=-DSTATIC_CONFIG make" to build
@@ -26,12 +27,20 @@ ifeq (${PKG_CONFIG}, ${EMPTY})
 endif
 
 # flags
-CPPFLAGS += -D_DEFAULT_SOURCE -DVERSION=\"${VERSION}\" ${XRANDRFLAGS} ${XINERAMAFLAGS} ${INIFLAGS}
-CFLAGS   += -g --std=gnu99 -pedantic -Wall -Wno-overlength-strings -Os ${STATIC} ${CPPFLAGS} ${EXTRACFLAGS}
+CPPFLAGS += -D_DEFAULT_SOURCE -DVERSION=\"${VERSION}\"
+CFLAGS   += -g --std=gnu99 -pedantic -Wall -Wno-overlength-strings -Os ${STATIC} ${CPPFLAGS}
 
 pkg_config_packs := dbus-1 x11 xscrnsaver \
                     "glib-2.0 >= 2.36" gio-2.0 \
                     pangocairo gdk-2.0
+
+ifeq ($(MULTIMON), xrandr)
+pkg_config_packs += xrandr
+CFLAGS += -DXRANDR
+else ifeq ($(MULTIMON), xinerama)
+pkg_config_packs += xinerama
+CFLAGS += -DXINERAMA
+endif
 
 # check if we need libxdg-basedir
 ifeq (,$(findstring STATIC_CONFIG,$(CFLAGS)))
@@ -41,7 +50,7 @@ endif
 # includes and libs
 INCS := $(shell ${PKG_CONFIG} --cflags ${pkg_config_packs})
 CFLAGS += ${INCS}
-LDFLAGS += -lm -L${X11LIB} -lXss ${XRANDRLIBS} ${XINERAMALIBS} $(shell ${PKG_CONFIG} --libs ${pkg_config_packs})
+LDFLAGS += -lm -L${X11LIB} -lXss $(shell ${PKG_CONFIG} --libs ${pkg_config_packs})
 
 # only make this an fatal error when where not cleaning
 ifneq (clean, $(MAKECMDGOALS))
