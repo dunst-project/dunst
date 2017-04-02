@@ -1,8 +1,19 @@
-before_install:
-    - sudo apt-get -qq update
-    - sudo apt-get install -y libdbus-1-dev libx11-dev libxrandr-dev libxinerama-dev libxss-dev libxdg-basedir-dev libglib2.0-dev libpango1.0-dev libcairo2-dev libnotify-dev libgtk2.0-dev
+addons:
+  apt:
+    packages:
+    - libdbus-1-dev
+    - libx11-dev
+    - libxrandr-dev
+    - libxinerama-dev
+    - libxss-dev
+    - libxdg-basedir-dev
+    - libglib2.0-dev
+    - libpango1.0-dev
+    - libcairo2-dev
+    - libnotify-dev
+    - libgtk2.0-dev
 dist: trusty
-sudo: required
+sudo: false
 language: c
 script: make && make test
 compiler:
