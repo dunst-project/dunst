@@ -703,6 +703,14 @@ static void x_win_move(int width, int height)
                 y = scr->dim.y + xctx.geometry.y;
         }
 
+        if (settings.centering == CENTERING_HORIZONTAL || settings.centering == CENTERING_BOTH) {
+                x = scr->dim.x + (scr->dim.w - width) / 2 + xctx.geometry.x;
+        }
+
+        if (settings.centering == CENTERING_VERTICAL || settings.centering == CENTERING_BOTH) {
+                y = scr->dim.y + (scr->dim.h - height) / 2 + xctx.geometry.y;
+        }
+
         /* move and resize */
         if (x != xctx.window_dim.x || y != xctx.window_dim.y) {
                 XMoveWindow(xctx.dpy, xctx.win, x, y);

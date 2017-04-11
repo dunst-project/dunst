@@ -533,6 +533,27 @@ void load_settings(char *cmdline_config_path)
                 "Always run rule-defined scripts, even if the notification is suppressed with format = \"\"."
         );
 
+        {
+                char *c = option_get_string(
+                        "global",
+                        "centering", "-centering", "off",
+                        "Align notifications on screen off/horizontal/vertical/both"
+                );
+
+                if (strcmp(c, "off") == 0)
+                        settings.centering = CENTERING_OFF;
+                else if (strcmp(c, "horizontal") == 0)
+                        settings.centering = CENTERING_HORIZONTAL;
+                else if (strcmp(c, "vertical") == 0)
+                        settings.centering = CENTERING_VERTICAL;
+                else if (strcmp(c, "both") == 0)
+                        settings.centering = CENTERING_BOTH;
+                else
+                        fprintf(stderr,
+                                "Warning: unknown centering option: %s\n", c);
+                g_free(c);
+        }
+
         /* push hardcoded default rules into rules list */
         for (int i = 0; i < LENGTH(default_rules); i++) {
                 rules = g_slist_insert(rules, &(default_rules[i]), -1);

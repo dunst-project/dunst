@@ -11,6 +11,7 @@ enum icon_position_t { icons_left, icons_right, icons_off };
 enum separator_color { FOREGROUND, AUTO, FRAME, CUSTOM };
 enum follow_mode { FOLLOW_NONE, FOLLOW_MOUSE, FOLLOW_KEYBOARD };
 enum markup_mode { MARKUP_NULL, MARKUP_NO, MARKUP_STRIP, MARKUP_FULL };
+enum centering { CENTERING_OFF, CENTERING_HORIZONTAL, CENTERING_VERTICAL, CENTERING_BOTH };
 
 typedef struct _settings {
         bool print_notifications;
@@ -72,6 +73,7 @@ typedef struct _settings {
         keyboard_shortcut close_all_ks;
         keyboard_shortcut history_ks;
         keyboard_shortcut context_ks;
+        enum centering centering;
 } settings_t;
 
 extern settings_t settings;
