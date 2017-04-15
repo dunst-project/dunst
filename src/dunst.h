@@ -18,7 +18,6 @@
 #define ColFG 1
 #define ColBG 0
 
-extern int verbosity;
 extern GQueue *queue;
 extern GQueue *displayed;
 extern GQueue *history;

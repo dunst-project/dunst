@@ -45,7 +45,6 @@ typedef struct _settings {
         int sticky_history;
         int history_length;
         int show_indicators;
-        int verbosity;
         int word_wrap;
         int ignore_newline;
         int line_height;
