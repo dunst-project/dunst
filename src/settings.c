@@ -105,7 +105,7 @@ void load_settings(char *cmdline_config_path)
 
         settings.font = option_get_string(
                 "global",
-                "font", "-fn", font,
+                "font", "-font/-fn", font,
                 "The font dunst should use."
         );
 
@@ -172,7 +172,7 @@ void load_settings(char *cmdline_config_path)
 
         settings.monitor = option_get_int(
                 "global",
-                "monitor", "-mon", monitor,
+                "monitor", "-mon/-monitor", monitor,
                 "On which monitor should the notifications be displayed"
         );
 
