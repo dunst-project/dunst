@@ -77,7 +77,10 @@ int randr_event_base = 0;
 void init_screens()
 {
         int randr_error_base = 0;
-        XRRQueryExtension(xctx.dpy, &randr_event_base, &randr_error_base);
+        if (!XRRQueryExtension(xctx.dpy, &randr_event_base, &randr_error_base)) {
+                fprintf(stderr, "Dunst was compiled with RandR but RandR extension is missing.");
+                exit(1);
+        }
         XRRSelectInput(xctx.dpy, RootWindow(xctx.dpy, DefaultScreen(xctx.dpy)), RRScreenChangeNotifyMask);
         x_update_screens();
 }
