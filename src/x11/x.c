@@ -814,6 +814,7 @@ gboolean x_mainloop_fd_dispatch(GSource * source, GSourceFunc callback,
                 switch (ev.type) {
                 case Expose:
                         if (ev.xexpose.count == 0 && xctx.visible) {
+                                x_win_draw();
                         }
                         break;
                 case SelectionNotify:
