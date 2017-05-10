@@ -6,7 +6,6 @@ Documentation=man:dunst(1)
 Type=dbus
 BusName=org.freedesktop.Notifications
 ExecStart=##PREFIX##/bin/dunst
-Environment=DISPLAY=:0
 
 [Install]
 WantedBy=default.target
