@@ -64,6 +64,7 @@ install-doc:
 install-service: service
 	mkdir -p ${DESTDIR}${PREFIX}/share/dbus-1/services/
 	install -m644 org.knopwob.dunst.service ${DESTDIR}${PREFIX}/share/dbus-1/services
+	install -Dm644 dunst.systemd.service ${DESTDIR}${PREFIX}/lib/systemd/user/dunst.service
 
 install: install-dunst install-doc install-service
 
