@@ -15,7 +15,11 @@ endif
 #   advanced features like per-monitor dpi calculation it should probably one
 #   be used if xrandr cannot be used for some reason.
 # * none disables multi-monitor support and dunst will assume only one monitor.
+ifeq ('no','$(shell xrandr -q &>/dev/null || [ $$? -eq 1 ] && echo -n no)')
+MULTIMON ?= xinerama
+else
 MULTIMON ?= xrandr
+endif
 
 # uncomment to disable parsing of dunstrc
 # or use "CFLAGS=-DSTATIC_CONFIG make" to build
