@@ -4,227 +4,154 @@ dunst - A customizable and lightweight notification-daemon
 
 =head1 SYNOPSIS
 
-dunst [-conf file] [-fn font] [-geometry geom] [-lf/lb/lfr/nf/nb/nfr/cf/cb/cfr color] 
-[-lto/nto/cto secs] [-lh/nh/sep_height height] [-format fmt] [-follow mode] [-mon n] 
-[-history_length n] [-t/title title] [-c/class class] [-v]
+dunst [-conf file] [-font font] [-geometry geom] [-format fmt] [-follow mode] [-monitor n] [-history_length n] ...
 
 =head1 DESCRIPTION
 
 Dunst is a highly configurable and lightweight notification daemon.
 
-=head1 OPTIONS
+=head1 COMMAND LINE OPTIONS
 
 =over 4
 
 =item B<-h/--help>
 
-display help message.
+List all command line flags
 
 =item B<-conf/-config file>
 
-use alternative config file.
-
-=item B<-fn font>
-
-Defines the font or font set used. Optionally set the size as a decimal number after the font name and space.
-Multiple font options can be separated with commas.
-
-=item B<-geometry [{width}]x{height}][+/-{x}+/-{y}]>
-
-The geometry of the message window. The height is measured
-in lines everything else in pixels. If the width is omitted
-but the height is given ("-geometry x2"), the message window
-expands over the whole screen (dmenu-like).
-If width is 0, the window expands to the longest
-message displayed. A positive x is measured from the left,
-a negative from the right side of the screen.
-Y is measured from the top and down respectively.
-
-=item B<-lf/nf/cf color>
-
-Defines the foreground color of low/normal/critical messages.
-
-=item B<-lb/nb/cb color>
-
-Defines the background color of low/normal/critical messages.
-
-=item B<-lfr/nfr/cfr color>
-
-Defines the frame color of low/normal/critical messages.
-
-=item B<-lto/nto/cto secs>
-
-Defines timeouts for low/normal/critical messages.
-
-=item B<-lh/-line_height height>
-
-Defines the height of a single line in pixel. If the height is smaller than the font height, it will get raised to the font height.
-
-=item B<-nh/-notification_height height>
-
-Defines the height of the notification window.
-
-=item B<-sep_height/-separator_height height>
-
-Defines the height of the separator line.
-
-=item B<-format fmt>
-
-Defines the format of the message. See FORMAT.
-
-=item B<-follow mode>
-
-Display notifications on focused monitor. Possible options are "mouse" to follow the mouse cursor, "keyboard" to follow the window
-with the keyboard focus and "none" to disable focus following. "mouse" and "keyboard" overwrite the -mon option.
-
-=item B<-mon n>
-
-Show the notification on monitor n.
-
-=item B<-history_length n>
-
-Max amount of notifications kept in history.
-
-=item B<-t/-title title>
-
-Defines the title of notification windows spawned by dunst.
-
-=item B<-t/-class class>
-
-Defines the class of notification windows spawned by dunst.
-
-=item B<-key key>
-
-Remove notification by pressing key.
-
-=item B<-all_key key>
-
-Remove all notifications by pressing key.
-
-=item B<-history_key key>
-
-Redisplay last notification by pressing key.
-
-=item B<-context_key key>
-
-Shortcut for context menu.
-
-=item B<-alignment position>
-
-Defines how text should be aligned, can be set to left/center/right.
-
-=item B<-icon_position position>
-
-Defines the align position of icons to left/right or off to disable icons.
-
-=item B<-max_icon_size size>
-
-Defines the max size for icons to scale. If icon_position is set to off, icons won't be displayed.
-
-=item B<-icon_folders path>
-
-Defines the path to the folder with the default icons.
-
-=item B<-li/ni/ci icon>
-
-Defines the icon for low/normal/critical messages.
-
-=item B<-padding pad>
-
-Defines padding between text and separator.
-
-=item B<-horizontal_padding pad>
-
-Defines horizontal padding.
-
-=item B<-transparency range>
-
-Defines transparency range between 0-100
-
-=item B<-sep_color/-separator_color color>
-
-Defines color of the separator line.
-
-=item B<-frame_color color>
-
-Defines color of the frame around window.
-
-=item B<-frame_width width>
-
-Defines width of frame around window.
-
-=item B<-idle_threshold secs>
-
-Don't timeout notifications if user is longer idle than threshold.
-
-=item B<-show_age_threshold secs>
-
-Show age of message if message is older than show_age_threshold seconds. Set to -1 to disable.
-
-=item B<-bounce_freq freq>
-
-The frequency with which text that is longer than the notification window allows bounces back and forth.
-
-=item B<-markup parsing>
-
-Defines how markup parsing should be handled in notifications. Possible options are "full" to allow a small subset of html markup,
-"strip" for compatibility with broken clients (this option is discouraged outside matching rules) or "no" to treat incoming
-notifications as plain text. Note that markup inside the format option will be parsed regardless of what this is set to.
-
-=item B<-indicate_hidden>
-
-Show how many notifications are hidden.
-
-=item B<-word_wrap>
-
-Truncating long lines or do word wrap.
-
-=item B<-ignore_newline>
-
-Ignore newline characters in notifications.
-
-=item B<-stack_duplicates>
-
-Merge multiple notifications with the same content.
-
-=item B<-hide_duplicates_count>
-
-Hide count of the merged notifications with the same content.
-
-=item B<-sticky_history>
-
-Don't timeout notifications popped up from history.
-
-=item B<-show_indicators>
-
-Show indicators for actions and URLs. See ACTIONS below for futher details.
-
-=item B<-sort>
-
-Sort messages by urgency.
-
-=item B<-shrink>
-
-Shrink window if it's smaller than the width. Will be ignored if width is 0.
-
-=item B<-print>
-
-Print notifications to stdout. This might be useful for logging, setting up rules or using the output in other scripts.
+Use alternative config file.
 
 =item B<-v/--version>
 
 Print version information.
 
-=item B<-always_run_script>
+=item B<-print>
 
-Always run rule-defined scripts, even if the notification is suppressed with format = "".
+Print notifications to stdout. This might be useful for logging, setting up
+rules or using the output in other scripts.
 
 =back
 
-=head1 FORMAT
+=head1 CONFIGURATION
 
-fmt is a string containing placeholders.
-The placeholders will be replaced with the corresponding text, or if the text is not present, nothing. Possible placeholders are:
+An example configuration file is included (usually /usr/share/dunst/dunstrc).
+To change the configuration, copy this file to ~/.config/dunst/dunstrc and edit
+it accordingly.
+
+The configuration is divided into sections in an ini-like format. The 'global'
+section contains most general settings while the 'shortcuts' sections contains
+all keyboard configuration and the 'experimental' section all the features that
+have not yet been tested thoroughly.
+
+Any section that is not one of the above is assumed to be a rule, see RULES for
+more details.
+
+For backwards compatibility reasons the section name 'frame' is considered bound
+and can't be used as a rule.
+
+=head2 Command line
+
+Each configuration option in the global section can be overridden from the
+command line by adding a single dash in front of it's name.
+For example the font option can be overridden by running
+
+    $ dunst -font "LiberationSans Mono 4"
+
+Configuration options that take boolean values can only currently be set to
+"true" through the command line via the same method. e.g.
+
+    $ dunst -shrink
+
+This is a known limitation of the way command line parameters are parsed and
+will be changed in the future.
+
+Available settings per section:
+
+=head2 Global section
+
+=over 4
+
+=item B<font> (default: "Monospace 8")
+
+Defines the font or font set used. Optionally set the size as a decimal number
+after the font name and space.
+Multiple font options can be separated with commas.
+
+This options is parsed as a Pango font description.
+
+=item B<geometry> (format: [{width}][x{height}][+/-{x}[+/-{y}]], default: "0x0+0-0")
+
+The geometry of the window the notifications will be displayed in.
+
+=over 4
+
+=item B<width>
+
+The width of the notification window in pixels. A negative value sets the width
+to the screen width B<minus the absolute value of the width>. If the width is
+omitted then the window expands to cover the whole screen. If it's 0 the window
+expands to the width of the longest message being displayed.
+
+=item B<height>
+
+The number of notifications that can appear at one time. When this
+limit is reached any additional notifications will be queued and displayed when
+the currently displayed ones either time out or are manually dismissed. If
+B<indicate_hidden> is true, then the specified limit is reduced by 1 and the
+last notification is a message informing how many hidden notifications are
+waiting to be displayed. See the B<indicate_hidden> entry for more information.
+
+The physical(pixel) height of the notifications vary depending on the number of
+lines that need to be displayed.
+
+See B<notification_height> for changing the physical height.
+
+=item B<x/y>
+
+Respectively the horizontal and vertical offset in pixels from the corner
+of the screen that the notification should be drawn at. For the horizontal(x)
+offset, a positive value is measured from the left of the screen while a
+negative one from the right. For the vertical(y) offset, a positive value is
+measured from the top while a negative from the bottom.
+
+It's important to note that the positive and negative sign B<DOES> affect the
+position even if the offset is 0. For example, a horizontal offset of +0 puts
+the notification on the left border of the screen while a horizontal offset of
+-0 at the right border. The same goes for the vertical offset.
+
+=back
+
+=item B<notification_height> (default: 0)
+
+The minimum height of the notification window in pixels. If the text and
+padding cannot fit in within the height specified by this value, the height
+will be increased as needed.
+
+=item B<line_height> (default: 0)
+
+The amount of extra spacing between text lines in pixels. Set to 0 to
+disable.
+
+=item B<separator_height> (default: 2)
+
+The height in pixels of the separator between notifications, if set to 0 there
+will be no separating line between notifications.
+
+=item B<format> (default: "%s %b")
+
+Specifies how the various attributes of the notification should be formatted on
+the notification window.
+
+Regardless of the status of the B<markup> setting, any markup tags that are
+present in the format will be parsed. Note that because of that, if a literal
+ampersand (&) is needed it needs to be escaped as '&amp;'
+
+If '\n' is present anywhere in the format, it will be replaced with
+a literal newline.
+
+If any of the following strings are present, they will be replaced with the
+equivalent notification attribute.
 
 =over 4
 
@@ -242,13 +169,420 @@ The placeholders will be replaced with the corresponding text, or if the text is
 
 =back
 
+If any of these exists in the format but hasn't been specified in the
+notification (e.g. no icon has been set), the placeholders will simply be
+removed from the format.
+
+=item B<follow> (values: [none/mouse/keyboard] default: none)
+
+Defines where the notifications should be placed in a multi-monitor setup. All
+values except I<none> override the B<monitor> setting.
+
+=over 4
+
+=item B<none>
+
+The notifications will be placed on the monitor specified by the B<monitor>
+setting.
+
+=item B<mouse>
+
+The notifications will be placed on the monitor that the mouse is currently in.
+
+=item B<keyboard>
+
+The notifications will be placed on the monitor that contains the window with
+keyboard focus.
+
+=back
+
+=item B<monitor> (default: 0)
+
+Specifies on which monitor the notifications should be displayed in, count
+starts at 0. See the B<follow> setting.
+
+=item B<history_length> (default: 20)
+
+Maximum number of notifications that will be kept in history. After that limit
+is reached, older notifications will be deleted once a new one arrives. See
+HISTORY.
+
+=item B<alignment> (values: [left/center/right], default: left)
+
+Defines how the notification text should be aligned.
+
+=item B<icon_position> (values: [left/right/off], default: off)
+
+Defines the position of the icon in the notification window. Setting it to off
+disables icons.
+
+=item B<max_icon_size> (default: 32)
+
+Defines the maximum size in pixels for the icons.
+If the icon is smaller than the specified value it won't be affected.
+If it's larger then it will be scaled down so that the larger axis is equivalent
+to the specified size.
+
+If B<icon_position> is set to off, this setting is ignored.
+
+=item B<icon_folders> (default: "/usr/share/icons/gnome/16x16/status/:/usr/share/icons/gnome/16x16/devices/")
+
+Can be set to a colon-separated list of paths to search for icons to use with
+notifications.
+
+Dunst doesn't currently do any type of icon lookup outside of these
+directories.
+
+=item B<padding> (default: 0)
+
+The distance in pixels from the content to the separator/border of the window
+in the vertical axis
+
+=item B<horizontal_padding> (default: 0)
+
+The distance in pixels from the content to the separator/border of the window
+in the horizontal axis
+
+=item B<transparency> (default: 0)
+
+A 0-100 range on how transparent the notification window should be, with 0
+being fully opaque and 100 invisible.
+
+This setting will only work if a compositor is running.
+
+=item B<separator_color> (values: [auto/foreground/frame/#RRGGBB] default: auto)
+
+Sets the color of the separator line between two notifications.
+
+=over 4
+
+=item B<auto>
+
+Dunst tries to find a color that fits the rest of the notification color
+scheme automatically.
+
+=item B<foreground>
+
+The color will be set to the same as the foreground color of the topmost
+notification that's being separated.
+
+=item B<frame>
+
+The color will be set to the frame color of the notification with the highest
+urgency between the 2 notifications that are being separated.
+
+=item B<anything else>
+
+Any other value is interpreted as a color, see COLORS
+
+=back
+
+=item B<frame_width> (default: 0)
+
+Defines width in pixels of frame around the notification window. Set to 0 to
+disable.
+
+=item B<frame_color color> (default: #888888)
+
+Defines color of the frame around the notification window. See COLORS.
+
+=item B<idle_threshold> (default: 0)
+
+Don't timeout notifications if user is idle longer than this value (in seconds).
+
+Set to 0 to disable.
+
+=item B<show_age_threshold> (default: -1)
+
+Show age of message if message is older than this value (in seconds).
+
+Set to -1 to disable.
+
+=item B<markup> (values: [full/strip/no], default: no)
+
+Defines how markup in notifications is handled.
+
+It's important to note that markup in the format option will be parsed
+regardless of what this is set to.
+
+Possible values:
+
+=over 4
+
+=item B<full>
+
+Allow a small subset of html markup in notifications
+
+    <b>bold</b>
+    <i>italic</i>
+    <s>strikethrough</s>
+    <u>underline</u>
+
+For a complete reference see
+<http://developer.gnome.org/pango/stable/PangoMarkupFormat.html>
+
+=item B<strip>
+
+This setting is provided for compatibility with some broken
+clients that send markup even though it's not enabled on the
+server.
+
+Dunst will try to strip the markup but the parsing is simplistic so using this
+option outside of matching rules for specific applications B<IS GREATLY
+DISCOURAGED>.
+
+See RULES
+
+=item B<no>
+
+Disable markup parsing, incoming notifications will be treated as
+plain text. Dunst will not advertise that it can parse markup if this is set as
+a global setting.
+
+=back
+
+=item B<indicate_hidden> (values: [true/false], default: true)
+
+If this is set to true, a notification indicating how many notifications are
+not being displayed due to the notification limit (see B<geometry>) will be
+shown B<in place of the last notification slot>.
+
+Meaning that if this is enabled the number of visible notifications will be 1
+less than what is specified in geometry, the last slot will be taken by the
+hidden count.
+
+=item B<word_wrap> (values: [true/false], default: false)
+
+Specifies how very long lines should be handled
+
+If it's set to false, long lines will be truncated an ellipsised.
+
+If it's set to true, long lines will be broken into multiple lines expanding
+the notification window height as necessary for them to fit.
+
+=item B<ignore_newline> (values: [true/false], default: false)
+
+If set to true, replace newline characters in notifications with whitespace.
+
+=item B<stack_duplicates> (values: [true/false], default: true)
+
+If set to true, duplicate notifications will be stacked together instead of
+being displayed separately.
+
+Two notifications are considered duplicate if the name of the program that sent
+it, summary, body, icon and urgency are all identical.
+
+=item B<hide_duplicates_count> (values: [true/false], default: false)
+
+Hide the count of stacked duplicate notifications.
+
+=item B<sticky_history> (values: [true/false], default: true)
+
+If set to true, notifications that have been recalled from history will not
+time out automatically.
+
+=item B<show_indicators> (values: [true/false], default: true)
+
+Show an indicator if a notification contains actions and/or open-able URLs. See
+ACTIONS below for further details.
+
+=item B<sort> (values: [true/false], default: true)
+
+If set to true, display notifications with higher urgency above the others.
+
+=item B<shrink> (values: [true/false], default: false)
+
+Shrink window if it's smaller than the width. Will be ignored if width is 0.
+
+This is used mainly in order to have the shrinking benefit of dynamic width (see
+geometry) while also having an upper bound on how long a notification can get
+before wrapping.
+
+=item B<always_run_script> (values: [true/false] default: true]
+
+Always run rule-defined scripts, even if the notification is suppressed with
+format = "". See SCRIPTING.
+
+=item B<title> (default: "Dunst")
+
+Defines the title of notification windows spawned by dunst. (_NET_WM_NAME
+property). There should be no need to modify this setting for regular use.
+
+=item B<class> (default: "Dunst")
+
+Defines the class of notification windows spawned by dunst. (First part of
+WM_CLASS). There should be no need to modify this setting for regular use.
+
+=back
+
+=head2 Shortcut section
+
+Keyboard shortcuts are defined in the following format: "Modifier+key" where the
+modifier is one of ctrl,mod1,mod2,mod3,mod4 and key is any keyboard key.
+
+=over 4
+
+=item B<close>
+
+B<command line flag>: -key <key>
+
+Specifies the keyboard shortcut for closing a notification.
+
+=item B<close_all>
+
+B<command line flag>: -all_key <key>
+
+Specifies the keyboard shortcut for closing all currently displayed notifications.
+
+=item B<history>
+
+B<command line flag>: -history_key <key>
+
+Specifies the keyboard shortcut for recalling a single notification from history.
+
+=item B<context>
+
+B<command line flag>: -context_key <key>
+
+Specifies the keyboard shortcut that opens the context menu.
+
+=back
+
+=head2 Urgency sections
+
+The urgency sections work in a similar way to rules and can be used to specify
+attributes for the different urgency levels of notifications (low, normal,
+critical). Currently only the background, foreground, timeout, frame_color and
+icon attributes can be modified.
+
+The urgency sections are urgency_low, urgency_normal, urgency_critical for low,
+normal and critical urgency respectively.
+
+See the example configuration file for examples.
+
+Additionally, you can override these settings via the following command line
+flags:
+
+Please note these flags may be removed in the future. See issue #328 in the bug
+tracker for discussions (See REPORTING BUGS).
+
+=over 4
+
+=item B<-li/ni/ci icon>
+
+Defines the icon for low, normal and critical notifications respectively.
+
+Where I<icon> is a path to an image file containing the icon.
+
+=item B<-lf/nf/cf color>
+
+Defines the foreground color for low, normal and critical notifications respectively.
+
+See COLORS for the value format.
+
+=item B<-lb/nb/cb color>
+
+Defines the background color for low, normal and critical notifications respectively.
+
+See COLORS for the value format.
+
+=item B<-lfr/nfr/cfr color>
+
+Defines the frame color for low, normal and critical notifications respectively.
+
+See COLORS for more information
+
+=item B<-lto/nto/cto secs>
+
+Defines the timeout time(in seconds) for low, normal and critical notifications
+respectively.
+
+=back
+
+=head1 HISTORY
+
+Dunst saves a number of notifications (specified by B<history_length>) in memory.
+These notifications can be recalled (i.e. redesiplayed) by pressing the
+B<history_key> (see the shortcuts section), whether these notifications will
+time out like if they have been just send depends on the value of the
+B<sticky_history> setting.
+
+Past notifications are redisplayed in a first-in-last-out order, meaning that
+pressing the history key once will bring up the most recent notification that
+had been closed/timed out.
+
+=head1 RULES
+
+Rules allow the conditional modification of notifications. They are defined by
+creating a section in the configuration file that has any name that is not
+already used internally (i.e. any name other than 'global', 'experimental',
+'frame', 'shortcuts', 'urgency_low', 'urgency_normal' and 'urgency_critical').
+
+There are 2 parts in configuring a rule: Defining the filters that control when
+a rule should apply and then the actions that should be taken when the rule is
+matched.
+
+=over 4
+
+=item B<filtering>
+
+Notifications can be matched for any of the following attributes: appname,
+summary, body, icon, category and msg_urgency where each is the respective
+notification attribute to be matched and 'msg_urgency' is the urgency of the
+notification, it is named so to not conflict with trying to modify the urgency.
+
+To define a matching rule simply assign the specified value to the value that
+should be matched, for example:
+
+    appname="notify-send"
+
+Matches only messages that were send via notify-send. If multiple filter
+expressions are present, all of them have to match for the rule to be applied
+(logical AND).
+
+Shell-like globing is supported.
+
+=item B<modifying>
+
+The following attributes can be overridden: timeout, urgency, foreground,
+background, new_icon, format where, as with the filtering attributes, each one
+corresponds to the respective notification attribute to be modified.
+
+As with filtering, to make a rule modify an attribute simply assign it in the
+rule definition.
+
+If the format is set to an empty string, the notification will not be
+suppressed.
+
+=back
+
+=head2 SCRIPTING
+
+Within rules you can specify a script to be run every time the rule is matched
+by assigning the 'script' option to the name of the script to be run. (If the
+value is not an absolute path, the directories in the PATH variable will be
+searched for an executable of the same name).
+
+When the script is called details of the notification that triggered it will be
+passed via command line parameters in the following order: appname, summary,
+body, icon, urgency.
+
+Where icon is the absolute path to the icon file if there is one and urgency is
+one of "LOW", "NORMAL" or "CRITICAL".
+
+If the notification is suppressed, the script will not be run unless
+B<always_run_scripts> is set to true.
+
 =head1 COLORS
 
-Every option that needs a color as argument accepts #RGB, #RRGGBB and
-X color names.
+Colors are interpreted as X11 color values. This includes both verbatim
+color names such as "Yellow", "Blue", "White", etc as well as #RGB and #RRGGBB
+values.
 
+B<NOTE>: '#' is interpreted as a comment, to use it the entire value needs to
+be in quotes like so: separator_color="#123456"
 
-=head1 NOTIFY-SEND
+=head2 NOTIFY-SEND
 
 dunst is able to get different colors for a message via notify-send.
 In order to do that you have to add a hint via the -h option.
@@ -282,8 +616,10 @@ replacement present.
 
 =head1 MISCELLANEOUS
 
-Dunst can be paused by sending a notification with a summary of "DUNST_COMMAND_PAUSE"
-and resumed with a summary of "DUNST_COMMAND_RESUME". Alternatively you can send SIGUSR1 and SIGUSR2 to pause and unpause respectively. For Example:
+Dunst can be paused by sending a notification with a summary of
+"DUNST_COMMAND_PAUSE" and resumed with a summary of "DUNST_COMMAND_RESUME".
+Alternatively you can send SIGUSR1 and SIGUSR2 to pause and unpause
+respectively. For Example:
 
 =over 4
 
@@ -293,23 +629,30 @@ and resumed with a summary of "DUNST_COMMAND_RESUME". Alternatively you can send
 
 =back
 
-When paused dunst will not display any notifications but keep all notifications in a queue.
-This can for example be wrapped around a screen locker (i3lock, slock) to prevent flickering
-of notifications through the lock and to read all missed notifications after returning to the computer.
+When paused dunst will not display any notifications but keep all notifications
+in a queue.  This can for example be wrapped around a screen locker (i3lock,
+slock) to prevent flickering of notifications through the lock and to read all
+missed notifications after returning to the computer.
 
-=head1 CONFIGURATION
+=head1 FILES
 
-An example configuration file is included (usually /usr/share/dunst/dunstrc).
-To change the configuration, copy this file to ~/.config/dunst/dunstrc and edit
-it accordingly.
+$XDG_CONFIG_HOME/dunst/dunstrc
 
-=head1 AUTHOR
+-or-
 
-written by Sascha Kruse <knopwob@googlemail.com>
+$HOME/.config/dunst/dunstrc
+
+=head1 AUTHORS
+
+Written by Sascha Kruse <knopwob@googlemail.com>
+
+=head1 REPORTING BUGS
+
+Bugs and suggestions should be reported on GitHub at https://github.com/dunst-project/dunst/issues
 
 =head1 COPYRIGHT
 
-copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information)
+Copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information)
 
 If you feel that copyrights are violated, please send me an email.
 
