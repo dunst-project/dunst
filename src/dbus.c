@@ -110,6 +110,7 @@ static void on_get_capabilities(GDBusConnection * connection,
         builder = g_variant_builder_new(G_VARIANT_TYPE("as"));
         g_variant_builder_add(builder, "s", "actions");
         g_variant_builder_add(builder, "s", "body");
+        g_variant_builder_add(builder, "s", "body-hyperlinks");
 
         if(settings.markup != MARKUP_NO)
                 g_variant_builder_add(builder, "s", "body-markup");
