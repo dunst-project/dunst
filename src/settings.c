@@ -544,6 +544,8 @@ void load_settings(char *cmdline_config_path)
                 if (!cur_section)
                         break;
                 if (strcmp(cur_section, "global") == 0
+                    || strcmp(cur_section, "frame") == 0
+                    || strcmp(cur_section, "experimental") == 0
                     || strcmp(cur_section, "shortcuts") == 0
                     || strcmp(cur_section, "urgency_low") == 0
                     || strcmp(cur_section, "urgency_normal") == 0
