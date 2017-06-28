@@ -73,6 +73,7 @@ char *notification_replace_format(const char *needle, const char *replacement, c
 void notification_update_text_to_render(notification *n);
 int notification_get_ttl(notification *n);
 int notification_get_age(notification *n);
+void notification_do_action(notification *n);
 
 #endif
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

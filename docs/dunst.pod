@@ -614,6 +614,11 @@ The "context" keybinding is used to interact with these actions, by showing a
 menu of possible actions. This feature requires "dmenu" or a dmenu drop-in
 replacement present.
 
+Alternatively, you can invoke an action with a middle click on the notification.
+If there is exactly one associated action, or one is marked as default, that one
+is invoked. If there are multiple, the context menu is shown. The same applies
+to URLs when there are no actions.
+
 =head1 MISCELLANEOUS
 
 Dunst can be paused by sending a notification with a summary of

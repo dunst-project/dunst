@@ -896,7 +896,7 @@ static void x_handle_click(XEvent ev)
                 return;
         }
 
-        if (ev.xbutton.button == Button1) {
+        if (ev.xbutton.button == Button1 || ev.xbutton.button == Button2) {
                 int y = settings.separator_height;
                 notification *n = NULL;
                 int first = true;
@@ -910,8 +910,13 @@ static void x_handle_click(XEvent ev)
                         if (first)
                                 y += settings.frame_width;
                 }
-                if (n)
-                        notification_close(n, 2);
+
+                if (n) {
+                        if (ev.xbutton.button == Button1)
+                                notification_close(n, 2);
+                        else
+                                notification_do_action(n);
+                }
         }
 }
 
