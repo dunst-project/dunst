@@ -820,7 +820,7 @@ gboolean x_mainloop_fd_dispatch(GSource * source, GSourceFunc callback,
                 case SelectionNotify:
                         if (ev.xselection.property == xctx.utf8)
                                 break;
-                case ButtonPress:
+                case ButtonRelease:
                         if (ev.xbutton.window == xctx.win) {
                                 x_handle_click(ev);
                         }
@@ -1060,7 +1060,7 @@ static void x_win_setup(void)
         wa.background_pixmap = ParentRelative;
         wa.event_mask =
             ExposureMask | KeyPressMask | VisibilityChangeMask |
-            ButtonPressMask | FocusChangeMask| StructureNotifyMask;
+            ButtonReleaseMask | FocusChangeMask| StructureNotifyMask;
 
         screen_info *scr = get_active_screen();
         xctx.win =
