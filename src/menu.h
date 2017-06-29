@@ -3,7 +3,7 @@
 #define DUNST_MENU_H
 
 char *extract_urls(const char *to_match);
-void open_browser(const char *url);
+void open_browser(const char *in);
 void invoke_action(const char *action);
 void regex_teardown(void);
 
