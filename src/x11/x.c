@@ -820,7 +820,7 @@ gboolean x_mainloop_fd_dispatch(GSource * source, GSourceFunc callback,
                 case SelectionNotify:
                         if (ev.xselection.property == xctx.utf8)
                                 break;
-                case ButtonPress:
+                case ButtonRelease:
                         if (ev.xbutton.window == xctx.win) {
                                 x_handle_click(ev);
                         }
@@ -896,7 +896,7 @@ static void x_handle_click(XEvent ev)
                 return;
         }
 
-        if (ev.xbutton.button == Button1) {
+        if (ev.xbutton.button == Button1 || ev.xbutton.button == Button2) {
                 int y = settings.separator_height;
                 notification *n = NULL;
                 int first = true;
@@ -910,8 +910,13 @@ static void x_handle_click(XEvent ev)
                         if (first)
                                 y += settings.frame_width;
                 }
-                if (n)
-                        notification_close(n, 2);
+
+                if (n) {
+                        if (ev.xbutton.button == Button1)
+                                notification_close(n, 2);
+                        else
+                                notification_do_action(n);
+                }
         }
 }
 
@@ -1055,7 +1060,7 @@ static void x_win_setup(void)
         wa.background_pixmap = ParentRelative;
         wa.event_mask =
             ExposureMask | KeyPressMask | VisibilityChangeMask |
-            ButtonPressMask | FocusChangeMask| StructureNotifyMask;
+            ButtonReleaseMask | FocusChangeMask| StructureNotifyMask;
 
         screen_info *scr = get_active_screen();
         xctx.win =

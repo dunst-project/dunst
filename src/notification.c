@@ -588,4 +588,32 @@ int notification_get_ttl(notification *n) {
 int notification_get_age(notification *n) {
         return time(NULL) - n->timestamp;
 }
+
+/*
+ * If the notification has exactly one action, or one is marked as default,
+ * invoke it. If there are multiple and no default, open the context menu. If
+ * there are no actions, proceed similarly with urls.
+ */
+void notification_do_action(notification *n) {
+        if (n->actions) {
+                if (n->actions->count == 2) {
+                        action_invoked(n, n->actions->actions[0]);
+                        return;
+                }
+                for (int i = 0; i < n->actions->count; i += 2) {
+                        if (strcmp(n->actions->actions[i], "default") == 0) {
+                                action_invoked(n, n->actions->actions[i]);
+                                return;
+                        }
+                }
+                context_menu();
+
+        } else if (n->urls) {
+                if (strstr(n->urls, "\n") == NULL)
+                        open_browser(n->urls);
+                else
+                        context_menu();
+        }
+}
+
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

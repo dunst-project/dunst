@@ -94,11 +94,16 @@ char *extract_urls(const char *to_match)
  * Open url in browser.
  *
  */
-void open_browser(const char *url)
-{
+void open_browser(const char *in) {
+        // remove prefix and test url
+        char *url = extract_urls(in);
+        if (!url)
+                return;
+
         int browser_pid1 = fork();
 
         if (browser_pid1) {
+                g_free(url);
                 int status;
                 waitpid(browser_pid1, &status, 0);
         } else {
@@ -164,23 +169,10 @@ void dispatch_menu_result(const char *input)
 {
         char *in = g_strdup(input);
         g_strstrip(in);
-        switch (in[0]) {
-            case '#':
+        if (in[0] == '#') {
                 invoke_action(in + 1);
-                break;
-            case '[': // named url. skip name and continue
-                in = strchr(in, ']');
-                if (in == NULL)
-                    break;
-            default:
-                {   // test and open url
-                    char *maybe_url = extract_urls(in);
-                    if (maybe_url) {
-                            open_browser(maybe_url);
-                            g_free(maybe_url);
-                            break;
-                    }
-                }
+        } else {
+                open_browser(in);
         }
         g_free(in);
 }
