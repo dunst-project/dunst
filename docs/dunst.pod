@@ -72,13 +72,33 @@ Available settings per section:
 
 =over 4
 
-=item B<font> (default: "Monospace 8")
+=item B<monitor> (default: 0)
 
-Defines the font or font set used. Optionally set the size as a decimal number
-after the font name and space.
-Multiple font options can be separated with commas.
+Specifies on which monitor the notifications should be displayed in, count
+starts at 0. See the B<follow> setting.
 
-This options is parsed as a Pango font description.
+=item B<follow> (values: [none/mouse/keyboard] default: none)
+
+Defines where the notifications should be placed in a multi-monitor setup. All
+values except I<none> override the B<monitor> setting.
+
+=over 4
+
+=item B<none>
+
+The notifications will be placed on the monitor specified by the B<monitor>
+setting.
+
+=item B<mouse>
+
+The notifications will be placed on the monitor that the mouse is currently in.
+
+=item B<keyboard>
+
+The notifications will be placed on the monitor that contains the window with
+keyboard focus.
+
+=back
 
 =item B<geometry> (format: [{width}][x{height}][+/-{x}[+/-{y}]], default: "0x0+0-0")
 
@@ -122,116 +142,41 @@ the notification on the left border of the screen while a horizontal offset of
 
 =back
 
+=item B<indicate_hidden> (values: [true/false], default: true)
+
+If this is set to true, a notification indicating how many notifications are
+not being displayed due to the notification limit (see B<geometry>) will be
+shown B<in place of the last notification slot>.
+
+Meaning that if this is enabled the number of visible notifications will be 1
+less than what is specified in geometry, the last slot will be taken by the
+hidden count.
+
+=item B<shrink> (values: [true/false], default: false)
+
+Shrink window if it's smaller than the width. Will be ignored if width is 0.
+
+This is used mainly in order to have the shrinking benefit of dynamic width (see
+geometry) while also having an upper bound on how long a notification can get
+before wrapping.
+
+=item B<transparency> (default: 0)
+
+A 0-100 range on how transparent the notification window should be, with 0
+being fully opaque and 100 invisible.
+
+This setting will only work if a compositor is running.
+
 =item B<notification_height> (default: 0)
 
 The minimum height of the notification window in pixels. If the text and
 padding cannot fit in within the height specified by this value, the height
 will be increased as needed.
 
-=item B<line_height> (default: 0)
-
-The amount of extra spacing between text lines in pixels. Set to 0 to
-disable.
-
 =item B<separator_height> (default: 2)
 
 The height in pixels of the separator between notifications, if set to 0 there
 will be no separating line between notifications.
-
-=item B<format> (default: "%s %b")
-
-Specifies how the various attributes of the notification should be formatted on
-the notification window.
-
-Regardless of the status of the B<markup> setting, any markup tags that are
-present in the format will be parsed. Note that because of that, if a literal
-ampersand (&) is needed it needs to be escaped as '&amp;'
-
-If '\n' is present anywhere in the format, it will be replaced with
-a literal newline.
-
-If any of the following strings are present, they will be replaced with the
-equivalent notification attribute.
-
-=over 4
-
-=item B<%a>  appname
-
-=item B<%s>  summary
-
-=item B<%b>  body
-
-=item B<%i>  iconname (including its path)
-
-=item B<%I>  iconname (without its path)
-
-=item B<%p>  progress value ([  0%] to [100%])
-
-=back
-
-If any of these exists in the format but hasn't been specified in the
-notification (e.g. no icon has been set), the placeholders will simply be
-removed from the format.
-
-=item B<follow> (values: [none/mouse/keyboard] default: none)
-
-Defines where the notifications should be placed in a multi-monitor setup. All
-values except I<none> override the B<monitor> setting.
-
-=over 4
-
-=item B<none>
-
-The notifications will be placed on the monitor specified by the B<monitor>
-setting.
-
-=item B<mouse>
-
-The notifications will be placed on the monitor that the mouse is currently in.
-
-=item B<keyboard>
-
-The notifications will be placed on the monitor that contains the window with
-keyboard focus.
-
-=back
-
-=item B<monitor> (default: 0)
-
-Specifies on which monitor the notifications should be displayed in, count
-starts at 0. See the B<follow> setting.
-
-=item B<history_length> (default: 20)
-
-Maximum number of notifications that will be kept in history. After that limit
-is reached, older notifications will be deleted once a new one arrives. See
-HISTORY.
-
-=item B<alignment> (values: [left/center/right], default: left)
-
-Defines how the notification text should be aligned.
-
-=item B<icon_position> (values: [left/right/off], default: off)
-
-Defines the position of the icon in the notification window. Setting it to off
-disables icons.
-
-=item B<max_icon_size> (default: 32)
-
-Defines the maximum size in pixels for the icons.
-If the icon is smaller than the specified value it won't be affected.
-If it's larger then it will be scaled down so that the larger axis is equivalent
-to the specified size.
-
-If B<icon_position> is set to off, this setting is ignored.
-
-=item B<icon_folders> (default: "/usr/share/icons/gnome/16x16/status/:/usr/share/icons/gnome/16x16/devices/")
-
-Can be set to a colon-separated list of paths to search for icons to use with
-notifications.
-
-Dunst doesn't currently do any type of icon lookup outside of these
-directories.
 
 =item B<padding> (default: 0)
 
@@ -240,15 +185,17 @@ in the vertical axis
 
 =item B<horizontal_padding> (default: 0)
 
-The distance in pixels from the content to the separator/border of the window
+The distance in pixels from the content to the border of the window
 in the horizontal axis
 
-=item B<transparency> (default: 0)
+=item B<frame_width> (default: 0)
 
-A 0-100 range on how transparent the notification window should be, with 0
-being fully opaque and 100 invisible.
+Defines width in pixels of frame around the notification window. Set to 0 to
+disable.
 
-This setting will only work if a compositor is running.
+=item B<frame_color color> (default: #888888)
+
+Defines color of the frame around the notification window. See COLORS.
 
 =item B<separator_color> (values: [auto/foreground/frame/#RRGGBB] default: auto)
 
@@ -277,14 +224,9 @@ Any other value is interpreted as a color, see COLORS
 
 =back
 
-=item B<frame_width> (default: 0)
+=item B<sort> (values: [true/false], default: true)
 
-Defines width in pixels of frame around the notification window. Set to 0 to
-disable.
-
-=item B<frame_color color> (default: #888888)
-
-Defines color of the frame around the notification window. See COLORS.
+If set to true, display notifications with higher urgency above the others.
 
 =item B<idle_threshold> (default: 0)
 
@@ -292,11 +234,18 @@ Don't timeout notifications if user is idle longer than this value (in seconds).
 
 Set to 0 to disable.
 
-=item B<show_age_threshold> (default: -1)
+=item B<font> (default: "Monospace 8")
 
-Show age of message if message is older than this value (in seconds).
+Defines the font or font set used. Optionally set the size as a decimal number
+after the font name and space.
+Multiple font options can be separated with commas.
 
-Set to -1 to disable.
+This options is parsed as a Pango font description.
+
+=item B<line_height> (default: 0)
+
+The amount of extra spacing between text lines in pixels. Set to 0 to
+disable.
 
 =item B<markup> (values: [full/strip/no], default: no)
 
@@ -341,15 +290,50 @@ a global setting.
 
 =back
 
-=item B<indicate_hidden> (values: [true/false], default: true)
+=item B<format> (default: "%s %b")
 
-If this is set to true, a notification indicating how many notifications are
-not being displayed due to the notification limit (see B<geometry>) will be
-shown B<in place of the last notification slot>.
+Specifies how the various attributes of the notification should be formatted on
+the notification window.
 
-Meaning that if this is enabled the number of visible notifications will be 1
-less than what is specified in geometry, the last slot will be taken by the
-hidden count.
+Regardless of the status of the B<markup> setting, any markup tags that are
+present in the format will be parsed. Note that because of that, if a literal
+ampersand (&) is needed it needs to be escaped as '&amp;'
+
+If '\n' is present anywhere in the format, it will be replaced with
+a literal newline.
+
+If any of the following strings are present, they will be replaced with the
+equivalent notification attribute.
+
+=over 4
+
+=item B<%a>  appname
+
+=item B<%s>  summary
+
+=item B<%b>  body
+
+=item B<%i>  iconname (including its path)
+
+=item B<%I>  iconname (without its path)
+
+=item B<%p>  progress value ([  0%] to [100%])
+
+=back
+
+If any of these exists in the format but hasn't been specified in the
+notification (e.g. no icon has been set), the placeholders will simply be
+removed from the format.
+
+=item B<alignment> (values: [left/center/right], default: left)
+
+Defines how the text should be aligned within the notification.
+
+=item B<show_age_threshold> (default: -1)
+
+Show age of message if message is older than this value (in seconds).
+
+Set to -1 to disable.
 
 =item B<word_wrap> (values: [true/false], default: false)
 
@@ -376,27 +360,53 @@ it, summary, body, icon and urgency are all identical.
 
 Hide the count of stacked duplicate notifications.
 
-=item B<sticky_history> (values: [true/false], default: true)
-
-If set to true, notifications that have been recalled from history will not
-time out automatically.
-
 =item B<show_indicators> (values: [true/false], default: true)
 
 Show an indicator if a notification contains actions and/or open-able URLs. See
 ACTIONS below for further details.
 
-=item B<sort> (values: [true/false], default: true)
+=item B<icon_position> (values: [left/right/off], default: off)
 
-If set to true, display notifications with higher urgency above the others.
+Defines the position of the icon in the notification window. Setting it to off
+disables icons.
 
-=item B<shrink> (values: [true/false], default: false)
+=item B<max_icon_size> (default: 32)
 
-Shrink window if it's smaller than the width. Will be ignored if width is 0.
+Defines the maximum size in pixels for the icons.
+If the icon is smaller than the specified value it won't be affected.
+If it's larger then it will be scaled down so that the larger axis is equivalent
+to the specified size.
 
-This is used mainly in order to have the shrinking benefit of dynamic width (see
-geometry) while also having an upper bound on how long a notification can get
-before wrapping.
+If B<icon_position> is set to off, this setting is ignored.
+
+=item B<icon_folders> (default: "/usr/share/icons/gnome/16x16/status/:/usr/share/icons/gnome/16x16/devices/")
+
+Can be set to a colon-separated list of paths to search for icons to use with
+notifications.
+
+Dunst doesn't currently do any type of icon lookup outside of these
+directories.
+
+=item B<sticky_history> (values: [true/false], default: true)
+
+If set to true, notifications that have been recalled from history will not
+time out automatically.
+
+=item B<history_length> (default: 20)
+
+Maximum number of notifications that will be kept in history. After that limit
+is reached, older notifications will be deleted once a new one arrives. See
+HISTORY.
+
+=item B<dmenu> (default: "/usr/bin/dmenu")
+
+The command that will be run when opening the context menu. Should be either
+a dmenu command or a dmenu-compatible menu.
+
+=item B<browser> (default: "/usr/bin/firefox")
+
+The command that will be run when opening a URL. The URL to be opened will be
+appended to the end of the value of this setting.
 
 =item B<always_run_script> (values: [true/false] default: true]
 
@@ -412,6 +422,11 @@ property). There should be no need to modify this setting for regular use.
 
 Defines the class of notification windows spawned by dunst. (First part of
 WM_CLASS). There should be no need to modify this setting for regular use.
+
+=item B<startup_notification> (values: [true/false], default: false)
+
+Display a notification on startup. This is usually used for debugging and there
+shouldn't be any need to use this option.
 
 =back
 
