@@ -16,6 +16,7 @@
 ### Changed
 - Text and icons are now centred vertically
 - Notifications aren't considered duplicate if urgency or icons differ
+- The frame width and color settings were moved to the global section as frame\_width and frame\_color respectively.
 
 ### Deprecated
 - `allow_markup` will be removed in later versions. It is being replaced by `markup`

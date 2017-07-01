@@ -181,16 +181,19 @@
     # Always run rule-defined scripts, even if the notification is suppressed
     always_run_script = true
 
+    # Defines color of the frame around the notification window.
+    frame_color = "#aaaaaa"
+
+    # Defines width in pixels of frame around the notification window.
+    # Set to 0 to disable.
+    frame_width = 3
+
 # Experimental features that may or may not work correctly. Do not expect them
 # to have a consistent behaviour across releases.
 [experimental]
     # Calculate the dpi to use on a per-monitor basis.
     # Please note that this setting will not work if Xft.dpi X resource is set.
     per_monitor_dpi = false
-
-[frame]
-    width = 3
-    color = "#aaaaaa"
 
 [shortcuts]
 

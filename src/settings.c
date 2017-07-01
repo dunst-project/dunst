@@ -396,18 +396,38 @@ void load_settings(char *cmdline_config_path)
                 "paths to default icons"
         );
 
-        settings.frame_width = option_get_int(
-                "frame",
-                "width", "-frame_width", frame_width,
-                "Width of frame around window"
-        );
+        {
+                // Backwards compatibility with the legacy 'frame' section.
 
-        settings.frame_color = option_get_string(
-                "frame",
-                "color", "-frame_color", frame_color,
-                "Color of the frame around window"
-        );
+                if (ini_is_set("global", "frame_width")) {
+                        settings.frame_width = option_get_int(
+                                "global",
+                                "frame_width", "-frame_width", frame_width,
+                                "Width of frame around the window"
+                        );
+                } else {
+                        settings.frame_width = option_get_int(
+                                "frame",
+                                "width", "-frame_width", frame_width,
+                                "Width of frame around the window"
+                        );
+                }
 
+                if (ini_is_set("global", "frame_color")) {
+                        settings.frame_color = option_get_string(
+                                "global",
+                                "frame_color", "-frame_color", frame_color,
+                                "Color of the frame around the window"
+                        );
+                } else {
+                        settings.frame_color = option_get_string(
+                                "frame",
+                                "color", "-frame_color", frame_color,
+                                "Color of the frame around the window"
+                        );
+                }
+
+        }
         settings.lowbgcolor = option_get_string(
                 "urgency_low",
                 "background", "-lb", lowbgcolor,
