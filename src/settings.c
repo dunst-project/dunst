@@ -225,12 +225,6 @@ void load_settings(char *cmdline_config_path)
                 "Define height of the window"
         );
 
-        settings.bounce_freq = option_get_double(
-                "global",
-                "bounce_freq", "-bounce_freq", bounce_freq,
-                "Make long text bounce from side to side"
-        );
-
         {
                 char *c = option_get_string(
                         "global",

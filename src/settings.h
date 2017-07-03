@@ -41,7 +41,6 @@ typedef struct _settings {
         int idle_threshold;
         int show_age_threshold;
         enum alignment align;
-        float bounce_freq;
         int sticky_history;
         int history_length;
         int show_indicators;

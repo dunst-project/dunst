@@ -23,7 +23,6 @@ int indicate_hidden = true;     /* show count of hidden messages */
 int idle_threshold = 0;         /* don't timeout notifications when idle for x seconds */
 int show_age_threshold = -1;    /* show age of notification, when notification is older than x seconds */
 enum alignment align = left;    /* text alignment [left/center/right] */
-float bounce_freq = 1;          /* determines the bounce frequency (if activated) */
 int sticky_history = true;
 int history_length = 20;          /* max amount of notifications kept in history */
 int show_indicators = true;

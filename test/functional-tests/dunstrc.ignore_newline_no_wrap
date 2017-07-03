@@ -5,7 +5,6 @@
     sort = yes
     indicate_hidden = yes
     alignment = left
-    bounce_freq = 0
     show_age_threshold = 60
     word_wrap = no
     ignore_newline = yes

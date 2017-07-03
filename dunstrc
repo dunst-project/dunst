@@ -82,12 +82,6 @@
     # Set to 0 to disable.
     idle_threshold = 120
 
-    # The frequency with which text that is longer than the notification
-    # window allows bounces back and forth.
-    # This option conflicts with "word_wrap".
-    # Set to 0 to disable.
-    bounce_freq = 0
-
     ### Text ###
 
     font = Monospace 8
