@@ -49,7 +49,7 @@ docs/dunst.1: docs/dunst.pod
 
 service:
 	@sed "s|##PREFIX##|$(PREFIX)|" org.knopwob.dunst.service.in > org.knopwob.dunst.service
-	@sed "s|##PREFIX##|$(PREFIX)|" contrib/dunst.systemd.service.in > dunst.systemd.service
+	@sed "s|##PREFIX##|$(PREFIX)|" dunst.systemd.service.in > dunst.systemd.service
 
 install-dunst: dunst doc
 	mkdir -p ${DESTDIR}${PREFIX}/bin
