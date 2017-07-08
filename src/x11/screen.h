@@ -22,7 +22,6 @@ typedef struct _screen_info {
 } screen_info;
 
 void init_screens();
-void x_update_screens();
 void screen_check_event(XEvent event);
 
 screen_info *get_active_screen();

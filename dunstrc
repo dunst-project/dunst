@@ -192,6 +192,18 @@
     # automatically after a crash.
     startup_notification = false
 
+    ### Legacy
+
+    # Use the Xinerama extension instead of RandR for multi-monitor support.
+    # This setting is provided for compatibility with older nVidia drivers that
+    # do not support RandR and using it on systems that support RandR is highly
+    # discouraged.
+    #
+    # By enabling this setting dunst will not be able to detect when a monitor
+    # is connected or disconnected which might break follow mode if the screen
+    # layout changes.
+    force_xinerama = false
+
 # Experimental features that may or may not work correctly. Do not expect them
 # to have a consistent behaviour across releases.
 [experimental]

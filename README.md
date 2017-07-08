@@ -17,6 +17,7 @@ Dunst is a highly configurable and lightweight notification daemon.
 Dunst has a number of build dependencies that must be present before attempting configuration. The names are different depending on [distribution](https://github.com/dunst-project/dunst/wiki/Dependencies):
 
 - dbus
+- libxinerama
 - libxrandr
 - libxss
 - libxdg-basedir

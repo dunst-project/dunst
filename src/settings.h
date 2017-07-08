@@ -70,6 +70,7 @@ typedef struct _settings {
         keyboard_shortcut close_all_ks;
         keyboard_shortcut history_ks;
         keyboard_shortcut context_ks;
+        bool force_xinerama;
 } settings_t;
 
 extern settings_t settings;

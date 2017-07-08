@@ -4,12 +4,9 @@
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/Xresource.h>
-#ifdef XRANDR
 #include <X11/extensions/randr.h>
 #include <X11/extensions/Xrandr.h>
-#elif XINERAMA
 #include <X11/extensions/Xinerama.h>
-#endif
 #include <assert.h>
 #include <glib.h>
 #include <locale.h>
@@ -26,7 +23,10 @@ int screens_len;
 
 bool dunst_follow_errored = false;
 
-void x_update_screens_fallback();
+void randr_init();
+void randr_update();
+void xinerama_update();
+void screen_update_fallback();
 static void x_follow_setup_error_handler(void);
 static int x_follow_tear_down_error_handler(void);
 static int FollowXErrorHandler(Display *display, XErrorEvent *e);
@@ -59,6 +59,15 @@ static double get_xft_dpi_value()
         return dpi;
 }
 
+void init_screens() {
+        if (!settings.force_xinerama) {
+                randr_init();
+                randr_update();
+        } else {
+                xinerama_update();
+        }
+}
+
 void alloc_screen_ar(int n)
 {
         assert(n > 0);
@@ -71,27 +80,26 @@ void alloc_screen_ar(int n)
         screens_len = n;
 }
 
-#ifdef XRANDR
 int randr_event_base = 0;
 
-void init_screens()
+void randr_init()
 {
         int randr_error_base = 0;
         if (!XRRQueryExtension(xctx.dpy, &randr_event_base, &randr_error_base)) {
-                fprintf(stderr, "Dunst was compiled with RandR but RandR extension is missing.");
-                exit(1);
+                fprintf(stderr, "Could not initialize the RandR extension, falling back to single monitor mode.\n");
+                return;
         }
         XRRSelectInput(xctx.dpy, RootWindow(xctx.dpy, DefaultScreen(xctx.dpy)), RRScreenChangeNotifyMask);
-        x_update_screens();
 }
 
-void x_update_screens()
+void randr_update()
 {
         int n;
         XRRMonitorInfo *m = XRRGetMonitors(xctx.dpy, RootWindow(xctx.dpy, DefaultScreen(xctx.dpy)), true, &n);
 
-        if (n == -1) {
-                x_update_screens_fallback();
+        if (m == NULL || n == -1) {
+                fprintf(stderr, "(RandR) Could not get screen info, falling back to single monitor mode\n");
+                screen_update_fallback();
                 return;
         }
 
@@ -116,23 +124,17 @@ static int autodetect_dpi(screen_info *scr)
 void screen_check_event(XEvent event)
 {
         if (event.type == randr_event_base + RRScreenChangeNotify)
-                x_update_screens();
+                randr_update();
 }
 
-#elif XINERAMA
-
-void init_screens()
-{
-        x_update_screens();
-}
-
-void x_update_screens()
+void xinerama_update()
 {
         int n;
         XineramaScreenInfo *info = XineramaQueryScreens(xctx.dpy, &n);
 
         if (!info) {
-                x_update_screens_fallback();
+                fprintf(stderr, "(Xinerama) Could not get screen info, falling back to single monitor mode\n");
+                screen_update_fallback();
                 return;
         }
 
@@ -147,29 +149,8 @@ void x_update_screens()
         XFree(info);
 }
 
-void screen_check_event(XEvent event) {} //No-op
 
-#define autodetect_dpi(x) 0
-
-#else
-
-void init_screens()
-{
-        x_update_screens_fallback();
-}
-
-void x_update_screens()
-{
-        x_update_screens_fallback();
-}
-
-void screen_check_event(XEvent event) {} //No-op
-
-#define autodetect_dpi(x) 0
-
-#endif
-
-void x_update_screens_fallback()
+void screen_update_fallback()
 {
         alloc_screen_ar(1);
 

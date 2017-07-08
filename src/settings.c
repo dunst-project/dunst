@@ -103,6 +103,12 @@ void load_settings(char *cmdline_config_path)
                 ""
         );
 
+        settings.force_xinerama = option_get_bool(
+                "global",
+                "force_xinerama", "-force_xinerama", false,
+                "Force the use of the Xinerama extension"
+        );
+
         settings.font = option_get_string(
                 "global",
                 "font", "-font/-fn", font,
