@@ -3,8 +3,8 @@ PREFIX ?= /usr/local
 MANPREFIX = ${PREFIX}/share/man
 
 # In dist tarballs, the version is stored in the VERSION files.
-VERSION := '$(shell [ -f VERSION ] && cat VERSION)'
-ifeq ('',$(VERSION))
+VERSION := "1.1.0 (git-unknown)"
+ifneq ($(wildcard ./.git/.),)
 VERSION := $(shell git describe --tags)
 endif
 
