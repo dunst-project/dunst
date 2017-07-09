@@ -319,6 +319,8 @@ equivalent notification attribute.
 
 =item B<%p>  progress value ([  0%] to [100%])
 
+=item B<%n>  progress value without any extra characters
+
 =back
 
 If any of these exists in the format but hasn't been specified in the

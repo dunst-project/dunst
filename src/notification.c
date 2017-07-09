@@ -323,8 +323,11 @@ int notification_init(notification * n, int id)
                 char pg[10];
                 sprintf(pg, "[%3d%%]", n->progress - 1);
                 n->msg = string_replace_all("%p", pg, n->msg);
+                sprintf(pg, "%d", n->progress - 1);
+                n->msg = string_replace_all("%n", pg, n->msg);
         } else {
                 n->msg = string_replace_all("%p", "", n->msg);
+                n->msg = string_replace_all("%n", "", n->msg);
         }
 
         n->msg = g_strchomp(n->msg);
