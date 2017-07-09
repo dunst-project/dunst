@@ -12,6 +12,8 @@
 #define NORM 1
 #define CRIT 2
 
+#define DUNST_NOTIF_MAX_CHARS 5000
+
 typedef struct _raw_image {
         int width;
         int height;

@@ -329,6 +329,16 @@ int notification_init(notification * n, int id)
 
         n->msg = g_strchomp(n->msg);
 
+        /* truncate overlong messages */
+        if (strlen(n->msg) > DUNST_NOTIF_MAX_CHARS) {
+                char* buffer = g_malloc(DUNST_NOTIF_MAX_CHARS);
+                strncpy(buffer, n->msg, DUNST_NOTIF_MAX_CHARS);
+                buffer[DUNST_NOTIF_MAX_CHARS-1] = '\0';
+
+                g_free(n->msg);
+                n->msg = buffer;
+        }
+
         if (n->icon != NULL && strlen(n->icon) <= 0) {
                 g_free(n->icon);
                 n->icon = NULL;
