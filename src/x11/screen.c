@@ -239,9 +239,10 @@ sc_cleanup:
 double get_dpi_for_screen(screen_info *scr)
 {
         double dpi = 0;
-        if ((dpi = get_xft_dpi_value()))
+        if ((!settings.force_xinerama && settings.per_monitor_dpi &&
+                (dpi = autodetect_dpi(scr))))
                 return dpi;
-        else if (settings.per_monitor_dpi && (dpi = autodetect_dpi(scr)))
+        else if ((dpi = get_xft_dpi_value()))
                 return dpi;
         else
                 return 96;

@@ -208,7 +208,10 @@
 # to have a consistent behaviour across releases.
 [experimental]
     # Calculate the dpi to use on a per-monitor basis.
-    # Please note that this setting will not work if Xft.dpi X resource is set.
+    # If this setting is enabled the Xft.dpi value will be ignored and instead
+    # dunst will attempt to calculate an appropriate dpi value for each monitor
+    # using the resolution and physical size. This might be useful in setups
+    # where there are multiple screens with very different dpi values.
     per_monitor_dpi = false
 
 [shortcuts]
