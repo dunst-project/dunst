@@ -406,6 +406,9 @@ void load_settings(char *cmdline_config_path)
                                 "Width of frame around the window"
                         );
                 } else {
+                        if (ini_is_set("frame", "width")) {
+                                fprintf(stderr, "Warning: The frame section is deprecated, width has been renamed to frame_width and moved to the global section.\n");
+                        }
                         settings.frame_width = option_get_int(
                                 "frame",
                                 "width", "-frame_width", frame_width,
@@ -420,6 +423,9 @@ void load_settings(char *cmdline_config_path)
                                 "Color of the frame around the window"
                         );
                 } else {
+                        if (ini_is_set("frame", "color")) {
+                                fprintf(stderr, "Warning: The frame section is deprecated, color has been renamed to frame_color and moved to the global section.\n");
+                        }
                         settings.frame_color = option_get_string(
                                 "frame",
                                 "color", "-frame_color", frame_color,
