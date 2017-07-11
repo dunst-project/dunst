@@ -372,12 +372,14 @@ ACTIONS below for further details.
 Defines the position of the icon in the notification window. Setting it to off
 disables icons.
 
-=item B<max_icon_size> (default: 32)
+=item B<max_icon_size> (default: 0)
 
 Defines the maximum size in pixels for the icons.
 If the icon is smaller than the specified value it won't be affected.
 If it's larger then it will be scaled down so that the larger axis is equivalent
 to the specified size.
+
+Set to 0 to disable icon scaling. (default)
 
 If B<icon_position> is set to off, this setting is ignored.
 
