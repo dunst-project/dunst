@@ -1,6 +1,6 @@
 # Dunst changelog
 
-## Unreleased
+## 1.2.0 - 2017-07-12
 
 ### Added
 - `always_run_script` option to run script even if a notification is suppressed
