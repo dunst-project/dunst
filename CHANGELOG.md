@@ -4,7 +4,7 @@
 
 ### Added
 - `always_run_script` option to run script even if a notification is suppressed
-- Support for svg icon files
+- Support for more icon file types
 - Support for raw icons
 - `hide_duplicate_count` option to hide the number of duplicate notifications
 - Support for per-urgency frame colours
@@ -12,15 +12,21 @@
 - `history_ignore` rule action to exclude a notification from being added to the history
 - Support for setting the dpi value dunst will use for font rendering via the `Xft.dpi` X resource
 - Experimental support for per-monitor dpi calculation
+- `max_icon_size` option to scale down icons if they exceed a certain size
+- Middle click on notifications can be used to trigger actions
+- Systemd service file, installed by default
+- `%n` format flag for getting progress value without any extra characters
 
 ### Changed
 - Text and icons are now centred vertically
 - Notifications aren't considered duplicate if urgency or icons differ
-- The frame width and color settings were moved to the global section as frame\_width and frame\_color respectively.
-- The maximum displayed field length is limited to 5000 characters
+- The maximum length of a notification is limited to 5000 characters
+- The frame width and color settings were moved to the global section as `frame_width` and `frame_color` respectively
+- Dropped Xinerama in favour of RandR, Xinerama can be enabled with the `-force_xinerama` option if needed
 
 ### Deprecated
-- `allow_markup` will be removed in later versions. It is being replaced by `markup`
+- `allow_markup` is deprecated with `markup` as its replacement
+- The urgency specific command line flags have been deprecated with no replacement, respond to issue #328 on the bug tracker if you depend on them
 
 ### Fixed
 - Infinite loop if there are 2 configuration file sections with the same name
@@ -29,9 +35,12 @@
 - Category based rules were applied without actually matching
 - dmenu command not parsing quoted arguments correctly
 - Icon alignment with dynamic width
-- Loading each line of the configuration file no longer relies on a static size buffer
+- Issue when loading configuration files with very long lines
+- '\n' is no longer expanded to a newline inside notification text
+- Notification window wasn't redrawn if obscured on systems without a compositor
 - `ignore_newline` now works regardless of the markup setting
 - dmenu process being left as a zombie if no option was selected
+- Crash when opening urls parsed from `<a href="">` tags
 
 ## 1.1.0 - 2014-07-29
 - fix nasty memory leak
