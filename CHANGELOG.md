@@ -1,5 +1,7 @@
 # Dunst changelog
 
+## Unreleased
+
 ## 1.2.0 - 2017-07-12
 
 ### Added
