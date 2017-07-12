@@ -7,22 +7,13 @@ ifneq ($(wildcard ./.git/.),)
 VERSION := $(shell git describe --tags)
 endif
 
-# Specifies which X extension dunst should use for multi monitor support
-# Possible values are randr, xinerama or none
-# * xrandr is the recommended/default value and should be the best option in most cases
-# * xinerama is the legacy equivalent to randr but does not support some more
-#   advanced features like per-monitor dpi calculation it should probably one
-#   be used if xrandr cannot be used for some reason.
-# * none disables multi-monitor support and dunst will assume only one monitor.
-MULTIMON ?= xrandr
-
 # uncomment to disable parsing of dunstrc
 # or use "CFLAGS=-DSTATIC_CONFIG make" to build
 #STATIC= -DSTATIC_CONFIG
 
 PKG_CONFIG:=$(shell which pkg-config)
 ifeq (${PKG_CONFIG}, ${EMPTY})
-	$(error "Failed to find pkg-config, please make sure it is installed")
+$(error "Failed to find pkg-config, please make sure it is installed")
 endif
 
 # flags

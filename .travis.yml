@@ -19,10 +19,6 @@ script: make && make test
 compiler:
     - gcc
     - clang
-env:
-  - MULTIMON=xrandr
-  - MULTIMON=xinerama
-  - MULTIMON=none
 notifications:
     irc:
         channels:
