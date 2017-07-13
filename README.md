@@ -23,7 +23,7 @@ Dunst has a number of build dependencies that must be present before attempting 
 - libxdg-basedir
 - glib
 - pango/cairo
-- libgtk2.0
+- libgtk-3-dev
 
 Checkout the [wiki][wiki] for more information.
 
