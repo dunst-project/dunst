@@ -48,6 +48,7 @@ typedef struct _settings {
         int ignore_newline;
         int line_height;
         int notification_height;
+        int min_notification_width;
         int separator_height;
         int padding;
         int h_padding;

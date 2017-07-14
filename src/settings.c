@@ -231,6 +231,12 @@ void load_settings(char *cmdline_config_path)
                 "Define height of the window"
         );
 
+        settings.min_notification_width = option_get_int(
+                "global",
+                "min_notification_width", "-nw/-min_notification_width", min_notification_width,
+                "Define the minimum width of the window, if it's dynamic"
+        );
+
         {
                 char *c = option_get_string(
                         "global",

@@ -173,6 +173,15 @@ The minimum height of the notification window in pixels. If the text and
 padding cannot fit in within the height specified by this value, the height
 will be increased as needed.
 
+-item B<minimum notification width> (default: 0)
+
+The minimum height of the notification window in pixels. If the text and
+padding cannot fit in within the width specified by this value, the width
+will be increased as needed.
+
+This lets you avoid notifications being too small with a small amount of text.
+It only applies with dynamic width (window geometry is set to 0) or shrink set.
+
 =item B<separator_height> (default: 2)
 
 The height in pixels of the separator between notifications, if set to 0 there

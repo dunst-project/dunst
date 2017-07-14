@@ -244,7 +244,8 @@ static dimension_t calculate_dimensions(GSList *layouts)
 
                 if (have_dynamic_width() || settings.shrink) {
                         /* dynamic width */
-                        total_width = MAX(text_width + 2 * settings.h_padding, total_width);
+                        total_width = MAX(text_width + 2 * settings.h_padding,
+                            MAX(settings.min_notification_width, total_width));
 
                         /* subtract height from the unwrapped text */
                         dim.h -= h;
@@ -261,6 +262,7 @@ static dimension_t calculate_dimensions(GSList *layouts)
                         w = dim.w;
                         w -= 2 * settings.h_padding;
                         w -= 2 * settings.frame_width;
+
                         if (cl->icon) w -= cairo_image_surface_get_width(cl->icon) + settings.h_padding;
                         r_setup_pango_layout(cl->l, w);
 
