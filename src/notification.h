@@ -34,6 +34,7 @@ typedef struct _notification {
         char *appname;
         char *summary;
         char *body;
+        bool icon_overridden;
         char *icon;
         RawImage *raw_icon;
         char *msg;            /* formatted message */
