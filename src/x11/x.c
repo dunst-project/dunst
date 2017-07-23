@@ -64,7 +64,6 @@ cairo_ctx_t cairo_ctx;
 static void x_shortcut_setup_error_handler(void);
 static int x_shortcut_tear_down_error_handler(void);
 static void x_win_move(int width, int height);
-static void setopacity(Window win, unsigned long opacity);
 static void x_handle_click(XEvent ev);
 static void x_win_setup(void);
 
@@ -781,20 +780,6 @@ static void x_win_move(int width, int height)
         xctx.window_dim.w = width;
 }
 
-static void setopacity(Window win, unsigned long opacity)
-{
-        Atom _NET_WM_WINDOW_OPACITY =
-            XInternAtom(xctx.dpy, "_NET_WM_WINDOW_OPACITY", false);
-        XChangeProperty(xctx.dpy,
-                        win,
-                        _NET_WM_WINDOW_OPACITY,
-                        XA_CARDINAL,
-                        32,
-                        PropModeReplace,
-                        (unsigned char *)&opacity,
-                        1L);
-}
-
 /*
  * Returns the modifier which is NumLock.
  */
@@ -1178,11 +1163,6 @@ static void x_win_setup(void)
                                  &wa);
 
         x_set_wm(xctx.win);
-        settings.transparency =
-            settings.transparency > 100 ? 100 : settings.transparency;
-        setopacity(xctx.win,
-                   (unsigned long)((100 - settings.transparency) *
-                                   (0xffffffff / 100)));
 
         if (settings.f_mode != FOLLOW_NONE) {
                 long root_event_mask = FocusChangeMask | PropertyChangeMask;

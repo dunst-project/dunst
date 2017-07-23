@@ -15,7 +15,6 @@ settings_t defaults = {
 .timeouts = { 10*G_USEC_PER_SEC, 10*G_USEC_PER_SEC, 0 }, /* low, normal, critical */
 .icons = { "dialog-information", "dialog-information", "dialog-warning" }, /* low, normal, critical */
 
-.transparency = 0,           /* transparency */
 .geom = "0x0",               /* geometry */
 .title = "Dunst",            /* the title of dunst notification windows */
 .class = "Dunst",            /* the class of dunst notification windows */

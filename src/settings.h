@@ -32,7 +32,6 @@ typedef struct _settings {
         char *format;
         gint64 timeouts[3];
         char *icons[3];
-        unsigned int transparency;
         char *geom;
         char *title;
         char *class;
