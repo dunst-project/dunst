@@ -152,125 +152,66 @@ static void on_notify(GDBusConnection * connection,
 
                         switch (idx) {
                         case 0:
-                                if (g_variant_is_of_type
-                                    (content, G_VARIANT_TYPE_STRING))
-                                        appname =
-                                            g_variant_dup_string(content, NULL);
+                                if (g_variant_is_of_type(content, G_VARIANT_TYPE_STRING))
+                                        appname = g_variant_dup_string(content, NULL);
                                 break;
                         case 1:
-                                if (g_variant_is_of_type
-                                    (content, G_VARIANT_TYPE_UINT32))
-                                        replaces_id =
-                                            g_variant_get_uint32(content);
+                                if (g_variant_is_of_type(content, G_VARIANT_TYPE_UINT32))
+                                        replaces_id = g_variant_get_uint32(content);
                                 break;
                         case 2:
-                                if (g_variant_is_of_type
-                                    (content, G_VARIANT_TYPE_STRING))
-                                        icon =
-                                            g_variant_dup_string(content, NULL);
+                                if (g_variant_is_of_type(content, G_VARIANT_TYPE_STRING))
+                                        icon = g_variant_dup_string(content, NULL);
                                 break;
                         case 3:
-                                if (g_variant_is_of_type
-                                    (content, G_VARIANT_TYPE_STRING))
-                                        summary =
-                                            g_variant_dup_string(content, NULL);
+                                if (g_variant_is_of_type(content, G_VARIANT_TYPE_STRING))
+                                        summary = g_variant_dup_string(content, NULL);
                                 break;
                         case 4:
-                                if (g_variant_is_of_type
-                                    (content, G_VARIANT_TYPE_STRING))
-                                        body =
-                                            g_variant_dup_string(content, NULL);
+                                if (g_variant_is_of_type(content, G_VARIANT_TYPE_STRING))
+                                        body = g_variant_dup_string(content, NULL);
                                 break;
                         case 5:
-                                if (g_variant_is_of_type
-                                    (content, G_VARIANT_TYPE_STRING_ARRAY))
-                                        actions->actions =
-                                            g_variant_dup_strv(content,
-                                                               &(actions->
-                                                                 count));
+                                if (g_variant_is_of_type(content, G_VARIANT_TYPE_STRING_ARRAY))
+                                        actions->actions = g_variant_dup_strv(content, &(actions->count));
                                 break;
                         case 6:
-                                if (g_variant_is_of_type
-                                    (content, G_VARIANT_TYPE_DICTIONARY)) {
+                                if (g_variant_is_of_type(content, G_VARIANT_TYPE_DICTIONARY)) {
 
-                                        dict_value =
-                                            g_variant_lookup_value(content,
-                                                                   "urgency",
-                                                                   G_VARIANT_TYPE_BYTE);
+                                        dict_value = g_variant_lookup_value(content, "urgency", G_VARIANT_TYPE_BYTE);
                                         if (dict_value)
-                                                urgency =
-                                                    g_variant_get_byte
-                                                    (dict_value);
+                                                urgency = g_variant_get_byte(dict_value);
 
-                                        dict_value =
-                                            g_variant_lookup_value(content,
-                                                                   "fgcolor",
-                                                                   G_VARIANT_TYPE_STRING);
+                                        dict_value = g_variant_lookup_value(content, "fgcolor", G_VARIANT_TYPE_STRING);
                                         if (dict_value)
-                                                fgcolor =
-                                                    g_variant_dup_string
-                                                    (dict_value, NULL);
+                                                fgcolor = g_variant_dup_string(dict_value, NULL);
 
-                                        dict_value =
-                                            g_variant_lookup_value(content,
-                                                                   "bgcolor",
-                                                                   G_VARIANT_TYPE_STRING);
+                                        dict_value = g_variant_lookup_value(content, "bgcolor", G_VARIANT_TYPE_STRING);
                                         if (dict_value)
-                                                bgcolor =
-                                                    g_variant_dup_string
-                                                    (dict_value, NULL);
+                                                bgcolor = g_variant_dup_string(dict_value, NULL);
 
-                                        dict_value =
-                                                g_variant_lookup_value(content,
-                                                                "category",
-                                                                G_VARIANT_TYPE_STRING);
+                                        dict_value = g_variant_lookup_value(content, "category", G_VARIANT_TYPE_STRING);
+                                        if (dict_value)
+                                                category = g_variant_dup_string(dict_value, NULL);
 
+                                        dict_value = g_variant_lookup_value(content, "image-data", G_VARIANT_TYPE("(iiibiiay)"));
+                                        if (!dict_value)
+                                                dict_value = g_variant_lookup_value(content, "icon_data", G_VARIANT_TYPE("(iiibiiay)"));
+                                        if (dict_value)
+                                                raw_icon = get_raw_image_from_data_hint(dict_value);
+
+                                        dict_value = g_variant_lookup_value(content, "value", G_VARIANT_TYPE_INT32);
                                         if (dict_value) {
-                                                category =
-                                                        g_variant_dup_string(
-                                                                        dict_value, NULL);
-                                        }
-
-                                        dict_value =
-                                                g_variant_lookup_value(content,
-                                                                "image-data",
-                                                                G_VARIANT_TYPE("(iiibiiay)"));
-                                        if (!dict_value) {
-                                            dict_value =
-                                                    g_variant_lookup_value(content,
-                                                                    "icon_data",
-                                                                    G_VARIANT_TYPE("(iiibiiay)"));
-                                        }
-
-                                        if (dict_value) {
-                                                raw_icon =
-                                                        get_raw_image_from_data_hint(
-                                                                        dict_value);
-                                        }
-
-                                        dict_value =
-                                                g_variant_lookup_value(content,
-                                                                "value",
-                                                                G_VARIANT_TYPE_INT32);
-
-                                        if (dict_value) {
-                                                progress =
-                                                        g_variant_get_int32(dict_value);
+                                                progress = g_variant_get_int32(dict_value);
                                         } else {
-                                                dict_value =
-                                                        g_variant_lookup_value(content,
-                                                                        "value",
-                                                                        G_VARIANT_TYPE_UINT32);
-
+                                                dict_value = g_variant_lookup_value(content, "value", G_VARIANT_TYPE_UINT32);
                                                 if (dict_value)
-                                                        progress =
-                                                                g_variant_get_uint32(dict_value);
+                                                        progress = g_variant_get_uint32(dict_value);
                                         }
                                 }
                                 break;
                         case 7:
-                                if (g_variant_is_of_type
-                                    (content, G_VARIANT_TYPE_INT32))
+                                if (g_variant_is_of_type(content, G_VARIANT_TYPE_INT32))
                                         timeout = g_variant_get_int32(content);
                                 break;
                         }
