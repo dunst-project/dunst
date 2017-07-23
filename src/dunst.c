@@ -62,7 +62,7 @@ void check_timeouts(void)
                 notification *n = iter->data;
 
                 /* don't timeout when user is idle */
-                if (x_is_idle()) {
+                if (x_is_idle() && !n->transient) {
                         n->start = time(NULL);
                         continue;
                 }

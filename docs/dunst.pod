@@ -234,6 +234,8 @@ Don't timeout notifications if user is idle longer than this value (in seconds).
 
 Set to 0 to disable.
 
+Transient notifications will ignore this setting and timeout anyway.
+
 =item B<font> (default: "Monospace 8")
 
 Defines the font or font set used. Optionally set the size as a decimal number

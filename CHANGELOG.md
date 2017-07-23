@@ -5,6 +5,9 @@
 ### Fixed
 - `new_icon` rule being ignored on notifications that had a raw icon
 
+## Changed
+- transient hints are now handled
+
 ## 1.2.0 - 2017-07-12
 
 ### Added
