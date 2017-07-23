@@ -68,12 +68,25 @@ static void setopacity(Window win, unsigned long opacity);
 static void x_handle_click(XEvent ev);
 static void x_win_setup(void);
 
+static color_t x_transparent_color_hex_to_double(int hexValue)
+{
+        color_t color;
+        color.r = ((hexValue >> 24) & 0xFF) / 255.0;
+        color.g = ((hexValue >> 16) & 0xFF) / 255.0;
+        color.b = ((hexValue >>  8) & 0xFF) / 255.0;
+        color.a = ((hexValue >>  0) & 0xFF) / 255.0;
+
+        return color;
+}
+
+
 static color_t x_color_hex_to_double(int hexValue)
 {
         color_t color;
         color.r = ((hexValue >> 16) & 0xFF) / 255.0;
         color.g = ((hexValue >> 8) & 0xFF) / 255.0;
         color.b = ((hexValue) & 0xFF) / 255.0;
+        color.a = 1.0;
 
         return color;
 }
@@ -86,7 +99,14 @@ static color_t x_string_to_color_t(const char *str)
                 printf("WARNING: Invalid color string: \"%s\"\n", str);
         }
 
-        return x_color_hex_to_double(val);
+        color_t color;
+        /* check if hexstring has additional transparency */
+        if (strlen(str) > 8){
+                color = x_transparent_color_hex_to_double(val);
+        } else {
+                color = x_color_hex_to_double(val);
+        }
+        return color;
 }
 
 static double _apply_delta(double base, double delta)
@@ -113,6 +133,7 @@ static color_t calculate_foreground_color(color_t bg)
         color.r = _apply_delta(color.r, c_delta * signedness);
         color.g = _apply_delta(color.g, c_delta * signedness);
         color.b = _apply_delta(color.b, c_delta * signedness);
+        color.a = 1.0;
 
         return color;
 }
@@ -144,6 +165,8 @@ static void x_cairo_setup(void)
                         xctx.win, DefaultVisual(xctx.dpy, 0), WIDTH, HEIGHT);
 
         cairo_ctx.context = cairo_create(cairo_ctx.surface);
+        // set default window to transparent
+        cairo_set_source_rgba(cairo_ctx.context, 0.0, 0.0, 0.0, 0.0);
 
         cairo_ctx.desc = pango_font_description_from_string(settings.font);
 }
@@ -608,7 +631,7 @@ static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, colored_layou
         if (last) bg_height += settings.frame_width;
         else bg_height += settings.separator_height;
 
-        cairo_set_source_rgb(c, cl->frame.r, cl->frame.g, cl->frame.b);
+        cairo_set_source_rgba(c, cl->frame.r, cl->frame.g, cl->frame.b, cl->frame.a);
         cairo_rectangle(c, bg_x, bg_y, bg_width, bg_height);
         cairo_fill(c);
 
@@ -624,7 +647,7 @@ static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, colored_layou
         if (last)
                 bg_height -= settings.frame_width;
 
-        cairo_set_source_rgb(c, cl->bg.r, cl->bg.g, cl->bg.b);
+        cairo_set_source_rgba(c, cl->bg.r, cl->bg.g, cl->bg.b, cl->bg.a);
         cairo_rectangle(c, bg_x, bg_y, bg_width, bg_height);
         cairo_fill(c);
 
@@ -642,7 +665,7 @@ static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, colored_layou
                 cairo_move_to(c, settings.frame_width + settings.h_padding, bg_y + settings.padding);
         }
 
-        cairo_set_source_rgb(c, cl->fg.r, cl->fg.g, cl->fg.b);
+        cairo_set_source_rgba(c, cl->fg.r, cl->fg.g, cl->fg.b, cl->fg.a);
         pango_cairo_update_layout(c, cl->l);
         pango_cairo_show_layout(c, cl->l);
         if (use_padding)
@@ -652,7 +675,7 @@ static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, colored_layou
 
         if (settings.separator_height > 0 && !last) {
                 color_t sep_color = x_get_separator_color(cl, cl_next);
-                cairo_set_source_rgb(c, sep_color.r, sep_color.g, sep_color.b);
+                cairo_set_source_rgba(c, sep_color.r, sep_color.g, sep_color.b, sep_color.a);
 
                 if (settings.sep_color == FRAME)
                         // Draw over the borders on both sides to avoid
