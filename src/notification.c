@@ -46,9 +46,9 @@ void notification_print(notification * n)
         printf("\tframe: %s\n", n->color_strings[ColFrame]);
         printf("\tid: %d\n", n->id);
         if (n->urls) {
-                printf("\turls\n");
+                printf("\turls:\n");
                 printf("\t{\n");
-                printf("%s\n", n->urls);
+                printf("\t\t%s\n", n->urls);
                 printf("\t}\n");
         }
 
@@ -56,11 +56,11 @@ void notification_print(notification * n)
                 printf("\tactions:\n");
                 printf("\t{\n");
                 for (int i = 0; i < n->actions->count; i += 2) {
-                        printf("\t\t [%s,%s]\n", n->actions->actions[i],
+                        printf("\t\t[%s,%s]\n", n->actions->actions[i],
                                n->actions->actions[i + 1]);
                 }
-                printf("actions_dmenu: %s\n", n->actions->dmenu_str);
-                printf("\t]\n");
+                printf("\t}\n");
+                printf("\tactions_dmenu: %s\n", n->actions->dmenu_str);
         }
         printf("\tscript: %s\n", n->script);
         printf("}\n");
