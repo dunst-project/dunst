@@ -216,14 +216,10 @@ static void on_notify(GDBusConnection * connection,
                                         else if((dict_value = g_variant_lookup_value(content, "transient", G_VARIANT_TYPE_INT32)))
                                                 transient = g_variant_get_int32(dict_value) > 0;
 
-                                        dict_value = g_variant_lookup_value(content, "value", G_VARIANT_TYPE_INT32);
-                                        if (dict_value) {
+                                        if((dict_value = g_variant_lookup_value(content, "value", G_VARIANT_TYPE_INT32)))
                                                 progress = g_variant_get_int32(dict_value);
-                                        } else {
-                                                dict_value = g_variant_lookup_value(content, "value", G_VARIANT_TYPE_UINT32);
-                                                if (dict_value)
-                                                        progress = g_variant_get_uint32(dict_value);
-                                        }
+                                        else if((dict_value = g_variant_lookup_value(content, "value", G_VARIANT_TYPE_UINT32)))
+                                                progress = g_variant_get_uint32(dict_value);
                                 }
                                 break;
                         case 7:
