@@ -390,9 +390,9 @@ void load_settings(char *cmdline_config_path)
                 "Scale larger icons down to this size, set to 0 to disable"
         );
 
-        settings.icon_folders = option_get_string(
+        settings.icon_path = option_get_string(
                 "global",
-                "icon_folders", "-icon_folders", icon_folders,
+                "icon_path", "-icon_path", icon_path,
                 "paths to default icons"
         );
 

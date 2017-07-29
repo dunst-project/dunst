@@ -329,13 +329,13 @@ static GdkPixbuf *get_pixbuf_from_path(char *icon_path)
                 if (icon_path[0] == '/' || icon_path[0] == '~') {
                         pixbuf = get_pixbuf_from_file(icon_path);
                 }
-                /* search in icon_folders */
+                /* search in icon_path */
                 if (pixbuf == NULL) {
-                        char *start = settings.icon_folders,
+                        char *start = settings.icon_path,
                              *end, *current_folder, *maybe_icon_path;
                         do {
                                 end = strchr(start, ':');
-                                if (end == NULL) end = strchr(settings.icon_folders, '\0'); /* end = end of string */
+                                if (end == NULL) end = strchr(settings.icon_path, '\0'); /* end = end of string */
 
                                 current_folder = g_strndup(start, end - start);
                                 /* try svg */
