@@ -116,17 +116,8 @@ void load_settings(char *cmdline_config_path)
         );
 
         {
-                //If markup isn't set, fall back to allow_markup for backwards compatibility
-                if (ini_is_set("global", "markup") || cmdline_is_set("-markup")) {
-                        char *c = option_get_string(
-                                "global",
-                                "markup", "-markup", markup,
-                                "Specify how markup should be handled"
-                        );
-
-                        settings.markup = parse_markup_mode(c);
-                        g_free(c);
-                } else if (ini_is_set("global", "allow_markup")) {
+                // Check if allow_markup set
+                if (ini_is_set("global", "allow_markup")) {
                         bool allow_markup = option_get_bool(
                                 "global",
                                 "allow_markup", NULL, false,
@@ -135,9 +126,23 @@ void load_settings(char *cmdline_config_path)
 
                         settings.markup = (allow_markup ? MARKUP_FULL : MARKUP_STRIP);
                         fprintf(stderr, "Warning: 'allow_markup' is deprecated, please use 'markup' instead.\n");
-                } else {
-                        settings.markup = parse_markup_mode(markup); // None are set, parse the default value from config.h
                 }
+
+                char *c = option_get_string(
+                        "global",
+                        "markup", "-markup", NULL,
+                        "Specify how markup should be handled"
+                );
+
+                //Use markup if set
+                //Use default if settings.markup not set yet
+                //  (=>c empty&&!allow_markup)
+                if(c){
+                        settings.markup = parse_markup_mode(c);
+                } else if (!settings.markup) {
+                        settings.markup = parse_markup_mode(markup);
+                }
+                g_free(c);
         }
 
         settings.format = option_get_string(
@@ -412,40 +417,37 @@ void load_settings(char *cmdline_config_path)
 
         {
                 // Backwards compatibility with the legacy 'frame' section.
-
-                if (ini_is_set("global", "frame_width")) {
-                        settings.frame_width = option_get_int(
-                                "global",
-                                "frame_width", "-frame_width", frame_width,
-                                "Width of frame around the window"
-                        );
-                } else {
-                        if (ini_is_set("frame", "width")) {
-                                fprintf(stderr, "Warning: The frame section is deprecated, width has been renamed to frame_width and moved to the global section.\n");
-                        }
+                if (ini_is_set("frame", "width")) {
                         settings.frame_width = option_get_int(
                                 "frame",
-                                "width", "-frame_width", frame_width,
+                                "width", NULL, frame_width,
                                 "Width of frame around the window"
                         );
+                        fprintf(stderr, "Warning: The frame section is deprecated, width has been renamed to frame_width and moved to the global section.\n");
                 }
 
-                if (ini_is_set("global", "frame_color")) {
-                        settings.frame_color = option_get_string(
-                                "global",
-                                "frame_color", "-frame_color", frame_color,
-                                "Color of the frame around the window"
-                        );
-                } else {
-                        if (ini_is_set("frame", "color")) {
-                                fprintf(stderr, "Warning: The frame section is deprecated, color has been renamed to frame_color and moved to the global section.\n");
-                        }
+                settings.frame_width = option_get_int(
+                        "global",
+                        "frame_width", "-frame_width",
+                        settings.frame_width ? settings.frame_width : frame_width,
+                        "Width of frame around the window"
+                );
+
+                if (ini_is_set("frame", "color")) {
                         settings.frame_color = option_get_string(
                                 "frame",
-                                "color", "-frame_color", frame_color,
+                                "color", NULL, frame_color,
                                 "Color of the frame around the window"
                         );
+                        fprintf(stderr, "Warning: The frame section is deprecated, color has been renamed to frame_color and moved to the global section.\n");
                 }
+
+                settings.frame_color = option_get_string(
+                        "global",
+                        "frame_color", "-frame_color",
+                        settings.frame_color ? settings.frame_color : frame_color,
+                        "Color of the frame around the window"
+                );
 
         }
         settings.lowbgcolor = option_get_string(
