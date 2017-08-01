@@ -383,7 +383,7 @@ Set to 0 to disable icon scaling. (default)
 
 If B<icon_position> is set to off, this setting is ignored.
 
-=item B<icon_folders> (default: "/usr/share/icons/gnome/16x16/status/:/usr/share/icons/gnome/16x16/devices/")
+=item B<icon_path> (default: "/usr/share/icons/gnome/16x16/status/:/usr/share/icons/gnome/16x16/devices/")
 
 Can be set to a colon-separated list of paths to search for icons to use with
 notifications.

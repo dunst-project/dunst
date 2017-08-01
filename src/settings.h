@@ -63,7 +63,7 @@ typedef struct _settings {
         char *browser;
         enum icon_position_t icon_position;
         int max_icon_size;
-        char *icon_folders;
+        char *icon_path;
         enum follow_mode f_mode;
         bool always_run_script;
         keyboard_shortcut close_ks;
