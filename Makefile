@@ -87,6 +87,6 @@ test-clean:
 	rm -f test/test test/*.o
 
 dunstify: dunstify.o
-	${CC} ${CFLAGS} -o $@ dunstify.o $(shell pkg-config --libs --cflags glib-2.0 libnotify gdk-2.0)
+	${CC} ${CFLAGS} -o $@ dunstify.o $(shell pkg-config --libs --cflags glib-2.0 libnotify gdk-3.0)
 
 .PHONY: all clean dist install uninstall

@@ -22,7 +22,7 @@ CFLAGS   += -g --std=gnu99 -pedantic -Wall -Wno-overlength-strings -Os ${STATIC}
 
 pkg_config_packs := dbus-1 x11 xscrnsaver \
                     "glib-2.0 >= 2.36" gio-2.0 \
-                    pangocairo gdk-2.0 xrandr xinerama
+                    pangocairo gdk-3.0 xrandr xinerama
 
 # check if we need libxdg-basedir
 ifeq (,$(findstring STATIC_CONFIG,$(CFLAGS)))
