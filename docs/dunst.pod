@@ -235,6 +235,7 @@ Don't timeout notifications if user is idle longer than this value (in seconds).
 Set to 0 to disable.
 
 Transient notifications will ignore this setting and timeout anyway.
+Use a rule overwriting with 'set_transient = no' to disable this behavior.
 
 =item B<font> (default: "Monospace 8")
 
@@ -558,9 +559,10 @@ matched.
 =item B<filtering>
 
 Notifications can be matched for any of the following attributes: appname,
-summary, body, icon, category and msg_urgency where each is the respective
-notification attribute to be matched and 'msg_urgency' is the urgency of the
-notification, it is named so to not conflict with trying to modify the urgency.
+summary, body, icon, category, match_transient and msg_urgency where each is
+the respective notification attribute to be matched and 'msg_urgency' is the
+urgency of the notification, it is named so to not conflict with trying to
+modify the urgency.
 
 To define a matching rule simply assign the specified value to the value that
 should be matched, for example:
@@ -576,8 +578,8 @@ Shell-like globing is supported.
 =item B<modifying>
 
 The following attributes can be overridden: timeout, urgency, foreground,
-background, new_icon, format where, as with the filtering attributes, each one
-corresponds to the respective notification attribute to be modified.
+background, new_icon, set_transient, format where, as with the filtering attributes,
+each one corresponds to the respective notification attribute to be modified.
 
 As with filtering, to make a rule modify an attribute simply assign it in the
 rule definition.
