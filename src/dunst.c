@@ -390,7 +390,7 @@ int dunst_main(int argc, char *argv[])
 
 void usage(int exit_status)
 {
-        fputs("usage:\n", stderr);
+        puts("usage:\n");
         char *us = cmdline_create_usage();
         puts(us);
         exit(exit_status);
