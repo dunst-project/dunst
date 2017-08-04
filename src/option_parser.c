@@ -109,6 +109,11 @@ char *get_value(char *section, char *key)
         return NULL;
 }
 
+char *ini_get_path(char *section, char *key, const char *def)
+{
+        return string_to_path(ini_get_string(section, key, def));
+}
+
 char *ini_get_string(char *section, char *key, const char *def)
 {
         char *value = get_value(section, key);
@@ -355,6 +360,17 @@ char *cmdline_get_string(char *key, const char *def, char *description)
                 return g_strdup(def);
 }
 
+char *cmdline_get_path(char *key, const char *def, char *description)
+{
+        cmdline_usage_append(key, "string", description);
+        char *str = cmdline_get_value(key);
+
+        if (str)
+                return string_to_path(g_strdup(str));
+        else
+                return string_to_path(g_strdup(def));
+}
+
 int cmdline_get_int(char *key, int def, char *description)
 {
         cmdline_usage_append(key, "double", description);
@@ -389,6 +405,24 @@ int cmdline_get_bool(char *key, int def, char *description)
 bool cmdline_is_set(char *key)
 {
         return cmdline_get_value(key) != NULL;
+}
+
+char *option_get_path(char *ini_section, char *ini_key, char *cmdline_key,
+                        const char *def, char *description)
+{
+        char *val = NULL;
+
+        if (cmdline_key) {
+                val = cmdline_get_path(cmdline_key, NULL, description);
+        }
+
+
+        if (val) {
+                return val;
+        } else {
+                return ini_get_path(ini_section, ini_key, def);
+        }
+
 }
 
 char *option_get_string(char *ini_section, char *ini_key, char *cmdline_key,

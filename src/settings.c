@@ -345,7 +345,7 @@ void load_settings(char *cmdline_config_path)
                 "print notification on startup"
         );
 
-        settings.dmenu = option_get_string(
+        settings.dmenu = option_get_path(
                 "global",
                 "dmenu", "-dmenu", dmenu,
                 "path to dmenu"
@@ -362,7 +362,7 @@ void load_settings(char *cmdline_config_path)
         }
 
 
-        settings.browser = option_get_string(
+        settings.browser = option_get_path(
                 "global",
                 "browser", "-browser", browser,
                 "path to browser"
@@ -636,7 +636,7 @@ void load_settings(char *cmdline_config_path)
                 r->format = ini_get_string(cur_section, "format", r->format);
                 r->new_icon = ini_get_string(cur_section, "new_icon", r->new_icon);
                 r->history_ignore = ini_get_bool(cur_section, "history_ignore", r->history_ignore);
-                r->script = ini_get_string(cur_section, "script", NULL);
+                r->script = ini_get_path(cur_section, "script", NULL);
         }
 
 #ifndef STATIC_CONFIG

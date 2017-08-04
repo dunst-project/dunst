@@ -588,9 +588,7 @@ suppressed.
 =head2 SCRIPTING
 
 Within rules you can specify a script to be run every time the rule is matched
-by assigning the 'script' option to the name of the script to be run. (If the
-value is not an absolute path, the directories in the PATH variable will be
-searched for an executable of the same name).
+by assigning the 'script' option to the name of the script to be run.
 
 When the script is called details of the notification that triggered it will be
 passed via command line parameters in the following order: appname, summary,
@@ -601,6 +599,10 @@ one of "LOW", "NORMAL" or "CRITICAL".
 
 If the notification is suppressed, the script will not be run unless
 B<always_run_scripts> is set to true.
+
+If '~/' occurs at the beginning of the script parameter, it will get replaced by the
+users' home directory. If the value is not an absolute path, the directories in the
+PATH variable will be searched for an executable of the same name.
 
 =head1 COLORS
 
