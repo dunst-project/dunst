@@ -186,6 +186,61 @@ void screen_update_fallback(void)
         screens[0].dim.h = DisplayHeight(xctx.dpy, screen);
 }
 
+/* see screen.h */
+bool have_fullscreen_window(void)
+{
+        return window_is_fullscreen(get_focused_window());
+}
+
+/* see screen.h */
+bool window_is_fullscreen(Window window)
+{
+        bool fs = false;
+
+        Atom has_wm_state = XInternAtom(xctx.dpy, "_NET_WM_STATE", True);
+        if (has_wm_state == None){
+                return false;
+        }
+
+        Atom actual_type_return;
+        int actual_format_return;
+        unsigned long bytes_after_return;
+        unsigned char *prop_to_return;
+        unsigned long n_items;
+        int result = XGetWindowProperty(
+                        xctx.dpy,
+                        window,
+                        has_wm_state,
+                        0,                     /* long_offset */
+                        sizeof(window),        /* long_length */
+                        false,                 /* delete */
+                        AnyPropertyType,       /* req_type */
+                        &actual_type_return,
+                        &actual_format_return,
+                        &n_items,
+                        &bytes_after_return,
+                        &prop_to_return);
+
+        if (result == Success) {
+                for(int i = 0; i < n_items; i++) {
+                        char *atom = XGetAtomName(xctx.dpy, ((Atom*)prop_to_return)[i]);
+
+                        if (atom) {
+                                if(0 == strcmp("_NET_WM_STATE_FULLSCREEN", atom))
+                                        fs = true;
+                                XFree(atom);
+                                if(fs)
+                                        break;
+                        }
+                }
+        }
+
+        if (prop_to_return)
+                XFree(prop_to_return);
+
+        return fs;
+}
+
 /*
  * Select the screen on which the Window
  * should be displayed.
