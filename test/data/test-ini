@@ -23,6 +23,9 @@
 	quoted = "A quoted string"
 	quoted_with_quotes = "A string "with quotes""
 
+[path]
+	expand_tilde    = ~/.path/to/tilde
+
 [int]
 	simple = 5
 	negative = -10

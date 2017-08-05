@@ -10,6 +10,7 @@ TEST test_next_section(void)
         char *section = NULL;
         ASSERT_STR_EQ("bool", (section = next_section(section)));
         ASSERT_STR_EQ("string", (section = next_section(section)));
+        ASSERT_STR_EQ("path", (section = next_section(section)));
         ASSERT_STR_EQ("int", (section = next_section(section)));
         ASSERT_STR_EQ("double", (section = next_section(section)));
         PASS();
@@ -59,6 +60,27 @@ TEST test_ini_get_string(void)
         PASS();
 }
 
+TEST test_ini_get_path(void)
+{
+        char *section = "path";
+        char *ptr, *exp;
+        char *home = getenv("HOME");
+
+        // return default, if nonexistent key
+        ASSERT_EQ(NULL, (ptr = ini_get_path(section, "nonexistent", NULL)));
+        ASSERT_STR_EQ("default", (ptr = ini_get_path(section, "nonexistent", "default")));
+        g_free(ptr);
+
+        // return path with replaced home
+        ASSERT_STR_EQ((exp = g_strconcat(home, "/.path/to/tilde", NULL)),
+                      (ptr = ini_get_path(section, "expand_tilde", NULL)));
+        g_free(ptr);
+        g_free(exp);
+
+        PASS();
+}
+
+
 TEST test_ini_get_int(void)
 {
         char *int_section = "int";
@@ -83,6 +105,25 @@ TEST test_ini_get_double(void)
         ASSERT_EQ(3.141592653589793, ini_get_double(double_section, "long", 0));
 
         ASSERT_EQ(10.5, ini_get_double(double_section, "nonexistent", 10.5));
+        PASS();
+}
+
+TEST test_cmdline_get_path(void)
+{
+        char *ptr, *exp;
+        char *home = getenv("HOME");
+
+        // return default, if nonexistent key
+        ASSERT_EQ(NULL, (ptr = cmdline_get_path("-nonexistent", NULL, "desc")));
+        ASSERT_STR_EQ("default", (ptr = cmdline_get_path("-nonexistent", "default", "desc")));
+        g_free(ptr);
+
+        // return path with replaced home
+        ASSERT_STR_EQ((exp = g_strconcat(home, "/path/from/cmdline", NULL)),
+                      (ptr = cmdline_get_path("-path", NULL, "desc")));
+        g_free(ptr);
+        g_free(exp);
+
         PASS();
 }
 
@@ -165,6 +206,38 @@ TEST test_option_get_string(void)
         PASS();
 }
 
+TEST test_option_get_path(void)
+{
+        char *section = "path";
+        char *ptr, *exp;
+        char *home = getenv("HOME");
+
+        // invalid ini, invalid cmdline
+        ASSERT_EQ(NULL, (ptr = option_get_path(section, "nonexistent", "-nonexistent", NULL, "desc")));
+        ASSERT_STR_EQ("default", (ptr = option_get_path(section, "nonexistent", "-nonexistent", "default", "desc")));
+        free(ptr);
+
+        //   valid ini, invalid cmdline
+        ASSERT_STR_EQ((exp = g_strconcat(home, "/.path/to/tilde", NULL)),
+                      (ptr = option_get_path(section, "expand_tilde", "-nonexistent", NULL, "desc")));
+        g_free(exp);
+        g_free(ptr);
+
+        //   valid ini,   valid cmdline
+        ASSERT_STR_EQ((exp = g_strconcat(home, "/path/from/cmdline", NULL)),
+                      (ptr = option_get_path(section, "expand_tilde", "-path", NULL, "desc")));
+        g_free(exp);
+        g_free(ptr);
+
+        // invalid ini,   valid cmdline
+        ASSERT_STR_EQ((exp = g_strconcat(home, "/path/from/cmdline", NULL)),
+                      (ptr = option_get_path(section, "nonexistent", "-path", NULL, "desc")));
+        g_free(exp);
+        g_free(ptr);
+
+        PASS();
+}
+
 TEST test_option_get_int(void)
 {
         char *int_section = "int";
@@ -215,11 +288,13 @@ SUITE(suite_option_parser)
         RUN_TEST(test_next_section);
         RUN_TEST(test_ini_get_bool);
         RUN_TEST(test_ini_get_string);
+        RUN_TEST(test_ini_get_path);
         RUN_TEST(test_ini_get_int);
         RUN_TEST(test_ini_get_double);
         char cmdline[] = "dunst -bool -b "
                 "-string \"A simple string from the cmdline\" -s Single_word_string "
                 "-int 3 -i 2 -negative -7 -zeroes 04 -intdecim 2.5 "
+                "-path ~/path/from/cmdline "
                 "-simple_double 2 -double 5.2"
                 ;
         int argc;
@@ -227,12 +302,14 @@ SUITE(suite_option_parser)
         g_shell_parse_argv(&cmdline[0], &argc, &argv, NULL);
         cmdline_load(argc, argv);
         RUN_TEST(test_cmdline_get_string);
+        RUN_TEST(test_cmdline_get_path);
         RUN_TEST(test_cmdline_get_int);
         RUN_TEST(test_cmdline_get_double);
         RUN_TEST(test_cmdline_get_bool);
         RUN_TEST(test_cmdline_create_usage);
 
         RUN_TEST(test_option_get_string);
+        RUN_TEST(test_option_get_path);
         RUN_TEST(test_option_get_int);
         RUN_TEST(test_option_get_double);
         RUN_TEST(test_option_get_bool);
