@@ -196,6 +196,8 @@ static void on_notify(GDBusConnection * connection,
 
                                         dict_value = g_variant_lookup_value(content, "image-data", G_VARIANT_TYPE("(iiibiiay)"));
                                         if (!dict_value)
+                                                dict_value = g_variant_lookup_value(content, "image_data", G_VARIANT_TYPE("(iiibiiay)"));
+                                        if (!dict_value)
                                                 dict_value = g_variant_lookup_value(content, "icon_data", G_VARIANT_TYPE("(iiibiiay)"));
                                         if (dict_value)
                                                 raw_icon = get_raw_image_from_data_hint(dict_value);
