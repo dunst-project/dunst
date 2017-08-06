@@ -57,8 +57,8 @@ void check_timeouts(void)
         if (displayed->length == 0)
                 return;
 
-        for (GList * iter = g_queue_peek_head_link(displayed); iter;
-             iter = iter->next) {
+        GList *iter = g_queue_peek_head_link(displayed);
+        while (iter) {
                 notification *n = iter->data;
 
                 /* don't timeout when user is idle */
@@ -72,12 +72,12 @@ void check_timeouts(void)
                         continue;
                 }
 
+                /* shift iter before we possibly delete the current notification */
+                iter = iter->next;
+
                 /* remove old message */
                 if (difftime(time(NULL), n->start) > n->timeout) {
-                        /* close_notification may conflict with iter, so restart */
                         notification_close(n, 1);
-                        check_timeouts();
-                        return;
                 }
         }
 }
