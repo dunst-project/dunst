@@ -16,6 +16,8 @@ void rule_apply(rule_t *r, notification *n)
                 n->timeout = r->timeout;
         if (r->urgency != URG_NONE)
                 n->urgency = r->urgency;
+        if (r->fullscreen != FS_NULL)
+                n->fullscreen = r->fullscreen;
         if (r->history_ignore != -1)
                 n->history_ignore = r->history_ignore;
         if (r->set_transient != -1)
@@ -69,6 +71,7 @@ void rule_init(rule_t *r)
         r->msg_urgency = URG_NONE;
         r->timeout = -1;
         r->urgency = URG_NONE;
+        r->fullscreen = FS_NULL;
         r->markup = MARKUP_NULL;
         r->new_icon = NULL;
         r->history_ignore = false;

@@ -284,6 +284,8 @@ notification *notification_create(void)
         n->transient = false;
         n->progress = -1;
 
+        n->fullscreen = FS_SHOW;
+
         return n;
 }
 

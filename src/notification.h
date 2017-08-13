@@ -9,6 +9,12 @@
 
 #define DUNST_NOTIF_MAX_CHARS 5000
 
+enum behavior_fullscreen {
+        FS_NULL,  //!< Invalid value
+        FS_DELAY, //!< Delay the notification until leaving fullscreen mode
+        FS_SHOW,  //!< Show the message when in fullscreen mode
+};
+
 /// Representing the urgencies according to the notification spec
 enum urgency {
         URG_NONE = -1, /**< Urgency not set (invalid) */
@@ -69,6 +75,7 @@ typedef struct _notification {
         bool first_render;      /**< markup has been rendered before? */
         int dup_count;          /**< amount of duplicate notifications stacked onto this */
         int displayed_height;
+        enum behavior_fullscreen fullscreen; //!< The instruction what to do with it, when desktop enters fullscreen
 
         /* derived fields */
         char *msg;            /**< formatted message */
