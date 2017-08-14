@@ -93,6 +93,9 @@ rule_t default_rules[] = {
 
         /*   name,    appname,       summary,        body, icon, category, msg_urgency, timeout, urgency,  markup,      history_ignore, match_transient, set_transient, new_icon, fg,   bg,        format,  script */
         {    "empty", NULL,          NULL,           NULL, NULL, NULL,     -1,          -1,      -1,       MARKUP_NULL, -1,             -1,              -1,            NULL,     NULL, NULL,      NULL,    NULL},
+        /* ignore transient hints in history by default */
+        {    "ignore_transient_in_history",
+                      NULL,          NULL,           NULL, NULL, NULL,     -1,          -1,      -1,       MARKUP_NULL,  1,              1,              -1,            NULL,     NULL, NULL,      NULL,    NULL},
         /* { "rule1", "notify-send", NULL,           NULL, NULL, NULL,     -1,          -1,      -1,       MARKUP_NULL, -1,             -1,              -1,            NULL,     NULL, NULL,      "%s %b", NULL}, */
         /* { "rule2", "Pidgin",      "*says*,        NULL, NULL, NULL,     -1,          -1,      CRITICAL, MARKUP_NULL, -1,             -1,              -1,            NULL,     NULL, NULL,      NULL,    NULL}, */
         /* { "rule3", "Pidgin",      "*signed on*",  NULL, NULL, NULL,     -1,          -1,      LOW,      MARKUP_NULL, -1,             -1,              -1,            NULL,     NULL, NULL,      NULL,    NULL}, */
