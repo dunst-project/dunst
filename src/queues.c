@@ -284,11 +284,13 @@ void queues_history_push_all(void)
 }
 
 /* see queues.h */
-void queues_check_timeouts(bool idle)
+void queues_check_timeouts(bool idle, bool fullscreen)
 {
         /* nothing to do */
         if (displayed->length == 0)
                 return;
+
+        bool is_idle = fullscreen ? false : idle;
 
         GList *iter = g_queue_peek_head_link(displayed);
         while (iter) {
@@ -302,7 +304,7 @@ void queues_check_timeouts(bool idle)
                 iter = iter->next;
 
                 /* don't timeout when user is idle */
-                if (idle && !n->transient) {
+                if (is_idle && !n->transient) {
                         n->start = g_get_monotonic_time();
                         continue;
                 }
@@ -320,7 +322,7 @@ void queues_check_timeouts(bool idle)
 }
 
 /* see queues.h */
-void queues_update(void)
+void queues_update(bool fullscreen)
 {
         if (pause_displayed) {
                 while (displayed->length > 0) {
@@ -331,17 +333,23 @@ void queues_update(void)
         }
 
         /* move notifications from queue to displayed */
-        while (waiting->length > 0) {
+        GList *iter = g_queue_peek_head_link(waiting);
+        while (iter) {
+                notification *n = iter->data;
+                GList *nextiter = iter->next;
 
                 if (displayed_limit > 0 && displayed->length >= displayed_limit) {
                         /* the list is full */
                         break;
                 }
 
-                notification *n = g_queue_pop_head(waiting);
-
                 if (!n)
                         return;
+
+                if (fullscreen && n->fullscreen == FS_DELAY) {
+                        iter = nextiter;
+                        continue;
+                }
 
                 n->start = g_get_monotonic_time();
 
@@ -349,7 +357,10 @@ void queues_update(void)
                         notification_run_script(n);
                 }
 
+                g_queue_delete_link(waiting, iter);
                 g_queue_insert_sorted(displayed, n, notification_cmp_data, NULL);
+
+                iter = nextiter;
         }
 }
 
