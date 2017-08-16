@@ -13,6 +13,7 @@
 #include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
+#include <libgen.h>
 
 #include "dbus.h"
 #include "dunst.h"
@@ -313,10 +314,12 @@ int notification_init(notification * n, int id)
                 n->markup);
 
         if (n->icon) {
-                n->msg = notification_replace_format("%I", basename(n->icon),
+                char *tmp = g_strdup(n->icon);
+                n->msg = notification_replace_format("%I", basename(tmp),
                         n->msg, MARKUP_NO);
                 n->msg = notification_replace_format("%i", n->icon,
                         n->msg, MARKUP_NO);
+                g_free(tmp);
         }
 
         if (n->progress) {
