@@ -61,6 +61,13 @@ void check_timeouts(void)
         while (iter) {
                 notification *n = iter->data;
 
+                /*
+                 * Update iter to the next item before we either exit the
+                 * current iteration of the loop or potentially delete the
+                 * notification which would invalidate the pointer.
+                 */
+                iter = iter->next;
+
                 /* don't timeout when user is idle */
                 if (x_is_idle()) {
                         n->start = time(NULL);
@@ -71,9 +78,6 @@ void check_timeouts(void)
                 if (n->start == 0 || n->timeout == 0) {
                         continue;
                 }
-
-                /* shift iter before we possibly delete the current notification */
-                iter = iter->next;
 
                 /* remove old message */
                 if (difftime(time(NULL), n->start) > n->timeout) {
