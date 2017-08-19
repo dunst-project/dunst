@@ -1,6 +1,8 @@
 #include "greatest.h"
 #include "src/utils.h"
 
+#include <glib.h>
+
 TEST test_string_replace_char(void)
 {
         char *text = malloc(128 * sizeof(char));
@@ -102,6 +104,32 @@ TEST test_string_strip_delimited(void)
         PASS();
 }
 
+TEST test_string_to_path(void)
+{
+        char *ptr, *exp;
+        char *home = getenv("HOME");
+
+        exp = "/usr/local/bin/script";
+        ASSERT_STR_EQ(exp, (ptr = string_to_path(g_strdup(exp))));
+        free(ptr);
+
+        exp = "~path/with/wrong/tilde";
+        ASSERT_STR_EQ(exp, (ptr = string_to_path(g_strdup(exp))));
+        free(ptr);
+
+        ASSERT_STR_EQ((exp = g_strconcat(home, "/.path/with/tilde", NULL)),
+                      (ptr = string_to_path(g_strdup("~/.path/with/tilde"))));
+        free(exp);
+        free(ptr);
+
+        ASSERT_STR_EQ((exp = g_strconcat(home, "/.path/with/tilde and some space", NULL)),
+                      (ptr = string_to_path(g_strdup("~/.path/with/tilde and some space"))));
+        free(exp);
+        free(ptr);
+
+        PASS();
+}
+
 SUITE(suite_utils)
 {
         RUN_TEST(test_string_replace_char);
@@ -109,5 +137,6 @@ SUITE(suite_utils)
         RUN_TEST(test_string_replace);
         RUN_TEST(test_string_append);
         RUN_TEST(test_string_strip_delimited);
+        RUN_TEST(test_string_to_path);
 }
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
