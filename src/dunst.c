@@ -181,8 +181,7 @@ static int get_sleep_time(void)
                 return 1;
         }
 
-        bool have_ttl = false;
-        int min_ttl = 0;
+        int min_ttl = INT_MAX;
         int max_age = 0;
         for (GList *iter = g_queue_peek_head_link(displayed); iter;
                         iter = iter->next) {
@@ -191,12 +190,7 @@ static int get_sleep_time(void)
                 max_age = MAX(max_age, notification_get_age(n));
                 int ttl = notification_get_ttl(n);
                 if (ttl >= 0) {
-                        if (have_ttl) {
-                                min_ttl = MIN(min_ttl, ttl);
-                        } else {
-                                min_ttl = ttl;
-                                have_ttl = true;
-                        }
+                        min_ttl = MIN(min_ttl, ttl);
                 }
         }
 
@@ -207,11 +201,7 @@ static int get_sleep_time(void)
                 return 1;
         }
 
-        if (!have_ttl) {
-                min_timeout = show_age_timeout;
-        } else {
-                min_timeout = MIN(show_age_timeout, min_ttl);
-        }
+        min_timeout = MIN(show_age_timeout, min_ttl);
 
         /* show_age_timeout might be negative */
         if (min_timeout < 1) {
