@@ -4,6 +4,7 @@
 
 ### Fixed
 - `new_icon` rule being ignored on notifications that had a raw icon
+- Do not replace format strings, which are in notification content
 
 ## Changed
 - transient hints are now handled
