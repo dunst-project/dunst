@@ -341,6 +341,7 @@ static GdkPixbuf *get_pixbuf_from_path(char *icon_path)
                                 /* try svg */
                                 maybe_icon_path = g_strconcat(current_folder, "/", icon_path, ".svg", NULL);
                                 if (!does_file_exist(maybe_icon_path)) {
+                                        g_free(maybe_icon_path);
                                         /* fallback to png */
                                         maybe_icon_path = g_strconcat(current_folder, "/", icon_path, ".png", NULL);
                                 }
