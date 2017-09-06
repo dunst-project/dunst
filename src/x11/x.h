@@ -48,9 +48,9 @@ void x_win_hide(void);
 void x_win_show(void);
 
 /* shortcut */
-void x_shortcut_init(keyboard_shortcut * shortcut);
-void x_shortcut_ungrab(keyboard_shortcut * ks);
-int x_shortcut_grab(keyboard_shortcut * ks);
+void x_shortcut_init(keyboard_shortcut *shortcut);
+void x_shortcut_ungrab(keyboard_shortcut *ks);
+int x_shortcut_grab(keyboard_shortcut *ks);
 KeySym x_shortcut_string_to_mask(const char *str);
 
 /* X misc */
@@ -58,10 +58,10 @@ bool x_is_idle(void);
 void x_setup(void);
 void x_free(void);
 
-gboolean x_mainloop_fd_dispatch(GSource * source, GSourceFunc callback,
+gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback,
                                 gpointer user_data);
-gboolean x_mainloop_fd_check(GSource * source);
-gboolean x_mainloop_fd_prepare(GSource * source, gint * timeout);
+gboolean x_mainloop_fd_check(GSource *source);
+gboolean x_mainloop_fd_prepare(GSource *source, gint *timeout);
 
 #endif
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

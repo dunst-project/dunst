@@ -207,7 +207,7 @@ char *clean_value(char *value)
 
 }
 
-int load_ini_file(FILE * fp)
+int load_ini_file(FILE *fp)
 {
         if (!fp)
                 return 1;

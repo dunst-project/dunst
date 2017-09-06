@@ -63,15 +63,15 @@ typedef struct _notification {
 } notification;
 
 notification *notification_create(void);
-int notification_init(notification * n, int id);
-void notification_free(notification * n);
+int notification_init(notification *n, int id);
+void notification_free(notification *n);
 int notification_close_by_id(int id, int reason);
 int notification_cmp(const void *a, const void *b);
 int notification_cmp_data(const void *a, const void *b, void *data);
 int notification_is_duplicate(const notification *a, const notification *b);
-void notification_run_script(notification * n);
-int notification_close(notification * n, int reason);
-void notification_print(notification * n);
+void notification_run_script(notification *n);
+int notification_close(notification *n, int reason);
+void notification_print(notification *n);
 char *notification_replace_format(const char *needle, const char *replacement, char *haystack, enum markup_mode markup);
 void notification_update_text_to_render(notification *n);
 int notification_get_ttl(notification *n);

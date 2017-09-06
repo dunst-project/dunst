@@ -30,7 +30,7 @@ int next_notification_id = 1;
  * print a human readable representation
  * of the given notification to stdout.
  */
-void notification_print(notification * n)
+void notification_print(notification *n)
 {
         printf("{\n");
         printf("\tappname: '%s'\n", n->appname);
@@ -71,7 +71,7 @@ void notification_print(notification * n)
  * Run the script associated with the
  * given notification.
  */
-void notification_run_script(notification * n)
+void notification_run_script(notification *n)
 {
         if (!n->script || strlen(n->script) < 1)
                 return;
@@ -167,7 +167,7 @@ int notification_is_duplicate(const notification *a, const notification *b)
 /*
  * Free the memory used by the given notification.
  */
-void notification_free(notification * n)
+void notification_free(notification *n)
 {
         assert(n != NULL);
         g_free(n->appname);
@@ -204,8 +204,8 @@ void notification_free(notification * n)
  */
 char *notification_replace_format(const char *needle, const char *replacement,
                                   char *haystack, enum markup_mode markup_mode) {
-        char* tmp;
-        char* ret;
+        char *tmp;
+        char *ret;
 
         tmp = markup_transform(g_strdup(replacement), markup_mode);
         ret = string_replace_all(needle, tmp, haystack);
@@ -279,7 +279,7 @@ void notification_init_defaults(notification *n)
  * notification_create, it is undefined behaviour to pass a notification
  * allocated some other way.
  */
-int notification_init(notification * n, int id)
+int notification_init(notification *n, int id)
 {
         assert(n != NULL);
 
@@ -337,7 +337,7 @@ int notification_init(notification * n, int id)
 
         /* truncate overlong messages */
         if (strlen(n->msg) > DUNST_NOTIF_MAX_CHARS) {
-                char* buffer = g_malloc(DUNST_NOTIF_MAX_CHARS);
+                char *buffer = g_malloc(DUNST_NOTIF_MAX_CHARS);
                 strncpy(buffer, n->msg, DUNST_NOTIF_MAX_CHARS);
                 buffer[DUNST_NOTIF_MAX_CHARS-1] = '\0';
 
@@ -365,7 +365,7 @@ int notification_init(notification * n, int id)
 
         /* check if n is a duplicate */
         if (settings.stack_duplicates) {
-                for (GList * iter = g_queue_peek_head_link(queue); iter;
+                for (GList *iter = g_queue_peek_head_link(queue); iter;
                      iter = iter->next) {
                         notification *orig = iter->data;
                         if (notification_is_duplicate(orig, n)) {
@@ -388,7 +388,7 @@ int notification_init(notification * n, int id)
                         }
                 }
 
-                for (GList * iter = g_queue_peek_head_link(displayed); iter;
+                for (GList *iter = g_queue_peek_head_link(displayed); iter;
                      iter = iter->next) {
                         notification *orig = iter->data;
                         if (notification_is_duplicate(orig, n)) {
@@ -496,7 +496,7 @@ int notification_close_by_id(int id, int reason)
 {
         notification *target = NULL;
 
-        for (GList * iter = g_queue_peek_head_link(displayed); iter;
+        for (GList *iter = g_queue_peek_head_link(displayed); iter;
              iter = iter->next) {
                 notification *n = iter->data;
                 if (n->id == id) {
@@ -507,7 +507,7 @@ int notification_close_by_id(int id, int reason)
                 }
         }
 
-        for (GList * iter = g_queue_peek_head_link(queue); iter;
+        for (GList *iter = g_queue_peek_head_link(queue); iter;
              iter = iter->next) {
                 notification *n = iter->data;
                 if (n->id == id) {
@@ -529,7 +529,7 @@ int notification_close_by_id(int id, int reason)
 /*
  * Close the given notification. SEE notification_close_by_id.
  */
-int notification_close(notification * n, int reason)
+int notification_close(notification *n, int reason)
 {
         assert(n != NULL);
         return notification_close_by_id(n->id, reason);

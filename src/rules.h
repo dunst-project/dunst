@@ -32,10 +32,10 @@ typedef struct _rule_t {
 
 extern GSList *rules;
 
-void rule_init(rule_t * r);
-void rule_apply(rule_t * r, notification * n);
-void rule_apply_all(notification * n);
-bool rule_matches_notification(rule_t * r, notification * n);
+void rule_init(rule_t *r);
+void rule_apply(rule_t *r, notification *n);
+void rule_apply_all(notification *n);
+bool rule_matches_notification(rule_t *r, notification *n);
 
 #endif
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
