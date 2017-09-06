@@ -99,3 +99,5 @@ rule_t default_rules[] = {
         /* { "rule4", "Pidgin",       "*signed off*",  NULL,  NULL, NULL,     -1,          -1,       LOW,      MARKUP_NULL,  false,           NULL,     NULL, NULL,      NULL,    NULL}, */
         /* { "rule5", NULL,           "*foobar*",      NULL,  NULL, NULL,     -1,          -1,       -1,       MARKUP_NULL,  false,           NULL,     NULL, "#00FF00", NULL,    NULL}, */
 };
+
+/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
