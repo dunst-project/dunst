@@ -387,6 +387,13 @@ int notification_init(notification *n, int id)
                                                 n->progress ? pg : "",
                                                 MARKUP_NO);
                                 break;
+                        case '%':
+                                n->msg = notification_replace_single_field(
+                                                n->msg,
+                                                &substr,
+                                                "%",
+                                                MARKUP_NO);
+                                break;
                         case '\0':
                                 fprintf(stderr, "WARNING: format_string has trailing %% character."
                                                 "To escape it use %%%%.");
