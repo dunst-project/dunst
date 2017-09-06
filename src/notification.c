@@ -207,28 +207,24 @@ void notification_free(notification *n)
  * to point to the first char, which occurs after replacement.
  *
  */
-char *notification_replace_single_field(char *haystack, char **needle,
+void notification_replace_single_field(char **haystack, char **needle,
                 const char *replacement, enum markup_mode markup_mode) {
 
         assert(*needle[0] == '%');
         // needle has to point into haystack (but not on the last char)
-        assert(*needle >= haystack);
-        assert(*needle - haystack < strlen(haystack) - 1);
+        assert(*needle >= *haystack);
+        assert(*needle - *haystack < strlen(*haystack) - 1);
 
-        char *ret;
-
-        int pos = *needle - haystack;
+        int pos = *needle - *haystack;
 
         char *input = markup_transform(g_strdup(replacement), markup_mode);
-        ret = string_replace_at(haystack, pos, 2, input);
+        *haystack = string_replace_at(*haystack, pos, 2, input);
 
         // point the needle to the next char
         // which was originally in haystack
-        *needle = ret + (*needle - haystack) + strlen(input);
+        *needle = *haystack + pos + strlen(input);
 
         g_free(input);
-
-        return ret;
 }
 
 char *notification_extract_markup_urls(char **str_ptr) {
@@ -333,66 +329,66 @@ int notification_init(notification *n, int id)
 
                 switch(substr[1]){
                         case 'a':
-                                n->msg = notification_replace_single_field(
-                                                n->msg,
-                                                &substr,
-                                                n->appname,
-                                                MARKUP_NO);
+                                notification_replace_single_field(
+                                        &n->msg,
+                                        &substr,
+                                        n->appname,
+                                        MARKUP_NO);
                                 break;
                         case 's':
-                                n->msg = notification_replace_single_field(
-                                                n->msg,
-                                                &substr,
-                                                n->summary,
-                                                n->markup);
+                                notification_replace_single_field(
+                                        &n->msg,
+                                        &substr,
+                                        n->summary,
+                                        n->markup);
                                 break;
                         case 'b':
-                                n->msg = notification_replace_single_field(
-                                                n->msg,
-                                                &substr,
-                                                n->body,
-                                                n->markup);
+                                notification_replace_single_field(
+                                        &n->msg,
+                                        &substr,
+                                        n->body,
+                                        n->markup);
                                 break;
                         case 'I':
-                                n->msg = notification_replace_single_field(
-                                                n->msg,
-                                                &substr,
-                                                n->icon ? basename(n->icon) : "",
-                                                MARKUP_NO);
+                                notification_replace_single_field(
+                                        &n->msg,
+                                        &substr,
+                                        n->icon ? basename(n->icon) : "",
+                                        MARKUP_NO);
                                 break;
                         case 'i':
-                                n->msg = notification_replace_single_field(
-                                                n->msg,
-                                                &substr,
-                                                n->icon ? n->icon : "",
-                                                MARKUP_NO);
+                                notification_replace_single_field(
+                                        &n->msg,
+                                        &substr,
+                                        n->icon ? n->icon : "",
+                                        MARKUP_NO);
                                 break;
                         case 'p':
                                 if (n->progress)
                                         sprintf(pg, "[%3d%%]", n->progress - 1);
 
-                                n->msg = notification_replace_single_field(
-                                                n->msg,
-                                                &substr,
-                                                n->progress ? pg : "",
-                                                MARKUP_NO);
+                                notification_replace_single_field(
+                                        &n->msg,
+                                        &substr,
+                                        n->progress ? pg : "",
+                                        MARKUP_NO);
                                 break;
                         case 'n':
                                 if (n->progress)
                                         sprintf(pg, "%d", n->progress - 1);
 
-                                n->msg = notification_replace_single_field(
-                                                n->msg,
-                                                &substr,
-                                                n->progress ? pg : "",
-                                                MARKUP_NO);
+                                notification_replace_single_field(
+                                        &n->msg,
+                                        &substr,
+                                        n->progress ? pg : "",
+                                        MARKUP_NO);
                                 break;
                         case '%':
-                                n->msg = notification_replace_single_field(
-                                                n->msg,
-                                                &substr,
-                                                "%",
-                                                MARKUP_NO);
+                                notification_replace_single_field(
+                                        &n->msg,
+                                        &substr,
+                                        "%",
+                                        MARKUP_NO);
                                 break;
                         case '\0':
                                 fprintf(stderr, "WARNING: format_string has trailing %% character."

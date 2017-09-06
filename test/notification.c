@@ -77,17 +77,20 @@ TEST test_notification_replace_single_field(void)
 
         strcpy(str, "Markup %a preserved");
         substr = strchr(str, '%');
-        ASSERT_STR_EQ("Markup and &amp; <i>is</i> preserved", (str = notification_replace_single_field(str, &substr, "and &amp; <i>is</i>", MARKUP_FULL)));
+        notification_replace_single_field(&str, &substr, "and &amp; <i>is</i>", MARKUP_FULL);
+        ASSERT_STR_EQ("Markup and &amp; <i>is</i> preserved", str);
         ASSERT_EQ(26, substr - str);
 
         strcpy(str, "Markup %a escaped");
         substr = strchr(str, '%');
-        ASSERT_STR_EQ("Markup and &amp; &lt;i&gt;is&lt;/i&gt; escaped", (str = notification_replace_single_field(str, &substr, "and & <i>is</i>", MARKUP_NO)));
+        notification_replace_single_field(&str, &substr, "and & <i>is</i>", MARKUP_NO);
+        ASSERT_STR_EQ("Markup and &amp; &lt;i&gt;is&lt;/i&gt; escaped", str);
         ASSERT_EQ(38, substr - str);
 
         strcpy(str, "Markup %a");
         substr = strchr(str, '%');
-        ASSERT_STR_EQ("Markup is removed and &amp; escaped", (str = notification_replace_single_field(str, &substr, "<i>is removed</i> and & escaped", MARKUP_STRIP)));
+        notification_replace_single_field(&str, &substr, "<i>is removed</i> and & escaped", MARKUP_STRIP);
+        ASSERT_STR_EQ("Markup is removed and &amp; escaped", str);
         ASSERT_EQ(35, substr - str);
 
         g_free(str);
