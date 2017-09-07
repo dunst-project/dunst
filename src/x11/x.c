@@ -108,9 +108,9 @@ static color_t calculate_foreground_color(color_t bg)
 
         int signedness = darken ? -1 : 1;
 
-        color.r = _apply_delta(color.r, c_delta * signedness);
-        color.g = _apply_delta(color.g, c_delta * signedness);
-        color.b = _apply_delta(color.b, c_delta * signedness);
+        color.r = _apply_delta(color.r, c_delta *signedness);
+        color.g = _apply_delta(color.g, c_delta *signedness);
+        color.b = _apply_delta(color.b, c_delta *signedness);
 
         return color;
 }
@@ -737,7 +737,7 @@ static KeySym x_numlock_mod()
 {
         static KeyCode nl = 0;
         KeySym sym = 0;
-        XModifierKeymap * map = XGetModifierMapping(xctx.dpy);
+        XModifierKeymap *map = XGetModifierMapping(xctx.dpy);
 
         if (!nl)
                 nl = XKeysymToKeycode(xctx.dpy, XStringToKeysym("Num_Lock"));
@@ -787,7 +787,7 @@ end:
  * Helper function to use glib's mainloop mechanic
  * with Xlib
  */
-gboolean x_mainloop_fd_prepare(GSource * source, gint * timeout)
+gboolean x_mainloop_fd_prepare(GSource *source, gint *timeout)
 {
         if (timeout)
                 *timeout = -1;
@@ -800,7 +800,7 @@ gboolean x_mainloop_fd_prepare(GSource * source, gint * timeout)
  * Helper function to use glib's mainloop mechanic
  * with Xlib
  */
-gboolean x_mainloop_fd_check(GSource * source)
+gboolean x_mainloop_fd_check(GSource *source)
 {
         return XPending(xctx.dpy) > 0;
 }
@@ -808,7 +808,7 @@ gboolean x_mainloop_fd_check(GSource * source)
 /*
  * Main Dispatcher for XEvents
  */
-gboolean x_mainloop_fd_dispatch(GSource * source, GSourceFunc callback,
+gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback,
                                 gpointer user_data)
 {
         XEvent ev;
@@ -904,7 +904,7 @@ static void x_handle_click(XEvent ev)
                 int y = settings.separator_height;
                 notification *n = NULL;
                 int first = true;
-                for (GList * iter = g_queue_peek_head_link(displayed); iter;
+                for (GList *iter = g_queue_peek_head_link(displayed); iter;
                      iter = iter->next) {
                         n = iter->data;
                         if (ev.xbutton.y > y && ev.xbutton.y < y + n->displayed_height)
@@ -1155,7 +1155,7 @@ KeySym x_shortcut_string_to_mask(const char *str)
 /*
  * Error handler for grabbing mouse and keyboard errors.
  */
-static int GrabXErrorHandler(Display * display, XErrorEvent * e)
+static int GrabXErrorHandler(Display *display, XErrorEvent *e)
 {
         dunst_grab_errored = true;
         char err_buf[BUFSIZ];
@@ -1195,7 +1195,7 @@ static int x_shortcut_tear_down_error_handler(void)
 /*
  * Grab the given keyboard shortcut.
  */
-int x_shortcut_grab(keyboard_shortcut * ks)
+int x_shortcut_grab(keyboard_shortcut *ks)
 {
         if (!ks->is_valid)
                 return 1;
@@ -1222,7 +1222,7 @@ int x_shortcut_grab(keyboard_shortcut * ks)
 /*
  * Ungrab the given keyboard shortcut.
  */
-void x_shortcut_ungrab(keyboard_shortcut * ks)
+void x_shortcut_ungrab(keyboard_shortcut *ks)
 {
         Window root;
         root = RootWindow(xctx.dpy, DefaultScreen(xctx.dpy));
@@ -1235,7 +1235,7 @@ void x_shortcut_ungrab(keyboard_shortcut * ks)
 /*
  * Initialize the keyboard shortcut.
  */
-void x_shortcut_init(keyboard_shortcut * ks)
+void x_shortcut_init(keyboard_shortcut *ks)
 {
         if (ks == NULL || ks->str == NULL)
                 return;

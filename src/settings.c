@@ -596,7 +596,7 @@ void load_settings(char *cmdline_config_path)
 
                 /* check for existing rule with same name */
                 rule_t *r = NULL;
-                for (GSList * iter = rules; iter; iter = iter->next) {
+                for (GSList *iter = rules; iter; iter = iter->next) {
                         rule_t *match = iter->data;
                         if (match->name &&
                             strcmp(match->name, cur_section) == 0)

@@ -290,7 +290,7 @@ static int x_follow_tear_down_error_handler(void)
         return dunst_follow_errored;
 }
 
-static int FollowXErrorHandler(Display * display, XErrorEvent * e)
+static int FollowXErrorHandler(Display *display, XErrorEvent *e)
 {
         dunst_follow_errored = true;
         char err_buf[BUFSIZ];

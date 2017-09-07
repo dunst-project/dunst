@@ -22,7 +22,7 @@ void string_strip_delimited(char *str, char a, char b);
 void die(char *msg, int exit_value);
 
 /* replace tilde and path-specific values with its equivalents */
-char* string_to_path(char* string);
+char *string_to_path(char *string);
 
 #endif
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

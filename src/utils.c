@@ -105,10 +105,10 @@ void string_strip_delimited(char *str, char a, char b)
         str[iwrite] = 0;
 }
 
-char* string_to_path(char* string) {
+char *string_to_path(char *string) {
 
         if (string && 0 == strncmp(string, "~/", 2)) {
-                char* home = g_strconcat(getenv("HOME"), "/", NULL);
+                char *home = g_strconcat(getenv("HOME"), "/", NULL);
 
                 string = string_replace("~/", home, string);
 

@@ -59,30 +59,30 @@ static const char *introspection_xml =
     "   </interface>"
     "</node>";
 
-static void on_get_capabilities(GDBusConnection * connection,
-                              const gchar * sender,
-                              const GVariant * parameters,
-                              GDBusMethodInvocation * invocation);
-static void on_notify(GDBusConnection * connection,
-                     const gchar * sender,
-                     GVariant * parameters, GDBusMethodInvocation * invocation);
-static void on_close_notification(GDBusConnection * connection,
-                                const gchar * sender,
-                                GVariant * parameters,
-                                GDBusMethodInvocation * invocation);
-static void on_get_server_information(GDBusConnection * connection,
-                                   const gchar * sender,
-                                   const GVariant * parameters,
-                                   GDBusMethodInvocation * invocation);
-static RawImage * get_raw_image_from_data_hint(GVariant *icon_data);
+static void on_get_capabilities(GDBusConnection *connection,
+                              const gchar *sender,
+                              const GVariant *parameters,
+                              GDBusMethodInvocation *invocation);
+static void on_notify(GDBusConnection *connection,
+                     const gchar *sender,
+                     GVariant *parameters, GDBusMethodInvocation *invocation);
+static void on_close_notification(GDBusConnection *connection,
+                                const gchar *sender,
+                                GVariant *parameters,
+                                GDBusMethodInvocation *invocation);
+static void on_get_server_information(GDBusConnection *connection,
+                                   const gchar *sender,
+                                   const GVariant *parameters,
+                                   GDBusMethodInvocation *invocation);
+static RawImage *get_raw_image_from_data_hint(GVariant *icon_data);
 
-void handle_method_call(GDBusConnection * connection,
-                        const gchar * sender,
-                        const gchar * object_path,
-                        const gchar * interface_name,
-                        const gchar * method_name,
-                        GVariant * parameters,
-                        GDBusMethodInvocation * invocation, gpointer user_data)
+void handle_method_call(GDBusConnection *connection,
+                        const gchar *sender,
+                        const gchar *object_path,
+                        const gchar *interface_name,
+                        const gchar *method_name,
+                        GVariant *parameters,
+                        GDBusMethodInvocation *invocation, gpointer user_data)
 {
         if (g_strcmp0(method_name, "GetCapabilities") == 0) {
                 on_get_capabilities(connection, sender, parameters, invocation);
@@ -99,10 +99,10 @@ void handle_method_call(GDBusConnection * connection,
         }
 }
 
-static void on_get_capabilities(GDBusConnection * connection,
-                              const gchar * sender,
-                              const GVariant * parameters,
-                              GDBusMethodInvocation * invocation)
+static void on_get_capabilities(GDBusConnection *connection,
+                              const gchar *sender,
+                              const GVariant *parameters,
+                              GDBusMethodInvocation *invocation)
 {
         GVariantBuilder *builder;
         GVariant *value;
@@ -122,9 +122,9 @@ static void on_get_capabilities(GDBusConnection * connection,
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
 }
 
-static void on_notify(GDBusConnection * connection,
-                     const gchar * sender,
-                     GVariant * parameters, GDBusMethodInvocation * invocation)
+static void on_notify(GDBusConnection *connection,
+                     const gchar *sender,
+                     GVariant *parameters, GDBusMethodInvocation *invocation)
 {
 
         gchar *appname = NULL;
@@ -270,10 +270,10 @@ static void on_notify(GDBusConnection * connection,
         run(NULL);
 }
 
-static void on_close_notification(GDBusConnection * connection,
-                                const gchar * sender,
-                                GVariant * parameters,
-                                GDBusMethodInvocation * invocation)
+static void on_close_notification(GDBusConnection *connection,
+                                const gchar *sender,
+                                GVariant *parameters,
+                                GDBusMethodInvocation *invocation)
 {
         guint32 id;
         g_variant_get(parameters, "(u)", &id);
@@ -282,10 +282,10 @@ static void on_close_notification(GDBusConnection * connection,
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
 }
 
-static void on_get_server_information(GDBusConnection * connection,
-                                   const gchar * sender,
-                                   const GVariant * parameters,
-                                   GDBusMethodInvocation * invocation)
+static void on_get_server_information(GDBusConnection *connection,
+                                   const gchar *sender,
+                                   const GVariant *parameters,
+                                   GDBusMethodInvocation *invocation)
 {
         GVariant *value;
 
@@ -295,7 +295,7 @@ static void on_get_server_information(GDBusConnection * connection,
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
 }
 
-void notification_closed(notification * n, int reason)
+void notification_closed(notification *n, int reason)
 {
         if (!dbus_conn) {
                 fprintf(stderr, "ERROR: Tried to close notification but dbus connection not set!\n");
@@ -318,7 +318,7 @@ void notification_closed(notification * n, int reason)
 
 }
 
-void action_invoked(notification * n, const char *identifier)
+void action_invoked(notification *n, const char *identifier)
 {
         GVariant *body = g_variant_new("(us)", n->id, identifier);
         GError *err = NULL;
@@ -339,8 +339,8 @@ static const GDBusInterfaceVTable interface_vtable = {
         handle_method_call
 };
 
-static void on_bus_acquired(GDBusConnection * connection,
-                            const gchar * name, gpointer user_data)
+static void on_bus_acquired(GDBusConnection *connection,
+                            const gchar *name, gpointer user_data)
 {
         guint registration_id;
 
@@ -358,20 +358,20 @@ static void on_bus_acquired(GDBusConnection * connection,
         }
 }
 
-static void on_name_acquired(GDBusConnection * connection,
-                             const gchar * name, gpointer user_data)
+static void on_name_acquired(GDBusConnection *connection,
+                             const gchar *name, gpointer user_data)
 {
         dbus_conn = connection;
 }
 
-static void on_name_lost(GDBusConnection * connection,
-                         const gchar * name, gpointer user_data)
+static void on_name_lost(GDBusConnection *connection,
+                         const gchar *name, gpointer user_data)
 {
         fprintf(stderr, "Name Lost. Is Another notification daemon running?\n");
         exit(1);
 }
 
-static RawImage * get_raw_image_from_data_hint(GVariant *icon_data)
+static RawImage *get_raw_image_from_data_hint(GVariant *icon_data)
 {
     RawImage *image = g_malloc(sizeof(RawImage));
     GVariant *data_variant;
