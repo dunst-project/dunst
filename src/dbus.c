@@ -138,6 +138,7 @@ static void on_notify(GDBusConnection *connection,
         /* hints */
         gint urgency = 1;
         gint progress = -1;
+        gboolean transient = 0;
         gchar *fgcolor = NULL;
         gchar *bgcolor = NULL;
         gchar *category = NULL;
@@ -202,14 +203,23 @@ static void on_notify(GDBusConnection *connection,
                                         if (dict_value)
                                                 raw_icon = get_raw_image_from_data_hint(dict_value);
 
-                                        dict_value = g_variant_lookup_value(content, "value", G_VARIANT_TYPE_INT32);
-                                        if (dict_value) {
+                                        /* Check for transient hints
+                                         *
+                                         * According to the spec, the transient hint should be boolean.
+                                         * But notify-send does not support hints of type 'boolean'.
+                                         * So let's check for int and boolean until notify-send is fixed.
+                                         */
+                                        if((dict_value = g_variant_lookup_value(content, "transient", G_VARIANT_TYPE_BOOLEAN)))
+                                                transient = g_variant_get_boolean(dict_value);
+                                        else if((dict_value = g_variant_lookup_value(content, "transient", G_VARIANT_TYPE_UINT32)))
+                                                transient = g_variant_get_uint32(dict_value) > 0;
+                                        else if((dict_value = g_variant_lookup_value(content, "transient", G_VARIANT_TYPE_INT32)))
+                                                transient = g_variant_get_int32(dict_value) > 0;
+
+                                        if((dict_value = g_variant_lookup_value(content, "value", G_VARIANT_TYPE_INT32)))
                                                 progress = g_variant_get_int32(dict_value);
-                                        } else {
-                                                dict_value = g_variant_lookup_value(content, "value", G_VARIANT_TYPE_UINT32);
-                                                if (dict_value)
-                                                        progress = g_variant_get_uint32(dict_value);
-                                        }
+                                        else if((dict_value = g_variant_lookup_value(content, "value", G_VARIANT_TYPE_UINT32)))
+                                                progress = g_variant_get_uint32(dict_value);
                                 }
                                 break;
                         case 7:
@@ -246,6 +256,7 @@ static void on_notify(GDBusConnection *connection,
         n->urgency = urgency;
         n->category = category;
         n->dbus_client = g_strdup(sender);
+        n->transient = transient;
         if (actions->count > 0) {
                 n->actions = actions;
         } else {

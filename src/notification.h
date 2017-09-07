@@ -53,6 +53,7 @@ typedef struct _notification {
         int displayed_height;
         const char *color_strings[3];
         bool first_render;
+        bool transient;
 
         int progress;           /* percentage + 1, 0 to hide */
         int line_count;

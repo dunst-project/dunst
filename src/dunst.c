@@ -69,7 +69,7 @@ void check_timeouts(void)
                 iter = iter->next;
 
                 /* don't timeout when user is idle */
-                if (x_is_idle()) {
+                if (x_is_idle() && !n->transient) {
                         n->start = time(NULL);
                         continue;
                 }

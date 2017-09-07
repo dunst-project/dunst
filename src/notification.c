@@ -41,6 +41,7 @@ void notification_print(notification *n)
         printf("\tcategory: %s\n", n->category);
         printf("\ttimeout: %d\n", n->timeout);
         printf("\turgency: %d\n", n->urgency);
+        printf("\ttransient: %d\n", n->transient);
         printf("\tformatted: '%s'\n", n->msg);
         printf("\tfg: %s\n", n->color_strings[ColFG]);
         printf("\tbg: %s\n", n->color_strings[ColBG]);

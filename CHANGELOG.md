@@ -5,6 +5,11 @@
 ### Fixed
 - `new_icon` rule being ignored on notifications that had a raw icon
 
+## Changed
+- transient hints are now handled
+  An additional rule option (`match_transient` and `set_transient`) is added
+  to optionally reset the transient setting
+
 ## 1.2.0 - 2017-07-12
 
 ### Added
