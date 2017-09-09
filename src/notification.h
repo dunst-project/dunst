@@ -73,7 +73,7 @@ int notification_is_duplicate(const notification *a, const notification *b);
 void notification_run_script(notification *n);
 int notification_close(notification *n, int reason);
 void notification_print(notification *n);
-char *notification_replace_format(const char *needle, const char *replacement, char *haystack, enum markup_mode markup);
+void notification_replace_single_field(char **haystack, char **needle, const char *replacement, enum markup_mode markup_mode);
 void notification_update_text_to_render(notification *n);
 int notification_get_ttl(notification *n);
 int notification_get_age(notification *n);

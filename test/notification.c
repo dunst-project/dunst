@@ -70,21 +70,28 @@ TEST test_notification_is_duplicate(void *notifications)
         PASS();
 }
 
-TEST test_notification_replace_format(void)
+TEST test_notification_replace_single_field(void)
 {
         char *str = g_malloc(128 * sizeof(char));
-
-        strcpy(str, "Testing format replacement");
-        ASSERT_STR_EQ("Testing text replacement", (str = notification_replace_format("format", "text", str, MARKUP_FULL)));
+        char *substr = NULL;
 
         strcpy(str, "Markup %a preserved");
-        ASSERT_STR_EQ("Markup and &amp; <i>is</i> preserved", (str = notification_replace_format("%a", "and &amp; <i>is</i>", str, MARKUP_FULL)));
+        substr = strchr(str, '%');
+        notification_replace_single_field(&str, &substr, "and &amp; <i>is</i>", MARKUP_FULL);
+        ASSERT_STR_EQ("Markup and &amp; <i>is</i> preserved", str);
+        ASSERT_EQ(26, substr - str);
 
         strcpy(str, "Markup %a escaped");
-        ASSERT_STR_EQ("Markup and &amp; &lt;i&gt;is&lt;/i&gt; escaped", (str = notification_replace_format("%a", "and & <i>is</i>", str, MARKUP_NO)));
+        substr = strchr(str, '%');
+        notification_replace_single_field(&str, &substr, "and & <i>is</i>", MARKUP_NO);
+        ASSERT_STR_EQ("Markup and &amp; &lt;i&gt;is&lt;/i&gt; escaped", str);
+        ASSERT_EQ(38, substr - str);
 
         strcpy(str, "Markup %a");
-        ASSERT_STR_EQ("Markup is removed and &amp; escaped", (str = notification_replace_format("%a", "<i>is removed</i> and & escaped", str, MARKUP_STRIP)));
+        substr = strchr(str, '%');
+        notification_replace_single_field(&str, &substr, "<i>is removed</i> and & escaped", MARKUP_STRIP);
+        ASSERT_STR_EQ("Markup is removed and &amp; escaped", str);
+        ASSERT_EQ(35, substr - str);
 
         g_free(str);
         PASS();
@@ -112,7 +119,7 @@ SUITE(suite_notification)
         g_free(a);
         g_free(b);
 
-        RUN_TEST(test_notification_replace_format);
+        RUN_TEST(test_notification_replace_single_field);
 }
 
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

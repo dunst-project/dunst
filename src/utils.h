@@ -9,6 +9,9 @@ char *string_replace_char(char needle, char replacement, char *haystack);
 char *string_replace_all(const char *needle, const char *replacement,
                          char *haystack);
 
+/* replace <len> characters with <repl> at position <pos> of the string <buf> */
+char *string_replace_at(char *buf, int pos, int len, const char *repl);
+
 /* replace needle with replacement in haystack */
 char *string_replace(const char *needle, const char *replacement,
                      char *haystack);

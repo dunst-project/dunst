@@ -200,19 +200,31 @@ void notification_free(notification *n)
 }
 
 /*
- * Replace all occurrences of "needle" with a quoted "replacement",
- * according to the markup settings.
+ * Replace the two chars where **needle points
+ * with a quoted "replacement", according to the markup settings.
+ *
+ * The needle is a double pointer and gets updated upon return
+ * to point to the first char, which occurs after replacement.
+ *
  */
-char *notification_replace_format(const char *needle, const char *replacement,
-                                  char *haystack, enum markup_mode markup_mode) {
-        char *tmp;
-        char *ret;
+void notification_replace_single_field(char **haystack, char **needle,
+                const char *replacement, enum markup_mode markup_mode) {
 
-        tmp = markup_transform(g_strdup(replacement), markup_mode);
-        ret = string_replace_all(needle, tmp, haystack);
-        g_free(tmp);
+        assert(*needle[0] == '%');
+        // needle has to point into haystack (but not on the last char)
+        assert(*needle >= *haystack);
+        assert(*needle - *haystack < strlen(*haystack) - 1);
 
-        return ret;
+        int pos = *needle - *haystack;
+
+        char *input = markup_transform(g_strdup(replacement), markup_mode);
+        *haystack = string_replace_at(*haystack, pos, 2, input);
+
+        // point the needle to the next char
+        // which was originally in haystack
+        *needle = *haystack + pos + strlen(input);
+
+        g_free(input);
 }
 
 char *notification_extract_markup_urls(char **str_ptr) {
@@ -307,31 +319,89 @@ int notification_init(notification *n, int id)
         n->urls = notification_extract_markup_urls(&(n->body));
 
         n->msg = string_replace_all("\\n", "\n", g_strdup(n->format));
-        n->msg = notification_replace_format("%a", n->appname, n->msg,
-                MARKUP_NO);
-        n->msg = notification_replace_format("%s", n->summary, n->msg,
-                n->markup);
-        n->msg = notification_replace_format("%b", n->body, n->msg,
-                n->markup);
 
-        if (n->icon) {
-                char *tmp = g_strdup(n->icon);
-                n->msg = notification_replace_format("%I", basename(tmp),
-                        n->msg, MARKUP_NO);
-                n->msg = notification_replace_format("%i", n->icon,
-                        n->msg, MARKUP_NO);
-                g_free(tmp);
-        }
+        /* replace all formatter */
+        for(char *substr = strchr(n->msg, '%');
+                  substr;
+                  substr = strchr(substr, '%')){
 
-        if (n->progress) {
-                char pg[10];
-                sprintf(pg, "[%3d%%]", n->progress - 1);
-                n->msg = string_replace_all("%p", pg, n->msg);
-                sprintf(pg, "%d", n->progress - 1);
-                n->msg = string_replace_all("%n", pg, n->msg);
-        } else {
-                n->msg = string_replace_all("%p", "", n->msg);
-                n->msg = string_replace_all("%n", "", n->msg);
+                char pg[16];
+
+                switch(substr[1]){
+                        case 'a':
+                                notification_replace_single_field(
+                                        &n->msg,
+                                        &substr,
+                                        n->appname,
+                                        MARKUP_NO);
+                                break;
+                        case 's':
+                                notification_replace_single_field(
+                                        &n->msg,
+                                        &substr,
+                                        n->summary,
+                                        n->markup);
+                                break;
+                        case 'b':
+                                notification_replace_single_field(
+                                        &n->msg,
+                                        &substr,
+                                        n->body,
+                                        n->markup);
+                                break;
+                        case 'I':
+                                notification_replace_single_field(
+                                        &n->msg,
+                                        &substr,
+                                        n->icon ? basename(n->icon) : "",
+                                        MARKUP_NO);
+                                break;
+                        case 'i':
+                                notification_replace_single_field(
+                                        &n->msg,
+                                        &substr,
+                                        n->icon ? n->icon : "",
+                                        MARKUP_NO);
+                                break;
+                        case 'p':
+                                if (n->progress)
+                                        sprintf(pg, "[%3d%%]", n->progress - 1);
+
+                                notification_replace_single_field(
+                                        &n->msg,
+                                        &substr,
+                                        n->progress ? pg : "",
+                                        MARKUP_NO);
+                                break;
+                        case 'n':
+                                if (n->progress)
+                                        sprintf(pg, "%d", n->progress - 1);
+
+                                notification_replace_single_field(
+                                        &n->msg,
+                                        &substr,
+                                        n->progress ? pg : "",
+                                        MARKUP_NO);
+                                break;
+                        case '%':
+                                notification_replace_single_field(
+                                        &n->msg,
+                                        &substr,
+                                        "%",
+                                        MARKUP_NO);
+                                break;
+                        case '\0':
+                                fprintf(stderr, "WARNING: format_string has trailing %% character."
+                                                "To escape it use %%%%.");
+                                break;
+                        default:
+                                fprintf(stderr, "WARNING: format_string %%%c"
+                                                " is unknown\n", substr[1]);
+                                // shift substr pointer forward,
+                                // as we can't interpret the format string
+                                substr++;
+                                break;
+                }
         }
 
         n->msg = g_strchomp(n->msg);
