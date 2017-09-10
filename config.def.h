@@ -90,18 +90,53 @@ keyboard_shortcut context_ks = {.str = "none",
 };                              /* ignore this */
 
 rule_t default_rules[] = {
-        /* name can be any unique string. It is used to identify the rule in dunstrc to override it there */
+        /* name can be any unique string. It is used to identify
+         * the rule in dunstrc to override it there
+         */
 
-        /*   name,    appname,       summary,        body, icon, category, msg_urgency, timeout, urgency,  markup,      history_ignore, match_transient, set_transient, new_icon, fg,   bg,        format,  script */
-        {    "empty", NULL,          NULL,           NULL, NULL, NULL,     -1,          -1,      -1,       MARKUP_NULL, -1,             -1,              -1,            NULL,     NULL, NULL,      NULL,    NULL},
+        /* an empty rule with no effect */
+        {
+                .name = "empty",
+                .appname         = NULL,
+                .summary         = NULL,
+                .body            = NULL,
+                .icon            = NULL,
+                .category        = NULL,
+                .msg_urgency     = -1,
+                .timeout         = -1,
+                .urgency         = -1,
+                .markup          = MARKUP_NULL,
+                .history_ignore  = 1,
+                .match_transient = 1,
+                .set_transient   = -1,
+                .new_icon        = NULL,
+                .fg              = NULL,
+                .bg              = NULL,
+                .format          = NULL,
+                .script          = NULL,
+        },
+
         /* ignore transient hints in history by default */
-        {    "ignore_transient_in_history",
-                      NULL,          NULL,           NULL, NULL, NULL,     -1,          -1,      -1,       MARKUP_NULL,  1,              1,              -1,            NULL,     NULL, NULL,      NULL,    NULL},
-        /* { "rule1", "notify-send", NULL,           NULL, NULL, NULL,     -1,          -1,      -1,       MARKUP_NULL, -1,             -1,              -1,            NULL,     NULL, NULL,      "%s %b", NULL}, */
-        /* { "rule2", "Pidgin",      "*says*,        NULL, NULL, NULL,     -1,          -1,      CRITICAL, MARKUP_NULL, -1,             -1,              -1,            NULL,     NULL, NULL,      NULL,    NULL}, */
-        /* { "rule3", "Pidgin",      "*signed on*",  NULL, NULL, NULL,     -1,          -1,      LOW,      MARKUP_NULL, -1,             -1,              -1,            NULL,     NULL, NULL,      NULL,    NULL}, */
-        /* { "rule4", "Pidgin",      "*signed off*", NULL, NULL, NULL,     -1,          -1,      LOW,      MARKUP_NULL, -1,             -1,              -1,            NULL,     NULL, NULL,      NULL,    NULL}, */
-        /* { "rule5", NULL,          "*foobar*",     NULL, NULL, NULL,     -1,          -1,      -1,       MARKUP_NULL, -1,             -1,              -1,            NULL,     NULL, "#00FF00", NULL,    NULL}, */
+        {
+                .name = "ignore_transient_in_history",
+                .appname         = NULL,
+                .summary         = NULL,
+                .body            = NULL,
+                .icon            = NULL,
+                .category        = NULL,
+                .msg_urgency     = -1,
+                .timeout         = -1,
+                .urgency         = -1,
+                .markup          = MARKUP_NULL,
+                .history_ignore  = 1,
+                .match_transient = 1,
+                .set_transient   = -1,
+                .new_icon        = NULL,
+                .fg              = NULL,
+                .bg              = NULL,
+                .format          = NULL,
+                .script          = NULL,
+        },
 };
 
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
