@@ -6,7 +6,7 @@ include config.mk
 CFLAGS += -I.
 LDFLAGS += -L.
 
-SRC := $(shell find src/ -name '*.c')
+SRC := $(sort $(shell find src/ -name '*.c'))
 OBJ := ${SRC:.c=.o}
 
 all: doc dunst service
