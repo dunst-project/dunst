@@ -12,7 +12,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 
 #include "dbus.h"
 #include "menu.h"
@@ -70,7 +69,7 @@ void check_timeouts(void)
 
                 /* don't timeout when user is idle */
                 if (x_is_idle() && !n->transient) {
-                        n->start = time(NULL);
+                        n->start = g_get_monotonic_time();
                         continue;
                 }
 
@@ -80,7 +79,7 @@ void check_timeouts(void)
                 }
 
                 /* remove old message */
-                if (difftime(time(NULL), n->start) > n->timeout) {
+                if (g_get_monotonic_time() - n->start > n->timeout) {
                         notification_close(n, 1);
                 }
         }
@@ -122,7 +121,7 @@ void update_lists()
 
                 if (!n)
                         return;
-                n->start = time(NULL);
+                n->start = g_get_monotonic_time();
                 if (!n->redisplayed && n->script) {
                         notification_run_script(n);
                 }
@@ -173,49 +172,37 @@ void wake_up(void)
         run(NULL);
 }
 
-static int get_sleep_time(void)
+static gint64 get_sleep_time(void)
 {
+        gint64 sleep = G_MAXINT64;
 
-        if (settings.show_age_threshold == 0) {
-                /* we need to update every second */
-                return 1;
-        }
-
-        int min_ttl = INT_MAX;
-        int max_age = 0;
+        gint64 max_age = 0;
         for (GList *iter = g_queue_peek_head_link(displayed); iter;
                         iter = iter->next) {
                 notification *n = iter->data;
 
                 max_age = MAX(max_age, notification_get_age(n));
-                int ttl = notification_get_ttl(n);
-                if (ttl >= 0) {
-                        min_ttl = MIN(min_ttl, ttl);
-                }
+                gint64 ttl = notification_get_ttl(n);
+                if (ttl >= 0)
+                        sleep = MIN(sleep, ttl);
         }
 
-        int min_timeout;
-        int show_age_timeout = settings.show_age_threshold - max_age;
-
-        if (show_age_timeout < 1) {
-                return 1;
+        /* if age_threshold is hit, seconds have to get updated every second */
+        if (settings.show_age_threshold >= 0) {
+                if (settings.show_age_threshold > max_age)
+                        sleep = MIN(sleep, settings.show_age_threshold - max_age);
+                else
+                        sleep = MIN(sleep, 1000*1000);
         }
 
-        min_timeout = MIN(show_age_timeout, min_ttl);
-
-        /* show_age_timeout might be negative */
-        if (min_timeout < 1) {
-                return 1;
-        } else {
-                return min_timeout;
-        }
+        return sleep;
 }
 
 gboolean run(void *data)
 {
         update_lists();
         static int timeout_cnt = 0;
-        static int next_timeout = 0;
+        static gint64 next_timeout = 0;
 
         if (data) {
                 timeout_cnt--;
@@ -234,13 +221,13 @@ gboolean run(void *data)
         }
 
         if (xctx.visible) {
-                int now = time(NULL);
-                int sleep = get_sleep_time();
+                gint64 now = g_get_monotonic_time();
+                gint64 sleep = get_sleep_time();
+                gint64 timeout_at = now + sleep;
 
                 if (sleep > 0) {
-                        int timeout_at = now + sleep;
                         if (timeout_cnt == 0 || timeout_at < next_timeout) {
-                                g_timeout_add_seconds(sleep, run, mainloop);
+                                g_timeout_add(sleep/1000, run, mainloop);
                                 next_timeout = timeout_at;
                                 timeout_cnt++;
                         }

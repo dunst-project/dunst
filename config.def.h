@@ -10,7 +10,7 @@ char *lowbgcolor = "#aaaaff";
 char *lowfgcolor = "#000000";
 char *format = "%s %b";         /* default format */
 
-int timeouts[] = { 10, 10, 0 }; /* low, normal, critical */
+gint64 timeouts[] = { 10*G_USEC_PER_SEC, 10*G_USEC_PER_SEC, 0 }; /* low, normal, critical */
 char *icons[] = { "dialog-information", "dialog-information", "dialog-warning" }; /* low, normal, critical */
 
 unsigned int transparency = 0;  /* transparency */
@@ -20,8 +20,8 @@ char *class = "Dunst";          /* the class of dunst notification windows */
 int shrink = false;             /* shrinking */
 int sort = true;                /* sort messages by urgency */
 int indicate_hidden = true;     /* show count of hidden messages */
-int idle_threshold = 0;         /* don't timeout notifications when idle for x seconds */
-int show_age_threshold = -1;    /* show age of notification, when notification is older than x seconds */
+gint64 idle_threshold = 0;      /* don't timeout notifications when idle for x seconds */
+gint64 show_age_threshold = -1; /* show age of notification, when notification is older than x seconds */
 enum alignment align = left;    /* text alignment [left/center/right] */
 int sticky_history = true;
 int history_length = 20;          /* max amount of notifications kept in history */

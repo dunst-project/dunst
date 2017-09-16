@@ -197,7 +197,7 @@ void load_settings(char *cmdline_config_path)
                 "Ignore newline characters in notifications"
         );
 
-        settings.idle_threshold = option_get_int(
+        settings.idle_threshold = G_USEC_PER_SEC * option_get_int(
                 "global",
                 "idle_threshold", "-idle_threshold", idle_threshold,
                 "Don't timeout notifications if user is longer idle than threshold"
@@ -279,7 +279,7 @@ void load_settings(char *cmdline_config_path)
                 }
         }
 
-        settings.show_age_threshold = option_get_int(
+        settings.show_age_threshold = G_USEC_PER_SEC * option_get_int(
                 "global",
                 "show_age_threshold", "-show_age_threshold", show_age_threshold,
                 "When should the age of the notification be displayed?"
@@ -490,7 +490,7 @@ void load_settings(char *cmdline_config_path)
                 "Frame color for notifications with low urgency"
         );
 
-        settings.timeouts[LOW] = option_get_int(
+        settings.timeouts[LOW] = G_USEC_PER_SEC * option_get_int(
                 "urgency_low",
                 "timeout", "-lto", timeouts[LOW],
                 "Timeout for notifications with low urgency"
@@ -520,7 +520,7 @@ void load_settings(char *cmdline_config_path)
                 "Frame color for notifications with normal urgency"
         );
 
-        settings.timeouts[NORM] = option_get_int(
+        settings.timeouts[NORM] = G_USEC_PER_SEC * option_get_int(
                 "urgency_normal",
                 "timeout", "-nto", timeouts[NORM],
                 "Timeout for notifications with normal urgency"
@@ -550,7 +550,7 @@ void load_settings(char *cmdline_config_path)
                 "Frame color for notifications with critical urgency"
         );
 
-        settings.timeouts[CRIT] = option_get_int(
+        settings.timeouts[CRIT] = G_USEC_PER_SEC * option_get_int(
                 "urgency_critical",
                 "timeout", "-cto", timeouts[CRIT],
                 "Timeout for notifications with critical urgency"
@@ -637,7 +637,7 @@ void load_settings(char *cmdline_config_path)
                 r->body = ini_get_string(cur_section, "body", r->body);
                 r->icon = ini_get_string(cur_section, "icon", r->icon);
                 r->category = ini_get_string(cur_section, "category", r->category);
-                r->timeout = ini_get_int(cur_section, "timeout", r->timeout);
+                r->timeout = G_USEC_PER_SEC * ini_get_int(cur_section, "timeout", r->timeout);
 
                 {
                         char *c = ini_get_string(

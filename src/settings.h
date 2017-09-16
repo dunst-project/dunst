@@ -30,7 +30,7 @@ typedef struct _settings {
         char *lowfgcolor;
         char *lowframecolor;
         char *format;
-        int timeouts[3];
+        gint64 timeouts[3];
         char *icons[3];
         unsigned int transparency;
         char *geom;
@@ -39,8 +39,8 @@ typedef struct _settings {
         int shrink;
         int sort;
         int indicate_hidden;
-        int idle_threshold;
-        int show_age_threshold;
+        gint64 idle_threshold;
+        gint64 show_age_threshold;
         enum alignment align;
         int sticky_history;
         int history_length;
