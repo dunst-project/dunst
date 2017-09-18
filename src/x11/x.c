@@ -287,28 +287,31 @@ static dimension_t calculate_dimensions(GSList *layouts)
         return dim;
 }
 
-struct buffer {
-        char *buf;
-        gsize bufsize;
-};
-
 static cairo_status_t read_from_buf(void *closure, unsigned char *data, unsigned int size)
 {
-        struct buffer *buf = (struct buffer *)closure;
-        unsigned int cpy = MIN(size, buf->bufsize);
-        memcpy(data, buf->buf, cpy);
-        buf->buf += cpy;
-        buf->bufsize -= cpy;
+        GByteArray *buf = (GByteArray *)closure;
+
+        unsigned int cpy = MIN(size, buf->len);
+        memcpy(data, buf->data, cpy);
+        g_byte_array_remove_range(buf, 0, cpy);
+
         return CAIRO_STATUS_SUCCESS;
 }
+
 
 static cairo_surface_t *gdk_pixbuf_to_cairo_surface(GdkPixbuf *pixbuf)
 {
         cairo_surface_t *icon_surface = NULL;
-        struct buffer buffer;
+        GByteArray *buffer;
+        char *bufstr;
+        gsize buflen;
 
-        gdk_pixbuf_save_to_buffer(pixbuf, &buffer.buf, &buffer.bufsize, "png", NULL, NULL);
-        icon_surface = cairo_image_surface_create_from_png_stream(read_from_buf, &buffer);
+        gdk_pixbuf_save_to_buffer(pixbuf, &bufstr, &buflen, "png", NULL, NULL);
+
+        buffer = g_byte_array_new_take((guint8*)bufstr, buflen);
+        icon_surface = cairo_image_surface_create_from_png_stream(read_from_buf, buffer);
+
+        g_byte_array_free(buffer, TRUE);
 
         return icon_surface;
 }
