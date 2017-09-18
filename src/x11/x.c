@@ -301,6 +301,13 @@ static cairo_status_t read_from_buf(void *closure, unsigned char *data, unsigned
 
 static cairo_surface_t *gdk_pixbuf_to_cairo_surface(GdkPixbuf *pixbuf)
 {
+        /*
+         * Export the gdk pixbuf into buffer as a png and import the png buffer
+         * via cairo again as a cairo_surface_t.
+         * It looks counterintuitive, as there is gdk_cairo_set_source_pixbuf,
+         * which does the job faster. But this would require gtk3 as a dependency
+         * for a single function call. See discussion in #334 and #376.
+         */
         cairo_surface_t *icon_surface = NULL;
         GByteArray *buffer;
         char *bufstr;
