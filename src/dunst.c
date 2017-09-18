@@ -232,15 +232,15 @@ gboolean run(void *data)
         }
 
         if (displayed->length > 0 && !xctx.visible && !pause_display) {
-            x_win_show();
+                x_win_show();
         }
 
         if (xctx.visible && (pause_display || displayed->length == 0)) {
-            x_win_hide();
+                x_win_hide();
         }
 
         if (xctx.visible) {
-            x_win_draw();
+                x_win_draw();
         }
 
         if (xctx.visible) {
