@@ -230,7 +230,8 @@ If set to true, display notifications with higher urgency above the others.
 
 =item B<idle_threshold> (default: 0)
 
-Don't timeout notifications if user is idle longer than this value (in seconds).
+Don't timeout notifications if user is idle longer than this time.
+See TIME FORMAT for valid times.
 
 Set to 0 to disable.
 
@@ -338,7 +339,8 @@ Defines how the text should be aligned within the notification.
 
 =item B<show_age_threshold> (default: -1)
 
-Show age of message if message is older than this value (in seconds).
+Show age of message if message is older than this time.
+See TIME FORMAT for valid times.
 
 Set to -1 to disable.
 
@@ -533,8 +535,9 @@ See COLORS for more information
 
 =item B<-lto/nto/cto secs>
 
-Defines the timeout time(in seconds) for low, normal and critical notifications
+Defines the timeout time for low, normal and critical notifications
 respectively.
+See TIME FORMAT for valid times.
 
 =back
 
@@ -660,6 +663,15 @@ Alternatively, you can invoke an action with a middle click on the notification.
 If there is exactly one associated action, or one is marked as default, that one
 is invoked. If there are multiple, the context menu is shown. The same applies
 to URLs when there are no actions.
+
+=head1 TIME FORMAT
+
+A time can be any decimal integer value suffixed with a time unit. If no unit
+given, seconds ("s") is taken as default.
+
+Time units understood by dunst are "ms", "s", "m", "h" and "d".
+
+Example time: "1000ms" "10m"
 
 =head1 MISCELLANEOUS
 

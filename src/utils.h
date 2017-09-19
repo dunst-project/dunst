@@ -2,6 +2,8 @@
 #ifndef DUNST_UTILS_H
 #define DUNST_UTILS_H
 
+#include <glib.h>
+
 /* replace all occurences of the character needle with the character replacement in haystack */
 char *string_replace_char(char needle, char replacement, char *haystack);
 
@@ -26,6 +28,9 @@ void die(char *msg, int exit_value);
 
 /* replace tilde and path-specific values with its equivalents */
 char *string_to_path(char *string);
+
+/* convert time units (ms, s, m) to internal gint64 microseconds */
+gint64 string_to_time(const char *string);
 
 #endif
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
