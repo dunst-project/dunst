@@ -351,6 +351,11 @@ If it's set to false, long lines will be truncated an ellipsised.
 If it's set to true, long lines will be broken into multiple lines expanding
 the notification window height as necessary for them to fit.
 
+=item B<ellipsize> (values: [start/middle/end], default: middle)
+
+If word_wrap is set to false, specifies where truncated lines should be
+ellipsized.
+
 =item B<ignore_newline> (values: [true/false], default: false)
 
 If set to true, replace newline characters in notifications with whitespace.

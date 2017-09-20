@@ -6,6 +6,7 @@
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <assert.h>
 #include <cairo.h>
 #include <cairo-xlib.h>
 #include <gdk/gdk.h>
@@ -404,7 +405,21 @@ static colored_layout *r_init_shared(cairo_t *c, notification *n)
         cl->l = create_layout(c);
 
         if (!settings.word_wrap) {
-                pango_layout_set_ellipsize(cl->l, PANGO_ELLIPSIZE_MIDDLE);
+                PangoEllipsizeMode ellipsize;
+                switch (settings.ellipsize) {
+                        case start:
+                                ellipsize = PANGO_ELLIPSIZE_START;
+                                break;
+                        case middle:
+                                ellipsize = PANGO_ELLIPSIZE_MIDDLE;
+                                break;
+                        case end:
+                                ellipsize = PANGO_ELLIPSIZE_END;
+                                break;
+                        default:
+                                assert(false);
+                }
+                pango_layout_set_ellipsize(cl->l, ellipsize);
         }
 
         GdkPixbuf *pixbuf = NULL;
