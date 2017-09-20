@@ -373,7 +373,7 @@ char *cmdline_get_path(char *key, const char *def, char *description)
 
 int cmdline_get_int(char *key, int def, char *description)
 {
-        cmdline_usage_append(key, "double", description);
+        cmdline_usage_append(key, "int", description);
         char *str = cmdline_get_value(key);
 
         if (str == NULL)
