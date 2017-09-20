@@ -169,6 +169,29 @@ void load_settings(char *cmdline_config_path)
                 "Truncating long lines or do word wrap"
         );
 
+        {
+                char *c = option_get_string(
+                        "global",
+                        "ellipsize", "-ellipsize", "middle",
+                        "Ellipsize truncated lines on the start/middle/end"
+                );
+
+                if (strlen(c) > 0) {
+                        if (strcmp(c, "start") == 0)
+                                settings.ellipsize = start;
+                        else if (strcmp(c, "middle") == 0)
+                                settings.ellipsize = middle;
+                        else if (strcmp(c, "end") == 0)
+                                settings.ellipsize = end;
+                        else {
+                                fprintf(stderr,
+                                        "Warning: unknown value for ellipsize\n");
+                                settings.ellipsize = middle;
+                        }
+                        g_free(c);
+                }
+        }
+
         settings.ignore_newline = option_get_bool(
                 "global",
                 "ignore_newline", "-ignore_newline", ignore_newline,
@@ -366,6 +389,11 @@ void load_settings(char *cmdline_config_path)
                 "global",
                 "browser", "-browser", browser,
                 "path to browser"
+        );
+        settings.file_handler = option_get_path(
+                "global",
+                "file_handler", "-file_handler",file_handler,
+                "path to file handler"
         );
 
         {

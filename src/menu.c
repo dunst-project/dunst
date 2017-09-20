@@ -111,10 +111,19 @@ void open_browser(const char *in) {
                 if (browser_pid2) {
                         exit(0);
                 } else {
+                       
+                       if(strncmp(url,"file",4) == 0){
+                        char *file_cmd = 
+                                string_append(settings.file_handler, url, " ");
+                        char **cmd = g_strsplit(file_cmd, " ",0);
+                        execvp(cmd[0],cmd);
+                       }
+                       else{
                         char *browser_cmd =
                             string_append(settings.browser, url, " ");
                         char **cmd = g_strsplit(browser_cmd, " ", 0);
                         execvp(cmd[0], cmd);
+                       }
                 }
         }
 }

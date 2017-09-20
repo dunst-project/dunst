@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- `ellipsize` option to control how long lines should be ellipsized when `word_wrap` is set to `false`
+
 ### Fixed
 - `new_icon` rule being ignored on notifications that had a raw icon
 - Do not replace format strings, which are in notification content

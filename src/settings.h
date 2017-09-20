@@ -7,6 +7,7 @@
 #include "x11/x.h"
 
 enum alignment { left, center, right };
+enum ellipsize { start, middle, end };
 enum icon_position_t { icons_left, icons_right, icons_off };
 enum separator_color { FOREGROUND, AUTO, FRAME, CUSTOM };
 enum follow_mode { FOLLOW_NONE, FOLLOW_MOUSE, FOLLOW_KEYBOARD };
@@ -45,6 +46,7 @@ typedef struct _settings {
         int history_length;
         int show_indicators;
         int word_wrap;
+        enum ellipsize ellipsize;
         int ignore_newline;
         int line_height;
         int notification_height;
@@ -61,6 +63,7 @@ typedef struct _settings {
         char *dmenu;
         char **dmenu_cmd;
         char *browser;
+        char *file_handler;
         enum icon_position_t icon_position;
         int max_icon_size;
         char *icon_path;

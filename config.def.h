@@ -52,6 +52,7 @@ int monitor = 0;
 char *dmenu = "/usr/bin/dmenu";
 
 char *browser = "/usr/bin/firefox";
+char *file_handler = "/usr/bin/firefox";
 
 int max_icon_size = 0;
 

@@ -140,6 +140,9 @@
     # geometry.
     word_wrap = yes
 
+    # When word_wrap is set to no, specify where to ellipsize long lines.
+    ellipsize = middle
+
     # Ignore newlines '\n' in notifications.
     ignore_newline = no
 
