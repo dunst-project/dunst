@@ -174,28 +174,34 @@ void wake_up(void)
 
 static gint64 get_sleep_time(void)
 {
+        gint64 time = g_get_monotonic_time();
         gint64 sleep = G_MAXINT64;
 
-        gint64 max_age = 0;
         for (GList *iter = g_queue_peek_head_link(displayed); iter;
                         iter = iter->next) {
                 notification *n = iter->data;
+                gint64 ttl = n->timeout - (time - n->start);
 
-                max_age = MAX(max_age, notification_get_age(n));
-                gint64 ttl = notification_get_ttl(n);
-                if (ttl >= 0)
-                        sleep = MIN(sleep, ttl);
+                if (n->timeout > 0) {
+                        if (ttl > 0)
+                                sleep = MIN(sleep, ttl);
+                        else
+                                // while we're processing, the notification already timed out
+                                return 0;
+                }
+
+                if (settings.show_age_threshold >= 0) {
+                        gint64 age = time - n->timestamp;
+
+                        if (age > settings.show_age_threshold)
+                                // sleep exactly until the next shift of the second happens
+                                sleep = MIN(sleep, ((G_USEC_PER_SEC) - (age % (G_USEC_PER_SEC))));
+                        else if (ttl > settings.show_age_threshold)
+                                sleep = MIN(sleep, settings.show_age_threshold);
+                }
         }
 
-        /* if age_threshold is hit, seconds have to get updated every second */
-        if (settings.show_age_threshold >= 0) {
-                if (settings.show_age_threshold > max_age)
-                        sleep = MIN(sleep, settings.show_age_threshold - max_age);
-                else
-                        sleep = MIN(sleep, 1000*1000);
-        }
-
-        return sleep;
+        return sleep != G_MAXINT64 ? sleep : -1;
 }
 
 gboolean run(void *data)

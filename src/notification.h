@@ -74,8 +74,6 @@ int notification_close(notification *n, int reason);
 void notification_print(notification *n);
 void notification_replace_single_field(char **haystack, char **needle, const char *replacement, enum markup_mode markup_mode);
 void notification_update_text_to_render(notification *n);
-gint64 notification_get_ttl(notification *n);
-gint64 notification_get_age(notification *n);
 void notification_do_action(notification *n);
 
 #endif

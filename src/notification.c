@@ -699,18 +699,6 @@ void notification_update_text_to_render(notification *n)
         n->text_to_render = buf;
 }
 
-gint64 notification_get_ttl(notification *n) {
-        if (n->timeout < 0) {
-                return -1;
-        } else {
-                return n->timeout - (g_get_monotonic_time() - n->start);
-        }
-}
-
-gint64 notification_get_age(notification *n) {
-        return g_get_monotonic_time() - n->timestamp;
-}
-
 /*
  * If the notification has exactly one action, or one is marked as default,
  * invoke it. If there are multiple and no default, open the context menu. If
