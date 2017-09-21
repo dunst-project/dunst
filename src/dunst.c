@@ -210,7 +210,7 @@ gboolean run(void *data)
         static int timeout_cnt = 0;
         static gint64 next_timeout = 0;
 
-        if (data) {
+        if (data && timeout_cnt > 0) {
                 timeout_cnt--;
         }
 
@@ -231,7 +231,7 @@ gboolean run(void *data)
                 gint64 sleep = get_sleep_time();
                 gint64 timeout_at = now + sleep;
 
-                if (sleep > 0) {
+                if (sleep >= 0) {
                         if (timeout_cnt == 0 || timeout_at < next_timeout) {
                                 g_timeout_add(sleep/1000, run, mainloop);
                                 next_timeout = timeout_at;
