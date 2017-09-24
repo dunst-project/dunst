@@ -172,24 +172,23 @@ void load_settings(char *cmdline_config_path)
         {
                 char *c = option_get_string(
                         "global",
-                        "ellipsize", "-ellipsize", "middle",
+                        "ellipsize", "-ellipsize", "",
                         "Ellipsize truncated lines on the start/middle/end"
                 );
 
-                if (strlen(c) > 0) {
-                        if (strcmp(c, "start") == 0)
-                                settings.ellipsize = start;
-                        else if (strcmp(c, "middle") == 0)
-                                settings.ellipsize = middle;
-                        else if (strcmp(c, "end") == 0)
-                                settings.ellipsize = end;
-                        else {
-                                fprintf(stderr,
-                                        "Warning: unknown value for ellipsize\n");
-                                settings.ellipsize = middle;
-                        }
-                        g_free(c);
+                if (strlen(c) == 0) {
+                        settings.ellipsize = ellipsize;
+                } else if (strcmp(c, "start") == 0) {
+                        settings.ellipsize = start;
+                } else if (strcmp(c, "middle") == 0) {
+                        settings.ellipsize = middle;
+                } else if (strcmp(c, "end") == 0) {
+                        settings.ellipsize = end;
+                } else {
+                        fprintf(stderr, "Warning: unknown ellipsize value: \"%s\"\n", c);
+                        settings.ellipsize = ellipsize;
                 }
+                g_free(c);
         }
 
         settings.ignore_newline = option_get_bool(
