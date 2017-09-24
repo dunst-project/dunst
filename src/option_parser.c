@@ -409,8 +409,11 @@ bool cmdline_is_set(const char *key)
         return cmdline_get_value(key) != NULL;
 }
 
-char *option_get_path(const char *ini_section, const char *ini_key, const char *cmdline_key,
-                        const char *def, const char *description)
+char *option_get_path(const char *ini_section,
+                      const char *ini_key,
+                      const char *cmdline_key,
+                      const char *def,
+                      const char *description)
 {
         char *val = NULL;
 
@@ -427,8 +430,11 @@ char *option_get_path(const char *ini_section, const char *ini_key, const char *
 
 }
 
-char *option_get_string(const char *ini_section, const char *ini_key, const char *cmdline_key,
-                        const char *def, const char *description)
+char *option_get_string(const char *ini_section,
+                        const char *ini_key,
+                        const char *cmdline_key,
+                        const char *def,
+                        const char *description)
 {
         char *val = NULL;
 
@@ -445,8 +451,11 @@ char *option_get_string(const char *ini_section, const char *ini_key, const char
 
 }
 
-int option_get_int(const char *ini_section, const char *ini_key, const char *cmdline_key,
-                   int def, const char *description)
+int option_get_int(const char *ini_section,
+                   const char *ini_key,
+                   const char *cmdline_key,
+                   int def,
+                   const char *description)
 {
         /* *str is only used to check wether the cmdline option is actually set. */
         const char *str = cmdline_get_value(cmdline_key);
@@ -461,8 +470,11 @@ int option_get_int(const char *ini_section, const char *ini_key, const char *cmd
                 return val;
 }
 
-double option_get_double(const char *ini_section, const char *ini_key, const char *cmdline_key,
-                         double def, const char *description)
+double option_get_double(const char *ini_section,
+                         const char *ini_key,
+                         const char *cmdline_key,
+                         double def,
+                         const char *description)
 {
         const char *str = cmdline_get_value(cmdline_key);
         double val = cmdline_get_double(cmdline_key, def, description);
@@ -473,8 +485,11 @@ double option_get_double(const char *ini_section, const char *ini_key, const cha
                 return val;
 }
 
-int option_get_bool(const char *ini_section, const char *ini_key, const char *cmdline_key,
-                    int def, const char *description)
+int option_get_bool(const char *ini_section,
+                    const char *ini_key,
+                    const char *cmdline_key,
+                    int def,
+                    const char *description)
 {
         int val = false;
 

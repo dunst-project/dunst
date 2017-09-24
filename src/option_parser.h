@@ -24,16 +24,31 @@ int cmdline_get_bool(const char *key, int def, const char *description);
 bool cmdline_is_set(const char *key);
 const char *cmdline_create_usage(void);
 
-char *option_get_string(const char *ini_section, const char *ini_key, const char *cmdline_key,
-                        const char *def, const char *description);
-char *option_get_path(const char *ini_section, const char *ini_key, const char *cmdline_key,
-                        const char *def, const char *description);
-int option_get_int(const char *ini_section, const char *ini_key, const char *cmdline_key, int def,
+char *option_get_string(const char *ini_section,
+                        const char *ini_key,
+                        const char *cmdline_key,
+                        const char *def,
+                        const char *description);
+char *option_get_path(const char *ini_section,
+                      const char *ini_key,
+                      const char *cmdline_key,
+                      const char *def,
+                      const char *description);
+int option_get_int(const char *ini_section,
+                   const char *ini_key,
+                   const char *cmdline_key,
+                   int def,
                    const char *description);
-double option_get_double(const char *ini_section, const char *ini_key, const char *cmdline_key,
-                         double def, const char *description);
-int option_get_bool(const char *ini_section, const char *ini_key, const char *cmdline_key,
-                    int def, const char *description);
+double option_get_double(const char *ini_section,
+                         const char *ini_key,
+                         const char *cmdline_key,
+                         double def,
+                         const char *description);
+int option_get_bool(const char *ini_section,
+                    const char *ini_key,
+                    const char *cmdline_key,
+                    int def,
+                    const char *description);
 
 /* returns the next known section.
  * if section == NULL returns first section.
