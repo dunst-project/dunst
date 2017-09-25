@@ -91,6 +91,8 @@ TEST test_string_append(void)
 
         ASSERT_STR_EQ("a", (exp = string_append(g_strdup("a"), "", NULL)));
         g_free(exp);
+        ASSERT_STR_EQ("a", (exp = string_append(g_strdup("a"), NULL, "_sep_")));
+        g_free(exp);
 
         ASSERT_EQ(NULL, (exp = string_append(NULL, NULL, "_sep_")));
         g_free(exp);

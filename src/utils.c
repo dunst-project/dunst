@@ -78,6 +78,8 @@ char *string_append(char *a, const char *b, const char *sep)
 {
         if (!a)
                 return g_strdup(b);
+        if (!b)
+                return a;
 
         char *new;
         if (!sep)
