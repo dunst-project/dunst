@@ -2,7 +2,6 @@ dunst
 *.o
 core
 vgcore.*
-config.h
 dunst.1
 org.knopwob.dunst.service
 dunst.systemd.service
