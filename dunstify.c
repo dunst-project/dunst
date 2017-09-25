@@ -24,19 +24,19 @@ static gboolean block = false;
 
 static GOptionEntry entries[] =
 {
-    { "appname", 'a', 0, G_OPTION_ARG_STRING, &appname, "Name of your application", "NAME" },
-    { "urgency", 'u', 0, G_OPTION_ARG_STRING, &urgency_str, "The urgency of this notification", "URG" },
-    { "hints",   'h', 0, G_OPTION_ARG_STRING_ARRAY, &hint_strs, "User specified hints", "HINT" },
-    { "action", 'A', 0, G_OPTION_ARG_STRING_ARRAY, &action_strs, "Actions the user can invoke", "ACTION" },
-    { "timeout", 't', 0, G_OPTION_ARG_INT, &timeout, "The time until the notification expires", "TIMEOUT" },
-    { "icon",    'i', 0, G_OPTION_ARG_STRING, &icon, "An Icon that should be displayed with the notification", "ICON" },
-    { "raw_icon", 'I', 0, G_OPTION_ARG_STRING, &raw_icon_path, "Path to the icon to be sent as raw image data", "RAW_ICON"},
-    { "capabilities",   'c', 0, G_OPTION_ARG_NONE, &capabilities, "Print the server capabilities and exit", NULL},
-    { "serverinfo", 's', 0, G_OPTION_ARG_NONE, &serverinfo, "Print server information and exit", NULL},
-    { "printid", 'p', 0, G_OPTION_ARG_NONE, &printid, "Print id, which can be used to update/replace this notification", NULL},
-    { "replace", 'r', 0, G_OPTION_ARG_INT, &replace_id, "Set id of this notification.", "ID"},
-    { "close", 'C', 0, G_OPTION_ARG_INT, &close_id, "Set id of this notification.", "ID"},
-    { "block", 'b', 0, G_OPTION_ARG_NONE, &block, "Block until notification is closed and print close reason", NULL},
+    { "appname",      'a', 0, G_OPTION_ARG_STRING,       &appname,        "Name of your application", "NAME" },
+    { "urgency",      'u', 0, G_OPTION_ARG_STRING,       &urgency_str,    "The urgency of this notification", "URG" },
+    { "hints",        'h', 0, G_OPTION_ARG_STRING_ARRAY, &hint_strs,      "User specified hints", "HINT" },
+    { "action",       'A', 0, G_OPTION_ARG_STRING_ARRAY, &action_strs,    "Actions the user can invoke", "ACTION" },
+    { "timeout",      't', 0, G_OPTION_ARG_INT,          &timeout,        "The time until the notification expires", "TIMEOUT" },
+    { "icon",         'i', 0, G_OPTION_ARG_STRING,       &icon,           "An Icon that should be displayed with the notification", "ICON" },
+    { "raw_icon",     'I', 0, G_OPTION_ARG_STRING,       &raw_icon_path,  "Path to the icon to be sent as raw image data", "RAW_ICON"},
+    { "capabilities", 'c', 0, G_OPTION_ARG_NONE,         &capabilities,   "Print the server capabilities and exit", NULL},
+    { "serverinfo",   's', 0, G_OPTION_ARG_NONE,         &serverinfo,     "Print server information and exit", NULL},
+    { "printid",      'p', 0, G_OPTION_ARG_NONE,         &printid,        "Print id, which can be used to update/replace this notification", NULL},
+    { "replace",      'r', 0, G_OPTION_ARG_INT,          &replace_id,     "Set id of this notification.", "ID"},
+    { "close",        'C', 0, G_OPTION_ARG_INT,          &close_id,       "Set id of this notification.", "ID"},
+    { "block",        'b', 0, G_OPTION_ARG_NONE,         &block,          "Block until notification is closed and print close reason", NULL},
     { NULL }
 };
 
