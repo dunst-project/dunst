@@ -422,6 +422,11 @@ a dmenu command or a dmenu-compatible menu.
 The command that will be run when opening a URL. The URL to be opened will be
 appended to the end of the value of this setting.
 
+=item B<file_handler> (default: "/usr/bin/thunar")
+
+The command that will be run when opening a URL beginning with file://. The
+URL to be opened will be appended to the end of the value of this setting.
+
 =item B<always_run_script> (values: [true/false] default: true]
 
 Always run rule-defined scripts, even if the notification is suppressed with
