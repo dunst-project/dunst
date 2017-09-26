@@ -112,13 +112,10 @@ void open_browser(const char *in) {
                         exit(0);
                 } else {
                        char *browser_cmd;
-                       if(strncmp(url,"file",4) == 0){
-                         browser_cmd = 
-                                string_append(settings.file_handler, url, " ");
-                       }
-                       else{
-                         browser_cmd =
-                            string_append(settings.browser, url, " ");
+                       if(strncmp(url,"file",4) == 0) {
+                               browser_cmd = string_append(settings.file_handler, url, " ");
+                       } else {
+                               browser_cmd = string_append(settings.browser, url, " ");
                        }
 
                        char **cmd = g_strsplit(browser_cmd, " ", 0);
