@@ -67,6 +67,7 @@ notification *notification_create(void);
 int notification_init(notification *n, int id);
 void notification_free(notification *n);
 int notification_close_by_id(int id, int reason);
+bool notification_replace_by_id(notification *n);
 int notification_cmp(const void *a, const void *b);
 int notification_cmp_data(const void *a, const void *b, void *data);
 int notification_is_duplicate(const notification *a, const notification *b);
