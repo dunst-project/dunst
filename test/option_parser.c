@@ -7,7 +7,7 @@
 
 TEST test_next_section(void)
 {
-        char *section = NULL;
+        const char *section = NULL;
         ASSERT_STR_EQ("bool", (section = next_section(section)));
         ASSERT_STR_EQ("string", (section = next_section(section)));
         ASSERT_STR_EQ("path", (section = next_section(section)));
@@ -173,7 +173,7 @@ TEST test_cmdline_create_usage(void)
         cmdline_get_int("-msgint/-mi", 0, "An int to test usage creation");
         cmdline_get_double("-msgdouble/-md", 0, "A double to test usage creation");
         cmdline_get_bool("-msgbool/-mb", false, "A bool to test usage creation");
-        char *usage = cmdline_create_usage();
+        const char *usage = cmdline_create_usage();
         ASSERT(strstr(usage, "-msgstring/-ms"));
         ASSERT(strstr(usage, "A string to test usage creation"));
         ASSERT(strstr(usage, "-msgint/-mi"));
@@ -182,7 +182,6 @@ TEST test_cmdline_create_usage(void)
         ASSERT(strstr(usage, "A double to test usage creation"));
         ASSERT(strstr(usage, "-msgbool/-mb"));
         ASSERT(strstr(usage, "A bool to test usage creation"));
-        free(usage);
         PASS();
 }
 

@@ -47,7 +47,7 @@ static enum markup_mode parse_markup_mode(const char *mode)
         }
 }
 
-static int ini_get_urgency(char *section, char *key, int def)
+static int ini_get_urgency(const char *section, const char *key, const int def)
 {
         int ret = def;
         char *urg = ini_get_string(section, key, "");
@@ -603,7 +603,7 @@ void load_settings(char *cmdline_config_path)
                 rules = g_slist_insert(rules, &(default_rules[i]), -1);
         }
 
-        char *cur_section = NULL;
+        const char *cur_section = NULL;
         for (;;) {
                 cur_section = next_section(cur_section);
                 if (!cur_section)

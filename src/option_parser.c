@@ -25,21 +25,21 @@ typedef struct _section_t {
 static int section_count = 0;
 static section_t *sections;
 
-static section_t *new_section(char *name);
-static section_t *get_section(char *name);
-static void add_entry(char *section_name, char *key, char *value);
-static char *get_value(char *section, char *key);
-static char *clean_value(char *value);
+static section_t *new_section(const char *name);
+static section_t *get_section(const char *name);
+static void add_entry(const char *section_name, const char *key, const char *value);
+static const char *get_value(const char *section, const char *key);
+static char *clean_value(const char *value);
 
 static int cmdline_argc;
 static char **cmdline_argv;
 
 static char *usage_str = NULL;
-static void cmdline_usage_append(char *key, char *type, char *description);
+static void cmdline_usage_append(const char *key, const char *type, const char *description);
 
-static int cmdline_find_option(char *key);
+static int cmdline_find_option(const char *key);
 
-section_t *new_section(char *name)
+section_t *new_section(const char *name)
 {
         for (int i = 0; i < section_count; i++) {
                 if(!strcmp(name, sections[i].name)) {
@@ -70,7 +70,7 @@ void free_ini(void)
         sections = NULL;
 }
 
-section_t *get_section(char *name)
+section_t *get_section(const char *name)
 {
         for (int i = 0; i < section_count; i++) {
                 if (strcmp(sections[i].name, name) == 0)
@@ -80,7 +80,7 @@ section_t *get_section(char *name)
         return NULL;
 }
 
-void add_entry(char *section_name, char *key, char *value)
+void add_entry(const char *section_name, const char *key, const char *value)
 {
         section_t *s = get_section(section_name);
         if (s == NULL) {
@@ -94,7 +94,7 @@ void add_entry(char *section_name, char *key, char *value)
         s->entries[s->entry_count - 1].value = clean_value(value);
 }
 
-char *get_value(char *section, char *key)
+const char *get_value(const char *section, const char *key)
 {
         section_t *s = get_section(section);
         if (!s) {
@@ -109,44 +109,44 @@ char *get_value(char *section, char *key)
         return NULL;
 }
 
-char *ini_get_path(char *section, char *key, const char *def)
+char *ini_get_path(const char *section, const char *key, const char *def)
 {
         return string_to_path(ini_get_string(section, key, def));
 }
 
-char *ini_get_string(char *section, char *key, const char *def)
+char *ini_get_string(const char *section, const char *key, const char *def)
 {
-        char *value = get_value(section, key);
+        const char *value = get_value(section, key);
         if (value)
                 return g_strdup(value);
 
         return def ? g_strdup(def) : NULL;
 }
 
-int ini_get_int(char *section, char *key, int def)
+int ini_get_int(const char *section, const char *key, int def)
 {
-        char *value = get_value(section, key);
+        const char *value = get_value(section, key);
         if (value == NULL)
                 return def;
         else
                 return atoi(value);
 }
 
-double ini_get_double(char *section, char *key, double def)
+double ini_get_double(const char *section, const char *key, double def)
 {
-        char *value = get_value(section, key);
+        const char *value = get_value(section, key);
         if (value == NULL)
                 return def;
         else
                 return atof(value);
 }
 
-bool ini_is_set(char *ini_section, char *ini_key)
+bool ini_is_set(const char *ini_section, const char *ini_key)
 {
         return get_value(ini_section, ini_key) != NULL;
 }
 
-char *next_section(char *section)
+const char *next_section(const char *section)
 {
         if (section_count == 0)
                 return NULL;
@@ -166,9 +166,9 @@ char *next_section(char *section)
         return NULL;
 }
 
-int ini_get_bool(char *section, char *key, int def)
+int ini_get_bool(const char *section, const char *key, int def)
 {
-        char *value = get_value(section, key);
+        const char *value = get_value(section, key);
         if (value == NULL)
                 return def;
         else {
@@ -191,7 +191,7 @@ int ini_get_bool(char *section, char *key, int def)
         }
 }
 
-char *clean_value(char *value)
+char *clean_value(const char *value)
 {
         char *s;
 
@@ -296,7 +296,7 @@ void cmdline_load(int argc, char *argv[])
         cmdline_argv = argv;
 }
 
-int cmdline_find_option(char *key)
+int cmdline_find_option(const char *key)
 {
         if (!key) {
                 return -1;
@@ -331,7 +331,7 @@ int cmdline_find_option(char *key)
         return -1;
 }
 
-static char *cmdline_get_value(char *key)
+static const char *cmdline_get_value(const char *key)
 {
         int idx = cmdline_find_option(key);
         if (idx < 0) {
@@ -347,10 +347,10 @@ static char *cmdline_get_value(char *key)
         return cmdline_argv[idx + 1];
 }
 
-char *cmdline_get_string(char *key, const char *def, char *description)
+char *cmdline_get_string(const char *key, const char *def, const char *description)
 {
         cmdline_usage_append(key, "string", description);
-        char *str = cmdline_get_value(key);
+        const char *str = cmdline_get_value(key);
 
         if (str)
                 return g_strdup(str);
@@ -360,10 +360,10 @@ char *cmdline_get_string(char *key, const char *def, char *description)
                 return g_strdup(def);
 }
 
-char *cmdline_get_path(char *key, const char *def, char *description)
+char *cmdline_get_path(const char *key, const char *def, const char *description)
 {
         cmdline_usage_append(key, "string", description);
-        char *str = cmdline_get_value(key);
+        const char *str = cmdline_get_value(key);
 
         if (str)
                 return string_to_path(g_strdup(str));
@@ -371,10 +371,10 @@ char *cmdline_get_path(char *key, const char *def, char *description)
                 return string_to_path(g_strdup(def));
 }
 
-int cmdline_get_int(char *key, int def, char *description)
+int cmdline_get_int(const char *key, int def, const char *description)
 {
         cmdline_usage_append(key, "int", description);
-        char *str = cmdline_get_value(key);
+        const char *str = cmdline_get_value(key);
 
         if (str == NULL)
                 return def;
@@ -382,33 +382,38 @@ int cmdline_get_int(char *key, int def, char *description)
                 return atoi(str);
 }
 
-double cmdline_get_double(char *key, double def, char *description)
+double cmdline_get_double(const char *key, double def, const char *description)
 {
         cmdline_usage_append(key, "double", description);
-        char *str = cmdline_get_value(key);
+        const char *str = cmdline_get_value(key);
+
         if (str == NULL)
                 return def;
         else
                 return atof(str);
 }
 
-int cmdline_get_bool(char *key, int def, char *description)
+int cmdline_get_bool(const char *key, int def, const char *description)
 {
         cmdline_usage_append(key, "", description);
         int idx = cmdline_find_option(key);
+
         if (idx > 0)
                 return true;
         else
                 return def;
 }
 
-bool cmdline_is_set(char *key)
+bool cmdline_is_set(const char *key)
 {
         return cmdline_get_value(key) != NULL;
 }
 
-char *option_get_path(char *ini_section, char *ini_key, char *cmdline_key,
-                        const char *def, char *description)
+char *option_get_path(const char *ini_section,
+                      const char *ini_key,
+                      const char *cmdline_key,
+                      const char *def,
+                      const char *description)
 {
         char *val = NULL;
 
@@ -425,8 +430,11 @@ char *option_get_path(char *ini_section, char *ini_key, char *cmdline_key,
 
 }
 
-char *option_get_string(char *ini_section, char *ini_key, char *cmdline_key,
-                        const char *def, char *description)
+char *option_get_string(const char *ini_section,
+                        const char *ini_key,
+                        const char *cmdline_key,
+                        const char *def,
+                        const char *description)
 {
         char *val = NULL;
 
@@ -443,11 +451,14 @@ char *option_get_string(char *ini_section, char *ini_key, char *cmdline_key,
 
 }
 
-int option_get_int(char *ini_section, char *ini_key, char *cmdline_key, int def,
-                   char *description)
+int option_get_int(const char *ini_section,
+                   const char *ini_key,
+                   const char *cmdline_key,
+                   int def,
+                   const char *description)
 {
         /* *str is only used to check wether the cmdline option is actually set. */
-        char *str = cmdline_get_value(cmdline_key);
+        const char *str = cmdline_get_value(cmdline_key);
 
         /* we call cmdline_get_int even when the option isn't set in order to
          * add the usage info */
@@ -459,10 +470,13 @@ int option_get_int(char *ini_section, char *ini_key, char *cmdline_key, int def,
                 return val;
 }
 
-double option_get_double(char *ini_section, char *ini_key, char *cmdline_key,
-                         double def, char *description)
+double option_get_double(const char *ini_section,
+                         const char *ini_key,
+                         const char *cmdline_key,
+                         double def,
+                         const char *description)
 {
-        char *str = cmdline_get_value(cmdline_key);
+        const char *str = cmdline_get_value(cmdline_key);
         double val = cmdline_get_double(cmdline_key, def, description);
 
         if (!str)
@@ -471,8 +485,11 @@ double option_get_double(char *ini_section, char *ini_key, char *cmdline_key,
                 return val;
 }
 
-int option_get_bool(char *ini_section, char *ini_key, char *cmdline_key,
-                    int def, char *description)
+int option_get_bool(const char *ini_section,
+                    const char *ini_key,
+                    const char *cmdline_key,
+                    int def,
+                    const char *description)
 {
         int val = false;
 
@@ -488,7 +505,7 @@ int option_get_bool(char *ini_section, char *ini_key, char *cmdline_key,
         return ini_get_bool(ini_section, ini_key, def);
 }
 
-void cmdline_usage_append(char *key, char *type, char *description)
+void cmdline_usage_append(const char *key, const char *type, const char *description)
 {
         char *key_type;
         if (type && strlen(type) > 0)
@@ -513,9 +530,9 @@ void cmdline_usage_append(char *key, char *type, char *description)
 
 }
 
-char *cmdline_create_usage(void)
+const char *cmdline_create_usage(void)
 {
-        return g_strdup(usage_str);
+        return usage_str;
 }
 
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
