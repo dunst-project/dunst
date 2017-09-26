@@ -27,6 +27,7 @@ int sticky_history = true;
 int history_length = 20;          /* max amount of notifications kept in history */
 int show_indicators = true;
 int word_wrap = false;
+enum ellipsize ellipsize = middle;
 int ignore_newline = false;
 int line_height = 0;            /* if line height < font height, it will be raised to font height */
 int notification_height = 0;    /* if notification height < font height and padding, it will be raised */

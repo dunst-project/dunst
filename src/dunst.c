@@ -395,7 +395,7 @@ int dunst_main(int argc, char *argv[])
 void usage(int exit_status)
 {
         puts("usage:\n");
-        char *us = cmdline_create_usage();
+        const char *us = cmdline_create_usage();
         puts(us);
         exit(exit_status);
 }

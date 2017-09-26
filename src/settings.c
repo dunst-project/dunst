@@ -47,7 +47,7 @@ static enum markup_mode parse_markup_mode(const char *mode)
         }
 }
 
-static int ini_get_urgency(char *section, char *key, int def)
+static int ini_get_urgency(const char *section, const char *key, const int def)
 {
         int ret = def;
         char *urg = ini_get_string(section, key, "");
@@ -172,24 +172,23 @@ void load_settings(char *cmdline_config_path)
         {
                 char *c = option_get_string(
                         "global",
-                        "ellipsize", "-ellipsize", "middle",
+                        "ellipsize", "-ellipsize", "",
                         "Ellipsize truncated lines on the start/middle/end"
                 );
 
-                if (strlen(c) > 0) {
-                        if (strcmp(c, "start") == 0)
-                                settings.ellipsize = start;
-                        else if (strcmp(c, "middle") == 0)
-                                settings.ellipsize = middle;
-                        else if (strcmp(c, "end") == 0)
-                                settings.ellipsize = end;
-                        else {
-                                fprintf(stderr,
-                                        "Warning: unknown value for ellipsize\n");
-                                settings.ellipsize = middle;
-                        }
-                        g_free(c);
+                if (strlen(c) == 0) {
+                        settings.ellipsize = ellipsize;
+                } else if (strcmp(c, "start") == 0) {
+                        settings.ellipsize = start;
+                } else if (strcmp(c, "middle") == 0) {
+                        settings.ellipsize = middle;
+                } else if (strcmp(c, "end") == 0) {
+                        settings.ellipsize = end;
+                } else {
+                        fprintf(stderr, "Warning: unknown ellipsize value: \"%s\"\n", c);
+                        settings.ellipsize = ellipsize;
                 }
+                g_free(c);
         }
 
         settings.ignore_newline = option_get_bool(
@@ -608,7 +607,7 @@ void load_settings(char *cmdline_config_path)
                 rules = g_slist_insert(rules, &(default_rules[i]), -1);
         }
 
-        char *cur_section = NULL;
+        const char *cur_section = NULL;
         for (;;) {
                 cur_section = next_section(cur_section);
                 if (!cur_section)
