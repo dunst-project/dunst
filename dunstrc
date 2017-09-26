@@ -184,6 +184,9 @@
     # Browser for opening urls in context menu.
     browser = /usr/bin/firefox -new-tab
 
+    # Optional application for opening file:// urls in context menu.
+    file_handler = /usr/bin/thunar
+
     # Always run rule-defined scripts, even if the notification is suppressed
     always_run_script = true
 

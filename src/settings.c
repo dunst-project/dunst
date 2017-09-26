@@ -390,6 +390,12 @@ void load_settings(char *cmdline_config_path)
                 "path to browser"
         );
 
+        settings.file_handler = option_get_path(
+                "global",
+                "file_handler", "-file_handler", file_handler,
+                "path to file handler"
+        );
+
         {
                 char *c = option_get_string(
                         "global",
