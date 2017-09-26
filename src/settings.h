@@ -63,6 +63,7 @@ typedef struct _settings {
         char *dmenu;
         char **dmenu_cmd;
         char *browser;
+        char *file_handler;
         enum icon_position_t icon_position;
         int max_icon_size;
         char *icon_path;
