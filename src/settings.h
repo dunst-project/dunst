@@ -75,6 +75,7 @@ struct settings {
         char *browser;
         char **browser_cmd;
         enum icon_position icon_position;
+        int min_icon_size;
         int max_icon_size;
         char *icon_path;
         enum follow_mode f_mode;

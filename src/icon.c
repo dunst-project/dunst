@@ -116,19 +116,23 @@ GdkPixbuf *icon_pixbuf_scale(GdkPixbuf *pixbuf)
 
         int w = gdk_pixbuf_get_width(pixbuf);
         int h = gdk_pixbuf_get_height(pixbuf);
-        int larger = w > h ? w : h;
+        int landscape = w > h;
+        int orig_larger = landscape ? w : h;
+        double larger = orig_larger;
+        double smaller = landscape ? h : w;
+        if (settings.min_icon_size && smaller < settings.min_icon_size) {
+                larger = larger / smaller * settings.min_icon_size;
+                smaller = settings.min_icon_size;
+        }
         if (settings.max_icon_size && larger > settings.max_icon_size) {
-                int scaled_w = settings.max_icon_size;
-                int scaled_h = settings.max_icon_size;
-                if (w >= h)
-                        scaled_h = (settings.max_icon_size * h) / w;
-                else
-                        scaled_w = (settings.max_icon_size * w) / h;
-
-                GdkPixbuf *scaled = gdk_pixbuf_scale_simple(
-                                pixbuf,
-                                scaled_w,
-                                scaled_h,
+                smaller = smaller / larger * settings.max_icon_size;
+                larger = settings.max_icon_size;
+        }
+        if ((int) larger != orig_larger) {
+                GdkPixbuf *scaled;
+                scaled = gdk_pixbuf_scale_simple(pixbuf,
+                                (int) (landscape ? larger : smaller),
+                                (int) (landscape ? smaller : larger),
                                 GDK_INTERP_BILINEAR);
                 g_object_unref(pixbuf);
                 pixbuf = scaled;
