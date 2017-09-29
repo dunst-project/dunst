@@ -54,6 +54,7 @@ char *dmenu = "/usr/bin/dmenu";
 
 char *browser = "/usr/bin/firefox";
 
+int min_icon_size = 0;
 int max_icon_size = 0;
 
 /* paths to default icons */

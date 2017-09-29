@@ -411,6 +411,12 @@ void load_settings(char *cmdline_config_path)
                 }
         }
 
+        settings.min_icon_size = option_get_int(
+                "global",
+                "min_icon_size", "-min_icon_size", min_icon_size,
+                "Scale smaller icons up to this size, set to 0 to disable. If max_icon_size also specified, that has the final say."
+        );
+
         settings.max_icon_size = option_get_int(
                 "global",
                 "max_icon_size", "-max_icon_size", max_icon_size,
