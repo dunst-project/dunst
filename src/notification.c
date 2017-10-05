@@ -428,7 +428,6 @@ int notification_init(notification *n, int id)
         if (id == 0) {
                 n->id = ++next_notification_id;
         } else {
-                notification_close_by_id(id, -1);
                 n->id = id;
         }
 
@@ -516,7 +515,8 @@ int notification_init(notification *n, int id)
                 }
                 printf("skipping notification: %s %s\n", n->body, n->summary);
         } else {
-                g_queue_insert_sorted(queue, n, notification_cmp_data, NULL);
+                if (id == 0 || !notification_replace_by_id(n))
+                        g_queue_insert_sorted(queue, n, notification_cmp_data, NULL);
         }
 
         char *tmp = g_strconcat(n->summary, " ", n->body, NULL);
@@ -604,6 +604,41 @@ int notification_close(notification *n, int reason)
 {
         assert(n != NULL);
         return notification_close_by_id(n->id, reason);
+}
+
+/*
+ * Replace the notification which matches the id field of
+ * the new notification. The given notification is inserted
+ * right in the same position as the old notification.
+ *
+ * Returns true, if a matching notification has been found
+ * and is replaced. Else false.
+ */
+bool notification_replace_by_id(notification *new)
+{
+
+        for (GList *iter = g_queue_peek_head_link(displayed);
+                    iter;
+                    iter = iter->next) {
+                notification *old = iter->data;
+                if (old->id == new->id) {
+                        iter->data = new;
+                        history_push(old);
+                        return true;
+                }
+        }
+
+        for (GList *iter = g_queue_peek_head_link(queue);
+                    iter;
+                    iter = iter->next) {
+                notification *old = iter->data;
+                if (old->id == new->id) {
+                        iter->data = new;
+                        history_push(old);
+                        return true;
+                }
+        }
+        return false;
 }
 
 void notification_update_text_to_render(notification *n)
