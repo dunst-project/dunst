@@ -351,8 +351,8 @@ void load_settings(char *cmdline_config_path)
                                 settings.sep_color = CUSTOM;
                                 settings.sep_custom_color_str = g_strdup(c);
                         }
-                        g_free(c);
                 }
+                g_free(c);
         }
 
         settings.stack_duplicates = option_get_bool(
