@@ -16,9 +16,6 @@
 #define ColFG 1
 #define ColBG 0
 
-extern GQueue *queue;
-extern GQueue *displayed;
-extern GQueue *history;
 extern GSList *rules;
 extern bool pause_display;
 extern const char *color_strings[3][3];
@@ -30,10 +27,7 @@ void wake_up(void);
 int dunst_main(int argc, char *argv[]);
 
 void check_timeouts(void);
-void history_pop(void);
-void history_push(notification *n);
 void usage(int exit_status);
-void move_all_to_history(void);
 void print_version(void);
 char *extract_urls(const char *str);
 void context_menu(void);

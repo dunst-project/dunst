@@ -19,6 +19,7 @@
 #include "menu.h"
 #include "rules.h"
 #include "settings.h"
+#include "queues.h"
 #include "utils.h"
 #include "x11/x.h"
 
@@ -430,6 +431,7 @@ int notification_init(notification *n, int id)
 
         n->dup_count = 0;
 
+        /* TODO: move this to queue.c */
         /* check if n is a duplicate */
         if (settings.stack_duplicates) {
                 for (GList *iter = g_queue_peek_head_link(queue); iter;
@@ -543,97 +545,6 @@ int notification_init(notification *n, int id)
                 notification_print(n);
 
         return n->id;
-}
-
-/*
- * Close the notification that has id.
- *
- * reasons:
- * -1 -> notification is a replacement, no NotificationClosed signal emitted
- *  1 -> the notification expired
- *  2 -> the notification was dismissed by the user_data
- *  3 -> The notification was closed by a call to CloseNotification
- */
-int notification_close_by_id(int id, int reason)
-{
-        notification *target = NULL;
-
-        for (GList *iter = g_queue_peek_head_link(displayed); iter;
-             iter = iter->next) {
-                notification *n = iter->data;
-                if (n->id == id) {
-                        g_queue_remove(displayed, n);
-                        history_push(n);
-                        target = n;
-                        break;
-                }
-        }
-
-        for (GList *iter = g_queue_peek_head_link(queue); iter;
-             iter = iter->next) {
-                notification *n = iter->data;
-                if (n->id == id) {
-                        g_queue_remove(queue, n);
-                        history_push(n);
-                        target = n;
-                        break;
-                }
-        }
-
-        if (reason > 0 && reason < 4 && target != NULL) {
-                notification_closed(target, reason);
-        }
-
-        wake_up();
-        return reason;
-}
-
-/*
- * Close the given notification. SEE notification_close_by_id.
- */
-int notification_close(notification *n, int reason)
-{
-        assert(n != NULL);
-        return notification_close_by_id(n->id, reason);
-}
-
-/*
- * Replace the notification which matches the id field of
- * the new notification. The given notification is inserted
- * right in the same position as the old notification.
- *
- * Returns true, if a matching notification has been found
- * and is replaced. Else false.
- */
-bool notification_replace_by_id(notification *new)
-{
-
-        for (GList *iter = g_queue_peek_head_link(displayed);
-                    iter;
-                    iter = iter->next) {
-                notification *old = iter->data;
-                if (old->id == new->id) {
-                        iter->data = new;
-                        new->start = time(NULL);
-                        new->dup_count = old->dup_count;
-                        notification_run_script(new);
-                        history_push(old);
-                        return true;
-                }
-        }
-
-        for (GList *iter = g_queue_peek_head_link(queue);
-                    iter;
-                    iter = iter->next) {
-                notification *old = iter->data;
-                if (old->id == new->id) {
-                        iter->data = new;
-                        new->dup_count = old->dup_count;
-                        history_push(old);
-                        return true;
-                }
-        }
-        return false;
 }
 
 void notification_update_text_to_render(notification *n)

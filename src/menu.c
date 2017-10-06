@@ -16,6 +16,7 @@
 #include "dunst.h"
 #include "settings.h"
 #include "notification.h"
+#include "queues.h"
 #include "utils.h"
 
 static bool is_initialized = false;

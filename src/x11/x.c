@@ -29,6 +29,7 @@
 #include "src/markup.h"
 #include "src/notification.h"
 #include "src/settings.h"
+#include "src/queues.h"
 #include "src/utils.h"
 
 #include "screen.h"

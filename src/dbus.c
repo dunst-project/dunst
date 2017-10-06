@@ -8,6 +8,7 @@
 
 #include "dunst.h"
 #include "notification.h"
+#include "queues.h"
 #include "settings.h"
 #include "utils.h"
 

@@ -16,6 +16,7 @@
 #include "menu.h"
 #include "notification.h"
 #include "option_parser.h"
+#include "queues.h"
 #include "settings.h"
 #include "x11/x.h"
 #include "x11/screen.h"
@@ -39,14 +40,11 @@ bool pause_display = false;
 
 GMainLoop *mainloop = NULL;
 
-/* notification lists */
-GQueue *queue = NULL;           /* all new notifications get into here */
-GQueue *displayed = NULL;       /* currently displayed notifications */
-GQueue *history = NULL;         /* history of displayed notifications */
 GSList *rules = NULL;
 
 /* misc funtions */
 
+/*TODO: move to queues.c */
 void check_timeouts(void)
 {
         /* nothing to do */
@@ -82,6 +80,7 @@ void check_timeouts(void)
         }
 }
 
+/*TODO: move to queues.c */
 void update_lists()
 {
         int limit;
@@ -128,47 +127,12 @@ void update_lists()
         }
 }
 
-void move_all_to_history()
-{
-        while (displayed->length > 0) {
-                notification_close(g_queue_peek_head_link(displayed)->data, 2);
-        }
-
-        while (queue->length > 0) {
-                notification_close(g_queue_peek_head_link(queue)->data, 2);
-        }
-}
-
-void history_pop(void)
-{
-        if (g_queue_is_empty(history))
-                return;
-
-        notification *n = g_queue_pop_tail(history);
-        n->redisplayed = true;
-        n->start = 0;
-        n->timeout = settings.sticky_history ? 0 : n->timeout;
-        g_queue_push_head(queue, n);
-
-        wake_up();
-}
-
-void history_push(notification *n)
-{
-        if (settings.history_length > 0 && history->length >= settings.history_length) {
-                notification *to_free = g_queue_pop_head(history);
-                notification_free(to_free);
-        }
-
-        if (!n->history_ignore)
-                g_queue_push_tail(history, n);
-}
-
 void wake_up(void)
 {
         run(NULL);
 }
 
+/* TODO: move parts to queue.c */
 static gint64 get_sleep_time(void)
 {
         gint64 time = g_get_monotonic_time();
@@ -264,19 +228,11 @@ gboolean quit_signal(gpointer data)
         return G_SOURCE_CONTINUE;
 }
 
-static void teardown_notification(gpointer data)
-{
-        notification *n = data;
-        notification_free(n);
-}
-
 static void teardown(void)
 {
         regex_teardown();
 
-        g_queue_free_full(history, teardown_notification);
-        g_queue_free_full(displayed, teardown_notification);
-        g_queue_free_full(queue, teardown_notification);
+        teardown_queues();
 
         x_free();
 }
@@ -284,6 +240,7 @@ static void teardown(void)
 int dunst_main(int argc, char *argv[])
 {
 
+        /*TODO: move to queues.c */
         history = g_queue_new();
         displayed = g_queue_new();
         queue = g_queue_new();
