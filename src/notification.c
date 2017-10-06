@@ -316,6 +316,15 @@ int notification_init(notification *n, int id)
 
         rule_apply_all(n);
 
+        if (n->icon != NULL && strlen(n->icon) <= 0) {
+                g_free(n->icon);
+                n->icon = NULL;
+        }
+
+        if (n->raw_icon == NULL && n->icon == NULL) {
+                n->icon = g_strdup(settings.icons[n->urgency]);
+        }
+
         n->urls = notification_extract_markup_urls(&(n->body));
 
         n->msg = string_replace_all("\\n", "\n", g_strdup(n->format));
@@ -414,15 +423,6 @@ int notification_init(notification *n, int id)
 
                 g_free(n->msg);
                 n->msg = buffer;
-        }
-
-        if (n->icon != NULL && strlen(n->icon) <= 0) {
-                g_free(n->icon);
-                n->icon = NULL;
-        }
-
-        if (n->raw_icon == NULL && n->icon == NULL) {
-                n->icon = g_strdup(settings.icons[n->urgency]);
         }
 
         if (id == 0) {
