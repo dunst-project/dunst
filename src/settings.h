@@ -55,7 +55,6 @@ typedef struct _settings {
         int h_padding;
         enum separator_color sep_color;
         char *sep_custom_color_str;
-        char *sep_color_str;
         int frame_width;
         char *frame_color;
         int startup_notification;

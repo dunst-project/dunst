@@ -56,7 +56,6 @@ typedef struct _notification {
         bool transient;
 
         int progress;           /* percentage + 1, 0 to hide */
-        int line_count;
         int history_ignore;
         const char *script;
         char *urls;
