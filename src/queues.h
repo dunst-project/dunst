@@ -10,6 +10,11 @@ extern GQueue *displayed;
 extern GQueue *history;
 
 /*
+ * Initialise neccessary queues
+ */
+void queues_init(void);
+
+/*
  * Replace the notification which matches the id field of
  * the new notification. The given notification is inserted
  * right in the same position as the old notification.

@@ -240,10 +240,7 @@ static void teardown(void)
 int dunst_main(int argc, char *argv[])
 {
 
-        /*TODO: move to queues.c */
-        history = g_queue_new();
-        displayed = g_queue_new();
-        queue = g_queue_new();
+        queues_init();
 
         cmdline_load(argc, argv);
 
