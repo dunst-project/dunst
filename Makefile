@@ -72,6 +72,7 @@ uninstall:
 	rm -f ${DESTDIR}${PREFIX}/bin/dunst
 	rm -f ${DESTDIR}${MANPREFIX}/man1/dunst.1
 	rm -f ${DESTDIR}${PREFIX}/share/dbus-1/services/org.knopwob.dunst.service
+	rm -f ${DESTDIR}${PREFIX}/lib/systemd/user/dunst.service
 	rm -rf ${DESTDIR}${PREFIX}/share/dunst
 
 test: test/test
