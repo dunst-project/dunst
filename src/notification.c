@@ -326,6 +326,7 @@ int notification_init(notification *n, int id)
                   substr = strchr(substr, '%')){
 
                 char pg[16];
+                char *icon_tmp;
 
                 switch(substr[1]){
                         case 'a':
@@ -350,11 +351,13 @@ int notification_init(notification *n, int id)
                                         n->markup);
                                 break;
                         case 'I':
+                                icon_tmp = g_strdup(n->icon);
                                 notification_replace_single_field(
                                         &n->msg,
                                         &substr,
-                                        n->icon ? basename(n->icon) : "",
+                                        icon_tmp ? basename(icon_tmp) : "",
                                         MARKUP_NO);
+                                g_free(icon_tmp);
                                 break;
                         case 'i':
                                 notification_replace_single_field(
