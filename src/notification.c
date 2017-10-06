@@ -522,14 +522,8 @@ int notification_init(notification *n, int id)
         char *tmp = g_strconcat(n->summary, " ", n->body, NULL);
 
         char *tmp_urls = extract_urls(tmp);
-        if (tmp_urls != NULL) {
-            if (n->urls != NULL) {
-                n->urls = string_append(n->urls, tmp_urls, "\n");
-                g_free(tmp_urls);
-            } else {
-                n->urls = tmp_urls;
-            }
-        }
+        n->urls = string_append(n->urls, tmp_urls, "\n");
+        g_free(tmp_urls);
 
         if (n->actions) {
                 n->actions->dmenu_str = NULL;

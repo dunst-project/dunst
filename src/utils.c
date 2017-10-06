@@ -76,8 +76,12 @@ char *string_replace_all(const char *needle, const char *replacement,
 
 char *string_append(char *a, const char *b, const char *sep)
 {
-        if (!a)
+        if (!a || *a == '\0') {
+                g_free(a);
                 return g_strdup(b);
+        }
+        if (!b || *b == '\0')
+                return a;
 
         char *new;
         if (!sep)
