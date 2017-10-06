@@ -6,7 +6,6 @@
 #include <glib.h>
 
 #include "dbus.h"
-#include "dunst.h"
 #include "notification.h"
 #include "settings.h"
 
@@ -76,7 +75,6 @@ int notification_close_by_id(int id, int reason)
                 notification_closed(target, reason);
         }
 
-        wake_up();
         return reason;
 }
 
@@ -107,8 +105,6 @@ void history_pop(void)
         n->start = 0;
         n->timeout = settings.sticky_history ? 0 : n->timeout;
         g_queue_push_head(queue, n);
-
-        wake_up();
 }
 
 void history_push(notification *n)

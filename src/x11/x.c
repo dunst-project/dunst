@@ -843,6 +843,7 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback,
                 case ButtonRelease:
                         if (ev.xbutton.window == xctx.win) {
                                 x_handle_click(ev);
+                                wake_up();
                         }
                         break;
                 case KeyPress:
@@ -855,8 +856,10 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback,
                             && settings.close_ks.mask == state) {
                                 if (displayed) {
                                         notification *n = g_queue_peek_head(displayed);
-                                        if (n)
+                                        if (n) {
                                                 notification_close(n, 2);
+                                                wake_up();
+                                        }
                                 }
                         }
                         if (settings.history_ks.str
@@ -864,18 +867,21 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback,
                                              0) == settings.history_ks.sym
                             && settings.history_ks.mask == state) {
                                 history_pop();
+                                wake_up();
                         }
                         if (settings.close_all_ks.str
                             && XLookupKeysym(&ev.xkey,
                                              0) == settings.close_all_ks.sym
                             && settings.close_all_ks.mask == state) {
                                 move_all_to_history();
+                                wake_up();
                         }
                         if (settings.context_ks.str
                             && XLookupKeysym(&ev.xkey,
                                              0) == settings.context_ks.sym
                             && settings.context_ks.mask == state) {
                                 context_menu();
+                                wake_up();
                         }
                         break;
                 case FocusIn:
