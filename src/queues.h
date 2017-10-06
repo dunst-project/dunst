@@ -8,11 +8,18 @@
 extern GQueue *queue;
 extern GQueue *displayed;
 extern GQueue *history;
+extern unsigned int displayed_limit;
 
 /*
  * Initialise neccessary queues
  */
 void queues_init(void);
+
+/*
+ * Set maximum notification count to display
+ * and store in displayed queue
+ */
+void queues_displayed_limit(unsigned int limit);
 
 /*
  * Replace the notification which matches the id field of

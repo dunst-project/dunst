@@ -1015,6 +1015,17 @@ void x_setup(void)
                                             &xctx.geometry.x, &xctx.geometry.y,
                                             &xctx.geometry.w, &xctx.geometry.h);
 
+        /* calculate maximum notification count and push information to queue */
+        if (xctx.geometry.h == 0) {
+                queues_displayed_limit(0);
+        } else if (xctx.geometry.h == 1) {
+                queues_displayed_limit(1);
+        } else if (settings.indicate_hidden) {
+                queues_displayed_limit(xctx.geometry.h - 1);
+        } else {
+                queues_displayed_limit(xctx.geometry.h);
+        }
+
         xctx.screensaver_info = XScreenSaverAllocInfo();
 
         init_screens();

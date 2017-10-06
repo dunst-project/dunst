@@ -14,11 +14,18 @@ GQueue *queue     = NULL; /* all new notifications get into here */
 GQueue *displayed = NULL; /* currently displayed notifications */
 GQueue *history   = NULL; /* history of displayed notifications */
 
+unsigned int displayed_limit = 0;
+
 void queues_init(void)
 {
         history   = g_queue_new();
         displayed = g_queue_new();
         queue     = g_queue_new();
+}
+
+void queues_displayed_limit(unsigned int limit)
+{
+        displayed_limit = limit;
 }
 
 bool notification_replace_by_id(notification *new)

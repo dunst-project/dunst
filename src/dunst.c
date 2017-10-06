@@ -83,8 +83,6 @@ void check_timeouts(void)
 /*TODO: move to queues.c */
 void update_lists()
 {
-        int limit;
-
         check_timeouts();
 
         if (pause_display) {
@@ -95,20 +93,10 @@ void update_lists()
                 return;
         }
 
-        if (xctx.geometry.h == 0) {
-                limit = 0;
-        } else if (xctx.geometry.h == 1) {
-                limit = 1;
-        } else if (settings.indicate_hidden) {
-                limit = xctx.geometry.h - 1;
-        } else {
-                limit = xctx.geometry.h;
-        }
-
         /* move notifications from queue to displayed */
         while (queue->length > 0) {
 
-                if (limit > 0 && displayed->length >= limit) {
+                if (displayed_limit > 0 && displayed->length >= displayed_limit) {
                         /* the list is full */
                         break;
                 }
