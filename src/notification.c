@@ -623,6 +623,9 @@ bool notification_replace_by_id(notification *new)
                 notification *old = iter->data;
                 if (old->id == new->id) {
                         iter->data = new;
+                        new->start = time(NULL);
+                        new->dup_count = old->dup_count;
+                        notification_run_script(new);
                         history_push(old);
                         return true;
                 }
@@ -634,6 +637,7 @@ bool notification_replace_by_id(notification *new)
                 notification *old = iter->data;
                 if (old->id == new->id) {
                         iter->data = new;
+                        new->dup_count = old->dup_count;
                         history_push(old);
                         return true;
                 }
