@@ -158,6 +158,20 @@ TEST test_string_to_path(void)
         PASS();
 }
 
+TEST test_string_to_time(void)
+{
+        char *input[] = { "5000 ms", "5000ms",  "100", "10s",   "2m",    "11h",      "9d", "d9", "   5 ms   ", NULL };
+        gint64  exp[] = {      5000,     5000, 100000, 10000, 120000, 39600000, 777600000,    0,            5, };
+
+        int i = 0;
+        while (input[i]){
+                ASSERT_EQ_FMT(string_to_time(input[i]), exp[i]*1000, "%ld");
+                i++;
+        }
+
+        PASS();
+}
+
 SUITE(suite_utils)
 {
         RUN_TEST(test_string_replace_char);
@@ -166,5 +180,6 @@ SUITE(suite_utils)
         RUN_TEST(test_string_append);
         RUN_TEST(test_string_strip_delimited);
         RUN_TEST(test_string_to_path);
+        RUN_TEST(test_string_to_time);
 }
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

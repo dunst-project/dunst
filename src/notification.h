@@ -4,7 +4,6 @@
 
 #include <glib.h>
 #include <stdbool.h>
-#include <time.h>
 
 #include "settings.h"
 
@@ -42,9 +41,9 @@ typedef struct _notification {
         char *text_to_render;
         const char *format;
         char *dbus_client;
-        time_t start;
-        time_t timestamp;
-        int timeout;
+        gint64 start;
+        gint64 timestamp;
+        gint64 timeout;
         int urgency;
         enum markup_mode markup;
         bool redisplayed;       /* has been displayed before? */
@@ -75,8 +74,6 @@ int notification_close(notification *n, int reason);
 void notification_print(notification *n);
 void notification_replace_single_field(char **haystack, char **needle, const char *replacement, enum markup_mode markup_mode);
 void notification_update_text_to_render(notification *n);
-int notification_get_ttl(notification *n);
-int notification_get_age(notification *n);
 void notification_do_action(notification *n);
 
 #endif

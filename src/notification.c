@@ -11,7 +11,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/wait.h>
-#include <time.h>
 #include <unistd.h>
 #include <libgen.h>
 
@@ -39,7 +38,7 @@ void notification_print(notification *n)
         printf("\ticon: '%s'\n", n->icon);
         printf("\traw_icon set: %s\n", (n->raw_icon ? "true" : "false"));
         printf("\tcategory: %s\n", n->category);
-        printf("\ttimeout: %d\n", n->timeout);
+        printf("\ttimeout: %ld\n", n->timeout/1000);
         printf("\turgency: %d\n", n->urgency);
         printf("\ttransient: %d\n", n->transient);
         printf("\tformatted: '%s'\n", n->msg);
@@ -478,7 +477,7 @@ int notification_init(notification *n, int id)
                                 } else {
                                         orig->progress = n->progress;
                                 }
-                                orig->start = time(NULL);
+                                orig->start = g_get_monotonic_time();
                                 notification_free(n);
                                 wake_up();
                                 return orig->id;
@@ -502,10 +501,10 @@ int notification_init(notification *n, int id)
         }
 
         n->timeout =
-            n->timeout == -1 ? settings.timeouts[n->urgency] : n->timeout;
+            n->timeout < 0 ? settings.timeouts[n->urgency] : n->timeout;
         n->start = 0;
 
-        n->timestamp = time(NULL);
+        n->timestamp = g_get_monotonic_time();
 
         n->redisplayed = false;
 
@@ -671,26 +670,26 @@ void notification_update_text_to_render(notification *n)
         }
 
         /* print age */
-        int hours, minutes, seconds;
-        time_t t_delta = time(NULL) - n->timestamp;
+        gint64 hours, minutes, seconds;
+        gint64 t_delta = g_get_monotonic_time() - n->timestamp;
 
         if (settings.show_age_threshold >= 0
             && t_delta >= settings.show_age_threshold) {
-                hours = t_delta / 3600;
-                minutes = t_delta / 60 % 60;
-                seconds = t_delta % 60;
+                hours   = t_delta / G_USEC_PER_SEC / 3600;
+                minutes = t_delta / G_USEC_PER_SEC / 60 % 60;
+                seconds = t_delta / G_USEC_PER_SEC % 60;
 
                 char *new_buf;
                 if (hours > 0) {
                         new_buf =
-                            g_strdup_printf("%s (%dh %dm %ds old)", buf, hours,
+                            g_strdup_printf("%s (%ldh %ldm %lds old)", buf, hours,
                                             minutes, seconds);
                 } else if (minutes > 0) {
                         new_buf =
-                            g_strdup_printf("%s (%dm %ds old)", buf, minutes,
+                            g_strdup_printf("%s (%ldm %lds old)", buf, minutes,
                                             seconds);
                 } else {
-                        new_buf = g_strdup_printf("%s (%ds old)", buf, seconds);
+                        new_buf = g_strdup_printf("%s (%lds old)", buf, seconds);
                 }
 
                 g_free(buf);
@@ -698,18 +697,6 @@ void notification_update_text_to_render(notification *n)
         }
 
         n->text_to_render = buf;
-}
-
-int notification_get_ttl(notification *n) {
-        if (n->timeout == 0) {
-                return -1;
-        } else {
-                return n->timeout - (time(NULL) - n->start);
-        }
-}
-
-int notification_get_age(notification *n) {
-        return time(NULL) - n->timestamp;
 }
 
 /*

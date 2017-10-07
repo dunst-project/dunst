@@ -900,7 +900,7 @@ bool x_is_idle(void)
         if (settings.idle_threshold == 0) {
                 return false;
         }
-        return xctx.screensaver_info->idle / 1000 > settings.idle_threshold;
+        return xctx.screensaver_info->idle > settings.idle_threshold / 1000;
 }
 
 /* TODO move to x_mainloop_* */

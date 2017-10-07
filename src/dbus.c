@@ -236,21 +236,13 @@ static void on_notify(GDBusConnection *connection,
 
         fflush(stdout);
 
-        if (timeout > 0) {
-                /* do some rounding */
-                timeout = (timeout + 500) / 1000;
-                if (timeout < 1) {
-                        timeout = 1;
-                }
-        }
-
         notification *n = notification_create();
         n->appname = appname;
         n->summary = summary;
         n->body = body;
         n->icon = icon;
         n->raw_icon = raw_icon;
-        n->timeout = timeout;
+        n->timeout = timeout < 0 ? -1 : timeout * 1000;
         n->markup = settings.markup;
         n->progress = (progress < 0 || progress > 100) ? 0 : progress + 1;
         n->urgency = urgency;
