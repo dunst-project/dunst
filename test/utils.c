@@ -160,8 +160,8 @@ TEST test_string_to_path(void)
 
 TEST test_string_to_time(void)
 {
-        char *input[] = { "5000 ms", "5000ms",  "100", "10s",   "2m",    "11h",      "9d", "d9", "   5 ms   ", NULL };
-        gint64  exp[] = {      5000,     5000, 100000, 10000, 120000, 39600000, 777600000,    0,            5, };
+        char *input[] = { "5000 ms", "5000ms",  "100", "10s",   "2m",    "11h",      "9d", "   5 ms   ", NULL };
+        gint64  exp[] = {      5000,     5000, 100000, 10000, 120000, 39600000, 777600000,     5,         0};
 
         int i = 0;
         while (input[i]){
