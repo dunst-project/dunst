@@ -11,7 +11,7 @@ char *lowfgcolor = "#000000";
 char *format = "%s %b";         /* default format */
 
 int timeouts[] = { 10, 10, 0 }; /* low, normal, critical */
-char *icons[] = { "info", "info", "emblem-important" }; /* low, normal, critical */
+char *icons[] = { "dialog-information", "dialog-information", "dialog-warning" }; /* low, normal, critical */
 
 unsigned int transparency = 0;  /* transparency */
 char *geom = "0x0";             /* geometry */
