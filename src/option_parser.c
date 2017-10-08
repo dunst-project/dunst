@@ -248,8 +248,7 @@ int load_ini_file(FILE *fp)
 
                         *end = '\0';
 
-                        if (current_section)
-                                g_free(current_section);
+                        g_free(current_section);
                         current_section = (g_strdup(start + 1));
                         new_section(current_section);
                         continue;
@@ -296,8 +295,7 @@ int load_ini_file(FILE *fp)
                 add_entry(current_section, key, value);
         }
         free(line);
-        if (current_section)
-                g_free(current_section);
+        g_free(current_section);
         return 0;
 }
 

@@ -176,12 +176,8 @@ void notification_free(notification *n)
         g_free(n->msg);
         g_free(n->dbus_client);
         g_free(n->category);
-
-        if (n->text_to_render)
-                g_free(n->text_to_render);
-
-        if (n->urls)
-                g_free(n->urls);
+        g_free(n->text_to_render);
+        g_free(n->urls);
 
         if (n->actions) {
                 g_strfreev(n->actions->actions);
@@ -642,10 +638,8 @@ bool notification_replace_by_id(notification *new)
 
 void notification_update_text_to_render(notification *n)
 {
-        if (n->text_to_render) {
-                g_free(n->text_to_render);
-                n->text_to_render = NULL;
-        }
+        g_free(n->text_to_render);
+        n->text_to_render = NULL;
 
         char *buf = NULL;
 

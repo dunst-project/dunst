@@ -23,8 +23,7 @@ void rule_apply(rule_t *r, notification *n)
         if (r->markup != MARKUP_NULL)
                 n->markup = r->markup;
         if (r->new_icon) {
-                if(n->icon)
-                        g_free(n->icon);
+                g_free(n->icon);
                 n->icon = g_strdup(r->new_icon);
                 n->icon_overridden = true;
         }
