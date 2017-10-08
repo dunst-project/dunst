@@ -1,6 +1,5 @@
 /* copyright 2012 - 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
 
-#define _GNU_SOURCE
 #define XLIB_ILLEGAL_ACCESS
 
 #include "dunst.h"
