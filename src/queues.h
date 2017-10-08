@@ -22,6 +22,17 @@ void queues_init(void);
 void queues_displayed_limit(unsigned int limit);
 
 /*
+ * Insert a fully initialized notification into queues
+ * Respects stack_duplicates, and notification replacement
+ *
+ * If replaces_id != 0, n replaces notification with id replaces_id
+ * If replaces_id == 0, n gets occupies a new position
+ *
+ * Returns the assigned notification id
+ */
+int queues_notification_insert(notification *n, int replaces_id);
+
+/*
  * Replace the notification which matches the id field of
  * the new notification. The given notification is inserted
  * right in the same position as the old notification.

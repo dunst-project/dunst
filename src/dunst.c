@@ -261,7 +261,9 @@ int dunst_main(int argc, char *argv[])
                 n->timeout = 10 * G_USEC_PER_SEC;
                 n->markup = MARKUP_NO;
                 n->urgency = LOW;
-                notification_init(n, 0);
+                notification_init(n);
+                queues_notification_insert(n, 0);
+                // we do not call wakeup now, wake_up does not work here yet
         }
 
         mainloop = g_main_loop_new(NULL, FALSE);

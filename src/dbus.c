@@ -264,7 +264,8 @@ static void on_notify(GDBusConnection *connection,
         n->color_strings[ColFG] = fgcolor;
         n->color_strings[ColBG] = bgcolor;
 
-        int id = notification_init(n, replaces_id);
+        notification_init(n);
+        int id = queues_notification_insert(n, replaces_id);
         wake_up();
 
         GVariant *reply = g_variant_new("(u)", id);

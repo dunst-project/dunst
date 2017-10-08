@@ -23,7 +23,6 @@
 #include "utils.h"
 #include "x11/x.h"
 
-int next_notification_id = 1;
 
 /*
  * print a human readable representation
@@ -280,28 +279,28 @@ void notification_init_defaults(notification *n)
 }
 
 /*
- * Initialize the given notification and add it to
- * the queue. Replace notification with id if id > 0.
+ * Initialize the given notification
  *
  * n should be a pointer to a notification allocated with
  * notification_create, it is undefined behaviour to pass a notification
  * allocated some other way.
  */
-int notification_init(notification *n, int id)
+void notification_init(notification *n)
 {
         assert(n != NULL);
 
         //Prevent undefined behaviour by initialising required fields
         notification_init_defaults(n);
 
+        // TODO: this does not belong into notification_init
         if (strcmp("DUNST_COMMAND_PAUSE", n->summary) == 0) {
                 pause_display = true;
-                return 0;
+                return;
         }
 
         if (strcmp("DUNST_COMMAND_RESUME", n->summary) == 0) {
                 pause_display = false;
-                return 0;
+                return;
         }
 
         n->script = NULL;
@@ -423,64 +422,7 @@ int notification_init(notification *n, int id)
                 n->msg = buffer;
         }
 
-        if (id == 0) {
-                n->id = ++next_notification_id;
-        } else {
-                n->id = id;
-        }
-
         n->dup_count = 0;
-
-        /* TODO: move this to queue.c */
-        /* check if n is a duplicate */
-        if (settings.stack_duplicates) {
-                for (GList *iter = g_queue_peek_head_link(queue); iter;
-                     iter = iter->next) {
-                        notification *orig = iter->data;
-                        if (notification_is_duplicate(orig, n)) {
-                                /* If the progress differs this was probably intended to replace the notification
-                                 * but notify-send was used. So don't increment dup_count in this case
-                                 */
-                                if (orig->progress == n->progress) {
-                                        orig->dup_count++;
-                                } else {
-                                        orig->progress = n->progress;
-                                }
-                                /* notifications that differ only in progress hints should be expected equal,
-                                 * but we want the latest message, with the latest hint value
-                                 */
-                                g_free(orig->msg);
-                                orig->msg = g_strdup(n->msg);
-                                notification_free(n);
-                                wake_up();
-                                return orig->id;
-                        }
-                }
-
-                for (GList *iter = g_queue_peek_head_link(displayed); iter;
-                     iter = iter->next) {
-                        notification *orig = iter->data;
-                        if (notification_is_duplicate(orig, n)) {
-                                /* notifications that differ only in progress hints should be expected equal,
-                                 * but we want the latest message, with the latest hint value
-                                 */
-                                g_free(orig->msg);
-                                orig->msg = g_strdup(n->msg);
-                                /* If the progress differs this was probably intended to replace the notification
-                                 * but notify-send was used. So don't increment dup_count in this case
-                                 */
-                                if (orig->progress == n->progress) {
-                                        orig->dup_count++;
-                                } else {
-                                        orig->progress = n->progress;
-                                }
-                                orig->start = g_get_monotonic_time();
-                                notification_free(n);
-                                wake_up();
-                                return orig->id;
-                        }
-                }
-        }
 
         /* urgency > CRIT -> array out of range */
         n->urgency = n->urgency > CRIT ? CRIT : n->urgency;
@@ -507,15 +449,13 @@ int notification_init(notification *n, int id)
 
         n->first_render = true;
 
+        /* TODO: this should not be part of notification_init */
         if (strlen(n->msg) == 0) {
                 notification_close(n, 2);
                 if (settings.always_run_script) {
                         notification_run_script(n);
                 }
                 printf("skipping notification: %s %s\n", n->body, n->summary);
-        } else {
-                if (id == 0 || !notification_replace_by_id(n))
-                        g_queue_insert_sorted(queue, n, notification_cmp_data, NULL);
         }
 
         char *tmp = g_strconcat(n->summary, " ", n->body, NULL);
@@ -540,11 +480,6 @@ int notification_init(notification *n, int id)
         }
 
         g_free(tmp);
-
-        if (settings.print_notifications)
-                notification_print(n);
-
-        return n->id;
 }
 
 void notification_update_text_to_render(notification *n)

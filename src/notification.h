@@ -62,7 +62,7 @@ typedef struct _notification {
 } notification;
 
 notification *notification_create(void);
-int notification_init(notification *n, int id);
+void notification_init(notification *n);
 void notification_free(notification *n);
 int notification_cmp(const void *a, const void *b);
 int notification_cmp_data(const void *a, const void *b, void *data);

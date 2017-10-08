@@ -15,6 +15,9 @@ GQueue *displayed = NULL; /* currently displayed notifications */
 GQueue *history   = NULL; /* history of displayed notifications */
 
 unsigned int displayed_limit = 0;
+int next_notification_id = 1;
+
+static int queues_stack_duplicate(notification *n);
 
 void queues_init(void)
 {
@@ -26,6 +29,84 @@ void queues_init(void)
 void queues_displayed_limit(unsigned int limit)
 {
         displayed_limit = limit;
+}
+
+int queues_notification_insert(notification *n, int replaces_id)
+{
+        if (replaces_id == 0) {
+
+                n->id = ++next_notification_id;
+
+                if (settings.stack_duplicates) {
+                        int stacked = queues_stack_duplicate(n);
+                        if (stacked > 0) {
+                                // notification got stacked
+                                return stacked;
+                        }
+                }
+
+                g_queue_insert_sorted(queue, n, notification_cmp_data, NULL);
+
+        } else {
+                n->id = replaces_id;
+                if (!notification_replace_by_id(n))
+                        g_queue_insert_sorted(queue, n, notification_cmp_data, NULL);
+        }
+
+        if (settings.print_notifications)
+                notification_print(n);
+
+        return n->id;
+}
+
+/*
+ * Replaces duplicate notification and stacks it
+ *
+ * Returns the notification id of the stacked notification
+ * Returns -1 if not notification could be stacked
+ */
+static int queues_stack_duplicate(notification *n)
+{
+        for (GList *iter = g_queue_peek_head_link(displayed); iter;
+             iter = iter->next) {
+                notification *orig = iter->data;
+                if (notification_is_duplicate(orig, n)) {
+                        /* If the progress differs, probably notify-send was used to update the notification
+                         * So only count it as a duplicate, if the progress was not the same.
+                         * */
+                        if (orig->progress == n->progress) {
+                                orig->dup_count++;
+                        } else {
+                                orig->progress = n->progress;
+                        }
+                        orig->start = g_get_monotonic_time();
+                        g_free(orig->msg);
+                        orig->msg = g_strdup(n->msg);
+                        notification_free(n);
+                        return orig->id;
+                }
+        }
+
+        for (GList *iter = g_queue_peek_head_link(queue); iter;
+             iter = iter->next) {
+                notification *orig = iter->data;
+                if (notification_is_duplicate(orig, n)) {
+                        /* If the progress differs, probably notify-send was used to update the notification
+                         * So only count it as a duplicate, if the progress was not the same.
+                         * */
+                        if (orig->progress == n->progress) {
+                                orig->dup_count++;
+                        } else {
+                                orig->progress = n->progress;
+                        }
+                        g_free(orig->msg);
+                        orig->msg = g_strdup(n->msg);
+                        notification_free(n);
+                        return orig->id;
+                }
+        }
+
+        return -1;
 }
 
 bool notification_replace_by_id(notification *new)
