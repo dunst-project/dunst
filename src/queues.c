@@ -213,6 +213,37 @@ void history_push(notification *n)
                 g_queue_push_tail(history, n);
 }
 
+gint64 queues_get_next_datachange(gint64 time)
+{
+        gint64 sleep = G_MAXINT64;
+
+        for (GList *iter = g_queue_peek_head_link(displayed); iter;
+                        iter = iter->next) {
+                notification *n = iter->data;
+                gint64 ttl = n->timeout - (time - n->start);
+
+                if (n->timeout > 0) {
+                        if (ttl > 0)
+                                sleep = MIN(sleep, ttl);
+                        else
+                                // while we're processing, the notification already timed out
+                                return 0;
+                }
+
+                if (settings.show_age_threshold >= 0) {
+                        gint64 age = time - n->timestamp;
+
+                        if (age > settings.show_age_threshold)
+                                // sleep exactly until the next shift of the second happens
+                                sleep = MIN(sleep, ((G_USEC_PER_SEC) - (age % (G_USEC_PER_SEC))));
+                        else if (ttl > settings.show_age_threshold)
+                                sleep = MIN(sleep, settings.show_age_threshold);
+                }
+        }
+
+        return sleep != G_MAXINT64 ? sleep : -1;
+}
+
 static void teardown_notification(gpointer data)
 {
         notification *n = data;

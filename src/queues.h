@@ -63,6 +63,18 @@ void history_push(notification *n);
 void move_all_to_history(void);
 
 /*
+ * Return the distance to the next event in the queue,
+ * which forces an update visible to the user
+ *
+ * This may be:
+ *
+ * - notification hits timeout
+ * - notification's age second changes
+ * - notification's age threshold is hit
+ */
+gint64 queues_get_next_datachange(gint64 time);
+
+/*
  * Remove all notifications from all lists
  * and free the notifications
  */
