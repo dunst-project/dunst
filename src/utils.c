@@ -1,5 +1,4 @@
 /* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
-#define _GNU_SOURCE
 #include "utils.h"
 
 #include <assert.h>
