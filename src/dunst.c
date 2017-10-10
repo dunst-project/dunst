@@ -20,8 +20,6 @@
 #include "x11/x.h"
 #include "x11/screen.h"
 
-#define LENGTH(X)               (sizeof X / sizeof X[0])
-
 #ifndef VERSION
 #define VERSION "version info needed"
 #endif
