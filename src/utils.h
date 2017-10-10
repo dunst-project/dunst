@@ -4,7 +4,7 @@
 
 #include <glib.h>
 
-/* replace all occurences of the character needle with the character replacement in haystack */
+/* replace all occurrences of the character needle with the character replacement in haystack */
 char *string_replace_char(char needle, char replacement, char *haystack);
 
 /* replace all occurrences of needle with replacement in haystack */
