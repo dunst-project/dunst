@@ -63,6 +63,18 @@ void history_push(notification *n);
 void move_all_to_history(void);
 
 /*
+ * Check timeout of each notification and close it, if neccessary
+ */
+void queues_check_timeouts(bool idle);
+
+/*
+ * Move inserted notifications from waiting queue to displayed queue
+ * and show them. In displayed queue, the amount of elements is limited
+ * to the amount set via queues_displayed_limit
+ */
+void queues_update();
+
+/*
  * Return the distance to the next event in the queue,
  * which forces an update visible to the user
  *

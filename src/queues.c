@@ -214,6 +214,74 @@ void history_push(notification *n)
                 g_queue_push_tail(history, n);
 }
 
+void queues_check_timeouts(bool idle)
+{
+        /* nothing to do */
+        if (displayed->length == 0)
+                return;
+
+        GList *iter = g_queue_peek_head_link(displayed);
+        while (iter) {
+                notification *n = iter->data;
+
+                /*
+                 * Update iter to the next item before we either exit the
+                 * current iteration of the loop or potentially delete the
+                 * notification which would invalidate the pointer.
+                 */
+                iter = iter->next;
+
+                /* don't timeout when user is idle */
+                if (idle && !n->transient) {
+                        n->start = g_get_monotonic_time();
+                        continue;
+                }
+
+                /* skip hidden and sticky messages */
+                if (n->start == 0 || n->timeout == 0) {
+                        continue;
+                }
+
+                /* remove old message */
+                if (g_get_monotonic_time() - n->start > n->timeout) {
+                        notification_close(n, 1);
+                }
+        }
+}
+
+void queues_update()
+{
+        if (pause_displayed) {
+                while (displayed->length > 0) {
+                        g_queue_insert_sorted(
+                            queue, g_queue_pop_head(displayed), notification_cmp_data, NULL);
+                }
+                return;
+        }
+
+        /* move notifications from queue to displayed */
+        while (queue->length > 0) {
+
+                if (displayed_limit > 0 && displayed->length >= displayed_limit) {
+                        /* the list is full */
+                        break;
+                }
+
+                notification *n = g_queue_pop_head(queue);
+
+                if (!n)
+                        return;
+
+                n->start = g_get_monotonic_time();
+
+                if (!n->redisplayed && n->script) {
+                        notification_run_script(n);
+                }
+
+                g_queue_insert_sorted(displayed, n, notification_cmp_data, NULL);
+        }
+}
+
 gint64 queues_get_next_datachange(gint64 time)
 {
         gint64 sleep = G_MAXINT64;

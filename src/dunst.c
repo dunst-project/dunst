@@ -43,77 +43,6 @@ GSList *rules = NULL;
 
 /* misc funtions */
 
-/*TODO: move to queues.c */
-void check_timeouts(void)
-{
-        /* nothing to do */
-        if (displayed->length == 0)
-                return;
-
-        GList *iter = g_queue_peek_head_link(displayed);
-        while (iter) {
-                notification *n = iter->data;
-
-                /*
-                 * Update iter to the next item before we either exit the
-                 * current iteration of the loop or potentially delete the
-                 * notification which would invalidate the pointer.
-                 */
-                iter = iter->next;
-
-                /* don't timeout when user is idle */
-                if (x_is_idle() && !n->transient) {
-                        n->start = g_get_monotonic_time();
-                        continue;
-                }
-
-                /* skip hidden and sticky messages */
-                if (n->start == 0 || n->timeout == 0) {
-                        continue;
-                }
-
-                /* remove old message */
-                if (g_get_monotonic_time() - n->start > n->timeout) {
-                        notification_close(n, 1);
-                }
-        }
-}
-
-/*TODO: move to queues.c */
-void update_lists()
-{
-        check_timeouts();
-
-        if (queues_pause_status()) {
-                while (displayed->length > 0) {
-                        g_queue_insert_sorted(queue, g_queue_pop_head(displayed),
-                                              notification_cmp_data, NULL);
-                }
-                return;
-        }
-
-        /* move notifications from queue to displayed */
-        while (queue->length > 0) {
-
-                if (displayed_limit > 0 && displayed->length >= displayed_limit) {
-                        /* the list is full */
-                        break;
-                }
-
-                notification *n = g_queue_pop_head(queue);
-
-                if (!n)
-                        return;
-                n->start = g_get_monotonic_time();
-                if (!n->redisplayed && n->script) {
-                        notification_run_script(n);
-                }
-
-                g_queue_insert_sorted(displayed, n, notification_cmp_data,
-                                      NULL);
-        }
-}
-
 void wake_up(void)
 {
         run(NULL);
@@ -121,7 +50,9 @@ void wake_up(void)
 
 gboolean run(void *data)
 {
-        update_lists();
+        queues_check_timeouts(x_is_idle());
+        queues_update();
+
         static int timeout_cnt = 0;
         static gint64 next_timeout = 0;
 
