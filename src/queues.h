@@ -37,6 +37,7 @@ unsigned int queues_length_history();
  * If replaces_id == 0, n gets occupies a new position
  *
  * Returns the assigned notification id
+ * If returned id == 0, the message was dismissed
  */
 int queues_notification_insert(notification *n, int replaces_id);
 

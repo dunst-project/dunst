@@ -4,6 +4,8 @@
 
 #include <assert.h>
 #include <glib.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "dbus.h"
 #include "notification.h"
@@ -52,6 +54,24 @@ unsigned int queues_length_history()
 
 int queues_notification_insert(notification *n, int replaces_id)
 {
+        /* do not display the message, if the message is empty */
+        if (strlen(n->msg) == 0) {
+                if (settings.always_run_script) {
+                        notification_run_script(n);
+                }
+                printf("skipping notification: %s %s\n", n->body, n->summary);
+                return 0;
+        }
+        /* Do not insert the message if it's a command */
+        if (strcmp("DUNST_COMMAND_PAUSE", n->summary) == 0) {
+                pause_displayed = true;
+                return 0;
+        }
+        if (strcmp("DUNST_COMMAND_RESUME", n->summary) == 0) {
+                pause_displayed = false;
+                return 0;
+        }
+
         if (replaces_id == 0) {
 
                 if (settings.stack_duplicates) {

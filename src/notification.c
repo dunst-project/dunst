@@ -292,17 +292,6 @@ void notification_init(notification *n)
         //Prevent undefined behaviour by initialising required fields
         notification_init_defaults(n);
 
-        // TODO: this does not belong into notification_init
-        if (strcmp("DUNST_COMMAND_PAUSE", n->summary) == 0) {
-                queues_pause_on();
-                return;
-        }
-
-        if (strcmp("DUNST_COMMAND_RESUME", n->summary) == 0) {
-                queues_pause_off();
-                return;
-        }
-
         n->script = NULL;
         n->text_to_render = NULL;
 
@@ -448,15 +437,6 @@ void notification_init(notification *n)
         n->redisplayed = false;
 
         n->first_render = true;
-
-        /* TODO: this should not be part of notification_init */
-        if (strlen(n->msg) == 0) {
-                queues_notification_close(n, 2);
-                if (settings.always_run_script) {
-                        notification_run_script(n);
-                }
-                printf("skipping notification: %s %s\n", n->body, n->summary);
-        }
 
         char *tmp = g_strconcat(n->summary, " ", n->body, NULL);
 
