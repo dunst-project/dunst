@@ -60,11 +60,11 @@ gboolean run(void *data)
                 timeout_cnt--;
         }
 
-        if (displayed->length > 0 && !xctx.visible) {
+        if (queues_length_displayed() > 0 && !xctx.visible) {
                 x_win_show();
         }
 
-        if (xctx.visible && displayed->length == 0) {
+        if (xctx.visible && queues_length_displayed() == 0) {
                 x_win_hide();
         }
 

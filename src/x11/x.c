@@ -533,11 +533,11 @@ static GSList *r_create_layouts(cairo_t *c)
 {
         GSList *layouts = NULL;
 
-        int qlen = g_list_length(g_queue_peek_head_link(queue));
+        int qlen = queues_length_waiting();
         bool xmore_is_needed = qlen > 0 && settings.indicate_hidden;
 
         notification *last = NULL;
-        for (GList *iter = g_queue_peek_head_link(displayed);
+        for (const GList *iter = queues_get_displayed();
                         iter; iter = iter->next)
         {
                 notification *n = iter->data;
@@ -854,12 +854,10 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback,
                             && XLookupKeysym(&ev.xkey,
                                              0) == settings.close_ks.sym
                             && settings.close_ks.mask == state) {
-                                if (displayed) {
-                                        notification *n = g_queue_peek_head(displayed);
-                                        if (n) {
-                                                queues_notification_close(n, 2);
-                                                wake_up();
-                                        }
+                                const GList *displayed = queues_get_displayed();
+                                if (displayed && displayed->data) {
+                                        queues_notification_close(displayed->data, 2);
+                                        wake_up();
                                 }
                         }
                         if (settings.history_ks.str
@@ -926,7 +924,7 @@ static void x_handle_click(XEvent ev)
                 int y = settings.separator_height;
                 notification *n = NULL;
                 int first = true;
-                for (GList *iter = g_queue_peek_head_link(displayed); iter;
+                for (const GList *iter = queues_get_displayed(); iter;
                      iter = iter->next) {
                         n = iter->data;
                         if (ev.xbutton.y > y && ev.xbutton.y < y + n->displayed_height)
@@ -1127,7 +1125,7 @@ static void x_win_setup(void)
 void x_win_show(void)
 {
         /* window is already mapped or there's nothing to show */
-        if (xctx.visible || g_queue_is_empty(displayed)) {
+        if (xctx.visible || queues_length_displayed() == 0) {
                 return;
         }
 

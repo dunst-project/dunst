@@ -5,11 +5,6 @@
 
 #include "notification.h"
 
-extern GQueue *queue;
-extern GQueue *displayed;
-extern GQueue *history;
-extern unsigned int displayed_limit;
-
 /*
  * Initialise neccessary queues
  */
@@ -20,6 +15,19 @@ void queues_init(void);
  * and store in displayed queue
  */
 void queues_displayed_limit(unsigned int limit);
+
+/*
+ * Return read only list of notifications
+ */
+const GList *queues_get_displayed();
+
+/*
+ * Returns the current amount of notifications,
+ * which are shown, waiting or already in history
+ */
+unsigned int queues_length_waiting();
+unsigned int queues_length_displayed();
+unsigned int queues_length_history();
 
 /*
  * Insert a fully initialized notification into queues
@@ -43,9 +51,12 @@ int queues_notification_insert(notification *n, int replaces_id);
 bool queues_notification_replace_id(notification *new);
 
 /*
- * Close the notification that has id.
+ * Close the notification that has n->id == id
  *
- * After closing, call wake_up to remove the notification from UI
+ * Sends a signal and pushes it automatically to history.
+ *
+ * After closing, call wake_up to synchronize the queues with the UI
+ * (which closes the notification on screen)
  *
  * reasons:
  * -1 -> notification is a replacement, no NotificationClosed signal emitted

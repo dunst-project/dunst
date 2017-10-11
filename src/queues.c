@@ -10,9 +10,9 @@
 #include "settings.h"
 
 /* notification lists */
-GQueue *queue     = NULL; /* all new notifications get into here */
-GQueue *displayed = NULL; /* currently displayed notifications */
-GQueue *history   = NULL; /* history of displayed notifications */
+static GQueue *queue     = NULL; /* all new notifications get into here */
+static GQueue *displayed = NULL; /* currently displayed notifications */
+static GQueue *history   = NULL; /* history of displayed notifications */
 
 unsigned int displayed_limit = 0;
 int next_notification_id = 1;
@@ -30,6 +30,24 @@ void queues_init(void)
 void queues_displayed_limit(unsigned int limit)
 {
         displayed_limit = limit;
+}
+
+/* misc getter functions */
+const GList *queues_get_displayed()
+{
+        return g_queue_peek_head_link(displayed);
+}
+unsigned int queues_length_waiting()
+{
+        return queue->length;
+}
+unsigned int queues_length_displayed()
+{
+        return displayed->length;
+}
+unsigned int queues_length_history()
+{
+        return history->length;
 }
 
 int queues_notification_insert(notification *n, int replaces_id)
