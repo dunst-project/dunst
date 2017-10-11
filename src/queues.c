@@ -10,7 +10,7 @@
 #include "settings.h"
 
 /* notification lists */
-static GQueue *queue     = NULL; /* all new notifications get into here */
+static GQueue *waiting   = NULL; /* all new notifications get into here */
 static GQueue *displayed = NULL; /* currently displayed notifications */
 static GQueue *history   = NULL; /* history of displayed notifications */
 
@@ -24,7 +24,7 @@ void queues_init(void)
 {
         history   = g_queue_new();
         displayed = g_queue_new();
-        queue     = g_queue_new();
+        waiting   = g_queue_new();
 }
 
 void queues_displayed_limit(unsigned int limit)
@@ -39,7 +39,7 @@ const GList *queues_get_displayed()
 }
 unsigned int queues_length_waiting()
 {
-        return queue->length;
+        return waiting->length;
 }
 unsigned int queues_length_displayed()
 {
@@ -64,12 +64,12 @@ int queues_notification_insert(notification *n, int replaces_id)
 
                 n->id = ++next_notification_id;
 
-                g_queue_insert_sorted(queue, n, notification_cmp_data, NULL);
+                g_queue_insert_sorted(waiting, n, notification_cmp_data, NULL);
 
         } else {
                 n->id = replaces_id;
                 if (!queues_notification_replace_id(n))
-                        g_queue_insert_sorted(queue, n, notification_cmp_data, NULL);
+                        g_queue_insert_sorted(waiting, n, notification_cmp_data, NULL);
         }
 
         if (settings.print_notifications)
@@ -106,7 +106,7 @@ static int queues_stack_duplicate(notification *n)
                 }
         }
 
-        for (GList *iter = g_queue_peek_head_link(queue); iter;
+        for (GList *iter = g_queue_peek_head_link(waiting); iter;
              iter = iter->next) {
                 notification *orig = iter->data;
                 if (notification_is_duplicate(orig, n)) {
@@ -145,7 +145,7 @@ bool queues_notification_replace_id(notification *new)
                 }
         }
 
-        for (GList *iter = g_queue_peek_head_link(queue);
+        for (GList *iter = g_queue_peek_head_link(waiting);
                     iter;
                     iter = iter->next) {
                 notification *old = iter->data;
@@ -174,11 +174,11 @@ int queues_notification_close_id(int id, int reason)
                 }
         }
 
-        for (GList *iter = g_queue_peek_head_link(queue); iter;
+        for (GList *iter = g_queue_peek_head_link(waiting); iter;
              iter = iter->next) {
                 notification *n = iter->data;
                 if (n->id == id) {
-                        g_queue_remove(queue, n);
+                        g_queue_remove(waiting, n);
                         queues_history_push(n);
                         target = n;
                         break;
@@ -207,7 +207,7 @@ void queues_history_pop(void)
         n->redisplayed = true;
         n->start = 0;
         n->timeout = settings.sticky_history ? 0 : n->timeout;
-        g_queue_push_head(queue, n);
+        g_queue_push_head(waiting, n);
 }
 
 void queues_history_push(notification *n)
@@ -227,8 +227,8 @@ void queues_history_push_all(void)
                 queues_notification_close(g_queue_peek_head_link(displayed)->data, 2);
         }
 
-        while (queue->length > 0) {
-                queues_notification_close(g_queue_peek_head_link(queue)->data, 2);
+        while (waiting->length > 0) {
+                queues_notification_close(g_queue_peek_head_link(waiting)->data, 2);
         }
 }
 
@@ -272,20 +272,20 @@ void queues_update()
         if (pause_displayed) {
                 while (displayed->length > 0) {
                         g_queue_insert_sorted(
-                            queue, g_queue_pop_head(displayed), notification_cmp_data, NULL);
+                            waiting, g_queue_pop_head(displayed), notification_cmp_data, NULL);
                 }
                 return;
         }
 
         /* move notifications from queue to displayed */
-        while (queue->length > 0) {
+        while (waiting->length > 0) {
 
                 if (displayed_limit > 0 && displayed->length >= displayed_limit) {
                         /* the list is full */
                         break;
                 }
 
-                notification *n = g_queue_pop_head(queue);
+                notification *n = g_queue_pop_head(waiting);
 
                 if (!n)
                         return;
@@ -356,6 +356,6 @@ void teardown_queues(void)
 {
         g_queue_free_full(history, teardown_notification);
         g_queue_free_full(displayed, teardown_notification);
-        g_queue_free_full(queue, teardown_notification);
+        g_queue_free_full(waiting, teardown_notification);
 }
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
