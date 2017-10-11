@@ -282,7 +282,7 @@ static void on_close_notification(GDBusConnection *connection,
 {
         guint32 id;
         g_variant_get(parameters, "(u)", &id);
-        notification_close_by_id(id, 3);
+        queues_notification_close_id(id, 3);
         wake_up();
         g_dbus_method_invocation_return_value(invocation, NULL);
         g_dbus_connection_flush(connection, NULL, NULL, NULL);

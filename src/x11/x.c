@@ -857,7 +857,7 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback,
                                 if (displayed) {
                                         notification *n = g_queue_peek_head(displayed);
                                         if (n) {
-                                                notification_close(n, 2);
+                                                queues_notification_close(n, 2);
                                                 wake_up();
                                         }
                                 }
@@ -939,7 +939,7 @@ static void x_handle_click(XEvent ev)
 
                 if (n) {
                         if (ev.xbutton.button == Button1)
-                                notification_close(n, 2);
+                                queues_notification_close(n, 2);
                         else
                                 notification_do_action(n);
                 }

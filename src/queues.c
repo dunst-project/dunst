@@ -50,7 +50,7 @@ int queues_notification_insert(notification *n, int replaces_id)
 
         } else {
                 n->id = replaces_id;
-                if (!notification_replace_by_id(n))
+                if (!queues_notification_replace_id(n))
                         g_queue_insert_sorted(queue, n, notification_cmp_data, NULL);
         }
 
@@ -110,7 +110,7 @@ static int queues_stack_duplicate(notification *n)
         return -1;
 }
 
-bool notification_replace_by_id(notification *new)
+bool queues_notification_replace_id(notification *new)
 {
 
         for (GList *iter = g_queue_peek_head_link(displayed);
@@ -141,7 +141,7 @@ bool notification_replace_by_id(notification *new)
         return false;
 }
 
-int notification_close_by_id(int id, int reason)
+int queues_notification_close_id(int id, int reason)
 {
         notification *target = NULL;
 
@@ -174,20 +174,20 @@ int notification_close_by_id(int id, int reason)
         return reason;
 }
 
-int notification_close(notification *n, int reason)
+int queues_notification_close(notification *n, int reason)
 {
         assert(n != NULL);
-        return notification_close_by_id(n->id, reason);
+        return queues_notification_close_id(n->id, reason);
 }
 
 void move_all_to_history()
 {
         while (displayed->length > 0) {
-                notification_close(g_queue_peek_head_link(displayed)->data, 2);
+                queues_notification_close(g_queue_peek_head_link(displayed)->data, 2);
         }
 
         while (queue->length > 0) {
-                notification_close(g_queue_peek_head_link(queue)->data, 2);
+                queues_notification_close(g_queue_peek_head_link(queue)->data, 2);
         }
 }
 
@@ -244,7 +244,7 @@ void queues_check_timeouts(bool idle)
 
                 /* remove old message */
                 if (g_get_monotonic_time() - n->start > n->timeout) {
-                        notification_close(n, 1);
+                        queues_notification_close(n, 1);
                 }
         }
 }

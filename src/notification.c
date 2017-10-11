@@ -451,7 +451,7 @@ void notification_init(notification *n)
 
         /* TODO: this should not be part of notification_init */
         if (strlen(n->msg) == 0) {
-                notification_close(n, 2);
+                queues_notification_close(n, 2);
                 if (settings.always_run_script) {
                         notification_run_script(n);
                 }

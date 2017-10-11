@@ -40,7 +40,7 @@ int queues_notification_insert(notification *n, int replaces_id);
  * Returns true, if a matching notification has been found
  * and is replaced. Else false.
  */
-bool notification_replace_by_id(notification *new);
+bool queues_notification_replace_id(notification *new);
 
 /*
  * Close the notification that has id.
@@ -53,10 +53,10 @@ bool notification_replace_by_id(notification *new);
  *  2 -> the notification was dismissed by the user_data
  *  3 -> The notification was closed by a call to CloseNotification
  */
-int notification_close_by_id(int id, int reason);
+int queues_notification_close_id(int id, int reason);
 
-/* Close the given notification. SEE notification_close_by_id. */
-int notification_close(notification *n, int reason);
+/* Close the given notification. SEE queues_notification_close_id. */
+int queues_notification_close(notification *n, int reason);
 
 void history_pop(void);
 void history_push(notification *n);
