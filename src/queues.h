@@ -58,9 +58,22 @@ int queues_notification_close_id(int id, int reason);
 /* Close the given notification. SEE queues_notification_close_id. */
 int queues_notification_close(notification *n, int reason);
 
-void history_pop(void);
-void history_push(notification *n);
-void move_all_to_history(void);
+/*
+ * Pushed the latest notification of history to the displayed queue
+ * and removes it from history
+ */
+void queues_history_pop(void);
+
+/*
+ * Push a single notification to history
+ * The given notification has to be removed its queue
+ */
+void queues_history_push(notification *n);
+
+/*
+ * Push all waiting and displayed notifications to history
+ */
+void queues_history_push_all(void);
 
 /*
  * Check timeout of each notification and close it, if neccessary

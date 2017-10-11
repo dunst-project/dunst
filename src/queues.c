@@ -122,7 +122,7 @@ bool queues_notification_replace_id(notification *new)
                         new->start = time(NULL);
                         new->dup_count = old->dup_count;
                         notification_run_script(new);
-                        history_push(old);
+                        queues_history_push(old);
                         return true;
                 }
         }
@@ -134,7 +134,7 @@ bool queues_notification_replace_id(notification *new)
                 if (old->id == new->id) {
                         iter->data = new;
                         new->dup_count = old->dup_count;
-                        history_push(old);
+                        queues_history_push(old);
                         return true;
                 }
         }
@@ -150,7 +150,7 @@ int queues_notification_close_id(int id, int reason)
                 notification *n = iter->data;
                 if (n->id == id) {
                         g_queue_remove(displayed, n);
-                        history_push(n);
+                        queues_history_push(n);
                         target = n;
                         break;
                 }
@@ -161,7 +161,7 @@ int queues_notification_close_id(int id, int reason)
                 notification *n = iter->data;
                 if (n->id == id) {
                         g_queue_remove(queue, n);
-                        history_push(n);
+                        queues_history_push(n);
                         target = n;
                         break;
                 }
@@ -180,18 +180,7 @@ int queues_notification_close(notification *n, int reason)
         return queues_notification_close_id(n->id, reason);
 }
 
-void move_all_to_history()
-{
-        while (displayed->length > 0) {
-                queues_notification_close(g_queue_peek_head_link(displayed)->data, 2);
-        }
-
-        while (queue->length > 0) {
-                queues_notification_close(g_queue_peek_head_link(queue)->data, 2);
-        }
-}
-
-void history_pop(void)
+void queues_history_pop(void)
 {
         if (g_queue_is_empty(history))
                 return;
@@ -203,7 +192,7 @@ void history_pop(void)
         g_queue_push_head(queue, n);
 }
 
-void history_push(notification *n)
+void queues_history_push(notification *n)
 {
         if (settings.history_length > 0 && history->length >= settings.history_length) {
                 notification *to_free = g_queue_pop_head(history);
@@ -212,6 +201,17 @@ void history_push(notification *n)
 
         if (!n->history_ignore)
                 g_queue_push_tail(history, n);
+}
+
+void queues_history_push_all(void)
+{
+        while (displayed->length > 0) {
+                queues_notification_close(g_queue_peek_head_link(displayed)->data, 2);
+        }
+
+        while (queue->length > 0) {
+                queues_notification_close(g_queue_peek_head_link(queue)->data, 2);
+        }
 }
 
 void queues_check_timeouts(bool idle)

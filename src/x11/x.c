@@ -866,14 +866,14 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback,
                             && XLookupKeysym(&ev.xkey,
                                              0) == settings.history_ks.sym
                             && settings.history_ks.mask == state) {
-                                history_pop();
+                                queues_history_pop();
                                 wake_up();
                         }
                         if (settings.close_all_ks.str
                             && XLookupKeysym(&ev.xkey,
                                              0) == settings.close_all_ks.sym
                             && settings.close_all_ks.mask == state) {
-                                move_all_to_history();
+                                queues_history_push_all();
                                 wake_up();
                         }
                         if (settings.context_ks.str
@@ -917,7 +917,7 @@ bool x_is_idle(void)
 static void x_handle_click(XEvent ev)
 {
         if (ev.xbutton.button == Button3) {
-                move_all_to_history();
+                queues_history_push_all();
 
                 return;
         }
