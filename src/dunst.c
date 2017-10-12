@@ -36,7 +36,6 @@ typedef struct _x11_source {
 } x11_source_t;
 
 /* index of colors fit to urgency level */
-bool pause_display = false;
 
 GMainLoop *mainloop = NULL;
 
@@ -85,7 +84,7 @@ void update_lists()
 {
         check_timeouts();
 
-        if (pause_display) {
+        if (queues_pause_status()) {
                 while (displayed->length > 0) {
                         g_queue_insert_sorted(queue, g_queue_pop_head(displayed),
                                               notification_cmp_data, NULL);
@@ -130,11 +129,11 @@ gboolean run(void *data)
                 timeout_cnt--;
         }
 
-        if (displayed->length > 0 && !xctx.visible && !pause_display) {
+        if (displayed->length > 0 && !xctx.visible) {
                 x_win_show();
         }
 
-        if (xctx.visible && (pause_display || displayed->length == 0)) {
+        if (xctx.visible && displayed->length == 0) {
                 x_win_hide();
         }
 
@@ -162,7 +161,7 @@ gboolean run(void *data)
 
 gboolean pause_signal(gpointer data)
 {
-        pause_display = true;
+        queues_pause_on();
         wake_up();
 
         return G_SOURCE_CONTINUE;
@@ -170,7 +169,7 @@ gboolean pause_signal(gpointer data)
 
 gboolean unpause_signal(gpointer data)
 {
-        pause_display = false;
+        queues_pause_off();
         wake_up();
 
         return G_SOURCE_CONTINUE;

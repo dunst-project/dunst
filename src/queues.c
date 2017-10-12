@@ -16,6 +16,7 @@ GQueue *history   = NULL; /* history of displayed notifications */
 
 unsigned int displayed_limit = 0;
 int next_notification_id = 1;
+bool pause_displayed = false;
 
 static int queues_stack_duplicate(notification *n);
 
@@ -242,6 +243,21 @@ gint64 queues_get_next_datachange(gint64 time)
         }
 
         return sleep != G_MAXINT64 ? sleep : -1;
+}
+
+void queues_pause_on(void)
+{
+        pause_displayed = true;
+}
+
+void queues_pause_off(void)
+{
+        pause_displayed = false;
+}
+
+bool queues_pause_status(void)
+{
+        return pause_displayed;
 }
 
 static void teardown_notification(gpointer data)

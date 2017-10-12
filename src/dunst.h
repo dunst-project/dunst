@@ -17,7 +17,6 @@
 #define ColBG 0
 
 extern GSList *rules;
-extern bool pause_display;
 extern const char *color_strings[3][3];
 
 /* return id of notification */

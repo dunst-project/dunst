@@ -294,12 +294,12 @@ void notification_init(notification *n)
 
         // TODO: this does not belong into notification_init
         if (strcmp("DUNST_COMMAND_PAUSE", n->summary) == 0) {
-                pause_display = true;
+                queues_pause_on();
                 return;
         }
 
         if (strcmp("DUNST_COMMAND_RESUME", n->summary) == 0) {
-                pause_display = false;
+                queues_pause_off();
                 return;
         }
 

@@ -75,6 +75,17 @@ void move_all_to_history(void);
 gint64 queues_get_next_datachange(gint64 time);
 
 /*
+ * Pause queue-management of dunst
+ *   pause_on  = paused (no notifications displayed)
+ *   pause_off = running
+ *
+ * Calling update_lists is neccessary
+ */
+void queues_pause_on(void);
+void queues_pause_off(void);
+bool queues_pause_status(void);
+
+/*
  * Remove all notifications from all lists
  * and free the notifications
  */
