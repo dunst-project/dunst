@@ -35,8 +35,6 @@ int queues_notification_insert(notification *n, int replaces_id)
 {
         if (replaces_id == 0) {
 
-                n->id = ++next_notification_id;
-
                 if (settings.stack_duplicates) {
                         int stacked = queues_stack_duplicate(n);
                         if (stacked > 0) {
@@ -44,6 +42,8 @@ int queues_notification_insert(notification *n, int replaces_id)
                                 return stacked;
                         }
                 }
+
+                n->id = ++next_notification_id;
 
                 g_queue_insert_sorted(queue, n, notification_cmp_data, NULL);
 
