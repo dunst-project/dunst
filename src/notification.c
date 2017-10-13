@@ -185,9 +185,9 @@ void notification_free(notification *n)
         }
 
         if (n->raw_icon) {
-            if (n->raw_icon->data)
-                g_free(n->raw_icon->data);
-            g_free(n->raw_icon);
+                if (n->raw_icon->data)
+                        g_free(n->raw_icon->data);
+                g_free(n->raw_icon);
         }
 
         g_free(n);
@@ -222,42 +222,42 @@ void notification_replace_single_field(char **haystack, char **needle,
 }
 
 char *notification_extract_markup_urls(char **str_ptr) {
-    char *start, *end, *replace_buf, *str, *urls = NULL, *url, *index_buf;
-    int linkno = 1;
+        char *start, *end, *replace_buf, *str, *urls = NULL, *url, *index_buf;
+        int linkno = 1;
 
-    str = *str_ptr;
-    while ((start = strstr(str, "<a href")) != NULL) {
-        end = strstr(start, ">");
-        if (end != NULL) {
-                replace_buf = g_strndup(start, end - start + 1);
-                url = extract_urls(replace_buf);
-                if (url != NULL) {
-                    str = string_replace(replace_buf, "[", str);
+        str = *str_ptr;
+        while ((start = strstr(str, "<a href")) != NULL) {
+                end = strstr(start, ">");
+                if (end != NULL) {
+                        replace_buf = g_strndup(start, end - start + 1);
+                        url = extract_urls(replace_buf);
+                        if (url != NULL) {
+                                str = string_replace(replace_buf, "[", str);
 
-                    index_buf = g_strdup_printf("[#%d]", linkno++);
-                    if (urls == NULL) {
-                        urls = g_strconcat(index_buf, " ", url, NULL);
-                    } else {
-                        char *tmp = urls;
-                        urls = g_strconcat(tmp, "\n", index_buf, " ", url, NULL);
-                        g_free(tmp);
-                    }
+                                index_buf = g_strdup_printf("[#%d]", linkno++);
+                                if (urls == NULL) {
+                                        urls = g_strconcat(index_buf, " ", url, NULL);
+                                } else {
+                                        char *tmp = urls;
+                                        urls = g_strconcat(tmp, "\n", index_buf, " ", url, NULL);
+                                        g_free(tmp);
+                                }
 
-                    index_buf[0] = ' ';
-                    str = string_replace("</a>", index_buf, str);
-                    g_free(index_buf);
-                    g_free(url);
+                                index_buf[0] = ' ';
+                                str = string_replace("</a>", index_buf, str);
+                                g_free(index_buf);
+                                g_free(url);
+                        } else {
+                                str = string_replace(replace_buf, "", str);
+                                str = string_replace("</a>", "", str);
+                        }
+                        g_free(replace_buf);
                 } else {
-                    str = string_replace(replace_buf, "", str);
-                    str = string_replace("</a>", "", str);
+                        break;
                 }
-                g_free(replace_buf);
-        } else {
-                break;
         }
-    }
-    *str_ptr = str;
-    return urls;
+        *str_ptr = str;
+        return urls;
 }
 
 /*

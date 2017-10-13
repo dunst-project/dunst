@@ -488,11 +488,11 @@ static colored_layout *r_init_shared(cairo_t *c, notification *n)
 
 static colored_layout *r_create_layout_for_xmore(cairo_t *c, notification *n, int qlen)
 {
-       colored_layout *cl = r_init_shared(c, n);
-       cl->text = g_strdup_printf("(%d more)", qlen);
-       cl->attr = NULL;
-       pango_layout_set_text(cl->l, cl->text, -1);
-       return cl;
+        colored_layout *cl = r_init_shared(c, n);
+        cl->text = g_strdup_printf("(%d more)", qlen);
+        cl->attr = NULL;
+        pango_layout_set_text(cl->l, cl->text, -1);
+        return cl;
 }
 
 static colored_layout *r_create_layout_from_notification(cairo_t *c, notification *n)
@@ -610,9 +610,9 @@ static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, colored_layou
 
         bool use_padding = settings.notification_height <= (2 * settings.padding) + h;
         if (use_padding)
-            dim.y += settings.padding;
+                dim.y += settings.padding;
         else
-            dim.y += (int) (ceil(bg_half_height) - pango_offset);
+                dim.y += (int) (ceil(bg_half_height) - pango_offset);
 
         if (cl->icon && settings.icon_position == icons_left) {
                 cairo_move_to(c, settings.frame_width + cairo_image_surface_get_width(cl->icon) + 2 * settings.h_padding, bg_y + settings.padding + h/2 - h_text/2);
@@ -626,9 +626,9 @@ static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, colored_layou
         pango_cairo_update_layout(c, cl->l);
         pango_cairo_show_layout(c, cl->l);
         if (use_padding)
-            dim.y += h + settings.padding;
+                dim.y += h + settings.padding;
         else
-            dim.y += (int) (floor(bg_half_height) + pango_offset);
+                dim.y += (int) (floor(bg_half_height) + pango_offset);
 
         if (settings.separator_height > 0 && !last) {
                 color_t sep_color = x_get_separator_color(cl, cl_next);
