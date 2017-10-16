@@ -95,6 +95,9 @@ void load_settings(char *cmdline_config_path)
         }
 
         load_ini_file(config_file);
+#else
+        fprintf(stderr, "Warning: dunstrc parsing disabled. "
+                        "Using STATIC_CONFIG is deprecated behavior.\n");
 #endif
 
         settings.per_monitor_dpi = option_get_bool(
