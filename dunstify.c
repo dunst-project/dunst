@@ -324,6 +324,8 @@ int main(int argc, char *argv[])
        g_print("%d\n", get_id(n));
     }
 
+    g_object_unref(G_OBJECT (n));
+
     die(0);
 }
 
