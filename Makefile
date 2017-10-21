@@ -14,12 +14,7 @@ all: doc dunst service
 .c.o:
 	${CC} -o $@ -c $< ${CFLAGS}
 
-${OBJ}: config.h config.mk
-
-config.h: config.def.h
-	@if test -s $@; then echo $< is newer than $@, merge and save $@. If you haven\'t edited $@ you can just delete it	&& exit 1; fi
-	@echo creating $@ from $<
-	@cp $< $@
+${OBJ}: config.mk
 
 dunst: ${OBJ} main.o
 	${CC} ${CFLAGS} -o $@ ${OBJ} main.o ${LDFLAGS}
@@ -37,11 +32,6 @@ clean-doc:
 	rm -f docs/dunst.1
 
 clean: clean-dunst clean-dunstify clean-doc test-clean
-
-distclean: clean clean-config
-
-clean-config:
-	rm -f config.h
 
 doc: docs/dunst.1
 docs/dunst.1: docs/dunst.pod

@@ -7,6 +7,7 @@ ifneq ($(wildcard ./.git/.),)
 VERSION := $(shell git describe --tags)
 endif
 
+# Warning: This is deprecated behavior
 # uncomment to disable parsing of dunstrc
 # or use "CFLAGS=-DSTATIC_CONFIG make" to build
 #STATIC= -DSTATIC_CONFIG
@@ -27,6 +28,8 @@ pkg_config_packs := dbus-1 x11 xscrnsaver \
 # check if we need libxdg-basedir
 ifeq (,$(findstring STATIC_CONFIG,$(CFLAGS)))
 	pkg_config_packs += libxdg-basedir
+else
+$(warning STATIC_CONFIG is deprecated behavior. It will get removed in future releases)
 endif
 
 # includes and libs
