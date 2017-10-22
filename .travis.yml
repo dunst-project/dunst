@@ -15,7 +15,7 @@ addons:
 dist: trusty
 sudo: false
 language: c
-script: CFLAGS=-Werror make && make test
+script: CFLAGS=-Werror make all dunstify test
 compiler:
     - gcc
     - clang
