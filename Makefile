@@ -8,8 +8,17 @@ ifneq ($(wildcard ./.git/.),)
 VERSION := $(shell git describe --tags)
 endif
 
-CFLAGS += -I.
-LDFLAGS += -L.
+LIBS := $(shell pkg-config --libs   ${pkg_config_packs})
+INCS := $(shell pkg-config --cflags ${pkg_config_packs})
+
+ifneq (clean, $(MAKECMDGOALS))
+ifeq ($(and $(INCS),$(LIBS)),)
+$(error "pkg-config failed!")
+endif
+endif
+
+CFLAGS += -I. ${INCS}
+LDFLAGS+= -L. ${LIBS}
 
 SRC := $(sort $(shell find src/ -name '*.c'))
 OBJ := ${SRC:.c=.o}
