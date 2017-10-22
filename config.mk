@@ -2,11 +2,6 @@
 PREFIX ?= /usr/local
 MANPREFIX = ${PREFIX}/share/man
 
-VERSION := "1.2.0-non-git"
-ifneq ($(wildcard ./.git/.),)
-VERSION := $(shell git describe --tags)
-endif
-
 # Warning: This is deprecated behavior
 # uncomment to disable parsing of dunstrc
 # or use "CFLAGS=-DSTATIC_CONFIG make" to build
