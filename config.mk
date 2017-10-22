@@ -32,6 +32,11 @@ else
 $(warning STATIC_CONFIG is deprecated behavior. It will get removed in future releases)
 endif
 
+# dunstify also needs libnotify
+ifneq (,$(findstring dunstify,${MAKECMDGOALS}))
+	pkg_config_packs += libnotify
+endif
+
 # includes and libs
 INCS := $(shell ${PKG_CONFIG} --cflags ${pkg_config_packs})
 CFLAGS += ${INCS}
