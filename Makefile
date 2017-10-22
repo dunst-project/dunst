@@ -27,6 +27,11 @@ TEST_OBJ := $(TEST_SRC:.c=.o)
 
 all: doc dunst service
 
+debug: CFLAGS   += ${CFLAGS_DEBUG}
+debug: LDFLAGS  += ${LDFLAGS_DEBUG}
+debug: CPPFLAGS += ${CPPFLAGS_DEBUG}
+debug: all
+
 .c.o:
 	${CC} -o $@ -c $< ${CFLAGS}
 

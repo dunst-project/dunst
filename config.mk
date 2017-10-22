@@ -11,6 +11,10 @@ CPPFLAGS += -D_DEFAULT_SOURCE -DVERSION=\"${VERSION}\"
 CFLAGS   += -g --std=gnu99 -pedantic -Wall -Wno-overlength-strings -Os ${STATIC} ${CPPFLAGS}
 LDFLAGS  += -lm -L${X11LIB}
 
+CPPFLAGS_DEBUG := -DDEBUG_BUILD
+CFLAGS_DEBUG   := -O0
+LDFLAGS_DEBUG  :=
+
 pkg_config_packs := dbus-1 \
                     gio-2.0 \
                     gdk-3.0 \
