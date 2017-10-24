@@ -64,8 +64,7 @@ static int ini_get_urgency(const char *section, const char *key, const int def)
                                 "unknown urgency: %s, ignoring\n",
                                 urg);
         }
-        if (urg)
-                g_free(urg);
+        g_free(urg);
         return ret;
 }
 
@@ -601,7 +600,7 @@ void load_settings(char *cmdline_config_path)
         );
 
         /* push hardcoded default rules into rules list */
-        for (int i = 0; i < LENGTH(default_rules); i++) {
+        for (int i = 0; i < G_N_ELEMENTS(default_rules); i++) {
                 rules = g_slist_insert(rules, &(default_rules[i]), -1);
         }
 

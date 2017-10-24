@@ -20,8 +20,6 @@
 #include "x11/x.h"
 #include "x11/screen.h"
 
-#define LENGTH(X)               (sizeof X / sizeof X[0])
-
 #ifndef VERSION
 #define VERSION "version info needed"
 #endif
@@ -318,7 +316,7 @@ int dunst_main(int argc, char *argv[])
                 n->summary = g_strdup("startup");
                 n->body = g_strdup("dunst is up and running");
                 n->progress = 0;
-                n->timeout = 10;
+                n->timeout = 10 * G_USEC_PER_SEC;
                 n->markup = MARKUP_NO;
                 n->urgency = LOW;
                 notification_init(n, 0);

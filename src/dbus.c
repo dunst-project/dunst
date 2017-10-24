@@ -376,36 +376,36 @@ static void on_name_lost(GDBusConnection *connection,
 
 static RawImage *get_raw_image_from_data_hint(GVariant *icon_data)
 {
-    RawImage *image = g_malloc(sizeof(RawImage));
-    GVariant *data_variant;
-    gsize expected_len;
+        RawImage *image = g_malloc(sizeof(RawImage));
+        GVariant *data_variant;
+        gsize expected_len;
 
-    g_variant_get (icon_data,
-                   "(iiibii@ay)",
-                   &image->width,
-                   &image->height,
-                   &image->rowstride,
-                   &image->has_alpha,
-                   &image->bits_per_sample,
-                   &image->n_channels,
-                   &data_variant);
+        g_variant_get (icon_data,
+                       "(iiibii@ay)",
+                       &image->width,
+                       &image->height,
+                       &image->rowstride,
+                       &image->has_alpha,
+                       &image->bits_per_sample,
+                       &image->n_channels,
+                       &data_variant);
 
-    expected_len = (image->height - 1) * image->rowstride + image->width
-            * ((image->n_channels * image->bits_per_sample + 7) / 8);
+        expected_len = (image->height - 1) * image->rowstride + image->width
+                * ((image->n_channels * image->bits_per_sample + 7) / 8);
 
-    if (expected_len != g_variant_get_size (data_variant)) {
-        fprintf(stderr, "Expected image data to be of length %" G_GSIZE_FORMAT
-               " but got a " "length of %" G_GSIZE_FORMAT,
-               expected_len,
-               g_variant_get_size (data_variant));
-        g_free(image);
-        return NULL;
-    }
+        if (expected_len != g_variant_get_size (data_variant)) {
+                fprintf(stderr, "Expected image data to be of length %" G_GSIZE_FORMAT
+                       " but got a " "length of %" G_GSIZE_FORMAT,
+                       expected_len,
+                       g_variant_get_size (data_variant));
+                g_free(image);
+                return NULL;
+        }
 
-    image->data = (guchar *) g_memdup (g_variant_get_data (data_variant),
+        image->data = (guchar *) g_memdup (g_variant_get_data (data_variant),
                                 g_variant_get_size (data_variant));
 
-    return image;
+        return image;
 }
 
 int initdbus(void)

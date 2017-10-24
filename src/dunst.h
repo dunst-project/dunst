@@ -9,9 +9,7 @@
 
 #include "notification.h"
 
-#define ERR(msg) printf("%s : %d\n", (msg), __LINE__)
 #define PERR(msg, errnum) printf("(%d) %s : %s\n", __LINE__, (msg), (strerror(errnum)))
-#define LENGTH(X)               (sizeof X / sizeof X[0])
 
 #define ColLast 3
 #define ColFrame 2
