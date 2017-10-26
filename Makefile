@@ -25,6 +25,7 @@ OBJ := ${SRC:.c=.o}
 TEST_SRC := $(sort $(shell find test/ -name '*.c'))
 TEST_OBJ := $(TEST_SRC:.c=.o)
 
+.PHONY: all debug
 all: doc dunst service
 
 debug: CFLAGS   += ${CFLAGS_DEBUG}
@@ -43,20 +44,24 @@ dunst: ${OBJ} main.o
 dunstify: dunstify.o
 	${CC} ${CFLAGS} -o $@ dunstify.o ${LDFLAGS}
 
+.PHONY: test
 test: test/test
 	cd test && ./test
 
 test/test: ${OBJ} ${TEST_OBJ}
 	${CC} ${CFLAGS} -o $@ ${TEST_OBJ} ${OBJ} ${LDFLAGS}
 
+.PHONY: doc
 doc: docs/dunst.1
 docs/dunst.1: docs/dunst.pod
 	pod2man --name=dunst -c "Dunst Reference" --section=1 --release=${VERSION} $< > $@
 
+.PHONY: service
 service:
 	@sed "s|##PREFIX##|$(PREFIX)|" org.knopwob.dunst.service.in > org.knopwob.dunst.service
 	@sed "s|##PREFIX##|$(PREFIX)|" dunst.systemd.service.in > dunst.systemd.service
 
+.PHONY: clean clean-dunst clean-dunstify clean-doc clean-tests
 clean: clean-dunst clean-dunstify clean-doc clean-tests
 
 clean-dunst:
@@ -74,6 +79,7 @@ clean-doc:
 clean-tests:
 	rm -f test/test test/*.o
 
+.PHONY: install install-dunst install-doc install-service uninstall
 install: install-dunst install-doc install-service
 
 install-dunst: dunst doc
@@ -97,5 +103,3 @@ uninstall:
 	rm -f ${DESTDIR}${PREFIX}/share/dbus-1/services/org.knopwob.dunst.service
 	rm -f ${DESTDIR}${PREFIX}/lib/systemd/user/dunst.service
 	rm -rf ${DESTDIR}${PREFIX}/share/dunst
-
-.PHONY: all clean dist install uninstall
