@@ -67,7 +67,11 @@ bool queues_notification_replace_id(notification *new);
  */
 int queues_notification_close_id(int id, int reason);
 
-/* Close the given notification. SEE queues_notification_close_id. */
+/* Close the given notification. SEE queues_notification_close_id.
+ *
+ * @n: (transfer full): The notification to close
+ * @reason: The reason to close
+ * */
 int queues_notification_close(notification *n, int reason);
 
 /*
@@ -79,6 +83,8 @@ void queues_history_pop(void);
 /*
  * Push a single notification to history
  * The given notification has to be removed its queue
+ *
+ * @n: (transfer full): The notification to push to history
  */
 void queues_history_push(notification *n);
 
