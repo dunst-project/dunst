@@ -180,28 +180,38 @@ static void on_notify(GDBusConnection *connection,
                                 if (g_variant_is_of_type(content, G_VARIANT_TYPE_DICTIONARY)) {
 
                                         dict_value = g_variant_lookup_value(content, "urgency", G_VARIANT_TYPE_BYTE);
-                                        if (dict_value)
+                                        if (dict_value) {
                                                 urgency = g_variant_get_byte(dict_value);
+                                                g_variant_unref(dict_value);
+                                        }
 
                                         dict_value = g_variant_lookup_value(content, "fgcolor", G_VARIANT_TYPE_STRING);
-                                        if (dict_value)
+                                        if (dict_value) {
                                                 fgcolor = g_variant_dup_string(dict_value, NULL);
+                                                g_variant_unref(dict_value);
+                                        }
 
                                         dict_value = g_variant_lookup_value(content, "bgcolor", G_VARIANT_TYPE_STRING);
-                                        if (dict_value)
+                                        if (dict_value) {
                                                 bgcolor = g_variant_dup_string(dict_value, NULL);
+                                                g_variant_unref(dict_value);
+                                        }
 
                                         dict_value = g_variant_lookup_value(content, "category", G_VARIANT_TYPE_STRING);
-                                        if (dict_value)
+                                        if (dict_value) {
                                                 category = g_variant_dup_string(dict_value, NULL);
+                                                g_variant_unref(dict_value);
+                                        }
 
                                         dict_value = g_variant_lookup_value(content, "image-data", G_VARIANT_TYPE("(iiibiiay)"));
                                         if (!dict_value)
                                                 dict_value = g_variant_lookup_value(content, "image_data", G_VARIANT_TYPE("(iiibiiay)"));
                                         if (!dict_value)
                                                 dict_value = g_variant_lookup_value(content, "icon_data", G_VARIANT_TYPE("(iiibiiay)"));
-                                        if (dict_value)
+                                        if (dict_value) {
                                                 raw_icon = get_raw_image_from_data_hint(dict_value);
+                                                g_variant_unref(dict_value);
+                                        }
 
                                         /* Check for transient hints
                                          *
@@ -209,17 +219,24 @@ static void on_notify(GDBusConnection *connection,
                                          * But notify-send does not support hints of type 'boolean'.
                                          * So let's check for int and boolean until notify-send is fixed.
                                          */
-                                        if((dict_value = g_variant_lookup_value(content, "transient", G_VARIANT_TYPE_BOOLEAN)))
+                                        if((dict_value = g_variant_lookup_value(content, "transient", G_VARIANT_TYPE_BOOLEAN))) {
                                                 transient = g_variant_get_boolean(dict_value);
-                                        else if((dict_value = g_variant_lookup_value(content, "transient", G_VARIANT_TYPE_UINT32)))
+                                                g_variant_unref(dict_value);
+                                        } else if((dict_value = g_variant_lookup_value(content, "transient", G_VARIANT_TYPE_UINT32))) {
                                                 transient = g_variant_get_uint32(dict_value) > 0;
-                                        else if((dict_value = g_variant_lookup_value(content, "transient", G_VARIANT_TYPE_INT32)))
+                                                g_variant_unref(dict_value);
+                                        } else if((dict_value = g_variant_lookup_value(content, "transient", G_VARIANT_TYPE_INT32))) {
                                                 transient = g_variant_get_int32(dict_value) > 0;
+                                                g_variant_unref(dict_value);
+                                        }
 
-                                        if((dict_value = g_variant_lookup_value(content, "value", G_VARIANT_TYPE_INT32)))
+                                        if((dict_value = g_variant_lookup_value(content, "value", G_VARIANT_TYPE_INT32))) {
                                                 progress = g_variant_get_int32(dict_value);
-                                        else if((dict_value = g_variant_lookup_value(content, "value", G_VARIANT_TYPE_UINT32)))
+                                                g_variant_unref(dict_value);
+                                        } else if((dict_value = g_variant_lookup_value(content, "value", G_VARIANT_TYPE_UINT32))) {
                                                 progress = g_variant_get_uint32(dict_value);
+                                                g_variant_unref(dict_value);
+                                        }
                                 }
                                 break;
                         case 7:
@@ -399,11 +416,13 @@ static RawImage *get_raw_image_from_data_hint(GVariant *icon_data)
                        expected_len,
                        g_variant_get_size (data_variant));
                 g_free(image);
+                g_variant_unref(data_variant);
                 return NULL;
         }
 
         image->data = (guchar *) g_memdup (g_variant_get_data (data_variant),
                                 g_variant_get_size (data_variant));
+        g_variant_unref(data_variant);
 
         return image;
 }
