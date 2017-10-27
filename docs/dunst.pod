@@ -454,6 +454,15 @@ By enabling this setting dunst will not be able to detect when a monitor is
 connected or disconnected which might break follow mode if the screen layout
 changes.
 
+=item B<corner_radius> (default: 0)
+
+Define the corner radius in pixels. A corner raidus of 0 will result in
+rectangular shaped notifications.
+
+By enabling this setting the outer border and the frame will be shaped.
+If you have multiple notifications, the whole window is shaped, not every
+single notification.
+
 =back
 
 =head2 Shortcut section

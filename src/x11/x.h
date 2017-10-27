@@ -5,6 +5,7 @@
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <X11/extensions/scrnsaver.h>
+#include <X11/extensions/shape.h>
 #include <glib.h>
 #include <stdbool.h>
 
@@ -46,6 +47,7 @@ extern xctx_t xctx;
 void x_win_draw(void);
 void x_win_hide(void);
 void x_win_show(void);
+void x_win_round_corners(void);
 
 /* shortcut */
 void x_shortcut_init(keyboard_shortcut *shortcut);

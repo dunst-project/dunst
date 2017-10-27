@@ -584,14 +584,116 @@ static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, colored_layou
         int bg_height = MAX(settings.notification_height, (2 * settings.padding) + h);
         double bg_half_height = settings.notification_height/2.0;
         int pango_offset = (int) floor(h/2.0);
+        const float degrees = M_PI / 180.0;
 
         if (first) bg_height += settings.frame_width;
         if (last) bg_height += settings.frame_width;
         else bg_height += settings.separator_height;
 
-        cairo_set_source_rgb(c, cl->frame.r, cl->frame.g, cl->frame.b);
-        cairo_rectangle(c, bg_x, bg_y, bg_width, bg_height);
-        cairo_fill(c);
+        XWindowAttributes win_attr;
+        XGetWindowAttributes(xctx.dpy, xctx.win, &win_attr);
+
+        int width = win_attr.width + win_attr.border_width;
+        int height = win_attr.height + win_attr.border_width;
+
+        int min_width_height = width < height ? width : height;
+        int half_min_width_height = (int) floor(min_width_height / 2.0);
+
+        settings.corner_radius = MIN(half_min_width_height, settings.corner_radius);
+
+        x_win_round_corners();
+
+        int corner_radius = MIN(settings.corner_radius, bg_height);
+
+        if (settings.frame_width > 0) {
+                if (first && last) {
+                        cairo_new_sub_path(c);
+                        cairo_arc(c,
+                                  bg_x + bg_width - corner_radius,
+                                  bg_y + corner_radius,
+                                  corner_radius,
+                                  -90 * degrees,
+                                  0 * degrees);
+                        cairo_arc(c,
+                                  bg_x + bg_width - corner_radius,
+                                  bg_y + bg_height - corner_radius,
+                                  corner_radius,
+                                  0 * degrees,
+                                  90 * degrees);
+                        cairo_arc(c,
+                                  bg_x + corner_radius,
+                                  bg_y + bg_height - corner_radius,
+                                  corner_radius,
+                                  90 * degrees,
+                                  180 * degrees);
+                        cairo_arc(c,
+                                  bg_x + corner_radius,
+                                  bg_y + corner_radius,
+                                  corner_radius,
+                                  180 * degrees,
+                                  270 * degrees);
+                        cairo_close_path(c);
+                } else if (first) {
+                        cairo_new_sub_path(c);
+                        cairo_arc(c,
+                                  bg_x + bg_width - corner_radius,
+                                  bg_y + corner_radius,
+                                  corner_radius,
+                                  -90 * degrees,
+                                  0 * degrees);
+                        cairo_arc(c,
+                                  bg_x + bg_width,
+                                  bg_y + bg_height,
+                                  0,
+                                  0,
+                                  0);
+                        cairo_arc(c,
+                                  bg_x,
+                                  bg_y + bg_height,
+                                  0,
+                                  0,
+                                  0);
+                        cairo_arc(c,
+                                  bg_x + corner_radius,
+                                  bg_y + corner_radius,
+                                  corner_radius,
+                                  180 * degrees,
+                                  270 * degrees);
+                        cairo_close_path(c);
+                } else if (last) {
+                        cairo_new_sub_path(c);
+                        cairo_arc(c,
+                                  bg_x + bg_width,
+                                  bg_y,
+                                  0,
+                                  0,
+                                  0);
+                        cairo_arc(c,
+                                  bg_x + bg_width - corner_radius,
+                                  bg_y + bg_height - corner_radius,
+                                  corner_radius,
+                                  0 * degrees,
+                                  90 * degrees);
+                        cairo_arc(c,
+                                  bg_x + corner_radius,
+                                  bg_y + bg_height - corner_radius,
+                                  corner_radius,
+                                  90 * degrees,
+                                  180 * degrees);
+                        cairo_arc(c,
+                                  bg_x,
+                                  bg_y,
+                                  0,
+                                  180 * degrees,
+                                  270 * degrees);
+                        cairo_close_path(c);
+                } else {
+                        cairo_rectangle(c, bg_x, bg_y, bg_width, bg_height);
+                }
+
+                cairo_set_source_rgb(c, cl->frame.r, cl->frame.g, cl->frame.b);
+                cairo_fill(c);
+        }
 
         /* adding frame */
         bg_x += settings.frame_width;
@@ -605,8 +707,92 @@ static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, colored_layou
         if (last)
                 bg_height -= settings.frame_width;
 
+        corner_radius -= settings.frame_width;
         cairo_set_source_rgb(c, cl->bg.r, cl->bg.g, cl->bg.b);
-        cairo_rectangle(c, bg_x, bg_y, bg_width, bg_height);
+        if (first && last) {
+                cairo_new_sub_path (c);
+                cairo_arc (c,
+                           bg_x + bg_width - corner_radius,
+                           bg_y + corner_radius,
+                           corner_radius,
+                           -90 * degrees,
+                           0 * degrees);
+                cairo_arc (c,
+                           bg_x + bg_width - corner_radius,
+                           bg_y + bg_height - corner_radius,
+                           corner_radius,
+                           0 * degrees,
+                           90 * degrees);
+                cairo_arc (c,
+                           bg_x + corner_radius,
+                           bg_y + bg_height - corner_radius,
+                           corner_radius,
+                           90 * degrees,
+                           180 * degrees);
+                cairo_arc (c,
+                           bg_x + corner_radius,
+                           bg_y + corner_radius,
+                           corner_radius,
+                           180 * degrees,
+                           270 * degrees);
+                cairo_close_path (c);
+        } else if (first) {
+                cairo_new_sub_path (c);
+                cairo_arc (c,
+                           bg_x + bg_width - corner_radius,
+                           bg_y + corner_radius,
+                           corner_radius,
+                           -90 * degrees,
+                           0 * degrees);
+                cairo_arc (c,
+                           bg_x + bg_width,
+                           bg_y + bg_height,
+                           0,
+                           0,
+                           0);
+                cairo_arc (c,
+                           bg_x,
+                           bg_y + bg_height,
+                           0,
+                           0,
+                           0);
+                cairo_arc (c,
+                           bg_x + corner_radius,
+                           bg_y + corner_radius,
+                           corner_radius,
+                           180 * degrees,
+                           270 * degrees);
+                cairo_close_path (c);
+        } else if (last) {
+                cairo_new_sub_path (c);
+                cairo_arc (c,
+                           bg_x + bg_width,
+                           bg_y,
+                           0,
+                           0,
+                           0);
+                cairo_arc (c,
+                           bg_x + bg_width - corner_radius,
+                           bg_y + bg_height - corner_radius,
+                           corner_radius,
+                           0 * degrees,
+                           90 * degrees);
+                cairo_arc (c,
+                           bg_x + corner_radius,
+                           bg_y + bg_height - corner_radius,
+                           corner_radius,
+                           90 * degrees,
+                           180 * degrees);
+                cairo_arc (c,
+                           bg_x,
+                           bg_y,
+                           0,
+                           180 * degrees,
+                           270 * degrees);
+                cairo_close_path (c);
+        } else {
+                cairo_rectangle(c, bg_x, bg_y, bg_width, bg_height);
+        }
         cairo_fill(c);
 
         bool use_padding = settings.notification_height <= (2 * settings.padding) + h;
@@ -702,6 +888,8 @@ void x_win_draw(void)
         cairo_destroy(c);
         cairo_surface_destroy(image_surface);
         r_free_layouts(layouts);
+
+        x_win_round_corners();
 
 }
 
@@ -1030,7 +1218,94 @@ void x_setup(void)
         x_win_setup();
         x_cairo_setup();
         x_shortcut_grab(&settings.history_ks);
+}
 
+void x_win_round_corners(void)
+{
+        XWindowAttributes win_attr;
+        XGetWindowAttributes(xctx.dpy, xctx.win, &win_attr);
+
+        int width = win_attr.width + win_attr.border_width;
+        int height = win_attr.height + win_attr.border_width;
+
+        Pixmap mask = XCreatePixmap(xctx.dpy, xctx.win, width, height, 1);
+        XGCValues xgcv;
+
+        GC shape_gc = XCreateGC(xctx.dpy, mask, 0, &xgcv);
+
+        int min_width_height = width < height ? width : height;
+        int half_min_width_height = (int) floor(min_width_height / 2.0);
+        int rad = settings.corner_radius < half_min_width_height ? settings.corner_radius : half_min_width_height;
+        int dia = 2 * rad;
+
+        XSetForeground(xctx.dpy, shape_gc, 0);
+        XFillRectangle(xctx.dpy,
+                       mask,
+                       shape_gc,
+                       0,
+                       0,
+                       width,
+                       height);
+
+        XSetForeground(xctx.dpy, shape_gc, 1);
+
+        XFillArc(xctx.dpy,
+                 mask,
+                 shape_gc,
+                 0,
+                 0,
+                 dia,
+                 dia,
+                 0,
+                 360 * 64);
+        XFillArc(xctx.dpy,
+                 mask,
+                 shape_gc,
+                 width - dia - 1,
+                 0,
+                 dia,
+                 dia,
+                 0,
+                 360 * 64);
+        XFillArc(xctx.dpy,
+                 mask,
+                 shape_gc,
+                 0,
+                 height - dia - 1,
+                 dia,
+                 dia,
+                 0,
+                 360 * 64);
+        XFillArc(xctx.dpy,
+                 mask,
+                 shape_gc,
+                 width - dia - 1,
+                 height - dia - 1,
+                 dia,
+                 dia,
+                 0, 360 * 64);
+
+        XFillRectangle(xctx.dpy,
+                       mask,
+                       shape_gc,
+                       rad,
+                       0,
+                       width-dia,
+                       height);
+        XFillRectangle(xctx.dpy,
+                       mask,
+                       shape_gc,
+                       0,
+                       rad,
+                       width,
+                       height-dia);
+
+        XShapeCombineMask(xctx.dpy, xctx.win, ShapeBounding, 0, 0, mask, ShapeSet);
+
+        XFreePixmap(xctx.dpy, mask);
+
+        XShapeSelectInput(xctx.dpy,
+                xctx.win, ShapeNotifyMask);
 }
 
 static void x_set_wm(Window win)
