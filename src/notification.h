@@ -35,34 +35,44 @@ typedef struct _actions {
 } Actions;
 
 typedef struct _notification {
+        int id;
+        char *dbus_client;
+
         char *appname;
         char *summary;
         char *body;
-        char *icon;
-        RawImage *raw_icon;
-        char *msg;            /* formatted message */
         char *category;
-        char *text_to_render;
-        const char *format;
-        char *dbus_client;
-        gint64 start;
-        gint64 timestamp;
-        gint64 timeout;
         enum urgency urgency;
-        enum markup_mode markup;
-        bool redisplayed;       /* has been displayed before? */
-        int id;
-        int dup_count;
-        int displayed_height;
-        const char *color_strings[3];
-        bool first_render;
-        bool transient;
 
-        int progress;           /* percentage (-1: undefined) */
-        int history_ignore;
-        const char *script;
-        char *urls;
+        char *icon;          /* plain icon information (may be a path or just a name) */
+        RawImage *raw_icon;  /* passed icon data of notification, takes precedence over icon */
+
+        gint64 start;      /* begin of current display */
+        gint64 timestamp;  /* arrival time */
+        gint64 timeout;    /* time to display */
+
         Actions *actions;
+
+        enum markup_mode markup;
+        const char *format;
+        const char *color_strings[3];
+        const char *script;
+
+        /* Hints */
+        bool transient;     /* timeout albeit user is idle */
+        int progress;       /* percentage (-1: undefined) */
+        int history_ignore; /* push to history or free directly */
+
+        /* internal */
+        bool redisplayed;       /* has been displayed before? */
+        bool first_render;      /* markup has been rendered before? */
+        int dup_count;          /* amount of duplicate notifications stacked onto this */
+        int displayed_height;
+
+        /* derived fields */
+        char *msg;            /* formatted message */
+        char *text_to_render; /* formatted message (with age and action indicators) */
+        char *urls;           /* urllist */
 } notification;
 
 notification *notification_create(void);
