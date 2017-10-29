@@ -23,6 +23,10 @@
 #include "utils.h"
 #include "x11/x.h"
 
+static void notification_extract_urls(notification *n);
+static void notification_format_message(notification *n);
+static void notification_dmenu_string(notification *n);
+
 /*
  * print a human readable representation
  * of the given notification to stdout.
@@ -289,54 +293,87 @@ char *notification_extract_markup_urls(char **str_ptr)
 }
 
 /*
- * Create notification struct and initialise everything to NULL,
- * this function is guaranteed to return a valid pointer.
+ * Create notification struct and initialise all fields with either
+ *  - the default (if it's not needed to be freed later)
+ *  - its undefined representation (NULL, -1)
+ *
+ * This function is guaranteed to return a valid pointer.
+ * @Returns: The generated notification
  */
 notification *notification_create(void)
 {
-        return g_malloc0(sizeof(notification));
-}
+        notification *n = g_malloc0(sizeof(notification));
 
-void notification_init_defaults(notification *n)
-{
-        assert(n != NULL);
-        if(n->appname == NULL) n->appname = g_strdup("unknown");
-        if(n->summary == NULL) n->summary = g_strdup("");
-        if(n->body == NULL) n->body = g_strdup("");
-        if(n->category == NULL) n->category = g_strdup("");
+        /* Unparameterized default values */
+        n->first_render = true;
+        n->markup = settings.markup;
+        n->format = settings.format;
+
+        n->timestamp = g_get_monotonic_time();
+
+        n->urgency = URG_NORM;
+        n->timeout = -1;
+
+        n->transient = false;
+        n->progress = -1;
+
+        return n;
 }
 
 /*
- * Initialize the given notification
+ * Sanitize values of notification, apply all matching rules
+ * and generate derived fields.
  *
- * n should be a pointer to a notification allocated with
- * notification_create, it is undefined behaviour to pass a notification
- * allocated some other way.
+ * @n: the notification to sanitize
  */
 void notification_init(notification *n)
 {
-        assert(n != NULL);
+        /* default to empty string to avoid further NULL faults */
+        n->appname  = n->appname  ? n->appname  : g_strdup("unknown");
+        n->summary  = n->summary  ? n->summary  : g_strdup("");
+        n->body     = n->body     ? n->body     : g_strdup("");
+        n->category = n->category ? n->category : g_strdup("");
 
-        //Prevent undefined behaviour by initialising required fields
-        notification_init_defaults(n);
+        /* sanitize urgency */
+        if (n->urgency < URG_MIN)
+                n->urgency = URG_LOW;
+        if (n->urgency > URG_MAX)
+                n->urgency = URG_CRIT;
 
-        n->script = NULL;
-        n->text_to_render = NULL;
+        /* Timeout processing */
+        if (n->timeout < 0)
+                n->timeout = settings.timeouts[n->urgency];
 
-        n->format = settings.format;
+        /* Icon handling */
+        if (n->icon && strlen(n->icon) <= 0)
+                g_clear_pointer(&n->icon, g_free);
+        if (!n->raw_icon && !n->icon)
+                n->icon = g_strdup(settings.icons[n->urgency]);
 
+        /* Color hints */
+        if (!n->colors[ColFG])
+                n->colors[ColFG] = xctx.colors[ColFG][n->urgency];
+        if (!n->colors[ColBG])
+                n->colors[ColBG] = xctx.colors[ColBG][n->urgency];
+        if (!n->colors[ColFrame])
+                n->colors[ColFrame] = xctx.colors[ColFrame][n->urgency];
+
+        /* Sanitize misc hints */
+        if (n->progress < 0 || n->progress > 100)
+                n->progress = -1;
+
+        /* Process rules */
         rule_apply_all(n);
 
-        if (n->icon != NULL && strlen(n->icon) <= 0) {
-                g_free(n->icon);
-                n->icon = NULL;
-        }
+        /* UPDATE derived fields */
+        notification_extract_urls(n);
+        notification_dmenu_string(n);
+        notification_format_message(n);
+}
 
-        if (n->raw_icon == NULL && n->icon == NULL) {
-                n->icon = g_strdup(settings.icons[n->urgency]);
-        }
-
-        n->urls = notification_extract_markup_urls(&(n->body));
+static void notification_format_message(notification *n)
+{
+        g_clear_pointer(&n->msg, g_free);
 
         n->msg = string_replace_all("\\n", "\n", g_strdup(n->format));
 
@@ -438,45 +475,25 @@ void notification_init(notification *n)
                 g_free(n->msg);
                 n->msg = buffer;
         }
+}
 
-        n->dup_count = 0;
-
-        /* urgency > URG_CRIT -> array out of range */
-        if (n->urgency < URG_MIN)
-                n->urgency = URG_LOW;
-        if (n->urgency > URG_MAX)
-                n->urgency = URG_CRIT;
-
-        if (!n->colors[ColFG]) {
-                n->colors[ColFG] = xctx.colors[ColFG][n->urgency];
-        }
-
-        if (!n->colors[ColBG]) {
-                n->colors[ColBG] = xctx.colors[ColBG][n->urgency];
-        }
-
-        if (!n->colors[ColFrame]) {
-                n->colors[ColFrame] = xctx.colors[ColFrame][n->urgency];
-        }
-
-        n->timeout =
-            n->timeout < 0 ? settings.timeouts[n->urgency] : n->timeout;
-        n->start = 0;
-
-        n->timestamp = g_get_monotonic_time();
-
-        n->redisplayed = false;
-
-        n->first_render = true;
+static void notification_extract_urls(notification *n)
+{
+        // DO markup urls processing here until we split this out correctly
+        n->urls = notification_extract_markup_urls(&(n->body));
 
         char *tmp = g_strconcat(n->summary, " ", n->body, NULL);
 
         char *tmp_urls = extract_urls(tmp);
         n->urls = string_append(n->urls, tmp_urls, "\n");
         g_free(tmp_urls);
+        g_free(tmp);
+}
 
+static void notification_dmenu_string(notification *n)
+{
         if (n->actions) {
-                n->actions->dmenu_str = NULL;
+                g_clear_pointer(&n->actions->dmenu_str, g_free);
                 for (int i = 0; i < n->actions->count; i += 2) {
                         char *human_readable = n->actions->actions[i + 1];
                         string_replace_char('[', '(', human_readable); // kill square brackets
@@ -489,14 +506,11 @@ void notification_init(notification *n)
                         }
                 }
         }
-
-        g_free(tmp);
 }
 
 void notification_update_text_to_render(notification *n)
 {
-        g_free(n->text_to_render);
-        n->text_to_render = NULL;
+        g_clear_pointer(&n->text_to_render, g_free);
 
         char *buf = NULL;
 

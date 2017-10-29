@@ -264,14 +264,14 @@ static void on_notify(GDBusConnection *connection,
         fflush(stdout);
 
         notification *n = notification_create();
+
         n->appname = appname;
         n->summary = summary;
         n->body = body;
         n->icon = icon;
         n->raw_icon = raw_icon;
         n->timeout = timeout < 0 ? -1 : timeout * 1000;
-        n->markup = settings.markup;
-        n->progress = (progress < 0 || progress > 100) ? -1 : progress;
+        n->progress = progress;
         n->urgency = urgency;
         n->category = category;
         n->dbus_client = g_strdup(sender);
@@ -283,9 +283,6 @@ static void on_notify(GDBusConnection *connection,
         }
         n->actions = actions;
 
-        for (int i = 0; i < ColLast; i++) {
-                n->colors[i] = NULL;
-        }
         n->colors[ColFG] = fgcolor;
         n->colors[ColBG] = bgcolor;
 
