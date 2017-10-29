@@ -359,23 +359,23 @@ void notification_init(notification *n)
                                         MARKUP_NO);
                                 break;
                         case 'p':
-                                if (n->progress)
-                                        sprintf(pg, "[%3d%%]", n->progress - 1);
+                                if (n->progress != -1)
+                                        sprintf(pg, "[%3d%%]", n->progress);
 
                                 notification_replace_single_field(
                                         &n->msg,
                                         &substr,
-                                        n->progress ? pg : "",
+                                        n->progress != -1 ? pg : "",
                                         MARKUP_NO);
                                 break;
                         case 'n':
-                                if (n->progress)
-                                        sprintf(pg, "%d", n->progress - 1);
+                                if (n->progress != -1)
+                                        sprintf(pg, "%d", n->progress);
 
                                 notification_replace_single_field(
                                         &n->msg,
                                         &substr,
-                                        n->progress ? pg : "",
+                                        n->progress != -1 ? pg : "",
                                         MARKUP_NO);
                                 break;
                         case '%':
