@@ -29,9 +29,9 @@ void rule_apply(rule_t *r, notification *n)
                 n->raw_icon = NULL;
         }
         if (r->fg)
-                n->color_strings[ColFG] = r->fg;
+                n->colors[ColFG] = r->fg;
         if (r->bg)
-                n->color_strings[ColBG] = r->bg;
+                n->colors[ColBG] = r->bg;
         if (r->format)
                 n->format = r->format;
         if (r->script)

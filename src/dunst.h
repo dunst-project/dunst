@@ -17,7 +17,7 @@
 #define ColBG 0
 
 extern GSList *rules;
-extern const char *color_strings[3][3];
+extern const char *colors[3][3];
 
 /* return id of notification */
 gboolean run(void *data);

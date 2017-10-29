@@ -284,10 +284,10 @@ static void on_notify(GDBusConnection *connection,
         n->actions = actions;
 
         for (int i = 0; i < ColLast; i++) {
-                n->color_strings[i] = NULL;
+                n->colors[i] = NULL;
         }
-        n->color_strings[ColFG] = fgcolor;
-        n->color_strings[ColBG] = bgcolor;
+        n->colors[ColFG] = fgcolor;
+        n->colors[ColBG] = bgcolor;
 
         notification_init(n);
         int id = queues_notification_insert(n, replaces_id);

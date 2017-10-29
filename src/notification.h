@@ -55,7 +55,7 @@ typedef struct _notification {
 
         enum markup_mode markup;
         const char *format;
-        const char *color_strings[3];
+        const char *colors[3];
         const char *script;
 
         /* Hints */

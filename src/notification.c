@@ -40,9 +40,9 @@ void notification_print(notification *n)
         printf("\turgency: %s\n", notification_urgency_to_string(n->urgency));
         printf("\ttransient: %d\n", n->transient);
         printf("\tformatted: '%s'\n", n->msg);
-        printf("\tfg: %s\n", n->color_strings[ColFG]);
-        printf("\tbg: %s\n", n->color_strings[ColBG]);
-        printf("\tframe: %s\n", n->color_strings[ColFrame]);
+        printf("\tfg: %s\n", n->colors[ColFG]);
+        printf("\tbg: %s\n", n->colors[ColBG]);
+        printf("\tframe: %s\n", n->colors[ColFrame]);
         printf("\tid: %d\n", n->id);
         if (n->urls) {
                 printf("\turls:\n");
@@ -447,16 +447,16 @@ void notification_init(notification *n)
         if (n->urgency > URG_MAX)
                 n->urgency = URG_CRIT;
 
-        if (!n->color_strings[ColFG]) {
-                n->color_strings[ColFG] = xctx.color_strings[ColFG][n->urgency];
+        if (!n->colors[ColFG]) {
+                n->colors[ColFG] = xctx.colors[ColFG][n->urgency];
         }
 
-        if (!n->color_strings[ColBG]) {
-                n->color_strings[ColBG] = xctx.color_strings[ColBG][n->urgency];
+        if (!n->colors[ColBG]) {
+                n->colors[ColBG] = xctx.colors[ColBG][n->urgency];
         }
 
-        if (!n->color_strings[ColFrame]) {
-                n->color_strings[ColFrame] = xctx.color_strings[ColFrame][n->urgency];
+        if (!n->colors[ColFrame]) {
+                n->colors[ColFrame] = xctx.colors[ColFrame][n->urgency];
         }
 
         n->timeout =
