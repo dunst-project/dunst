@@ -164,6 +164,20 @@ int notification_is_duplicate(const notification *a, const notification *b)
 }
 
 /*
+ * Free the actions element
+ * @a: (nullable): Pointer to #Actions
+ */
+void actions_free(Actions *a)
+{
+        if (!a)
+                return;
+
+        g_strfreev(a->actions);
+        g_free(a->dmenu_str);
+        g_free(a);
+}
+
+/*
  * Free a #RawImage
  * @i: (nullable): pointer to #RawImage
  */
@@ -192,11 +206,7 @@ void notification_free(notification *n)
         g_free(n->text_to_render);
         g_free(n->urls);
 
-        if (n->actions) {
-                g_strfreev(n->actions->actions);
-                g_free(n->actions->dmenu_str);
-        }
-
+        actions_free(n->actions);
         rawimage_free(n->raw_icon);
 
         g_free(n);
