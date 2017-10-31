@@ -8,6 +8,7 @@
 
 #include "dunst.h"
 #include "notification.h"
+#include "queues.h"
 #include "settings.h"
 #include "utils.h"
 
@@ -280,14 +281,20 @@ static void on_notify(GDBusConnection *connection,
         n->color_strings[ColFG] = fgcolor;
         n->color_strings[ColBG] = bgcolor;
 
-        int id = notification_init(n, replaces_id);
-        wake_up();
+        notification_init(n);
+        int id = queues_notification_insert(n, replaces_id);
 
         GVariant *reply = g_variant_new("(u)", id);
         g_dbus_method_invocation_return_value(invocation, reply);
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
 
-        run(NULL);
+        // The message got discarded
+        if (id == 0) {
+                notification_closed(n, 2);
+                notification_free(n);
+        }
+
+        wake_up();
 }
 
 static void on_close_notification(GDBusConnection *connection,
@@ -297,7 +304,8 @@ static void on_close_notification(GDBusConnection *connection,
 {
         guint32 id;
         g_variant_get(parameters, "(u)", &id);
-        notification_close_by_id(id, 3);
+        queues_notification_close_id(id, 3);
+        wake_up();
         g_dbus_method_invocation_return_value(invocation, NULL);
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
 }

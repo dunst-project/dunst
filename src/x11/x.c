@@ -29,6 +29,7 @@
 #include "src/markup.h"
 #include "src/notification.h"
 #include "src/settings.h"
+#include "src/queues.h"
 #include "src/utils.h"
 
 #include "screen.h"
@@ -532,11 +533,11 @@ static GSList *r_create_layouts(cairo_t *c)
 {
         GSList *layouts = NULL;
 
-        int qlen = g_list_length(g_queue_peek_head_link(queue));
+        int qlen = queues_length_waiting();
         bool xmore_is_needed = qlen > 0 && settings.indicate_hidden;
 
         notification *last = NULL;
-        for (GList *iter = g_queue_peek_head_link(displayed);
+        for (const GList *iter = queues_get_displayed();
                         iter; iter = iter->next)
         {
                 notification *n = iter->data;
@@ -842,6 +843,7 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback,
                 case ButtonRelease:
                         if (ev.xbutton.window == xctx.win) {
                                 x_handle_click(ev);
+                                wake_up();
                         }
                         break;
                 case KeyPress:
@@ -852,29 +854,32 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback,
                             && XLookupKeysym(&ev.xkey,
                                              0) == settings.close_ks.sym
                             && settings.close_ks.mask == state) {
-                                if (displayed) {
-                                        notification *n = g_queue_peek_head(displayed);
-                                        if (n)
-                                                notification_close(n, 2);
+                                const GList *displayed = queues_get_displayed();
+                                if (displayed && displayed->data) {
+                                        queues_notification_close(displayed->data, 2);
+                                        wake_up();
                                 }
                         }
                         if (settings.history_ks.str
                             && XLookupKeysym(&ev.xkey,
                                              0) == settings.history_ks.sym
                             && settings.history_ks.mask == state) {
-                                history_pop();
+                                queues_history_pop();
+                                wake_up();
                         }
                         if (settings.close_all_ks.str
                             && XLookupKeysym(&ev.xkey,
                                              0) == settings.close_all_ks.sym
                             && settings.close_all_ks.mask == state) {
-                                move_all_to_history();
+                                queues_history_push_all();
+                                wake_up();
                         }
                         if (settings.context_ks.str
                             && XLookupKeysym(&ev.xkey,
                                              0) == settings.context_ks.sym
                             && settings.context_ks.mask == state) {
                                 context_menu();
+                                wake_up();
                         }
                         break;
                 case FocusIn:
@@ -910,7 +915,7 @@ bool x_is_idle(void)
 static void x_handle_click(XEvent ev)
 {
         if (ev.xbutton.button == Button3) {
-                move_all_to_history();
+                queues_history_push_all();
 
                 return;
         }
@@ -919,7 +924,7 @@ static void x_handle_click(XEvent ev)
                 int y = settings.separator_height;
                 notification *n = NULL;
                 int first = true;
-                for (GList *iter = g_queue_peek_head_link(displayed); iter;
+                for (const GList *iter = queues_get_displayed(); iter;
                      iter = iter->next) {
                         n = iter->data;
                         if (ev.xbutton.y > y && ev.xbutton.y < y + n->displayed_height)
@@ -932,7 +937,7 @@ static void x_handle_click(XEvent ev)
 
                 if (n) {
                         if (ev.xbutton.button == Button1)
-                                notification_close(n, 2);
+                                queues_notification_close(n, 2);
                         else
                                 notification_do_action(n);
                 }
@@ -1007,6 +1012,17 @@ void x_setup(void)
         xctx.geometry.mask = XParseGeometry(settings.geom,
                                             &xctx.geometry.x, &xctx.geometry.y,
                                             &xctx.geometry.w, &xctx.geometry.h);
+
+        /* calculate maximum notification count and push information to queue */
+        if (xctx.geometry.h == 0) {
+                queues_displayed_limit(0);
+        } else if (xctx.geometry.h == 1) {
+                queues_displayed_limit(1);
+        } else if (settings.indicate_hidden) {
+                queues_displayed_limit(xctx.geometry.h - 1);
+        } else {
+                queues_displayed_limit(xctx.geometry.h);
+        }
 
         xctx.screensaver_info = XScreenSaverAllocInfo();
 
@@ -1109,7 +1125,7 @@ static void x_win_setup(void)
 void x_win_show(void)
 {
         /* window is already mapped or there's nothing to show */
-        if (xctx.visible || g_queue_is_empty(displayed)) {
+        if (xctx.visible || queues_length_displayed() == 0) {
                 return;
         }
 

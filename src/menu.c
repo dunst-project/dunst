@@ -16,6 +16,7 @@
 #include "dunst.h"
 #include "settings.h"
 #include "notification.h"
+#include "queues.h"
 #include "utils.h"
 
 static bool is_initialized = false;
@@ -136,7 +137,7 @@ void invoke_action(const char *action)
         int appname_len = strlen(appname_begin) - 1; // remove ]
         int action_len = strlen(action) - appname_len - 3; // remove space, [, ]
 
-        for (GList *iter = g_queue_peek_head_link(displayed); iter;
+        for (const GList *iter = queues_get_displayed(); iter;
              iter = iter->next) {
                 notification *n = iter->data;
                 if (g_str_has_prefix(appname_begin, n->appname) && strlen(n->appname) == appname_len) {
@@ -188,7 +189,7 @@ void context_menu(void)
         }
         char *dmenu_input = NULL;
 
-        for (GList *iter = g_queue_peek_head_link(displayed); iter;
+        for (const GList *iter = queues_get_displayed(); iter;
              iter = iter->next) {
                 notification *n = iter->data;
 
