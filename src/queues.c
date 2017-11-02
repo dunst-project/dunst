@@ -157,7 +157,7 @@ bool queues_notification_replace_id(notification *new)
                 notification *old = iter->data;
                 if (old->id == new->id) {
                         iter->data = new;
-                        new->start = time(NULL);
+                        new->start = g_get_monotonic_time();
                         new->dup_count = old->dup_count;
                         notification_run_script(new);
                         queues_history_push(old);
