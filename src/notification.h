@@ -33,7 +33,6 @@ typedef struct _notification {
         char *appname;
         char *summary;
         char *body;
-        bool icon_overridden;
         char *icon;
         RawImage *raw_icon;
         char *msg;            /* formatted message */
@@ -63,6 +62,8 @@ typedef struct _notification {
 
 notification *notification_create(void);
 void notification_init(notification *n);
+void actions_free(Actions *a);
+void rawimage_free(RawImage *i);
 void notification_free(notification *n);
 int notification_cmp(const void *a, const void *b);
 int notification_cmp_data(const void *a, const void *b, void *data);

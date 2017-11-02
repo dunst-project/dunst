@@ -425,7 +425,7 @@ static colored_layout *r_init_shared(cairo_t *c, notification *n)
 
         GdkPixbuf *pixbuf = NULL;
 
-        if (n->raw_icon && !n->icon_overridden &&
+        if (n->raw_icon &&
             settings.icon_position != icons_off) {
 
                 pixbuf = get_pixbuf_from_raw_image(n->raw_icon);

@@ -25,7 +25,8 @@ void rule_apply(rule_t *r, notification *n)
         if (r->new_icon) {
                 g_free(n->icon);
                 n->icon = g_strdup(r->new_icon);
-                n->icon_overridden = true;
+                rawimage_free(n->raw_icon);
+                n->raw_icon = NULL;
         }
         if (r->fg)
                 n->color_strings[ColFG] = r->fg;

@@ -267,13 +267,12 @@ static void on_notify(GDBusConnection *connection,
         n->category = category;
         n->dbus_client = g_strdup(sender);
         n->transient = transient;
-        if (actions->count > 0) {
-                n->actions = actions;
-        } else {
-                n->actions = NULL;
-                g_strfreev(actions->actions);
-                g_free(actions);
+
+        if (actions->count < 1) {
+                actions_free(actions);
+                actions = NULL;
         }
+        n->actions = actions;
 
         for (int i = 0; i < ColLast; i++) {
                 n->color_strings[i] = NULL;
