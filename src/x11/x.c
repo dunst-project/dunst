@@ -608,84 +608,24 @@ static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, colored_layou
         if (settings.frame_width > 0) {
                 if (first && last) {
                         cairo_new_sub_path(c);
-                        cairo_arc(c,
-                                  bg_x + bg_width - corner_radius,
-                                  bg_y + corner_radius,
-                                  corner_radius,
-                                  -90 * degrees,
-                                  0 * degrees);
-                        cairo_arc(c,
-                                  bg_x + bg_width - corner_radius,
-                                  bg_y + bg_height - corner_radius,
-                                  corner_radius,
-                                  0 * degrees,
-                                  90 * degrees);
-                        cairo_arc(c,
-                                  bg_x + corner_radius,
-                                  bg_y + bg_height - corner_radius,
-                                  corner_radius,
-                                  90 * degrees,
-                                  180 * degrees);
-                        cairo_arc(c,
-                                  bg_x + corner_radius,
-                                  bg_y + corner_radius,
-                                  corner_radius,
-                                  180 * degrees,
-                                  270 * degrees);
+                        cairo_arc(c, bg_x + bg_width - corner_radius, bg_y +             corner_radius, corner_radius, -90 * degrees,   0 * degrees);
+                        cairo_arc(c, bg_x + bg_width - corner_radius, bg_y + bg_height - corner_radius, corner_radius, 0   * degrees,  90 * degrees);
+                        cairo_arc(c, bg_x +            corner_radius, bg_y + bg_height - corner_radius, corner_radius, 90  * degrees, 180 * degrees);
+                        cairo_arc(c, bg_x +            corner_radius, bg_y +             corner_radius, corner_radius, 180 * degrees, 270 * degrees);
                         cairo_close_path(c);
                 } else if (first) {
                         cairo_new_sub_path(c);
-                        cairo_arc(c,
-                                  bg_x + bg_width - corner_radius,
-                                  bg_y + corner_radius,
-                                  corner_radius,
-                                  -90 * degrees,
-                                  0 * degrees);
-                        cairo_arc(c,
-                                  bg_x + bg_width,
-                                  bg_y + bg_height,
-                                  0,
-                                  0,
-                                  0);
-                        cairo_arc(c,
-                                  bg_x,
-                                  bg_y + bg_height,
-                                  0,
-                                  0,
-                                  0);
-                        cairo_arc(c,
-                                  bg_x + corner_radius,
-                                  bg_y + corner_radius,
-                                  corner_radius,
-                                  180 * degrees,
-                                  270 * degrees);
+                        cairo_arc(c, bg_x + bg_width - corner_radius, bg_y + corner_radius, corner_radius, -90 * degrees,   0 * degrees);
+                        cairo_arc(c, bg_x + bg_width                , bg_y + bg_height    , 0            ,   0 * degrees,   0 * degrees);
+                        cairo_arc(c, bg_x                           , bg_y + bg_height    , 0            ,   0 * degrees,   0 * degrees);
+                        cairo_arc(c, bg_x            + corner_radius, bg_y + corner_radius, corner_radius, 180 * degrees, 270 * degrees);
                         cairo_close_path(c);
                 } else if (last) {
                         cairo_new_sub_path(c);
-                        cairo_arc(c,
-                                  bg_x + bg_width,
-                                  bg_y,
-                                  0,
-                                  0,
-                                  0);
-                        cairo_arc(c,
-                                  bg_x + bg_width - corner_radius,
-                                  bg_y + bg_height - corner_radius,
-                                  corner_radius,
-                                  0 * degrees,
-                                  90 * degrees);
-                        cairo_arc(c,
-                                  bg_x + corner_radius,
-                                  bg_y + bg_height - corner_radius,
-                                  corner_radius,
-                                  90 * degrees,
-                                  180 * degrees);
-                        cairo_arc(c,
-                                  bg_x,
-                                  bg_y,
-                                  0,
-                                  180 * degrees,
-                                  270 * degrees);
+                        cairo_arc(c, bg_x + bg_width                , bg_y                            , 0            ,   0 * degrees,   0);
+                        cairo_arc(c, bg_x + bg_width - corner_radius, bg_y + bg_height - corner_radius, corner_radius,   0 * degrees,  90 * degrees);
+                        cairo_arc(c, bg_x            + corner_radius, bg_y + bg_height - corner_radius, corner_radius,  90 * degrees, 180 * degrees);
+                        cairo_arc(c, bg_x                           , bg_y                            , 0            , 180 * degrees, 270 * degrees);
                         cairo_close_path(c);
                 } else {
                         cairo_rectangle(c, bg_x, bg_y, bg_width, bg_height);
@@ -710,86 +650,26 @@ static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, colored_layou
         corner_radius -= settings.frame_width;
         cairo_set_source_rgb(c, cl->bg.r, cl->bg.g, cl->bg.b);
         if (first && last) {
-                cairo_new_sub_path (c);
-                cairo_arc (c,
-                           bg_x + bg_width - corner_radius,
-                           bg_y + corner_radius,
-                           corner_radius,
-                           -90 * degrees,
-                           0 * degrees);
-                cairo_arc (c,
-                           bg_x + bg_width - corner_radius,
-                           bg_y + bg_height - corner_radius,
-                           corner_radius,
-                           0 * degrees,
-                           90 * degrees);
-                cairo_arc (c,
-                           bg_x + corner_radius,
-                           bg_y + bg_height - corner_radius,
-                           corner_radius,
-                           90 * degrees,
-                           180 * degrees);
-                cairo_arc (c,
-                           bg_x + corner_radius,
-                           bg_y + corner_radius,
-                           corner_radius,
-                           180 * degrees,
-                           270 * degrees);
-                cairo_close_path (c);
+                cairo_new_sub_path(c);
+                cairo_arc(c, bg_x + bg_width - corner_radius, bg_y             + corner_radius, corner_radius, -90 * degrees,   0 * degrees);
+                cairo_arc(c, bg_x + bg_width - corner_radius, bg_y + bg_height - corner_radius, corner_radius,   0 * degrees,  90 * degrees);
+                cairo_arc(c, bg_x            + corner_radius, bg_y + bg_height - corner_radius, corner_radius,  90 * degrees, 180 * degrees);
+                cairo_arc(c, bg_x            + corner_radius, bg_y             + corner_radius, corner_radius, 180 * degrees, 270 * degrees);
+                cairo_close_path(c);
         } else if (first) {
-                cairo_new_sub_path (c);
-                cairo_arc (c,
-                           bg_x + bg_width - corner_radius,
-                           bg_y + corner_radius,
-                           corner_radius,
-                           -90 * degrees,
-                           0 * degrees);
-                cairo_arc (c,
-                           bg_x + bg_width,
-                           bg_y + bg_height,
-                           0,
-                           0,
-                           0);
-                cairo_arc (c,
-                           bg_x,
-                           bg_y + bg_height,
-                           0,
-                           0,
-                           0);
-                cairo_arc (c,
-                           bg_x + corner_radius,
-                           bg_y + corner_radius,
-                           corner_radius,
-                           180 * degrees,
-                           270 * degrees);
-                cairo_close_path (c);
+                cairo_new_sub_path(c);
+                cairo_arc(c, bg_x + bg_width - corner_radius, bg_y + corner_radius, corner_radius, -90 * degrees,   0 * degrees);
+                cairo_arc(c, bg_x + bg_width                , bg_y + bg_height    , 0            ,   0 * degrees,   0 * degrees);
+                cairo_arc(c, bg_x                           , bg_y + bg_height    , 0            ,   0 * degrees,   0 * degrees);
+                cairo_arc(c, bg_x            + corner_radius, bg_y + corner_radius, corner_radius, 180 * degrees, 270 * degrees);
+                cairo_close_path(c);
         } else if (last) {
-                cairo_new_sub_path (c);
-                cairo_arc (c,
-                           bg_x + bg_width,
-                           bg_y,
-                           0,
-                           0,
-                           0);
-                cairo_arc (c,
-                           bg_x + bg_width - corner_radius,
-                           bg_y + bg_height - corner_radius,
-                           corner_radius,
-                           0 * degrees,
-                           90 * degrees);
-                cairo_arc (c,
-                           bg_x + corner_radius,
-                           bg_y + bg_height - corner_radius,
-                           corner_radius,
-                           90 * degrees,
-                           180 * degrees);
-                cairo_arc (c,
-                           bg_x,
-                           bg_y,
-                           0,
-                           180 * degrees,
-                           270 * degrees);
-                cairo_close_path (c);
+                cairo_new_sub_path(c);
+                cairo_arc(c, bg_x + bg_width                , bg_y                            , 0            ,   0 * degrees,   0 * degrees);
+                cairo_arc(c, bg_x + bg_width - corner_radius, bg_y + bg_height - corner_radius, corner_radius,   0 * degrees,  90 * degrees);
+                cairo_arc(c, bg_x            + corner_radius, bg_y + bg_height - corner_radius, corner_radius,  90 * degrees, 180 * degrees);
+                cairo_arc(c, bg_x                           , bg_y                            , 0            , 180 * degrees, 270 * degrees);
+                cairo_close_path(c);
         } else {
                 cairo_rectangle(c, bg_x, bg_y, bg_width, bg_height);
         }
@@ -1249,56 +1129,13 @@ void x_win_round_corners(void)
 
         XSetForeground(xctx.dpy, shape_gc, 1);
 
-        XFillArc(xctx.dpy,
-                 mask,
-                 shape_gc,
-                 0,
-                 0,
-                 dia,
-                 dia,
-                 0,
-                 360 * 64);
-        XFillArc(xctx.dpy,
-                 mask,
-                 shape_gc,
-                 width - dia - 1,
-                 0,
-                 dia,
-                 dia,
-                 0,
-                 360 * 64);
-        XFillArc(xctx.dpy,
-                 mask,
-                 shape_gc,
-                 0,
-                 height - dia - 1,
-                 dia,
-                 dia,
-                 0,
-                 360 * 64);
-        XFillArc(xctx.dpy,
-                 mask,
-                 shape_gc,
-                 width - dia - 1,
-                 height - dia - 1,
-                 dia,
-                 dia,
-                 0, 360 * 64);
+        XFillArc(xctx.dpy, mask, shape_gc, 0              , 0               , dia, dia, 0, 360 * 64);
+        XFillArc(xctx.dpy, mask, shape_gc, width - dia - 1, 0               , dia, dia, 0, 360 * 64);
+        XFillArc(xctx.dpy, mask, shape_gc, 0              , height - dia - 1, dia, dia, 0, 360 * 64);
+        XFillArc(xctx.dpy, mask, shape_gc, width - dia - 1, height - dia - 1, dia, dia, 0, 360 * 64);
 
-        XFillRectangle(xctx.dpy,
-                       mask,
-                       shape_gc,
-                       rad,
-                       0,
-                       width-dia,
-                       height);
-        XFillRectangle(xctx.dpy,
-                       mask,
-                       shape_gc,
-                       0,
-                       rad,
-                       width,
-                       height-dia);
+        XFillRectangle(xctx.dpy, mask, shape_gc, rad, 0  , width-dia, height);
+        XFillRectangle(xctx.dpy, mask, shape_gc, 0  , rad, width    , height-dia);
 
         XShapeCombineMask(xctx.dpy, xctx.win, ShapeBounding, 0, 0, mask, ShapeSet);
 
