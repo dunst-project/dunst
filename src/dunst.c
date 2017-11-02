@@ -154,7 +154,7 @@ int dunst_main(int argc, char *argv[])
                 n->appname = g_strdup("dunst");
                 n->summary = g_strdup("startup");
                 n->body = g_strdup("dunst is up and running");
-                n->progress = 0;
+                n->progress = -1;
                 n->timeout = 10 * G_USEC_PER_SEC;
                 n->markup = MARKUP_NO;
                 n->urgency = LOW;

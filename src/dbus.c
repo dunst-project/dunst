@@ -262,7 +262,7 @@ static void on_notify(GDBusConnection *connection,
         n->raw_icon = raw_icon;
         n->timeout = timeout < 0 ? -1 : timeout * 1000;
         n->markup = settings.markup;
-        n->progress = (progress < 0 || progress > 100) ? 0 : progress + 1;
+        n->progress = (progress < 0 || progress > 100) ? -1 : progress;
         n->urgency = urgency;
         n->category = category;
         n->dbus_client = g_strdup(sender);
