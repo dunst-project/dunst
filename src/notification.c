@@ -252,46 +252,6 @@ void notification_replace_single_field(char **haystack,
         g_free(input);
 }
 
-char *notification_extract_markup_urls(char **str_ptr)
-{
-        char *start, *end, *replace_buf, *str, *urls = NULL, *url, *index_buf;
-        int linkno = 1;
-
-        str = *str_ptr;
-        while ((start = strstr(str, "<a href")) != NULL) {
-                end = strstr(start, ">");
-                if (end != NULL) {
-                        replace_buf = g_strndup(start, end - start + 1);
-                        url = extract_urls(replace_buf);
-                        if (url != NULL) {
-                                str = string_replace(replace_buf, "[", str);
-
-                                index_buf = g_strdup_printf("[#%d]", linkno++);
-                                if (urls == NULL) {
-                                        urls = g_strconcat(index_buf, " ", url, NULL);
-                                } else {
-                                        char *tmp = urls;
-                                        urls = g_strconcat(tmp, "\n", index_buf, " ", url, NULL);
-                                        g_free(tmp);
-                                }
-
-                                index_buf[0] = ' ';
-                                str = string_replace("</a>", index_buf, str);
-                                g_free(index_buf);
-                                g_free(url);
-                        } else {
-                                str = string_replace(replace_buf, "", str);
-                                str = string_replace("</a>", "", str);
-                        }
-                        g_free(replace_buf);
-                } else {
-                        break;
-                }
-        }
-        *str_ptr = str;
-        return urls;
-}
-
 /*
  * Create notification struct and initialise all fields with either
  *  - the default (if it's not needed to be freed later)
@@ -479,15 +439,26 @@ static void notification_format_message(notification *n)
 
 static void notification_extract_urls(notification *n)
 {
-        // DO markup urls processing here until we split this out correctly
-        n->urls = notification_extract_markup_urls(&(n->body));
+        g_clear_pointer(&n->urls, g_free);
 
-        char *tmp = g_strconcat(n->summary, " ", n->body, NULL);
+        char *urls_in = string_append(g_strdup(n->summary), n->body, " ");
 
-        char *tmp_urls = extract_urls(tmp);
-        n->urls = string_append(n->urls, tmp_urls, "\n");
-        g_free(tmp_urls);
-        g_free(tmp);
+        char *urls_a = NULL;
+        char *urls_img = NULL;
+        markup_strip_a(&urls_in, &urls_a);
+        markup_strip_img(&urls_in, &urls_img);
+        // remove links and images first to not confuse
+        // plain urls extraction
+        char *urls_text = extract_urls(urls_in);
+
+        n->urls = string_append(n->urls, urls_a, "\n");
+        n->urls = string_append(n->urls, urls_img, "\n");
+        n->urls = string_append(n->urls, urls_text, "\n");
+
+        g_free(urls_in);
+        g_free(urls_a);
+        g_free(urls_img);
+        g_free(urls_text);
 }
 
 static void notification_dmenu_string(notification *n)

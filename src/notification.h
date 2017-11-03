@@ -72,7 +72,7 @@ typedef struct _notification {
         /* derived fields */
         char *msg;            /* formatted message */
         char *text_to_render; /* formatted message (with age and action indicators) */
-        char *urls;           /* urllist */
+        char *urls;           /* urllist delimited by '\n' */
 } notification;
 
 notification *notification_create(void);
