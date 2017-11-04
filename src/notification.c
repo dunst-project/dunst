@@ -214,6 +214,9 @@ void notification_free(notification *n)
         g_free(n->category);
         g_free(n->text_to_render);
         g_free(n->urls);
+        g_free(n->colors[ColFG]);
+        g_free(n->colors[ColBG]);
+        g_free(n->colors[ColFrame]);
 
         actions_free(n->actions);
         rawimage_free(n->raw_icon);
@@ -312,11 +315,11 @@ void notification_init(notification *n)
 
         /* Color hints */
         if (!n->colors[ColFG])
-                n->colors[ColFG] = xctx.colors[ColFG][n->urgency];
+                n->colors[ColFG] = g_strdup(xctx.colors[ColFG][n->urgency]);
         if (!n->colors[ColBG])
-                n->colors[ColBG] = xctx.colors[ColBG][n->urgency];
+                n->colors[ColBG] = g_strdup(xctx.colors[ColBG][n->urgency]);
         if (!n->colors[ColFrame])
-                n->colors[ColFrame] = xctx.colors[ColFrame][n->urgency];
+                n->colors[ColFrame] = g_strdup(xctx.colors[ColFrame][n->urgency]);
 
         /* Sanitize misc hints */
         if (n->progress < 0 || n->progress > 100)
