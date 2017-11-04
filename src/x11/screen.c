@@ -23,6 +23,11 @@ int screens_len;
 
 bool dunst_follow_errored = false;
 
+int randr_event_base = 0;
+
+static int randr_major_version = 0;
+static int randr_minor_version = 0;
+
 void randr_init();
 void randr_update();
 void xinerama_update();
@@ -80,8 +85,6 @@ void alloc_screen_ar(int n)
         screens_len = n;
 }
 
-int randr_event_base = 0;
-
 void randr_init()
 {
         int randr_error_base = 0;
@@ -89,19 +92,31 @@ void randr_init()
                 fprintf(stderr, "Could not initialize the RandR extension, falling back to single monitor mode.\n");
                 return;
         }
+        XRRQueryVersion(xctx.dpy, &randr_major_version, &randr_minor_version);
         XRRSelectInput(xctx.dpy, RootWindow(xctx.dpy, DefaultScreen(xctx.dpy)), RRScreenChangeNotifyMask);
 }
 
 void randr_update()
 {
-        int n;
-        XRRMonitorInfo *m = XRRGetMonitors(xctx.dpy, RootWindow(xctx.dpy, DefaultScreen(xctx.dpy)), true, &n);
-
-        if (m == NULL || n == -1) {
-                fprintf(stderr, "(RandR) Could not get screen info, falling back to single monitor mode\n");
+        if (randr_major_version < 1
+            || (randr_major_version == 1 && randr_minor_version < 5)) {
+                fprintf(stderr, "Server RandR version too low (%i.%i). Falling back to single monitor mode\n",
+                                randr_major_version,
+                                randr_minor_version);
                 screen_update_fallback();
                 return;
         }
+
+        int n = 0;
+        XRRMonitorInfo *m = XRRGetMonitors(xctx.dpy, RootWindow(xctx.dpy, DefaultScreen(xctx.dpy)), true, &n);
+
+        if (n < 1) {
+                fprintf(stderr, "Get monitors reported %i monitors, falling back to single monitor mode\n", n);
+                screen_update_fallback();
+                return;
+        }
+
+        assert(m);
 
         alloc_screen_ar(n);
 

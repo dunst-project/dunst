@@ -22,7 +22,7 @@ pkg_config_packs := dbus-1 \
                     pangocairo \
                     x11 \
                     xinerama \
-                    xrandr \
+                    "xrandr >= 1.5" \
                     xscrnsaver
 
 # check if we need libxdg-basedir
