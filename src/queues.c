@@ -188,7 +188,6 @@ int queues_notification_close_id(int id, int reason)
                 notification *n = iter->data;
                 if (n->id == id) {
                         g_queue_remove(displayed, n);
-                        queues_history_push(n);
                         target = n;
                         break;
                 }
@@ -198,15 +197,19 @@ int queues_notification_close_id(int id, int reason)
              iter = iter->next) {
                 notification *n = iter->data;
                 if (n->id == id) {
+                        assert(target == NULL);
                         g_queue_remove(waiting, n);
-                        queues_history_push(n);
                         target = n;
                         break;
                 }
         }
 
-        if (reason > 0 && reason < 4 && target != NULL) {
-                notification_closed(target, reason);
+        if (target) {
+
+                if (reason > 0 && reason < 4)
+                        notification_closed(target, reason);
+
+                queues_history_push(target);
         }
 
         return reason;
@@ -232,13 +235,16 @@ void queues_history_pop(void)
 
 void queues_history_push(notification *n)
 {
-        if (settings.history_length > 0 && history->length >= settings.history_length) {
-                notification *to_free = g_queue_pop_head(history);
-                notification_free(to_free);
-        }
+        if (!n->history_ignore) {
+                if (settings.history_length > 0 && history->length >= settings.history_length) {
+                        notification *to_free = g_queue_pop_head(history);
+                        notification_free(to_free);
+                }
 
-        if (!n->history_ignore)
                 g_queue_push_tail(history, n);
+        } else {
+                notification_free(n);
+        }
 }
 
 void queues_history_push_all(void)
