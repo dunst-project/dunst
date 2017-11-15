@@ -161,7 +161,7 @@ bool queues_notification_replace_id(notification *new)
                         new->start = g_get_monotonic_time();
                         new->dup_count = old->dup_count;
                         notification_run_script(new);
-                        queues_history_push(old);
+                        notification_free(old);
                         return true;
                 }
         }
@@ -173,7 +173,7 @@ bool queues_notification_replace_id(notification *new)
                 if (old->id == new->id) {
                         iter->data = new;
                         new->dup_count = old->dup_count;
-                        queues_history_push(old);
+                        notification_free(old);
                         return true;
                 }
         }
