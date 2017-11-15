@@ -54,6 +54,7 @@ unsigned int queues_length_history()
 
 int queues_notification_insert(notification *n, int replaces_id)
 {
+
         /* do not display the message, if the message is empty */
         if (strlen(n->msg) == 0) {
                 if (settings.always_run_script) {
@@ -74,6 +75,8 @@ int queues_notification_insert(notification *n, int replaces_id)
 
         if (replaces_id == 0) {
 
+                n->id = ++next_notification_id;
+
                 if (settings.stack_duplicates) {
                         int stacked = queues_stack_duplicate(n);
                         if (stacked > 0) {
@@ -81,8 +84,6 @@ int queues_notification_insert(notification *n, int replaces_id)
                                 return stacked;
                         }
                 }
-
-                n->id = ++next_notification_id;
 
                 g_queue_insert_sorted(waiting, n, notification_cmp_data, NULL);
 
@@ -118,11 +119,17 @@ static int queues_stack_duplicate(notification *n)
                         } else {
                                 orig->progress = n->progress;
                         }
-                        orig->start = g_get_monotonic_time();
-                        g_free(orig->msg);
-                        orig->msg = g_strdup(n->msg);
-                        notification_free(n);
-                        return orig->id;
+
+                        iter->data = n;
+
+                        n->start = g_get_monotonic_time();
+
+                        n->dup_count = orig->dup_count;
+
+                        notification_closed(orig, 1);
+
+                        notification_free(orig);
+                        return n->id;
                 }
         }
 
@@ -138,10 +145,14 @@ static int queues_stack_duplicate(notification *n)
                         } else {
                                 orig->progress = n->progress;
                         }
-                        g_free(orig->msg);
-                        orig->msg = g_strdup(n->msg);
-                        notification_free(n);
-                        return orig->id;
+                        iter->data = n;
+
+                        n->dup_count = orig->dup_count;
+
+                        notification_closed(orig, 1);
+
+                        notification_free(orig);
+                        return n->id;
                 }
         }
 
