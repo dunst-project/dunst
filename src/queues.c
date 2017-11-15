@@ -20,7 +20,7 @@ unsigned int displayed_limit = 0;
 int next_notification_id = 1;
 bool pause_displayed = false;
 
-static int queues_stack_duplicate(notification *n);
+static bool queues_stack_duplicate(notification *n);
 
 void queues_init(void)
 {
@@ -74,19 +74,9 @@ int queues_notification_insert(notification *n, int replaces_id)
         }
 
         if (replaces_id == 0) {
-
                 n->id = ++next_notification_id;
-
-                if (settings.stack_duplicates) {
-                        int stacked = queues_stack_duplicate(n);
-                        if (stacked > 0) {
-                                // notification got stacked
-                                return stacked;
-                        }
-                }
-
-                g_queue_insert_sorted(waiting, n, notification_cmp_data, NULL);
-
+                if (!settings.stack_duplicates || !queues_stack_duplicate(n))
+                        g_queue_insert_sorted(waiting, n, notification_cmp_data, NULL);
         } else {
                 n->id = replaces_id;
                 if (!queues_notification_replace_id(n))
@@ -102,10 +92,10 @@ int queues_notification_insert(notification *n, int replaces_id)
 /*
  * Replaces duplicate notification and stacks it
  *
- * Returns the notification id of the stacked notification
- * Returns -1 if not notification could be stacked
+ * Returns %true, if notification got stacked
+ * Returns %false, if notification did not get stacked
  */
-static int queues_stack_duplicate(notification *n)
+static bool queues_stack_duplicate(notification *n)
 {
         for (GList *iter = g_queue_peek_head_link(displayed); iter;
              iter = iter->next) {
@@ -129,7 +119,7 @@ static int queues_stack_duplicate(notification *n)
                         notification_closed(orig, 1);
 
                         notification_free(orig);
-                        return n->id;
+                        return true;
                 }
         }
 
@@ -152,11 +142,11 @@ static int queues_stack_duplicate(notification *n)
                         notification_closed(orig, 1);
 
                         notification_free(orig);
-                        return n->id;
+                        return true;
                 }
         }
 
-        return -1;
+        return false;
 }
 
 bool queues_notification_replace_id(notification *new)
