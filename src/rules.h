@@ -20,7 +20,7 @@ typedef struct _rule_t {
 
         /* actions */
         gint64 timeout;
-        int urgency;
+        enum urgency urgency;
         enum markup_mode markup;
         int history_ignore;
         int match_transient;

@@ -7,11 +7,14 @@
 
 #include "settings.h"
 
-#define LOW 0
-#define NORM 1
-#define CRIT 2
-
 #define DUNST_NOTIF_MAX_CHARS 5000
+
+enum urgency {
+        NONE = -1,
+        LOW = 0,
+        NORM = 1,
+        CRIT = 2,
+};
 
 typedef struct _raw_image {
         int width;
@@ -43,7 +46,7 @@ typedef struct _notification {
         gint64 start;
         gint64 timestamp;
         gint64 timeout;
-        int urgency;
+        enum urgency urgency;
         enum markup_mode markup;
         bool redisplayed;       /* has been displayed before? */
         int id;
@@ -74,5 +77,6 @@ void notification_replace_single_field(char **haystack, char **needle, const cha
 void notification_update_text_to_render(notification *n);
 void notification_do_action(notification *n);
 
+const char *notification_urgency_to_string(enum urgency urgency);
 #endif
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

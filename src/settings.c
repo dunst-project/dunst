@@ -47,7 +47,7 @@ static enum markup_mode parse_markup_mode(const char *mode)
         }
 }
 
-static int ini_get_urgency(const char *section, const char *key, const int def)
+static enum urgency ini_get_urgency(const char *section, const char *key, const int def)
 {
         int ret = def;
         char *urg = ini_get_string(section, key, "");
