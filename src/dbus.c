@@ -324,6 +324,12 @@ static void on_get_server_information(GDBusConnection *connection,
 
 void notification_closed(notification *n, enum reason reason)
 {
+        if (reason < REASON_MIN || REASON_MAX < reason) {
+                fprintf(stderr, "ERROR: Closing notification with reason '%d' not supported. "
+                                "Closing it with reason '%d'.\n", reason, REASON_UNDEF);
+                reason = REASON_UNDEF;
+        }
+
         if (!dbus_conn) {
                 fprintf(stderr, "ERROR: Tried to close notification but dbus connection not set!\n");
                 return;

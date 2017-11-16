@@ -6,10 +6,12 @@
 #include "notification.h"
 
 enum reason {
+        REASON_MIN = 1,
         REASON_TIME = 1,
         REASON_USER = 2,
         REASON_SIG = 3,
         REASON_UNDEF = 4,
+        REASON_MAX = 4,
 };
 
 int initdbus(void);

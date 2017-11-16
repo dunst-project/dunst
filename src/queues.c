@@ -204,10 +204,7 @@ int queues_notification_close_id(int id, enum reason reason)
         }
 
         if (target) {
-
-                if (reason > 0 && reason < 4)
-                        notification_closed(target, reason);
-
+                notification_closed(target, reason);
                 queues_history_push(target);
         }
 
