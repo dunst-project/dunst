@@ -113,13 +113,13 @@ void notification_run_script(notification *n)
 const char *notification_urgency_to_string(enum urgency urgency)
 {
         switch (urgency) {
-        case NONE:
+        case URG_NONE:
                 return "NONE";
-        case LOW:
+        case URG_LOW:
                 return "LOW";
-        case NORM:
+        case URG_NORM:
                 return "NORMAL";
-        case CRIT:
+        case URG_CRIT:
                 return "CRITICAL";
         default:
                 return "UNDEF";
@@ -437,8 +437,8 @@ void notification_init(notification *n)
 
         n->dup_count = 0;
 
-        /* urgency > CRIT -> array out of range */
-        n->urgency = n->urgency > CRIT ? CRIT : n->urgency;
+        /* urgency > URG_CRIT -> array out of range */
+        n->urgency = n->urgency > URG_CRIT ? URG_CRIT : n->urgency;
 
         if (!n->color_strings[ColFG]) {
                 n->color_strings[ColFG] = xctx.color_strings[ColFG][n->urgency];

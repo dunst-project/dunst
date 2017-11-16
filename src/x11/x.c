@@ -980,26 +980,26 @@ void x_setup(void)
         x_shortcut_grab(&settings.context_ks);
         x_shortcut_ungrab(&settings.context_ks);
 
-        xctx.color_strings[ColFG][LOW] = settings.lowfgcolor;
-        xctx.color_strings[ColFG][NORM] = settings.normfgcolor;
-        xctx.color_strings[ColFG][CRIT] = settings.critfgcolor;
+        xctx.color_strings[ColFG][URG_LOW] = settings.lowfgcolor;
+        xctx.color_strings[ColFG][URG_NORM] = settings.normfgcolor;
+        xctx.color_strings[ColFG][URG_CRIT] = settings.critfgcolor;
 
-        xctx.color_strings[ColBG][LOW] = settings.lowbgcolor;
-        xctx.color_strings[ColBG][NORM] = settings.normbgcolor;
-        xctx.color_strings[ColBG][CRIT] = settings.critbgcolor;
+        xctx.color_strings[ColBG][URG_LOW] = settings.lowbgcolor;
+        xctx.color_strings[ColBG][URG_NORM] = settings.normbgcolor;
+        xctx.color_strings[ColBG][URG_CRIT] = settings.critbgcolor;
 
         if (settings.lowframecolor)
-                xctx.color_strings[ColFrame][LOW] = settings.lowframecolor;
+                xctx.color_strings[ColFrame][URG_LOW] = settings.lowframecolor;
         else
-                xctx.color_strings[ColFrame][LOW] = settings.frame_color;
+                xctx.color_strings[ColFrame][URG_LOW] = settings.frame_color;
         if (settings.normframecolor)
-                xctx.color_strings[ColFrame][NORM] = settings.normframecolor;
+                xctx.color_strings[ColFrame][URG_NORM] = settings.normframecolor;
         else
-                xctx.color_strings[ColFrame][NORM] = settings.frame_color;
+                xctx.color_strings[ColFrame][URG_NORM] = settings.frame_color;
         if (settings.critframecolor)
-                xctx.color_strings[ColFrame][CRIT] = settings.critframecolor;
+                xctx.color_strings[ColFrame][URG_CRIT] = settings.critframecolor;
         else
-                xctx.color_strings[ColFrame][CRIT] = settings.frame_color;
+                xctx.color_strings[ColFrame][URG_CRIT] = settings.frame_color;
 
         /* parse and set xctx.geometry and monitor position */
         if (settings.geom[0] == '-') {

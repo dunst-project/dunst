@@ -10,10 +10,10 @@
 #define DUNST_NOTIF_MAX_CHARS 5000
 
 enum urgency {
-        NONE = -1,
-        LOW = 0,
-        NORM = 1,
-        CRIT = 2,
+        URG_NONE = -1,
+        URG_LOW = 0,
+        URG_NORM = 1,
+        URG_CRIT = 2,
 };
 
 typedef struct _raw_image {

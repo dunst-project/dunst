@@ -60,11 +60,11 @@ TEST test_notification_is_duplicate(void *notifications)
 
         ASSERT(notification_is_duplicate(a, b));
 
-        b->urgency = LOW;
+        b->urgency = URG_LOW;
         ASSERT_FALSE(notification_is_duplicate(a, b));
-        b->urgency = NORM;
+        b->urgency = URG_NORM;
         ASSERT(notification_is_duplicate(a, b));
-        b->urgency = CRIT;
+        b->urgency = URG_CRIT;
         ASSERT_FALSE(notification_is_duplicate(a, b));
 
         PASS();
@@ -107,7 +107,7 @@ SUITE(suite_notification)
         a->summary = "Summary";
         a->body = "Body";
         a->icon = "Icon";
-        a->urgency = NORM;
+        a->urgency = URG_NORM;
 
         notification *b = notification_create();
         memcpy(b, a, sizeof(*b));
