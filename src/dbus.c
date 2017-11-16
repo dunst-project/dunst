@@ -303,7 +303,7 @@ static void on_close_notification(GDBusConnection *connection,
 {
         guint32 id;
         g_variant_get(parameters, "(u)", &id);
-        queues_notification_close_id(id, 3);
+        queues_notification_close_id(id, REASON_SIG);
         wake_up();
         g_dbus_method_invocation_return_value(invocation, NULL);
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
@@ -322,7 +322,7 @@ static void on_get_server_information(GDBusConnection *connection,
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
 }
 
-void notification_closed(notification *n, int reason)
+void notification_closed(notification *n, enum reason reason)
 {
         if (!dbus_conn) {
                 fprintf(stderr, "ERROR: Tried to close notification but dbus connection not set!\n");

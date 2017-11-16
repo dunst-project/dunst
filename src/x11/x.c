@@ -25,6 +25,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "src/dbus.h"
 #include "src/dunst.h"
 #include "src/markup.h"
 #include "src/notification.h"
@@ -856,7 +857,7 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback,
                             && settings.close_ks.mask == state) {
                                 const GList *displayed = queues_get_displayed();
                                 if (displayed && displayed->data) {
-                                        queues_notification_close(displayed->data, 2);
+                                        queues_notification_close(displayed->data, REASON_USER);
                                         wake_up();
                                 }
                         }
@@ -937,7 +938,7 @@ static void x_handle_click(XEvent ev)
 
                 if (n) {
                         if (ev.xbutton.button == Button1)
-                                queues_notification_close(n, 2);
+                                queues_notification_close(n, REASON_USER);
                         else
                                 notification_do_action(n);
                 }

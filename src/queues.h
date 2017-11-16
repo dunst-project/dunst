@@ -4,6 +4,7 @@
 #define DUNST_QUEUE_H
 
 #include "notification.h"
+#include "dbus.h"
 
 /*
  * Initialise neccessary queues
@@ -58,21 +59,15 @@ bool queues_notification_replace_id(notification *new);
  *
  * After closing, call wake_up to synchronize the queues with the UI
  * (which closes the notification on screen)
- *
- * reasons:
- * -1 -> notification is a replacement, no NotificationClosed signal emitted
- *  1 -> the notification expired
- *  2 -> the notification was dismissed by the user_data
- *  3 -> The notification was closed by a call to CloseNotification
  */
-int queues_notification_close_id(int id, int reason);
+int queues_notification_close_id(int id, enum reason reason);
 
 /* Close the given notification. SEE queues_notification_close_id.
  *
  * @n: (transfer full): The notification to close
  * @reason: The reason to close
  * */
-int queues_notification_close(notification *n, int reason);
+int queues_notification_close(notification *n, enum reason reason);
 
 /*
  * Pushed the latest notification of history to the displayed queue

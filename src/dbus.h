@@ -5,10 +5,17 @@
 
 #include "notification.h"
 
+enum reason {
+        REASON_TIME = 1,
+        REASON_USER = 2,
+        REASON_SIG = 3,
+        REASON_UNDEF = 4,
+};
+
 int initdbus(void);
 void dbus_tear_down(int id);
 /* void dbus_poll(int timeout); */
-void notification_closed(notification *n, int reason);
+void notification_closed(notification *n, enum reason reason);
 void action_invoked(notification *n, const char *identifier);
 
 #endif

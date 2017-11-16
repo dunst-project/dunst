@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "dbus.h"
 #include "notification.h"
 #include "settings.h"
 
@@ -179,7 +178,7 @@ bool queues_notification_replace_id(notification *new)
         return false;
 }
 
-int queues_notification_close_id(int id, int reason)
+int queues_notification_close_id(int id, enum reason reason)
 {
         notification *target = NULL;
 
@@ -215,7 +214,7 @@ int queues_notification_close_id(int id, int reason)
         return reason;
 }
 
-int queues_notification_close(notification *n, int reason)
+int queues_notification_close(notification *n, enum reason reason)
 {
         assert(n != NULL);
         return queues_notification_close_id(n->id, reason);
@@ -250,11 +249,11 @@ void queues_history_push(notification *n)
 void queues_history_push_all(void)
 {
         while (displayed->length > 0) {
-                queues_notification_close(g_queue_peek_head_link(displayed)->data, 2);
+                queues_notification_close(g_queue_peek_head_link(displayed)->data, REASON_USER);
         }
 
         while (waiting->length > 0) {
-                queues_notification_close(g_queue_peek_head_link(waiting)->data, 2);
+                queues_notification_close(g_queue_peek_head_link(waiting)->data, REASON_USER);
         }
 }
 
@@ -288,7 +287,7 @@ void queues_check_timeouts(bool idle)
 
                 /* remove old message */
                 if (g_get_monotonic_time() - n->start > n->timeout) {
-                        queues_notification_close(n, 1);
+                        queues_notification_close(n, REASON_TIME);
                 }
         }
 }
