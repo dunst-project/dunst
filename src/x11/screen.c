@@ -197,6 +197,9 @@ bool window_is_fullscreen(Window window)
 {
         bool fs = false;
 
+        if (!window)
+                return false;
+
         Atom has_wm_state = XInternAtom(xctx.dpy, "_NET_WM_STATE", True);
         if (has_wm_state == None){
                 return false;
