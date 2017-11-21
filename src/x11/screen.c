@@ -192,6 +192,24 @@ bool have_fullscreen_window(void)
         return window_is_fullscreen(get_focused_window());
 }
 
+/**
+ * X11 ErrorHandler to mainly discard BadWindow parameter error
+ */
+static int XErrorHandlerFullscreen(Display *display, XErrorEvent *e)
+{
+        /* Ignore BadWindow errors. Window may have been gone */
+        if (e->error_code == BadWindow) {
+                return 0;
+        }
+
+        char err_buf[BUFSIZ];
+        XGetErrorText(display, e->error_code, err_buf, BUFSIZ);
+        fputs(err_buf, stderr);
+        fputs("\n", stderr);
+
+        return 0;
+}
+
 /* see screen.h */
 bool window_is_fullscreen(Window window)
 {
@@ -204,6 +222,9 @@ bool window_is_fullscreen(Window window)
         if (has_wm_state == None){
                 return false;
         }
+
+        XFlush(xctx.dpy);
+        XSetErrorHandler(XErrorHandlerFullscreen);
 
         Atom actual_type_return;
         int actual_format_return;
@@ -223,6 +244,10 @@ bool window_is_fullscreen(Window window)
                         &n_items,
                         &bytes_after_return,
                         &prop_to_return);
+
+        XFlush(xctx.dpy);
+        XSync(xctx.dpy, false);
+        XSetErrorHandler(NULL);
 
         if (result == Success) {
                 for(int i = 0; i < n_items; i++) {
