@@ -438,7 +438,10 @@ void notification_init(notification *n)
         n->dup_count = 0;
 
         /* urgency > URG_CRIT -> array out of range */
-        n->urgency = n->urgency > URG_CRIT ? URG_CRIT : n->urgency;
+        if (n->urgency < URG_MIN)
+                n->urgency = URG_LOW;
+        if (n->urgency > URG_MAX)
+                n->urgency = URG_CRIT;
 
         if (!n->color_strings[ColFG]) {
                 n->color_strings[ColFG] = xctx.color_strings[ColFG][n->urgency];

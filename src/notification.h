@@ -11,9 +11,11 @@
 
 enum urgency {
         URG_NONE = -1,
+        URG_MIN = 0,
         URG_LOW = 0,
         URG_NORM = 1,
         URG_CRIT = 2,
+        URG_MAX = 2,
 };
 
 typedef struct _raw_image {
