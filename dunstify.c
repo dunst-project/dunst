@@ -296,9 +296,10 @@ int main(int argc, char *argv[])
 
     GMainLoop *l = NULL;
 
-    if (block || action_strs)
+    if (block || action_strs) {
         l = g_main_loop_new(NULL, false);
         g_signal_connect(n, "closed", G_CALLBACK(closed), NULL);
+    }
 
     if (action_strs)
         for (int i = 0; action_strs[i]; i++) {
@@ -317,12 +318,11 @@ int main(int argc, char *argv[])
         die(1);
     }
 
+    if (printid)
+        g_print("%d\n", get_id(n));
+
     if (block || action_strs)
         g_main_loop_run(l);
-
-    if (printid) {
-       g_print("%d\n", get_id(n));
-    }
 
     g_object_unref(G_OBJECT (n));
 
