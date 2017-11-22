@@ -47,18 +47,18 @@ static enum markup_mode parse_markup_mode(const char *mode)
         }
 }
 
-static int ini_get_urgency(const char *section, const char *key, const int def)
+static enum urgency ini_get_urgency(const char *section, const char *key, const int def)
 {
         int ret = def;
         char *urg = ini_get_string(section, key, "");
 
         if (strlen(urg) > 0) {
                 if (strcmp(urg, "low") == 0)
-                        ret = LOW;
+                        ret = URG_LOW;
                 else if (strcmp(urg, "normal") == 0)
-                        ret = NORM;
+                        ret = URG_NORM;
                 else if (strcmp(urg, "critical") == 0)
-                        ret = CRIT;
+                        ret = URG_CRIT;
                 else
                         fprintf(stderr,
                                 "unknown urgency: %s, ignoring\n",
@@ -492,15 +492,15 @@ void load_settings(char *cmdline_config_path)
                 "Frame color for notifications with low urgency"
         );
 
-        settings.timeouts[LOW] = option_get_time(
+        settings.timeouts[URG_LOW] = option_get_time(
                 "urgency_low",
-                "timeout", "-lto", defaults.timeouts[LOW],
+                "timeout", "-lto", defaults.timeouts[URG_LOW],
                 "Timeout for notifications with low urgency"
         );
 
-        settings.icons[LOW] = option_get_string(
+        settings.icons[URG_LOW] = option_get_string(
                 "urgency_low",
-                "icon", "-li", defaults.icons[LOW],
+                "icon", "-li", defaults.icons[URG_LOW],
                 "Icon for notifications with low urgency"
         );
 
@@ -522,15 +522,15 @@ void load_settings(char *cmdline_config_path)
                 "Frame color for notifications with normal urgency"
         );
 
-        settings.timeouts[NORM] = option_get_time(
+        settings.timeouts[URG_NORM] = option_get_time(
                 "urgency_normal",
-                "timeout", "-nto", defaults.timeouts[NORM],
+                "timeout", "-nto", defaults.timeouts[URG_NORM],
                 "Timeout for notifications with normal urgency"
         );
 
-        settings.icons[NORM] = option_get_string(
+        settings.icons[URG_NORM] = option_get_string(
                 "urgency_normal",
-                "icon", "-ni", defaults.icons[NORM],
+                "icon", "-ni", defaults.icons[URG_NORM],
                 "Icon for notifications with normal urgency"
         );
 
@@ -552,15 +552,15 @@ void load_settings(char *cmdline_config_path)
                 "Frame color for notifications with critical urgency"
         );
 
-        settings.timeouts[CRIT] = option_get_time(
+        settings.timeouts[URG_CRIT] = option_get_time(
                 "urgency_critical",
-                "timeout", "-cto", defaults.timeouts[CRIT],
+                "timeout", "-cto", defaults.timeouts[URG_CRIT],
                 "Timeout for notifications with critical urgency"
         );
 
-        settings.icons[CRIT] = option_get_string(
+        settings.icons[URG_CRIT] = option_get_string(
                 "urgency_critical",
-                "icon", "-ci", defaults.icons[CRIT],
+                "icon", "-ci", defaults.icons[URG_CRIT],
                 "Icon for notifications with critical urgency"
         );
 

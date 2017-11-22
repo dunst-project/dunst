@@ -157,7 +157,7 @@ int dunst_main(int argc, char *argv[])
                 n->progress = -1;
                 n->timeout = 10 * G_USEC_PER_SEC;
                 n->markup = MARKUP_NO;
-                n->urgency = LOW;
+                n->urgency = URG_LOW;
                 notification_init(n);
                 queues_notification_insert(n, 0);
                 // we do not call wakeup now, wake_up does not work here yet

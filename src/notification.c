@@ -38,7 +38,7 @@ void notification_print(notification *n)
         printf("\traw_icon set: %s\n", (n->raw_icon ? "true" : "false"));
         printf("\tcategory: %s\n", n->category);
         printf("\ttimeout: %ld\n", n->timeout/1000);
-        printf("\turgency: %d\n", n->urgency);
+        printf("\turgency: %s\n", notification_urgency_to_string(n->urgency));
         printf("\ttransient: %d\n", n->transient);
         printf("\tformatted: '%s'\n", n->msg);
         printf("\tfg: %s\n", n->color_strings[ColFG]);
@@ -80,21 +80,7 @@ void notification_run_script(notification *n)
         char *body = n->body ? n->body : "";
         char *icon = n->icon ? n->icon : "";
 
-        char *urgency;
-        switch (n->urgency) {
-        case LOW:
-                urgency = "LOW";
-                break;
-        case NORM:
-                urgency = "NORMAL";
-                break;
-        case CRIT:
-                urgency = "CRITICAL";
-                break;
-        default:
-                urgency = "NORMAL";
-                break;
-        }
+        const char *urgency = notification_urgency_to_string(n->urgency);
 
         int pid1 = fork();
 
@@ -118,6 +104,25 @@ void notification_run_script(notification *n)
                                 exit(EXIT_FAILURE);
                         }
                 }
+        }
+}
+
+/*
+ * Helper function to convert an urgency to a string
+ */
+const char *notification_urgency_to_string(enum urgency urgency)
+{
+        switch (urgency) {
+        case URG_NONE:
+                return "NONE";
+        case URG_LOW:
+                return "LOW";
+        case URG_NORM:
+                return "NORMAL";
+        case URG_CRIT:
+                return "CRITICAL";
+        default:
+                return "UNDEF";
         }
 }
 
@@ -432,8 +437,11 @@ void notification_init(notification *n)
 
         n->dup_count = 0;
 
-        /* urgency > CRIT -> array out of range */
-        n->urgency = n->urgency > CRIT ? CRIT : n->urgency;
+        /* urgency > URG_CRIT -> array out of range */
+        if (n->urgency < URG_MIN)
+                n->urgency = URG_LOW;
+        if (n->urgency > URG_MAX)
+                n->urgency = URG_CRIT;
 
         if (!n->color_strings[ColFG]) {
                 n->color_strings[ColFG] = xctx.color_strings[ColFG][n->urgency];

@@ -14,7 +14,7 @@ void rule_apply(rule_t *r, notification *n)
 {
         if (r->timeout != -1)
                 n->timeout = r->timeout;
-        if (r->urgency != -1)
+        if (r->urgency != URG_NONE)
                 n->urgency = r->urgency;
         if (r->history_ignore != -1)
                 n->history_ignore = r->history_ignore;
@@ -62,9 +62,9 @@ void rule_init(rule_t *r)
         r->body = NULL;
         r->icon = NULL;
         r->category = NULL;
-        r->msg_urgency = -1;
+        r->msg_urgency = URG_NONE;
         r->timeout = -1;
-        r->urgency = -1;
+        r->urgency = URG_NONE;
         r->markup = MARKUP_NULL;
         r->new_icon = NULL;
         r->history_ignore = false;
@@ -86,6 +86,6 @@ bool rule_matches_notification(rule_t *r, notification *n)
                 && (!r->icon || !fnmatch(r->icon, n->icon, 0))
                 && (!r->category || !fnmatch(r->category, n->category, 0))
                 && (r->match_transient == -1 || (r->match_transient == n->transient))
-                && (r->msg_urgency == -1 || r->msg_urgency == n->urgency));
+                && (r->msg_urgency == URG_NONE || r->msg_urgency == n->urgency));
 }
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
