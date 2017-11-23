@@ -95,10 +95,14 @@ char *extract_urls(const char *to_match)
  */
 void open_browser(const char *in)
 {
-        // remove prefix and test url
-        char *url = extract_urls(in);
-        if (!url)
-                return;
+        char *url = NULL;
+
+        // If any, remove leading [ linktext ] from URL
+        const char *end = strstr(in, "] ");
+        if (*in == '[' && end)
+                url = g_strdup(end + 2);
+        else
+                url = g_strdup(in);
 
         int browser_pid1 = fork();
 
