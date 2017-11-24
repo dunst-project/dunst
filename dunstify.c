@@ -1,5 +1,6 @@
 #include <glib.h>
 #include <libnotify/notify.h>
+#include <locale.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -252,6 +253,7 @@ void add_hint(NotifyNotification *n, char *str)
 
 int main(int argc, char *argv[])
 {
+    setlocale(LC_ALL, "");
     #if !GLIB_CHECK_VERSION(2,35,0)
         g_type_init();
     #endif
