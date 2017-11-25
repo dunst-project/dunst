@@ -206,6 +206,13 @@ static void on_notify(GDBusConnection *connection,
                                                 g_variant_unref(dict_value);
                                         }
 
+                                        dict_value = g_variant_lookup_value(content, "image-path", G_VARIANT_TYPE_STRING);
+                                        if (dict_value) {
+                                                g_free(icon);
+                                                icon = g_variant_dup_string(dict_value, NULL);
+                                                g_variant_unref(dict_value);
+                                        }
+
                                         dict_value = g_variant_lookup_value(content, "image-data", G_VARIANT_TYPE("(iiibiiay)"));
                                         if (!dict_value)
                                                 dict_value = g_variant_lookup_value(content, "image_data", G_VARIANT_TYPE("(iiibiiay)"));
