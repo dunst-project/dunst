@@ -164,7 +164,6 @@ void xinerama_update()
         XFree(info);
 }
 
-
 void screen_update_fallback()
 {
         alloc_screen_ar(1);
@@ -177,7 +176,6 @@ void screen_update_fallback()
 
         screens[0].dim.w = DisplayWidth(xctx.dpy, screen);
         screens[0].dim.h = DisplayHeight(xctx.dpy, screen);
-
 }
 
 /*
@@ -297,7 +295,7 @@ static Window get_focused_window(void)
                            &bytes_after,
                            &prop_return);
         if (prop_return) {
-                focused = *(Window *) prop_return;
+                focused = *(Window *)prop_return;
                 XFree(prop_return);
         }
 

@@ -23,7 +23,6 @@
 #include "utils.h"
 #include "x11/x.h"
 
-
 /*
  * print a human readable representation
  * of the given notification to stdout.

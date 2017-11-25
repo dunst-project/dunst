@@ -10,7 +10,7 @@
 
 char *string_replace_char(char needle, char replacement, char *haystack) {
         char *current = haystack;
-        while ((current = strchr (current, needle)) != NULL)
+        while ((current = strchr(current, needle)) != NULL)
                 *current++ = replacement;
         return haystack;
 }
@@ -34,7 +34,7 @@ char *string_replace_at(char *buf, int pos, int len, const char *repl)
         memcpy(tmp + pos, repl, repl_len);
         memmove(tmp + pos + repl_len, buf + pos + len, buf_len - (pos + len) + 1);
 
-        if(tmp != buf) {
+        if (tmp != buf) {
                 g_free(buf);
         }
 

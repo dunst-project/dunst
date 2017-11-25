@@ -111,13 +111,12 @@ static color_t calculate_foreground_color(color_t bg)
 
         int signedness = darken ? -1 : 1;
 
-        color.r = _apply_delta(color.r, c_delta *signedness);
-        color.g = _apply_delta(color.g, c_delta *signedness);
-        color.b = _apply_delta(color.b, c_delta *signedness);
+        color.r = _apply_delta(color.r, c_delta * signedness);
+        color.g = _apply_delta(color.g, c_delta * signedness);
+        color.b = _apply_delta(color.b, c_delta * signedness);
 
         return color;
 }
-
 
 static color_t x_get_separator_color(colored_layout *cl, colored_layout *cl_next)
 {
@@ -200,7 +199,7 @@ static bool is_readable_file(const char *filename)
 
 const char *get_filename_ext(const char *filename) {
         const char *dot = strrchr(filename, '.');
-        if(!dot || dot == filename) return "";
+        if (!dot || dot == filename) return "";
         return dot + 1;
 }
 
@@ -630,7 +629,7 @@ static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, colored_layou
         if (use_padding)
                 dim.y += h + settings.padding;
         else
-                dim.y += (int) (floor(bg_half_height) + pango_offset);
+                dim.y += (int)(floor(bg_half_height) + pango_offset);
 
         if (settings.separator_height > 0 && !last) {
                 color_t sep_color = x_get_separator_color(cl, cl_next);
@@ -648,7 +647,7 @@ static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, colored_layou
         }
         cairo_move_to(c, settings.h_padding, dim.y);
 
-        if (cl->icon)  {
+        if (cl->icon) {
                 unsigned int image_width = cairo_image_surface_get_width(cl->icon),
                              image_height = cairo_image_surface_get_height(cl->icon),
                              image_x,
@@ -660,9 +659,9 @@ static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, colored_layou
                         image_x = bg_width - settings.h_padding - image_width + settings.frame_width;
                 }
 
-                cairo_set_source_surface (c, cl->icon, image_x, image_y);
-                cairo_rectangle (c, image_x, image_y, image_width, image_height);
-                cairo_fill (c);
+                cairo_set_source_surface(c, cl->icon, image_x, image_y);
+                cairo_rectangle(c, image_x, image_y, image_width, image_height);
+                cairo_fill(c);
         }
 
         return dim;
@@ -703,7 +702,6 @@ void x_win_draw(void)
         cairo_destroy(c);
         cairo_surface_destroy(image_surface);
         r_free_layouts(layouts);
-
 }
 
 static void x_win_move(int width, int height)
@@ -731,7 +729,6 @@ static void x_win_move(int width, int height)
         if (width != xctx.window_dim.w || height != xctx.window_dim.h) {
                 XResizeWindow(xctx.dpy, xctx.win, width, height);
         }
-
 
         xctx.window_dim.x = x;
         xctx.window_dim.y = y;
@@ -1036,7 +1033,6 @@ void x_setup(void)
         x_win_setup();
         x_cairo_setup();
         x_shortcut_grab(&settings.history_ks);
-
 }
 
 static void x_set_wm(Window win)
@@ -1210,7 +1206,6 @@ KeySym x_shortcut_string_to_mask(const char *str)
                 fprintf(stderr, "Warning: Unknown Modifier: %s\n", str);
                 return 0;
         }
-
 }
 
 /*

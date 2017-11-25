@@ -114,7 +114,7 @@ static void on_get_capabilities(GDBusConnection *connection,
         g_variant_builder_add(builder, "s", "body");
         g_variant_builder_add(builder, "s", "body-hyperlinks");
 
-        if(settings.markup != MARKUP_NO)
+        if (settings.markup != MARKUP_NO)
                 g_variant_builder_add(builder, "s", "body-markup");
 
         value = g_variant_new("(as)", builder);
@@ -421,15 +421,15 @@ static RawImage *get_raw_image_from_data_hint(GVariant *icon_data)
         GVariant *data_variant;
         gsize expected_len;
 
-        g_variant_get (icon_data,
-                       "(iiibii@ay)",
-                       &image->width,
-                       &image->height,
-                       &image->rowstride,
-                       &image->has_alpha,
-                       &image->bits_per_sample,
-                       &image->n_channels,
-                       &data_variant);
+        g_variant_get(icon_data,
+                      "(iiibii@ay)",
+                      &image->width,
+                      &image->height,
+                      &image->rowstride,
+                      &image->has_alpha,
+                      &image->bits_per_sample,
+                      &image->n_channels,
+                      &data_variant);
 
         expected_len = (image->height - 1) * image->rowstride + image->width
                 * ((image->n_channels * image->bits_per_sample + 7) / 8);
@@ -444,8 +444,8 @@ static RawImage *get_raw_image_from_data_hint(GVariant *icon_data)
                 return NULL;
         }
 
-        image->data = (guchar *) g_memdup (g_variant_get_data (data_variant),
-                                g_variant_get_size (data_variant));
+        image->data = (guchar *) g_memdup(g_variant_get_data(data_variant),
+                                          g_variant_get_size(data_variant));
         g_variant_unref(data_variant);
 
         return image;
