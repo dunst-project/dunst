@@ -121,20 +121,20 @@ static color_t calculate_foreground_color(color_t bg)
 static color_t x_get_separator_color(colored_layout *cl, colored_layout *cl_next)
 {
         switch (settings.sep_color) {
-                case FRAME:
-                        if (cl_next->n->urgency > cl->n->urgency)
-                                return cl_next->frame;
-                        else
-                                return cl->frame;
-                case CUSTOM:
-                        return x_string_to_color_t(settings.sep_custom_color_str);
-                case FOREGROUND:
-                        return cl->fg;
-                case AUTO:
-                        return calculate_foreground_color(cl->bg);
-                default:
-                        printf("Unknown separator color type. Please file a Bugreport.\n");
-                        return cl->fg;
+        case FRAME:
+                if (cl_next->n->urgency > cl->n->urgency)
+                        return cl_next->frame;
+                else
+                        return cl->frame;
+        case CUSTOM:
+                return x_string_to_color_t(settings.sep_custom_color_str);
+        case FOREGROUND:
+                return cl->fg;
+        case AUTO:
+                return calculate_foreground_color(cl->bg);
+        default:
+                printf("Unknown separator color type. Please file a Bugreport.\n");
+                return cl->fg;
 
         }
 }
@@ -158,16 +158,16 @@ static void r_setup_pango_layout(PangoLayout *layout, int width)
 
         PangoAlignment align;
         switch (settings.align) {
-                case left:
-                default:
-                        align = PANGO_ALIGN_LEFT;
-                        break;
-                case center:
-                        align = PANGO_ALIGN_CENTER;
-                        break;
-                case right:
-                        align = PANGO_ALIGN_RIGHT;
-                        break;
+        case left:
+        default:
+                align = PANGO_ALIGN_LEFT;
+                break;
+        case center:
+                align = PANGO_ALIGN_CENTER;
+                break;
+        case right:
+                align = PANGO_ALIGN_RIGHT;
+                break;
         }
         pango_layout_set_alignment(layout, align);
 
@@ -410,17 +410,17 @@ static colored_layout *r_init_shared(cairo_t *c, notification *n)
         if (!settings.word_wrap) {
                 PangoEllipsizeMode ellipsize;
                 switch (settings.ellipsize) {
-                        case start:
-                                ellipsize = PANGO_ELLIPSIZE_START;
-                                break;
-                        case middle:
-                                ellipsize = PANGO_ELLIPSIZE_MIDDLE;
-                                break;
-                        case end:
-                                ellipsize = PANGO_ELLIPSIZE_END;
-                                break;
-                        default:
-                                assert(false);
+                case start:
+                        ellipsize = PANGO_ELLIPSIZE_START;
+                        break;
+                case middle:
+                        ellipsize = PANGO_ELLIPSIZE_MIDDLE;
+                        break;
+                case end:
+                        ellipsize = PANGO_ELLIPSIZE_END;
+                        break;
+                default:
+                        assert(false);
                 }
                 pango_layout_set_ellipsize(cl->l, ellipsize);
         }
@@ -771,30 +771,30 @@ static KeySym x_numlock_mod()
                                  * could count as 'using implementation details',
                                  * so use this large switch. */
                                 switch (mod) {
-                                        case ShiftMapIndex:
-                                                sym = ShiftMask;
-                                                goto end;
-                                        case LockMapIndex:
-                                                sym = LockMask;
-                                                goto end;
-                                        case ControlMapIndex:
-                                                sym = ControlMask;
-                                                goto end;
-                                        case Mod1MapIndex:
-                                                sym = Mod1Mask;
-                                                goto end;
-                                        case Mod2MapIndex:
-                                                sym = Mod2Mask;
-                                                goto end;
-                                        case Mod3MapIndex:
-                                                sym = Mod3Mask;
-                                                goto end;
-                                        case Mod4MapIndex:
-                                                sym = Mod4Mask;
-                                                goto end;
-                                        case Mod5MapIndex:
-                                                sym = Mod5Mask;
-                                                goto end;
+                                case ShiftMapIndex:
+                                        sym = ShiftMask;
+                                        goto end;
+                                case LockMapIndex:
+                                        sym = LockMask;
+                                        goto end;
+                                case ControlMapIndex:
+                                        sym = ControlMask;
+                                        goto end;
+                                case Mod1MapIndex:
+                                        sym = Mod1Mask;
+                                        goto end;
+                                case Mod2MapIndex:
+                                        sym = Mod2Mask;
+                                        goto end;
+                                case Mod3MapIndex:
+                                        sym = Mod3Mask;
+                                        goto end;
+                                case Mod4MapIndex:
+                                        sym = Mod4Mask;
+                                        goto end;
+                                case Mod5MapIndex:
+                                        sym = Mod5Mask;
+                                        goto end;
                                 }
                         }
                 }
