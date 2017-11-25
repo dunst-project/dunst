@@ -248,7 +248,8 @@ void notification_replace_single_field(char **haystack,
         g_free(input);
 }
 
-char *notification_extract_markup_urls(char **str_ptr) {
+char *notification_extract_markup_urls(char **str_ptr)
+{
         char *start, *end, *replace_buf, *str, *urls = NULL, *url, *index_buf;
         int linkno = 1;
 
@@ -342,12 +343,12 @@ void notification_init(notification *n)
         /* replace all formatter */
         for(char *substr = strchr(n->msg, '%');
                   substr;
-                  substr = strchr(substr, '%')){
+                  substr = strchr(substr, '%')) {
 
                 char pg[16];
                 char *icon_tmp;
 
-                switch(substr[1]){
+                switch(substr[1]) {
                         case 'a':
                                 notification_replace_single_field(
                                         &n->msg,
@@ -553,7 +554,8 @@ void notification_update_text_to_render(notification *n)
  * invoke it. If there are multiple and no default, open the context menu. If
  * there are no actions, proceed similarly with urls.
  */
-void notification_do_action(notification *n) {
+void notification_do_action(notification *n)
+{
         if (n->actions) {
                 if (n->actions->count == 2) {
                         action_invoked(n, n->actions->actions[0]);

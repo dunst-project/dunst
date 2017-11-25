@@ -188,7 +188,8 @@ static bool have_dynamic_width(void)
         return (xctx.geometry.mask & WidthValue && xctx.geometry.w == 0);
 }
 
-static bool does_file_exist(const char *filename){
+static bool does_file_exist(const char *filename)
+{
         return (access(filename, F_OK) != -1);
 }
 
@@ -197,7 +198,8 @@ static bool is_readable_file(const char *filename)
         return (access(filename, R_OK) != -1);
 }
 
-const char *get_filename_ext(const char *filename) {
+const char *get_filename_ext(const char *filename)
+{
         const char *dot = strrchr(filename, '.');
         if (!dot || dot == filename) return "";
         return dot + 1;

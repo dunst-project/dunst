@@ -64,7 +64,8 @@ static double get_xft_dpi_value()
         return dpi;
 }
 
-void init_screens() {
+void init_screens()
+{
         if (!settings.force_xinerama) {
                 randr_init();
                 randr_update();
