@@ -2,15 +2,16 @@
 #include "utils.h"
 
 #include <assert.h>
-#include <glib.h>
 #include <errno.h>
+#include <glib.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-char *string_replace_char(char needle, char replacement, char *haystack) {
+char *string_replace_char(char needle, char replacement, char *haystack)
+{
         char *current = haystack;
-        while ((current = strchr (current, needle)) != NULL)
+        while ((current = strchr(current, needle)) != NULL)
                 *current++ = replacement;
         return haystack;
 }
@@ -34,7 +35,7 @@ char *string_replace_at(char *buf, int pos, int len, const char *repl)
         memcpy(tmp + pos, repl, repl_len);
         memmove(tmp + pos + repl_len, buf + pos + len, buf_len - (pos + len) + 1);
 
-        if(tmp != buf) {
+        if (tmp != buf) {
                 g_free(buf);
         }
 
@@ -52,8 +53,7 @@ char *string_replace(const char *needle, const char *replacement, char *haystack
         return string_replace_at(haystack, (start - haystack), strlen(needle), replacement);
 }
 
-char *string_replace_all(const char *needle, const char *replacement,
-    char *haystack)
+char *string_replace_all(const char *needle, const char *replacement, char *haystack)
 {
         char *start;
         int needle_pos;
@@ -110,7 +110,8 @@ void string_strip_delimited(char *str, char a, char b)
         str[iwrite] = 0;
 }
 
-char *string_to_path(char *string) {
+char *string_to_path(char *string)
+{
 
         if (string && 0 == strncmp(string, "~/", 2)) {
                 char *home = g_strconcat(getenv("HOME"), "/", NULL);
@@ -123,7 +124,8 @@ char *string_to_path(char *string) {
         return string;
 }
 
-gint64 string_to_time(const char *string) {
+gint64 string_to_time(const char *string)
+{
 
         assert(string);
 
@@ -134,16 +136,13 @@ gint64 string_to_time(const char *string) {
         if (errno != 0) {
                 fprintf(stderr, "ERROR: Time: '%s': %s.\n", string, strerror(errno));
                 return 0;
-        }
-        else if (string == endptr) {
+        } else if (string == endptr) {
                 fprintf(stderr, "ERROR: Time: No digits found.\n");
                 return 0;
-        }
-        else if (errno != 0 && val == 0) {
+        } else if (errno != 0 && val == 0) {
                 fprintf(stderr, "ERROR: Time: '%s' unknown error.\n", string);
                 return 0;
-        }
-        else if (errno == 0 && !*endptr) {
+        } else if (errno == 0 && !*endptr) {
                 return val * G_USEC_PER_SEC;
         }
 

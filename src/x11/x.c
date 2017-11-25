@@ -7,18 +7,18 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <assert.h>
-#include <cairo.h>
 #include <cairo-xlib.h>
-#include <gdk/gdk.h>
+#include <cairo.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
+#include <gdk/gdk.h>
 #include <glib-object.h>
 #include <locale.h>
 #include <math.h>
-#include <pango/pangocairo.h>
 #include <pango/pango-attributes.h>
 #include <pango/pango-font.h>
 #include <pango/pango-layout.h>
 #include <pango/pango-types.h>
+#include <pango/pangocairo.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,8 +29,8 @@
 #include "src/dunst.h"
 #include "src/markup.h"
 #include "src/notification.h"
-#include "src/settings.h"
 #include "src/queues.h"
+#include "src/settings.h"
 #include "src/utils.h"
 
 #include "screen.h"
@@ -111,31 +111,30 @@ static color_t calculate_foreground_color(color_t bg)
 
         int signedness = darken ? -1 : 1;
 
-        color.r = _apply_delta(color.r, c_delta *signedness);
-        color.g = _apply_delta(color.g, c_delta *signedness);
-        color.b = _apply_delta(color.b, c_delta *signedness);
+        color.r = _apply_delta(color.r, c_delta * signedness);
+        color.g = _apply_delta(color.g, c_delta * signedness);
+        color.b = _apply_delta(color.b, c_delta * signedness);
 
         return color;
 }
 
-
 static color_t x_get_separator_color(colored_layout *cl, colored_layout *cl_next)
 {
         switch (settings.sep_color) {
-                case FRAME:
-                        if (cl_next->n->urgency > cl->n->urgency)
-                                return cl_next->frame;
-                        else
-                                return cl->frame;
-                case CUSTOM:
-                        return x_string_to_color_t(settings.sep_custom_color_str);
-                case FOREGROUND:
-                        return cl->fg;
-                case AUTO:
-                        return calculate_foreground_color(cl->bg);
-                default:
-                        printf("Unknown separator color type. Please file a Bugreport.\n");
-                        return cl->fg;
+        case FRAME:
+                if (cl_next->n->urgency > cl->n->urgency)
+                        return cl_next->frame;
+                else
+                        return cl->frame;
+        case CUSTOM:
+                return x_string_to_color_t(settings.sep_custom_color_str);
+        case FOREGROUND:
+                return cl->fg;
+        case AUTO:
+                return calculate_foreground_color(cl->bg);
+        default:
+                printf("Unknown separator color type. Please file a Bugreport.\n");
+                return cl->fg;
 
         }
 }
@@ -159,16 +158,16 @@ static void r_setup_pango_layout(PangoLayout *layout, int width)
 
         PangoAlignment align;
         switch (settings.align) {
-                case left:
-                default:
-                        align = PANGO_ALIGN_LEFT;
-                        break;
-                case center:
-                        align = PANGO_ALIGN_CENTER;
-                        break;
-                case right:
-                        align = PANGO_ALIGN_RIGHT;
-                        break;
+        case left:
+        default:
+                align = PANGO_ALIGN_LEFT;
+                break;
+        case center:
+                align = PANGO_ALIGN_CENTER;
+                break;
+        case right:
+                align = PANGO_ALIGN_RIGHT;
+                break;
         }
         pango_layout_set_alignment(layout, align);
 
@@ -189,7 +188,8 @@ static bool have_dynamic_width(void)
         return (xctx.geometry.mask & WidthValue && xctx.geometry.w == 0);
 }
 
-static bool does_file_exist(const char *filename){
+static bool does_file_exist(const char *filename)
+{
         return (access(filename, F_OK) != -1);
 }
 
@@ -198,9 +198,10 @@ static bool is_readable_file(const char *filename)
         return (access(filename, R_OK) != -1);
 }
 
-const char *get_filename_ext(const char *filename) {
+const char *get_filename_ext(const char *filename)
+{
         const char *dot = strrchr(filename, '.');
-        if(!dot || dot == filename) return "";
+        if (!dot || dot == filename) return "";
         return dot + 1;
 }
 
@@ -409,17 +410,17 @@ static colored_layout *r_init_shared(cairo_t *c, notification *n)
         if (!settings.word_wrap) {
                 PangoEllipsizeMode ellipsize;
                 switch (settings.ellipsize) {
-                        case start:
-                                ellipsize = PANGO_ELLIPSIZE_START;
-                                break;
-                        case middle:
-                                ellipsize = PANGO_ELLIPSIZE_MIDDLE;
-                                break;
-                        case end:
-                                ellipsize = PANGO_ELLIPSIZE_END;
-                                break;
-                        default:
-                                assert(false);
+                case start:
+                        ellipsize = PANGO_ELLIPSIZE_START;
+                        break;
+                case middle:
+                        ellipsize = PANGO_ELLIPSIZE_MIDDLE;
+                        break;
+                case end:
+                        ellipsize = PANGO_ELLIPSIZE_END;
+                        break;
+                default:
+                        assert(false);
                 }
                 pango_layout_set_ellipsize(cl->l, ellipsize);
         }
@@ -630,7 +631,7 @@ static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, colored_layou
         if (use_padding)
                 dim.y += h + settings.padding;
         else
-                dim.y += (int) (floor(bg_half_height) + pango_offset);
+                dim.y += (int)(floor(bg_half_height) + pango_offset);
 
         if (settings.separator_height > 0 && !last) {
                 color_t sep_color = x_get_separator_color(cl, cl_next);
@@ -648,7 +649,7 @@ static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, colored_layou
         }
         cairo_move_to(c, settings.h_padding, dim.y);
 
-        if (cl->icon)  {
+        if (cl->icon) {
                 unsigned int image_width = cairo_image_surface_get_width(cl->icon),
                              image_height = cairo_image_surface_get_height(cl->icon),
                              image_x,
@@ -660,9 +661,9 @@ static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, colored_layou
                         image_x = bg_width - settings.h_padding - image_width + settings.frame_width;
                 }
 
-                cairo_set_source_surface (c, cl->icon, image_x, image_y);
-                cairo_rectangle (c, image_x, image_y, image_width, image_height);
-                cairo_fill (c);
+                cairo_set_source_surface(c, cl->icon, image_x, image_y);
+                cairo_rectangle(c, image_x, image_y, image_width, image_height);
+                cairo_fill(c);
         }
 
         return dim;
@@ -703,7 +704,6 @@ void x_win_draw(void)
         cairo_destroy(c);
         cairo_surface_destroy(image_surface);
         r_free_layouts(layouts);
-
 }
 
 static void x_win_move(int width, int height)
@@ -732,7 +732,6 @@ static void x_win_move(int width, int height)
                 XResizeWindow(xctx.dpy, xctx.win, width, height);
         }
 
-
         xctx.window_dim.x = x;
         xctx.window_dim.y = y;
         xctx.window_dim.h = height;
@@ -743,8 +742,14 @@ static void setopacity(Window win, unsigned long opacity)
 {
         Atom _NET_WM_WINDOW_OPACITY =
             XInternAtom(xctx.dpy, "_NET_WM_WINDOW_OPACITY", false);
-        XChangeProperty(xctx.dpy, win, _NET_WM_WINDOW_OPACITY, XA_CARDINAL, 32,
-                        PropModeReplace, (unsigned char *)&opacity, 1L);
+        XChangeProperty(xctx.dpy,
+                        win,
+                        _NET_WM_WINDOW_OPACITY,
+                        XA_CARDINAL,
+                        32,
+                        PropModeReplace,
+                        (unsigned char *)&opacity,
+                        1L);
 }
 
 /*
@@ -766,30 +771,30 @@ static KeySym x_numlock_mod()
                                  * could count as 'using implementation details',
                                  * so use this large switch. */
                                 switch (mod) {
-                                        case ShiftMapIndex:
-                                                sym = ShiftMask;
-                                                goto end;
-                                        case LockMapIndex:
-                                                sym = LockMask;
-                                                goto end;
-                                        case ControlMapIndex:
-                                                sym = ControlMask;
-                                                goto end;
-                                        case Mod1MapIndex:
-                                                sym = Mod1Mask;
-                                                goto end;
-                                        case Mod2MapIndex:
-                                                sym = Mod2Mask;
-                                                goto end;
-                                        case Mod3MapIndex:
-                                                sym = Mod3Mask;
-                                                goto end;
-                                        case Mod4MapIndex:
-                                                sym = Mod4Mask;
-                                                goto end;
-                                        case Mod5MapIndex:
-                                                sym = Mod5Mask;
-                                                goto end;
+                                case ShiftMapIndex:
+                                        sym = ShiftMask;
+                                        goto end;
+                                case LockMapIndex:
+                                        sym = LockMask;
+                                        goto end;
+                                case ControlMapIndex:
+                                        sym = ControlMask;
+                                        goto end;
+                                case Mod1MapIndex:
+                                        sym = Mod1Mask;
+                                        goto end;
+                                case Mod2MapIndex:
+                                        sym = Mod2Mask;
+                                        goto end;
+                                case Mod3MapIndex:
+                                        sym = Mod3Mask;
+                                        goto end;
+                                case Mod4MapIndex:
+                                        sym = Mod4Mask;
+                                        goto end;
+                                case Mod5MapIndex:
+                                        sym = Mod5Mask;
+                                        goto end;
                                 }
                         }
                 }
@@ -825,8 +830,7 @@ gboolean x_mainloop_fd_check(GSource *source)
 /*
  * Main Dispatcher for XEvents
  */
-gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback,
-                                gpointer user_data)
+gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer user_data)
 {
         XEvent ev;
         unsigned int state;
@@ -1031,7 +1035,6 @@ void x_setup(void)
         x_win_setup();
         x_cairo_setup();
         x_shortcut_grab(&settings.history_ks);
-
 }
 
 static void x_set_wm(Window win)
@@ -1045,9 +1048,14 @@ static void x_set_wm(Window win)
                 XInternAtom(xctx.dpy, "_NET_WM_NAME", false);
 
         XStoreName(xctx.dpy, win, title);
-        XChangeProperty(xctx.dpy, win, _net_wm_title,
-                XInternAtom(xctx.dpy, "UTF8_STRING", false), 8,
-                PropModeReplace, (unsigned char *) title, strlen(title));
+        XChangeProperty(xctx.dpy,
+                        win,
+                        _net_wm_title,
+                        XInternAtom(xctx.dpy, "UTF8_STRING", false),
+                        8,
+                        PropModeReplace,
+                        (unsigned char *)title,
+                        strlen(title));
 
         /* set window class */
         char *class = settings.class != NULL ? settings.class : "Dunst";
@@ -1062,8 +1070,14 @@ static void x_set_wm(Window win)
         data[0] = XInternAtom(xctx.dpy, "_NET_WM_WINDOW_TYPE_NOTIFICATION", false);
         data[1] = XInternAtom(xctx.dpy, "_NET_WM_WINDOW_TYPE_UTILITY", false);
 
-        XChangeProperty(xctx.dpy, win, net_wm_window_type, XA_ATOM, 32,
-                PropModeReplace, (unsigned char *) data, 2L);
+        XChangeProperty(xctx.dpy,
+                        win,
+                        net_wm_window_type,
+                        XA_ATOM,
+                        32,
+                        PropModeReplace,
+                        (unsigned char *)data,
+                        2L);
 
         /* set state above */
         Atom net_wm_state =
@@ -1099,13 +1113,18 @@ static void x_win_setup(void)
             ButtonReleaseMask | FocusChangeMask| StructureNotifyMask;
 
         screen_info *scr = get_active_screen();
-        xctx.win =
-            XCreateWindow(xctx.dpy, root, scr->dim.x, scr->dim.y, scr->dim.w,
-                          1, 0, DefaultDepth(xctx.dpy,
-                                                       DefaultScreen(xctx.dpy)),
-                          CopyFromParent, DefaultVisual(xctx.dpy,
-                                                        DefaultScreen(xctx.dpy)),
-                          CWOverrideRedirect | CWBackPixmap | CWEventMask, &wa);
+        xctx.win = XCreateWindow(xctx.dpy,
+                                 root,
+                                 scr->dim.x,
+                                 scr->dim.y,
+                                 scr->dim.w,
+                                 1,
+                                 0,
+                                 DefaultDepth(xctx.dpy, DefaultScreen(xctx.dpy)),
+                                 CopyFromParent,
+                                 DefaultVisual(xctx.dpy, DefaultScreen(xctx.dpy)),
+                                 CWOverrideRedirect | CWBackPixmap | CWEventMask,
+                                 &wa);
 
         x_set_wm(xctx.win);
         settings.transparency =
@@ -1135,8 +1154,16 @@ void x_win_show(void)
         x_shortcut_grab(&settings.context_ks);
 
         x_shortcut_setup_error_handler();
-        XGrabButton(xctx.dpy, AnyButton, AnyModifier, xctx.win, false,
-                    BUTTONMASK, GrabModeAsync, GrabModeSync, None, None);
+        XGrabButton(xctx.dpy,
+                    AnyButton,
+                    AnyModifier,
+                    xctx.win,
+                    false,
+                    BUTTONMASK,
+                    GrabModeAsync,
+                    GrabModeSync,
+                    None,
+                    None);
         if (x_shortcut_tear_down_error_handler()) {
                 fprintf(stderr, "Unable to grab mouse button(s)\n");
         }
@@ -1181,7 +1208,6 @@ KeySym x_shortcut_string_to_mask(const char *str)
                 fprintf(stderr, "Warning: Unknown Modifier: %s\n", str);
                 return 0;
         }
-
 }
 
 /*
@@ -1237,10 +1263,20 @@ int x_shortcut_grab(keyboard_shortcut *ks)
         x_shortcut_setup_error_handler();
 
         if (ks->is_valid) {
-                XGrabKey(xctx.dpy, ks->code, ks->mask, root,
-                         true, GrabModeAsync, GrabModeAsync);
-                XGrabKey(xctx.dpy, ks->code, ks->mask | x_numlock_mod() , root,
-                         true, GrabModeAsync, GrabModeAsync);
+                XGrabKey(xctx.dpy,
+                         ks->code,
+                         ks->mask,
+                         root,
+                         true,
+                         GrabModeAsync,
+                         GrabModeAsync);
+                XGrabKey(xctx.dpy,
+                         ks->code,
+                         ks->mask | x_numlock_mod(),
+                         root,
+                         true,
+                         GrabModeAsync,
+                         GrabModeAsync);
         }
 
         if (x_shortcut_tear_down_error_handler()) {

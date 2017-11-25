@@ -4,9 +4,9 @@
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/Xresource.h>
-#include <X11/extensions/randr.h>
-#include <X11/extensions/Xrandr.h>
 #include <X11/extensions/Xinerama.h>
+#include <X11/extensions/Xrandr.h>
+#include <X11/extensions/randr.h>
 #include <assert.h>
 #include <glib.h>
 #include <locale.h>
@@ -64,7 +64,8 @@ static double get_xft_dpi_value()
         return dpi;
 }
 
-void init_screens() {
+void init_screens()
+{
         if (!settings.force_xinerama) {
                 randr_init();
                 randr_update();
@@ -164,7 +165,6 @@ void xinerama_update()
         XFree(info);
 }
 
-
 void screen_update_fallback()
 {
         alloc_screen_ar(1);
@@ -177,7 +177,6 @@ void screen_update_fallback()
 
         screens[0].dim.w = DisplayWidth(xctx.dpy, screen);
         screens[0].dim.h = DisplayHeight(xctx.dpy, screen);
-
 }
 
 /*
@@ -210,9 +209,15 @@ screen_info *get_active_screen()
                         unsigned int dummy_ui;
                         Window dummy_win;
 
-                        XQueryPointer(xctx.dpy, root, &dummy_win,
-                                        &dummy_win, &x, &y, &dummy,
-                                        &dummy, &dummy_ui);
+                        XQueryPointer(xctx.dpy,
+                                      root,
+                                      &dummy_win,
+                                      &dummy_win,
+                                      &x,
+                                      &y,
+                                      &dummy,
+                                      &dummy,
+                                      &dummy_ui);
                 }
 
                 if (settings.f_mode == FOLLOW_KEYBOARD) {
@@ -278,11 +283,20 @@ static Window get_focused_window(void)
         Atom netactivewindow =
             XInternAtom(xctx.dpy, "_NET_ACTIVE_WINDOW", false);
 
-        XGetWindowProperty(xctx.dpy, root, netactivewindow, 0L,
-                           sizeof(Window), false, XA_WINDOW,
-                           &type, &format, &nitems, &bytes_after, &prop_return);
+        XGetWindowProperty(xctx.dpy,
+                           root,
+                           netactivewindow,
+                           0L,
+                           sizeof(Window),
+                           false,
+                           XA_WINDOW,
+                           &type,
+                           &format,
+                           &nitems,
+                           &bytes_after,
+                           &prop_return);
         if (prop_return) {
-                focused = *(Window *) prop_return;
+                focused = *(Window *)prop_return;
                 XFree(prop_return);
         }
 

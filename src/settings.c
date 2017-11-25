@@ -139,7 +139,7 @@ void load_settings(char *cmdline_config_path)
                 //Use markup if set
                 //Use default if settings.markup not set yet
                 //  (=>c empty&&!allow_markup)
-                if(c){
+                if (c) {
                         settings.markup = parse_markup_mode(c);
                 } else if (!settings.markup) {
                         settings.markup = defaults.markup;

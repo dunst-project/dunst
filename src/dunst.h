@@ -4,8 +4,8 @@
 #define DUNST_DUNST_H
 
 #include <glib.h>
-#include <stdio.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 #include "notification.h"
 

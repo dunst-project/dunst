@@ -14,9 +14,9 @@
 
 #include "dbus.h"
 #include "dunst.h"
-#include "settings.h"
 #include "notification.h"
 #include "queues.h"
+#include "settings.h"
 #include "utils.h"
 
 static bool is_initialized = false;
@@ -43,8 +43,7 @@ static int regex_init(void)
 
 void regex_teardown(void)
 {
-        if (is_initialized)
-        {
+        if (is_initialized) {
                 regfree(&cregex);
                 is_initialized = false;
         }
@@ -94,7 +93,8 @@ char *extract_urls(const char *to_match)
  * Open url in browser.
  *
  */
-void open_browser(const char *in) {
+void open_browser(const char *in)
+{
         // remove prefix and test url
         char *url = extract_urls(in);
         if (!url)

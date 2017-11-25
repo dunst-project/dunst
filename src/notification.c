@@ -5,24 +5,23 @@
 #include <assert.h>
 #include <errno.h>
 #include <glib.h>
+#include <libgen.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <libgen.h>
 
 #include "dbus.h"
 #include "dunst.h"
 #include "markup.h"
 #include "menu.h"
+#include "queues.h"
 #include "rules.h"
 #include "settings.h"
-#include "queues.h"
 #include "utils.h"
 #include "x11/x.h"
-
 
 /*
  * print a human readable representation
@@ -92,7 +91,8 @@ void notification_run_script(notification *n)
                 if (pid2) {
                         exit(0);
                 } else {
-                        int ret = execlp(n->script, n->script,
+                        int ret = execlp(n->script,
+                                         n->script,
                                          appname,
                                          summary,
                                          body,
@@ -225,8 +225,11 @@ void notification_free(notification *n)
  * to point to the first char, which occurs after replacement.
  *
  */
-void notification_replace_single_field(char **haystack, char **needle,
-                const char *replacement, enum markup_mode markup_mode) {
+void notification_replace_single_field(char **haystack,
+                                       char **needle,
+                                       const char *replacement,
+                                       enum markup_mode markup_mode)
+{
 
         assert(*needle[0] == '%');
         // needle has to point into haystack (but not on the last char)
@@ -245,7 +248,8 @@ void notification_replace_single_field(char **haystack, char **needle,
         g_free(input);
 }
 
-char *notification_extract_markup_urls(char **str_ptr) {
+char *notification_extract_markup_urls(char **str_ptr)
+{
         char *start, *end, *replace_buf, *str, *urls = NULL, *url, *index_buf;
         int linkno = 1;
 
@@ -339,87 +343,87 @@ void notification_init(notification *n)
         /* replace all formatter */
         for(char *substr = strchr(n->msg, '%');
                   substr;
-                  substr = strchr(substr, '%')){
+                  substr = strchr(substr, '%')) {
 
                 char pg[16];
                 char *icon_tmp;
 
-                switch(substr[1]){
-                        case 'a':
-                                notification_replace_single_field(
-                                        &n->msg,
-                                        &substr,
-                                        n->appname,
-                                        MARKUP_NO);
-                                break;
-                        case 's':
-                                notification_replace_single_field(
-                                        &n->msg,
-                                        &substr,
-                                        n->summary,
-                                        n->markup);
-                                break;
-                        case 'b':
-                                notification_replace_single_field(
-                                        &n->msg,
-                                        &substr,
-                                        n->body,
-                                        n->markup);
-                                break;
-                        case 'I':
-                                icon_tmp = g_strdup(n->icon);
-                                notification_replace_single_field(
-                                        &n->msg,
-                                        &substr,
-                                        icon_tmp ? basename(icon_tmp) : "",
-                                        MARKUP_NO);
-                                g_free(icon_tmp);
-                                break;
-                        case 'i':
-                                notification_replace_single_field(
-                                        &n->msg,
-                                        &substr,
-                                        n->icon ? n->icon : "",
-                                        MARKUP_NO);
-                                break;
-                        case 'p':
-                                if (n->progress != -1)
-                                        sprintf(pg, "[%3d%%]", n->progress);
+                switch(substr[1]) {
+                case 'a':
+                        notification_replace_single_field(
+                                &n->msg,
+                                &substr,
+                                n->appname,
+                                MARKUP_NO);
+                        break;
+                case 's':
+                        notification_replace_single_field(
+                                &n->msg,
+                                &substr,
+                                n->summary,
+                                n->markup);
+                        break;
+                case 'b':
+                        notification_replace_single_field(
+                                &n->msg,
+                                &substr,
+                                n->body,
+                                n->markup);
+                        break;
+                case 'I':
+                        icon_tmp = g_strdup(n->icon);
+                        notification_replace_single_field(
+                                &n->msg,
+                                &substr,
+                                icon_tmp ? basename(icon_tmp) : "",
+                                MARKUP_NO);
+                        g_free(icon_tmp);
+                        break;
+                case 'i':
+                        notification_replace_single_field(
+                                &n->msg,
+                                &substr,
+                                n->icon ? n->icon : "",
+                                MARKUP_NO);
+                        break;
+                case 'p':
+                        if (n->progress != -1)
+                                sprintf(pg, "[%3d%%]", n->progress);
 
-                                notification_replace_single_field(
-                                        &n->msg,
-                                        &substr,
-                                        n->progress != -1 ? pg : "",
-                                        MARKUP_NO);
-                                break;
-                        case 'n':
-                                if (n->progress != -1)
-                                        sprintf(pg, "%d", n->progress);
+                        notification_replace_single_field(
+                                &n->msg,
+                                &substr,
+                                n->progress != -1 ? pg : "",
+                                MARKUP_NO);
+                        break;
+                case 'n':
+                        if (n->progress != -1)
+                                sprintf(pg, "%d", n->progress);
 
-                                notification_replace_single_field(
-                                        &n->msg,
-                                        &substr,
-                                        n->progress != -1 ? pg : "",
-                                        MARKUP_NO);
-                                break;
-                        case '%':
-                                notification_replace_single_field(
-                                        &n->msg,
-                                        &substr,
-                                        "%",
-                                        MARKUP_NO);
-                                break;
-                        case '\0':
-                                fprintf(stderr, "WARNING: format_string has trailing %% character."
-                                                "To escape it use %%%%.");
-                                break;
-                        default:
-                                fprintf(stderr, "WARNING: format_string %%%c"
-                                                " is unknown\n", substr[1]);
-                                // shift substr pointer forward,
-                                // as we can't interpret the format string
-                                substr++;
-                                break;
+                        notification_replace_single_field(
+                                &n->msg,
+                                &substr,
+                                n->progress != -1 ? pg : "",
+                                MARKUP_NO);
+                        break;
+                case '%':
+                        notification_replace_single_field(
+                                &n->msg,
+                                &substr,
+                                "%",
+                                MARKUP_NO);
+                        break;
+                case '\0':
+                        fprintf(stderr, "WARNING: format_string has trailing %% character."
+                                        "To escape it use %%%%.");
+                        break;
+                default:
+                        fprintf(stderr, "WARNING: format_string %%%c"
+                                        " is unknown\n", substr[1]);
+                        // shift substr pointer forward,
+                        // as we can't interpret the format string
+                        substr++;
+                        break;
                 }
         }
 
@@ -550,7 +554,8 @@ void notification_update_text_to_render(notification *n)
  * invoke it. If there are multiple and no default, open the context menu. If
  * there are no actions, proceed similarly with urls.
  */
-void notification_do_action(notification *n) {
+void notification_do_action(notification *n)
+{
         if (n->actions) {
                 if (n->actions->count == 2) {
                         action_invoked(n, n->actions->actions[0]);

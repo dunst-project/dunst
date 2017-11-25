@@ -41,7 +41,7 @@ static int cmdline_find_option(const char *key);
 section_t *new_section(const char *name)
 {
         for (int i = 0; i < section_count; i++) {
-                if(!strcmp(name, sections[i].name)) {
+                if (!strcmp(name, sections[i].name)) {
                         die("Duplicated section in dunstrc detected.\n", -1);
                 }
         }
@@ -215,7 +215,6 @@ char *clean_value(const char *value)
                 s[strlen(s) - 1] = '\0';
 
         return s;
-
 }
 
 int load_ini_file(FILE *fp)
@@ -443,13 +442,11 @@ char *option_get_path(const char *ini_section,
                 val = cmdline_get_path(cmdline_key, NULL, description);
         }
 
-
         if (val) {
                 return val;
         } else {
                 return ini_get_path(ini_section, ini_key, def);
         }
-
 }
 
 char *option_get_string(const char *ini_section,
@@ -464,13 +461,11 @@ char *option_get_string(const char *ini_section,
                 val = cmdline_get_string(cmdline_key, NULL, description);
         }
 
-
         if (val) {
                 return val;
         } else {
                 return ini_get_string(ini_section, ini_key, def);
         }
-
 }
 
 gint64 option_get_time(const char *ini_section,

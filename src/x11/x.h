@@ -10,7 +10,7 @@
 
 #include "screen.h"
 
-#define BUTTONMASK              (ButtonPressMask|ButtonReleaseMask)
+#define BUTTONMASK (ButtonPressMask|ButtonReleaseMask)
 #define FONT_HEIGHT_BORDER 2
 #define DEFFONT "Monospace-11"
 
