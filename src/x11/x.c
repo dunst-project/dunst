@@ -743,8 +743,14 @@ static void setopacity(Window win, unsigned long opacity)
 {
         Atom _NET_WM_WINDOW_OPACITY =
             XInternAtom(xctx.dpy, "_NET_WM_WINDOW_OPACITY", false);
-        XChangeProperty(xctx.dpy, win, _NET_WM_WINDOW_OPACITY, XA_CARDINAL, 32,
-                        PropModeReplace, (unsigned char *)&opacity, 1L);
+        XChangeProperty(xctx.dpy,
+                        win,
+                        _NET_WM_WINDOW_OPACITY,
+                        XA_CARDINAL,
+                        32,
+                        PropModeReplace,
+                        (unsigned char *)&opacity,
+                        1L);
 }
 
 /*
@@ -825,8 +831,7 @@ gboolean x_mainloop_fd_check(GSource *source)
 /*
  * Main Dispatcher for XEvents
  */
-gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback,
-                                gpointer user_data)
+gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer user_data)
 {
         XEvent ev;
         unsigned int state;
@@ -1045,9 +1050,14 @@ static void x_set_wm(Window win)
                 XInternAtom(xctx.dpy, "_NET_WM_NAME", false);
 
         XStoreName(xctx.dpy, win, title);
-        XChangeProperty(xctx.dpy, win, _net_wm_title,
-                XInternAtom(xctx.dpy, "UTF8_STRING", false), 8,
-                PropModeReplace, (unsigned char *) title, strlen(title));
+        XChangeProperty(xctx.dpy,
+                        win,
+                        _net_wm_title,
+                        XInternAtom(xctx.dpy, "UTF8_STRING", false),
+                        8,
+                        PropModeReplace,
+                        (unsigned char *)title,
+                        strlen(title));
 
         /* set window class */
         char *class = settings.class != NULL ? settings.class : "Dunst";
@@ -1062,8 +1072,14 @@ static void x_set_wm(Window win)
         data[0] = XInternAtom(xctx.dpy, "_NET_WM_WINDOW_TYPE_NOTIFICATION", false);
         data[1] = XInternAtom(xctx.dpy, "_NET_WM_WINDOW_TYPE_UTILITY", false);
 
-        XChangeProperty(xctx.dpy, win, net_wm_window_type, XA_ATOM, 32,
-                PropModeReplace, (unsigned char *) data, 2L);
+        XChangeProperty(xctx.dpy,
+                        win,
+                        net_wm_window_type,
+                        XA_ATOM,
+                        32,
+                        PropModeReplace,
+                        (unsigned char *)data,
+                        2L);
 
         /* set state above */
         Atom net_wm_state =
@@ -1099,13 +1115,18 @@ static void x_win_setup(void)
             ButtonReleaseMask | FocusChangeMask| StructureNotifyMask;
 
         screen_info *scr = get_active_screen();
-        xctx.win =
-            XCreateWindow(xctx.dpy, root, scr->dim.x, scr->dim.y, scr->dim.w,
-                          1, 0, DefaultDepth(xctx.dpy,
-                                                       DefaultScreen(xctx.dpy)),
-                          CopyFromParent, DefaultVisual(xctx.dpy,
-                                                        DefaultScreen(xctx.dpy)),
-                          CWOverrideRedirect | CWBackPixmap | CWEventMask, &wa);
+        xctx.win = XCreateWindow(xctx.dpy,
+                                 root,
+                                 scr->dim.x,
+                                 scr->dim.y,
+                                 scr->dim.w,
+                                 1,
+                                 0,
+                                 DefaultDepth(xctx.dpy, DefaultScreen(xctx.dpy)),
+                                 CopyFromParent,
+                                 DefaultVisual(xctx.dpy, DefaultScreen(xctx.dpy)),
+                                 CWOverrideRedirect | CWBackPixmap | CWEventMask,
+                                 &wa);
 
         x_set_wm(xctx.win);
         settings.transparency =
@@ -1135,8 +1156,16 @@ void x_win_show(void)
         x_shortcut_grab(&settings.context_ks);
 
         x_shortcut_setup_error_handler();
-        XGrabButton(xctx.dpy, AnyButton, AnyModifier, xctx.win, false,
-                    BUTTONMASK, GrabModeAsync, GrabModeSync, None, None);
+        XGrabButton(xctx.dpy,
+                    AnyButton,
+                    AnyModifier,
+                    xctx.win,
+                    false,
+                    BUTTONMASK,
+                    GrabModeAsync,
+                    GrabModeSync,
+                    None,
+                    None);
         if (x_shortcut_tear_down_error_handler()) {
                 fprintf(stderr, "Unable to grab mouse button(s)\n");
         }
@@ -1237,10 +1266,20 @@ int x_shortcut_grab(keyboard_shortcut *ks)
         x_shortcut_setup_error_handler();
 
         if (ks->is_valid) {
-                XGrabKey(xctx.dpy, ks->code, ks->mask, root,
-                         true, GrabModeAsync, GrabModeAsync);
-                XGrabKey(xctx.dpy, ks->code, ks->mask | x_numlock_mod() , root,
-                         true, GrabModeAsync, GrabModeAsync);
+                XGrabKey(xctx.dpy,
+                         ks->code,
+                         ks->mask,
+                         root,
+                         true,
+                         GrabModeAsync,
+                         GrabModeAsync);
+                XGrabKey(xctx.dpy,
+                         ks->code,
+                         ks->mask | x_numlock_mod(),
+                         root,
+                         true,
+                         GrabModeAsync,
+                         GrabModeAsync);
         }
 
         if (x_shortcut_tear_down_error_handler()) {

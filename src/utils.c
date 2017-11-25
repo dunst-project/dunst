@@ -52,8 +52,7 @@ char *string_replace(const char *needle, const char *replacement, char *haystack
         return string_replace_at(haystack, (start - haystack), strlen(needle), replacement);
 }
 
-char *string_replace_all(const char *needle, const char *replacement,
-    char *haystack)
+char *string_replace_all(const char *needle, const char *replacement, char *haystack)
 {
         char *start;
         int needle_pos;

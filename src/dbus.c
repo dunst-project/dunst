@@ -61,20 +61,21 @@ static const char *introspection_xml =
     "</node>";
 
 static void on_get_capabilities(GDBusConnection *connection,
-                              const gchar *sender,
-                              const GVariant *parameters,
-                              GDBusMethodInvocation *invocation);
-static void on_notify(GDBusConnection *connection,
-                     const gchar *sender,
-                     GVariant *parameters, GDBusMethodInvocation *invocation);
-static void on_close_notification(GDBusConnection *connection,
                                 const gchar *sender,
-                                GVariant *parameters,
+                                const GVariant *parameters,
                                 GDBusMethodInvocation *invocation);
+static void on_notify(GDBusConnection *connection,
+                      const gchar *sender,
+                      GVariant *parameters,
+                      GDBusMethodInvocation *invocation);
+static void on_close_notification(GDBusConnection *connection,
+                                  const gchar *sender,
+                                  GVariant *parameters,
+                                  GDBusMethodInvocation *invocation);
 static void on_get_server_information(GDBusConnection *connection,
-                                   const gchar *sender,
-                                   const GVariant *parameters,
-                                   GDBusMethodInvocation *invocation);
+                                      const gchar *sender,
+                                      const GVariant *parameters,
+                                      GDBusMethodInvocation *invocation);
 static RawImage *get_raw_image_from_data_hint(GVariant *icon_data);
 
 void handle_method_call(GDBusConnection *connection,
@@ -83,7 +84,8 @@ void handle_method_call(GDBusConnection *connection,
                         const gchar *interface_name,
                         const gchar *method_name,
                         GVariant *parameters,
-                        GDBusMethodInvocation *invocation, gpointer user_data)
+                        GDBusMethodInvocation *invocation,
+                        gpointer user_data)
 {
         if (g_strcmp0(method_name, "GetCapabilities") == 0) {
                 on_get_capabilities(connection, sender, parameters, invocation);
@@ -92,8 +94,7 @@ void handle_method_call(GDBusConnection *connection,
         } else if (g_strcmp0(method_name, "CloseNotification") == 0) {
                 on_close_notification(connection, sender, parameters, invocation);
         } else if (g_strcmp0(method_name, "GetServerInformation") == 0) {
-                on_get_server_information(connection, sender, parameters,
-                                       invocation);
+                on_get_server_information(connection, sender, parameters, invocation);
         } else {
                 fprintf(stderr, "WARNING: sender: %s; unknown method_name: %s\n", sender,
                        method_name);
@@ -101,9 +102,9 @@ void handle_method_call(GDBusConnection *connection,
 }
 
 static void on_get_capabilities(GDBusConnection *connection,
-                              const gchar *sender,
-                              const GVariant *parameters,
-                              GDBusMethodInvocation *invocation)
+                                const gchar *sender,
+                                const GVariant *parameters,
+                                GDBusMethodInvocation *invocation)
 {
         GVariantBuilder *builder;
         GVariant *value;
@@ -124,8 +125,9 @@ static void on_get_capabilities(GDBusConnection *connection,
 }
 
 static void on_notify(GDBusConnection *connection,
-                     const gchar *sender,
-                     GVariant *parameters, GDBusMethodInvocation *invocation)
+                      const gchar *sender,
+                      GVariant *parameters,
+                      GDBusMethodInvocation *invocation)
 {
 
         gchar *appname = NULL;
@@ -297,9 +299,9 @@ static void on_notify(GDBusConnection *connection,
 }
 
 static void on_close_notification(GDBusConnection *connection,
-                                const gchar *sender,
-                                GVariant *parameters,
-                                GDBusMethodInvocation *invocation)
+                                  const gchar *sender,
+                                  GVariant *parameters,
+                                  GDBusMethodInvocation *invocation)
 {
         guint32 id;
         g_variant_get(parameters, "(u)", &id);
@@ -310,9 +312,9 @@ static void on_close_notification(GDBusConnection *connection,
 }
 
 static void on_get_server_information(GDBusConnection *connection,
-                                   const gchar *sender,
-                                   const GVariant *parameters,
-                                   GDBusMethodInvocation *invocation)
+                                      const gchar *sender,
+                                      const GVariant *parameters,
+                                      GDBusMethodInvocation *invocation)
 {
         GVariant *value;
 
@@ -342,7 +344,9 @@ void notification_closed(notification *n, enum reason reason)
                                       n->dbus_client,
                                       "/org/freedesktop/Notifications",
                                       "org.freedesktop.Notifications",
-                                      "NotificationClosed", body, &err);
+                                      "NotificationClosed",
+                                      body,
+                                      &err);
 
         if (err) {
                 fprintf(stderr, "Unable to close notification: %s\n", err->message);
@@ -360,7 +364,9 @@ void action_invoked(notification *n, const char *identifier)
                                       n->dbus_client,
                                       "/org/freedesktop/Notifications",
                                       "org.freedesktop.Notifications",
-                                      "ActionInvoked", body, &err);
+                                      "ActionInvoked",
+                                      body,
+                                      &err);
 
         if (err) {
                 fprintf(stderr, "Unable to invoke action: %s\n", err->message);
@@ -373,7 +379,8 @@ static const GDBusInterfaceVTable interface_vtable = {
 };
 
 static void on_bus_acquired(GDBusConnection *connection,
-                            const gchar *name, gpointer user_data)
+                            const gchar *name,
+                            gpointer user_data)
 {
         guint registration_id;
 
@@ -383,7 +390,9 @@ static void on_bus_acquired(GDBusConnection *connection,
                                                             "/org/freedesktop/Notifications",
                                                             introspection_data->interfaces[0],
                                                             &interface_vtable,
-                                                            NULL, NULL, &err);
+                                                            NULL,
+                                                            NULL,
+                                                            &err);
 
         if (registration_id == 0) {
                 fprintf(stderr, "Unable to register dbus connection: %s\n", err->message);
@@ -392,13 +401,15 @@ static void on_bus_acquired(GDBusConnection *connection,
 }
 
 static void on_name_acquired(GDBusConnection *connection,
-                             const gchar *name, gpointer user_data)
+                             const gchar *name,
+                             gpointer user_data)
 {
         dbus_conn = connection;
 }
 
 static void on_name_lost(GDBusConnection *connection,
-                         const gchar *name, gpointer user_data)
+                         const gchar *name,
+                         gpointer user_data)
 {
         fprintf(stderr, "Name Lost. Is Another notification daemon running?\n");
         exit(1);
@@ -455,7 +466,10 @@ int initdbus(void)
                                   "org.freedesktop.Notifications",
                                   G_BUS_NAME_OWNER_FLAGS_NONE,
                                   on_bus_acquired,
-                                  on_name_acquired, on_name_lost, NULL, NULL);
+                                  on_name_acquired,
+                                  on_name_lost,
+                                  NULL,
+                                  NULL);
 
         return owner_id;
 }

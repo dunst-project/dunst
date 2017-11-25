@@ -92,7 +92,8 @@ void notification_run_script(notification *n)
                 if (pid2) {
                         exit(0);
                 } else {
-                        int ret = execlp(n->script, n->script,
+                        int ret = execlp(n->script,
+                                         n->script,
                                          appname,
                                          summary,
                                          body,
@@ -225,8 +226,11 @@ void notification_free(notification *n)
  * to point to the first char, which occurs after replacement.
  *
  */
-void notification_replace_single_field(char **haystack, char **needle,
-                const char *replacement, enum markup_mode markup_mode) {
+void notification_replace_single_field(char **haystack,
+                                       char **needle,
+                                       const char *replacement,
+                                       enum markup_mode markup_mode)
+{
 
         assert(*needle[0] == '%');
         // needle has to point into haystack (but not on the last char)

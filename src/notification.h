@@ -75,7 +75,10 @@ int notification_cmp_data(const void *a, const void *b, void *data);
 int notification_is_duplicate(const notification *a, const notification *b);
 void notification_run_script(notification *n);
 void notification_print(notification *n);
-void notification_replace_single_field(char **haystack, char **needle, const char *replacement, enum markup_mode markup_mode);
+void notification_replace_single_field(char **haystack,
+                                       char **needle,
+                                       const char *replacement,
+                                       enum markup_mode markup_mode);
 void notification_update_text_to_render(notification *n);
 void notification_do_action(notification *n);
 
