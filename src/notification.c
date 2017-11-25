@@ -5,21 +5,21 @@
 #include <assert.h>
 #include <errno.h>
 #include <glib.h>
+#include <libgen.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <libgen.h>
 
 #include "dbus.h"
 #include "dunst.h"
 #include "markup.h"
 #include "menu.h"
+#include "queues.h"
 #include "rules.h"
 #include "settings.h"
-#include "queues.h"
 #include "utils.h"
 #include "x11/x.h"
 

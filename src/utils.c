@@ -2,8 +2,8 @@
 #include "utils.h"
 
 #include <assert.h>
-#include <glib.h>
 #include <errno.h>
+#include <glib.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

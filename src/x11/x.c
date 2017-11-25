@@ -7,18 +7,18 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <assert.h>
-#include <cairo.h>
 #include <cairo-xlib.h>
-#include <gdk/gdk.h>
+#include <cairo.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
+#include <gdk/gdk.h>
 #include <glib-object.h>
 #include <locale.h>
 #include <math.h>
-#include <pango/pangocairo.h>
 #include <pango/pango-attributes.h>
 #include <pango/pango-font.h>
 #include <pango/pango-layout.h>
 #include <pango/pango-types.h>
+#include <pango/pangocairo.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,8 +29,8 @@
 #include "src/dunst.h"
 #include "src/markup.h"
 #include "src/notification.h"
-#include "src/settings.h"
 #include "src/queues.h"
+#include "src/settings.h"
 #include "src/utils.h"
 
 #include "screen.h"

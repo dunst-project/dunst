@@ -14,9 +14,9 @@
 
 #include "dbus.h"
 #include "dunst.h"
-#include "settings.h"
 #include "notification.h"
 #include "queues.h"
+#include "settings.h"
 #include "utils.h"
 
 static bool is_initialized = false;

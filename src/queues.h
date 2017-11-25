@@ -3,8 +3,8 @@
 #ifndef DUNST_QUEUE_H
 #define DUNST_QUEUE_H
 
-#include "notification.h"
 #include "dbus.h"
+#include "notification.h"
 
 /*
  * Initialise neccessary queues

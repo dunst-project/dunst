@@ -18,8 +18,8 @@
 #include "option_parser.h"
 #include "queues.h"
 #include "settings.h"
-#include "x11/x.h"
 #include "x11/screen.h"
+#include "x11/x.h"
 
 #ifndef VERSION
 #define VERSION "version info needed"
