@@ -78,7 +78,7 @@ gboolean run(void *data)
                 gint64 timeout_at = now + sleep;
 
                 if (sleep >= 0) {
-                        if (timeout_cnt == 0 || timeout_at < next_timeout) {
+                        if (timeout_cnt == 0 || next_timeout < now || timeout_at < next_timeout) {
                                 g_timeout_add(sleep/1000, run, mainloop);
                                 next_timeout = timeout_at;
                                 timeout_cnt++;
