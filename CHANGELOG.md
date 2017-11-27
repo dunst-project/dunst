@@ -1,20 +1,33 @@
 # Dunst changelog
 
-## Unreleased
+## 1.3.0 - 2017-12-26
 
 ### Added
-- `ellipsize` option to control how long lines should be ellipsized when `word_wrap` is set to `false`
+- `ellipsize` option to control how long lines should be ellipsized when `word_wrap` is set to `false` (#374)
+- A beginning tilde of a path is now expanded to the home of the current user (#351)
+- The image-path hint is now respected, as GApplications send their icon only via this link (#447)
+- If dunst can't acquire the DBus name, dunst prints the PID of the process holding the name (#458 #460)
 
 ### Fixed
-- `new_icon` rule being ignored on notifications that had a raw icon
-- Do not replace format strings, which are in notification content
-- DBus related memory leaks closed:
+- `new_icon` rule being ignored on notifications that had a raw icon (#423)
+- Do not replace format strings, which are in notification content (#322 #365)
+- DBus related memory leaks closed: (#397)
   On the DBus connection, all hints never got freed. For raw icons, dunst saved them three times.
+- Dunst crashed on X11 servers with RandR support less than 1.5. (#413 #364)
+- Dunst silently read the default config file, if -conf did not specify a valid file (#452)
 
 ## Changed
-- transient hints are now handled
+- transient hints are now handled (#343 #310)
   An additional rule option (`match_transient` and `set_transient`) is added
   to optionally reset the transient setting
+- Timeouts are now calculated in microseconds with GLib's `g_get_monotonic_time()` (#379 #291)
+- `icon_folders` is renamed to `icon_path` (#170)
+- `config.def.h` and `config.h` got merged (#371)
+- The dependency on GTK3+ had been removed. Instead of GTK3+, dunst requires now gdk-pixbuf,
+  which had been a transient dependency before. (#334 #376)
+- The `_GNU_SOURCE` macros had been removed to make dunst portable to nonGNU systems (#403)
+- Replacing notifications does not require a full redraw and replaces flickerless (#415)
+- Internal refactorings of the notification queue handling. (#411)
 
 ## 1.2.0 - 2017-07-12
 

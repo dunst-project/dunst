@@ -1,4 +1,53 @@
 ===================================================================================
+Release Notes For v1.3.0
+===================================================================================
+
+Version 1.3 is supposed to be fully backwards compatible with 1.2.
+
+For users:
+
+* Behavioral changes
+
+  Dunst respects the timeout in milliseconds now. Notifications with a one second
+  timeout are not shown up to three seconds.
+
+  Transient notifications are now timing out properly also when in idle and are not
+  saved in history.
+
+  A prefixed tilde to path option (browser, dmenu, script) is interpreted as the
+  home folder of the user.
+
+* Configuration Options
+
+  `icon_folders` got deprecated and renamed to `icon_path`. `icon_folders` is still
+  supported, but will get removed in future.
+
+  The option `ellpsize` got introduced. It controls where to ellipsize the text of
+  an overlong notification if `word_wrap = no`.
+
+  For transient notifications, there are the rules `set_transient` and
+  `match_transient` to configure the behavior of the notification.
+
+For maintainers:
+
+* Dependencies
+
+  The GTK3+ dependency got removed. Instead of this, gdk-pixbuf is required
+  explicitly. This had been a transient dependency before.
+
+  In the Makefile, libxrandr is now specified to require its version minimum to 1.5.
+  The dependency on libxrandr >= 1.5 is not new. Dunst 1.2.0 required it too, but
+  there was no active check for it.
+
+* Portability
+
+  GNU-specific functions have been disabled to make dunst portable to nongnu libc's.
+
+
+For more details, consider [CHANGELOG.md].
+
+
+===================================================================================
 Release Notes For v1.2.0
 ===================================================================================
 
