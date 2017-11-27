@@ -53,12 +53,7 @@ gboolean run(void *data)
         queues_check_timeouts(x_is_idle());
         queues_update();
 
-        static int timeout_cnt = 0;
         static gint64 next_timeout = 0;
-
-        if (data && timeout_cnt > 0) {
-                timeout_cnt--;
-        }
 
         if (!xctx.visible && queues_length_displayed() > 0) {
                 x_win_show();
@@ -78,10 +73,9 @@ gboolean run(void *data)
                 gint64 timeout_at = now + sleep;
 
                 if (sleep >= 0) {
-                        if (timeout_cnt == 0 || next_timeout < now || timeout_at < next_timeout) {
-                                g_timeout_add(sleep/1000, run, mainloop);
+                        if (next_timeout < now || timeout_at < next_timeout) {
+                                g_timeout_add(sleep/1000, run, NULL);
                                 next_timeout = timeout_at;
-                                timeout_cnt++;
                         }
                 }
         }
