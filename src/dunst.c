@@ -53,14 +53,9 @@ gboolean run(void *data)
         queues_check_timeouts(x_is_idle());
         queues_update();
 
-        static int timeout_cnt = 0;
         static gint64 next_timeout = 0;
 
-        if (data && timeout_cnt > 0) {
-                timeout_cnt--;
-        }
-
-        if (queues_length_displayed() > 0 && !xctx.visible) {
+        if (!xctx.visible && queues_length_displayed() > 0) {
                 x_win_show();
         }
 
@@ -78,16 +73,19 @@ gboolean run(void *data)
                 gint64 timeout_at = now + sleep;
 
                 if (sleep >= 0) {
-                        if (timeout_cnt == 0 || timeout_at < next_timeout) {
-                                g_timeout_add(sleep/1000, run, mainloop);
+                        if (next_timeout < now || timeout_at < next_timeout) {
+                                g_timeout_add(sleep/1000, run, NULL);
                                 next_timeout = timeout_at;
-                                timeout_cnt++;
                         }
                 }
         }
 
-        /* always return false to delete timers */
-        return false;
+        /* If the execution got triggered by g_timeout_add,
+         * we have to remove the timeout (which is actually a
+         * recurring interval), as we have set a new one
+         * by ourselves.
+         */
+        return G_SOURCE_REMOVE;
 }
 
 gboolean pause_signal(gpointer data)

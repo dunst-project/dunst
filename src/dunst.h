@@ -19,18 +19,15 @@
 extern GSList *rules;
 extern const char *color_strings[3][3];
 
-/* return id of notification */
 gboolean run(void *data);
 void wake_up(void);
 
 int dunst_main(int argc, char *argv[]);
 
-void check_timeouts(void);
 void usage(int exit_status);
 void print_version(void);
 char *extract_urls(const char *str);
 void context_menu(void);
-void wake_up(void);
 void pause_signal_handler(int sig);
 
 #endif

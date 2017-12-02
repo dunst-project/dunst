@@ -701,6 +701,8 @@ void x_win_draw(void)
         cairo_paint(cairo_ctx.context);
         cairo_show_page(cairo_ctx.context);
 
+        XFlush(xctx.dpy);
+
         cairo_destroy(c);
         cairo_surface_destroy(image_surface);
         r_free_layouts(layouts);
