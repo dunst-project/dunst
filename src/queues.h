@@ -34,13 +34,13 @@ unsigned int queues_length_history();
  * Insert a fully initialized notification into queues
  * Respects stack_duplicates, and notification replacement
  *
- * If replaces_id != 0, n replaces notification with id replaces_id
- * If replaces_id == 0, n gets occupies a new position
+ * If n->id != 0, n replaces notification with id n->id
+ * If n->id == 0, n gets a new id assigned
  *
  * Returns the assigned notification id
  * If returned id == 0, the message was dismissed
  */
-int queues_notification_insert(notification *n, int replaces_id);
+int queues_notification_insert(notification *n);
 
 /*
  * Replace the notification which matches the id field of

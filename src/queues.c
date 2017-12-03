@@ -51,7 +51,7 @@ unsigned int queues_length_history()
         return history->length;
 }
 
-int queues_notification_insert(notification *n, int replaces_id)
+int queues_notification_insert(notification *n)
 {
 
         /* do not display the message, if the message is empty */
@@ -72,12 +72,11 @@ int queues_notification_insert(notification *n, int replaces_id)
                 return 0;
         }
 
-        if (replaces_id == 0) {
+        if (n->id == 0) {
                 n->id = ++next_notification_id;
                 if (!settings.stack_duplicates || !queues_stack_duplicate(n))
                         g_queue_insert_sorted(waiting, n, notification_cmp_data, NULL);
         } else {
-                n->id = replaces_id;
                 if (!queues_notification_replace_id(n))
                         g_queue_insert_sorted(waiting, n, notification_cmp_data, NULL);
         }

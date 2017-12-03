@@ -124,10 +124,7 @@ static void on_get_capabilities(GDBusConnection *connection,
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
 }
 
-static void on_notify(GDBusConnection *connection,
-                      const gchar *sender,
-                      GVariant *parameters,
-                      GDBusMethodInvocation *invocation)
+static notification *dbus_message_to_notification(const gchar *sender, GVariant *parameters)
 {
 
         gchar *appname = NULL;
@@ -265,6 +262,7 @@ static void on_notify(GDBusConnection *connection,
 
         notification *n = notification_create();
 
+        n->id = replaces_id;
         n->appname = appname;
         n->summary = summary;
         n->body = body;
@@ -287,7 +285,16 @@ static void on_notify(GDBusConnection *connection,
         n->colors[ColBG] = bgcolor;
 
         notification_init(n);
-        int id = queues_notification_insert(n, replaces_id);
+        return n;
+}
+
+static void on_notify(GDBusConnection *connection,
+                      const gchar *sender,
+                      GVariant *parameters,
+                      GDBusMethodInvocation *invocation)
+{
+        notification *n = dbus_message_to_notification(sender, parameters);
+        int id = queues_notification_insert(n);
 
         GVariant *reply = g_variant_new("(u)", id);
         g_dbus_method_invocation_return_value(invocation, reply);
