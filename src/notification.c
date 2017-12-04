@@ -49,10 +49,12 @@ void notification_print(notification *n)
         printf("\tframe: %s\n", n->colors[ColFrame]);
         printf("\tid: %d\n", n->id);
         if (n->urls) {
+                char *urls = string_replace_all("\n", "\t\t\n", g_strdup(n->urls));
                 printf("\turls:\n");
                 printf("\t{\n");
-                printf("\t\t%s\n", n->urls);
+                printf("\t\t%s\n", urls);
                 printf("\t}\n");
+                g_free(urls);
         }
 
         if (n->actions) {
