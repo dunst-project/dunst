@@ -205,7 +205,9 @@ int queues_notification_close_id(int id, enum reason reason)
         }
 
         if (target) {
-                signal_notification_closed(target, reason);
+                //Don't notify clients if notification was pulled from history
+                if (!target->redisplayed)
+                        signal_notification_closed(target, reason);
                 queues_history_push(target);
         }
 
