@@ -79,6 +79,13 @@ void load_settings(char *cmdline_config_path)
 
         if (cmdline_config_path != NULL) {
                 config_file = fopen(cmdline_config_path, "r");
+
+                if(!config_file) {
+                        char *msg = g_strdup_printf(
+                                        "Cannot find config file: '%s'\n",
+                                        cmdline_config_path);
+                        die(msg, 1);
+                }
         }
         if (config_file == NULL) {
                 config_file = xdgConfigOpen("dunst/dunstrc", "r", &xdg);
