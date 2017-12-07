@@ -13,6 +13,7 @@
 #include <stdlib.h>
 
 #include "dbus.h"
+#include "log.h"
 #include "menu.h"
 #include "notification.h"
 #include "option_parser.h"
@@ -127,6 +128,8 @@ int dunst_main(int argc, char *argv[])
         queues_init();
 
         cmdline_load(argc, argv);
+
+        dunst_log_init();
 
         if (cmdline_get_bool("-v/-version", false, "Print version")
             || cmdline_get_bool("--version", false, "Print version")) {
