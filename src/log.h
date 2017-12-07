@@ -14,7 +14,7 @@
 #define LOG_I g_info
 #define LOG_D g_debug
 
-void dunst_log_init(void);
+void dunst_log_init(bool testing);
 
 #endif
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

@@ -19,13 +19,18 @@ static const char *log_level_to_string(GLogLevelFlags level)
 
 /*
  * Log handling function for GLib's logging wrapper
+ *
+ * If the gpointer is valid, do not do anything
  */
 static void dunst_log_handler(
                 const gchar    *log_domain,
                 GLogLevelFlags  message_level,
                 const gchar    *message,
-                gpointer        user_data)
+                gpointer        testing)
 {
+        if (testing)
+                return;
+
         const char *log_level_str =
                 log_level_to_string(message_level & G_LOG_LEVEL_MASK);
 
@@ -38,10 +43,13 @@ static void dunst_log_handler(
 
 /*
  * Initialise log handling. Can be called any time.
+ *
+ * If bool is %TRUE, it suppresses all logging output.
+ * Primarily used for testing
  */
-void dunst_log_init(void)
+void dunst_log_init(bool testing)
 {
-        g_log_set_default_handler(dunst_log_handler, NULL);
+        g_log_set_default_handler(dunst_log_handler, (void*)testing);
 }
 
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
