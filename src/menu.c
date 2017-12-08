@@ -14,6 +14,7 @@
 
 #include "dbus.h"
 #include "dunst.h"
+#include "log.h"
 #include "notification.h"
 #include "queues.h"
 #include "settings.h"
@@ -134,7 +135,7 @@ void invoke_action(const char *action)
 
         char *appname_begin = strchr(action, '[');
         if (!appname_begin) {
-                printf("invalid action: %s\n", action);
+                LOG_W("Invalid action: '%s'", action);
                 return;
         }
         appname_begin++;
@@ -188,7 +189,7 @@ void dispatch_menu_result(const char *input)
 void context_menu(void)
 {
         if (settings.dmenu_cmd == NULL) {
-                fprintf(stderr, "dmenu command not set properly. Cowardly refusing to open the context menu.\n");
+                LOG_C("Unable to open dmenu: No dmenu command set.");
                 return;
         }
         char *dmenu_input = NULL;

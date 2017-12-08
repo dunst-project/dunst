@@ -136,13 +136,13 @@ gint64 string_to_time(const char *string)
         gint64 val = strtoll(string, &endptr, 10);
 
         if (errno != 0) {
-                fprintf(stderr, "ERROR: Time: '%s': %s.\n", string, strerror(errno));
+                LOG_W("Time: '%s': %s.", string, strerror(errno));
                 return 0;
         } else if (string == endptr) {
-                fprintf(stderr, "ERROR: Time: No digits found.\n");
+                LOG_W("Time: '%s': No digits found.", string);
                 return 0;
         } else if (errno != 0 && val == 0) {
-                fprintf(stderr, "ERROR: Time: '%s' unknown error.\n", string);
+                LOG_W("Time: '%s': Unknown error.", string);
                 return 0;
         } else if (errno == 0 && !*endptr) {
                 return val * G_USEC_PER_SEC;

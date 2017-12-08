@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "dunst.h"
 #include "log.h"
 #include "utils.h"
 
@@ -239,10 +240,7 @@ int load_ini_file(FILE *fp)
                 if (*start == '[') {
                         char *end = strchr(start + 1, ']');
                         if (!end) {
-                                fprintf(stderr,
-                                     "Warning: invalid config file at line %d\n",
-                                     line_num);
-                                fprintf(stderr, "Missing ']'\n");
+                                LOG_W("Invalid config file at line %d: Missing ']'.", line_num);
                                 continue;
                         }
 
@@ -256,10 +254,7 @@ int load_ini_file(FILE *fp)
 
                 char *equal = strchr(start + 1, '=');
                 if (!equal) {
-                        fprintf(stderr,
-                               "Warning: invalid config file at line %d\n",
-                               line_num);
-                        fprintf(stderr, "Missing '='\n");
+                        LOG_W("Invalid config file at line %d: Missing '='.", line_num);
                         continue;
                 }
 
@@ -271,10 +266,7 @@ int load_ini_file(FILE *fp)
                 if (quote) {
                         char *closing_quote = strchr(quote + 1, '"');
                         if (!closing_quote) {
-                                fprintf(stderr,
-                                     "Warning: invalid config file at line %d\n",
-                                     line_num);
-                                fprintf(stderr, "Missing '\"'\n");
+                                LOG_W("Invalid config file at line %d: Missing '\"'.", line_num);
                                 continue;
                         }
                 } else {
@@ -285,10 +277,7 @@ int load_ini_file(FILE *fp)
                 value = g_strstrip(value);
 
                 if (!current_section) {
-                        fprintf(stderr,
-                               "Warning: invalid config file at line %d\n",
-                               line_num);
-                        fprintf(stderr, "Key value pair without a section\n");
+                        LOG_W("Invalid config file at line %d: Key value pair without a section.", line_num);
                         continue;
                 }
 
@@ -349,8 +338,7 @@ static const char *cmdline_get_value(const char *key)
 
         if (idx + 1 >= cmdline_argc) {
                 /* the argument is missing */
-                fprintf(stderr, "Warning: %s, missing argument. Ignoring\n",
-                        key);
+                LOG_W("%s: Missing argument. Ignoring.", key);
                 return NULL;
         }
         return cmdline_argv[idx + 1];

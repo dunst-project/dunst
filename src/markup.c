@@ -7,6 +7,7 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "log.h"
 #include "settings.h"
 #include "utils.h"
 
@@ -68,17 +69,15 @@ void markup_strip_a(char **str, char **urls)
 
                 // the tag is broken, ignore it
                 if (!tag1_end) {
-                        fprintf(stderr,
-                                "WARNING: Given link is broken: '%s'\n",
-                                tag1);
+                        LOG_W("Given link is broken: '%s'",
+                              tag1);
                         string_replace_at(*str, tag1-*str, strlen(tag1), "");
                         break;
                 }
                 if (tag2 && tag2 < tag1_end) {
                         int repl_len =  (tag2 - tag1) + strlen("</a>");
-                        fprintf(stderr,
-                                "WARNING: Given link is broken: '%.*s.'\n",
-                                repl_len, tag1);
+                        LOG_W("Given link is broken: '%.*s.'",
+                              repl_len, tag1);
                         string_replace_at(*str, tag1-*str, repl_len, "");
                         break;
                 }
@@ -147,7 +146,7 @@ void markup_strip_img(char **str, char **urls)
 
                 // the tag is broken, ignore it
                 if (!end) {
-                        fprintf(stderr, "WARNING: Given image is broken: '%s'\n", start);
+                        LOG_W("Given image is broken: '%s'", start);
                         string_replace_at(*str, start-*str, strlen(start), "");
                         break;
                 }
@@ -188,9 +187,8 @@ void markup_strip_img(char **str, char **urls)
                         text_src = g_strndup(src_s, src_e-src_s);
 
                 } else {
-                        fprintf(stderr,
-                                "WARNING: Given image argument is broken: '%.*s'\n",
-                                (int)(end-start), start);
+                         LOG_W("Given image argument is broken: '%.*s'",
+                               (int)(end-start), start);
                 }
 
                 // replacement text for alt
