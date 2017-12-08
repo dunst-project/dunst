@@ -331,8 +331,7 @@ static int FollowXErrorHandler(Display *display, XErrorEvent *e)
         dunst_follow_errored = true;
         char err_buf[BUFSIZ];
         XGetErrorText(display, e->error_code, err_buf, BUFSIZ);
-        fputs(err_buf, stderr);
-        fputs("\n", stderr);
+        LOG_W("%s", err_buf);
 
         return 0;
 }

@@ -34,7 +34,7 @@ static int regex_init(void)
             "(\\([-[:alnum:]_\\@;/?:&=%$.+!*\x27,~#]*\\)|[-[:alnum:]_\\@;/?:&=%$+*~])+";
         int ret = regcomp(&cregex, regex, REG_EXTENDED | REG_ICASE);
         if (ret != 0) {
-                fputs("failed to compile regex", stderr);
+                LOG_W("Failed to compile regex.");
                 return 0;
         } else {
                 is_initialized = true;

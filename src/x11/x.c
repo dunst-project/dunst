@@ -832,7 +832,7 @@ gboolean x_mainloop_fd_prepare(GSource *source, gint *timeout)
         if (timeout)
                 *timeout = -1;
         else
-                g_print("BUG: x_mainloop_fd_prepare: timeout == NULL\n");
+                LOG_E("x_mainloop_fd_prepare: timeout == NULL");
         return false;
 }
 
@@ -992,7 +992,7 @@ void x_setup(void)
 
         /* initialize xctx.dc, font, keyboard, colors */
         if (!setlocale(LC_CTYPE, "") || !XSupportsLocale())
-                fputs("no locale support\n", stderr);
+                LOG_W("No locale support");
         if (!(xctx.dpy = XOpenDisplay(NULL))) {
                 DIE("Cannot open X11 display.");
         }
@@ -1244,11 +1244,11 @@ static int GrabXErrorHandler(Display *display, XErrorEvent *e)
         dunst_grab_errored = true;
         char err_buf[BUFSIZ];
         XGetErrorText(display, e->error_code, err_buf, BUFSIZ);
-        fputs(err_buf, stderr);
-        fputs("\n", stderr);
 
         if (e->error_code != BadAccess) {
-                exit(EXIT_FAILURE);
+                DIE("%s", err_buf);
+        } else {
+                LOG_W("%s", err_buf);
         }
 
         return 0;

@@ -26,10 +26,6 @@
 #define VERSION "version info needed"
 #endif
 
-#define MSG 1
-#define INFO 2
-#define DEBUG 3
-
 typedef struct _x11_source {
         GSource source;
         Display *dpy;
