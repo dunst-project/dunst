@@ -26,6 +26,7 @@
 
 #include "src/dbus.h"
 #include "src/dunst.h"
+#include "src/log.h"
 #include "src/markup.h"
 #include "src/notification.h"
 #include "src/queues.h"
@@ -996,7 +997,7 @@ void x_setup(void)
         if (!setlocale(LC_CTYPE, "") || !XSupportsLocale())
                 fputs("no locale support\n", stderr);
         if (!(xctx.dpy = XOpenDisplay(NULL))) {
-                die("cannot open display\n", EXIT_FAILURE);
+                DIE("Cannot open X11 display.");
         }
 
         x_shortcut_init(&settings.close_ks);

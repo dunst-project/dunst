@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "log.h"
 #include "utils.h"
 
 typedef struct _entry_t {
@@ -42,7 +43,7 @@ section_t *new_section(const char *name)
 {
         for (int i = 0; i < section_count; i++) {
                 if (!strcmp(name, sections[i].name)) {
-                        die("Duplicated section in dunstrc detected.\n", -1);
+                        DIE("Duplicated section in dunstrc detected.");
                 }
         }
 

@@ -14,6 +14,8 @@
 #define LOG_I g_info
 #define LOG_D g_debug
 
+#define DIE(...) do { LOG_C(__VA_ARGS__); exit(EXIT_FAILURE); } while (0)
+
 void dunst_log_init(bool testing);
 
 #endif

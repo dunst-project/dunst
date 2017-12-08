@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "log.h"
+
 char *string_replace_char(char needle, char replacement, char *haystack)
 {
         char *current = haystack;
@@ -162,12 +164,6 @@ gint64 string_to_time(const char *string)
                 return val * G_USEC_PER_SEC * 60 * 60 * 24;
         else
                 return 0;
-}
-
-void die(char *text, int exit_value)
-{
-        fputs(text, stderr);
-        exit(exit_value);
 }
 
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

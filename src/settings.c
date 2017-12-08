@@ -13,6 +13,7 @@
 #include "rules.h" // put before config.h to fix missing include
 #include "config.h"
 #include "dunst.h"
+#include "log.h"
 #include "notification.h"
 #include "option_parser.h"
 #include "utils.h"
@@ -85,10 +86,7 @@ void load_settings(char *cmdline_config_path)
                 }
 
                 if(!config_file) {
-                        char *msg = g_strdup_printf(
-                                        "Cannot find config file: '%s'\n",
-                                        cmdline_config_path);
-                        die(msg, 1);
+                        DIE("Cannot find config file: '%s'", cmdline_config_path);
                 }
         }
         if (config_file == NULL) {
