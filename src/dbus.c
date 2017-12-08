@@ -418,7 +418,11 @@ static void on_name_lost(GDBusConnection *connection,
                          const gchar *name,
                          gpointer user_data)
 {
-        fprintf(stderr, "Name Lost. Is Another notification daemon running?\n");
+        if (connection)
+                fprintf(stderr, "Cannot acquire 'org.freedesktop.Notifications'."
+                                "Is Another notification daemon running?\n");
+        else
+                fprintf(stderr, "Cannot connect to DBus.\n");
         exit(1);
 }
 
