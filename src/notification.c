@@ -108,7 +108,7 @@ void notification_run_script(notification *n)
                                          urgency,
                                          (char *)NULL);
                         if (ret != 0) {
-                                PERR("Unable to run script", errno);
+                                LOG_W("Unable to run script: %s", strerror(errno));
                                 exit(EXIT_FAILURE);
                         }
                 }
