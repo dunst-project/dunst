@@ -558,12 +558,12 @@ void notification_do_action(notification *n)
 {
         if (n->actions) {
                 if (n->actions->count == 2) {
-                        action_invoked(n, n->actions->actions[0]);
+                        signal_action_invoked(n, n->actions->actions[0]);
                         return;
                 }
                 for (int i = 0; i < n->actions->count; i += 2) {
                         if (strcmp(n->actions->actions[i], "default") == 0) {
-                                action_invoked(n, n->actions->actions[i]);
+                                signal_action_invoked(n, n->actions->actions[i]);
                                 return;
                         }
                 }

@@ -157,7 +157,7 @@ void invoke_action(const char *action)
         }
 
         if (invoked && action_identifier) {
-                action_invoked(invoked, action_identifier);
+                signal_action_invoked(invoked, action_identifier);
         }
 }
 

@@ -17,8 +17,8 @@ enum reason {
 int initdbus(void);
 void dbus_tear_down(int id);
 /* void dbus_poll(int timeout); */
-void notification_closed(notification *n, enum reason reason);
-void action_invoked(notification *n, const char *identifier);
+void signal_notification_closed(notification *n, enum reason reason);
+void signal_action_invoked(notification *n, const char *identifier);
 
 #endif
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

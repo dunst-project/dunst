@@ -298,7 +298,7 @@ static void on_notify(GDBusConnection *connection,
 
         // The message got discarded
         if (id == 0) {
-                notification_closed(n, 2);
+                signal_notification_closed(n, 2);
                 notification_free(n);
         }
 
@@ -331,7 +331,7 @@ static void on_get_server_information(GDBusConnection *connection,
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
 }
 
-void notification_closed(notification *n, enum reason reason)
+void signal_notification_closed(notification *n, enum reason reason)
 {
         if (reason < REASON_MIN || REASON_MAX < reason) {
                 fprintf(stderr, "ERROR: Closing notification with reason '%d' not supported. "
@@ -362,7 +362,7 @@ void notification_closed(notification *n, enum reason reason)
 
 }
 
-void action_invoked(notification *n, const char *identifier)
+void signal_action_invoked(notification *n, const char *identifier)
 {
         GVariant *body = g_variant_new("(us)", n->id, identifier);
         GError *err = NULL;
