@@ -115,7 +115,7 @@ static bool queues_stack_duplicate(notification *n)
 
                         n->dup_count = orig->dup_count;
 
-                        notification_closed(orig, 1);
+                        signal_notification_closed(orig, 1);
 
                         notification_free(orig);
                         return true;
@@ -138,7 +138,7 @@ static bool queues_stack_duplicate(notification *n)
 
                         n->dup_count = orig->dup_count;
 
-                        notification_closed(orig, 1);
+                        signal_notification_closed(orig, 1);
 
                         notification_free(orig);
                         return true;
@@ -205,7 +205,9 @@ int queues_notification_close_id(int id, enum reason reason)
         }
 
         if (target) {
-                notification_closed(target, reason);
+                //Don't notify clients if notification was pulled from history
+                if (!target->redisplayed)
+                        signal_notification_closed(target, reason);
                 queues_history_push(target);
         }
 
