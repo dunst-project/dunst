@@ -31,7 +31,7 @@ Checkout the [wiki][wiki] for more information.
 
 Please use the [issue tracker][issue-tracker] provided by GitHub to send us bug reports or feature requests. You can also join us on the IRC channel `#dunst` on Freenode.
 
-## Mantainers
+## Maintainers
 
 Nikos Tsipinakis <nikos@tsipinakis.com>
 
