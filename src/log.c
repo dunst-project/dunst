@@ -4,6 +4,8 @@
 
 #include <glib.h>
 
+static GLogLevelFlags log_level = G_LOG_LEVEL_WARNING;
+
 static const char *log_level_to_string(GLogLevelFlags level)
 {
         switch (level) {
@@ -15,6 +17,38 @@ static const char *log_level_to_string(GLogLevelFlags level)
         case G_LOG_LEVEL_DEBUG: return "DEBUG";
         default: return "UNKNOWN";
         }
+}
+
+void log_set_level_from_string(const char *level)
+{
+        if (!level)
+                return;
+
+        if (g_ascii_strcasecmp(level, "critical") == 0)
+                log_level = G_LOG_LEVEL_CRITICAL;
+        else if (g_ascii_strcasecmp(level, "crit") == 0)
+                log_level = G_LOG_LEVEL_CRITICAL;
+        else if (g_ascii_strcasecmp(level, "warning") == 0)
+                log_level = G_LOG_LEVEL_WARNING;
+        else if (g_ascii_strcasecmp(level, "warn") == 0)
+                log_level = G_LOG_LEVEL_WARNING;
+        else if (g_ascii_strcasecmp(level, "message") == 0)
+                log_level = G_LOG_LEVEL_MESSAGE;
+        else if (g_ascii_strcasecmp(level, "mesg") == 0)
+                log_level = G_LOG_LEVEL_MESSAGE;
+        else if (g_ascii_strcasecmp(level, "info") == 0)
+                log_level = G_LOG_LEVEL_INFO;
+        else if (g_ascii_strcasecmp(level, "debug") == 0)
+                log_level = G_LOG_LEVEL_DEBUG;
+        else if (g_ascii_strcasecmp(level, "deb") == 0)
+                log_level = G_LOG_LEVEL_DEBUG;
+        else
+                LOG_W("Unknown log level: '%s'", level);
+}
+
+void log_set_level(GLogLevelFlags level)
+{
+        log_level = level;
 }
 
 /*
@@ -31,6 +65,12 @@ static void dunst_log_handler(
         if (testing)
                 return;
 
+/* if you want to have a debug build, you want to log anything,
+ * unconditionally, without specifying debug log level again */
+#ifndef DEBUG_BUILD
+        if (log_level < message_level)
+                return;
+#endif
         const char *log_level_str =
                 log_level_to_string(message_level & G_LOG_LEVEL_MASK);
 

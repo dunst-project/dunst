@@ -132,6 +132,10 @@ int dunst_main(int argc, char *argv[])
                 print_version();
         }
 
+        char *verbosity = cmdline_get_string("-verbosity", NULL, "Minimum level for message");
+        log_set_level_from_string(verbosity);
+        g_free(verbosity);
+
         char *cmdline_config_path;
         cmdline_config_path =
             cmdline_get_string("-conf/-config", NULL,

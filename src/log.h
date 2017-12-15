@@ -16,6 +16,9 @@
 
 #define DIE(...) do { LOG_C(__VA_ARGS__); exit(EXIT_FAILURE); } while (0)
 
+void log_set_level(GLogLevelFlags level);
+void log_set_level_from_string(const char* level);
+
 void dunst_log_init(bool testing);
 
 #endif
