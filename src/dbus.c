@@ -12,14 +12,18 @@
 #include "settings.h"
 #include "utils.h"
 
+#define FDN_PATH "/org/freedesktop/Notifications"
+#define FDN_IFAC "org.freedesktop.Notifications"
+#define FDN_NAME "org.freedesktop.Notifications"
+
 GDBusConnection *dbus_conn;
 
 static GDBusNodeInfo *introspection_data = NULL;
 
 static const char *introspection_xml =
     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-    "<node name=\"/org/freedesktop/Notifications\">"
-    "    <interface name=\"org.freedesktop.Notifications\">"
+    "<node name=\""FDN_PATH"\">"
+    "    <interface name=\""FDN_IFAC"\">"
 
     "        <method name=\"GetCapabilities\">"
     "            <arg direction=\"out\" name=\"capabilities\"    type=\"as\"/>"
@@ -349,8 +353,8 @@ void signal_notification_closed(notification *n, enum reason reason)
 
         g_dbus_connection_emit_signal(dbus_conn,
                                       n->dbus_client,
-                                      "/org/freedesktop/Notifications",
-                                      "org.freedesktop.Notifications",
+                                      FDN_PATH,
+                                      FDN_IFAC,
                                       "NotificationClosed",
                                       body,
                                       &err);
@@ -369,8 +373,8 @@ void signal_action_invoked(notification *n, const char *identifier)
 
         g_dbus_connection_emit_signal(dbus_conn,
                                       n->dbus_client,
-                                      "/org/freedesktop/Notifications",
-                                      "org.freedesktop.Notifications",
+                                      FDN_PATH,
+                                      FDN_IFAC,
                                       "ActionInvoked",
                                       body,
                                       &err);
@@ -394,7 +398,7 @@ static void on_bus_acquired(GDBusConnection *connection,
         GError *err = NULL;
 
         registration_id = g_dbus_connection_register_object(connection,
-                                                            "/org/freedesktop/Notifications",
+                                                            FDN_PATH,
                                                             introspection_data->interfaces[0],
                                                             &interface_vtable,
                                                             NULL,
@@ -419,7 +423,7 @@ static void on_name_lost(GDBusConnection *connection,
                          gpointer user_data)
 {
         if (connection)
-                fprintf(stderr, "Cannot acquire 'org.freedesktop.Notifications'."
+                fprintf(stderr, "Cannot acquire '"FDN_NAME"'."
                                 "Is Another notification daemon running?\n");
         else
                 fprintf(stderr, "Cannot connect to DBus.\n");
@@ -474,7 +478,7 @@ int initdbus(void)
                                                           NULL);
 
         owner_id = g_bus_own_name(G_BUS_TYPE_SESSION,
-                                  "org.freedesktop.Notifications",
+                                  FDN_NAME,
                                   G_BUS_NAME_OWNER_FLAGS_NONE,
                                   on_bus_acquired,
                                   on_name_acquired,
