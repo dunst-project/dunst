@@ -128,10 +128,7 @@ static void on_get_capabilities(GDBusConnection *connection,
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
 }
 
-static void on_notify(GDBusConnection *connection,
-                      const gchar *sender,
-                      GVariant *parameters,
-                      GDBusMethodInvocation *invocation)
+static notification *dbus_message_to_notification(const gchar *sender, GVariant *parameters)
 {
 
         gchar *appname = NULL;
@@ -268,14 +265,15 @@ static void on_notify(GDBusConnection *connection,
         fflush(stdout);
 
         notification *n = notification_create();
+
+        n->id = replaces_id;
         n->appname = appname;
         n->summary = summary;
         n->body = body;
         n->icon = icon;
         n->raw_icon = raw_icon;
         n->timeout = timeout < 0 ? -1 : timeout * 1000;
-        n->markup = settings.markup;
-        n->progress = (progress < 0 || progress > 100) ? -1 : progress;
+        n->progress = progress;
         n->urgency = urgency;
         n->category = category;
         n->dbus_client = g_strdup(sender);
@@ -287,14 +285,20 @@ static void on_notify(GDBusConnection *connection,
         }
         n->actions = actions;
 
-        for (int i = 0; i < ColLast; i++) {
-                n->color_strings[i] = NULL;
-        }
-        n->color_strings[ColFG] = fgcolor;
-        n->color_strings[ColBG] = bgcolor;
+        n->colors[ColFG] = fgcolor;
+        n->colors[ColBG] = bgcolor;
 
         notification_init(n);
-        int id = queues_notification_insert(n, replaces_id);
+        return n;
+}
+
+static void on_notify(GDBusConnection *connection,
+                      const gchar *sender,
+                      GVariant *parameters,
+                      GDBusMethodInvocation *invocation)
+{
+        notification *n = dbus_message_to_notification(sender, parameters);
+        int id = queues_notification_insert(n);
 
         GVariant *reply = g_variant_new("(u)", id);
         g_dbus_method_invocation_return_value(invocation, reply);

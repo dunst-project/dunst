@@ -23,6 +23,10 @@
 #include "utils.h"
 #include "x11/x.h"
 
+static void notification_extract_urls(notification *n);
+static void notification_format_message(notification *n);
+static void notification_dmenu_string(notification *n);
+
 /*
  * print a human readable representation
  * of the given notification to stdout.
@@ -40,15 +44,17 @@ void notification_print(notification *n)
         printf("\turgency: %s\n", notification_urgency_to_string(n->urgency));
         printf("\ttransient: %d\n", n->transient);
         printf("\tformatted: '%s'\n", n->msg);
-        printf("\tfg: %s\n", n->color_strings[ColFG]);
-        printf("\tbg: %s\n", n->color_strings[ColBG]);
-        printf("\tframe: %s\n", n->color_strings[ColFrame]);
+        printf("\tfg: %s\n", n->colors[ColFG]);
+        printf("\tbg: %s\n", n->colors[ColBG]);
+        printf("\tframe: %s\n", n->colors[ColFrame]);
         printf("\tid: %d\n", n->id);
         if (n->urls) {
+                char *urls = string_replace_all("\n", "\t\t\n", g_strdup(n->urls));
                 printf("\turls:\n");
                 printf("\t{\n");
-                printf("\t\t%s\n", n->urls);
+                printf("\t\t%s\n", urls);
                 printf("\t}\n");
+                g_free(urls);
         }
 
         if (n->actions) {
@@ -210,6 +216,9 @@ void notification_free(notification *n)
         g_free(n->category);
         g_free(n->text_to_render);
         g_free(n->urls);
+        g_free(n->colors[ColFG]);
+        g_free(n->colors[ColBG]);
+        g_free(n->colors[ColFrame]);
 
         actions_free(n->actions);
         rawimage_free(n->raw_icon);
@@ -248,95 +257,88 @@ void notification_replace_single_field(char **haystack,
         g_free(input);
 }
 
-char *notification_extract_markup_urls(char **str_ptr)
-{
-        char *start, *end, *replace_buf, *str, *urls = NULL, *url, *index_buf;
-        int linkno = 1;
-
-        str = *str_ptr;
-        while ((start = strstr(str, "<a href")) != NULL) {
-                end = strstr(start, ">");
-                if (end != NULL) {
-                        replace_buf = g_strndup(start, end - start + 1);
-                        url = extract_urls(replace_buf);
-                        if (url != NULL) {
-                                str = string_replace(replace_buf, "[", str);
-
-                                index_buf = g_strdup_printf("[#%d]", linkno++);
-                                if (urls == NULL) {
-                                        urls = g_strconcat(index_buf, " ", url, NULL);
-                                } else {
-                                        char *tmp = urls;
-                                        urls = g_strconcat(tmp, "\n", index_buf, " ", url, NULL);
-                                        g_free(tmp);
-                                }
-
-                                index_buf[0] = ' ';
-                                str = string_replace("</a>", index_buf, str);
-                                g_free(index_buf);
-                                g_free(url);
-                        } else {
-                                str = string_replace(replace_buf, "", str);
-                                str = string_replace("</a>", "", str);
-                        }
-                        g_free(replace_buf);
-                } else {
-                        break;
-                }
-        }
-        *str_ptr = str;
-        return urls;
-}
-
 /*
- * Create notification struct and initialise everything to NULL,
- * this function is guaranteed to return a valid pointer.
+ * Create notification struct and initialise all fields with either
+ *  - the default (if it's not needed to be freed later)
+ *  - its undefined representation (NULL, -1)
+ *
+ * This function is guaranteed to return a valid pointer.
+ * @Returns: The generated notification
  */
 notification *notification_create(void)
 {
-        return g_malloc0(sizeof(notification));
-}
+        notification *n = g_malloc0(sizeof(notification));
 
-void notification_init_defaults(notification *n)
-{
-        assert(n != NULL);
-        if(n->appname == NULL) n->appname = g_strdup("unknown");
-        if(n->summary == NULL) n->summary = g_strdup("");
-        if(n->body == NULL) n->body = g_strdup("");
-        if(n->category == NULL) n->category = g_strdup("");
+        /* Unparameterized default values */
+        n->first_render = true;
+        n->markup = settings.markup;
+        n->format = settings.format;
+
+        n->timestamp = g_get_monotonic_time();
+
+        n->urgency = URG_NORM;
+        n->timeout = -1;
+
+        n->transient = false;
+        n->progress = -1;
+
+        return n;
 }
 
 /*
- * Initialize the given notification
+ * Sanitize values of notification, apply all matching rules
+ * and generate derived fields.
  *
- * n should be a pointer to a notification allocated with
- * notification_create, it is undefined behaviour to pass a notification
- * allocated some other way.
+ * @n: the notification to sanitize
  */
 void notification_init(notification *n)
 {
-        assert(n != NULL);
+        /* default to empty string to avoid further NULL faults */
+        n->appname  = n->appname  ? n->appname  : g_strdup("unknown");
+        n->summary  = n->summary  ? n->summary  : g_strdup("");
+        n->body     = n->body     ? n->body     : g_strdup("");
+        n->category = n->category ? n->category : g_strdup("");
 
-        //Prevent undefined behaviour by initialising required fields
-        notification_init_defaults(n);
+        /* sanitize urgency */
+        if (n->urgency < URG_MIN)
+                n->urgency = URG_LOW;
+        if (n->urgency > URG_MAX)
+                n->urgency = URG_CRIT;
 
-        n->script = NULL;
-        n->text_to_render = NULL;
+        /* Timeout processing */
+        if (n->timeout < 0)
+                n->timeout = settings.timeouts[n->urgency];
 
-        n->format = settings.format;
+        /* Icon handling */
+        if (n->icon && strlen(n->icon) <= 0)
+                g_clear_pointer(&n->icon, g_free);
+        if (!n->raw_icon && !n->icon)
+                n->icon = g_strdup(settings.icons[n->urgency]);
 
+        /* Color hints */
+        if (!n->colors[ColFG])
+                n->colors[ColFG] = g_strdup(xctx.colors[ColFG][n->urgency]);
+        if (!n->colors[ColBG])
+                n->colors[ColBG] = g_strdup(xctx.colors[ColBG][n->urgency]);
+        if (!n->colors[ColFrame])
+                n->colors[ColFrame] = g_strdup(xctx.colors[ColFrame][n->urgency]);
+
+        /* Sanitize misc hints */
+        if (n->progress < 0 || n->progress > 100)
+                n->progress = -1;
+
+        /* Process rules */
         rule_apply_all(n);
 
-        if (n->icon != NULL && strlen(n->icon) <= 0) {
-                g_free(n->icon);
-                n->icon = NULL;
-        }
+        /* UPDATE derived fields */
+        notification_extract_urls(n);
+        notification_dmenu_string(n);
+        notification_format_message(n);
+}
 
-        if (n->raw_icon == NULL && n->icon == NULL) {
-                n->icon = g_strdup(settings.icons[n->urgency]);
-        }
-
-        n->urls = notification_extract_markup_urls(&(n->body));
+static void notification_format_message(notification *n)
+{
+        g_clear_pointer(&n->msg, g_free);
 
         n->msg = string_replace_all("\\n", "\n", g_strdup(n->format));
 
@@ -438,45 +440,36 @@ void notification_init(notification *n)
                 g_free(n->msg);
                 n->msg = buffer;
         }
+}
 
-        n->dup_count = 0;
+static void notification_extract_urls(notification *n)
+{
+        g_clear_pointer(&n->urls, g_free);
 
-        /* urgency > URG_CRIT -> array out of range */
-        if (n->urgency < URG_MIN)
-                n->urgency = URG_LOW;
-        if (n->urgency > URG_MAX)
-                n->urgency = URG_CRIT;
+        char *urls_in = string_append(g_strdup(n->summary), n->body, " ");
 
-        if (!n->color_strings[ColFG]) {
-                n->color_strings[ColFG] = xctx.color_strings[ColFG][n->urgency];
-        }
+        char *urls_a = NULL;
+        char *urls_img = NULL;
+        markup_strip_a(&urls_in, &urls_a);
+        markup_strip_img(&urls_in, &urls_img);
+        // remove links and images first to not confuse
+        // plain urls extraction
+        char *urls_text = extract_urls(urls_in);
 
-        if (!n->color_strings[ColBG]) {
-                n->color_strings[ColBG] = xctx.color_strings[ColBG][n->urgency];
-        }
+        n->urls = string_append(n->urls, urls_a, "\n");
+        n->urls = string_append(n->urls, urls_img, "\n");
+        n->urls = string_append(n->urls, urls_text, "\n");
 
-        if (!n->color_strings[ColFrame]) {
-                n->color_strings[ColFrame] = xctx.color_strings[ColFrame][n->urgency];
-        }
+        g_free(urls_in);
+        g_free(urls_a);
+        g_free(urls_img);
+        g_free(urls_text);
+}
 
-        n->timeout =
-            n->timeout < 0 ? settings.timeouts[n->urgency] : n->timeout;
-        n->start = 0;
-
-        n->timestamp = g_get_monotonic_time();
-
-        n->redisplayed = false;
-
-        n->first_render = true;
-
-        char *tmp = g_strconcat(n->summary, " ", n->body, NULL);
-
-        char *tmp_urls = extract_urls(tmp);
-        n->urls = string_append(n->urls, tmp_urls, "\n");
-        g_free(tmp_urls);
-
+static void notification_dmenu_string(notification *n)
+{
         if (n->actions) {
-                n->actions->dmenu_str = NULL;
+                g_clear_pointer(&n->actions->dmenu_str, g_free);
                 for (int i = 0; i < n->actions->count; i += 2) {
                         char *human_readable = n->actions->actions[i + 1];
                         string_replace_char('[', '(', human_readable); // kill square brackets
@@ -489,14 +482,11 @@ void notification_init(notification *n)
                         }
                 }
         }
-
-        g_free(tmp);
 }
 
 void notification_update_text_to_render(notification *n)
 {
-        g_free(n->text_to_render);
-        n->text_to_render = NULL;
+        g_clear_pointer(&n->text_to_render, g_free);
 
         char *buf = NULL;
 

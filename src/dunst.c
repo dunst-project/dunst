@@ -149,6 +149,7 @@ int dunst_main(int argc, char *argv[])
 
         if (settings.startup_notification) {
                 notification *n = notification_create();
+                n->id = 0;
                 n->appname = g_strdup("dunst");
                 n->summary = g_strdup("startup");
                 n->body = g_strdup("dunst is up and running");
@@ -157,7 +158,7 @@ int dunst_main(int argc, char *argv[])
                 n->markup = MARKUP_NO;
                 n->urgency = URG_LOW;
                 notification_init(n);
-                queues_notification_insert(n, 0);
+                queues_notification_insert(n);
                 // we do not call wakeup now, wake_up does not work here yet
         }
 

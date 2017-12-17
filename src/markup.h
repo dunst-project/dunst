@@ -5,6 +5,10 @@
 #include "settings.h"
 
 char *markup_strip(char *str);
+
+void markup_strip_a(char **str, char **urls);
+void markup_strip_img(char **str, char **urls);
+
 char *markup_transform(char *str, enum markup_mode markup_mode);
 
 #endif
