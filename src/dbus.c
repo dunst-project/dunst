@@ -422,15 +422,99 @@ static void on_name_acquired(GDBusConnection *connection,
         dbus_conn = connection;
 }
 
+/*
+ * Get the PID of the current process, which acquired FDN DBus Name.
+ *
+ * Returns: valid PID, else -1
+ */
+static int dbus_get_fdn_pid(GDBusConnection *connection)
+{
+        char *owner = NULL;
+        GError *error = NULL;
+        int pid = -1;
+
+        GDBusProxy *proxy_fdn;
+        GDBusProxy *proxy_dbus;
+
+        if (!connection)
+                return pid;
+
+        proxy_fdn = g_dbus_proxy_new_sync(
+                                     connection,
+                                     /* do not trigger a start of the notification daemon */
+                                     G_DBUS_PROXY_FLAGS_DO_NOT_AUTO_START,
+                                     NULL, /* info */
+                                     FDN_NAME,
+                                     FDN_PATH,
+                                     FDN_IFAC,
+                                     NULL, /* cancelable */
+                                     &error);
+
+        if (error) {
+                g_error_free(error);
+                return pid;
+        }
+
+        owner = g_dbus_proxy_get_name_owner(proxy_fdn);
+
+        proxy_dbus = g_dbus_proxy_new_sync(
+                                     connection,
+                                     G_DBUS_PROXY_FLAGS_NONE,
+                                     NULL, /* info */
+                                     "org.freedesktop.DBus",
+                                     "/org/freedesktop/DBus",
+                                     "org.freedesktop.DBus",
+                                     NULL, /* cancelable */
+                                     &error);
+
+        if (error) {
+                g_error_free(error);
+                return pid;
+        }
+
+        GVariant *pidinfo = g_dbus_proxy_call_sync(
+                                     proxy_dbus,
+                                     "org.freedesktop.DBus.GetConnectionUnixProcessID",
+                                     g_variant_new("(s)", owner),
+                                     G_DBUS_CALL_FLAGS_NONE,
+                                     /* It's not worth to wait for the PID
+                                      * longer than half a second when dying */
+                                     500,
+                                     NULL,
+                                     &error);
+
+        if (error) {
+                g_error_free(error);
+                return pid;
+        }
+
+        g_variant_get(pidinfo, "(u)", &pid);
+
+        g_object_unref(proxy_fdn);
+        g_object_unref(proxy_dbus);
+        g_free(owner);
+        if (pidinfo)
+                g_variant_unref(pidinfo);
+
+        return pid;
+}
+
+
 static void on_name_lost(GDBusConnection *connection,
                          const gchar *name,
                          gpointer user_data)
 {
-        if (connection)
-                fprintf(stderr, "Cannot acquire '"FDN_NAME"'."
-                                "Is Another notification daemon running?\n");
-        else
+        if (connection) {
+                int pid = dbus_get_fdn_pid(connection);
+                if (pid > 0)
+                        fprintf(stderr, "Cannot acquire '"FDN_NAME"': "
+                                "Name is acquired by PID '%d'.\n", pid);
+                else
+                        fprintf(stderr, "Cannot acquire '"FDN_NAME"'.\n");
+
+        } else {
                 fprintf(stderr, "Cannot connect to DBus.\n");
+        }
         exit(1);
 }
 
