@@ -1,31 +1,31 @@
 addons:
   apt:
     packages:
-    - libdbus-1-dev
-    - libx11-dev
-    - libxrandr-dev
-    - libxinerama-dev
-    - libxss-dev
-    - libxdg-basedir-dev
-    - libglib2.0-dev
-    - libpango1.0-dev
-    - libcairo2-dev
-    - libnotify-dev
-    - libgtk-3-dev
+      - libdbus-1-dev
+      - libx11-dev
+      - libxrandr-dev
+      - libxinerama-dev
+      - libxss-dev
+      - libxdg-basedir-dev
+      - libglib2.0-dev
+      - libpango1.0-dev
+      - libcairo2-dev
+      - libnotify-dev
+      - libgtk-3-dev
 dist: trusty
 sudo: false
 language: c
 before_install:
- - pip install --user cpp-coveralls
+  - pip install --user cpp-coveralls
 script:
- - CFLAGS="-fprofile-arcs -ftest-coverage -Werror" make all dunstify test
- - coveralls
+  - CFLAGS="-fprofile-arcs -ftest-coverage -Werror" make all dunstify test
+  - coveralls
 compiler:
-    - gcc
-    - clang
+  - gcc
+  - clang
 notifications:
-    irc:
-        channels:
-            - "chat.freenode.net#dunst"
-        on_success: change
-        on_failure: always
+  irc:
+    channels:
+      - "chat.freenode.net#dunst"
+    on_success: change
+    on_failure: always
