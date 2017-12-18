@@ -15,7 +15,11 @@ addons:
 dist: trusty
 sudo: false
 language: c
-script: CFLAGS=-Werror make all dunstify test
+before_install:
+ - pip install --user cpp-coveralls
+script:
+ - CFLAGS="-fprofile-arcs -ftest-coverage -Werror" make all dunstify test
+ - coveralls
 compiler:
     - gcc
     - clang
