@@ -12,13 +12,14 @@ addons:
       - libcairo2-dev
       - libnotify-dev
       - libgtk-3-dev
+      - valgrind
 dist: trusty
 sudo: false
 language: c
 before_install:
   - pip install --user cpp-coveralls
 script:
-  - CFLAGS="-fprofile-arcs -ftest-coverage -Werror" make all dunstify test
+  - CFLAGS="-fprofile-arcs -ftest-coverage -Werror" make all dunstify test-valgrind
   - coveralls
 compiler:
   - gcc
