@@ -29,9 +29,9 @@ char *string_replace_at(char *buf, int pos, int len, const char *repl)
                 tmp = buf;
         } else {
                 tmp = g_malloc(size);
+                memcpy(tmp, buf, pos);
         }
 
-        memcpy(tmp, buf, pos);
         memcpy(tmp + pos, repl, repl_len);
         memmove(tmp + pos + repl_len, buf + pos + len, buf_len - (pos + len) + 1);
 

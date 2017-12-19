@@ -44,9 +44,19 @@ dunst: ${OBJ} main.o
 dunstify: dunstify.o
 	${CC} ${CFLAGS} -o $@ dunstify.o ${LDFLAGS}
 
-.PHONY: test
+.PHONY: test test-valgrind
 test: test/test
 	cd test && ./test
+
+test-valgrind: test/test
+	cd ./test \
+		&& valgrind \
+			--suppressions=../.valgrind.suppressions \
+			--leak-check=full \
+			--show-leak-kinds=definite \
+			--errors-for-leak-kinds=definite \
+			--error-exitcode=123 \
+			./test
 
 test/test: ${OBJ} ${TEST_OBJ}
 	${CC} ${CFLAGS} -o $@ ${TEST_OBJ} ${OBJ} ${LDFLAGS}
