@@ -2,6 +2,10 @@
 PREFIX ?= /usr/local
 MANPREFIX = ${PREFIX}/share/man
 
+# Disable systemd service file installation,
+# if you don't want to use systemd albeit installed
+#SYSTEMD ?= 0
+
 # uncomment to disable parsing of dunstrc
 # or use "CFLAGS=-DSTATIC_CONFIG make" to build
 #STATIC= -DSTATIC_CONFIG # Warning: This is deprecated behavior
