@@ -126,14 +126,11 @@ clean-tests:
 install: install-dunst install-doc install-service
 
 install-dunst: dunst doc
-	mkdir -p ${DESTDIR}${PREFIX}/bin
-	install -m755 dunst ${DESTDIR}${PREFIX}/bin
-	mkdir -p ${DESTDIR}${MANPREFIX}/man1
-	install -m644 docs/dunst.1 ${DESTDIR}${MANPREFIX}/man1
+	install -Dm755 dunst ${DESTDIR}${PREFIX}/bin/dunst
+	install -Dm644 docs/dunst.1 ${DESTDIR}${MANPREFIX}/man1/dunst.1
 
 install-doc:
-	mkdir -p ${DESTDIR}${PREFIX}/share/dunst
-	install -m644 dunstrc ${DESTDIR}${PREFIX}/share/dunst
+	install -Dm644 dunstrc ${DESTDIR}${PREFIX}/share/dunst/dunstrc
 
 install-service: service install-service-dbus
 install-service-dbus:
