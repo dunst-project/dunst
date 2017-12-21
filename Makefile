@@ -8,6 +8,18 @@ ifneq ($(wildcard ./.git/.),)
 VERSION := $(shell git describe --tags)
 endif
 
+SERVICEDIR_DBUS ?= $(shell pkg-config dbus-1 --variable=session_bus_services_dir)
+SERVICEDIR_DBUS := ${SERVICEDIR_DBUS}
+ifeq (,${SERVICEDIR_DBUS})
+$(error "Failed to query pkg-config for package 'dbus-1'!")
+endif
+
+SERVICEDIR_SYSTEMD ?= $(shell pkg-config systemd --variable=systemduserunitdir)
+SERVICEDIR_SYSTEMD := ${SERVICEDIR_SYSTEMD}
+ifeq (,${SERVICEDIR_SYSTEMD})
+$(error "Failed to query pkg-config for package 'systemd'!")
+endif
+
 LIBS := $(shell pkg-config --libs   ${pkg_config_packs})
 INCS := $(shell pkg-config --cflags ${pkg_config_packs})
 
@@ -103,13 +115,12 @@ install-doc:
 	install -m644 dunstrc ${DESTDIR}${PREFIX}/share/dunst
 
 install-service: service
-	mkdir -p ${DESTDIR}${PREFIX}/share/dbus-1/services/
-	install -m644 org.knopwob.dunst.service ${DESTDIR}${PREFIX}/share/dbus-1/services
-	install -Dm644 dunst.systemd.service ${DESTDIR}${PREFIX}/lib/systemd/user/dunst.service
+	install -Dm644 org.knopwob.dunst.service ${DESTDIR}${SERVICEDIR_DBUS}/org.knopwob.dunst.service
+	install -Dm644 dunst.systemd.service ${DESTDIR}${SERVICEDIR_SYSTEMD}/dunst.service
 
 uninstall:
 	rm -f ${DESTDIR}${PREFIX}/bin/dunst
 	rm -f ${DESTDIR}${MANPREFIX}/man1/dunst.1
-	rm -f ${DESTDIR}${PREFIX}/share/dbus-1/services/org.knopwob.dunst.service
-	rm -f ${DESTDIR}${PREFIX}/lib/systemd/user/dunst.service
+	rm -f ${DESTDIR}${SERVICEDIR_DBUS}/org.knopwob.dunst.service
+	rm -f ${DESTDIR}${SERVICEDIR_SYSTEMD}/dunst.service
 	rm -rf ${DESTDIR}${PREFIX}/share/dunst
