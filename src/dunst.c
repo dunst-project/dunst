@@ -42,13 +42,14 @@ GMainLoop *mainloop = NULL;
 GSList *rules = NULL;
 
 /* misc funtions */
+static gboolean run(void *data);
 
 void wake_up(void)
 {
         run(NULL);
 }
 
-gboolean run(void *data)
+static gboolean run(void *data)
 {
         queues_check_timeouts(x_is_idle());
         queues_update();
