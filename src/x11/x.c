@@ -730,6 +730,7 @@ static void x_win_move(int width, int height)
 
         int x, y;
         screen_info *scr = get_active_screen();
+        xctx.cur_screen = scr->scr;
         /* calculate window position */
         if (xctx.geometry.mask & XNegative) {
                 x = (scr->dim.x + (scr->dim.w - width)) + xctx.geometry.x;
@@ -908,8 +909,16 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer 
                         break;
                 case FocusIn:
                 case FocusOut:
-                case PropertyNotify:
                         wake_up();
+                        break;
+                case PropertyNotify:
+                        /* Ignore PropertyNotify, when we're still on the
+                         * same screen. PropertyNotify is only neccessary
+                         * to detect a focus change to another screen
+                         */
+                        if(   settings.f_mode != FOLLOW_NONE
+                           && get_active_screen()->scr != xctx.cur_screen)
+                                wake_up();
                         break;
                 default:
                         screen_check_event(ev);
