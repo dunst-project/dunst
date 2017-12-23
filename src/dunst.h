@@ -19,7 +19,6 @@
 extern GSList *rules;
 extern const char *colors[3][3];
 
-gboolean run(void *data);
 void wake_up(void);
 
 int dunst_main(int argc, char *argv[]);
