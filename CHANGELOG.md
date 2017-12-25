@@ -28,6 +28,8 @@
 - The `_GNU_SOURCE` macros had been removed to make dunst portable to nonGNU systems (#403)
 - Replacing notifications does not require a full redraw and replaces flickerless (#415)
 - Internal refactorings of the notification queue handling. (#411)
+- Dunst does now install the systemd and dbus service files into their proper location given
+  by pkg-config. Use `SERVICEDIR_(DBUS|SYSTEMD)` params to overwrite them. (#463)
 
 ## 1.2.0 - 2017-07-12
 

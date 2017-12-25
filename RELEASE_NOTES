@@ -39,6 +39,18 @@ For maintainers:
   The dependency on libxrandr >= 1.5 is not new. Dunst 1.2.0 required it too, but
   there was no active check for it.
 
+* Installation process
+
+	The internals of dunst's make installation process have slightly changed. The
+	install routine won't install the service files for DBus and systemd in a hardcoded
+	subdirectory of $PREFIX. It'll now query the `dbus-1` and `systemd` pkg-config
+	packages for those paths and will put it there.
+
+	To overwrite the pkg-config values, you can manually specify another path.
+	Use `SERVICEDIR_(DBUS|SYSTEMD)` vars as parameters to your make calls.
+
+	For all introduced variables, see [the README.md].
+
 * Portability
 
   GNU-specific functions have been disabled to make dunst portable to nongnu libc's.
