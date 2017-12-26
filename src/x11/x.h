@@ -25,6 +25,7 @@ typedef struct _keyboard_shortcut {
 typedef struct _xctx {
         Atom utf8;
         Display *dpy;
+        int cur_screen;
         Window win;
         bool visible;
         dimension_t geometry;

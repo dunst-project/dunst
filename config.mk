@@ -17,7 +17,7 @@ LDFLAGS_DEBUG  :=
 
 pkg_config_packs := dbus-1 \
                     gio-2.0 \
-                    gdk-3.0 \
+                    gdk-pixbuf-2.0 \
                     "glib-2.0 >= 2.36" \
                     pangocairo \
                     x11 \

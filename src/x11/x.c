@@ -10,7 +10,6 @@
 #include <cairo-xlib.h>
 #include <cairo.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
-#include <gdk/gdk.h>
 #include <glib-object.h>
 #include <locale.h>
 #include <math.h>
@@ -288,21 +287,39 @@ static dimension_t calculate_dimensions(GSList *layouts)
         return dim;
 }
 
-static cairo_surface_t *gdk_pixbuf_to_cairo_surface(const GdkPixbuf *pixbuf)
+static cairo_status_t read_from_buf(void *closure, unsigned char *data, unsigned int size)
 {
-        cairo_surface_t *icon_surface = NULL;
-        cairo_t *cr;
-        cairo_format_t format;
-        double width, height;
+        GByteArray *buf = (GByteArray *)closure;
 
-        format = gdk_pixbuf_get_has_alpha(pixbuf) ? CAIRO_FORMAT_ARGB32 : CAIRO_FORMAT_RGB24;
-        width = gdk_pixbuf_get_width(pixbuf);
-        height = gdk_pixbuf_get_height(pixbuf);
-        icon_surface = cairo_image_surface_create(format, width, height);
-        cr = cairo_create(icon_surface);
-        gdk_cairo_set_source_pixbuf(cr, pixbuf, 0, 0);
-        cairo_paint(cr);
-        cairo_destroy(cr);
+        unsigned int cpy = MIN(size, buf->len);
+        memcpy(data, buf->data, cpy);
+        g_byte_array_remove_range(buf, 0, cpy);
+
+        return CAIRO_STATUS_SUCCESS;
+}
+
+
+static cairo_surface_t *gdk_pixbuf_to_cairo_surface(GdkPixbuf *pixbuf)
+{
+        /*
+         * Export the gdk pixbuf into buffer as a png and import the png buffer
+         * via cairo again as a cairo_surface_t.
+         * It looks counterintuitive, as there is gdk_cairo_set_source_pixbuf,
+         * which does the job faster. But this would require gtk3 as a dependency
+         * for a single function call. See discussion in #334 and #376.
+         */
+        cairo_surface_t *icon_surface = NULL;
+        GByteArray *buffer;
+        char *bufstr;
+        gsize buflen;
+
+        gdk_pixbuf_save_to_buffer(pixbuf, &bufstr, &buflen, "png", NULL, NULL);
+
+        buffer = g_byte_array_new_take((guint8*)bufstr, buflen);
+        icon_surface = cairo_image_surface_create_from_png_stream(read_from_buf, buffer);
+
+        g_byte_array_free(buffer, TRUE);
+
         return icon_surface;
 }
 
@@ -713,6 +730,7 @@ static void x_win_move(int width, int height)
 
         int x, y;
         screen_info *scr = get_active_screen();
+        xctx.cur_screen = scr->scr;
         /* calculate window position */
         if (xctx.geometry.mask & XNegative) {
                 x = (scr->dim.x + (scr->dim.w - width)) + xctx.geometry.x;
@@ -891,8 +909,16 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer 
                         break;
                 case FocusIn:
                 case FocusOut:
-                case PropertyNotify:
                         wake_up();
+                        break;
+                case PropertyNotify:
+                        /* Ignore PropertyNotify, when we're still on the
+                         * same screen. PropertyNotify is only neccessary
+                         * to detect a focus change to another screen
+                         */
+                        if(   settings.f_mode != FOLLOW_NONE
+                           && get_active_screen()->scr != xctx.cur_screen)
+                                wake_up();
                         break;
                 default:
                         screen_check_event(ev);

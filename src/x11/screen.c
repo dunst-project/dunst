@@ -122,6 +122,7 @@ void randr_update()
         alloc_screen_ar(n);
 
         for (int i = 0; i < n; i++) {
+                screens[i].scr = i;
                 screens[i].dim.x = m[i].x;
                 screens[i].dim.y = m[i].y;
                 screens[i].dim.w = m[i].width;
@@ -157,6 +158,7 @@ void xinerama_update()
         alloc_screen_ar(n);
 
         for (int i = 0; i < n; i++) {
+                screens[i].scr = i;
                 screens[i].dim.x = info[i].x_org;
                 screens[i].dim.y = info[i].y_org;
                 screens[i].dim.h = info[i].height;
