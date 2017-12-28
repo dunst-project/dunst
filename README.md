@@ -12,7 +12,9 @@
 Dunst is a highly configurable and lightweight notification daemon.
 
 
-## Compiling
+## Installation
+
+### Dependencies
 
 Dunst has a number of build dependencies that must be present before attempting configuration. The names are different depending on [distribution](https://github.com/dunst-project/dunst/wiki/Dependencies):
 
@@ -24,6 +26,23 @@ Dunst has a number of build dependencies that must be present before attempting 
 - glib
 - pango/cairo
 - libgtk-3-dev
+
+### Building
+
+```
+git clone https://github.com/dunst-project/dunst.git
+cd dunst
+make
+sudo make install
+```
+
+### Make parameters
+
+- `PREFIX=<PATH>`: Set the prefix of the installation. (Default: `/usr/local`)
+- `MANPREFIX=<PATH>`: Set the prefix of the manpage. (Default: `${PREFIX}/share/man`)
+- `SYSTEMD=(0|1)`: Enable/Disable the systemd unit. (Default: detected via `pkg-config`)
+- `SERVICEDIR_SYSTEMD=<PATH>`: The path to put the systemd user service file. Unused, if `SYSTEMD=0`. (Default: detected via `pkg-config`)
+- `SERVICEDIR_DBUS=<PATH>`: The path to put the dbus service file. (Default: detected via `pkg-config`)
 
 Checkout the [wiki][wiki] for more information.
 

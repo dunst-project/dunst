@@ -8,6 +8,31 @@ ifneq ($(wildcard ./.git/.),)
 VERSION := $(shell git describe --tags)
 endif
 
+ifeq (,${SYSTEMD})
+# Check for systemctl to avoid discrepancies on systems, where
+# systemd is installed, but systemd.pc is in another package 
+systemctl := $(shell command -v systemctl >/dev/null && echo systemctl)
+ifeq (systemctl,${systemctl})
+SYSTEMD := 1
+else
+SYSTEMD := 0
+endif
+endif
+
+SERVICEDIR_DBUS ?= $(shell pkg-config dbus-1 --variable=session_bus_services_dir)
+SERVICEDIR_DBUS := ${SERVICEDIR_DBUS}
+ifeq (,${SERVICEDIR_DBUS})
+$(error "Failed to query pkg-config for package 'dbus-1'!")
+endif
+
+ifneq (0,${SYSTEMD})
+SERVICEDIR_SYSTEMD ?= $(shell pkg-config systemd --variable=systemduserunitdir)
+SERVICEDIR_SYSTEMD := ${SERVICEDIR_SYSTEMD}
+ifeq (,${SERVICEDIR_SYSTEMD})
+$(error "Failed to query pkg-config for package 'systemd'!")
+endif
+endif
+
 LIBS := $(shell pkg-config --libs   ${pkg_config_packs})
 INCS := $(shell pkg-config --cflags ${pkg_config_packs})
 
@@ -66,10 +91,15 @@ doc: docs/dunst.1
 docs/dunst.1: docs/dunst.pod
 	pod2man --name=dunst -c "Dunst Reference" --section=1 --release=${VERSION} $< > $@
 
-.PHONY: service
-service:
+.PHONY: service service-dbus service-systemd
+service: service-dbus
+service-dbus:
 	@sed "s|##PREFIX##|$(PREFIX)|" org.knopwob.dunst.service.in > org.knopwob.dunst.service
+ifneq (0,${SYSTEMD})
+service: service-systemd
+service-systemd:
 	@sed "s|##PREFIX##|$(PREFIX)|" dunst.systemd.service.in > dunst.systemd.service
+endif
 
 .PHONY: clean clean-dunst clean-dunstify clean-doc clean-tests
 clean: clean-dunst clean-dunstify clean-doc clean-tests
@@ -89,27 +119,39 @@ clean-doc:
 clean-tests:
 	rm -f test/test test/*.o
 
-.PHONY: install install-dunst install-doc install-service uninstall
+.PHONY: install install-dunst install-doc \
+        install-service install-service-dbus install-service-systemd \
+        uninstall \
+        uninstall-service uninstall-service-dbus uninstall-service-systemd
 install: install-dunst install-doc install-service
 
 install-dunst: dunst doc
-	mkdir -p ${DESTDIR}${PREFIX}/bin
-	install -m755 dunst ${DESTDIR}${PREFIX}/bin
-	mkdir -p ${DESTDIR}${MANPREFIX}/man1
-	install -m644 docs/dunst.1 ${DESTDIR}${MANPREFIX}/man1
+	install -Dm755 dunst ${DESTDIR}${PREFIX}/bin/dunst
+	install -Dm644 docs/dunst.1 ${DESTDIR}${MANPREFIX}/man1/dunst.1
 
 install-doc:
-	mkdir -p ${DESTDIR}${PREFIX}/share/dunst
-	install -m644 dunstrc ${DESTDIR}${PREFIX}/share/dunst
+	install -Dm644 dunstrc ${DESTDIR}${PREFIX}/share/dunst/dunstrc
 
-install-service: service
-	mkdir -p ${DESTDIR}${PREFIX}/share/dbus-1/services/
-	install -m644 org.knopwob.dunst.service ${DESTDIR}${PREFIX}/share/dbus-1/services
-	install -Dm644 dunst.systemd.service ${DESTDIR}${PREFIX}/lib/systemd/user/dunst.service
+install-service: service install-service-dbus
+install-service-dbus:
+	install -Dm644 org.knopwob.dunst.service ${DESTDIR}${SERVICEDIR_DBUS}/org.knopwob.dunst.service
+ifneq (0,${SYSTEMD})
+install-service: install-service-systemd
+install-service-systemd:
+	install -Dm644 dunst.systemd.service ${DESTDIR}${SERVICEDIR_SYSTEMD}/dunst.service
+endif
 
-uninstall:
+uninstall: uninstall-service
 	rm -f ${DESTDIR}${PREFIX}/bin/dunst
 	rm -f ${DESTDIR}${MANPREFIX}/man1/dunst.1
-	rm -f ${DESTDIR}${PREFIX}/share/dbus-1/services/org.knopwob.dunst.service
-	rm -f ${DESTDIR}${PREFIX}/lib/systemd/user/dunst.service
 	rm -rf ${DESTDIR}${PREFIX}/share/dunst
+
+uninstall-service: uninstall-service-dbus
+uninstall-service-dbus:
+	rm -f ${DESTDIR}${SERVICEDIR_DBUS}/org.knopwob.dunst.service
+
+ifneq (0,${SYSTEMD})
+uninstall-service: uninstall-service-systemd
+uninstall-service-systemd:
+	rm -f ${DESTDIR}${SERVICEDIR_SYSTEMD}/dunst.service
+endif
