@@ -408,11 +408,11 @@ void load_settings(char *cmdline_config_path)
                 "print notification on startup"
         );
 
-        settings.dmenu = option_get_path(
+        settings.dmenu = string_to_path(option_get_string(
                 "global",
                 "dmenu", "-dmenu", defaults.dmenu,
                 "path to dmenu"
-        );
+        ));
 
         {
                 GError *error = NULL;
@@ -425,11 +425,11 @@ void load_settings(char *cmdline_config_path)
         }
 
 
-        settings.browser = option_get_path(
+        settings.browser = string_to_path(option_get_string(
                 "global",
                 "browser", "-browser", defaults.browser,
                 "path to browser"
-        );
+        ));
 
         {
                 char *c = option_get_string(
@@ -714,7 +714,7 @@ void load_settings(char *cmdline_config_path)
                         r->fullscreen = parse_enum_fullscreen(c, r->fullscreen);
                         g_free(c);
                 }
-                r->script = ini_get_path(cur_section, "script", NULL);
+                r->script = string_to_path(ini_get_string(cur_section, "script", NULL));
         }
 
 #ifndef STATIC_CONFIG
