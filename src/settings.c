@@ -21,34 +21,6 @@
 
 settings_t settings;
 
-static void parse_follow_mode(const char *mode)
-{
-        if (strcmp(mode, "mouse") == 0)
-                settings.f_mode = FOLLOW_MOUSE;
-        else if (strcmp(mode, "keyboard") == 0)
-                settings.f_mode = FOLLOW_KEYBOARD;
-        else if (strcmp(mode, "none") == 0)
-                settings.f_mode = FOLLOW_NONE;
-        else {
-                LOG_W("Unknown follow mode: '%s'", mode);
-                settings.f_mode = FOLLOW_NONE;
-        }
-}
-
-static enum markup_mode parse_markup_mode(const char *mode)
-{
-        if (strcmp(mode, "strip") == 0) {
-                return MARKUP_STRIP;
-        } else if (strcmp(mode, "no") == 0) {
-                return MARKUP_NO;
-        } else if (strcmp(mode, "full") == 0 || strcmp(mode, "yes") == 0) {
-                return MARKUP_FULL;
-        } else {
-                LOG_W("Unknown markup mode: '%s'", mode);
-                return MARKUP_NO;
-        }
-}
-
 static enum urgency ini_get_urgency(const char *section, const char *key, const int def)
 {
         int ret = def;
@@ -156,7 +128,7 @@ void load_settings(const char *cmdline_config_path)
                 //Use default if settings.markup not set yet
                 //  (=>c empty&&!allow_markup)
                 if (c) {
-                        settings.markup = parse_markup_mode(c);
+                        settings.markup = parse_markup_mode(c, defaults.markup);
                 } else if (!settings.markup) {
                         settings.markup = defaults.markup;
                 }
@@ -187,27 +159,11 @@ void load_settings(const char *cmdline_config_path)
                 "Truncating long lines or do word wrap"
         );
 
-        {
-                char *c = g_strdup(option_get_string(
-                        "global",
-                        "ellipsize", "-ellipsize", "",
-                        "Ellipsize truncated lines on the start/middle/end"
-                ));
-
-                if (strlen(c) == 0) {
-                        settings.ellipsize = defaults.ellipsize;
-                } else if (strcmp(c, "start") == 0) {
-                        settings.ellipsize = start;
-                } else if (strcmp(c, "middle") == 0) {
-                        settings.ellipsize = middle;
-                } else if (strcmp(c, "end") == 0) {
-                        settings.ellipsize = end;
-                } else {
-                        LOG_W("Unknown ellipsize value: '%s'", c);
-                        settings.ellipsize = defaults.ellipsize;
-                }
-                g_free(c);
-        }
+        settings.ellipsize = parse_ellipsize(option_get_string(
+                "global",
+                "ellipsize", "-ellipsize", NULL,
+                "Ellipsize truncated lines on the start/middle/end"
+        ), defaults.ellipsize);
 
         settings.ignore_newline = option_get_bool(
                 "global",
@@ -227,18 +183,11 @@ void load_settings(const char *cmdline_config_path)
                 "On which monitor should the notifications be displayed"
         );
 
-        {
-                char *c = g_strdup(option_get_string(
-                        "global",
-                        "follow", "-follow", "",
-                        "Follow mouse, keyboard or none?"
-                ));
-
-                if (strlen(c) > 0) {
-                        parse_follow_mode(c);
-                        g_free(c);
-                }
-        }
+        settings.f_mode = parse_follow_mode(option_get_string(
+                "global",
+                "follow", "-follow", NULL,
+                "Follow mouse, keyboard or none?"
+        ), defaults.f_mode);
 
         settings.title = g_strdup(option_get_string(
                 "global",
@@ -288,25 +237,11 @@ void load_settings(const char *cmdline_config_path)
                 "Define height of the window"
         );
 
-        {
-                char *c = g_strdup(option_get_string(
-                        "global",
-                        "alignment", "-align/-alignment", "",
-                        "Text alignment left/center/right"
-                ));
-
-                if (strlen(c) > 0) {
-                        if (strcmp(c, "left") == 0)
-                                settings.align = left;
-                        else if (strcmp(c, "center") == 0)
-                                settings.align = center;
-                        else if (strcmp(c, "right") == 0)
-                                settings.align = right;
-                        else
-                                LOG_W("Unknown alignment value: '%s'", c);
-                        g_free(c);
-                }
-        }
+        settings.align = parse_alignment(option_get_string(
+                "global",
+                "alignment", "-align/-alignment", NULL,
+                "Text alignment left/center/right"
+        ), defaults.align);
 
         settings.show_age_threshold = option_get_time(
                 "global",
@@ -368,26 +303,18 @@ void load_settings(const char *cmdline_config_path)
                 "Window corner radius"
         );
 
-        {
-                char *c = g_strdup(option_get_string(
+        settings.sep_color = parse_sepcolor(option_get_string(
+                "global",
+                "separator_color", "-sep_color/-separator_color", "",
+                "Color of the separator line (or 'auto')"
+        ));
+
+        if (settings.sep_color == SEP_CUSTOM) {
+                settings.sep_custom_color_str = g_strdup(option_get_string(
                         "global",
                         "separator_color", "-sep_color/-separator_color", "",
                         "Color of the separator line (or 'auto')"
                 ));
-
-                if (strlen(c) > 0) {
-                        if (strcmp(c, "auto") == 0)
-                                settings.sep_color = SEP_AUTO;
-                        else if (strcmp(c, "foreground") == 0)
-                                settings.sep_color = SEP_FOREGROUND;
-                        else if (strcmp(c, "frame") == 0)
-                                settings.sep_color = SEP_FRAME;
-                        else {
-                                settings.sep_color = SEP_CUSTOM;
-                                settings.sep_custom_color_str = g_strdup(c);
-                        }
-                }
-                g_free(c);
         }
 
         settings.stack_duplicates = option_get_bool(
@@ -425,25 +352,11 @@ void load_settings(const char *cmdline_config_path)
                 "path to browser"
         )));
 
-        {
-                char *c = g_strdup(option_get_string(
-                        "global",
-                        "icon_position", "-icon_position", "off",
-                        "Align icons left/right/off"
-                ));
-
-                if (strlen(c) > 0) {
-                        if (strcmp(c, "left") == 0)
-                                settings.icon_position = icons_left;
-                        else if (strcmp(c, "right") == 0)
-                                settings.icon_position = icons_right;
-                        else if (strcmp(c, "off") == 0)
-                                settings.icon_position = icons_off;
-                        else
-                                LOG_W("Unknown icon position: '%s'", c);
-                        g_free(c);
-                }
-        }
+        settings.icon_position = parse_icon_position(option_get_string(
+                "global",
+                "icon_position", "-icon_position", NULL,
+                "Align icons left/right/off"
+        ), defaults.icon_position);
 
         settings.max_icon_size = option_get_int(
                 "global",
@@ -676,19 +589,7 @@ void load_settings(const char *cmdline_config_path)
                 r->icon = g_strdup(ini_get_string(cur_section, "icon", r->icon));
                 r->category = g_strdup(ini_get_string(cur_section, "category", r->category));
                 r->timeout = ini_get_time(cur_section, "timeout", r->timeout);
-
-                {
-                        char *c = g_strdup(ini_get_string(
-                                cur_section,
-                                "markup", NULL
-                        ));
-
-                        if (c != NULL) {
-                                r->markup = parse_markup_mode(c);
-                                g_free(c);
-                        }
-                }
-
+                r->markup = parse_markup_mode(ini_get_string(cur_section, "markup", NULL), MARKUP_NULL);
                 r->urgency = ini_get_urgency(cur_section, "urgency", r->urgency);
                 r->msg_urgency = ini_get_urgency(cur_section, "msg_urgency", r->msg_urgency);
                 r->fg = g_strdup(ini_get_string(cur_section, "foreground", r->fg));

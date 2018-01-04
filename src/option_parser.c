@@ -528,4 +528,102 @@ enum behavior_fullscreen parse_enum_fullscreen(const char *string, enum behavior
         }
 }
 
+/* see option_parser.h */
+enum alignment parse_alignment(const char *string, enum alignment def)
+{
+        if (!string)
+                return def;
+        if (strcmp(string, "left") == 0)
+                return left;
+        else if (strcmp(string, "center") == 0)
+                return center;
+        else if (strcmp(string, "right") == 0)
+                return right;
+
+        LOG_W("Unknown alignment value: '%s'", string);
+        return def;
+}
+
+/* see option_parser.h */
+enum ellipsize parse_ellipsize(const char *string, enum ellipsize def)
+{
+        if (!string)
+                return def;
+
+        if (strcmp(string, "start") == 0)
+                return start;
+        else if (strcmp(string, "middle") == 0)
+                return middle;
+        else if (strcmp(string, "end") == 0)
+                return end;
+
+        LOG_W("Unknown ellipsize value: '%s'", string);
+        return def;
+}
+
+/* see option_parser.h */
+enum follow_mode parse_follow_mode(const char *string, enum follow_mode def)
+{
+        if (!string)
+                return def;
+
+        if (strcmp(string, "mouse") == 0)
+                return FOLLOW_MOUSE;
+        else if (strcmp(string, "keyboard") == 0)
+                return FOLLOW_KEYBOARD;
+        else if (strcmp(string, "none") == 0)
+                return FOLLOW_NONE;
+
+        LOG_W("Unknown follow mode: '%s'", string);
+        return def;
+}
+
+/* see option_parser.h */
+enum icon_position_t parse_icon_position(const char *string, enum icon_position_t def)
+{
+        if (!string)
+                return def;
+
+        if (strcmp(string, "left") == 0)
+                return icons_left;
+        else if (strcmp(string, "right") == 0)
+                return icons_right;
+        else if (strcmp(string, "off") == 0)
+                return icons_off;
+
+        LOG_W("Unknown icon position: '%s'", string);
+        return def;
+}
+
+/* see option_parser.h */
+enum markup_mode parse_markup_mode(const char *string, enum markup_mode def)
+{
+        if (!string)
+                return def;
+
+        if (strcmp(string, "strip") == 0)
+                return MARKUP_STRIP;
+        else if (strcmp(string, "no") == 0)
+                return MARKUP_NO;
+        else if (strcmp(string, "full") == 0 || strcmp(string, "yes") == 0)
+                return MARKUP_FULL;
+
+        LOG_W("Unknown markup mode: '%s'", string);
+        return def;
+}
+
+/* see option_parser.h */
+enum separator_color parse_sepcolor(const char *string)
+{
+        //TODO: map good empty separator color
+        if (strcmp(string, "auto") == 0)
+                return SEP_AUTO;
+        else if (strcmp(string, "foreground") == 0)
+                return SEP_FOREGROUND;
+        else if (strcmp(string, "frame") == 0)
+                return SEP_FRAME;
+        else
+                return SEP_CUSTOM;
+}
+
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

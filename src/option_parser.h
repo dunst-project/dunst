@@ -70,5 +70,77 @@ const char *next_section(const char *section);
  */
 enum behavior_fullscreen parse_enum_fullscreen(const char *string, enum behavior_fullscreen def);
 
+/**
+ * Parse the alignment value of the given string
+ *
+ * @param string the string representation of #alignment.
+ *               The string must not contain any waste characters.
+ * @param def value to return in case of errors
+ *
+ * @return the #alignment representation of `string`
+ * @return `def` if `string` is invalid or `NULL`
+ */
+enum alignment parse_alignment(const char *string, enum alignment def);
+
+/**
+ * Parse the ellipsize value of the given string
+ *
+ * @param string the string representation of #ellipsize.
+ *               The string must not contain any waste characters.
+ * @param def value to return in case of errors
+ *
+ * @return the #ellipsize representation of `string`
+ * @return `def` if `string` is invalid or `NULL`
+ */
+enum ellipsize parse_ellipsize(const char *string, enum ellipsize def);
+
+/**
+ * Parse the follow mode value of the given string
+ *
+ * @param string the string representation of #follow_mode.
+ *               The string must not contain any waste characters.
+ * @param def value to return in case of errors
+ *
+ * @return the #follow_mode representation of `string`
+ * @return `def` if `string` is invalid or `NULL`
+ */
+enum follow_mode parse_follow_mode(const char *string, enum follow_mode def);
+
+/**
+ * Parse the icon position value of the given string
+ *
+ * @param string the string representation of #icon_position_t.
+ *               The string must not contain any waste characters.
+ * @param def value to return in case of errors
+ *
+ * @return the #icon_position_t representation of `string`
+ * @return `def` if `string` is invalid or `NULL`
+ */
+enum icon_position_t parse_icon_position(const char *string, enum icon_position_t def);
+
+/**
+ * Parse the markup mode value of the given string
+ *
+ * @param string the string representation of #markup_mode.
+ *               The string must not contain any waste characters.
+ * @param def value to return in case of errors
+ *
+ * @return the #markup_mode representation of `string`
+ * @return `def` if `string` is invalid or `NULL`
+ */
+enum markup_mode parse_markup_mode(const char *string, enum markup_mode def);
+
+/**
+ * Parse the separator color of the given string
+ *
+ * @param string the string representation of #separator_color.
+ *               The string must not contain any waste characters.
+ * @param def value to return in case of errors
+ *
+ * @return the #separator_color representation of `string`
+ * @return `def` if `string` is invalid or `NULL`
+ */
+enum separator_color parse_sepcolor(const char *string);
+
 #endif
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
