@@ -626,4 +626,21 @@ enum separator_color parse_sepcolor(const char *string)
                 return SEP_CUSTOM;
 }
 
+/* see option_parser.h */
+enum urgency parse_urgency(const char *string, enum urgency def)
+{
+        if (!string)
+                return def;
+
+        if (strcmp(string, "low") == 0)
+                return URG_LOW;
+        else if (strcmp(string, "normal") == 0)
+                return URG_NORM;
+        else if (strcmp(string, "critical") == 0)
+                return URG_CRIT;
+
+        LOG_W("Unknown urgency: '%s'", string);
+        return def;
+}
+
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

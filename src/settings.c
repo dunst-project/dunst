@@ -21,25 +21,6 @@
 
 settings_t settings;
 
-static enum urgency ini_get_urgency(const char *section, const char *key, const int def)
-{
-        int ret = def;
-        char *urg = g_strdup(ini_get_string(section, key, ""));
-
-        if (strlen(urg) > 0) {
-                if (strcmp(urg, "low") == 0)
-                        ret = URG_LOW;
-                else if (strcmp(urg, "normal") == 0)
-                        ret = URG_NORM;
-                else if (strcmp(urg, "critical") == 0)
-                        ret = URG_CRIT;
-                else
-                        LOG_W("Unknown urgency: '%s'", urg);
-        }
-        g_free(urg);
-        return ret;
-}
-
 void load_settings(const char *cmdline_config_path)
 {
 
@@ -590,8 +571,8 @@ void load_settings(const char *cmdline_config_path)
                 r->category = g_strdup(ini_get_string(cur_section, "category", r->category));
                 r->timeout = ini_get_time(cur_section, "timeout", r->timeout);
                 r->markup = parse_markup_mode(ini_get_string(cur_section, "markup", NULL), MARKUP_NULL);
-                r->urgency = ini_get_urgency(cur_section, "urgency", r->urgency);
-                r->msg_urgency = ini_get_urgency(cur_section, "msg_urgency", r->msg_urgency);
+                r->urgency = parse_urgency(ini_get_string(cur_section, "urgency", NULL), URG_NONE);
+                r->msg_urgency = parse_urgency(ini_get_string(cur_section, "msg_urgency", NULL), URG_NONE);
                 r->fg = g_strdup(ini_get_string(cur_section, "foreground", r->fg));
                 r->bg = g_strdup(ini_get_string(cur_section, "background", r->bg));
                 r->fc = g_strdup(ini_get_string(cur_section, "frame_color", r->fc));

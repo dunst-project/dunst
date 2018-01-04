@@ -142,5 +142,17 @@ enum markup_mode parse_markup_mode(const char *string, enum markup_mode def);
  */
 enum separator_color parse_sepcolor(const char *string);
 
+/**
+ * Parse the urgency value of the given string
+ *
+ * @param string the string representation of #urgency.
+ *               The string must not contain any waste characters.
+ * @param def value to return in case of errors
+ *
+ * @return the #urgency representation of `string`
+ * @return `def` if `string` is invalid or `NULL`
+ */
+enum urgency parse_urgency(const char *string, enum urgency def);
+
 #endif
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
