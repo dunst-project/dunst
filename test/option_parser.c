@@ -44,18 +44,14 @@ TEST test_ini_get_bool(void)
 
 TEST test_ini_get_string(void)
 {
-        char *string_section = "string";
-        char *ptr;
+        const char *string_section = "string";
+        const char *ptr;
         ASSERT_STR_EQ("A simple string", (ptr = ini_get_string(string_section, "simple", "")));
-        free(ptr);
 
         ASSERT_STR_EQ("A quoted string", (ptr = ini_get_string(string_section, "quoted", "")));
-        free(ptr);
         ASSERT_STR_EQ("A string \"with quotes\"", (ptr = ini_get_string(string_section, "quoted_with_quotes", "")));
-        free(ptr);
 
         ASSERT_STR_EQ("default value", (ptr = ini_get_string(string_section, "nonexistent", "default value")));
-        free(ptr);
 
         PASS();
 }
@@ -89,13 +85,10 @@ TEST test_ini_get_double(void)
 
 TEST test_cmdline_get_string(void)
 {
-        char *ptr;
+        const char *ptr;
         ASSERT_STR_EQ("A simple string from the cmdline", (ptr =cmdline_get_string("-string", "", "")));
-        free(ptr);
         ASSERT_STR_EQ("Single_word_string", (ptr = cmdline_get_string("-str/-s", "", "")));
-        free(ptr);
         ASSERT_STR_EQ("Default", (ptr = cmdline_get_string("-nonexistent", "Default", "")));
-        free(ptr);
         PASS();
 }
 
@@ -129,7 +122,7 @@ TEST test_cmdline_get_bool(void)
 
 TEST test_cmdline_create_usage(void)
 {
-        g_free(cmdline_get_string("-msgstring/-ms", "", "A string to test usage creation"));
+        cmdline_get_string("-msgstring/-ms", "", "A string to test usage creation");
         cmdline_get_int("-msgint/-mi", 0, "An int to test usage creation");
         cmdline_get_double("-msgdouble/-md", 0, "A double to test usage creation");
         cmdline_get_bool("-msgbool/-mb", false, "A bool to test usage creation");
@@ -147,21 +140,15 @@ TEST test_cmdline_create_usage(void)
 
 TEST test_option_get_string(void)
 {
-        char *string_section = "string";
-        char *ptr;
+        const char *string_section = "string";
+        const char *ptr;
 
         ASSERT_STR_EQ("A simple string", (ptr =option_get_string(string_section, "simple", "-nonexistent", "", "")));
-        free(ptr);
         ASSERT_STR_EQ("Single_word_string", (ptr = option_get_string(string_section, "simple", "-str/-s", "", "")));
-        free(ptr);
         ASSERT_STR_EQ("A simple string from the cmdline", (ptr = option_get_string(string_section, "simple", "-string", "", "")));
-        free(ptr);
         ASSERT_STR_EQ("A simple string from the cmdline", (ptr = option_get_string(string_section, "simple", "-string/-s", "", "")));
-        free(ptr);
         ASSERT_STR_EQ("Single_word_string", (ptr = option_get_string(string_section, "simple", "-s", "", "")));
-        free(ptr);
         ASSERT_STR_EQ("Default", (ptr = option_get_string(string_section, "nonexistent", "-nonexistent", "Default", "")));
-        free(ptr);
         PASS();
 }
 

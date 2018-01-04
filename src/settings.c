@@ -52,7 +52,7 @@ static enum markup_mode parse_markup_mode(const char *mode)
 static enum urgency ini_get_urgency(const char *section, const char *key, const int def)
 {
         int ret = def;
-        char *urg = ini_get_string(section, key, "");
+        char *urg = g_strdup(ini_get_string(section, key, ""));
 
         if (strlen(urg) > 0) {
                 if (strcmp(urg, "low") == 0)
@@ -68,7 +68,7 @@ static enum urgency ini_get_urgency(const char *section, const char *key, const 
         return ret;
 }
 
-void load_settings(char *cmdline_config_path)
+void load_settings(const char *cmdline_config_path)
 {
 
 #ifndef STATIC_CONFIG
@@ -107,17 +107,12 @@ void load_settings(char *cmdline_config_path)
               "Using STATIC_CONFIG is deprecated behavior.");
 #endif
 
-        {
-                char *loglevel = option_get_string(
-                                "global",
-                                "verbosity", "-verbosity", NULL,
-                                "The verbosity to log (one of 'crit', 'warn', 'mesg', 'info', 'debug')"
-                        );
+        log_set_level_from_string(option_get_string(
+                "global",
+                "verbosity", "-verbosity", NULL,
+                "The verbosity to log (one of 'crit', 'warn', 'mesg', 'info', 'debug')"
+        ));
 
-                log_set_level_from_string(loglevel);
-
-                g_free(loglevel);
-        }
 
         settings.per_monitor_dpi = option_get_bool(
                 "experimental",
@@ -131,11 +126,11 @@ void load_settings(char *cmdline_config_path)
                 "Force the use of the Xinerama extension"
         );
 
-        settings.font = option_get_string(
+        settings.font = g_strdup(option_get_string(
                 "global",
                 "font", "-font/-fn", defaults.font,
                 "The font dunst should use."
-        );
+        ));
 
         {
                 // Check if allow_markup set
@@ -151,11 +146,11 @@ void load_settings(char *cmdline_config_path)
                               "use 'markup' instead.");
                 }
 
-                char *c = option_get_string(
+                char *c = g_strdup(option_get_string(
                         "global",
                         "markup", "-markup", NULL,
                         "Specify how markup should be handled"
-                );
+                ));
 
                 //Use markup if set
                 //Use default if settings.markup not set yet
@@ -168,11 +163,11 @@ void load_settings(char *cmdline_config_path)
                 g_free(c);
         }
 
-        settings.format = option_get_string(
+        settings.format = g_strdup(option_get_string(
                 "global",
                 "format", "-format", defaults.format,
                 "The format template for the notifications"
-        );
+        ));
 
         settings.sort = option_get_bool(
                 "global",
@@ -193,11 +188,11 @@ void load_settings(char *cmdline_config_path)
         );
 
         {
-                char *c = option_get_string(
+                char *c = g_strdup(option_get_string(
                         "global",
                         "ellipsize", "-ellipsize", "",
                         "Ellipsize truncated lines on the start/middle/end"
-                );
+                ));
 
                 if (strlen(c) == 0) {
                         settings.ellipsize = defaults.ellipsize;
@@ -233,11 +228,11 @@ void load_settings(char *cmdline_config_path)
         );
 
         {
-                char *c = option_get_string(
+                char *c = g_strdup(option_get_string(
                         "global",
                         "follow", "-follow", "",
                         "Follow mouse, keyboard or none?"
-                );
+                ));
 
                 if (strlen(c) > 0) {
                         parse_follow_mode(c);
@@ -245,21 +240,21 @@ void load_settings(char *cmdline_config_path)
                 }
         }
 
-        settings.title = option_get_string(
+        settings.title = g_strdup(option_get_string(
                 "global",
                 "title", "-t/-title", defaults.title,
                 "Define the title of windows spawned by dunst."
-        );
+        ));
 
-        settings.class = option_get_string(
+        settings.class = g_strdup(option_get_string(
                 "global",
                 "class", "-c/-class", defaults.class,
                 "Define the class of windows spawned by dunst."
-        );
+        ));
 
         {
 
-                char *c = option_get_string(
+                const char *c = option_get_string(
                         "global",
                         "geometry", "-geom/-geometry", NULL,
                         "Geometry for the window"
@@ -269,7 +264,6 @@ void load_settings(char *cmdline_config_path)
                         // TODO: Implement own geometry parsing to get rid of
                         //       the include dependency on X11
                         settings.geometry = x_parse_geometry(c);
-                        g_free(c);
                 } else {
                         settings.geometry = defaults.geometry;
                 }
@@ -295,11 +289,11 @@ void load_settings(char *cmdline_config_path)
         );
 
         {
-                char *c = option_get_string(
+                char *c = g_strdup(option_get_string(
                         "global",
                         "alignment", "-align/-alignment", "",
                         "Text alignment left/center/right"
-                );
+                ));
 
                 if (strlen(c) > 0) {
                         if (strcmp(c, "left") == 0)
@@ -375,11 +369,11 @@ void load_settings(char *cmdline_config_path)
         );
 
         {
-                char *c = option_get_string(
+                char *c = g_strdup(option_get_string(
                         "global",
                         "separator_color", "-sep_color/-separator_color", "",
                         "Color of the separator line (or 'auto')"
-                );
+                ));
 
                 if (strlen(c) > 0) {
                         if (strcmp(c, "auto") == 0)
@@ -408,11 +402,11 @@ void load_settings(char *cmdline_config_path)
                 "print notification on startup"
         );
 
-        settings.dmenu = string_to_path(option_get_string(
+        settings.dmenu = string_to_path(g_strdup(option_get_string(
                 "global",
                 "dmenu", "-dmenu", defaults.dmenu,
                 "path to dmenu"
-        ));
+        )));
 
         {
                 GError *error = NULL;
@@ -425,18 +419,18 @@ void load_settings(char *cmdline_config_path)
         }
 
 
-        settings.browser = string_to_path(option_get_string(
+        settings.browser = string_to_path(g_strdup(option_get_string(
                 "global",
                 "browser", "-browser", defaults.browser,
                 "path to browser"
-        ));
+        )));
 
         {
-                char *c = option_get_string(
+                char *c = g_strdup(option_get_string(
                         "global",
                         "icon_position", "-icon_position", "off",
                         "Align icons left/right/off"
-                );
+                ));
 
                 if (strlen(c) > 0) {
                         if (strcmp(c, "left") == 0)
@@ -460,22 +454,22 @@ void load_settings(char *cmdline_config_path)
         // If the deprecated icon_folders option is used,
         // read it and generate its usage string.
         if (ini_is_set("global", "icon_folders") || cmdline_is_set("-icon_folders")) {
-                settings.icon_path = option_get_string(
+                settings.icon_path = g_strdup(option_get_string(
                         "global",
                         "icon_folders", "-icon_folders", defaults.icon_path,
                         "folders to default icons (deprecated, please use 'icon_path' instead)"
-                );
+                ));
                 LOG_M("The option 'icon_folders' is deprecated, please use 'icon_path' instead.");
         }
         // Read value and generate usage string for icon_path.
         // If icon_path is set, override icon_folder.
         // if not, but icon_folder is set, use that instead of the compile time default.
-        settings.icon_path = option_get_string(
+        settings.icon_path = g_strdup(option_get_string(
                 "global",
                 "icon_path", "-icon_path",
                 settings.icon_path ? settings.icon_path : defaults.icon_path,
                 "paths to default icons"
-        );
+        ));
 
         {
                 // Backwards compatibility with the legacy 'frame' section.
@@ -498,41 +492,41 @@ void load_settings(char *cmdline_config_path)
                 );
 
                 if (ini_is_set("frame", "color")) {
-                        settings.frame_color = option_get_string(
+                        settings.frame_color = g_strdup(option_get_string(
                                 "frame",
                                 "color", NULL, defaults.frame_color,
                                 "Color of the frame around the window"
-                        );
+                        ));
                         LOG_M("The frame section is deprecated, color "
                               "has been renamed to frame_color and moved "
                               "to the global section.");
                 }
 
-                settings.frame_color = option_get_string(
+                settings.frame_color = g_strdup(option_get_string(
                         "global",
                         "frame_color", "-frame_color",
                         settings.frame_color ? settings.frame_color : defaults.frame_color,
                         "Color of the frame around the window"
-                );
+                ));
 
         }
-        settings.lowbgcolor = option_get_string(
+        settings.lowbgcolor = g_strdup(option_get_string(
                 "urgency_low",
                 "background", "-lb", defaults.lowbgcolor,
                 "Background color for notifications with low urgency"
-        );
+        ));
 
-        settings.lowfgcolor = option_get_string(
+        settings.lowfgcolor = g_strdup(option_get_string(
                 "urgency_low",
                 "foreground", "-lf", defaults.lowfgcolor,
                 "Foreground color for notifications with low urgency"
-        );
+        ));
 
-        settings.lowframecolor = option_get_string(
+        settings.lowframecolor = g_strdup(option_get_string(
                 "urgency_low",
                 "frame_color", "-lfr", NULL,
                 "Frame color for notifications with low urgency"
-        );
+        ));
 
         settings.timeouts[URG_LOW] = option_get_time(
                 "urgency_low",
@@ -540,29 +534,29 @@ void load_settings(char *cmdline_config_path)
                 "Timeout for notifications with low urgency"
         );
 
-        settings.icons[URG_LOW] = option_get_string(
+        settings.icons[URG_LOW] = g_strdup(option_get_string(
                 "urgency_low",
                 "icon", "-li", defaults.icons[URG_LOW],
                 "Icon for notifications with low urgency"
-        );
+        ));
 
-        settings.normbgcolor = option_get_string(
+        settings.normbgcolor = g_strdup(option_get_string(
                 "urgency_normal",
                 "background", "-nb", defaults.normbgcolor,
                 "Background color for notifications with normal urgency"
-        );
+        ));
 
-        settings.normfgcolor = option_get_string(
+        settings.normfgcolor = g_strdup(option_get_string(
                 "urgency_normal",
                 "foreground", "-nf", defaults.normfgcolor,
                 "Foreground color for notifications with normal urgency"
-        );
+        ));
 
-        settings.normframecolor = option_get_string(
+        settings.normframecolor = g_strdup(option_get_string(
                 "urgency_normal",
                 "frame_color", "-nfr", NULL,
                 "Frame color for notifications with normal urgency"
-        );
+        ));
 
         settings.timeouts[URG_NORM] = option_get_time(
                 "urgency_normal",
@@ -570,29 +564,29 @@ void load_settings(char *cmdline_config_path)
                 "Timeout for notifications with normal urgency"
         );
 
-        settings.icons[URG_NORM] = option_get_string(
+        settings.icons[URG_NORM] = g_strdup(option_get_string(
                 "urgency_normal",
                 "icon", "-ni", defaults.icons[URG_NORM],
                 "Icon for notifications with normal urgency"
-        );
+        ));
 
-        settings.critbgcolor = option_get_string(
+        settings.critbgcolor = g_strdup(option_get_string(
                 "urgency_critical",
                 "background", "-cb", defaults.critbgcolor,
                 "Background color for notifications with critical urgency"
-        );
+        ));
 
-        settings.critfgcolor = option_get_string(
+        settings.critfgcolor = g_strdup(option_get_string(
                 "urgency_critical",
                 "foreground", "-cf", defaults.critfgcolor,
                 "Foreground color for notifications with ciritical urgency"
-        );
+        ));
 
-        settings.critframecolor = option_get_string(
+        settings.critframecolor = g_strdup(option_get_string(
                 "urgency_critical",
                 "frame_color", "-cfr", NULL,
                 "Frame color for notifications with critical urgency"
-        );
+        ));
 
         settings.timeouts[URG_CRIT] = option_get_time(
                 "urgency_critical",
@@ -600,35 +594,35 @@ void load_settings(char *cmdline_config_path)
                 "Timeout for notifications with critical urgency"
         );
 
-        settings.icons[URG_CRIT] = option_get_string(
+        settings.icons[URG_CRIT] = g_strdup(option_get_string(
                 "urgency_critical",
                 "icon", "-ci", defaults.icons[URG_CRIT],
                 "Icon for notifications with critical urgency"
-        );
+        ));
 
-        settings.close_ks.str = option_get_string(
+        settings.close_ks.str = g_strdup(option_get_string(
                 "shortcuts",
                 "close", "-key", defaults.close_ks.str,
                 "Shortcut for closing one notification"
-        );
+        ));
 
-        settings.close_all_ks.str = option_get_string(
+        settings.close_all_ks.str = g_strdup(option_get_string(
                 "shortcuts",
                 "close_all", "-all_key", defaults.close_all_ks.str,
                 "Shortcut for closing all notifications"
-        );
+        ));
 
-        settings.history_ks.str = option_get_string(
+        settings.history_ks.str = g_strdup(option_get_string(
                 "shortcuts",
                 "history", "-history_key", defaults.history_ks.str,
                 "Shortcut to pop the last notification from history"
-        );
+        ));
 
-        settings.context_ks.str = option_get_string(
+        settings.context_ks.str = g_strdup(option_get_string(
                 "shortcuts",
                 "context", "-context_key", defaults.context_ks.str,
                 "Shortcut for context menu"
-        );
+        ));
 
         settings.print_notifications = cmdline_get_bool(
                 "-print", false,
@@ -676,18 +670,18 @@ void load_settings(char *cmdline_config_path)
                 }
 
                 r->name = g_strdup(cur_section);
-                r->appname = ini_get_string(cur_section, "appname", r->appname);
-                r->summary = ini_get_string(cur_section, "summary", r->summary);
-                r->body = ini_get_string(cur_section, "body", r->body);
-                r->icon = ini_get_string(cur_section, "icon", r->icon);
-                r->category = ini_get_string(cur_section, "category", r->category);
+                r->appname = g_strdup(ini_get_string(cur_section, "appname", r->appname));
+                r->summary = g_strdup(ini_get_string(cur_section, "summary", r->summary));
+                r->body = g_strdup(ini_get_string(cur_section, "body", r->body));
+                r->icon = g_strdup(ini_get_string(cur_section, "icon", r->icon));
+                r->category = g_strdup(ini_get_string(cur_section, "category", r->category));
                 r->timeout = ini_get_time(cur_section, "timeout", r->timeout);
 
                 {
-                        char *c = ini_get_string(
+                        char *c = g_strdup(ini_get_string(
                                 cur_section,
                                 "markup", NULL
-                        );
+                        ));
 
                         if (c != NULL) {
                                 r->markup = parse_markup_mode(c);
@@ -697,24 +691,16 @@ void load_settings(char *cmdline_config_path)
 
                 r->urgency = ini_get_urgency(cur_section, "urgency", r->urgency);
                 r->msg_urgency = ini_get_urgency(cur_section, "msg_urgency", r->msg_urgency);
-                r->fg = ini_get_string(cur_section, "foreground", r->fg);
-                r->bg = ini_get_string(cur_section, "background", r->bg);
-                r->fc = ini_get_string(cur_section, "frame_color", r->fc);
-                r->format = ini_get_string(cur_section, "format", r->format);
-                r->new_icon = ini_get_string(cur_section, "new_icon", r->new_icon);
+                r->fg = g_strdup(ini_get_string(cur_section, "foreground", r->fg));
+                r->bg = g_strdup(ini_get_string(cur_section, "background", r->bg));
+                r->fc = g_strdup(ini_get_string(cur_section, "frame_color", r->fc));
+                r->format = g_strdup(ini_get_string(cur_section, "format", r->format));
+                r->new_icon = g_strdup(ini_get_string(cur_section, "new_icon", r->new_icon));
                 r->history_ignore = ini_get_bool(cur_section, "history_ignore", r->history_ignore);
                 r->match_transient = ini_get_bool(cur_section, "match_transient", r->match_transient);
                 r->set_transient = ini_get_bool(cur_section, "set_transient", r->set_transient);
-                {
-                        char *c = ini_get_string(
-                                cur_section,
-                                "fullscreen", NULL
-                        );
-
-                        r->fullscreen = parse_enum_fullscreen(c, r->fullscreen);
-                        g_free(c);
-                }
-                r->script = string_to_path(ini_get_string(cur_section, "script", NULL));
+                r->fullscreen = parse_enum_fullscreen(ini_get_string(cur_section,"fullscreen", NULL), r->fullscreen);
+                r->script = string_to_path(g_strdup(ini_get_string(cur_section, "script", NULL)));
         }
 
 #ifndef STATIC_CONFIG

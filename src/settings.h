@@ -89,7 +89,7 @@ typedef struct _settings {
 
 extern settings_t settings;
 
-void load_settings(char *cmdline_config_path);
+void load_settings(const char *cmdline_config_path);
 
 #endif
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

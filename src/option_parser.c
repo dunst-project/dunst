@@ -110,13 +110,10 @@ const char *get_value(const char *section, const char *key)
         return NULL;
 }
 
-char *ini_get_string(const char *section, const char *key, const char *def)
+const char *ini_get_string(const char *section, const char *key, const char *def)
 {
         const char *value = get_value(section, key);
-        if (value)
-                return g_strdup(value);
-
-        return def ? g_strdup(def) : NULL;
+        return value ? value : def;
 }
 
 gint64 ini_get_time(const char *section, const char *key, gint64 def)
@@ -339,17 +336,14 @@ static const char *cmdline_get_value(const char *key)
         return cmdline_argv[idx + 1];
 }
 
-char *cmdline_get_string(const char *key, const char *def, const char *description)
+const char *cmdline_get_string(const char *key, const char *def, const char *description)
 {
         cmdline_usage_append(key, "string", description);
         const char *str = cmdline_get_value(key);
 
         if (str)
-                return g_strdup(str);
-        if (def == NULL)
-                return NULL;
-        else
-                return g_strdup(def);
+                return str;
+        return def;
 }
 
 gint64 cmdline_get_time(const char *key, gint64 def, const char *description)
@@ -403,13 +397,13 @@ bool cmdline_is_set(const char *key)
         return cmdline_get_value(key) != NULL;
 }
 
-char *option_get_string(const char *ini_section,
+const char *option_get_string(const char *ini_section,
                         const char *ini_key,
                         const char *cmdline_key,
                         const char *def,
                         const char *description)
 {
-        char *val = NULL;
+        const char *val = NULL;
 
         if (cmdline_key) {
                 val = cmdline_get_string(cmdline_key, NULL, description);
