@@ -165,7 +165,7 @@ TEST test_string_to_time(void)
 
         int i = 0;
         while (input[i]){
-                ASSERT_EQ_FMT(string_to_time(input[i]), exp[i]*1000, "%ld");
+                ASSERT_EQ_FMT(string_to_time(input[i], -1), exp[i]*1000, "%ld");
                 i++;
         }
 

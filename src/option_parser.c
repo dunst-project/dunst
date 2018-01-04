@@ -116,18 +116,6 @@ const char *ini_get_string(const char *section, const char *key, const char *def
         return value ? value : def;
 }
 
-gint64 ini_get_time(const char *section, const char *key, gint64 def)
-{
-        const char *timestring = get_value(section, key);
-        gint64 val = def;
-
-        if (timestring) {
-                val = string_to_time(timestring);
-        }
-
-        return val;
-}
-
 int ini_get_int(const char *section, const char *key, int def)
 {
         const char *value = get_value(section, key);
@@ -346,19 +334,6 @@ const char *cmdline_get_string(const char *key, const char *def, const char *des
         return def;
 }
 
-gint64 cmdline_get_time(const char *key, gint64 def, const char *description)
-{
-        cmdline_usage_append(key, "time", description);
-        const char *timestring = cmdline_get_value(key);
-        gint64 val = def;
-
-        if (timestring) {
-                val = string_to_time(timestring);
-        }
-
-        return val;
-}
-
 int cmdline_get_int(const char *key, int def, const char *description)
 {
         cmdline_usage_append(key, "int", description);
@@ -414,16 +389,6 @@ const char *option_get_string(const char *ini_section,
         } else {
                 return ini_get_string(ini_section, ini_key, def);
         }
-}
-
-gint64 option_get_time(const char *ini_section,
-                       const char *ini_key,
-                       const char *cmdline_key,
-                       gint64 def,
-                       const char *description)
-{
-        gint64 ini_val = ini_get_time(ini_section, ini_key, def);
-        return cmdline_get_time(cmdline_key, ini_val, description);
 }
 
 int option_get_int(const char *ini_section,

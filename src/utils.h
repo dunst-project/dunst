@@ -24,8 +24,21 @@ void string_strip_delimited(char *str, char a, char b);
 /* replace tilde and path-specific values with its equivalents */
 char *string_to_path(char *string);
 
-/* convert time units (ms, s, m) to internal gint64 microseconds */
-gint64 string_to_time(const char *string);
+/**
+ * Convert time strings to internal gint64 microseconds
+ *
+ * The string can contain any number with a suffixed unit of time.
+ * Possible units are: `ms`, `s`, `m`, `h` and `d`
+ *
+ * If no timeunit given, defaults to `s`.
+ *
+ * @param string the string representation of a number with suffixed timeunit
+ * @param def value to return in case of errors
+ *
+ * @return the `gint64` representation of `string`
+ * @return `def` if `string` is invalid or `NULL`
+ */
+gint64 string_to_time(const char *string, gint64 def);
 
 /**
  * Get the current monotonic time. In contrast to `g_get_monotonic_time`,

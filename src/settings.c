@@ -152,11 +152,11 @@ void load_settings(const char *cmdline_config_path)
                 "Ignore newline characters in notifications"
         );
 
-        settings.idle_threshold = option_get_time(
+        settings.idle_threshold = string_to_time(option_get_string(
                 "global",
-                "idle_threshold", "-idle_threshold", defaults.idle_threshold,
+                "idle_threshold", "-idle_threshold", NULL,
                 "Don't timeout notifications if user is longer idle than threshold"
-        );
+        ), defaults.idle_threshold);
 
         settings.monitor = option_get_int(
                 "global",
@@ -224,11 +224,11 @@ void load_settings(const char *cmdline_config_path)
                 "Text alignment left/center/right"
         ), defaults.align);
 
-        settings.show_age_threshold = option_get_time(
+        settings.show_age_threshold = string_to_time(option_get_string(
                 "global",
-                "show_age_threshold", "-show_age_threshold", defaults.show_age_threshold,
+                "show_age_threshold", "-show_age_threshold", NULL,
                 "When should the age of the notification be displayed?"
-        );
+        ), defaults.show_age_threshold);
 
         settings.hide_duplicate_count = option_get_bool(
                 "global",
@@ -422,11 +422,11 @@ void load_settings(const char *cmdline_config_path)
                 "Frame color for notifications with low urgency"
         ));
 
-        settings.timeouts[URG_LOW] = option_get_time(
+        settings.timeouts[URG_LOW] = string_to_time(option_get_string(
                 "urgency_low",
-                "timeout", "-lto", defaults.timeouts[URG_LOW],
+                "timeout", "-lto", NULL,
                 "Timeout for notifications with low urgency"
-        );
+        ), defaults.timeouts[URG_LOW]);
 
         settings.icons[URG_LOW] = g_strdup(option_get_string(
                 "urgency_low",
@@ -452,11 +452,11 @@ void load_settings(const char *cmdline_config_path)
                 "Frame color for notifications with normal urgency"
         ));
 
-        settings.timeouts[URG_NORM] = option_get_time(
+        settings.timeouts[URG_NORM] = string_to_time(option_get_string(
                 "urgency_normal",
-                "timeout", "-nto", defaults.timeouts[URG_NORM],
+                "timeout", "-nto", NULL,
                 "Timeout for notifications with normal urgency"
-        );
+        ), defaults.timeouts[URG_NORM]);
 
         settings.icons[URG_NORM] = g_strdup(option_get_string(
                 "urgency_normal",
@@ -482,11 +482,11 @@ void load_settings(const char *cmdline_config_path)
                 "Frame color for notifications with critical urgency"
         ));
 
-        settings.timeouts[URG_CRIT] = option_get_time(
+        settings.timeouts[URG_CRIT] = string_to_time(option_get_string(
                 "urgency_critical",
-                "timeout", "-cto", defaults.timeouts[URG_CRIT],
+                "timeout", "-cto", NULL,
                 "Timeout for notifications with critical urgency"
-        );
+        ), defaults.timeouts[URG_CRIT]);
 
         settings.icons[URG_CRIT] = g_strdup(option_get_string(
                 "urgency_critical",
@@ -569,7 +569,7 @@ void load_settings(const char *cmdline_config_path)
                 r->body = g_strdup(ini_get_string(cur_section, "body", r->body));
                 r->icon = g_strdup(ini_get_string(cur_section, "icon", r->icon));
                 r->category = g_strdup(ini_get_string(cur_section, "category", r->category));
-                r->timeout = ini_get_time(cur_section, "timeout", r->timeout);
+                r->timeout = string_to_time(ini_get_string(cur_section, "timeout", NULL), -1);
                 r->markup = parse_markup_mode(ini_get_string(cur_section, "markup", NULL), MARKUP_NULL);
                 r->urgency = parse_urgency(ini_get_string(cur_section, "urgency", NULL), URG_NONE);
                 r->msg_urgency = parse_urgency(ini_get_string(cur_section, "msg_urgency", NULL), URG_NONE);

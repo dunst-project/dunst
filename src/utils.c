@@ -127,10 +127,11 @@ char *string_to_path(char *string)
         return string;
 }
 
-gint64 string_to_time(const char *string)
+/* see utils.h */
+gint64 string_to_time(const char *string, gint64 def)
 {
-
-        assert(string);
+        if (!string)
+                return def;
 
         errno = 0;
         char *endptr;
@@ -138,13 +139,13 @@ gint64 string_to_time(const char *string)
 
         if (errno != 0) {
                 LOG_W("Time: '%s': %s.", string, strerror(errno));
-                return 0;
+                return def;
         } else if (string == endptr) {
                 LOG_W("Time: '%s': No digits found.", string);
-                return 0;
+                return def;
         } else if (errno != 0 && val == 0) {
                 LOG_W("Time: '%s': Unknown error.", string);
-                return 0;
+                return def;
         } else if (errno == 0 && !*endptr) {
                 return val * G_USEC_PER_SEC;
         }
@@ -164,7 +165,7 @@ gint64 string_to_time(const char *string)
         else if (0 == strncmp(endptr, "d", 1))
                 return val * G_USEC_PER_SEC * 60 * 60 * 24;
         else
-                return 0;
+                return def;
 }
 
 /* see utils.h */
