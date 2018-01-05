@@ -3,18 +3,38 @@
 ## Unreleased
 
 ### Added
-- `ellipsize` option to control how long lines should be ellipsized when `word_wrap` is set to `false`
+- `ellipsize` option to control how long lines should be ellipsized when `word_wrap` is set to `false` (#374)
+- A beginning tilde of a path is now expanded to the home of the current user (#351)
+- The image-path hint is now respected, as GApplications send their icon only via this link (#447)
+- The (legacy) image\_data hint is now respected (#353)
+- If dunst can't acquire the DBus name, dunst prints the PID of the process holding the name (#458 #460)
+- Increased accuracy of timeouts by using microseconds internally (#379 #291)
+- Support for specifying timeout values in milliseconds, minutes, hours, or days. (#379)
+- Support for HTML img tags (via context menu) (#428)
 
 ### Fixed
-- `new_icon` rule being ignored on notifications that had a raw icon
-- Do not replace format strings, which are in notification content
-- DBus related memory leaks closed:
-  On the DBus connection, all hints never got freed. For raw icons, dunst saved them three times.
+- `new_icon` rule being ignored on notifications that had a raw icon (#423)
+- Format strings being replaced recursively in some cases (#322 #365)
+- DBus related memory leaks (#397)
+- Crash on X11 servers with RandR support less than 1.5. (#413 #364)
+- Silently reading the default config file, if `-conf` did not specify a valid file (#452)
+- Notification window flickering when a notification is replaced (#320 #415)
+- Inaccurate timeout in some cases (#291 #379)
 
-## Changed
-- transient hints are now handled
+### Changed
+- Transient hints are now handled (#343 #310)
   An additional rule option (`match_transient` and `set_transient`) is added
   to optionally reset the transient setting
+- HTML links are now referred to by their text in the context menu rather than numbers (#428)
+- `icon_folders` setting renamed to `icon_path` (#170)
+- `config.def.h` and `config.h` got merged (#371)
+- The dependency on GTK3+ has been removed. Instead of GTK3+, dunst now
+  requires gdk-pixbuf which had been a transient dependency before. (#334
+  #376)
+- The `_GNU_SOURCE` macros had been removed to make dunst portable to nonGNU systems (#403)
+- Internal refactorings of the notification queue handling. (#411)
+- Dunst does now install the systemd and dbus service files into their proper location given
+  by pkg-config. Use `SERVICEDIR_(DBUS|SYSTEMD)` params to overwrite them. (#463)
 
 ## 1.2.0 - 2017-07-12
 
