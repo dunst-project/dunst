@@ -1,6 +1,6 @@
 # Dunst changelog
 
-## Unreleased
+## 1.3.0 (2018-01-05)
 
 ### Added
 - `ellipsize` option to control how long lines should be ellipsized when `word_wrap` is set to `false` (#374)
