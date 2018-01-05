@@ -78,7 +78,11 @@ void load_settings(char *cmdline_config_path)
         xdgInitHandle(&xdg);
 
         if (cmdline_config_path != NULL) {
-                config_file = fopen(cmdline_config_path, "r");
+                if (0 == strcmp(cmdline_config_path, "-")) {
+                        config_file = stdin;
+                } else {
+                        config_file = fopen(cmdline_config_path, "r");
+                }
 
                 if(!config_file) {
                         char *msg = g_strdup_printf(
