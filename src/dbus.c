@@ -425,9 +425,14 @@ static void on_name_acquired(GDBusConnection *connection,
 /*
  * Get the PID of the current process, which acquired FDN DBus Name.
  *
+ * If name or vendor specified, the name and vendor
+ * will get additionally get via the FDN GetServerInformation method
+ *
  * Returns: valid PID, else -1
  */
-static int dbus_get_fdn_pid(GDBusConnection *connection)
+static int dbus_get_fdn_daemon_info(GDBusConnection  *connection,
+                                       char **name,
+                                       char **vendor)
 {
         char *owner = NULL;
         GError *error = NULL;
@@ -453,6 +458,28 @@ static int dbus_get_fdn_pid(GDBusConnection *connection)
         if (error) {
                 g_error_free(error);
                 return pid;
+        }
+
+        GVariant *daemoninfo;
+        if (name || vendor) {
+                daemoninfo = g_dbus_proxy_call_sync(
+                                     proxy_fdn,
+                                     FDN_IFAC ".GetServerInformation",
+                                     NULL,
+                                     G_DBUS_CALL_FLAGS_NONE,
+                                     /* It's not worth to wait for the info
+                                      * longer than half a second when dying */
+                                     500,
+                                     NULL, /* cancelable */
+                                     &error);
+        }
+
+        if (error) {
+                /* Ignore the error, we may still be able to retrieve the PID */
+                g_error_free(error);
+                error = NULL;
+        } else {
+                g_variant_get(daemoninfo, "(ssss)", name, vendor, NULL, NULL);
         }
 
         owner = g_dbus_proxy_get_name_owner(proxy_fdn);
@@ -493,6 +520,8 @@ static int dbus_get_fdn_pid(GDBusConnection *connection)
         g_object_unref(proxy_fdn);
         g_object_unref(proxy_dbus);
         g_free(owner);
+        if (daemoninfo)
+                g_variant_unref(daemoninfo);
         if (pidinfo)
                 g_variant_unref(pidinfo);
 
@@ -505,10 +534,11 @@ static void on_name_lost(GDBusConnection *connection,
                          gpointer user_data)
 {
         if (connection) {
-                int pid = dbus_get_fdn_pid(connection);
+                char *name = NULL;
+                int pid = dbus_get_fdn_daemon_info(connection, &name, NULL);
                 if (pid > 0)
                         fprintf(stderr, "Cannot acquire '"FDN_NAME"': "
-                                "Name is acquired by PID '%d'.\n", pid);
+                                "Name is acquired by '%s' with PID '%d'.\n", name, pid);
                 else
                         fprintf(stderr, "Cannot acquire '"FDN_NAME"'.\n");
 
