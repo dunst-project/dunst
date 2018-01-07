@@ -324,7 +324,7 @@ void notification_init(notification *n)
                 n->colors[ColFrame] = g_strdup(xctx.colors[ColFrame][n->urgency]);
 
         /* Sanitize misc hints */
-        if (n->progress < 0 || n->progress > 100)
+        if (n->progress < 0)
                 n->progress = -1;
 
         /* Process rules */
