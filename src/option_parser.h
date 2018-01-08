@@ -132,9 +132,9 @@ enum markup_mode parse_markup_mode(const char *string, enum markup_mode def);
  * @param def value to return in case of errors
  *
  * @return the #separator_color representation of `string`
- * @return `def` if `string` is invalid or `NULL`
+ * @return `def` if `string` is `NULL`
  */
-enum separator_color parse_sepcolor(const char *string);
+struct separator_color_data parse_sepcolor(const char *string, struct separator_color_data def);
 
 /**
  * Parse the urgency value of the given string

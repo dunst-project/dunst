@@ -9,9 +9,13 @@
 enum alignment { left, center, right };
 enum ellipsize { start, middle, end };
 enum icon_position_t { icons_left, icons_right, icons_off };
-enum separator_color { SEP_FOREGROUND, SEP_AUTO, SEP_FRAME, SEP_CUSTOM };
 enum follow_mode { FOLLOW_NONE, FOLLOW_MOUSE, FOLLOW_KEYBOARD };
 enum markup_mode { MARKUP_NULL, MARKUP_NO, MARKUP_STRIP, MARKUP_FULL };
+enum separator_color { SEP_FOREGROUND, SEP_AUTO, SEP_FRAME, SEP_CUSTOM };
+struct separator_color_data {
+        enum separator_color type;
+        char *sep_color;
+};
 
 struct geometry {
         int x;
@@ -65,8 +69,7 @@ typedef struct _settings {
         int separator_height;
         int padding;
         int h_padding;
-        enum separator_color sep_color;
-        char *sep_custom_color_str;
+        struct separator_color_data sep_color;
         int frame_width;
         char *frame_color;
         int startup_notification;

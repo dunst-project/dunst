@@ -317,18 +317,9 @@ void load_settings(const char *cmdline_config_path)
         settings.sep_color = parse_sepcolor(option_get_string(
                 "global", "separator_color",
                 "-sep_color/-separator_color",
-                "",
+                NULL,
                 "Color of the separator line (or 'auto')"
-        ));
-
-        if (settings.sep_color == SEP_CUSTOM) {
-                settings.sep_custom_color_str = g_strdup(option_get_string(
-                        "global", "separator_color",
-                        "-sep_color/-separator_color",
-                        "",
-                        "Color of the separator line (or 'auto')"
-                ));
-        }
+        ), defaults.sep_color);
 
         settings.stack_duplicates = option_get_bool(
                 "global", "stack_duplicates",

@@ -507,6 +507,7 @@ enum alignment parse_alignment(const char *string, enum alignment def)
 
         LOG_W("Unknown alignment value: '%s'", string);
         return def;
+
 }
 
 /* see option_parser.h */
@@ -578,17 +579,25 @@ enum markup_mode parse_markup_mode(const char *string, enum markup_mode def)
 }
 
 /* see option_parser.h */
-enum separator_color parse_sepcolor(const char *string)
+struct separator_color_data parse_sepcolor(const char *string, struct separator_color_data def)
 {
-        //TODO: map good empty separator color
-        if (strcmp(string, "auto") == 0)
-                return SEP_AUTO;
-        else if (strcmp(string, "foreground") == 0)
-                return SEP_FOREGROUND;
-        else if (strcmp(string, "frame") == 0)
-                return SEP_FRAME;
-        else
-                return SEP_CUSTOM;
+        if (!string)
+                return def;
+
+        struct separator_color_data ret;
+
+        if (strcmp(string, "auto") == 0) {
+                ret.type = SEP_AUTO;
+        } else if (strcmp(string, "foreground") == 0) {
+                ret.type = SEP_FOREGROUND;
+        } else if (strcmp(string, "frame") == 0) {
+                ret.type = SEP_FRAME;
+        } else {
+                ret.type = SEP_CUSTOM;
+                ret.sep_color = g_strdup(string);
+        }
+
+        return ret;
 }
 
 /* see option_parser.h */
