@@ -340,12 +340,6 @@ void load_settings(char *cmdline_config_path)
                 "horizontal padding"
         );
 
-        settings.transparency = option_get_int(
-                "global",
-                "transparency", "-transparency", defaults.transparency,
-                "Transparency. range 0-100"
-        );
-
         {
                 char *c = option_get_string(
                         "global",

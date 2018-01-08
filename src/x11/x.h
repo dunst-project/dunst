@@ -39,6 +39,7 @@ typedef struct _color_t {
         double r;
         double g;
         double b;
+        double a;
 } color_t;
 
 extern xctx_t xctx;

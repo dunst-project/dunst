@@ -9,7 +9,6 @@
     word_wrap = no
     ignore_newline = yes
     geometry = "250x0-30+20"
-    transparency = 0
     idle_threshold = 120
     monitor = 0
     follow = mouse
