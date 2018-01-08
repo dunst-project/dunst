@@ -68,20 +68,23 @@ void load_settings(const char *cmdline_config_path)
 
 
         settings.per_monitor_dpi = option_get_bool(
-                "experimental",
-                "per_monitor_dpi", NULL, false,
+                "experimental", "per_monitor_dpi",
+                NULL,
+                false,
                 ""
         );
 
         settings.force_xinerama = option_get_bool(
-                "global",
-                "force_xinerama", "-force_xinerama", false,
+                "global", "force_xinerama",
+                "-force_xinerama",
+                false,
                 "Force the use of the Xinerama extension"
         );
 
         settings.font = g_strdup(option_get_string(
-                "global",
-                "font", "-font/-fn", defaults.font,
+                "global", "font",
+                "-font/-fn",
+                defaults.font,
                 "The font dunst should use."
         ));
 
@@ -89,8 +92,9 @@ void load_settings(const char *cmdline_config_path)
                 // Check if allow_markup set
                 if (ini_is_set("global", "allow_markup")) {
                         bool allow_markup = option_get_bool(
-                                "global",
-                                "allow_markup", NULL, false,
+                                "global", "allow_markup",
+                                NULL,
+                                false,
                                 "Allow markup in notifications"
                         );
 
@@ -100,8 +104,9 @@ void load_settings(const char *cmdline_config_path)
                 }
 
                 char *c = g_strdup(option_get_string(
-                        "global",
-                        "markup", "-markup", NULL,
+                        "global", "markup",
+                        "-markup",
+                        NULL,
                         "Specify how markup should be handled"
                 ));
 
@@ -117,76 +122,88 @@ void load_settings(const char *cmdline_config_path)
         }
 
         settings.format = g_strdup(option_get_string(
-                "global",
-                "format", "-format", defaults.format,
+                "global", "format",
+                "-format",
+                defaults.format,
                 "The format template for the notifications"
         ));
 
         settings.sort = option_get_bool(
-                "global",
-                "sort", "-sort", defaults.sort,
+                "global", "sort",
+                "-sort",
+                defaults.sort,
                 "Sort notifications by urgency and date?"
         );
 
         settings.indicate_hidden = option_get_bool(
-                "global",
-                "indicate_hidden", "-indicate_hidden", defaults.indicate_hidden,
+                "global", "indicate_hidden",
+                "-indicate_hidden",
+                defaults.indicate_hidden,
                 "Show how many notificaitons are hidden?"
         );
 
         settings.word_wrap = option_get_bool(
-                "global",
-                "word_wrap", "-word_wrap", defaults.word_wrap,
+                "global", "word_wrap",
+                "-word_wrap",
+                defaults.word_wrap,
                 "Truncating long lines or do word wrap"
         );
 
         settings.ellipsize = parse_ellipsize(option_get_string(
-                "global",
-                "ellipsize", "-ellipsize", NULL,
+                "global", "ellipsize",
+                "-ellipsize",
+                NULL,
                 "Ellipsize truncated lines on the start/middle/end"
         ), defaults.ellipsize);
 
         settings.ignore_newline = option_get_bool(
-                "global",
-                "ignore_newline", "-ignore_newline", defaults.ignore_newline,
+                "global", "ignore_newline",
+                "-ignore_newline",
+                defaults.ignore_newline,
                 "Ignore newline characters in notifications"
         );
 
         settings.idle_threshold = string_to_time(option_get_string(
-                "global",
-                "idle_threshold", "-idle_threshold", NULL,
+                "global", "idle_threshold",
+                "-idle_threshold",
+                NULL,
                 "Don't timeout notifications if user is longer idle than threshold"
         ), defaults.idle_threshold);
 
         settings.monitor = option_get_int(
-                "global",
-                "monitor", "-mon/-monitor", defaults.monitor,
+                "global", "monitor",
+                "-mon/-monitor",
+                defaults.monitor,
                 "On which monitor should the notifications be displayed"
         );
 
         settings.f_mode = parse_follow_mode(option_get_string(
-                "global",
-                "follow", "-follow", NULL,
+                "global", "follow",
+                "-follow",
+                NULL,
                 "Follow mouse, keyboard or none?"
         ), defaults.f_mode);
 
         settings.title = g_strdup(option_get_string(
-                "global",
-                "title", "-t/-title", defaults.title,
+                "global", "title",
+                "-t/-title",
+                defaults.title,
                 "Define the title of windows spawned by dunst."
         ));
 
         settings.class = g_strdup(option_get_string(
-                "global",
-                "class", "-c/-class", defaults.class,
+                "global", "class",
+                "-c/-class",
+                defaults.class,
                 "Define the class of windows spawned by dunst."
         ));
 
         {
 
                 const char *c = option_get_string(
-                        "global",
-                        "geometry", "-geom/-geometry", NULL,
+                        "global", "geometry",
+                        "-geom/-geometry",
+                        NULL,
                         "Geometry for the window"
                 );
 
@@ -201,118 +218,136 @@ void load_settings(const char *cmdline_config_path)
         }
 
         settings.shrink = option_get_bool(
-                "global",
-                "shrink", "-shrink", defaults.shrink,
+                "global", "shrink",
+                "-shrink",
+                defaults.shrink,
                 "Shrink window if it's smaller than the width"
         );
 
         settings.line_height = option_get_int(
-                "global",
-                "line_height", "-lh/-line_height", defaults.line_height,
+                "global", "line_height",
+                "-lh/-line_height",
+                defaults.line_height,
                 "Add spacing between lines of text"
         );
 
         settings.notification_height = option_get_int(
-                "global",
-                "notification_height", "-nh/-notification_height", defaults.notification_height,
+                "global", "notification_height",
+                "-nh/-notification_height",
+                defaults.notification_height,
                 "Define height of the window"
         );
 
         settings.align = parse_alignment(option_get_string(
-                "global",
-                "alignment", "-align/-alignment", NULL,
+                "global", "alignment",
+                "-align/-alignment", NULL,
                 "Text alignment left/center/right"
         ), defaults.align);
 
         settings.show_age_threshold = string_to_time(option_get_string(
-                "global",
-                "show_age_threshold", "-show_age_threshold", NULL,
+                "global", "show_age_threshold",
+                "-show_age_threshold",
+                NULL,
                 "When should the age of the notification be displayed?"
         ), defaults.show_age_threshold);
 
         settings.hide_duplicate_count = option_get_bool(
-                "global",
-                "hide_duplicate_count", "-hide_duplicate_count", false,
+                "global", "hide_duplicate_count",
+                "-hide_duplicate_count",
+                false,
                 "Hide the count of merged notifications with the same content"
         );
 
         settings.sticky_history = option_get_bool(
-                "global",
-                "sticky_history", "-sticky_history", defaults.sticky_history,
+                "global", "sticky_history",
+                "-sticky_history",
+                defaults.sticky_history,
                 "Don't timeout notifications popped up from history"
         );
 
         settings.history_length = option_get_int(
-                "global",
-                "history_length", "-history_length", defaults.history_length,
+                "global", "history_length",
+                "-history_length",
+                defaults.history_length,
                 "Max amount of notifications kept in history"
         );
 
         settings.show_indicators = option_get_bool(
-                "global",
-                "show_indicators", "-show_indicators", defaults.show_indicators,
+                "global", "show_indicators",
+                "-show_indicators",
+                defaults.show_indicators,
                 "Show indicators for actions \"(A)\" and URLs \"(U)\""
         );
 
         settings.separator_height = option_get_int(
-                "global",
-                "separator_height", "-sep_height/-separator_height", defaults.separator_height,
+                "global", "separator_height",
+                "-sep_height/-separator_height",
+                defaults.separator_height,
                 "height of the separator line"
         );
 
         settings.padding = option_get_int(
-                "global",
-                "padding", "-padding", defaults.padding,
+                "global", "padding",
+                "-padding",
+                defaults.padding,
                 "Padding between text and separator"
         );
 
         settings.h_padding = option_get_int(
-                "global",
-                "horizontal_padding", "-horizontal_padding", defaults.h_padding,
+                "global", "horizontal_padding",
+                "-horizontal_padding",
+                defaults.h_padding,
                 "horizontal padding"
         );
 
         settings.transparency = option_get_int(
-                "global",
-                "transparency", "-transparency", defaults.transparency,
+                "global", "transparency",
+                "-transparency",
+                defaults.transparency,
                 "Transparency. range 0-100"
         );
 
         settings.corner_radius = option_get_int(
-                "global",
-                "corner_radius", "-corner_radius", defaults.corner_radius,
+                "global", "corner_radius",
+                "-corner_radius",
+                defaults.corner_radius,
                 "Window corner radius"
         );
 
         settings.sep_color = parse_sepcolor(option_get_string(
-                "global",
-                "separator_color", "-sep_color/-separator_color", "",
+                "global", "separator_color",
+                "-sep_color/-separator_color",
+                "",
                 "Color of the separator line (or 'auto')"
         ));
 
         if (settings.sep_color == SEP_CUSTOM) {
                 settings.sep_custom_color_str = g_strdup(option_get_string(
-                        "global",
-                        "separator_color", "-sep_color/-separator_color", "",
+                        "global", "separator_color",
+                        "-sep_color/-separator_color",
+                        "",
                         "Color of the separator line (or 'auto')"
                 ));
         }
 
         settings.stack_duplicates = option_get_bool(
-                "global",
-                "stack_duplicates", "-stack_duplicates", true,
+                "global", "stack_duplicates",
+                "-stack_duplicates",
+                true,
                 "Merge multiple notifications with the same content"
         );
 
         settings.startup_notification = option_get_bool(
-                "global",
-                "startup_notification", "-startup_notification", false,
+                "global", "startup_notification",
+                "-startup_notification",
+                false,
                 "print notification on startup"
         );
 
         settings.dmenu = string_to_path(g_strdup(option_get_string(
-                "global",
-                "dmenu", "-dmenu", defaults.dmenu,
+                "global", "dmenu",
+                "-dmenu",
+                defaults.dmenu,
                 "path to dmenu"
         )));
 
@@ -328,20 +363,23 @@ void load_settings(const char *cmdline_config_path)
 
 
         settings.browser = string_to_path(g_strdup(option_get_string(
-                "global",
-                "browser", "-browser", defaults.browser,
+                "global", "browser",
+                "-browser",
+                defaults.browser,
                 "path to browser"
         )));
 
         settings.icon_position = parse_icon_position(option_get_string(
-                "global",
-                "icon_position", "-icon_position", NULL,
+                "global", "icon_position",
+                "-icon_position",
+                NULL,
                 "Align icons left/right/off"
         ), defaults.icon_position);
 
         settings.max_icon_size = option_get_int(
-                "global",
-                "max_icon_size", "-max_icon_size", defaults.max_icon_size,
+                "global", "max_icon_size",
+                "-max_icon_size",
+                defaults.max_icon_size,
                 "Scale larger icons down to this size, set to 0 to disable"
         );
 
@@ -349,8 +387,9 @@ void load_settings(const char *cmdline_config_path)
         // read it and generate its usage string.
         if (ini_is_set("global", "icon_folders") || cmdline_is_set("-icon_folders")) {
                 settings.icon_path = g_strdup(option_get_string(
-                        "global",
-                        "icon_folders", "-icon_folders", defaults.icon_path,
+                        "global", "icon_folders",
+                        "-icon_folders",
+                        defaults.icon_path,
                         "folders to default icons (deprecated, please use 'icon_path' instead)"
                 ));
                 LOG_M("The option 'icon_folders' is deprecated, please use 'icon_path' instead.");
@@ -359,8 +398,8 @@ void load_settings(const char *cmdline_config_path)
         // If icon_path is set, override icon_folder.
         // if not, but icon_folder is set, use that instead of the compile time default.
         settings.icon_path = g_strdup(option_get_string(
-                "global",
-                "icon_path", "-icon_path",
+                "global", "icon_path",
+                "-icon_path",
                 settings.icon_path ? settings.icon_path : defaults.icon_path,
                 "paths to default icons"
         ));
@@ -369,8 +408,9 @@ void load_settings(const char *cmdline_config_path)
                 // Backwards compatibility with the legacy 'frame' section.
                 if (ini_is_set("frame", "width")) {
                         settings.frame_width = option_get_int(
-                                "frame",
-                                "width", NULL, defaults.frame_width,
+                                "frame", "width",
+                                NULL,
+                                defaults.frame_width,
                                 "Width of frame around the window"
                         );
                         LOG_M("The frame section is deprecated, width has "
@@ -379,16 +419,17 @@ void load_settings(const char *cmdline_config_path)
                 }
 
                 settings.frame_width = option_get_int(
-                        "global",
-                        "frame_width", "-frame_width",
+                        "global", "frame_width",
+                        "-frame_width",
                         settings.frame_width ? settings.frame_width : defaults.frame_width,
                         "Width of frame around the window"
                 );
 
                 if (ini_is_set("frame", "color")) {
                         settings.frame_color = g_strdup(option_get_string(
-                                "frame",
-                                "color", NULL, defaults.frame_color,
+                                "frame", "color",
+                                NULL,
+                                defaults.frame_color,
                                 "Color of the frame around the window"
                         ));
                         LOG_M("The frame section is deprecated, color "
@@ -397,135 +438,156 @@ void load_settings(const char *cmdline_config_path)
                 }
 
                 settings.frame_color = g_strdup(option_get_string(
-                        "global",
-                        "frame_color", "-frame_color",
+                        "global", "frame_color",
+                        "-frame_color",
                         settings.frame_color ? settings.frame_color : defaults.frame_color,
                         "Color of the frame around the window"
                 ));
 
         }
         settings.lowbgcolor = g_strdup(option_get_string(
-                "urgency_low",
-                "background", "-lb", defaults.lowbgcolor,
+                "urgency_low", "background",
+                "-lb",
+                defaults.lowbgcolor,
                 "Background color for notifications with low urgency"
         ));
 
         settings.lowfgcolor = g_strdup(option_get_string(
-                "urgency_low",
-                "foreground", "-lf", defaults.lowfgcolor,
+                "urgency_low", "foreground",
+                "-lf",
+                defaults.lowfgcolor,
                 "Foreground color for notifications with low urgency"
         ));
 
         settings.lowframecolor = g_strdup(option_get_string(
-                "urgency_low",
-                "frame_color", "-lfr", NULL,
+                "urgency_low", "frame_color",
+                "-lfr",
+                NULL,
                 "Frame color for notifications with low urgency"
         ));
 
         settings.timeouts[URG_LOW] = string_to_time(option_get_string(
-                "urgency_low",
-                "timeout", "-lto", NULL,
+                "urgency_low", "timeout",
+                "-lto",
+                NULL,
                 "Timeout for notifications with low urgency"
         ), defaults.timeouts[URG_LOW]);
 
         settings.icons[URG_LOW] = g_strdup(option_get_string(
-                "urgency_low",
-                "icon", "-li", defaults.icons[URG_LOW],
+                "urgency_low", "icon",
+                "-li",
+                defaults.icons[URG_LOW],
                 "Icon for notifications with low urgency"
         ));
 
         settings.normbgcolor = g_strdup(option_get_string(
-                "urgency_normal",
-                "background", "-nb", defaults.normbgcolor,
+                "urgency_normal", "background",
+                "-nb",
+                defaults.normbgcolor,
                 "Background color for notifications with normal urgency"
         ));
 
         settings.normfgcolor = g_strdup(option_get_string(
-                "urgency_normal",
-                "foreground", "-nf", defaults.normfgcolor,
+                "urgency_normal", "foreground",
+                "-nf",
+                defaults.normfgcolor,
                 "Foreground color for notifications with normal urgency"
         ));
 
         settings.normframecolor = g_strdup(option_get_string(
-                "urgency_normal",
-                "frame_color", "-nfr", NULL,
+                "urgency_normal", "frame_color",
+                "-nfr",
+                NULL,
                 "Frame color for notifications with normal urgency"
         ));
 
         settings.timeouts[URG_NORM] = string_to_time(option_get_string(
-                "urgency_normal",
-                "timeout", "-nto", NULL,
+                "urgency_normal", "timeout",
+                "-nto",
+                NULL,
                 "Timeout for notifications with normal urgency"
         ), defaults.timeouts[URG_NORM]);
 
         settings.icons[URG_NORM] = g_strdup(option_get_string(
-                "urgency_normal",
-                "icon", "-ni", defaults.icons[URG_NORM],
+                "urgency_normal", "icon",
+                "-ni",
+                defaults.icons[URG_NORM],
                 "Icon for notifications with normal urgency"
         ));
 
         settings.critbgcolor = g_strdup(option_get_string(
-                "urgency_critical",
-                "background", "-cb", defaults.critbgcolor,
+                "urgency_critical", "background",
+                "-cb",
+                defaults.critbgcolor,
                 "Background color for notifications with critical urgency"
         ));
 
         settings.critfgcolor = g_strdup(option_get_string(
-                "urgency_critical",
-                "foreground", "-cf", defaults.critfgcolor,
+                "urgency_critical", "foreground",
+                "-cf",
+                defaults.critfgcolor,
                 "Foreground color for notifications with ciritical urgency"
         ));
 
         settings.critframecolor = g_strdup(option_get_string(
-                "urgency_critical",
-                "frame_color", "-cfr", NULL,
+                "urgency_critical", "frame_color",
+                "-cfr",
+                NULL,
                 "Frame color for notifications with critical urgency"
         ));
 
         settings.timeouts[URG_CRIT] = string_to_time(option_get_string(
-                "urgency_critical",
-                "timeout", "-cto", NULL,
+                "urgency_critical", "timeout",
+                "-cto",
+                NULL,
                 "Timeout for notifications with critical urgency"
         ), defaults.timeouts[URG_CRIT]);
 
         settings.icons[URG_CRIT] = g_strdup(option_get_string(
-                "urgency_critical",
-                "icon", "-ci", defaults.icons[URG_CRIT],
+                "urgency_critical", "icon",
+                "-ci",
+                defaults.icons[URG_CRIT],
                 "Icon for notifications with critical urgency"
         ));
 
         settings.close_ks.str = g_strdup(option_get_string(
-                "shortcuts",
-                "close", "-key", defaults.close_ks.str,
+                "shortcuts", "close",
+                "-key",
+                defaults.close_ks.str,
                 "Shortcut for closing one notification"
         ));
 
         settings.close_all_ks.str = g_strdup(option_get_string(
-                "shortcuts",
-                "close_all", "-all_key", defaults.close_all_ks.str,
+                "shortcuts", "close_all",
+                "-all_key",
+                defaults.close_all_ks.str,
                 "Shortcut for closing all notifications"
         ));
 
         settings.history_ks.str = g_strdup(option_get_string(
-                "shortcuts",
-                "history", "-history_key", defaults.history_ks.str,
+                "shortcuts", "history",
+                "-history_key",
+                defaults.history_ks.str,
                 "Shortcut to pop the last notification from history"
         ));
 
         settings.context_ks.str = g_strdup(option_get_string(
-                "shortcuts",
-                "context", "-context_key", defaults.context_ks.str,
+                "shortcuts", "context",
+                "-context_key",
+                defaults.context_ks.str,
                 "Shortcut for context menu"
         ));
 
         settings.print_notifications = cmdline_get_bool(
-                "-print", false,
+                "-print",
+                false,
                 "Print notifications to cmdline (DEBUG)"
         );
 
         settings.always_run_script = option_get_bool(
-                "global",
-                "always_run_script", "-always_run_script", true,
+                "global", "always_run_script",
+                "-always_run_script",
+                true,
                 "Always run rule-defined scripts, even if the notification is suppressed with format = \"\"."
         );
 
