@@ -21,7 +21,6 @@
 #include "rules.h"
 #include "settings.h"
 #include "utils.h"
-#include "x11/x.h"
 
 static void notification_extract_urls(notification *n);
 static void notification_format_message(notification *n);
@@ -316,12 +315,26 @@ void notification_init(notification *n)
                 n->icon = g_strdup(settings.icons[n->urgency]);
 
         /* Color hints */
+        NotificationColors defcolors;
+        switch (n->urgency) {
+                case URG_LOW:
+                        defcolors = settings.colors_low;
+                        break;
+                case URG_NORM:
+                        defcolors = settings.colors_norm;
+                        break;
+                case URG_CRIT:
+                        defcolors = settings.colors_crit;
+                        break;
+                default:
+                        g_error("Unhandled urgency type: %d", n->urgency);
+        }
         if (!n->colors.fg)
-                n->colors.fg = g_strdup(xctx.colors[ColFG][n->urgency]);
+                n->colors.fg = g_strdup(defcolors.fg);
         if (!n->colors.bg)
-                n->colors.bg = g_strdup(xctx.colors[ColBG][n->urgency]);
+                n->colors.bg = g_strdup(defcolors.bg);
         if (!n->colors.frame)
-                n->colors.frame = g_strdup(xctx.colors[ColFrame][n->urgency]);
+                n->colors.frame = g_strdup(defcolors.frame);
 
         /* Sanitize misc hints */
         if (n->progress < 0)

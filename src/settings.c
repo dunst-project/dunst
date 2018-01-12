@@ -499,7 +499,7 @@ void load_settings(char *cmdline_config_path)
 
         settings.colors_low.frame = option_get_string(
                 "urgency_low",
-                "frame_color", "-lfr", NULL,
+                "frame_color", "-lfr", settings.frame_color ? settings.frame_color : defaults.colors_low.frame,
                 "Frame color for notifications with low urgency"
         );
 
@@ -529,7 +529,7 @@ void load_settings(char *cmdline_config_path)
 
         settings.colors_norm.frame = option_get_string(
                 "urgency_normal",
-                "frame_color", "-nfr", NULL,
+                "frame_color", "-nfr", settings.frame_color ? settings.frame_color : defaults.colors_norm.frame,
                 "Frame color for notifications with normal urgency"
         );
 
@@ -559,7 +559,7 @@ void load_settings(char *cmdline_config_path)
 
         settings.colors_crit.frame = option_get_string(
                 "urgency_critical",
-                "frame_color", "-cfr", NULL,
+                "frame_color", "-cfr", settings.frame_color ? settings.frame_color : defaults.colors_crit.frame,
                 "Frame color for notifications with critical urgency"
         );
 
