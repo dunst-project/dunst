@@ -37,7 +37,6 @@ struct dimensions {
 
 struct x_context {
         Display *dpy;
-        const char *colors[3][3];
         XScreenSaverInfo *screensaver_info;
 };
 
