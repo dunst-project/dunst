@@ -485,9 +485,9 @@ static colored_layout *r_init_shared(cairo_t *c, notification *n)
                 cl->icon = NULL;
         }
 
-        cl->fg = x_string_to_color_t(n->colors[ColFG]);
-        cl->bg = x_string_to_color_t(n->colors[ColBG]);
-        cl->frame = x_string_to_color_t(n->colors[ColFrame]);
+        cl->fg = x_string_to_color_t(n->colors.fg);
+        cl->bg = x_string_to_color_t(n->colors.bg);
+        cl->frame = x_string_to_color_t(n->colors.frame);
 
         cl->n = n;
 

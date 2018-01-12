@@ -34,6 +34,12 @@ typedef struct _actions {
         gsize count;
 } Actions;
 
+typedef struct _notification_colors {
+        char *frame;
+        char *bg;
+        char *fg;
+} NotificationColors;
+
 typedef struct _notification {
         int id;
         char *dbus_client;
@@ -56,7 +62,7 @@ typedef struct _notification {
         enum markup_mode markup;
         const char *format;
         const char *script;
-        char *colors[3];
+        NotificationColors colors;
 
         /* Hints */
         bool transient;     /* timeout albeit user is idle */

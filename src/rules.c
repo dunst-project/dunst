@@ -29,12 +29,12 @@ void rule_apply(rule_t *r, notification *n)
                 n->raw_icon = NULL;
         }
         if (r->fg) {
-                g_free(n->colors[ColFG]);
-                n->colors[ColFG] = g_strdup(r->fg);
+                g_free(n->colors.fg);
+                n->colors.fg = g_strdup(r->fg);
         }
         if (r->bg) {
-                g_free(n->colors[ColBG]);
-                n->colors[ColBG] = g_strdup(r->bg);
+                g_free(n->colors.bg);
+                n->colors.bg = g_strdup(r->bg);
         }
         if (r->format)
                 n->format = r->format;
