@@ -2,6 +2,13 @@
 #ifndef DUNST_NOTIFICATION_H
 #define DUNST_NOTIFICATION_H
 
+//TODO: Remove cyclic dependency
+typedef struct _notification_colors {
+        char *frame;
+        char *bg;
+        char *fg;
+} NotificationColors;
+
 #include <glib.h>
 #include <stdbool.h>
 
@@ -33,12 +40,6 @@ typedef struct _actions {
         char *dmenu_str;
         gsize count;
 } Actions;
-
-typedef struct _notification_colors {
-        char *frame;
-        char *bg;
-        char *fg;
-} NotificationColors;
 
 typedef struct _notification {
         int id;

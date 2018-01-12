@@ -13,6 +13,8 @@ enum separator_color { FOREGROUND, AUTO, FRAME, CUSTOM };
 enum follow_mode { FOLLOW_NONE, FOLLOW_MOUSE, FOLLOW_KEYBOARD };
 enum markup_mode { MARKUP_NULL, MARKUP_NO, MARKUP_STRIP, MARKUP_FULL };
 
+#include "notification.h"
+
 typedef struct _settings {
         bool print_notifications;
         bool per_monitor_dpi;
@@ -20,15 +22,9 @@ typedef struct _settings {
         bool stack_duplicates;
         bool hide_duplicate_count;
         char *font;
-        char *normbgcolor;
-        char *normfgcolor;
-        char *normframecolor;
-        char *critbgcolor;
-        char *critfgcolor;
-        char *critframecolor;
-        char *lowbgcolor;
-        char *lowfgcolor;
-        char *lowframecolor;
+        NotificationColors colors_low;
+        NotificationColors colors_norm;
+        NotificationColors colors_crit;
         char *format;
         gint64 timeouts[3];
         char *icons[3];
