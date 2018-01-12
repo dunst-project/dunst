@@ -101,5 +101,14 @@ void notification_update_text_to_render(notification *n);
 void notification_do_action(notification *n);
 
 const char *notification_urgency_to_string(enum urgency urgency);
+
+/**
+ * Return the string representation for fullscreen behavior
+ *
+ * @param in the #behavior_fullscreen enum value to represent
+ * @return the string representation for `in`
+ */
+const char *enum_to_string_fullscreen(enum behavior_fullscreen in);
+
 #endif
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
