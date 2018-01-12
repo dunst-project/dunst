@@ -32,16 +32,16 @@ void rule_apply(struct rule *r, struct notification *n)
                 g_clear_pointer(&n->raw_icon, rawimage_free);
         }
         if (r->fg) {
-                g_free(n->colors[ColFG]);
-                n->colors[ColFG] = g_strdup(r->fg);
+                g_free(n->colors.fg);
+                n->colors.fg = g_strdup(r->fg);
         }
         if (r->bg) {
-                g_free(n->colors[ColBG]);
-                n->colors[ColBG] = g_strdup(r->bg);
+                g_free(n->colors.bg);
+                n->colors.bg = g_strdup(r->bg);
         }
         if (r->fc) {
-                g_free(n->colors[ColFrame]);
-                n->colors[ColFrame] = g_strdup(r->fc);
+                g_free(n->colors.frame);
+                n->colors.frame = g_strdup(r->fc);
         }
         if (r->format)
                 n->format = r->format;

@@ -281,9 +281,9 @@ static struct colored_layout *layout_init_shared(cairo_t *c, const struct notifi
                 cl->icon = NULL;
         }
 
-        cl->fg = string_to_color(n->colors[ColFG]);
-        cl->bg = string_to_color(n->colors[ColBG]);
-        cl->frame = string_to_color(n->colors[ColFrame]);
+        cl->fg = string_to_color(n->colors.fg);
+        cl->bg = string_to_color(n->colors.bg);
+        cl->frame = string_to_color(n->colors.frame);
 
         cl->n = n;
 
