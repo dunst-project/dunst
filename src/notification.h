@@ -10,9 +10,10 @@
 #define DUNST_NOTIF_MAX_CHARS 5000
 
 enum behavior_fullscreen {
-        FS_NULL,  //!< Invalid value
-        FS_DELAY, //!< Delay the notification until leaving fullscreen mode
-        FS_SHOW,  //!< Show the message when in fullscreen mode
+        FS_NULL,      //!< Invalid value
+        FS_DELAY,     //!< Delay the notification until leaving fullscreen mode
+        FS_PUSHBACK,  //!< When entering fullscreen mode, push the notification back to waiting
+        FS_SHOW,      //!< Show the message when in fullscreen mode
 };
 
 /// Representing the urgencies according to the notification spec

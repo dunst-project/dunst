@@ -332,6 +332,22 @@ void queues_update(bool fullscreen)
                 return;
         }
 
+        /* move notifications back to queue, which are set to pushback */
+        if (fullscreen) {
+                GList *iter = g_queue_peek_head_link(displayed);
+                while (iter) {
+                        notification *n = iter->data;
+                        GList *nextiter = iter->next;
+
+                        if (n->fullscreen == FS_PUSHBACK){
+                                g_queue_delete_link(displayed, iter);
+                                g_queue_insert_sorted(waiting, n, notification_cmp_data, NULL);
+                        }
+
+                        iter = nextiter;
+                }
+        }
+
         /* move notifications from queue to displayed */
         GList *iter = g_queue_peek_head_link(waiting);
         while (iter) {
@@ -346,7 +362,8 @@ void queues_update(bool fullscreen)
                 if (!n)
                         return;
 
-                if (fullscreen && n->fullscreen == FS_DELAY) {
+                if (fullscreen
+                    && (n->fullscreen == FS_DELAY || n->fullscreen == FS_PUSHBACK)) {
                         iter = nextiter;
                         continue;
                 }

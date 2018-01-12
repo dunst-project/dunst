@@ -561,6 +561,8 @@ enum behavior_fullscreen parse_enum_fullscreen(const char *string, enum behavior
                 return FS_SHOW;
         else if (strcmp(string, "delay") == 0)
                 return FS_DELAY;
+        else if (strcmp(string, "pushback") == 0)
+                return FS_PUSHBACK;
         else {
                 LOG_W("Unknown fullscreen value: '%s'\n", string);
                 return def;

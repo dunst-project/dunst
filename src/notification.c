@@ -34,6 +34,7 @@ const char *enum_to_string_fullscreen(enum behavior_fullscreen in)
         switch (in) {
                 case FS_SHOW: return "show";
                 case FS_DELAY: return "delay";
+                case FS_PUSHBACK: return "pushback";
                 case FS_NULL: return "(null)";
                 default:
                         LOG_E("Enum behavior_fullscreen has wrong value.");
