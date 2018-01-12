@@ -2,7 +2,12 @@
 #ifndef DUNST_MARKUP_H
 #define DUNST_MARKUP_H
 
-#include "settings.h"
+enum markup_mode {
+        MARKUP_NULL,
+        MARKUP_NO,
+        MARKUP_STRIP,
+        MARKUP_FULL
+};
 
 /**
  * Strip any markup from text; turn it in to plain text.

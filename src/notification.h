@@ -5,7 +5,7 @@
 #include <glib.h>
 #include <stdbool.h>
 
-#include "settings.h"
+#include "markup.h"
 
 #define DUNST_NOTIF_MAX_CHARS 5000
 

@@ -4,6 +4,8 @@
 
 #include <stdbool.h>
 
+#include "markup.h"
+#include "notification.h"
 #include "x11/x.h"
 
 enum alignment { ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT };
@@ -11,7 +13,6 @@ enum ellipsize { ELLIPSE_START, ELLIPSE_MIDDLE, ELLIPSE_END };
 enum icon_position { ICON_LEFT, ICON_RIGHT, ICON_OFF };
 enum separator_color { SEP_FOREGROUND, SEP_AUTO, SEP_FRAME, SEP_CUSTOM };
 enum follow_mode { FOLLOW_NONE, FOLLOW_MOUSE, FOLLOW_KEYBOARD };
-enum markup_mode { MARKUP_NULL, MARKUP_NO, MARKUP_STRIP, MARKUP_FULL };
 enum mouse_action { MOUSE_NONE, MOUSE_DO_ACTION, MOUSE_CLOSE_CURRENT, MOUSE_CLOSE_ALL };
 
 struct geometry {
@@ -33,15 +34,9 @@ struct settings {
         bool stack_duplicates;
         bool hide_duplicate_count;
         char *font;
-        char *normbgcolor;
-        char *normfgcolor;
-        char *normframecolor;
-        char *critbgcolor;
-        char *critfgcolor;
-        char *critframecolor;
-        char *lowbgcolor;
-        char *lowfgcolor;
-        char *lowframecolor;
+        struct notification_colors colors_low;
+        struct notification_colors colors_norm;
+        struct notification_colors colors_crit;
         char *format;
         gint64 timeouts[3];
         char *icons[3];

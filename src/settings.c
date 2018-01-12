@@ -621,19 +621,19 @@ void load_settings(char *cmdline_config_path)
                 g_free(c);
         }
 
-        settings.lowbgcolor = option_get_string(
+        settings.colors_low.bg = option_get_string(
                 "urgency_low",
-                "background", "-lb", defaults.lowbgcolor,
+                "background", "-lb", defaults.colors_low.bg,
                 "Background color for notifications with low urgency"
         );
 
-        settings.lowfgcolor = option_get_string(
+        settings.colors_low.fg = option_get_string(
                 "urgency_low",
-                "foreground", "-lf", defaults.lowfgcolor,
+                "foreground", "-lf", defaults.colors_low.fg,
                 "Foreground color for notifications with low urgency"
         );
 
-        settings.lowframecolor = option_get_string(
+        settings.colors_low.frame = option_get_string(
                 "urgency_low",
                 "frame_color", "-lfr", NULL,
                 "Frame color for notifications with low urgency"
@@ -651,19 +651,19 @@ void load_settings(char *cmdline_config_path)
                 "Icon for notifications with low urgency"
         );
 
-        settings.normbgcolor = option_get_string(
+        settings.colors_norm.bg = option_get_string(
                 "urgency_normal",
-                "background", "-nb", defaults.normbgcolor,
+                "background", "-nb", defaults.colors_norm.bg,
                 "Background color for notifications with normal urgency"
         );
 
-        settings.normfgcolor = option_get_string(
+        settings.colors_norm.fg = option_get_string(
                 "urgency_normal",
-                "foreground", "-nf", defaults.normfgcolor,
+                "foreground", "-nf", defaults.colors_norm.fg,
                 "Foreground color for notifications with normal urgency"
         );
 
-        settings.normframecolor = option_get_string(
+        settings.colors_norm.frame = option_get_string(
                 "urgency_normal",
                 "frame_color", "-nfr", NULL,
                 "Frame color for notifications with normal urgency"
@@ -681,19 +681,19 @@ void load_settings(char *cmdline_config_path)
                 "Icon for notifications with normal urgency"
         );
 
-        settings.critbgcolor = option_get_string(
+        settings.colors_crit.bg = option_get_string(
                 "urgency_critical",
-                "background", "-cb", defaults.critbgcolor,
+                "background", "-cb", defaults.colors_crit.bg,
                 "Background color for notifications with critical urgency"
         );
 
-        settings.critfgcolor = option_get_string(
+        settings.colors_crit.fg = option_get_string(
                 "urgency_critical",
-                "foreground", "-cf", defaults.critfgcolor,
-                "Foreground color for notifications with critical urgency"
+                "foreground", "-cf", defaults.colors_crit.fg,
+                "Foreground color for notifications with ciritical urgency"
         );
 
-        settings.critframecolor = option_get_string(
+        settings.colors_crit.frame = option_get_string(
                 "urgency_critical",
                 "frame_color", "-cfr", NULL,
                 "Frame color for notifications with critical urgency"
