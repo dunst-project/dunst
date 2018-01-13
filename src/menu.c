@@ -243,6 +243,10 @@ void context_menu(void)
                         exit(EXIT_FAILURE);
                 }
                 execvp(settings.dmenu_cmd[0], settings.dmenu_cmd);
+                fprintf(stderr, "Warning: failed to execute '%s': %s\n",
+                                settings.dmenu,
+                                strerror(errno));
+                exit(EXIT_FAILURE);
         } else {
                 close(child_io[0]);
                 close(parent_io[1]);
