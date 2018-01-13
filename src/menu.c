@@ -115,8 +115,7 @@ void open_browser(const char *in)
                 if (browser_pid2) {
                         exit(0);
                 } else {
-                        char *browser_cmd =
-                            string_append(settings.browser, url, " ");
+                        char *browser_cmd = g_strconcat(settings.browser, " ", url, NULL);
                         char **cmd = g_strsplit(browser_cmd, " ", 0);
                         execvp(cmd[0], cmd);
                         // execvp won't return if it's successful
