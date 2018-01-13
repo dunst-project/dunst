@@ -119,6 +119,12 @@ void open_browser(const char *in)
                             string_append(settings.browser, url, " ");
                         char **cmd = g_strsplit(browser_cmd, " ", 0);
                         execvp(cmd[0], cmd);
+                        // execvp won't return if it's successful
+                        // so, if we're here, it's definitely an error
+                        fprintf(stderr, "Warning: failed to execute '%s': %s\n",
+                                        settings.browser,
+                                        strerror(errno));
+                        exit(EXIT_FAILURE);
                 }
         }
 }
