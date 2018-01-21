@@ -106,12 +106,17 @@ void load_settings(char *cmdline_config_path)
               "Using STATIC_CONFIG is deprecated behavior.");
 #endif
 
-        log_set_level_from_string(option_get_string(
-                "global",
-                "verbosity", "-verbosity", NULL,
-                "The verbosity to log (one of 'info', 'mesg', 'warn', 'crit')"
-                "The verbosity to log (one of 'crit', 'warn', 'mesg', 'info', 'debug')"
-        ));
+        {
+                char *loglevel = option_get_string(
+                                "global",
+                                "verbosity", "-verbosity", NULL,
+                                "The verbosity to log (one of 'crit', 'warn', 'mesg', 'info', 'debug')"
+                        );
+
+                log_set_level_from_string(loglevel);
+
+                g_free(loglevel);
+        }
 
         settings.per_monitor_dpi = option_get_bool(
                 "experimental",
