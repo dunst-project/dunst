@@ -831,8 +831,6 @@ gboolean x_mainloop_fd_prepare(GSource *source, gint *timeout)
 {
         if (timeout)
                 *timeout = -1;
-        else
-                LOG_E("x_mainloop_fd_prepare: timeout == NULL");
         return false;
 }
 
