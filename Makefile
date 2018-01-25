@@ -19,26 +19,26 @@ SYSTEMD := 0
 endif
 endif
 
-SERVICEDIR_DBUS ?= $(shell pkg-config dbus-1 --variable=session_bus_services_dir)
+SERVICEDIR_DBUS ?= $(shell $(PKG_CONFIG) dbus-1 --variable=session_bus_services_dir)
 SERVICEDIR_DBUS := ${SERVICEDIR_DBUS}
 ifeq (,${SERVICEDIR_DBUS})
-$(error "Failed to query pkg-config for package 'dbus-1'!")
+$(error "Failed to query $(PKG_CONFIG) for package 'dbus-1'!")
 endif
 
 ifneq (0,${SYSTEMD})
-SERVICEDIR_SYSTEMD ?= $(shell pkg-config systemd --variable=systemduserunitdir)
+SERVICEDIR_SYSTEMD ?= $(shell $(PKG_CONFIG) systemd --variable=systemduserunitdir)
 SERVICEDIR_SYSTEMD := ${SERVICEDIR_SYSTEMD}
 ifeq (,${SERVICEDIR_SYSTEMD})
-$(error "Failed to query pkg-config for package 'systemd'!")
+$(error "Failed to query $(PKG_CONFIG) for package 'systemd'!")
 endif
 endif
 
-LIBS := $(shell pkg-config --libs   ${pkg_config_packs})
-INCS := $(shell pkg-config --cflags ${pkg_config_packs})
+LIBS := $(shell $(PKG_CONFIG) --libs   ${pkg_config_packs})
+INCS := $(shell $(PKG_CONFIG) --cflags ${pkg_config_packs})
 
 ifneq (clean, $(MAKECMDGOALS))
 ifeq ($(and $(INCS),$(LIBS)),)
-$(error "pkg-config failed!")
+$(error "$(PKG_CONFIG) failed!")
 endif
 endif
 
