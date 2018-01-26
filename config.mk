@@ -2,6 +2,8 @@
 PREFIX ?= /usr/local
 MANPREFIX = ${PREFIX}/share/man
 
+PKG_CONFIG ?= pkg-config
+
 # Disable systemd service file installation,
 # if you don't want to use systemd albeit installed
 #SYSTEMD ?= 0
