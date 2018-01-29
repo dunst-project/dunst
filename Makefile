@@ -132,12 +132,12 @@ install-dunst: dunst doc
 install-doc:
 	install -Dm644 dunstrc ${DESTDIR}${PREFIX}/share/dunst/dunstrc
 
-install-service: service install-service-dbus
-install-service-dbus:
+install-service: install-service-dbus
+install-service-dbus: service-dbus
 	install -Dm644 org.knopwob.dunst.service ${DESTDIR}${SERVICEDIR_DBUS}/org.knopwob.dunst.service
 ifneq (0,${SYSTEMD})
 install-service: install-service-systemd
-install-service-systemd:
+install-service-systemd: service-systemd
 	install -Dm644 dunst.systemd.service ${DESTDIR}${SERVICEDIR_SYSTEMD}/dunst.service
 endif
 
