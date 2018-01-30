@@ -1,6 +1,12 @@
 # Dunst changelog
 
-## 1.3.0 (2018-01-05)
+## 1.3.1 - 2018-01-30
+
+### Fixed
+
+- Race condition resulting in the service files being empty (#488)
+
+## 1.3.0 - 2018-01-05
 
 ### Added
 - `ellipsize` option to control how long lines should be ellipsized when `word_wrap` is set to `false` (#374)
