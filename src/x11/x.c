@@ -485,9 +485,9 @@ static colored_layout *r_init_shared(cairo_t *c, notification *n)
                 cl->icon = NULL;
         }
 
-        cl->fg = x_string_to_color_t(n->colors[ColFG]);
-        cl->bg = x_string_to_color_t(n->colors[ColBG]);
-        cl->frame = x_string_to_color_t(n->colors[ColFrame]);
+        cl->fg = x_string_to_color_t(n->colors.fg);
+        cl->bg = x_string_to_color_t(n->colors.bg);
+        cl->frame = x_string_to_color_t(n->colors.frame);
 
         cl->n = n;
 
@@ -1012,27 +1012,6 @@ void x_setup(void)
         x_shortcut_ungrab(&settings.history_ks);
         x_shortcut_grab(&settings.context_ks);
         x_shortcut_ungrab(&settings.context_ks);
-
-        xctx.colors[ColFG][URG_LOW] = settings.lowfgcolor;
-        xctx.colors[ColFG][URG_NORM] = settings.normfgcolor;
-        xctx.colors[ColFG][URG_CRIT] = settings.critfgcolor;
-
-        xctx.colors[ColBG][URG_LOW] = settings.lowbgcolor;
-        xctx.colors[ColBG][URG_NORM] = settings.normbgcolor;
-        xctx.colors[ColBG][URG_CRIT] = settings.critbgcolor;
-
-        if (settings.lowframecolor)
-                xctx.colors[ColFrame][URG_LOW] = settings.lowframecolor;
-        else
-                xctx.colors[ColFrame][URG_LOW] = settings.frame_color;
-        if (settings.normframecolor)
-                xctx.colors[ColFrame][URG_NORM] = settings.normframecolor;
-        else
-                xctx.colors[ColFrame][URG_NORM] = settings.frame_color;
-        if (settings.critframecolor)
-                xctx.colors[ColFrame][URG_CRIT] = settings.critframecolor;
-        else
-                xctx.colors[ColFrame][URG_CRIT] = settings.frame_color;
 
         /* parse and set xctx.geometry and monitor position */
         if (settings.geom[0] == '-') {

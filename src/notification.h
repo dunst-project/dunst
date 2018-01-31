@@ -2,6 +2,13 @@
 #ifndef DUNST_NOTIFICATION_H
 #define DUNST_NOTIFICATION_H
 
+//TODO: Remove cyclic dependency
+typedef struct _notification_colors {
+        char *frame;
+        char *bg;
+        char *fg;
+} NotificationColors;
+
 #include <glib.h>
 #include <stdbool.h>
 
@@ -56,7 +63,7 @@ typedef struct _notification {
         enum markup_mode markup;
         const char *format;
         const char *script;
-        char *colors[3];
+        NotificationColors colors;
 
         /* Hints */
         bool transient;     /* timeout albeit user is idle */

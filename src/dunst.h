@@ -11,11 +11,6 @@
 
 #define PERR(msg, errnum) printf("(%d) %s : %s\n", __LINE__, (msg), (strerror(errnum)))
 
-#define ColLast 3
-#define ColFrame 2
-#define ColFG 1
-#define ColBG 0
-
 extern GSList *rules;
 extern const char *colors[3][3];
 

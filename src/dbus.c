@@ -285,8 +285,8 @@ static notification *dbus_message_to_notification(const gchar *sender, GVariant 
         }
         n->actions = actions;
 
-        n->colors[ColFG] = fgcolor;
-        n->colors[ColBG] = bgcolor;
+        n->colors.fg = fgcolor;
+        n->colors.bg = bgcolor;
 
         notification_init(n);
         return n;
