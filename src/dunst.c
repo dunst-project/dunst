@@ -13,6 +13,7 @@
 #include <stdlib.h>
 
 #include "dbus.h"
+#include "log.h"
 #include "menu.h"
 #include "notification.h"
 #include "option_parser.h"
@@ -24,10 +25,6 @@
 #ifndef VERSION
 #define VERSION "version info needed"
 #endif
-
-#define MSG 1
-#define INFO 2
-#define DEBUG 3
 
 typedef struct _x11_source {
         GSource source;
@@ -128,10 +125,16 @@ int dunst_main(int argc, char *argv[])
 
         cmdline_load(argc, argv);
 
+        dunst_log_init(false);
+
         if (cmdline_get_bool("-v/-version", false, "Print version")
             || cmdline_get_bool("--version", false, "Print version")) {
                 print_version();
         }
+
+        char *verbosity = cmdline_get_string("-verbosity", NULL, "Minimum level for message");
+        log_set_level_from_string(verbosity);
+        g_free(verbosity);
 
         char *cmdline_config_path;
         cmdline_config_path =

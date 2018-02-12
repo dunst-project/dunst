@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "log.h"
+
 char *string_replace_char(char needle, char replacement, char *haystack)
 {
         char *current = haystack;
@@ -134,13 +136,13 @@ gint64 string_to_time(const char *string)
         gint64 val = strtoll(string, &endptr, 10);
 
         if (errno != 0) {
-                fprintf(stderr, "ERROR: Time: '%s': %s.\n", string, strerror(errno));
+                LOG_W("Time: '%s': %s.", string, strerror(errno));
                 return 0;
         } else if (string == endptr) {
-                fprintf(stderr, "ERROR: Time: No digits found.\n");
+                LOG_W("Time: '%s': No digits found.", string);
                 return 0;
         } else if (errno != 0 && val == 0) {
-                fprintf(stderr, "ERROR: Time: '%s' unknown error.\n", string);
+                LOG_W("Time: '%s': Unknown error.", string);
                 return 0;
         } else if (errno == 0 && !*endptr) {
                 return val * G_USEC_PER_SEC;
@@ -162,12 +164,6 @@ gint64 string_to_time(const char *string)
                 return val * G_USEC_PER_SEC * 60 * 60 * 24;
         else
                 return 0;
-}
-
-void die(char *text, int exit_value)
-{
-        fputs(text, stderr);
-        exit(exit_value);
 }
 
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

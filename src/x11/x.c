@@ -26,6 +26,7 @@
 
 #include "src/dbus.h"
 #include "src/dunst.h"
+#include "src/log.h"
 #include "src/markup.h"
 #include "src/notification.h"
 #include "src/queues.h"
@@ -83,7 +84,7 @@ static color_t x_string_to_color_t(const char *str)
         char *end;
         long int val = strtol(str+1, &end, 16);
         if (*end != '\0' && *(end+1) != '\0') {
-                printf("WARNING: Invalid color string: \"%s\"\n", str);
+                LOG_W("Invalid color string: '%s'", str);
         }
 
         return x_color_hex_to_double(val);
@@ -132,9 +133,7 @@ static color_t x_get_separator_color(colored_layout *cl, colored_layout *cl_next
         case AUTO:
                 return calculate_foreground_color(cl->bg);
         default:
-                printf("Unknown separator color type. Please file a Bugreport.\n");
-                return cl->fg;
-
+                LOG_E("Unknown separator color type.");
         }
 }
 
@@ -378,8 +377,7 @@ static GdkPixbuf *get_pixbuf_from_path(char *icon_path)
                         } while (*(end) != '\0');
                 }
                 if (pixbuf == NULL) {
-                        fprintf(stderr,
-                                "Could not load icon: '%s'\n", icon_path);
+                        LOG_W("Could not load icon: '%s'", icon_path);
                 }
                 if (uri_path != NULL) {
                         g_free(uri_path);
@@ -534,7 +532,7 @@ static colored_layout *r_create_layout_from_notification(cairo_t *c, notificatio
                 cl->attr = NULL;
                 pango_layout_set_text(cl->l, n->text_to_render, -1);
                 if (n->first_render) {
-                        printf("Error parsing markup: %s\n", err->message);
+                        LOG_W("Unable to parse markup: %s", err->message);
                 }
                 g_error_free(err);
         }
@@ -833,8 +831,6 @@ gboolean x_mainloop_fd_prepare(GSource *source, gint *timeout)
 {
         if (timeout)
                 *timeout = -1;
-        else
-                g_print("BUG: x_mainloop_fd_prepare: timeout == NULL\n");
         return false;
 }
 
@@ -994,9 +990,9 @@ void x_setup(void)
 
         /* initialize xctx.dc, font, keyboard, colors */
         if (!setlocale(LC_CTYPE, "") || !XSupportsLocale())
-                fputs("no locale support\n", stderr);
+                LOG_W("No locale support");
         if (!(xctx.dpy = XOpenDisplay(NULL))) {
-                die("cannot open display\n", EXIT_FAILURE);
+                DIE("Cannot open X11 display.");
         }
 
         x_shortcut_init(&settings.close_ks);
@@ -1193,7 +1189,7 @@ void x_win_show(void)
                     None,
                     None);
         if (x_shortcut_tear_down_error_handler()) {
-                fprintf(stderr, "Unable to grab mouse button(s)\n");
+                LOG_W("Unable to grab mouse button(s).");
         }
 
         XMapRaised(xctx.dpy, xctx.win);
@@ -1233,7 +1229,7 @@ KeySym x_shortcut_string_to_mask(const char *str)
         } else if (!strcmp(str, "shift")) {
                 return ShiftMask;
         } else {
-                fprintf(stderr, "Warning: Unknown Modifier: %s\n", str);
+                LOG_W("Unknown Modifier: '%s'", str);
                 return 0;
         }
 }
@@ -1246,11 +1242,11 @@ static int GrabXErrorHandler(Display *display, XErrorEvent *e)
         dunst_grab_errored = true;
         char err_buf[BUFSIZ];
         XGetErrorText(display, e->error_code, err_buf, BUFSIZ);
-        fputs(err_buf, stderr);
-        fputs("\n", stderr);
 
         if (e->error_code != BadAccess) {
-                exit(EXIT_FAILURE);
+                DIE("%s", err_buf);
+        } else {
+                LOG_W("%s", err_buf);
         }
 
         return 0;
@@ -1308,7 +1304,7 @@ int x_shortcut_grab(keyboard_shortcut *ks)
         }
 
         if (x_shortcut_tear_down_error_handler()) {
-                fprintf(stderr, "Unable to grab key \"%s\"\n", ks->str);
+                LOG_W("Unable to grab key '%s'.", ks->str);
                 ks->is_valid = false;
                 return 1;
         }
@@ -1371,8 +1367,7 @@ void x_shortcut_init(keyboard_shortcut *ks)
         }
 
         if (ks->sym == NoSymbol || ks->code == NoSymbol) {
-                fprintf(stderr, "Warning: Unknown keyboard shortcut: %s\n",
-                        ks->str);
+                LOG_W("Unknown keyboard shortcut: '%s'", ks->str);
                 ks->is_valid = false;
         } else {
                 ks->is_valid = true;

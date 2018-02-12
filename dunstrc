@@ -198,6 +198,15 @@
     # automatically after a crash.
     startup_notification = false
 
+    # Manage dunst's desire for talking
+    # Can be one of the following values:
+    #  crit: Critical features. Dunst aborts
+    #  warn: Only non-fatal warnings
+    #  mesg: Important Messages
+    #  info: all unimportant stuff
+    # debug: all less than unimportant stuff
+    verbosity = mesg
+
     ### Legacy
 
     # Use the Xinerama extension instead of RandR for multi-monitor support.

@@ -13,6 +13,7 @@
 #include "rules.h" // put before config.h to fix missing include
 #include "config.h"
 #include "dunst.h"
+#include "log.h"
 #include "notification.h"
 #include "option_parser.h"
 #include "utils.h"
@@ -28,7 +29,7 @@ static void parse_follow_mode(const char *mode)
         else if (strcmp(mode, "none") == 0)
                 settings.f_mode = FOLLOW_NONE;
         else {
-                fprintf(stderr, "Warning: unknown follow mode: \"%s\"\n", mode);
+                LOG_W("Unknown follow mode: '%s'", mode);
                 settings.f_mode = FOLLOW_NONE;
         }
 }
@@ -42,7 +43,7 @@ static enum markup_mode parse_markup_mode(const char *mode)
         } else if (strcmp(mode, "full") == 0 || strcmp(mode, "yes") == 0) {
                 return MARKUP_FULL;
         } else {
-                fprintf(stderr, "Warning: unknown markup mode: \"%s\"\n", mode);
+                LOG_W("Unknown markup mode: '%s'", mode);
                 return MARKUP_NO;
         }
 }
@@ -60,9 +61,7 @@ static enum urgency ini_get_urgency(const char *section, const char *key, const 
                 else if (strcmp(urg, "critical") == 0)
                         ret = URG_CRIT;
                 else
-                        fprintf(stderr,
-                                "unknown urgency: %s, ignoring\n",
-                                urg);
+                        LOG_W("Unknown urgency: '%s'", urg);
         }
         g_free(urg);
         return ret;
@@ -85,10 +84,7 @@ void load_settings(char *cmdline_config_path)
                 }
 
                 if(!config_file) {
-                        char *msg = g_strdup_printf(
-                                        "Cannot find config file: '%s'\n",
-                                        cmdline_config_path);
-                        die(msg, 1);
+                        DIE("Cannot find config file: '%s'", cmdline_config_path);
                 }
         }
         if (config_file == NULL) {
@@ -99,16 +95,28 @@ void load_settings(char *cmdline_config_path)
                  * (before v0.2). */
                 config_file = xdgConfigOpen("dunstrc", "r", &xdg);
                 if (config_file == NULL) {
-                        puts("no dunstrc found -> skipping\n");
+                        LOG_W("No dunstrc found.");
                         xdgWipeHandle(&xdg);
                 }
         }
 
         load_ini_file(config_file);
 #else
-        fprintf(stderr, "Warning: dunstrc parsing disabled. "
-                        "Using STATIC_CONFIG is deprecated behavior.\n");
+        LOG_M("dunstrc parsing disabled. "
+              "Using STATIC_CONFIG is deprecated behavior.");
 #endif
+
+        {
+                char *loglevel = option_get_string(
+                                "global",
+                                "verbosity", "-verbosity", NULL,
+                                "The verbosity to log (one of 'crit', 'warn', 'mesg', 'info', 'debug')"
+                        );
+
+                log_set_level_from_string(loglevel);
+
+                g_free(loglevel);
+        }
 
         settings.per_monitor_dpi = option_get_bool(
                 "experimental",
@@ -138,7 +146,8 @@ void load_settings(char *cmdline_config_path)
                         );
 
                         settings.markup = (allow_markup ? MARKUP_FULL : MARKUP_STRIP);
-                        fprintf(stderr, "Warning: 'allow_markup' is deprecated, please use 'markup' instead.\n");
+                        LOG_M("'allow_markup' is deprecated, please "
+                              "use 'markup' instead.");
                 }
 
                 char *c = option_get_string(
@@ -198,7 +207,7 @@ void load_settings(char *cmdline_config_path)
                 } else if (strcmp(c, "end") == 0) {
                         settings.ellipsize = end;
                 } else {
-                        fprintf(stderr, "Warning: unknown ellipsize value: \"%s\"\n", c);
+                        LOG_W("Unknown ellipsize value: '%s'", c);
                         settings.ellipsize = defaults.ellipsize;
                 }
                 g_free(c);
@@ -286,8 +295,7 @@ void load_settings(char *cmdline_config_path)
                         else if (strcmp(c, "right") == 0)
                                 settings.align = right;
                         else
-                                fprintf(stderr,
-                                        "Warning: unknown alignment\n");
+                                LOG_W("Unknown alignment value: '%s'", c);
                         g_free(c);
                 }
         }
@@ -389,8 +397,8 @@ void load_settings(char *cmdline_config_path)
         {
                 GError *error = NULL;
                 if (!g_shell_parse_argv(settings.dmenu, NULL, &settings.dmenu_cmd, &error)) {
-                        fprintf(stderr, "Unable to parse dmenu command: %s\n", error->message);
-                        fprintf(stderr, "dmenu functionality will be disabled.\n");
+                        LOG_W("Unable to parse dmenu command: '%s'."
+                              "dmenu functionality will be disabled.", error->message);
                         g_error_free(error);
                         settings.dmenu_cmd = NULL;
                 }
@@ -418,8 +426,7 @@ void load_settings(char *cmdline_config_path)
                         else if (strcmp(c, "off") == 0)
                                 settings.icon_position = icons_off;
                         else
-                                fprintf(stderr,
-                                        "Warning: unknown icon position: %s\n", c);
+                                LOG_W("Unknown icon position: '%s'", c);
                         g_free(c);
                 }
         }
@@ -438,7 +445,7 @@ void load_settings(char *cmdline_config_path)
                         "icon_folders", "-icon_folders", defaults.icon_path,
                         "folders to default icons (deprecated, please use 'icon_path' instead)"
                 );
-                fprintf(stderr, "Warning: 'icon_folders' is deprecated, please use 'icon_path' instead.\n");
+                LOG_M("The option 'icon_folders' is deprecated, please use 'icon_path' instead.");
         }
         // Read value and generate usage string for icon_path.
         // If icon_path is set, override icon_folder.
@@ -458,7 +465,9 @@ void load_settings(char *cmdline_config_path)
                                 "width", NULL, defaults.frame_width,
                                 "Width of frame around the window"
                         );
-                        fprintf(stderr, "Warning: The frame section is deprecated, width has been renamed to frame_width and moved to the global section.\n");
+                        LOG_M("The frame section is deprecated, width has "
+                              "been renamed to frame_width and moved to "
+                              "the global section.");
                 }
 
                 settings.frame_width = option_get_int(
@@ -474,7 +483,9 @@ void load_settings(char *cmdline_config_path)
                                 "color", NULL, defaults.frame_color,
                                 "Color of the frame around the window"
                         );
-                        fprintf(stderr, "Warning: The frame section is deprecated, color has been renamed to frame_color and moved to the global section.\n");
+                        LOG_M("The frame section is deprecated, color "
+                              "has been renamed to frame_color and moved "
+                              "to the global section.");
                 }
 
                 settings.frame_color = option_get_string(

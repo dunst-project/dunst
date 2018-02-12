@@ -444,6 +444,12 @@ WM_CLASS). There should be no need to modify this setting for regular use.
 Display a notification on startup. This is usually used for debugging and there
 shouldn't be any need to use this option.
 
+=item B<verbosity> (values: 'crit', 'warn', 'mesg', 'info', 'debug' default 'mesg')
+
+Do not display log messages, which have lower precedence than specified
+verbosity. This won't affect printing notifications on the terminal. Use
+the '-print' option for this.
+
 =item B<force_xinerama> (values: [true/false], default: false)
 
 Use the Xinerama extension instead of RandR for multi-monitor support. This

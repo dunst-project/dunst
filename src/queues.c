@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "log.h"
 #include "notification.h"
 #include "settings.h"
 
@@ -59,7 +60,7 @@ int queues_notification_insert(notification *n)
                 if (settings.always_run_script) {
                         notification_run_script(n);
                 }
-                printf("skipping notification: %s %s\n", n->body, n->summary);
+                LOG_M("Skipping notification: '%s' '%s'", n->body, n->summary);
                 return 0;
         }
         /* Do not insert the message if it's a command */

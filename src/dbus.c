@@ -7,6 +7,7 @@
 #include <stdlib.h>
 
 #include "dunst.h"
+#include "log.h"
 #include "notification.h"
 #include "queues.h"
 #include "settings.h"
@@ -100,8 +101,9 @@ void handle_method_call(GDBusConnection *connection,
         } else if (g_strcmp0(method_name, "GetServerInformation") == 0) {
                 on_get_server_information(connection, sender, parameters, invocation);
         } else {
-                fprintf(stderr, "WARNING: sender: %s; unknown method_name: %s\n", sender,
-                       method_name);
+                LOG_M("Unknown method name: '%s' (sender: '%s').",
+                      method_name,
+                      sender);
         }
 }
 
@@ -342,14 +344,13 @@ static void on_get_server_information(GDBusConnection *connection,
 void signal_notification_closed(notification *n, enum reason reason)
 {
         if (reason < REASON_MIN || REASON_MAX < reason) {
-                fprintf(stderr, "ERROR: Closing notification with reason '%d' not supported. "
-                                "Closing it with reason '%d'.\n", reason, REASON_UNDEF);
+                LOG_W("Closing notification with reason '%d' not supported. "
+                      "Closing it with reason '%d'.", reason, REASON_UNDEF);
                 reason = REASON_UNDEF;
         }
 
         if (!dbus_conn) {
-                fprintf(stderr, "ERROR: Tried to close notification but dbus connection not set!\n");
-                return;
+                LOG_E("Unable to close notification: No DBus connection.");
         }
 
         GVariant *body = g_variant_new("(uu)", n->id, reason);
@@ -364,7 +365,7 @@ void signal_notification_closed(notification *n, enum reason reason)
                                       &err);
 
         if (err) {
-                fprintf(stderr, "Unable to close notification: %s\n", err->message);
+                LOG_W("Unable to close notification: %s", err->message);
                 g_error_free(err);
         }
 
@@ -384,7 +385,7 @@ void signal_action_invoked(notification *n, const char *identifier)
                                       &err);
 
         if (err) {
-                fprintf(stderr, "Unable to invoke action: %s\n", err->message);
+                LOG_W("Unable to invoke action: %s", err->message);
                 g_error_free(err);
         }
 }
@@ -410,8 +411,7 @@ static void on_bus_acquired(GDBusConnection *connection,
                                                             &err);
 
         if (registration_id == 0) {
-                fprintf(stderr, "Unable to register dbus connection: %s\n", err->message);
-                exit(1);
+                DIE("Unable to register dbus connection: %s", err->message);
         }
 }
 
@@ -536,14 +536,14 @@ static void on_name_lost(GDBusConnection *connection,
         if (connection) {
                 char *name = NULL;
                 int pid = dbus_get_fdn_daemon_info(connection, &name, NULL);
-                if (pid > 0)
-                        fprintf(stderr, "Cannot acquire '"FDN_NAME"': "
-                                "Name is acquired by '%s' with PID '%d'.\n", name, pid);
-                else
-                        fprintf(stderr, "Cannot acquire '"FDN_NAME"'.\n");
-
+                if (pid > 0) {
+                        DIE("Cannot acquire '"FDN_NAME"': "
+                            "Name is acquired by '%s' with PID '%d'.", name, pid);
+                } else {
+                        DIE("Cannot acquire '"FDN_NAME"'.");
+                }
         } else {
-                fprintf(stderr, "Cannot connect to DBus.\n");
+                DIE("Cannot connect to DBus.");
         }
         exit(1);
 }
@@ -568,10 +568,10 @@ static RawImage *get_raw_image_from_data_hint(GVariant *icon_data)
                 * ((image->n_channels * image->bits_per_sample + 7) / 8);
 
         if (expected_len != g_variant_get_size (data_variant)) {
-                fprintf(stderr, "Expected image data to be of length %" G_GSIZE_FORMAT
-                       " but got a " "length of %" G_GSIZE_FORMAT,
-                       expected_len,
-                       g_variant_get_size (data_variant));
+                LOG_W("Expected image data to be of length %" G_GSIZE_FORMAT
+                      " but got a length of %" G_GSIZE_FORMAT,
+                      expected_len,
+                      g_variant_get_size(data_variant));
                 g_free(image);
                 g_variant_unref(data_variant);
                 return NULL;

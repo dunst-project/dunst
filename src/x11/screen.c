@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "src/log.h"
 #include "src/settings.h"
 #include "x.h"
 
@@ -90,7 +91,8 @@ void randr_init()
 {
         int randr_error_base = 0;
         if (!XRRQueryExtension(xctx.dpy, &randr_event_base, &randr_error_base)) {
-                fprintf(stderr, "Could not initialize the RandR extension, falling back to single monitor mode.\n");
+                LOG_W("Could not initialize the RandR extension. "
+                      "Falling back to single monitor mode.");
                 return;
         }
         XRRQueryVersion(xctx.dpy, &randr_major_version, &randr_minor_version);
@@ -101,9 +103,10 @@ void randr_update()
 {
         if (randr_major_version < 1
             || (randr_major_version == 1 && randr_minor_version < 5)) {
-                fprintf(stderr, "Server RandR version too low (%i.%i). Falling back to single monitor mode\n",
-                                randr_major_version,
-                                randr_minor_version);
+                LOG_W("Server RandR version too low (%i.%i). "
+                      "Falling back to single monitor mode.",
+                      randr_major_version,
+                      randr_minor_version);
                 screen_update_fallback();
                 return;
         }
@@ -112,7 +115,8 @@ void randr_update()
         XRRMonitorInfo *m = XRRGetMonitors(xctx.dpy, RootWindow(xctx.dpy, DefaultScreen(xctx.dpy)), true, &n);
 
         if (n < 1) {
-                fprintf(stderr, "Get monitors reported %i monitors, falling back to single monitor mode\n", n);
+                LOG_C("Get monitors reported %i monitors. "
+                      "Falling back to single monitor mode.", n);
                 screen_update_fallback();
                 return;
         }
@@ -150,7 +154,8 @@ void xinerama_update()
         XineramaScreenInfo *info = XineramaQueryScreens(xctx.dpy, &n);
 
         if (!info) {
-                fprintf(stderr, "(Xinerama) Could not get screen info, falling back to single monitor mode\n");
+                LOG_W("Could not get xinerama screen info. "
+                      "Falling back to single monitor mode.");
                 screen_update_fallback();
                 return;
         }
@@ -326,8 +331,7 @@ static int FollowXErrorHandler(Display *display, XErrorEvent *e)
         dunst_follow_errored = true;
         char err_buf[BUFSIZ];
         XGetErrorText(display, e->error_code, err_buf, BUFSIZ);
-        fputs(err_buf, stderr);
-        fputs("\n", stderr);
+        LOG_W("%s", err_buf);
 
         return 0;
 }

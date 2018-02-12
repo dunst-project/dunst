@@ -15,6 +15,7 @@
 
 #include "dbus.h"
 #include "dunst.h"
+#include "log.h"
 #include "markup.h"
 #include "menu.h"
 #include "queues.h"
@@ -33,6 +34,7 @@ static void notification_dmenu_string(notification *n);
  */
 void notification_print(notification *n)
 {
+        //TODO: use logging info for this
         printf("{\n");
         printf("\tappname: '%s'\n", n->appname);
         printf("\tsummary: '%s'\n", n->summary);
@@ -106,7 +108,7 @@ void notification_run_script(notification *n)
                                          urgency,
                                          (char *)NULL);
                         if (ret != 0) {
-                                PERR("Unable to run script", errno);
+                                LOG_W("Unable to run script: %s", strerror(errno));
                                 exit(EXIT_FAILURE);
                         }
                 }
@@ -416,12 +418,11 @@ static void notification_format_message(notification *n)
                                 MARKUP_NO);
                         break;
                 case '\0':
-                        fprintf(stderr, "WARNING: format_string has trailing %% character."
-                                        "To escape it use %%%%.");
+                        LOG_W("format_string has trailing %% character. "
+                              "To escape it use %%%%.");
                         break;
                 default:
-                        fprintf(stderr, "WARNING: format_string %%%c"
-                                        " is unknown\n", substr[1]);
+                        LOG_W("format_string %%%c is unknown.", substr[1]);
                         // shift substr pointer forward,
                         // as we can't interpret the format string
                         substr++;

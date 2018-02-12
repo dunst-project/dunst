@@ -14,6 +14,7 @@
 
 #include "dbus.h"
 #include "dunst.h"
+#include "log.h"
 #include "notification.h"
 #include "queues.h"
 #include "settings.h"
@@ -33,7 +34,7 @@ static int regex_init(void)
             "(\\([-[:alnum:]_\\@;/?:&=%$.+!*\x27,~#]*\\)|[-[:alnum:]_\\@;/?:&=%$+*~])+";
         int ret = regcomp(&cregex, regex, REG_EXTENDED | REG_ICASE);
         if (ret != 0) {
-                fputs("failed to compile regex", stderr);
+                LOG_W("Failed to compile regex.");
                 return 0;
         } else {
                 is_initialized = true;
@@ -139,7 +140,7 @@ void invoke_action(const char *action)
 
         char *appname_begin = strchr(action, '[');
         if (!appname_begin) {
-                printf("invalid action: %s\n", action);
+                LOG_W("Invalid action: '%s'", action);
                 return;
         }
         appname_begin++;
@@ -193,7 +194,7 @@ void dispatch_menu_result(const char *input)
 void context_menu(void)
 {
         if (settings.dmenu_cmd == NULL) {
-                fprintf(stderr, "dmenu command not set properly. Cowardly refusing to open the context menu.\n");
+                LOG_C("Unable to open dmenu: No dmenu command set.");
                 return;
         }
         char *dmenu_input = NULL;
@@ -218,12 +219,12 @@ void context_menu(void)
         int child_io[2];
         int parent_io[2];
         if (pipe(child_io) != 0) {
-                PERR("pipe()", errno);
+                LOG_W("pipe(): error in child: %s", strerror(errno));
                 g_free(dmenu_input);
                 return;
         }
         if (pipe(parent_io) != 0) {
-                PERR("pipe()", errno);
+                LOG_W("pipe(): error in parent: %s", strerror(errno));
                 g_free(dmenu_input);
                 return;
         }
@@ -234,12 +235,12 @@ void context_menu(void)
                 close(parent_io[0]);
                 close(0);
                 if (dup(child_io[0]) == -1) {
-                        PERR("dup()", errno);
+                        LOG_W("dup(): error in child: %s", strerror(errno));
                         exit(EXIT_FAILURE);
                 }
                 close(1);
                 if (dup(parent_io[1]) == -1) {
-                        PERR("dup()", errno);
+                        LOG_W("dup(): error in parent: %s", strerror(errno));
                         exit(EXIT_FAILURE);
                 }
                 execvp(settings.dmenu_cmd[0], settings.dmenu_cmd);
@@ -252,7 +253,7 @@ void context_menu(void)
                 close(parent_io[1]);
                 size_t wlen = strlen(dmenu_input);
                 if (write(child_io[1], dmenu_input, wlen) != wlen) {
-                        PERR("write()", errno);
+                        LOG_W("write(): error: %s", strerror(errno));
                 }
                 close(child_io[1]);
 
