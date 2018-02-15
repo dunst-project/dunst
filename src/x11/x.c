@@ -852,6 +852,8 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer 
         unsigned int state;
         while (XPending(xctx.dpy) > 0) {
                 XNextEvent(xctx.dpy, &ev);
+                LOG_D("XEvent: processing '%d'", ev.type);
+
                 switch (ev.type) {
                 case Expose:
                         if (ev.xexpose.count == 0 && xctx.visible) {

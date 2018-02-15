@@ -146,6 +146,8 @@ void screen_check_event(XEvent event)
 {
         if (event.type == randr_event_base + RRScreenChangeNotify)
                 randr_update();
+        else
+                LOG_D("XEvent: Ignored '%d'", event.type);
 }
 
 void xinerama_update(void)
