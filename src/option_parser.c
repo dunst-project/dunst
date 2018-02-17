@@ -159,31 +159,6 @@ const char *next_section(const char *section)
         return NULL;
 }
 
-int ini_get_bool(const char *section, const char *key, int def)
-{
-        const char *value = get_value(section, key);
-        if (value == NULL)
-                return def;
-        else {
-                switch (value[0]) {
-                case 'y':
-                case 'Y':
-                case 't':
-                case 'T':
-                case '1':
-                        return true;
-                case 'n':
-                case 'N':
-                case 'f':
-                case 'F':
-                case '0':
-                        return false;
-                default:
-                        return def;
-                }
-        }
-}
-
 char *clean_value(const char *value)
 {
         char *s;
@@ -356,17 +331,6 @@ double cmdline_get_double(const char *key, double def, const char *description)
                 return atof(str);
 }
 
-int cmdline_get_bool(const char *key, int def, const char *description)
-{
-        cmdline_usage_append(key, "", description);
-        int idx = cmdline_find_option(key);
-
-        if (idx > 0)
-                return true;
-        else
-                return def;
-}
-
 bool cmdline_is_set(const char *key)
 {
         return cmdline_get_value(key) != NULL;
@@ -423,26 +387,6 @@ double option_get_double(const char *ini_section,
                 return ini_get_double(ini_section, ini_key, def);
         else
                 return val;
-}
-
-int option_get_bool(const char *ini_section,
-                    const char *ini_key,
-                    const char *cmdline_key,
-                    int def,
-                    const char *description)
-{
-        int val = false;
-
-        if (cmdline_key)
-                val = cmdline_get_bool(cmdline_key, false, description);
-
-        if (cmdline_key && val) {
-                /* this can only be true if the value has been set,
-                 * so we can return */
-                return true;
-        }
-
-        return ini_get_bool(ini_section, ini_key, def);
 }
 
 void cmdline_usage_append(const char *key, const char *type, const char *description)

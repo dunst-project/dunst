@@ -67,19 +67,19 @@ void load_settings(const char *cmdline_config_path)
         ));
 
 
-        settings.per_monitor_dpi = option_get_bool(
+        settings.per_monitor_dpi = string_parse_bool(option_get_string(
                 "experimental", "per_monitor_dpi",
                 NULL,
-                false,
+                NULL,
                 ""
-        );
+        ), false);
 
-        settings.force_xinerama = option_get_bool(
+        settings.force_xinerama = string_parse_bool(option_get_string(
                 "global", "force_xinerama",
                 "-force_xinerama",
-                false,
+                NULL,
                 "Force the use of the Xinerama extension"
-        );
+        ), false);
 
         settings.font = g_strdup(option_get_string(
                 "global", "font",
@@ -91,12 +91,12 @@ void load_settings(const char *cmdline_config_path)
         {
                 // Check if allow_markup set
                 if (ini_is_set("global", "allow_markup")) {
-                        bool allow_markup = option_get_bool(
+                        bool allow_markup = string_parse_bool(option_get_string(
                                 "global", "allow_markup",
                                 NULL,
-                                false,
+                                NULL,
                                 "Allow markup in notifications"
-                        );
+                        ), false);
 
                         settings.markup = (allow_markup ? MARKUP_FULL : MARKUP_STRIP);
                         LOG_M("'allow_markup' is deprecated, please "
@@ -128,26 +128,26 @@ void load_settings(const char *cmdline_config_path)
                 "The format template for the notifications"
         ));
 
-        settings.sort = option_get_bool(
+        settings.sort = string_parse_bool(option_get_string(
                 "global", "sort",
                 "-sort",
-                defaults.sort,
+                NULL,
                 "Sort notifications by urgency and date?"
-        );
+        ), defaults.sort);
 
-        settings.indicate_hidden = option_get_bool(
+        settings.indicate_hidden = string_parse_bool(option_get_string(
                 "global", "indicate_hidden",
                 "-indicate_hidden",
-                defaults.indicate_hidden,
+                NULL,
                 "Show how many notificaitons are hidden?"
-        );
+        ), defaults.indicate_hidden);
 
-        settings.word_wrap = option_get_bool(
+        settings.word_wrap = string_parse_bool(option_get_string(
                 "global", "word_wrap",
                 "-word_wrap",
-                defaults.word_wrap,
+                NULL,
                 "Truncating long lines or do word wrap"
-        );
+        ), defaults.word_wrap);
 
         settings.ellipsize = parse_ellipsize(option_get_string(
                 "global", "ellipsize",
@@ -156,12 +156,12 @@ void load_settings(const char *cmdline_config_path)
                 "Ellipsize truncated lines on the start/middle/end"
         ), defaults.ellipsize);
 
-        settings.ignore_newline = option_get_bool(
+        settings.ignore_newline = string_parse_bool(option_get_string(
                 "global", "ignore_newline",
                 "-ignore_newline",
-                defaults.ignore_newline,
+                NULL,
                 "Ignore newline characters in notifications"
-        );
+        ), defaults.ignore_newline);
 
         settings.idle_threshold = string_to_time(option_get_string(
                 "global", "idle_threshold",
@@ -217,12 +217,12 @@ void load_settings(const char *cmdline_config_path)
 
         }
 
-        settings.shrink = option_get_bool(
+        settings.shrink = string_parse_bool(option_get_string(
                 "global", "shrink",
                 "-shrink",
-                defaults.shrink,
+                NULL,
                 "Shrink window if it's smaller than the width"
-        );
+        ), defaults.shrink);
 
         settings.line_height = option_get_int(
                 "global", "line_height",
@@ -251,19 +251,19 @@ void load_settings(const char *cmdline_config_path)
                 "When should the age of the notification be displayed?"
         ), defaults.show_age_threshold);
 
-        settings.hide_duplicate_count = option_get_bool(
+        settings.hide_duplicate_count = string_parse_bool(option_get_string(
                 "global", "hide_duplicate_count",
                 "-hide_duplicate_count",
-                false,
+                NULL,
                 "Hide the count of merged notifications with the same content"
-        );
+        ), false);
 
-        settings.sticky_history = option_get_bool(
+        settings.sticky_history = string_parse_bool(option_get_string(
                 "global", "sticky_history",
                 "-sticky_history",
-                defaults.sticky_history,
+                NULL,
                 "Don't timeout notifications popped up from history"
-        );
+        ), defaults.sticky_history);
 
         settings.history_length = option_get_int(
                 "global", "history_length",
@@ -272,12 +272,12 @@ void load_settings(const char *cmdline_config_path)
                 "Max amount of notifications kept in history"
         );
 
-        settings.show_indicators = option_get_bool(
+        settings.show_indicators = string_parse_bool(option_get_string(
                 "global", "show_indicators",
                 "-show_indicators",
-                defaults.show_indicators,
+                NULL,
                 "Show indicators for actions \"(A)\" and URLs \"(U)\""
-        );
+        ), defaults.show_indicators);
 
         settings.separator_height = option_get_int(
                 "global", "separator_height",
@@ -321,19 +321,19 @@ void load_settings(const char *cmdline_config_path)
                 "Color of the separator line (or 'auto')"
         ), defaults.sep_color);
 
-        settings.stack_duplicates = option_get_bool(
+        settings.stack_duplicates = string_parse_bool(option_get_string(
                 "global", "stack_duplicates",
                 "-stack_duplicates",
-                true,
+                NULL,
                 "Merge multiple notifications with the same content"
-        );
+        ), true);
 
-        settings.startup_notification = option_get_bool(
+        settings.startup_notification = string_parse_bool(option_get_string(
                 "global", "startup_notification",
                 "-startup_notification",
-                false,
+                NULL,
                 "print notification on startup"
-        );
+        ), false);
 
         settings.dmenu = string_to_path(g_strdup(option_get_string(
                 "global", "dmenu",
@@ -569,18 +569,18 @@ void load_settings(const char *cmdline_config_path)
                 "Shortcut for context menu"
         ));
 
-        settings.print_notifications = cmdline_get_bool(
+        settings.print_notifications = string_parse_bool(cmdline_get_string(
                 "-print",
-                false,
+                NULL,
                 "Print notifications to cmdline (DEBUG)"
-        );
+        ), false);
 
-        settings.always_run_script = option_get_bool(
+        settings.always_run_script = string_parse_bool(option_get_string(
                 "global", "always_run_script",
                 "-always_run_script",
-                true,
+                NULL,
                 "Always run rule-defined scripts, even if the notification is suppressed with format = \"\"."
-        );
+        ), true);
 
         /* push hardcoded default rules into rules list */
         for (int i = 0; i < G_N_ELEMENTS(default_rules); i++) {
@@ -631,9 +631,9 @@ void load_settings(const char *cmdline_config_path)
                 r->fc = g_strdup(ini_get_string(cur_section, "frame_color", r->fc));
                 r->format = g_strdup(ini_get_string(cur_section, "format", r->format));
                 r->new_icon = g_strdup(ini_get_string(cur_section, "new_icon", r->new_icon));
-                r->history_ignore = ini_get_bool(cur_section, "history_ignore", r->history_ignore);
-                r->match_transient = ini_get_bool(cur_section, "match_transient", r->match_transient);
-                r->set_transient = ini_get_bool(cur_section, "set_transient", r->set_transient);
+                r->history_ignore = string_parse_bool(ini_get_string(cur_section, "history_ignore", NULL), r->history_ignore);
+                r->match_transient = string_parse_bool(ini_get_string(cur_section, "match_transient", NULL), r->match_transient);
+                r->set_transient = string_parse_bool(ini_get_string(cur_section, "set_transient", NULL), r->set_transient);
                 r->fullscreen = parse_enum_fullscreen(ini_get_string(cur_section,"fullscreen", NULL), r->fullscreen);
                 r->script = string_to_path(g_strdup(ini_get_string(cur_section, "script", NULL)));
         }

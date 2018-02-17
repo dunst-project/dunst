@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <glib.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -185,4 +186,29 @@ gint64 time_monotonic_now(void)
         return (gint64)tv_now.tv_sec  * G_USEC_PER_SEC
                      + tv_now.tv_nsec / 1000;
 }
+
+/* see utils.h */
+bool string_parse_bool(const char *string, bool def)
+{
+        if (!string)
+                return def;
+
+        switch (string[0]) {
+        case 'y':
+        case 'Y':
+        case 't':
+        case 'T':
+        case '1':
+                return true;
+        case 'n':
+        case 'N':
+        case 'f':
+        case 'F':
+        case '0':
+                return false;
+        default:
+                return def;
+        }
+}
+
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

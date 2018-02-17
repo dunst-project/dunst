@@ -172,6 +172,41 @@ TEST test_string_to_time(void)
         PASS();
 }
 
+TEST test_string_parse_bool(void)
+{
+        ASSERT(string_parse_bool("true", false));
+        ASSERT(string_parse_bool("True", false));
+        ASSERT(string_parse_bool("TRUE", false));
+
+        ASSERT(string_parse_bool("y", false));
+        ASSERT(string_parse_bool("yes", false));
+        ASSERT(string_parse_bool("Yes", false));
+        ASSERT(string_parse_bool("YES", false));
+
+        ASSERT_FALSE(string_parse_bool("false", true));
+        ASSERT_FALSE(string_parse_bool("False", true));
+        ASSERT_FALSE(string_parse_bool("FALSE", true));
+
+        ASSERT_FALSE(string_parse_bool("n", true));
+        ASSERT_FALSE(string_parse_bool("no", true));
+        ASSERT_FALSE(string_parse_bool("No", true));
+        ASSERT_FALSE(string_parse_bool("NO", true));
+
+        /* Assert that default values get taken
+         * properly on invalid input
+         */
+        ASSERT(string_parse_bool(NULL, true) == true);
+        ASSERT(string_parse_bool(NULL, false) == false);
+
+        ASSERT(string_parse_bool("", true) == true);
+        ASSERT(string_parse_bool("", false) == false);
+
+        ASSERT(string_parse_bool("Boolean", false) == false);
+        ASSERT(string_parse_bool("Boolean", false) == false);
+
+        PASS();
+}
+
 SUITE(suite_utils)
 {
         RUN_TEST(test_string_replace_char);
@@ -181,5 +216,6 @@ SUITE(suite_utils)
         RUN_TEST(test_string_strip_delimited);
         RUN_TEST(test_string_to_path);
         RUN_TEST(test_string_to_time);
+        RUN_TEST(test_string_parse_bool);
 }
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

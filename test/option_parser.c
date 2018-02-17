@@ -16,32 +16,6 @@ TEST test_next_section(void)
         PASS();
 }
 
-TEST test_ini_get_bool(void)
-{
-        char *bool_section = "bool";
-        ASSERT(ini_get_bool(bool_section, "booltrue", false));
-        ASSERT(ini_get_bool(bool_section, "booltrue_capital", false));
-
-        ASSERT_FALSE(ini_get_bool(bool_section, "boolfalse", true));
-        ASSERT_FALSE(ini_get_bool(bool_section, "boolfalse_capital", true));
-
-        ASSERT(ini_get_bool(bool_section, "boolyes", false));
-        ASSERT(ini_get_bool(bool_section, "boolyes_capital", false));
-
-        ASSERT_FALSE(ini_get_bool(bool_section, "boolno", true));
-        ASSERT_FALSE(ini_get_bool(bool_section, "boolno_capital", true));
-
-        ASSERT(ini_get_bool(bool_section, "boolbin1", false));
-        ASSERT_FALSE(ini_get_bool(bool_section, "boolbin0", true));
-
-        ASSERT(ini_get_bool(bool_section, "boolinvalid", true));
-        ASSERT_FALSE(ini_get_bool(bool_section, "boolinvalid", false));
-
-        ASSERT(ini_get_bool(bool_section, "nonexistent", true));
-        ASSERT_FALSE(ini_get_bool(bool_section, "nonexistent", false));
-        PASS();
-}
-
 TEST test_ini_get_string(void)
 {
         const char *string_section = "string";
@@ -111,21 +85,11 @@ TEST test_cmdline_get_double(void)
         PASS();
 }
 
-TEST test_cmdline_get_bool(void)
-{
-        ASSERT(cmdline_get_bool("-bool", false, ""));
-        ASSERT(cmdline_get_bool("-shortbool/-b", false, ""));
-        ASSERT(cmdline_get_bool("-boolnd/-n", true, ""));
-        ASSERT_FALSE(cmdline_get_bool("-boolnd/-n", false, ""));
-        PASS();
-}
-
 TEST test_cmdline_create_usage(void)
 {
         cmdline_get_string("-msgstring/-ms", "", "A string to test usage creation");
         cmdline_get_int("-msgint/-mi", 0, "An int to test usage creation");
         cmdline_get_double("-msgdouble/-md", 0, "A double to test usage creation");
-        cmdline_get_bool("-msgbool/-mb", false, "A bool to test usage creation");
         const char *usage = cmdline_create_usage();
         ASSERT(strstr(usage, "-msgstring/-ms"));
         ASSERT(strstr(usage, "A string to test usage creation"));
@@ -133,8 +97,6 @@ TEST test_cmdline_create_usage(void)
         ASSERT(strstr(usage, "An int to test usage creation"));
         ASSERT(strstr(usage, "-msgdouble/-md"));
         ASSERT(strstr(usage, "A double to test usage creation"));
-        ASSERT(strstr(usage, "-msgbool/-mb"));
-        ASSERT(strstr(usage, "A bool to test usage creation"));
         PASS();
 }
 
@@ -181,16 +143,6 @@ TEST test_option_get_double(void)
         PASS();
 }
 
-TEST test_option_get_bool(void)
-{
-        char *bool_section = "bool";
-        ASSERT(option_get_bool(bool_section, "boolfalse", "-bool/-b", false, ""));
-        ASSERT(option_get_bool(bool_section, "boolbin1", "-nonexistent", false, ""));
-        ASSERT_FALSE(option_get_bool(bool_section, "boolbin0", "-nonexistent", false, ""));
-        ASSERT_FALSE(option_get_bool(bool_section, "nonexistent", "-nonexistent", false, ""));
-        PASS();
-}
-
 SUITE(suite_option_parser)
 {
         FILE *config_file = fopen("data/test-ini", "r");
@@ -200,11 +152,10 @@ SUITE(suite_option_parser)
         }
         load_ini_file(config_file);
         RUN_TEST(test_next_section);
-        RUN_TEST(test_ini_get_bool);
         RUN_TEST(test_ini_get_string);
         RUN_TEST(test_ini_get_int);
         RUN_TEST(test_ini_get_double);
-        char cmdline[] = "dunst -bool -b "
+        char cmdline[] = "dunst -b "
                 "-string \"A simple string from the cmdline\" -s Single_word_string "
                 "-int 3 -i 2 -negative -7 -zeroes 04 -intdecim 2.5 "
                 "-path ~/path/from/cmdline "
@@ -217,13 +168,11 @@ SUITE(suite_option_parser)
         RUN_TEST(test_cmdline_get_string);
         RUN_TEST(test_cmdline_get_int);
         RUN_TEST(test_cmdline_get_double);
-        RUN_TEST(test_cmdline_get_bool);
         RUN_TEST(test_cmdline_create_usage);
 
         RUN_TEST(test_option_get_string);
         RUN_TEST(test_option_get_int);
         RUN_TEST(test_option_get_double);
-        RUN_TEST(test_option_get_bool);
         free_ini();
         g_strfreev(argv);
         fclose(config_file);

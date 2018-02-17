@@ -3,6 +3,7 @@
 #define DUNST_UTILS_H
 
 #include <glib.h>
+#include <stdbool.h>
 
 /* replace all occurrences of the character needle with the character replacement in haystack */
 char *string_replace_char(char needle, char replacement, char *haystack);
@@ -48,6 +49,19 @@ gint64 string_to_time(const char *string, gint64 def);
  * @returns: A `gint64` monotonic time representation
  */
 gint64 time_monotonic_now(void);
+
+/**
+ * Convert string to boolean value
+ *
+ * Booleans of Yes/No, True/False and 0/1 are understood
+ *
+ * @param string the string representation of the boolean
+ * @param def value to return in case of errors
+ *
+ * @return the `bool` representation of `string`
+ * @return `def` if `string` is invalid or `NULL`
+ */
+bool string_parse_bool(const char *string, bool def);
 
 #endif
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
