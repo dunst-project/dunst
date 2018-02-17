@@ -29,7 +29,8 @@ pkg_config_packs := dbus-1 \
                     x11 \
                     xinerama \
                     "xrandr >= 1.5" \
-                    xscrnsaver
+                    xscrnsaver \
+		    libnotify
 
 # check if we need libxdg-basedir
 ifeq (,$(findstring STATIC_CONFIG,$(CFLAGS)))
