@@ -170,12 +170,12 @@ void load_settings(const char *cmdline_config_path)
                 "Don't timeout notifications if user is longer idle than threshold"
         ), defaults.idle_threshold);
 
-        settings.monitor = option_get_int(
+        settings.monitor = string_parse_int(option_get_string(
                 "global", "monitor",
                 "-mon/-monitor",
-                defaults.monitor,
+                NULL,
                 "On which monitor should the notifications be displayed"
-        );
+        ), defaults.monitor);
 
         settings.f_mode = parse_follow_mode(option_get_string(
                 "global", "follow",
@@ -224,19 +224,19 @@ void load_settings(const char *cmdline_config_path)
                 "Shrink window if it's smaller than the width"
         ), defaults.shrink);
 
-        settings.line_height = option_get_int(
+        settings.line_height = string_parse_int(option_get_string(
                 "global", "line_height",
                 "-lh/-line_height",
-                defaults.line_height,
+                NULL,
                 "Add spacing between lines of text"
-        );
+        ), defaults.line_height);
 
-        settings.notification_height = option_get_int(
+        settings.notification_height = string_parse_int(option_get_string(
                 "global", "notification_height",
                 "-nh/-notification_height",
-                defaults.notification_height,
+                NULL,
                 "Define height of the window"
-        );
+        ), defaults.notification_height);
 
         settings.align = parse_alignment(option_get_string(
                 "global", "alignment",
@@ -265,12 +265,12 @@ void load_settings(const char *cmdline_config_path)
                 "Don't timeout notifications popped up from history"
         ), defaults.sticky_history);
 
-        settings.history_length = option_get_int(
+        settings.history_length = string_parse_int(option_get_string(
                 "global", "history_length",
                 "-history_length",
-                defaults.history_length,
+                NULL,
                 "Max amount of notifications kept in history"
-        );
+        ), defaults.history_length);
 
         settings.show_indicators = string_parse_bool(option_get_string(
                 "global", "show_indicators",
@@ -279,40 +279,40 @@ void load_settings(const char *cmdline_config_path)
                 "Show indicators for actions \"(A)\" and URLs \"(U)\""
         ), defaults.show_indicators);
 
-        settings.separator_height = option_get_int(
+        settings.separator_height = string_parse_int(option_get_string(
                 "global", "separator_height",
                 "-sep_height/-separator_height",
-                defaults.separator_height,
+                NULL,
                 "height of the separator line"
-        );
+        ), defaults.separator_height);
 
-        settings.padding = option_get_int(
+        settings.padding = string_parse_int(option_get_string(
                 "global", "padding",
                 "-padding",
-                defaults.padding,
+                NULL,
                 "Padding between text and separator"
-        );
+        ), defaults.padding);
 
-        settings.h_padding = option_get_int(
+        settings.h_padding = string_parse_int(option_get_string(
                 "global", "horizontal_padding",
                 "-horizontal_padding",
-                defaults.h_padding,
+                NULL,
                 "horizontal padding"
-        );
+        ), defaults.h_padding);
 
-        settings.transparency = option_get_int(
+        settings.transparency = string_parse_int(option_get_string(
                 "global", "transparency",
                 "-transparency",
-                defaults.transparency,
+                NULL,
                 "Transparency. range 0-100"
-        );
+        ), defaults.transparency);
 
-        settings.corner_radius = option_get_int(
+        settings.corner_radius = string_parse_int(option_get_string(
                 "global", "corner_radius",
                 "-corner_radius",
-                defaults.corner_radius,
+                NULL,
                 "Window corner radius"
-        );
+        ), defaults.corner_radius);
 
         settings.sep_color = parse_sepcolor(option_get_string(
                 "global", "separator_color",
@@ -367,12 +367,12 @@ void load_settings(const char *cmdline_config_path)
                 "Align icons left/right/off"
         ), defaults.icon_position);
 
-        settings.max_icon_size = option_get_int(
+        settings.max_icon_size = string_parse_int(option_get_string(
                 "global", "max_icon_size",
                 "-max_icon_size",
-                defaults.max_icon_size,
+                NULL,
                 "Scale larger icons down to this size, set to 0 to disable"
-        );
+        ), defaults.max_icon_size);
 
         // If the deprecated icon_folders option is used,
         // read it and generate its usage string.
@@ -398,23 +398,23 @@ void load_settings(const char *cmdline_config_path)
         {
                 // Backwards compatibility with the legacy 'frame' section.
                 if (ini_is_set("frame", "width")) {
-                        settings.frame_width = option_get_int(
+                        settings.frame_width = string_parse_int(option_get_string(
                                 "frame", "width",
                                 NULL,
-                                defaults.frame_width,
+                                NULL,
                                 "Width of frame around the window"
-                        );
+                        ), defaults.frame_width);
                         LOG_M("The frame section is deprecated, width has "
                               "been renamed to frame_width and moved to "
                               "the global section.");
                 }
 
-                settings.frame_width = option_get_int(
+                settings.frame_width = string_parse_int(option_get_string(
                         "global", "frame_width",
                         "-frame_width",
-                        settings.frame_width ? settings.frame_width : defaults.frame_width,
+                        NULL,
                         "Width of frame around the window"
-                );
+                ), settings.frame_width ? settings.frame_width : defaults.frame_width);
 
                 if (ini_is_set("frame", "color")) {
                         settings.frame_color = g_strdup(option_get_string(

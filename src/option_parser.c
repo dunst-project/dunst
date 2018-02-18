@@ -116,15 +116,6 @@ const char *ini_get_string(const char *section, const char *key, const char *def
         return value ? value : def;
 }
 
-int ini_get_int(const char *section, const char *key, int def)
-{
-        const char *value = get_value(section, key);
-        if (value == NULL)
-                return def;
-        else
-                return atoi(value);
-}
-
 double ini_get_double(const char *section, const char *key, double def)
 {
         const char *value = get_value(section, key);
@@ -309,17 +300,6 @@ const char *cmdline_get_string(const char *key, const char *def, const char *des
         return def;
 }
 
-int cmdline_get_int(const char *key, int def, const char *description)
-{
-        cmdline_usage_append(key, "int", description);
-        const char *str = cmdline_get_value(key);
-
-        if (str == NULL)
-                return def;
-        else
-                return atoi(str);
-}
-
 double cmdline_get_double(const char *key, double def, const char *description)
 {
         cmdline_usage_append(key, "double", description);
@@ -353,25 +333,6 @@ const char *option_get_string(const char *ini_section,
         } else {
                 return ini_get_string(ini_section, ini_key, def);
         }
-}
-
-int option_get_int(const char *ini_section,
-                   const char *ini_key,
-                   const char *cmdline_key,
-                   int def,
-                   const char *description)
-{
-        /* *str is only used to check wether the cmdline option is actually set. */
-        const char *str = cmdline_get_value(cmdline_key);
-
-        /* we call cmdline_get_int even when the option isn't set in order to
-         * add the usage info */
-        int val = cmdline_get_int(cmdline_key, def, description);
-
-        if (!str)
-                return ini_get_int(ini_section, ini_key, def);
-        else
-                return val;
 }
 
 double option_get_double(const char *ini_section,

@@ -63,5 +63,16 @@ gint64 time_monotonic_now(void);
  */
 bool string_parse_bool(const char *string, bool def);
 
+/**
+ * Convert string to integer value
+ *
+ * @param string the string representation of the integer
+ * @param def value to return in case of errors
+ *
+ * @return the `int` representation of `string`
+ * @return `def` if `string` is invalid or `NULL`
+ */
+int string_parse_int(const char *string, int def);
+
 #endif
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

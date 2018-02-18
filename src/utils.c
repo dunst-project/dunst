@@ -211,4 +211,30 @@ bool string_parse_bool(const char *string, bool def)
         }
 }
 
+/* see utils.h */
+int string_parse_int(const char *string, int def)
+{
+        if (!string)
+                return def;
+
+        errno = 0;
+        char *endptr;
+        int val = strtol(string, &endptr, 10);
+
+        if (errno != 0) {
+                LOG_W("Cannot parse integer '%s': %s.", string, strerror(errno));
+                return def;
+        } else if (string == endptr) {
+                LOG_W("Cannot parse integer '%s': No digits found.", string);
+                return def;
+        } else if (errno != 0 && val == 0) {
+                LOG_W("Cannot parse integer '%s': Unknown error", string);
+                return def;
+        } else if (errno == 0 && !*endptr) {
+                return val;
+        }
+
+        return def;
+}
+
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

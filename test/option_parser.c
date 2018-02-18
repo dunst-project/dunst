@@ -30,20 +30,6 @@ TEST test_ini_get_string(void)
         PASS();
 }
 
-TEST test_ini_get_int(void)
-{
-        char *int_section = "int";
-
-        ASSERT_EQ(5, ini_get_int(int_section, "simple", 0));
-        ASSERT_EQ(-10, ini_get_int(int_section, "negative", 0));
-        ASSERT_EQ(2, ini_get_int(int_section, "decimal", 0));
-        ASSERT_EQ(7, ini_get_int(int_section, "leading_zeroes", 0));
-        ASSERT_EQ(1024, ini_get_int(int_section, "multi_char", 0));
-
-        ASSERT_EQ(10, ini_get_int(int_section, "nonexistent", 10));
-        PASS();
-}
-
 TEST test_ini_get_double(void)
 {
         char *double_section = "double";
@@ -66,17 +52,6 @@ TEST test_cmdline_get_string(void)
         PASS();
 }
 
-TEST test_cmdline_get_int(void)
-{
-        ASSERT_EQ(3, cmdline_get_int("-int", 0, ""));
-        ASSERT_EQ(2, cmdline_get_int("-int2/-i", 0, ""));
-        ASSERT_EQ(-7, cmdline_get_int("-negative", 0, ""));
-        ASSERT_EQ(4, cmdline_get_int("-zeroes", 0, ""));
-        ASSERT_EQ(2, cmdline_get_int("-intdecim", 0, ""));
-        ASSERT_EQ(10, cmdline_get_int("-nonexistent", 10, ""));
-        PASS();
-}
-
 TEST test_cmdline_get_double(void)
 {
         ASSERT_EQ(2, cmdline_get_double("-simple_double", 0, ""));
@@ -88,13 +63,10 @@ TEST test_cmdline_get_double(void)
 TEST test_cmdline_create_usage(void)
 {
         cmdline_get_string("-msgstring/-ms", "", "A string to test usage creation");
-        cmdline_get_int("-msgint/-mi", 0, "An int to test usage creation");
         cmdline_get_double("-msgdouble/-md", 0, "A double to test usage creation");
         const char *usage = cmdline_create_usage();
         ASSERT(strstr(usage, "-msgstring/-ms"));
         ASSERT(strstr(usage, "A string to test usage creation"));
-        ASSERT(strstr(usage, "-msgint/-mi"));
-        ASSERT(strstr(usage, "An int to test usage creation"));
         ASSERT(strstr(usage, "-msgdouble/-md"));
         ASSERT(strstr(usage, "A double to test usage creation"));
         PASS();
@@ -111,25 +83,6 @@ TEST test_option_get_string(void)
         ASSERT_STR_EQ("A simple string from the cmdline", (ptr = option_get_string(string_section, "simple", "-string/-s", "", "")));
         ASSERT_STR_EQ("Single_word_string", (ptr = option_get_string(string_section, "simple", "-s", "", "")));
         ASSERT_STR_EQ("Default", (ptr = option_get_string(string_section, "nonexistent", "-nonexistent", "Default", "")));
-        PASS();
-}
-
-TEST test_option_get_int(void)
-{
-        char *int_section = "int";
-        ASSERT_EQ(3,  option_get_int(int_section, "negative", "-int", 0, ""));
-        ASSERT_EQ(2,  option_get_int(int_section, "simple", "-int2/-i", 0, ""));
-        ASSERT_EQ(-7, option_get_int(int_section, "decimal", "-negative", 0, ""));
-        ASSERT_EQ(4,  option_get_int(int_section, "simple", "-zeroes", 0, ""));
-        ASSERT_EQ(2,  option_get_int(int_section, "simple", "-intdecim", 0, ""));
-
-        ASSERT_EQ(5, option_get_int(int_section, "simple", "-nonexistent", 0, ""));
-        ASSERT_EQ(-10, option_get_int(int_section, "negative", "-nonexistent", 0, ""));
-        ASSERT_EQ(2, option_get_int(int_section, "decimal", "-nonexistent", 0, ""));
-        ASSERT_EQ(7, option_get_int(int_section, "leading_zeroes", "-nonexistent", 0, ""));
-        ASSERT_EQ(1024, option_get_int(int_section, "multi_char", "-nonexistent", 0, ""));
-
-        ASSERT_EQ(3, option_get_int(int_section, "nonexistent", "-nonexistent", 3, ""));
         PASS();
 }
 
@@ -153,7 +106,6 @@ SUITE(suite_option_parser)
         load_ini_file(config_file);
         RUN_TEST(test_next_section);
         RUN_TEST(test_ini_get_string);
-        RUN_TEST(test_ini_get_int);
         RUN_TEST(test_ini_get_double);
         char cmdline[] = "dunst -b "
                 "-string \"A simple string from the cmdline\" -s Single_word_string "
@@ -166,12 +118,10 @@ SUITE(suite_option_parser)
         g_shell_parse_argv(&cmdline[0], &argc, &argv, NULL);
         cmdline_load(argc, argv);
         RUN_TEST(test_cmdline_get_string);
-        RUN_TEST(test_cmdline_get_int);
         RUN_TEST(test_cmdline_get_double);
         RUN_TEST(test_cmdline_create_usage);
 
         RUN_TEST(test_option_get_string);
-        RUN_TEST(test_option_get_int);
         RUN_TEST(test_option_get_double);
         free_ini();
         g_strfreev(argv);

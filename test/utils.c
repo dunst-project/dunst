@@ -207,6 +207,19 @@ TEST test_string_parse_bool(void)
         PASS();
 }
 
+TEST test_string_parse_int(void)
+{
+        ASSERT_EQ(string_parse_int( "10", -1),  10);
+        ASSERT_EQ(string_parse_int("+12", -1),  12);
+        ASSERT_EQ(string_parse_int("-13", -1), -13);
+
+        ASSERT_EQ(string_parse_int(NULL, -2123), -2123);
+        ASSERT_EQ(string_parse_int(  "", -4193), -4193);
+        ASSERT_EQ(string_parse_int("as", -1323), -1323);
+        ASSERT_EQ(string_parse_int( " ", -8982), -8982);
+        PASS();
+}
+
 SUITE(suite_utils)
 {
         RUN_TEST(test_string_replace_char);
@@ -217,5 +230,6 @@ SUITE(suite_utils)
         RUN_TEST(test_string_to_path);
         RUN_TEST(test_string_to_time);
         RUN_TEST(test_string_parse_bool);
+        RUN_TEST(test_string_parse_int);
 }
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
