@@ -38,7 +38,7 @@ static char **cmdline_argv;
 static char *usage_str = NULL;
 static void cmdline_usage_append(const char *key, const char *type, const char *description);
 
-static int cmdline_find_option(const char *key);
+static int cmdline_find_option(const char *keys);
 
 section_t *new_section(const char *name)
 {
@@ -231,38 +231,24 @@ void cmdline_load(int argc, char *argv[])
         cmdline_argv = argv;
 }
 
-int cmdline_find_option(const char *key)
+int cmdline_find_option(const char *keys)
 {
-        if (!key) {
+        if (!keys)
                 return -1;
-        }
-        char *key1 = g_strdup(key);
-        char *key2 = strchr(key1, '/');
 
-        if (key2) {
-                *key2 = '\0';
-                key2++;
-        }
-
-        /* look for first key */
-        for (int i = 0; i < cmdline_argc; i++) {
-                if (strcmp(key1, cmdline_argv[i]) == 0) {
-                        g_free(key1);
-                        return i;
-                }
-        }
+        gchar **split = g_strsplit(keys, "/", -1);
 
         /* look for second key if one was specified */
-        if (key2) {
+        for (gchar **cur = split; *cur; cur++) {
                 for (int i = 0; i < cmdline_argc; i++) {
-                        if (strcmp(key2, cmdline_argv[i]) == 0) {
-                                g_free(key1);
+                        if (strcmp(*cur, cmdline_argv[i]) == 0) {
+                                g_strfreev(split);
                                 return i;
                         }
                 }
         }
 
-        g_free(key1);
+        g_strfreev(split);
         return -1;
 }
 
