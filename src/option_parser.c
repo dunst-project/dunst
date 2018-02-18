@@ -116,15 +116,6 @@ const char *ini_get_string(const char *section, const char *key, const char *def
         return value ? value : def;
 }
 
-double ini_get_double(const char *section, const char *key, double def)
-{
-        const char *value = get_value(section, key);
-        if (value == NULL)
-                return def;
-        else
-                return atof(value);
-}
-
 bool ini_is_set(const char *ini_section, const char *ini_key)
 {
         return get_value(ini_section, ini_key) != NULL;
@@ -300,17 +291,6 @@ const char *cmdline_get_string(const char *key, const char *def, const char *des
         return def;
 }
 
-double cmdline_get_double(const char *key, double def, const char *description)
-{
-        cmdline_usage_append(key, "double", description);
-        const char *str = cmdline_get_value(key);
-
-        if (str == NULL)
-                return def;
-        else
-                return atof(str);
-}
-
 bool cmdline_is_set(const char *key)
 {
         return cmdline_get_value(key) != NULL;
@@ -333,21 +313,6 @@ const char *option_get_string(const char *ini_section,
         } else {
                 return ini_get_string(ini_section, ini_key, def);
         }
-}
-
-double option_get_double(const char *ini_section,
-                         const char *ini_key,
-                         const char *cmdline_key,
-                         double def,
-                         const char *description)
-{
-        const char *str = cmdline_get_value(cmdline_key);
-        double val = cmdline_get_double(cmdline_key, def, description);
-
-        if (!str)
-                return ini_get_double(ini_section, ini_key, def);
-        else
-                return val;
 }
 
 void cmdline_usage_append(const char *key, const char *type, const char *description)
