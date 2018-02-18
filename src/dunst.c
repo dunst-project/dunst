@@ -125,11 +125,7 @@ int dunst_main(int argc, char *argv[])
 
         dunst_log_init(false);
 
-        if (string_parse_bool(cmdline_get_string(
-                                        "-v/-version/--version",
-                                        NULL,
-                                        "Print version"),
-                                false)) {
+        if (cmdline_flag("-v/-version/--version", "Print version")) {
                 print_version();
         }
 
@@ -141,7 +137,7 @@ int dunst_main(int argc, char *argv[])
                                "Path to configuration file");
         load_settings(cmdline_config_path);
 
-        if (string_parse_bool(cmdline_get_string("-h/-help/--help", NULL, "Print help"), false)) {
+        if (cmdline_flag("-h/-help/--help", "Print help")) {
                 usage(EXIT_SUCCESS);
         }
 

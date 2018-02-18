@@ -62,6 +62,14 @@ TEST test_option_get_string(void)
         PASS();
 }
 
+TEST test_cmdline_flag(void)
+{
+        ASSERT(cmdline_flag("-flag1", ""));
+        ASSERT_FALSE(cmdline_flag("-flag2", ""));
+        ASSERT(cmdline_flag("-flag3", ""));
+        PASS();
+}
+
 SUITE(suite_option_parser)
 {
         FILE *config_file = fopen("data/test-ini", "r");
@@ -76,7 +84,8 @@ SUITE(suite_option_parser)
                 "-string \"A simple string from the cmdline\" -s Single_word_string "
                 "-int 3 -i 2 -negative -7 -zeroes 04 -intdecim 2.5 "
                 "-path ~/path/from/cmdline "
-                "-simple_double 2 -double 5.2"
+                "-simple_double 2 -double 5.2 "
+                "-flag1 -flag3" //make sure to put flag3 at the overall end of this string
                 ;
         int argc;
         char **argv;
@@ -84,6 +93,7 @@ SUITE(suite_option_parser)
         cmdline_load(argc, argv);
         RUN_TEST(test_cmdline_get_string);
         RUN_TEST(test_cmdline_create_usage);
+        RUN_TEST(test_cmdline_flag);
 
         RUN_TEST(test_option_get_string);
         free_ini();

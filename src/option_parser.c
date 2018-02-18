@@ -282,6 +282,13 @@ bool cmdline_is_set(const char *key)
         return cmdline_get_value(key) != NULL;
 }
 
+/* see option_parser.h */
+bool cmdline_flag(const char *key, const char *description)
+{
+        cmdline_usage_append(key, NULL, description);
+        return cmdline_find_option(key) != -1;
+}
+
 const char *option_get_string(const char *ini_section,
                         const char *ini_key,
                         const char *cmdline_key,

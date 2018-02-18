@@ -17,6 +17,15 @@ void cmdline_load(int argc, char *argv[]);
 /* for all cmdline_get_* key can be either "-key" or "-key/-longkey" */
 const char *cmdline_get_string(const char *key, const char *def, const char *description);
 bool cmdline_is_set(const char *key);
+
+/** Query a flag from the commandline
+ *
+ * Adds description to the command line usage
+ *
+ * Returns: `true`, if flag is set
+ *          `false`, if flag is not set
+ */
+bool cmdline_flag(const char *key, const char *description);
 const char *cmdline_create_usage(void);
 
 const char *option_get_string(const char *ini_section,
