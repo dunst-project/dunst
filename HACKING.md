@@ -1,5 +1,19 @@
 # Important notes on the code
 
+**You can generate an internal overview with doxygen. For this, use `make doc-doxygen` and you'll find an internal overview of all functions and symbols in `docs/internal/html`.**
+
+# Comments
+
+- Comment system is held similar to JavaDoc
+    - Use `@param` to describe all input parameters
+    - Documentation comments should start with a double star (`/**`)
+    - Append `()` to function names and prepend variables with `#` to properly reference them in the docs
+- Add comments to all functions and methods
+- Markdown inside the comments is allowed and also desired
+- Add the comments to the prototype. Doxygen will merge the protoype and implementation documentation anyways.
+  Except for **static** methods, add the documentation header to the implementation and *not to the prototype*.
+- Member documentation should happen with `/**<` and should span to the right side of the member
+
 ## Log messages
 
 ### Messages
