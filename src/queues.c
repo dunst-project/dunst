@@ -35,19 +35,19 @@ void queues_displayed_limit(unsigned int limit)
 }
 
 /* misc getter functions */
-const GList *queues_get_displayed()
+const GList *queues_get_displayed(void)
 {
         return g_queue_peek_head_link(displayed);
 }
-unsigned int queues_length_waiting()
+unsigned int queues_length_waiting(void)
 {
         return waiting->length;
 }
-unsigned int queues_length_displayed()
+unsigned int queues_length_displayed(void)
 {
         return displayed->length;
 }
-unsigned int queues_length_history()
+unsigned int queues_length_history(void)
 {
         return history->length;
 }
@@ -292,7 +292,7 @@ void queues_check_timeouts(bool idle)
         }
 }
 
-void queues_update()
+void queues_update(void)
 {
         if (pause_displayed) {
                 while (displayed->length > 0) {

@@ -20,15 +20,15 @@ void queues_displayed_limit(unsigned int limit);
 /*
  * Return read only list of notifications
  */
-const GList *queues_get_displayed();
+const GList *queues_get_displayed(void);
 
 /*
  * Returns the current amount of notifications,
  * which are shown, waiting or already in history
  */
-unsigned int queues_length_waiting();
-unsigned int queues_length_displayed();
-unsigned int queues_length_history();
+unsigned int queues_length_waiting(void);
+unsigned int queues_length_displayed(void);
+unsigned int queues_length_history(void);
 
 /*
  * Insert a fully initialized notification into queues
@@ -98,7 +98,7 @@ void queues_check_timeouts(bool idle);
  * and show them. In displayed queue, the amount of elements is limited
  * to the amount set via queues_displayed_limit
  */
-void queues_update();
+void queues_update(void);
 
 /*
  * Return the distance to the next event in the queue,

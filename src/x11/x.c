@@ -773,7 +773,7 @@ static void setopacity(Window win, unsigned long opacity)
 /*
  * Returns the modifier which is NumLock.
  */
-static KeySym x_numlock_mod()
+static KeySym x_numlock_mod(void)
 {
         static KeyCode nl = 0;
         KeySym sym = 0;
@@ -1199,7 +1199,7 @@ void x_win_show(void)
 /*
  * Hide the window and ungrab unused keyboard_shortcuts
  */
-void x_win_hide()
+void x_win_hide(void)
 {
         x_shortcut_ungrab(&settings.close_ks);
         x_shortcut_ungrab(&settings.close_all_ks);

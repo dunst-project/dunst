@@ -21,10 +21,10 @@ typedef struct _screen_info {
         dimension_t dim;
 } screen_info;
 
-void init_screens();
+void init_screens(void);
 void screen_check_event(XEvent event);
 
-screen_info *get_active_screen();
+screen_info *get_active_screen(void);
 double get_dpi_for_screen(screen_info *scr);
 
 #endif
