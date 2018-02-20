@@ -1,5 +1,18 @@
 /* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
 
+/**
+ * @file queues.c
+ * @brief All important functions to handle the notification queues for
+ * history, entrance and currently displayed ones.
+ *
+ * Every method requires to have executed queues_init() at the start.
+ *
+ * A read only representation of the queue with the current notifications
+ * can get acquired by calling queues_get_displayed().
+ *
+ * When ending the program or resetting the queues, tear down the stack with
+ * queues_teardown(). (And reinit with queues_init() if needed.)
+ */
 #include "queues.h"
 
 #include <assert.h>
@@ -12,9 +25,9 @@
 #include "settings.h"
 
 /* notification lists */
-static GQueue *waiting   = NULL; /* all new notifications get into here */
-static GQueue *displayed = NULL; /* currently displayed notifications */
-static GQueue *history   = NULL; /* history of displayed notifications */
+static GQueue *waiting   = NULL; /**< all new notifications get into here */
+static GQueue *displayed = NULL; /**< currently displayed notifications */
+static GQueue *history   = NULL; /**< history of displayed notifications */
 
 unsigned int displayed_limit = 0;
 int next_notification_id = 1;
@@ -22,6 +35,7 @@ bool pause_displayed = false;
 
 static bool queues_stack_duplicate(notification *n);
 
+/* see queues.h */
 void queues_init(void)
 {
         history   = g_queue_new();
@@ -29,29 +43,37 @@ void queues_init(void)
         waiting   = g_queue_new();
 }
 
+/* see queues.h */
 void queues_displayed_limit(unsigned int limit)
 {
         displayed_limit = limit;
 }
 
-/* misc getter functions */
+/* see queues.h */
 const GList *queues_get_displayed(void)
 {
         return g_queue_peek_head_link(displayed);
 }
+
+/* see queues.h */
 unsigned int queues_length_waiting(void)
 {
         return waiting->length;
 }
+
+/* see queues.h */
 unsigned int queues_length_displayed(void)
 {
         return displayed->length;
 }
+
+/* see queues.h */
 unsigned int queues_length_history(void)
 {
         return history->length;
 }
 
+/* see queues.h */
 int queues_notification_insert(notification *n)
 {
 
@@ -88,11 +110,11 @@ int queues_notification_insert(notification *n)
         return n->id;
 }
 
-/*
+/**
  * Replaces duplicate notification and stacks it
  *
- * Returns %true, if notification got stacked
- * Returns %false, if notification did not get stacked
+ * @return true, if notification got stacked
+ * @return false, if notification did not get stacked
  */
 static bool queues_stack_duplicate(notification *n)
 {
@@ -148,6 +170,7 @@ static bool queues_stack_duplicate(notification *n)
         return false;
 }
 
+/* see queues.h */
 bool queues_notification_replace_id(notification *new)
 {
 
@@ -179,6 +202,7 @@ bool queues_notification_replace_id(notification *new)
         return false;
 }
 
+/* see queues.h */
 void queues_notification_close_id(int id, enum reason reason)
 {
         notification *target = NULL;
@@ -212,12 +236,14 @@ void queues_notification_close_id(int id, enum reason reason)
         }
 }
 
+/* see queues.h */
 void queues_notification_close(notification *n, enum reason reason)
 {
         assert(n != NULL);
         queues_notification_close_id(n->id, reason);
 }
 
+/* see queues.h */
 void queues_history_pop(void)
 {
         if (g_queue_is_empty(history))
@@ -230,6 +256,7 @@ void queues_history_pop(void)
         g_queue_push_head(waiting, n);
 }
 
+/* see queues.h */
 void queues_history_push(notification *n)
 {
         if (!n->history_ignore) {
@@ -244,6 +271,7 @@ void queues_history_push(notification *n)
         }
 }
 
+/* see queues.h */
 void queues_history_push_all(void)
 {
         while (displayed->length > 0) {
@@ -255,6 +283,7 @@ void queues_history_push_all(void)
         }
 }
 
+/* see queues.h */
 void queues_check_timeouts(bool idle)
 {
         /* nothing to do */
@@ -290,6 +319,7 @@ void queues_check_timeouts(bool idle)
         }
 }
 
+/* see queues.h */
 void queues_update(void)
 {
         if (pause_displayed) {
@@ -323,6 +353,7 @@ void queues_update(void)
         }
 }
 
+/* see queues.h */
 gint64 queues_get_next_datachange(gint64 time)
 {
         gint64 sleep = G_MAXINT64;
@@ -354,27 +385,36 @@ gint64 queues_get_next_datachange(gint64 time)
         return sleep != G_MAXINT64 ? sleep : -1;
 }
 
+/* see queues.h */
 void queues_pause_on(void)
 {
         pause_displayed = true;
 }
 
+/* see queues.h */
 void queues_pause_off(void)
 {
         pause_displayed = false;
 }
 
+/* see queues.h */
 bool queues_pause_status(void)
 {
         return pause_displayed;
 }
 
+/**
+ * Helper function for teardown_queues() to free a single notification
+ *
+ * @param data The notification to free
+ */
 static void teardown_notification(gpointer data)
 {
         notification *n = data;
         notification_free(n);
 }
 
+/* see queues.h */
 void teardown_queues(void)
 {
         g_queue_free_full(history, teardown_notification);

@@ -1,11 +1,16 @@
 /* copyright 2012 - 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
 
+/** @file log.c
+ *  @brief logging wrapper to use GLib's logging capabilities
+ */
+
 #include "log.h"
 
 #include <glib.h>
 
 static GLogLevelFlags log_level = G_LOG_LEVEL_WARNING;
 
+/* see log.h */
 static const char *log_level_to_string(GLogLevelFlags level)
 {
         switch (level) {
@@ -19,6 +24,7 @@ static const char *log_level_to_string(GLogLevelFlags level)
         }
 }
 
+/* see log.h */
 void log_set_level_from_string(const char *level)
 {
         if (!level)
@@ -51,10 +57,13 @@ void log_set_level(GLogLevelFlags level)
         log_level = level;
 }
 
-/*
+/**
  * Log handling function for GLib's logging wrapper
  *
- * If the gpointer is valid, do not do anything
+ * @param log_domain Used only by GLib
+ * @param message_level Used only by GLib
+ * @param message Used only by GLib
+ * @param testing If not `NULL` (here: `true`), do nothing
  */
 static void dunst_log_handler(
                 const gchar    *log_domain,
@@ -81,12 +90,7 @@ static void dunst_log_handler(
                 g_print("%s: %s\n", log_level_str, message);
 }
 
-/*
- * Initialise log handling. Can be called any time.
- *
- * If bool is %TRUE, it suppresses all logging output.
- * Primarily used for testing
- */
+/* see log.h */
 void dunst_log_init(bool testing)
 {
         g_log_set_default_handler(dunst_log_handler, (void*)testing);

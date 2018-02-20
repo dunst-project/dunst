@@ -16,9 +16,27 @@
 
 #define DIE(...) do { LOG_C(__VA_ARGS__); exit(EXIT_FAILURE); } while (0)
 
+/**
+ * @return the string representation of the given `level`
+ */
 void log_set_level(GLogLevelFlags level);
+
+/**
+ * Set the current loglevel to `level`
+ *
+ * @param level The desired log level
+ *
+ * If `level` is `NULL`, nothing will be done.
+ * If `level` is an invalid value, nothing will be done.
+ */
 void log_set_level_from_string(const char* level);
 
+/**
+ * Initialise log handling. Can be called any time.
+ *
+ * @param testing If we're in testing mode and should
+ *                suppress all output
+ */
 void dunst_log_init(bool testing);
 
 #endif

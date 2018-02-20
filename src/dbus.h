@@ -5,13 +5,14 @@
 
 #include "notification.h"
 
+/// The reasons according to the notification spec
 enum reason {
-        REASON_MIN = 1,
-        REASON_TIME = 1,
-        REASON_USER = 2,
-        REASON_SIG = 3,
-        REASON_UNDEF = 4,
-        REASON_MAX = 4,
+        REASON_MIN = 1,   /**< Minimum value, useful for boundary checking */
+        REASON_TIME = 1,  /**< The notification timed out */
+        REASON_USER = 2,  /**< The user closed the notification */
+        REASON_SIG = 3,   /**< The daemon received a `NotificationClose` signal */
+        REASON_UNDEF = 4, /**< Undefined reason not matching the previous ones */
+        REASON_MAX = 4,   /**< Maximum value, useful for boundary checking */
 };
 
 int initdbus(void);
