@@ -60,14 +60,14 @@ bool queues_notification_replace_id(notification *new);
  * After closing, call wake_up to synchronize the queues with the UI
  * (which closes the notification on screen)
  */
-int queues_notification_close_id(int id, enum reason reason);
+void queues_notification_close_id(int id, enum reason reason);
 
 /* Close the given notification. SEE queues_notification_close_id.
  *
  * @n: (transfer full): The notification to close
  * @reason: The reason to close
  * */
-int queues_notification_close(notification *n, enum reason reason);
+void queues_notification_close(notification *n, enum reason reason);
 
 /*
  * Pushed the latest notification of history to the displayed queue

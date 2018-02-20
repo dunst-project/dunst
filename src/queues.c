@@ -179,7 +179,7 @@ bool queues_notification_replace_id(notification *new)
         return false;
 }
 
-int queues_notification_close_id(int id, enum reason reason)
+void queues_notification_close_id(int id, enum reason reason)
 {
         notification *target = NULL;
 
@@ -210,14 +210,12 @@ int queues_notification_close_id(int id, enum reason reason)
                         signal_notification_closed(target, reason);
                 queues_history_push(target);
         }
-
-        return reason;
 }
 
-int queues_notification_close(notification *n, enum reason reason)
+void queues_notification_close(notification *n, enum reason reason)
 {
         assert(n != NULL);
-        return queues_notification_close_id(n->id, reason);
+        queues_notification_close_id(n->id, reason);
 }
 
 void queues_history_pop(void)
