@@ -114,18 +114,13 @@ void string_strip_delimited(char *str, char a, char b)
         str[iwrite] = 0;
 }
 
-char *string_to_path(char *string)
+/* see utils.h */
+char *string_to_path(const char *string)
 {
-
-        if (string && 0 == strncmp(string, "~/", 2)) {
-                char *home = g_strconcat(getenv("HOME"), "/", NULL);
-
-                string = string_replace("~/", home, string);
-
-                g_free(home);
-        }
-
-        return string;
+        if (string && 0 == strncmp(string, "~/", 2))
+                return g_strconcat(getenv("HOME"), string+1, NULL);
+        else
+                return g_strdup(string);
 }
 
 /* see utils.h */

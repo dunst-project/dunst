@@ -138,20 +138,20 @@ TEST test_string_to_path(void)
         char *home = getenv("HOME");
 
         exp = "/usr/local/bin/script";
-        ASSERT_STR_EQ(exp, (ptr = string_to_path(g_strdup(exp))));
+        ASSERT_STR_EQ(exp, (ptr = string_to_path(exp)));
         free(ptr);
 
         exp = "~path/with/wrong/tilde";
-        ASSERT_STR_EQ(exp, (ptr = string_to_path(g_strdup(exp))));
+        ASSERT_STR_EQ(exp, (ptr = string_to_path(exp)));
         free(ptr);
 
         ASSERT_STR_EQ((exp = g_strconcat(home, "/.path/with/tilde", NULL)),
-                      (ptr = string_to_path(g_strdup("~/.path/with/tilde"))));
+                      (ptr = string_to_path("~/.path/with/tilde")));
         free(exp);
         free(ptr);
 
         ASSERT_STR_EQ((exp = g_strconcat(home, "/.path/with/tilde and some space", NULL)),
-                      (ptr = string_to_path(g_strdup("~/.path/with/tilde and some space"))));
+                      (ptr = string_to_path("~/.path/with/tilde and some space")));
         free(exp);
         free(ptr);
 

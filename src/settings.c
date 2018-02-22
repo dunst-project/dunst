@@ -335,12 +335,12 @@ void load_settings(const char *cmdline_config_path)
                 "print notification on startup"
         ), false);
 
-        settings.dmenu = string_to_path(g_strdup(option_get_string(
+        settings.dmenu = string_to_path(option_get_string(
                 "global", "dmenu",
                 "-dmenu",
                 defaults.dmenu,
                 "path to dmenu"
-        )));
+        ));
 
         {
                 GError *error = NULL;
@@ -353,12 +353,12 @@ void load_settings(const char *cmdline_config_path)
         }
 
 
-        settings.browser = string_to_path(g_strdup(option_get_string(
+        settings.browser = string_to_path(option_get_string(
                 "global", "browser",
                 "-browser",
                 defaults.browser,
                 "path to browser"
-        )));
+        ));
 
         settings.icon_position = parse_icon_position(option_get_string(
                 "global", "icon_position",
@@ -635,7 +635,7 @@ void load_settings(const char *cmdline_config_path)
                 r->match_transient = string_parse_bool(ini_get_string(cur_section, "match_transient", NULL), r->match_transient);
                 r->set_transient = string_parse_bool(ini_get_string(cur_section, "set_transient", NULL), r->set_transient);
                 r->fullscreen = parse_enum_fullscreen(ini_get_string(cur_section,"fullscreen", NULL), r->fullscreen);
-                r->script = string_to_path(g_strdup(ini_get_string(cur_section, "script", NULL)));
+                r->script = string_to_path(ini_get_string(cur_section, "script", NULL));
         }
 
 #ifndef STATIC_CONFIG

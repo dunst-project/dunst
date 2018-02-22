@@ -22,8 +22,16 @@ char *string_append(char *a, const char *b, const char *sep);
 /* strip content between two delimiter characters (inplace) */
 void string_strip_delimited(char *str, char a, char b);
 
-/* replace tilde and path-specific values with its equivalents */
-char *string_to_path(char *string);
+/**
+ * Expand leading tilde in a string with contents of `$HOME`
+ *
+ * Will only copy the string and return its copy, if no tilde found.
+ * Free the returned string after use again with `g_free`.
+ *
+ * @param string the path to expand
+ * @return The string with an expaned beginning tilde
+ */
+char *string_to_path(const char *string);
 
 /**
  * Convert time strings to internal gint64 microseconds
