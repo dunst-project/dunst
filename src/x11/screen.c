@@ -29,16 +29,16 @@ int randr_event_base = 0;
 static int randr_major_version = 0;
 static int randr_minor_version = 0;
 
-void randr_init();
-void randr_update();
-void xinerama_update();
-void screen_update_fallback();
+void randr_init(void);
+void randr_update(void);
+void xinerama_update(void);
+void screen_update_fallback(void);
 static void x_follow_setup_error_handler(void);
 static int x_follow_tear_down_error_handler(void);
 static int FollowXErrorHandler(Display *display, XErrorEvent *e);
 static Window get_focused_window(void);
 
-static double get_xft_dpi_value()
+static double get_xft_dpi_value(void)
 {
         static double dpi = -1;
         //Only run this once, we don't expect dpi changes during runtime
@@ -65,7 +65,7 @@ static double get_xft_dpi_value()
         return dpi;
 }
 
-void init_screens()
+void init_screens(void)
 {
         if (!settings.force_xinerama) {
                 randr_init();
@@ -87,7 +87,7 @@ void alloc_screen_ar(int n)
         screens_len = n;
 }
 
-void randr_init()
+void randr_init(void)
 {
         int randr_error_base = 0;
         if (!XRRQueryExtension(xctx.dpy, &randr_event_base, &randr_error_base)) {
@@ -99,7 +99,7 @@ void randr_init()
         XRRSelectInput(xctx.dpy, RootWindow(xctx.dpy, DefaultScreen(xctx.dpy)), RRScreenChangeNotifyMask);
 }
 
-void randr_update()
+void randr_update(void)
 {
         if (randr_major_version < 1
             || (randr_major_version == 1 && randr_minor_version < 5)) {
@@ -148,7 +148,7 @@ void screen_check_event(XEvent event)
                 randr_update();
 }
 
-void xinerama_update()
+void xinerama_update(void)
 {
         int n;
         XineramaScreenInfo *info = XineramaQueryScreens(xctx.dpy, &n);
@@ -172,7 +172,7 @@ void xinerama_update()
         XFree(info);
 }
 
-void screen_update_fallback()
+void screen_update_fallback(void)
 {
         alloc_screen_ar(1);
 
@@ -190,7 +190,7 @@ void screen_update_fallback()
  * Select the screen on which the Window
  * should be displayed.
  */
-screen_info *get_active_screen()
+screen_info *get_active_screen(void)
 {
         int ret = 0;
         if (settings.monitor > 0 && settings.monitor < screens_len) {

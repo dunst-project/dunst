@@ -7,3 +7,4 @@ org.knopwob.dunst.service
 dunst.systemd.service
 dunstify
 test/test
+docs/internal/html

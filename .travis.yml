@@ -1,6 +1,8 @@
 addons:
   apt:
     packages:
+      - doxygen
+      - graphviz
       - libdbus-1-dev
       - libx11-dev
       - libxrandr-dev
@@ -19,7 +21,7 @@ language: c
 before_install:
   - pip install --user cpp-coveralls
 script:
-  - CFLAGS="-fprofile-arcs -ftest-coverage -Werror" make all dunstify test-valgrind
+  - CFLAGS="-fprofile-arcs -ftest-coverage -Werror" make all dunstify test-valgrind doc-doxygen
   - coveralls
 compiler:
   - gcc

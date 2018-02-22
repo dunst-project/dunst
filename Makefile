@@ -86,10 +86,12 @@ test-valgrind: test/test
 test/test: ${OBJ} ${TEST_OBJ}
 	${CC} ${CFLAGS} -o $@ ${TEST_OBJ} ${OBJ} ${LDFLAGS}
 
-.PHONY: doc
+.PHONY: doc doc-doxygen
 doc: docs/dunst.1
 docs/dunst.1: docs/dunst.pod
 	pod2man --name=dunst -c "Dunst Reference" --section=1 --release=${VERSION} $< > $@
+doc-doxygen:
+	doxygen docs/internal/Doxyfile
 
 .PHONY: service service-dbus service-systemd
 service: service-dbus
@@ -115,6 +117,7 @@ clean-dunstify:
 
 clean-doc:
 	rm -f docs/dunst.1
+	rm -fr docs/internal/html
 
 clean-tests:
 	rm -f test/test test/*.o

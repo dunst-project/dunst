@@ -9,13 +9,14 @@
 
 #define DUNST_NOTIF_MAX_CHARS 5000
 
+/// Representing the urgencies according to the notification spec
 enum urgency {
-        URG_NONE = -1,
-        URG_MIN = 0,
-        URG_LOW = 0,
-        URG_NORM = 1,
-        URG_CRIT = 2,
-        URG_MAX = 2,
+        URG_NONE = -1, /**< Urgency not set (invalid) */
+        URG_MIN = 0,   /**< Minimum value, useful for boundary checking */
+        URG_LOW = 0,   /**< Low urgency */
+        URG_NORM = 1,  /**< Normal urgency */
+        URG_CRIT = 2,  /**< Critical urgency */
+        URG_MAX = 2,   /**< Maximum value, useful for boundary checking */
 };
 
 typedef struct _raw_image {
@@ -44,12 +45,12 @@ typedef struct _notification {
         char *category;
         enum urgency urgency;
 
-        char *icon;          /* plain icon information (may be a path or just a name) */
-        RawImage *raw_icon;  /* passed icon data of notification, takes precedence over icon */
+        char *icon;          /**< plain icon information (may be a path or just a name) */
+        RawImage *raw_icon;  /**< passed icon data of notification, takes precedence over icon */
 
-        gint64 start;      /* begin of current display */
-        gint64 timestamp;  /* arrival time */
-        gint64 timeout;    /* time to display */
+        gint64 start;      /**< begin of current display */
+        gint64 timestamp;  /**< arrival time */
+        gint64 timeout;    /**< time to display */
 
         Actions *actions;
 
@@ -59,20 +60,20 @@ typedef struct _notification {
         char *colors[3];
 
         /* Hints */
-        bool transient;     /* timeout albeit user is idle */
-        int progress;       /* percentage (-1: undefined) */
-        int history_ignore; /* push to history or free directly */
+        bool transient;     /**< timeout albeit user is idle */
+        int progress;       /**< percentage (-1: undefined) */
+        int history_ignore; /**< push to history or free directly */
 
         /* internal */
-        bool redisplayed;       /* has been displayed before? */
-        bool first_render;      /* markup has been rendered before? */
-        int dup_count;          /* amount of duplicate notifications stacked onto this */
+        bool redisplayed;       /**< has been displayed before? */
+        bool first_render;      /**< markup has been rendered before? */
+        int dup_count;          /**< amount of duplicate notifications stacked onto this */
         int displayed_height;
 
         /* derived fields */
-        char *msg;            /* formatted message */
-        char *text_to_render; /* formatted message (with age and action indicators) */
-        char *urls;           /* urllist delimited by '\n' */
+        char *msg;            /**< formatted message */
+        char *text_to_render; /**< formatted message (with age and action indicators) */
+        char *urls;           /**< urllist delimited by '\\n' */
 } notification;
 
 notification *notification_create(void);
