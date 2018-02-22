@@ -139,21 +139,21 @@ TEST test_string_to_path(void)
 
         exp = "/usr/local/bin/script";
         ASSERT_STR_EQ(exp, (ptr = string_to_path(exp)));
-        free(ptr);
+        g_free(ptr);
 
         exp = "~path/with/wrong/tilde";
         ASSERT_STR_EQ(exp, (ptr = string_to_path(exp)));
-        free(ptr);
+        g_free(ptr);
 
         ASSERT_STR_EQ((exp = g_strconcat(home, "/.path/with/tilde", NULL)),
                       (ptr = string_to_path("~/.path/with/tilde")));
-        free(exp);
-        free(ptr);
+        g_free(exp);
+        g_free(ptr);
 
         ASSERT_STR_EQ((exp = g_strconcat(home, "/.path/with/tilde and some space", NULL)),
                       (ptr = string_to_path("~/.path/with/tilde and some space")));
-        free(exp);
-        free(ptr);
+        g_free(exp);
+        g_free(ptr);
 
         PASS();
 }
