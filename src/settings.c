@@ -88,38 +88,26 @@ void load_settings(const char *cmdline_config_path)
                 "The font dunst should use."
         ));
 
-        {
-                // Check if allow_markup set
-                if (ini_is_set("global", "allow_markup")) {
-                        bool allow_markup = string_parse_bool(option_get_string(
-                                "global", "allow_markup",
-                                NULL,
-                                NULL,
-                                "Allow markup in notifications"
-                        ), false);
-
-                        settings.markup = (allow_markup ? MARKUP_FULL : MARKUP_STRIP);
-                        LOG_M("'allow_markup' is deprecated, please "
-                              "use 'markup' instead.");
-                }
-
-                char *c = g_strdup(option_get_string(
-                        "global", "markup",
-                        "-markup",
+        // Check if allow_markup set
+        if (ini_is_set("global", "allow_markup")) {
+                bool allow_markup = string_parse_bool(option_get_string(
+                        "global", "allow_markup",
                         NULL,
-                        "Specify how markup should be handled"
-                ));
+                        NULL,
+                        "Allow markup in notifications"
+                ), false);
 
-                //Use markup if set
-                //Use default if settings.markup not set yet
-                //  (=>c empty&&!allow_markup)
-                if (c) {
-                        settings.markup = parse_markup_mode(c, defaults.markup);
-                } else if (!settings.markup) {
-                        settings.markup = defaults.markup;
-                }
-                g_free(c);
+                settings.markup = (allow_markup ? MARKUP_FULL : MARKUP_STRIP);
+                LOG_M("'allow_markup' is deprecated, please "
+                      "use 'markup' instead.");
         }
+
+        settings.markup = parse_markup_mode(option_get_string(
+                "global", "markup",
+                "-markup",
+                NULL,
+                "Specify how markup should be handled"
+        ), defaults.markup);
 
         settings.format = g_strdup(option_get_string(
                 "global", "format",
