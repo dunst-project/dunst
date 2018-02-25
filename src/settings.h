@@ -87,6 +87,7 @@ typedef struct _settings {
         keyboard_shortcut context_ks;
         bool force_xinerama;
         int corner_radius;
+        GLogLevelFlags log_level;
 } settings_t;
 
 extern settings_t settings;

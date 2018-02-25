@@ -101,6 +101,7 @@ settings_t defaults = {
         .code = 0,.sym = NoSymbol,.is_valid = false
 },                              /* ignore this */
 
+.log_level = G_LOG_LEVEL_WARNING,
 };
 
 rule_t default_rules[] = {

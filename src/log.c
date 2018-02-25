@@ -8,10 +8,10 @@
 
 #include <glib.h>
 
-static GLogLevelFlags log_level = G_LOG_LEVEL_WARNING;
+#include "settings.h"
 
 /* see log.h */
-static const char *log_level_to_string(GLogLevelFlags level)
+const char *log_level_to_string(GLogLevelFlags level)
 {
         switch (level) {
         case G_LOG_LEVEL_ERROR: return "ERROR";
@@ -25,36 +25,32 @@ static const char *log_level_to_string(GLogLevelFlags level)
 }
 
 /* see log.h */
-void log_set_level_from_string(const char *level)
+GLogLevelFlags string_parse_loglevel(const char *level, GLogLevelFlags def)
 {
         if (!level)
-                return;
+                return def;
 
         if (g_ascii_strcasecmp(level, "critical") == 0)
-                log_level = G_LOG_LEVEL_CRITICAL;
+                return G_LOG_LEVEL_CRITICAL;
         else if (g_ascii_strcasecmp(level, "crit") == 0)
-                log_level = G_LOG_LEVEL_CRITICAL;
+                return G_LOG_LEVEL_CRITICAL;
         else if (g_ascii_strcasecmp(level, "warning") == 0)
-                log_level = G_LOG_LEVEL_WARNING;
+                return G_LOG_LEVEL_WARNING;
         else if (g_ascii_strcasecmp(level, "warn") == 0)
-                log_level = G_LOG_LEVEL_WARNING;
+                return G_LOG_LEVEL_WARNING;
         else if (g_ascii_strcasecmp(level, "message") == 0)
-                log_level = G_LOG_LEVEL_MESSAGE;
+                return G_LOG_LEVEL_MESSAGE;
         else if (g_ascii_strcasecmp(level, "mesg") == 0)
-                log_level = G_LOG_LEVEL_MESSAGE;
+                return G_LOG_LEVEL_MESSAGE;
         else if (g_ascii_strcasecmp(level, "info") == 0)
-                log_level = G_LOG_LEVEL_INFO;
+                return G_LOG_LEVEL_INFO;
         else if (g_ascii_strcasecmp(level, "debug") == 0)
-                log_level = G_LOG_LEVEL_DEBUG;
+                return G_LOG_LEVEL_DEBUG;
         else if (g_ascii_strcasecmp(level, "deb") == 0)
-                log_level = G_LOG_LEVEL_DEBUG;
-        else
-                LOG_W("Unknown log level: '%s'", level);
-}
+                return G_LOG_LEVEL_DEBUG;
 
-void log_set_level(GLogLevelFlags level)
-{
-        log_level = level;
+        LOG_W("Unknown log level: '%s'", level);
+        return def;
 }
 
 /**
@@ -77,7 +73,7 @@ static void dunst_log_handler(
 /* if you want to have a debug build, you want to log anything,
  * unconditionally, without specifying debug log level again */
 #ifndef DEBUG_BUILD
-        if (log_level < message_level)
+        if (settings.log_level < message_level)
                 return;
 #endif
         const char *log_level_str =
@@ -94,6 +90,7 @@ static void dunst_log_handler(
 void dunst_log_init(bool testing)
 {
         g_log_set_default_handler(dunst_log_handler, (void*)testing);
+        settings.log_level = G_LOG_LEVEL_MESSAGE;
 }
 
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

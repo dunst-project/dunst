@@ -60,11 +60,11 @@ void load_settings(const char *cmdline_config_path)
               "Using STATIC_CONFIG is deprecated behavior.");
 #endif
 
-        log_set_level_from_string(option_get_string(
+        settings.log_level = string_parse_loglevel(option_get_string(
                 "global",
                 "verbosity", "-verbosity", NULL,
                 "The verbosity to log (one of 'crit', 'warn', 'mesg', 'info', 'debug')"
-        ));
+        ), defaults.log_level);
 
 
         settings.per_monitor_dpi = string_parse_bool(option_get_string(

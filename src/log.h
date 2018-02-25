@@ -16,23 +16,34 @@
 
 #define DIE(...) do { LOG_C(__VA_ARGS__); exit(EXIT_FAILURE); } while (0)
 
-/**
- * @return the string representation of the given `level`
- */
-void log_set_level(GLogLevelFlags level);
 
 /**
- * Set the current loglevel to `level`
+ * Return the corresponding string representation of `level`
  *
- * @param level The desired log level
+ * @param level The level to convert to a string
  *
- * If `level` is `NULL`, nothing will be done.
- * If `level` is an invalid value, nothing will be done.
+ * @return the representation of the given level
+ * @return `"UNKNOWN"` if `level` is an invalid
  */
-void log_set_level_from_string(const char* level);
+const char *log_level_to_string(GLogLevelFlags level);
+
+/**
+ * Return the corresponding log level for given string
+ *
+ * @param level The string to convert. It shall not
+ *              contain waste characters.
+ * @param def The default to fallback to
+ *
+ * @return the representation of the given logstring
+ * @return `def` if `string` is an invalid value or `NULL`
+ */
+GLogLevelFlags string_parse_loglevel(const char *level, GLogLevelFlags def);
 
 /**
  * Initialise log handling. Can be called any time.
+ *
+ * To avoid any issues, it'll set #settings_t.log_level of
+ * the #settings variable to `G_LOG_LEVEL_MESSAGE`.
  *
  * @param testing If we're in testing mode and should
  *                suppress all output
