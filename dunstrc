@@ -279,7 +279,7 @@
 # override settings for certain messages.
 # Messages can be matched by "appname", "summary", "body", "icon", "category",
 # "msg_urgency" and you can override the "timeout", "urgency", "foreground",
-# "background", "new_icon" and "format".
+# "background", "new_icon" and "format", "fullscreen".
 # Shell-like globbing will get expanded.
 #
 # SCRIPTING
@@ -293,6 +293,19 @@
 # to "".
 # NOTE: It might be helpful to run dunst -print in a terminal in order
 # to find fitting options for rules.
+
+# fullscreen values
+# show: show the notifications, regardless if there is a fullscreen window opened
+# delay: displays the new notification, if there is there is no fullscreen window active
+#        If the notification is already drawn, it won't get undrawn.
+# pushback: same as delay, but when switching into fullscreen, the notification will get
+#           withdrawn from screen again and will get delayed like a new notification
+
+#[fullscreen_delay_everything]
+#    fullscreen = delay
+#[fullscreen_show_critical]
+#    msg_urgency = critical
+#    fullscreen = show
 
 #[espeak]
 #    summary = "*"

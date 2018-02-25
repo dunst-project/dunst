@@ -60,6 +60,7 @@ typedef struct _colored_layout {
 } colored_layout;
 
 cairo_ctx_t cairo_ctx;
+static bool fullscreen_last = false;
 
 /* FIXME refactor setup teardown handlers into one setup and one teardown */
 static void x_shortcut_setup_error_handler(void);
@@ -848,10 +849,13 @@ gboolean x_mainloop_fd_check(GSource *source)
  */
 gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer user_data)
 {
+        bool fullscreen_now;
         XEvent ev;
         unsigned int state;
         while (XPending(xctx.dpy) > 0) {
                 XNextEvent(xctx.dpy, &ev);
+                LOG_D("XEvent: processing '%d'", ev.type);
+
                 switch (ev.type) {
                 case Expose:
                         if (ev.xexpose.count == 0 && xctx.visible) {
@@ -908,13 +912,20 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer 
                         wake_up();
                         break;
                 case PropertyNotify:
+                        fullscreen_now = have_fullscreen_window();
+
+                        if (fullscreen_now != fullscreen_last) {
+                                fullscreen_last = fullscreen_now;
+                                wake_up();
+                        } else if (   settings.f_mode != FOLLOW_NONE
                         /* Ignore PropertyNotify, when we're still on the
                          * same screen. PropertyNotify is only neccessary
                          * to detect a focus change to another screen
                          */
-                        if(   settings.f_mode != FOLLOW_NONE
-                           && get_active_screen()->scr != xctx.cur_screen)
-                                wake_up();
+                                   && xctx.visible
+                                   && get_active_screen()->scr != xctx.cur_screen) {
+                                x_win_draw();
+                        }
                         break;
                 default:
                         screen_check_event(ev);

@@ -6,6 +6,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#include "dunst.h"
+
 int load_ini_file(FILE *);
 char *ini_get_path(const char *section, const char *key, const char *def);
 char *ini_get_string(const char *section, const char *key, const char *def);
@@ -62,6 +64,18 @@ int option_get_bool(const char *ini_section,
  * returns NULL if no more sections are available
  */
 const char *next_section(const char *section);
+
+/**
+ * Parse the fullscreen behavior value of the given string
+ *
+ * @param string the string representation of #behavior_fullscreen.
+ *               The string must not contain any waste characters.
+ * @param def value to return in case of errors
+ *
+ * @return the #behavior_fullscreen representation of `string`
+ * @return `def` if `string` is invalid or `NULL`
+ */
+enum behavior_fullscreen parse_enum_fullscreen(const char *string, enum behavior_fullscreen def);
 
 #endif
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

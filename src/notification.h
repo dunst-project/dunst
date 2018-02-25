@@ -9,6 +9,13 @@
 
 #define DUNST_NOTIF_MAX_CHARS 5000
 
+enum behavior_fullscreen {
+        FS_NULL,      //!< Invalid value
+        FS_DELAY,     //!< Delay the notification until leaving fullscreen mode
+        FS_PUSHBACK,  //!< When entering fullscreen mode, push the notification back to waiting
+        FS_SHOW,      //!< Show the message when in fullscreen mode
+};
+
 /// Representing the urgencies according to the notification spec
 enum urgency {
         URG_NONE = -1, /**< Urgency not set (invalid) */
@@ -69,6 +76,7 @@ typedef struct _notification {
         bool first_render;      /**< markup has been rendered before? */
         int dup_count;          /**< amount of duplicate notifications stacked onto this */
         int displayed_height;
+        enum behavior_fullscreen fullscreen; //!< The instruction what to do with it, when desktop enters fullscreen
 
         /* derived fields */
         char *msg;            /**< formatted message */
@@ -94,5 +102,14 @@ void notification_update_text_to_render(notification *n);
 void notification_do_action(notification *n);
 
 const char *notification_urgency_to_string(enum urgency urgency);
+
+/**
+ * Return the string representation for fullscreen behavior
+ *
+ * @param in the #behavior_fullscreen enum value to represent
+ * @return the string representation for `in`
+ */
+const char *enum_to_string_fullscreen(enum behavior_fullscreen in);
+
 #endif
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

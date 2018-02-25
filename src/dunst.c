@@ -48,8 +48,12 @@ void wake_up(void)
 
 static gboolean run(void *data)
 {
-        queues_check_timeouts(x_is_idle());
-        queues_update();
+        LOG_D("RUN");
+
+        bool fullscreen = have_fullscreen_window();
+
+        queues_check_timeouts(x_is_idle(), fullscreen);
+        queues_update(fullscreen);
 
         static gint64 next_timeout = 0;
 

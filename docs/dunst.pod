@@ -594,8 +594,9 @@ Shell-like globing is supported.
 =item B<modifying>
 
 The following attributes can be overridden: timeout, urgency, foreground,
-background, new_icon, set_transient, format where, as with the filtering attributes,
-each one corresponds to the respective notification attribute to be modified.
+background, new_icon, set_transient, format, fullscreen where,
+as with the filtering attributes, each one corresponds to the respective
+notification attribute to be modified.
 
 As with filtering, to make a rule modify an attribute simply assign it in the
 rule definition.

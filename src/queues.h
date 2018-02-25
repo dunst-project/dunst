@@ -125,8 +125,10 @@ void queues_history_push_all(void);
  *
  * @param idle the program's idle status. Important to calculate the
  *             timeout for transient notifications
+ * @param fullscreen the desktop's fullscreen status. Important to
+ *             calculate the timeout for transient notifications
  */
-void queues_check_timeouts(bool idle);
+void queues_check_timeouts(bool idle, bool fullscreen);
 
 /**
  * Move inserted notifications from waiting queue to displayed queue
@@ -135,8 +137,11 @@ void queues_check_timeouts(bool idle);
  *
  * @post Call wake_up() to synchronize the queues with the UI
  *       (which closes old and shows new notifications on screen)
+ *
+ * @param fullscreen the desktop's fullscreen status. Important to
+ *                   move notifications to the right queue
  */
-void queues_update(void);
+void queues_update(bool fullscreen);
 
 /**
  * Calculate the distance to the next event, when an element in the

@@ -28,6 +28,19 @@ static void notification_extract_urls(notification *n);
 static void notification_format_message(notification *n);
 static void notification_dmenu_string(notification *n);
 
+/* see notification.h */
+const char *enum_to_string_fullscreen(enum behavior_fullscreen in)
+{
+        switch (in) {
+                case FS_SHOW: return "show";
+                case FS_DELAY: return "delay";
+                case FS_PUSHBACK: return "pushback";
+                case FS_NULL: return "(null)";
+                default:
+                        LOG_E("Enum behavior_fullscreen has wrong value.");
+        }
+}
+
 /*
  * print a human readable representation
  * of the given notification to stdout.
@@ -49,6 +62,7 @@ void notification_print(notification *n)
         printf("\tfg: %s\n", n->colors[ColFG]);
         printf("\tbg: %s\n", n->colors[ColBG]);
         printf("\tframe: %s\n", n->colors[ColFrame]);
+        printf("\tfullscreen: %s\n", enum_to_string_fullscreen(n->fullscreen));
         printf("\tid: %d\n", n->id);
         if (n->urls) {
                 char *urls = string_replace_all("\n", "\t\t\n", g_strdup(n->urls));
@@ -283,6 +297,8 @@ notification *notification_create(void)
 
         n->transient = false;
         n->progress = -1;
+
+        n->fullscreen = FS_SHOW;
 
         return n;
 }

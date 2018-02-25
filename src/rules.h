@@ -30,6 +30,7 @@ typedef struct _rule_t {
         char *bg;
         const char *format;
         const char *script;
+        enum behavior_fullscreen fullscreen;
 } rule_t;
 
 extern GSList *rules;

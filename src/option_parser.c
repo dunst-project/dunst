@@ -551,4 +551,22 @@ const char *cmdline_create_usage(void)
         return usage_str;
 }
 
+/* see option_parser.h */
+enum behavior_fullscreen parse_enum_fullscreen(const char *string, enum behavior_fullscreen def)
+{
+        if (!string)
+                return def;
+
+        if (strcmp(string, "show") == 0)
+                return FS_SHOW;
+        else if (strcmp(string, "delay") == 0)
+                return FS_DELAY;
+        else if (strcmp(string, "pushback") == 0)
+                return FS_PUSHBACK;
+        else {
+                LOG_W("Unknown fullscreen value: '%s'\n", string);
+                return def;
+        }
+}
+
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

@@ -684,6 +684,15 @@ void load_settings(char *cmdline_config_path)
                 r->history_ignore = ini_get_bool(cur_section, "history_ignore", r->history_ignore);
                 r->match_transient = ini_get_bool(cur_section, "match_transient", r->match_transient);
                 r->set_transient = ini_get_bool(cur_section, "set_transient", r->set_transient);
+                {
+                        char *c = ini_get_string(
+                                cur_section,
+                                "fullscreen", NULL
+                        );
+
+                        r->fullscreen = parse_enum_fullscreen(c, r->fullscreen);
+                        g_free(c);
+                }
                 r->script = ini_get_path(cur_section, "script", NULL);
         }
 
