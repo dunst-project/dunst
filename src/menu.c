@@ -50,6 +50,49 @@ void regex_teardown(void)
         }
 }
 
+/* see menu.h */
+char **split_into_cmd(const char *command, ...)
+{
+        GError *error = NULL;
+        char **split;
+        if (!g_shell_parse_argv(command, NULL, &split, &error)) {
+                LOG_W("Unable to parse command: '%s'.", error->message);
+                g_error_free(error);
+                split = NULL;
+        }
+
+        if (split) {
+                va_list args;
+                char *cur;
+                int len_args = 0;
+
+                va_start(args, command);
+                while ((cur = va_arg(args, char*)))
+                        len_args++;
+                va_end(args);
+
+                if (len_args > 0) {
+                        size_t len_cmd = g_strv_length(split);
+                        gchar **cmd = g_new(gchar*, len_cmd+len_args+1);
+                        memcpy(cmd, split, len_cmd*(sizeof(gchar*)));
+
+                        len_args = 0;
+                        va_start(args, command);
+                        while ((cur = va_arg(args, char*))) {
+                                cmd[len_cmd+len_args] = g_strdup(cur);
+                                len_args++;
+                        }
+                        va_end(args);
+                        cmd[len_cmd+len_args] = NULL;
+
+                        g_free(split);
+                        split = cmd;
+                }
+        }
+
+        return split;
+}
+
 /*
  * Exctract all urls from a given string.
  *
@@ -116,12 +159,11 @@ void open_browser(const char *in)
                 if (browser_pid2) {
                         exit(0);
                 } else {
-                        char *browser_cmd = g_strconcat(settings.browser, " ", url, NULL);
-                        char **cmd = g_strsplit(browser_cmd, " ", 0);
-                        execvp(cmd[0], cmd);
+                        char **browser_cmd = split_into_cmd(settings.browser, url, NULL);
+                        execvp(browser_cmd[0], browser_cmd);
                         // execvp won't return if it's successful
                         // so, if we're here, it's definitely an error
-                        fprintf(stderr, "Warning: failed to execute '%s': %s\n",
+                        LOG_W("Failed to execute '%s': %s\n",
                                         settings.browser,
                                         strerror(errno));
                         exit(EXIT_FAILURE);
@@ -193,10 +235,6 @@ void dispatch_menu_result(const char *input)
  */
 void context_menu(void)
 {
-        if (settings.dmenu_cmd == NULL) {
-                LOG_C("Unable to open dmenu: No dmenu command set.");
-                return;
-        }
         char *dmenu_input = NULL;
 
         for (const GList *iter = queues_get_displayed(); iter;
@@ -243,10 +281,17 @@ void context_menu(void)
                         LOG_W("dup(): error in parent: %s", strerror(errno));
                         exit(EXIT_FAILURE);
                 }
-                execvp(settings.dmenu_cmd[0], settings.dmenu_cmd);
-                fprintf(stderr, "Warning: failed to execute '%s': %s\n",
-                                settings.dmenu,
-                                strerror(errno));
+
+                char **dmenu_cmd = split_into_cmd(settings.dmenu, NULL);
+
+                if (dmenu_cmd) {
+                        execvp(dmenu_cmd[0], dmenu_cmd);
+                        LOG_W("Failed to execute '%s': %s\n",
+                                        settings.dmenu,
+                                        strerror(errno));
+                } else {
+                        LOG_W("Cannot execute '%s'.", settings.dmenu);
+                }
                 exit(EXIT_FAILURE);
         } else {
                 close(child_io[0]);

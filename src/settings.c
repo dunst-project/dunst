@@ -330,17 +330,6 @@ void load_settings(const char *cmdline_config_path)
                 "path to dmenu"
         ));
 
-        {
-                GError *error = NULL;
-                if (!g_shell_parse_argv(settings.dmenu, NULL, &settings.dmenu_cmd, &error)) {
-                        LOG_W("Unable to parse dmenu command: '%s'."
-                              "dmenu functionality will be disabled.", error->message);
-                        g_error_free(error);
-                        settings.dmenu_cmd = NULL;
-                }
-        }
-
-
         settings.browser = string_to_path(option_get_string(
                 "global", "browser",
                 "-browser",

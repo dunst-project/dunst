@@ -75,7 +75,6 @@ typedef struct _settings {
         int startup_notification;
         int monitor;
         char *dmenu;
-        char **dmenu_cmd;
         char *browser;
         enum icon_position_t icon_position;
         int max_icon_size;
