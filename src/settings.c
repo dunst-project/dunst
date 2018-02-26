@@ -90,14 +90,12 @@ void load_settings(const char *cmdline_config_path)
 
         // Check if allow_markup set
         if (ini_is_set("global", "allow_markup")) {
-                bool allow_markup = string_parse_bool(option_get_string(
+                settings.markup = parse_markup_mode(option_get_string(
                         "global", "allow_markup",
                         NULL,
                         NULL,
                         "Allow markup in notifications"
-                ), false);
-
-                settings.markup = (allow_markup ? MARKUP_FULL : MARKUP_STRIP);
+                ), MARKUP_STRIP);
                 LOG_M("'allow_markup' is deprecated, please "
                       "use 'markup' instead.");
         }
