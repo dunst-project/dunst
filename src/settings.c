@@ -19,10 +19,67 @@
 #include "utils.h"
 #include "x11/x.h"
 
+#define S2P(val, def) string_to_path(val)
+#define S2S(val, def) g_strdup(val)
+
+#define TYPE(type, place, conv, free, equa) type
+#define PLAC(type, place, conv, free, equa) place
+#define CONV(type, place, conv, free, equa) conv
+#define FREE(type, place, conv, free, equa) free
+#define EQUA(type, place, conv, free, equa) equa
+
+#define EQ(a, b) (a != b)
+#define EQ_SEP(a, b) ((a.type == b.type) && (a.type != CUSTOM || 0 == strcmp(a.sep_color, b.sep_color)))
+
+//       typename      c-type                        placeholder               transferfunc            freefunc, equal
+#define  T_INT         int,                          "integer",                string_parse_int,       NULL,     EQ
+#define  T_BOOL        bool,                         "[yes|no]",               string_parse_bool,      NULL,     EQ
+#define  T_TIME        gint64,                       "integer[|s|m|h|d]",      string_to_time,         NULL,     EQ
+#define  T_PATH        char*,                        "path",                   S2P,                    g_free,   EQ
+#define  T_ALIGN       enum alignment,               "[left|center|right]",    parse_alignment,        NULL,     EQ
+#define  T_ICONPOS     enum icon_position_t,         "[left|right|off]",       parse_icon_position,    NULL,     EQ
+#define  T_STRING      char*,                        "string",                 S2S,                    g_free,   EQ
+#define  T_LOGLEVEL    GLogLevelFlags,               "level",                  string_parse_loglevel,  NULL,     EQ
+#define  T_ELLIPSIZE   enum ellipsize,               "[left|middle|right]",    parse_ellipsize,        NULL,     EQ
+#define  T_FOLLOW      enum follow_mode,             "[none|mouse|keyboard]",  parse_follow_mode,      NULL,     EQ
+#define  T_MARKUP      enum markup_mode,             "[no|strip|full]",        parse_markup_mode,      NULL,     EQ
+#define  T_SEPCOLOR    struct separator_color_data,  "<string>",               parse_sepcolor,         NULL,     EQ_SEP
+#define  T_URGENCY     enum urgency,                 "[low|normal|critical]",  parse_urgency,          NULL,     EQ
+#define  T_FULLSCREEN  enum behavior_fullscreen,     "",                       parse_enum_fullscreen,  NULL,     EQ
+
+#define OPTION(type, feld, def, sec, key, cmd, desc) \
+        do { \
+                const char *value = option_get_string(sec, key, cmd, NULL, desc); \
+                if (value) { \
+                        TYPE type  converted = CONV type (value, def); \
+                        if (!EQUA type(converted, def)) { \
+                                SETTINGS.feld = converted; \
+                        } \
+                } \
+        } while(0)
+
+#define DEPREC(type, feld, def, sec, key, cmd, desc, message) \
+        do { \
+                if (ini_is_set(sec, key) || cmdline_is_set(cmd)) { \
+                        OPTION(type, feld, def, sec, key, cmd, desc); \
+                        LOG_W(message); \
+                } \
+        } while(0)
+
+#define RULE(type, field, key) \
+                r->field = CONV type (ini_get_string(cur_section, key, NULL), r->field)
+
+char *string_parse_string(const char* string, const char *def)
+{
+        return string ? g_strdup(string) : g_strdup(def);
+}
+
 settings_t settings;
 
 void load_settings(const char *cmdline_config_path)
 {
+
+#define SETTINGS settings
 
 #ifndef STATIC_CONFIG
         xdgHandle xdg;
