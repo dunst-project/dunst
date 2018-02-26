@@ -372,47 +372,45 @@ void load_settings(const char *cmdline_config_path)
                 "paths to default icons"
         ));
 
-        {
-                // Backwards compatibility with the legacy 'frame' section.
-                if (ini_is_set("frame", "width")) {
-                        settings.frame_width = string_parse_int(option_get_string(
-                                "frame", "width",
-                                NULL,
-                                NULL,
-                                "Width of frame around the window"
-                        ), defaults.frame_width);
-                        LOG_M("The frame section is deprecated, width has "
-                              "been renamed to frame_width and moved to "
-                              "the global section.");
-                }
-
+        // Backwards compatibility with the legacy 'frame' section.
+        if (ini_is_set("frame", "width")) {
                 settings.frame_width = string_parse_int(option_get_string(
-                        "global", "frame_width",
-                        "-frame_width",
+                        "frame", "width",
+                        NULL,
                         NULL,
                         "Width of frame around the window"
-                ), settings.frame_width ? settings.frame_width : defaults.frame_width);
+                ), defaults.frame_width);
+                LOG_M("The frame section is deprecated, width has "
+                      "been renamed to frame_width and moved to "
+                      "the global section.");
+        }
 
-                if (ini_is_set("frame", "color")) {
-                        settings.frame_color = g_strdup(option_get_string(
-                                "frame", "color",
-                                NULL,
-                                defaults.frame_color,
-                                "Color of the frame around the window"
-                        ));
-                        LOG_M("The frame section is deprecated, color "
-                              "has been renamed to frame_color and moved "
-                              "to the global section.");
-                }
+        settings.frame_width = string_parse_int(option_get_string(
+                "global", "frame_width",
+                "-frame_width",
+                NULL,
+                "Width of frame around the window"
+        ), settings.frame_width ? settings.frame_width : defaults.frame_width);
 
+        if (ini_is_set("frame", "color")) {
                 settings.frame_color = g_strdup(option_get_string(
-                        "global", "frame_color",
-                        "-frame_color",
-                        settings.frame_color ? settings.frame_color : defaults.frame_color,
+                        "frame", "color",
+                        NULL,
+                        defaults.frame_color,
                         "Color of the frame around the window"
                 ));
-
+                LOG_M("The frame section is deprecated, color "
+                      "has been renamed to frame_color and moved "
+                      "to the global section.");
         }
+
+        settings.frame_color = g_strdup(option_get_string(
+                "global", "frame_color",
+                "-frame_color",
+                settings.frame_color ? settings.frame_color : defaults.frame_color,
+                "Color of the frame around the window"
+        ));
+
         settings.lowbgcolor = g_strdup(option_get_string(
                 "urgency_low", "background",
                 "-lb",
