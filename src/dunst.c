@@ -32,7 +32,7 @@ GMainLoop *mainloop = NULL;
 
 GSList *rules = NULL;
 
-/* misc funtions */
+/* misc functions */
 static gboolean run(void *data);
 
 void wake_up(void)

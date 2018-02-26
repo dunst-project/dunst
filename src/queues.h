@@ -158,14 +158,14 @@ gint64 queues_get_next_datachange(gint64 time);
 /**
  * Pause queue-management of dunst
  *
- * @post Calling update_lists() is neccessary
+ * @post Calling update_lists() is necessary
  */
 void queues_pause_on(void);
 
 /**
  * Unpause (run) queue-management of dunst
  *
- * @post Calling update_lists() is neccessary
+ * @post Calling update_lists() is necessary
  */
 void queues_pause_off(void);
 

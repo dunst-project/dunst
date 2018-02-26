@@ -183,7 +183,7 @@ void load_settings(char *cmdline_config_path)
         settings.indicate_hidden = option_get_bool(
                 "global",
                 "indicate_hidden", "-indicate_hidden", defaults.indicate_hidden,
-                "Show how many notificaitons are hidden?"
+                "Show how many notifications are hidden"
         );
 
         settings.word_wrap = option_get_bool(
@@ -365,7 +365,7 @@ void load_settings(char *cmdline_config_path)
         settings.transparency = option_get_int(
                 "global",
                 "transparency", "-transparency", defaults.transparency,
-                "Transparency. range 0-100"
+                "Transparency. Range 0-100"
         );
 
         settings.corner_radius = option_get_int(
@@ -585,7 +585,7 @@ void load_settings(char *cmdline_config_path)
         settings.critfgcolor = option_get_string(
                 "urgency_critical",
                 "foreground", "-cf", defaults.critfgcolor,
-                "Foreground color for notifications with ciritical urgency"
+                "Foreground color for notifications with critical urgency"
         );
 
         settings.critframecolor = option_get_string(
