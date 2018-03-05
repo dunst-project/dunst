@@ -45,7 +45,7 @@ typedef struct _color_t {
 extern xctx_t xctx;
 
 /* window */
-void x_win_draw(void);
+void x_win_move(int width, int height);
 void x_win_hide(void);
 void x_win_show(void);
 
