@@ -2,6 +2,7 @@
 #ifndef DUNST_X_H
 #define DUNST_X_H
 
+#include <cairo.h>
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <X11/extensions/scrnsaver.h>
@@ -58,6 +59,8 @@ KeySym x_shortcut_string_to_mask(const char *str);
 bool x_is_idle(void);
 void x_setup(void);
 void x_free(void);
+
+cairo_surface_t *x_create_cairo_surface(void);
 
 gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback,
                                 gpointer user_data);

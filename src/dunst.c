@@ -13,6 +13,7 @@
 #include <stdlib.h>
 
 #include "dbus.h"
+#include "draw.h"
 #include "log.h"
 #include "menu.h"
 #include "notification.h"
@@ -67,7 +68,7 @@ static gboolean run(void *data)
         }
 
         if (xctx.visible) {
-                x_win_draw();
+                draw();
         }
 
         if (xctx.visible) {
@@ -120,7 +121,7 @@ static void teardown(void)
 
         teardown_queues();
 
-        x_free();
+        draw_deinit();
 }
 
 int dunst_main(int argc, char *argv[])
@@ -154,7 +155,7 @@ int dunst_main(int argc, char *argv[])
 
         int owner_id = initdbus();
 
-        x_setup();
+        draw_setup();
 
         if (settings.startup_notification) {
                 notification *n = notification_create();
