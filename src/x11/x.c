@@ -12,11 +12,6 @@
 #include <glib-object.h>
 #include <locale.h>
 #include <math.h>
-#include <pango/pango-attributes.h>
-#include <pango/pango-font.h>
-#include <pango/pango-layout.h>
-#include <pango/pango-types.h>
-#include <pango/pangocairo.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -41,25 +36,6 @@
 xctx_t xctx;
 bool dunst_grab_errored = false;
 
-typedef struct _cairo_ctx {
-        cairo_status_t status;
-        cairo_surface_t *surface;
-        cairo_t *context;
-        PangoFontDescription *desc;
-} cairo_ctx_t;
-
-typedef struct _colored_layout {
-        PangoLayout *l;
-        color_t fg;
-        color_t bg;
-        color_t frame;
-        char *text;
-        PangoAttrList *attr;
-        cairo_surface_t *icon;
-        notification *n;
-} colored_layout;
-
-cairo_ctx_t cairo_ctx;
 static bool fullscreen_last = false;
 
 /* FIXME refactor setup teardown handlers into one setup and one teardown */
@@ -68,16 +44,6 @@ static int x_shortcut_tear_down_error_handler(void);
 static void setopacity(Window win, unsigned long opacity);
 static void x_handle_click(XEvent ev);
 static void x_win_setup(void);
-
-static void x_cairo_setup(void)
-{
-        cairo_ctx.surface = cairo_xlib_surface_create(xctx.dpy,
-                        xctx.win, DefaultVisual(xctx.dpy, 0), WIDTH, HEIGHT);
-
-        cairo_ctx.context = cairo_create(cairo_ctx.surface);
-
-        cairo_ctx.desc = pango_font_description_from_string(settings.font);
-}
 
 cairo_surface_t *x_create_cairo_surface(void)
 {
@@ -347,9 +313,6 @@ static void x_handle_click(XEvent ev)
 
 void x_free(void)
 {
-        cairo_surface_destroy(cairo_ctx.surface);
-        cairo_destroy(cairo_ctx.context);
-
         if (xctx.dpy)
                 XCloseDisplay(xctx.dpy);
 }
@@ -429,7 +392,6 @@ void x_setup(void)
 
         init_screens();
         x_win_setup();
-        x_cairo_setup();
         x_shortcut_grab(&settings.history_ks);
 }
 
