@@ -13,8 +13,6 @@ typedef struct _dimension_t {
         unsigned int h;
         unsigned int mmh;
         unsigned int w;
-        int mask;
-        int negative_width;
 } dimension_t;
 
 typedef struct _screen_info {

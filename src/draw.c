@@ -149,7 +149,7 @@ static void free_colored_layout(void *data)
 
 static bool have_dynamic_width(void)
 {
-        return (xctx.geometry.mask & WidthValue && xctx.geometry.w == 0);
+        return (settings.geometry.width_set && settings.geometry.w == 0);
 }
 
 static dimension_t calculate_dimensions(GSList *layouts)
@@ -159,18 +159,17 @@ static dimension_t calculate_dimensions(GSList *layouts)
         dim.h = 0;
         dim.x = 0;
         dim.y = 0;
-        dim.mask = xctx.geometry.mask;
 
         screen_info *scr = get_active_screen();
         if (have_dynamic_width()) {
                 /* dynamic width */
                 dim.w = 0;
-        } else if (xctx.geometry.mask & WidthValue) {
+        } else if (settings.geometry.width_set) {
                 /* fixed width */
-                if (xctx.geometry.negative_width) {
-                        dim.w = scr->dim.w - xctx.geometry.w;
+                if (settings.geometry.negative_width) {
+                        dim.w = scr->dim.w - settings.geometry.w;
                 } else {
-                        dim.w = xctx.geometry.w;
+                        dim.w = settings.geometry.w;
                 }
         } else {
                 /* across the screen */
@@ -202,8 +201,8 @@ static dimension_t calculate_dimensions(GSList *layouts)
 
                         if (total_width > scr->dim.w) {
                                 /* set width to screen width */
-                                dim.w = scr->dim.w - xctx.geometry.x * 2;
-                        } else if (have_dynamic_width() || (total_width < xctx.geometry.w && settings.shrink)) {
+                                dim.w = scr->dim.w - settings.geometry.x * 2;
+                        } else if (have_dynamic_width() || (total_width < settings.geometry.w && settings.shrink)) {
                                 /* set width to text width */
                                 dim.w = total_width + 2 * settings.frame_width;
                         }
@@ -394,7 +393,7 @@ static GSList *r_create_layouts(cairo_t *c)
 
                 notification_update_text_to_render(n);
 
-                if (!iter->next && xmore_is_needed && xctx.geometry.h == 1) {
+                if (!iter->next && xmore_is_needed && settings.geometry.h == 1) {
                         char *new_ttr = g_strdup_printf("%s (%d more)", n->text_to_render, qlen);
                         g_free(n->text_to_render);
                         n->text_to_render = new_ttr;
@@ -403,7 +402,7 @@ static GSList *r_create_layouts(cairo_t *c)
                                 r_create_layout_from_notification(c, n));
         }
 
-        if (xmore_is_needed && xctx.geometry.h != 1) {
+        if (xmore_is_needed && settings.geometry.h != 1) {
                 /* append xmore message as new message */
                 layouts = g_slist_append(layouts,
                         r_create_layout_for_xmore(c, last, qlen));

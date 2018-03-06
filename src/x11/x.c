@@ -58,16 +58,16 @@ void x_win_move(int width, int height)
         screen_info *scr = get_active_screen();
         xctx.cur_screen = scr->scr;
         /* calculate window position */
-        if (xctx.geometry.mask & XNegative) {
-                x = (scr->dim.x + (scr->dim.w - width)) + xctx.geometry.x;
+        if (settings.geometry.negative_x) {
+                x = (scr->dim.x + (scr->dim.w - width)) + settings.geometry.x;
         } else {
-                x = scr->dim.x + xctx.geometry.x;
+                x = scr->dim.x + settings.geometry.x;
         }
 
-        if (xctx.geometry.mask & YNegative) {
-                y = scr->dim.y + (scr->dim.h + xctx.geometry.y) - height;
+        if (settings.geometry.negative_y) {
+                y = scr->dim.y + (scr->dim.h + settings.geometry.y) - height;
         } else {
-                y = scr->dim.y + xctx.geometry.y;
+                y = scr->dim.y + settings.geometry.y;
         }
 
         /* move and resize */
@@ -365,34 +365,45 @@ void x_setup(void)
         else
                 xctx.colors[ColFrame][URG_CRIT] = settings.frame_color;
 
-        /* parse and set xctx.geometry and monitor position */
-        if (settings.geom[0] == '-') {
-                xctx.geometry.negative_width = true;
-                settings.geom++;
-        } else {
-                xctx.geometry.negative_width = false;
-        }
-
-        xctx.geometry.mask = XParseGeometry(settings.geom,
-                                            &xctx.geometry.x, &xctx.geometry.y,
-                                            &xctx.geometry.w, &xctx.geometry.h);
-
-        /* calculate maximum notification count and push information to queue */
-        if (xctx.geometry.h == 0) {
-                queues_displayed_limit(0);
-        } else if (xctx.geometry.h == 1) {
-                queues_displayed_limit(1);
-        } else if (settings.indicate_hidden) {
-                queues_displayed_limit(xctx.geometry.h - 1);
-        } else {
-                queues_displayed_limit(xctx.geometry.h);
-        }
-
         xctx.screensaver_info = XScreenSaverAllocInfo();
 
         init_screens();
         x_win_setup();
         x_shortcut_grab(&settings.history_ks);
+}
+
+struct geometry x_parse_geometry(const char *geom_str)
+{
+        assert(geom_str);
+
+        if (geom_str[0] == '-') {
+                settings.geometry.negative_width = true;
+                geom_str++;
+        } else {
+                settings.geometry.negative_width = false;
+        }
+
+        struct geometry geometry = { 0 };
+
+        int mask = XParseGeometry(geom_str,
+                                  &geometry.x, &geometry.y,
+                                  &geometry.w, &geometry.h);
+        geometry.width_set = mask & WidthValue;
+        geometry.negative_x = mask & XNegative;
+        geometry.negative_y = mask & YNegative;
+
+        /* calculate maximum notification count and push information to queue */
+        if (geometry.h == 0) {
+                queues_displayed_limit(0);
+        } else if (geometry.h == 1) {
+                queues_displayed_limit(1);
+        } else if (settings.indicate_hidden) {
+                queues_displayed_limit(geometry.h - 1);
+        } else {
+                queues_displayed_limit(geometry.h);
+        }
+
+        return geometry;
 }
 
 static void x_set_wm(Window win)

@@ -23,13 +23,15 @@ typedef struct _keyboard_shortcut {
         bool is_valid;
 } keyboard_shortcut;
 
+// Cyclical dependency
+#include "src/settings.h"
+
 typedef struct _xctx {
         Atom utf8;
         Display *dpy;
         int cur_screen;
         Window win;
         bool visible;
-        dimension_t geometry;
         const char *colors[3][3];
         XScreenSaverInfo *screensaver_info;
         dimension_t window_dim;
@@ -59,6 +61,8 @@ KeySym x_shortcut_string_to_mask(const char *str);
 bool x_is_idle(void);
 void x_setup(void);
 void x_free(void);
+
+struct geometry x_parse_geometry(const char *geom_str);
 
 cairo_surface_t *x_create_cairo_surface(void);
 

@@ -16,7 +16,15 @@ settings_t defaults = {
 .icons = { "dialog-information", "dialog-information", "dialog-warning" }, /* low, normal, critical */
 
 .transparency = 0,           /* transparency */
-.geom = "0x0",               /* geometry */
+.geometry = { .x = 0,        /* geometry */
+              .y = 0,
+              .w = 0,
+              .h = 0,
+              .negative_x = 0,
+              .negative_y = 0,
+              .negative_width = 0,
+              .width_set = 0
+            },
 .title = "Dunst",            /* the title of dunst notification windows */
 .class = "Dunst",            /* the class of dunst notification windows */
 .shrink = false,             /* shrinking */

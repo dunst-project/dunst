@@ -13,6 +13,18 @@ enum separator_color { FOREGROUND, AUTO, FRAME, CUSTOM };
 enum follow_mode { FOLLOW_NONE, FOLLOW_MOUSE, FOLLOW_KEYBOARD };
 enum markup_mode { MARKUP_NULL, MARKUP_NO, MARKUP_STRIP, MARKUP_FULL };
 
+struct geometry {
+        int x;
+        int y;
+        unsigned int w;
+        unsigned int h;
+        bool negative_x;
+        bool negative_y;
+        bool negative_width;
+        bool width_set;
+
+};
+
 typedef struct _settings {
         bool print_notifications;
         bool per_monitor_dpi;
@@ -33,7 +45,7 @@ typedef struct _settings {
         gint64 timeouts[3];
         char *icons[3];
         unsigned int transparency;
-        char *geom;
+        struct geometry geometry;
         char *title;
         char *class;
         int shrink;
