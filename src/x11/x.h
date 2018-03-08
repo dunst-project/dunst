@@ -26,6 +26,13 @@ typedef struct _keyboard_shortcut {
 // Cyclical dependency
 #include "src/settings.h"
 
+struct dimensions {
+        int x;
+        int y;
+        int w;
+        int h;
+};
+
 typedef struct _xctx {
         Atom utf8;
         Display *dpy;
@@ -34,7 +41,6 @@ typedef struct _xctx {
         bool visible;
         const char *colors[3][3];
         XScreenSaverInfo *screensaver_info;
-        dimension_t window_dim;
         unsigned long sep_custom_col;
 } xctx_t;
 

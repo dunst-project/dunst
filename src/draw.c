@@ -152,13 +152,9 @@ static bool have_dynamic_width(void)
         return (settings.geometry.width_set && settings.geometry.w == 0);
 }
 
-static dimension_t calculate_dimensions(GSList *layouts)
+static struct dimensions calculate_dimensions(GSList *layouts)
 {
-        dimension_t dim;
-        dim.w = 0;
-        dim.h = 0;
-        dim.x = 0;
-        dim.y = 0;
+        struct dimensions dim = { 0 };
 
         screen_info *scr = get_active_screen();
         if (have_dynamic_width()) {
@@ -167,13 +163,13 @@ static dimension_t calculate_dimensions(GSList *layouts)
         } else if (settings.geometry.width_set) {
                 /* fixed width */
                 if (settings.geometry.negative_width) {
-                        dim.w = scr->dim.w - settings.geometry.w;
+                        dim.w = scr->w - settings.geometry.w;
                 } else {
                         dim.w = settings.geometry.w;
                 }
         } else {
                 /* across the screen */
-                dim.w = scr->dim.w;
+                dim.w = scr->w;
         }
 
         dim.h += 2 * settings.frame_width;
@@ -199,9 +195,9 @@ static dimension_t calculate_dimensions(GSList *layouts)
                         /* subtract height from the unwrapped text */
                         dim.h -= h;
 
-                        if (total_width > scr->dim.w) {
+                        if (total_width > scr->w) {
                                 /* set width to screen width */
-                                dim.w = scr->dim.w - settings.geometry.x * 2;
+                                dim.w = scr->w - settings.geometry.x * 2;
                         } else if (have_dynamic_width() || (total_width < settings.geometry.w && settings.shrink)) {
                                 /* set width to text width */
                                 dim.w = total_width + 2 * settings.frame_width;
@@ -320,7 +316,7 @@ static colored_layout *r_init_shared(cairo_t *c, notification *n)
 
         cl->n = n;
 
-        dimension_t dim = calculate_dimensions(NULL);
+        struct dimensions dim = calculate_dimensions(NULL);
         int width = dim.w;
 
         if (have_dynamic_width()) {
@@ -416,7 +412,7 @@ static void r_free_layouts(GSList *layouts)
         g_slist_free_full(layouts, free_colored_layout);
 }
 
-static dimension_t x_render_layout(cairo_t *c, colored_layout *cl, colored_layout *cl_next, dimension_t dim, bool first, bool last)
+static struct dimensions x_render_layout(cairo_t *c, colored_layout *cl, colored_layout *cl_next, struct dimensions dim, bool first, bool last)
 {
         int h;
         int h_text = 0;
@@ -520,7 +516,7 @@ void draw(void)
 
         GSList *layouts = r_create_layouts(c_context);
 
-        dimension_t dim = calculate_dimensions(layouts);
+        struct dimensions dim = calculate_dimensions(layouts);
         int width = dim.w;
         int height = dim.h;
 

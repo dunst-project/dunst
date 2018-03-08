@@ -53,35 +53,39 @@ cairo_surface_t *x_create_cairo_surface(void)
 
 void x_win_move(int width, int height)
 {
+        // Previous dimensions of the window to avoid calling X11 if no change
+        // is needed
+        static struct dimensions window_dim = { 0 };
 
         int x, y;
         screen_info *scr = get_active_screen();
-        xctx.cur_screen = scr->scr;
+        xctx.cur_screen = scr->id;
+
         /* calculate window position */
         if (settings.geometry.negative_x) {
-                x = (scr->dim.x + (scr->dim.w - width)) + settings.geometry.x;
+                x = (scr->x + (scr->w - width)) + settings.geometry.x;
         } else {
-                x = scr->dim.x + settings.geometry.x;
+                x = scr->x + settings.geometry.x;
         }
 
         if (settings.geometry.negative_y) {
-                y = scr->dim.y + (scr->dim.h + settings.geometry.y) - height;
+                y = scr->y + (scr->h + settings.geometry.y) - height;
         } else {
-                y = scr->dim.y + settings.geometry.y;
+                y = scr->y + settings.geometry.y;
         }
 
         /* move and resize */
-        if (x != xctx.window_dim.x || y != xctx.window_dim.y) {
+        if (x != window_dim.x || y != window_dim.y) {
                 XMoveWindow(xctx.dpy, xctx.win, x, y);
         }
-        if (width != xctx.window_dim.w || height != xctx.window_dim.h) {
+        if (width != window_dim.w || height != window_dim.h) {
                 XResizeWindow(xctx.dpy, xctx.win, width, height);
         }
 
-        xctx.window_dim.x = x;
-        xctx.window_dim.y = y;
-        xctx.window_dim.h = height;
-        xctx.window_dim.w = width;
+        window_dim.x = x;
+        window_dim.y = y;
+        window_dim.h = height;
+        window_dim.w = width;
 }
 
 static void setopacity(Window win, unsigned long opacity)
@@ -250,7 +254,7 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer 
                          * to detect a focus change to another screen
                          */
                                    && xctx.visible
-                                   && get_active_screen()->scr != xctx.cur_screen) {
+                                   && get_active_screen()->id != xctx.cur_screen) {
                                 draw();
                         }
                         break;
@@ -467,11 +471,6 @@ static void x_win_setup(void)
         Window root;
         XSetWindowAttributes wa;
 
-        xctx.window_dim.x = 0;
-        xctx.window_dim.y = 0;
-        xctx.window_dim.w = 0;
-        xctx.window_dim.h = 0;
-
         root = RootWindow(xctx.dpy, DefaultScreen(xctx.dpy));
         xctx.utf8 = XInternAtom(xctx.dpy, "UTF8_STRING", false);
 
@@ -484,9 +483,9 @@ static void x_win_setup(void)
         screen_info *scr = get_active_screen();
         xctx.win = XCreateWindow(xctx.dpy,
                                  root,
-                                 scr->dim.x,
-                                 scr->dim.y,
-                                 scr->dim.w,
+                                 scr->x,
+                                 scr->y,
+                                 scr->w,
                                  1,
                                  0,
                                  DefaultDepth(xctx.dpy, DefaultScreen(xctx.dpy)),

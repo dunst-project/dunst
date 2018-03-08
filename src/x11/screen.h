@@ -7,17 +7,13 @@
 
 #define INRECT(x,y,rx,ry,rw,rh) ((x) >= (rx) && (x) < (rx)+(rw) && (y) >= (ry) && (y) < (ry)+(rh))
 
-typedef struct _dimension_t {
+typedef struct {
+        int id;
         int x;
         int y;
         unsigned int h;
         unsigned int mmh;
         unsigned int w;
-} dimension_t;
-
-typedef struct _screen_info {
-        int scr;
-        dimension_t dim;
 } screen_info;
 
 void init_screens(void);
