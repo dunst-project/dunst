@@ -28,6 +28,7 @@ typedef struct _rule_t {
         char *new_icon;
         char *fg;
         char *bg;
+        char *fc;
         const char *format;
         const char *script;
         enum behavior_fullscreen fullscreen;

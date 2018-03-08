@@ -279,7 +279,7 @@
 # override settings for certain messages.
 # Messages can be matched by "appname", "summary", "body", "icon", "category",
 # "msg_urgency" and you can override the "timeout", "urgency", "foreground",
-# "background", "new_icon" and "format", "fullscreen".
+# "background", "frame_color", "new_icon" and "format", "fullscreen".
 # Shell-like globbing will get expanded.
 #
 # SCRIPTING

@@ -38,6 +38,10 @@ void rule_apply(rule_t *r, notification *n)
                 g_free(n->colors[ColBG]);
                 n->colors[ColBG] = g_strdup(r->bg);
         }
+        if (r->fc) {
+                g_free(n->colors[ColFrame]);
+                n->colors[ColFrame] = g_strdup(r->fc);
+        }
         if (r->format)
                 n->format = r->format;
         if (r->script)
@@ -79,6 +83,7 @@ void rule_init(rule_t *r)
         r->set_transient = -1;
         r->fg = NULL;
         r->bg = NULL;
+        r->fc = NULL;
         r->format = NULL;
 }
 
