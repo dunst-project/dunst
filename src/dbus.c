@@ -147,6 +147,7 @@ static notification *dbus_message_to_notification(const gchar *sender, GVariant 
         gboolean transient = 0;
         gchar *fgcolor = NULL;
         gchar *bgcolor = NULL;
+        gchar *frcolor = NULL;
         gchar *category = NULL;
         RawImage *raw_icon = NULL;
 
@@ -200,6 +201,12 @@ static notification *dbus_message_to_notification(const gchar *sender, GVariant 
                                         dict_value = g_variant_lookup_value(content, "bgcolor", G_VARIANT_TYPE_STRING);
                                         if (dict_value) {
                                                 bgcolor = g_variant_dup_string(dict_value, NULL);
+                                                g_variant_unref(dict_value);
+                                        }
+
+                                        dict_value = g_variant_lookup_value(content, "frcolor", G_VARIANT_TYPE_STRING);
+                                        if (dict_value) {
+                                                frcolor = g_variant_dup_string(dict_value, NULL);
                                                 g_variant_unref(dict_value);
                                         }
 
@@ -289,6 +296,7 @@ static notification *dbus_message_to_notification(const gchar *sender, GVariant 
 
         n->colors[ColFG] = fgcolor;
         n->colors[ColBG] = bgcolor;
+        n->colors[ColFrame] = frcolor;
 
         notification_init(n);
         return n;

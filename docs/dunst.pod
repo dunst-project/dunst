@@ -594,7 +594,7 @@ Shell-like globing is supported.
 =item B<modifying>
 
 The following attributes can be overridden: timeout, urgency, foreground,
-background, new_icon, set_transient, format, fullscreen where,
+background, frame_color, new_icon, set_transient, format, fullscreen where,
 as with the filtering attributes, each one corresponds to the respective
 notification attribute to be modified.
 
@@ -644,7 +644,7 @@ The progress value can be set with a hint, too.
 
 =item notify-send -h string:fgcolor:#ff4444
 
-=item notify-send -h string:bgcolor:#4444ff -h string:fgcolor:#ff4444
+=item notify-send -h string:bgcolor:#4444ff -h string:fgcolor:#ff4444 -h string:frcolor:#44ff44
 
 =item notify-send -h int:value:42 "Working ..."
 
