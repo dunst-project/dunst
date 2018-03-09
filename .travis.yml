@@ -18,14 +18,22 @@ addons:
 dist: trusty
 sudo: false
 language: c
+
 before_install:
   - pip install --user cpp-coveralls
+
 script:
   - CFLAGS="-fprofile-arcs -ftest-coverage -Werror" make all dunstify test-valgrind doc-doxygen
-  - coveralls
-compiler:
-  - gcc
-  - clang
+
+matrix:
+  include:
+    - compiler: gcc
+      after_success:
+        - coveralls
+    - compiler: clang
+      after_success:
+        - coveralls --gcov llvm-cov --gcov-options gcov
+
 notifications:
   irc:
     channels:
