@@ -23,7 +23,9 @@ before_install:
   - pip install --user cpp-coveralls
 
 script:
-  - CFLAGS="-fprofile-arcs -ftest-coverage -Werror" make all dunstify test-valgrind doc-doxygen
+  - CFLAGS="-Werror" make all dunstify test-valgrind doc-doxygen
+  - make clean
+  - CFLAGS="-Werror -fprofile-arcs -ftest-coverage -O0" make test
 
 matrix:
   include:
