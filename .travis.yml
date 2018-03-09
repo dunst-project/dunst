@@ -31,7 +31,7 @@ matrix:
   include:
     - compiler: gcc
       after_success:
-        - coveralls
+        - coveralls --exclude 'test'
     - compiler: clang
       after_success:
-        - coveralls --gcov llvm-cov --gcov-options gcov
+        - coveralls --exclude 'test' --gcov llvm-cov --gcov-options gcov
