@@ -35,10 +35,3 @@ matrix:
     - compiler: clang
       after_success:
         - coveralls --gcov llvm-cov --gcov-options gcov
-
-notifications:
-  irc:
-    channels:
-      - "chat.freenode.net#dunst"
-    on_success: change
-    on_failure: always
