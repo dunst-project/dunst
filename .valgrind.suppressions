@@ -8,3 +8,32 @@
    ...
    fun:main
 }
+
+# librsvg leaks some memory, when an invalid svg file is read
+# TODO: find the memory leak and fix it upstream
+{
+   invalid_svgs1
+   Memcheck:Leak
+   ...
+   fun:gdk_pixbuf__svg_image_load_increment
+   ...
+   fun:get_pixbuf_from_file
+}
+
+{
+   invalid_svgs2
+   Memcheck:Leak
+   ...
+   fun:gdk_pixbuf__svg_image_begin_load
+   ...
+   fun:get_pixbuf_from_file
+}
+
+{
+   invalid_svgs3
+   Memcheck:Leak
+   ...
+   fun:rsvg_handle_write
+   ...
+   fun:get_pixbuf_from_file
+}
