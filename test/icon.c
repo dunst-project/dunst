@@ -14,18 +14,18 @@
 #define IS_ICON_PNG(pb)  4 == gdk_pixbuf_get_width(pb)
 #define IS_ICON_SVG(pb) 16 == gdk_pixbuf_get_width(pb)
 
-TEST test_get_pixbuf_from_path_invalid(void)
+TEST test_get_pixbuf_from_icon_invalid(void)
 {
-        GdkPixbuf *pixbuf = get_pixbuf_from_path("invalid");
+        GdkPixbuf *pixbuf = get_pixbuf_from_icon("invalid");
         ASSERT(pixbuf == NULL);
         g_clear_pointer(&pixbuf, g_object_unref);
 
         PASS();
 }
 
-TEST test_get_pixbuf_from_path_both(void)
+TEST test_get_pixbuf_from_icon_both(void)
 {
-        GdkPixbuf *pixbuf = get_pixbuf_from_path("icon1");
+        GdkPixbuf *pixbuf = get_pixbuf_from_icon("icon1");
         ASSERT(pixbuf);
         ASSERTm("SVG pixbuf hasn't precedence", IS_ICON_SVG(pixbuf));
         g_clear_pointer(&pixbuf, g_object_unref);
@@ -33,9 +33,9 @@ TEST test_get_pixbuf_from_path_both(void)
         PASS();
 }
 
-TEST test_get_pixbuf_from_path_onlysvg(void)
+TEST test_get_pixbuf_from_icon_onlysvg(void)
 {
-        GdkPixbuf *pixbuf = get_pixbuf_from_path("onlysvg");
+        GdkPixbuf *pixbuf = get_pixbuf_from_icon("onlysvg");
         ASSERT(pixbuf);
         ASSERTm("SVG pixbuf isn't loaded", IS_ICON_SVG(pixbuf));
         g_clear_pointer(&pixbuf, g_object_unref);
@@ -43,9 +43,9 @@ TEST test_get_pixbuf_from_path_onlysvg(void)
         PASS();
 }
 
-TEST test_get_pixbuf_from_path_onlypng(void)
+TEST test_get_pixbuf_from_icon_onlypng(void)
 {
-        GdkPixbuf *pixbuf = get_pixbuf_from_path("onlypng");
+        GdkPixbuf *pixbuf = get_pixbuf_from_icon("onlypng");
         ASSERT(pixbuf);
         ASSERTm("PNG pixbuf isn't loaded", IS_ICON_PNG(pixbuf));
         g_clear_pointer(&pixbuf, g_object_unref);
@@ -53,10 +53,10 @@ TEST test_get_pixbuf_from_path_onlypng(void)
         PASS();
 }
 
-TEST test_get_pixbuf_from_path_filename(void)
+TEST test_get_pixbuf_from_icon_filename(void)
 {
         char *icon = string_append(g_get_current_dir(), "/data/icons/valid.png", NULL);
-        GdkPixbuf *pixbuf = get_pixbuf_from_path(icon);
+        GdkPixbuf *pixbuf = get_pixbuf_from_icon(icon);
         ASSERT(pixbuf);
         ASSERTm("PNG pixbuf isn't loaded", IS_ICON_PNG(pixbuf));
         g_clear_pointer(&pixbuf, g_object_unref);
@@ -65,11 +65,11 @@ TEST test_get_pixbuf_from_path_filename(void)
         PASS();
 }
 
-TEST test_get_pixbuf_from_path_fileuri(void)
+TEST test_get_pixbuf_from_icon_fileuri(void)
 {
         char *curdir = g_get_current_dir();
         char *icon = g_strconcat("file://", curdir,"/data/icons/valid.svg", NULL);
-        GdkPixbuf *pixbuf = get_pixbuf_from_path(icon);
+        GdkPixbuf *pixbuf = get_pixbuf_from_icon(icon);
         ASSERT(pixbuf);
         ASSERTm("SVG pixbuf isn't loaded", IS_ICON_SVG(pixbuf));
         g_clear_pointer(&pixbuf, g_object_unref);
@@ -86,12 +86,12 @@ SUITE(suite_icon)
                 ":" ICONPREFIX "/valid"
                 ":" ICONPREFIX "/both";
 
-        RUN_TEST(test_get_pixbuf_from_path_invalid);
-        RUN_TEST(test_get_pixbuf_from_path_both);
-        RUN_TEST(test_get_pixbuf_from_path_onlysvg);
-        RUN_TEST(test_get_pixbuf_from_path_onlypng);
-        RUN_TEST(test_get_pixbuf_from_path_filename);
-        RUN_TEST(test_get_pixbuf_from_path_fileuri);
+        RUN_TEST(test_get_pixbuf_from_icon_invalid);
+        RUN_TEST(test_get_pixbuf_from_icon_both);
+        RUN_TEST(test_get_pixbuf_from_icon_onlysvg);
+        RUN_TEST(test_get_pixbuf_from_icon_onlypng);
+        RUN_TEST(test_get_pixbuf_from_icon_filename);
+        RUN_TEST(test_get_pixbuf_from_icon_fileuri);
 
         settings.icon_path = NULL;
 }
