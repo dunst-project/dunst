@@ -14,8 +14,8 @@ PKG_CONFIG ?= pkg-config
 
 # flags
 CPPFLAGS += -D_DEFAULT_SOURCE -DVERSION=\"${VERSION}\"
-CFLAGS   += -g --std=gnu99 -pedantic -Wall -Wno-overlength-strings -Os ${STATIC} ${CPPFLAGS}
-LDFLAGS  += -lm -L${X11LIB}
+CFLAGS   := -g --std=gnu99 -pedantic -Wall -Wno-overlength-strings -Os ${STATIC} ${CPPFLAGS} ${CFLAGS}
+LDFLAGS  := -lm ${LDFLAGS}
 
 CPPFLAGS_DEBUG := -DDEBUG_BUILD
 CFLAGS_DEBUG   := -O0
