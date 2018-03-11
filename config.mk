@@ -13,9 +13,9 @@ PKG_CONFIG ?= pkg-config
 #STATIC= -DSTATIC_CONFIG # Warning: This is deprecated behavior
 
 # flags
-CPPFLAGS += -D_DEFAULT_SOURCE -DVERSION=\"${VERSION}\"
-CFLAGS   := -g --std=gnu99 -pedantic -Wall -Wno-overlength-strings -Os ${STATIC} ${CPPFLAGS} ${CFLAGS}
-LDFLAGS  := -lm ${LDFLAGS}
+DEFAULT_CPPFLAGS = -D_DEFAULT_SOURCE -DVERSION=\"${VERSION}\"
+DEFAULT_CFLAGS   = -g --std=gnu99 -pedantic -Wall -Wno-overlength-strings -Os ${STATIC}
+DEFAULT_LDFLAGS  = -lm
 
 CPPFLAGS_DEBUG := -DDEBUG_BUILD
 CFLAGS_DEBUG   := -O0
