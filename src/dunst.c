@@ -22,10 +22,6 @@
 #include "x11/screen.h"
 #include "x11/x.h"
 
-#ifndef VERSION
-#define VERSION "version info needed"
-#endif
-
 /* index of colors fit to urgency level */
 
 GMainLoop *mainloop = NULL;

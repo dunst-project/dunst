@@ -18,6 +18,9 @@ dist: trusty
 sudo: false
 language: c
 
+git:
+  depth: false
+
 before_install:
   - pip install --user cpp-coveralls
 

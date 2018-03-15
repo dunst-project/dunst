@@ -8,6 +8,7 @@ SUITE_EXTERN(suite_utils);
 SUITE_EXTERN(suite_option_parser);
 SUITE_EXTERN(suite_notification);
 SUITE_EXTERN(suite_markup);
+SUITE_EXTERN(suite_misc);
 SUITE_EXTERN(suite_icon);
 
 GREATEST_MAIN_DEFS();
@@ -21,6 +22,7 @@ int main(int argc, char *argv[]) {
         RUN_SUITE(suite_option_parser);
         RUN_SUITE(suite_notification);
         RUN_SUITE(suite_markup);
+        RUN_SUITE(suite_misc);
         RUN_SUITE(suite_icon);
         GREATEST_MAIN_END();
 }
