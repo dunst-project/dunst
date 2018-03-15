@@ -1,5 +1,8 @@
 dunst
 *.o
+*.gcda
+*.gcno
+*.gcov
 core
 vgcore.*
 dunst.1

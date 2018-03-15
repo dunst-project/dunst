@@ -26,8 +26,8 @@ before_install:
 
 script:
   - CFLAGS="-Werror" make all dunstify test-valgrind doc-doxygen
-  - make clean
-  - CFLAGS="-Werror -fprofile-arcs -ftest-coverage -O0" make test
+  - CFLAGS="-Werror" make clean
+  - CFLAGS="-Werror" make test-coverage
 
 matrix:
   include:
