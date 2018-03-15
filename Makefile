@@ -87,6 +87,15 @@ test-valgrind: test/test
 test-coverage: CFLAGS += -fprofile-arcs -ftest-coverage -O0
 test-coverage: test
 
+test-coverage-report: test-coverage
+	mkdir -p docs/internal/coverage
+	gcovr \
+		-r . \
+		--exclude=test \
+		--html \
+		--html-details \
+		-o docs/internal/coverage/index.html
+
 test/test: ${OBJ} ${TEST_OBJ}
 	${CC} -o ${@} ${TEST_OBJ} ${OBJ} ${CFLAGS} ${LDFLAGS}
 
@@ -122,6 +131,7 @@ clean-dunstify:
 clean-doc:
 	rm -f docs/dunst.1
 	rm -fr docs/internal/html
+	rm -fr docs/internal/coverage
 
 clean-tests:
 	rm -f test/test test/*.o
