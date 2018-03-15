@@ -42,8 +42,8 @@ $(error "$(PKG_CONFIG) failed!")
 endif
 endif
 
-CFLAGS += -I. ${INCS}
-LDFLAGS+= -L. ${LIBS}
+CFLAGS  := ${DEFAULT_CPPFLAGS} ${CPPFLAGS} ${DEFAULT_CFLAGS} ${CFLAGS} -I. ${INCS}
+LDFLAGS := ${DEFAULT_LDFLAGS} ${LDFLAGS} -L. ${LIBS}
 
 SRC := $(sort $(shell find src/ -name '*.c'))
 OBJ := ${SRC:.c=.o}
@@ -53,7 +53,7 @@ TEST_OBJ := $(TEST_SRC:.c=.o)
 .PHONY: all debug
 all: doc dunst service
 
-debug: CFLAGS   += ${CFLAGS_DEBUG}
+debug: CFLAGS   += ${CPPFLAGS_DEBUG} ${CFLAGS_DEBUG}
 debug: LDFLAGS  += ${LDFLAGS_DEBUG}
 debug: CPPFLAGS += ${CPPFLAGS_DEBUG}
 debug: all
