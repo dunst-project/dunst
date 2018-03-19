@@ -33,11 +33,17 @@ struct dimensions {
         int h;
 };
 
+typedef struct {
+        Window xwin;
+        cairo_surface_t *root_surface;
+        int cur_screen;
+        bool visible;
+        struct dimensions dim;
+} window_x11;
+
 typedef struct _xctx {
         Display *dpy;
-        int cur_screen;
-        Window win;
-        bool visible;
+        window_x11 win;
         const char *colors[3][3];
         XScreenSaverInfo *screensaver_info;
 } xctx_t;
