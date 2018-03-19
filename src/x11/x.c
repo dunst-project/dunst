@@ -193,9 +193,6 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer 
                                 draw();
                         }
                         break;
-                case SelectionNotify:
-                        if (ev.xselection.property == xctx.utf8)
-                                break;
                 case ButtonRelease:
                         if (ev.xbutton.window == xctx.win) {
                                 x_handle_click(ev);
@@ -472,7 +469,6 @@ static void x_win_setup(void)
         XSetWindowAttributes wa;
 
         root = RootWindow(xctx.dpy, DefaultScreen(xctx.dpy));
-        xctx.utf8 = XInternAtom(xctx.dpy, "UTF8_STRING", false);
 
         wa.override_redirect = true;
         wa.background_pixmap = ParentRelative;

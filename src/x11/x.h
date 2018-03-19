@@ -34,14 +34,12 @@ struct dimensions {
 };
 
 typedef struct _xctx {
-        Atom utf8;
         Display *dpy;
         int cur_screen;
         Window win;
         bool visible;
         const char *colors[3][3];
         XScreenSaverInfo *screensaver_info;
-        unsigned long sep_custom_col;
 } xctx_t;
 
 typedef struct _color_t {
