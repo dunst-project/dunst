@@ -381,7 +381,7 @@ static void notification_format_message(notification *n)
                                 &n->msg,
                                 &substr,
                                 n->summary,
-                                n->markup);
+                                MARKUP_NO);
                         break;
                 case 'b':
                         notification_replace_single_field(
