@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "log.h"
 
@@ -166,4 +167,21 @@ gint64 string_to_time(const char *string)
                 return 0;
 }
 
+/* see utils.h */
+gint64 time_monotonic_now(void)
+{
+        struct timespec tv_now;
+
+        /* On Linux, BOOTTIME is the correct monotonic time,
+         * as BOOTTIME counts onwards during sleep. For all other
+         * POSIX compliant OSes, MONOTONIC should also count onwards
+         * during system sleep. */
+#ifdef __linux__
+        clock_gettime(CLOCK_BOOTTIME, &tv_now);
+#else
+        clock_gettime(CLOCK_MONOTONIC, &tv_now);
+#endif
+        return (gint64)tv_now.tv_sec  * G_USEC_PER_SEC
+                     + tv_now.tv_nsec / 1000;
+}
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

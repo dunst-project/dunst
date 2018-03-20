@@ -19,6 +19,7 @@
 #include "option_parser.h"
 #include "queues.h"
 #include "settings.h"
+#include "utils.h"
 #include "x11/screen.h"
 #include "x11/x.h"
 
@@ -70,7 +71,7 @@ static gboolean run(void *data)
         }
 
         if (xctx.visible) {
-                gint64 now = g_get_monotonic_time();
+                gint64 now = time_monotonic_now();
                 gint64 sleep = queues_get_next_datachange(now);
                 gint64 timeout_at = now + sleep;
 

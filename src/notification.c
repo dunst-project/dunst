@@ -290,7 +290,7 @@ notification *notification_create(void)
         n->markup = settings.markup;
         n->format = settings.format;
 
-        n->timestamp = g_get_monotonic_time();
+        n->timestamp = time_monotonic_now();
 
         n->urgency = URG_NORM;
         n->timeout = -1;
@@ -528,7 +528,7 @@ void notification_update_text_to_render(notification *n)
 
         /* print age */
         gint64 hours, minutes, seconds;
-        gint64 t_delta = g_get_monotonic_time() - n->timestamp;
+        gint64 t_delta = time_monotonic_now() - n->timestamp;
 
         if (settings.show_age_threshold >= 0
             && t_delta >= settings.show_age_threshold) {

@@ -23,6 +23,7 @@
 #include "log.h"
 #include "notification.h"
 #include "settings.h"
+#include "utils.h"
 
 /* notification lists */
 static GQueue *waiting   = NULL; /**< all new notifications get into here */
@@ -133,7 +134,7 @@ static bool queues_stack_duplicate(notification *n)
 
                         iter->data = n;
 
-                        n->start = g_get_monotonic_time();
+                        n->start = time_monotonic_now();
 
                         n->dup_count = orig->dup_count;
 
@@ -180,7 +181,7 @@ bool queues_notification_replace_id(notification *new)
                 notification *old = iter->data;
                 if (old->id == new->id) {
                         iter->data = new;
-                        new->start = g_get_monotonic_time();
+                        new->start = time_monotonic_now();
                         new->dup_count = old->dup_count;
                         notification_run_script(new);
                         notification_free(old);
@@ -305,7 +306,7 @@ void queues_check_timeouts(bool idle, bool fullscreen)
 
                 /* don't timeout when user is idle */
                 if (is_idle && !n->transient) {
-                        n->start = g_get_monotonic_time();
+                        n->start = time_monotonic_now();
                         continue;
                 }
 
@@ -315,7 +316,7 @@ void queues_check_timeouts(bool idle, bool fullscreen)
                 }
 
                 /* remove old message */
-                if (g_get_monotonic_time() - n->start > n->timeout) {
+                if (time_monotonic_now() - n->start > n->timeout) {
                         queues_notification_close(n, REASON_TIME);
                 }
         }
@@ -368,7 +369,7 @@ void queues_update(bool fullscreen)
                         continue;
                 }
 
-                n->start = g_get_monotonic_time();
+                n->start = time_monotonic_now();
 
                 if (!n->redisplayed && n->script) {
                         notification_run_script(n);

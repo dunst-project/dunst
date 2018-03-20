@@ -27,5 +27,14 @@ char *string_to_path(char *string);
 /* convert time units (ms, s, m) to internal gint64 microseconds */
 gint64 string_to_time(const char *string);
 
+/**
+ * Get the current monotonic time. In contrast to `g_get_monotonic_time`,
+ * this function respects the real monotonic time of the system and
+ * counts onwards during system sleep.
+ *
+ * @returns: A `gint64` monotonic time representation
+ */
+gint64 time_monotonic_now(void);
+
 #endif
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
