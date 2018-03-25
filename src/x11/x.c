@@ -51,41 +51,26 @@ cairo_surface_t *x_create_cairo_surface(void)
                         xctx.win.xwin, DefaultVisual(xctx.dpy, 0), WIDTH, HEIGHT);
 }
 
-void x_win_move(int width, int height)
+void x_win_move(int x, int y, int width, int height)
 {
         // Previous dimensions of the window to avoid calling X11 if no change
         // is needed
         static struct dimensions window_dim = { 0 };
 
-        int x, y;
-        screen_info *scr = get_active_screen();
-        xctx.win.cur_screen = scr->id;
-
-        /* calculate window position */
-        if (settings.geometry.negative_x) {
-                x = (scr->x + (scr->w - width)) + settings.geometry.x;
-        } else {
-                x = scr->x + settings.geometry.x;
-        }
-
-        if (settings.geometry.negative_y) {
-                y = scr->y + (scr->h + settings.geometry.y) - height;
-        } else {
-                y = scr->y + settings.geometry.y;
-        }
-
         /* move and resize */
         if (x != window_dim.x || y != window_dim.y) {
                 XMoveWindow(xctx.dpy, xctx.win.xwin, x, y);
-        }
-        if (width != window_dim.w || height != window_dim.h) {
-                XResizeWindow(xctx.dpy, xctx.win.xwin, width, height);
+
+                window_dim.x = x;
+                window_dim.y = y;
         }
 
-        window_dim.x = x;
-        window_dim.y = y;
-        window_dim.h = height;
-        window_dim.w = width;
+        if (width != window_dim.w || height != window_dim.h) {
+                XResizeWindow(xctx.dpy, xctx.win.xwin, width, height);
+
+                window_dim.h = height;
+                window_dim.w = width;
+        }
 }
 
 static void setopacity(Window win, unsigned long opacity)
@@ -181,6 +166,7 @@ gboolean x_mainloop_fd_check(GSource *source)
 gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer user_data)
 {
         bool fullscreen_now;
+        screen_info *scr;
         XEvent ev;
         unsigned int state;
         while (XPending(xctx.dpy) > 0) {
@@ -241,6 +227,7 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer 
                         break;
                 case PropertyNotify:
                         fullscreen_now = have_fullscreen_window();
+                        scr = get_active_screen();
 
                         if (fullscreen_now != fullscreen_last) {
                                 fullscreen_last = fullscreen_now;
@@ -251,8 +238,9 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer 
                          * to detect a focus change to another screen
                          */
                                    && xctx.win.visible
-                                   && get_active_screen()->id != xctx.win.cur_screen) {
+                                   && scr->id != xctx.win.cur_screen) {
                                 draw();
+                                xctx.win.cur_screen = scr->id;
                         }
                         break;
                 default:

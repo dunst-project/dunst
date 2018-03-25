@@ -479,6 +479,31 @@ static struct dimensions layout_render(cairo_t *c, colored_layout *cl, colored_l
         return dim;
 }
 
+/**
+ * Calculates the position the window should be placed at given its width and
+ * height and stores them in \p ret_x and \p ret_y.
+ */
+static void calc_window_pos(int width, int height, int *ret_x, int *ret_y)
+{
+        screen_info *scr = get_active_screen();
+
+        if (ret_x) {
+                if (settings.geometry.negative_x) {
+                        *ret_x = (scr->x + (scr->w - width)) + settings.geometry.x;
+                } else {
+                        *ret_x = scr->x + settings.geometry.x;
+                }
+        }
+
+        if (ret_y) {
+                if (settings.geometry.negative_y) {
+                        *ret_y = scr->y + (scr->h + settings.geometry.y) - height;
+                } else {
+                        *ret_y = scr->y + settings.geometry.y;
+                }
+        }
+}
+
 void draw(void)
 {
 
@@ -487,12 +512,14 @@ void draw(void)
         struct dimensions dim = calculate_dimensions(layouts);
         int width = dim.w;
         int height = dim.h;
+        int win_x, win_y;
 
         cairo_t *c;
         cairo_surface_t *image_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
         c = cairo_create(image_surface);
 
-        x_win_move(width, height);
+        calc_window_pos(dim.w, dim.h, &win_x, &win_y);
+        x_win_move(win_x, win_y, width, height);
         cairo_xlib_surface_set_size(root_surface, width, height);
 
         cairo_move_to(c, 0, 0);
