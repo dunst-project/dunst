@@ -267,38 +267,8 @@ static colored_layout *layout_init_shared(cairo_t *c, notification *n)
                 pango_layout_set_ellipsize(cl->l, ellipsize);
         }
 
-        GdkPixbuf *pixbuf = NULL;
-
         if (settings.icon_position != icons_off) {
-                if (n->raw_icon)
-                        pixbuf = get_pixbuf_from_raw_image(n->raw_icon);
-                else if (n->icon)
-                        pixbuf = get_pixbuf_from_icon(n->icon);
-        }
-
-        if (pixbuf != NULL) {
-                int w = gdk_pixbuf_get_width(pixbuf);
-                int h = gdk_pixbuf_get_height(pixbuf);
-                int larger = w > h ? w : h;
-                if (settings.max_icon_size && larger > settings.max_icon_size) {
-                        GdkPixbuf *scaled;
-                        if (w >= h) {
-                                scaled = gdk_pixbuf_scale_simple(pixbuf,
-                                                settings.max_icon_size,
-                                                (int) ((double) settings.max_icon_size / w * h),
-                                                GDK_INTERP_BILINEAR);
-                        } else {
-                                scaled = gdk_pixbuf_scale_simple(pixbuf,
-                                                (int) ((double) settings.max_icon_size / h * w),
-                                                settings.max_icon_size,
-                                                GDK_INTERP_BILINEAR);
-                        }
-                        g_object_unref(pixbuf);
-                        pixbuf = scaled;
-                }
-
-                cl->icon = gdk_pixbuf_to_cairo_surface(pixbuf);
-                g_object_unref(pixbuf);
+                cl->icon = icon_get_for_notification(n);
         } else {
                 cl->icon = NULL;
         }

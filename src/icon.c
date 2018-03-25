@@ -138,4 +138,44 @@ GdkPixbuf *get_pixbuf_from_raw_image(const RawImage *raw_image)
 
         return pixbuf;
 }
+
+cairo_surface_t *icon_get_for_notification(const notification *n)
+{
+        GdkPixbuf *pixbuf;
+
+        if (n->raw_icon)
+                pixbuf = get_pixbuf_from_raw_image(n->raw_icon);
+        else if (n->icon)
+                pixbuf = get_pixbuf_from_icon(n->icon);
+        else
+                return NULL;
+
+        if (!pixbuf)
+                return NULL;
+
+        int w = gdk_pixbuf_get_width(pixbuf);
+        int h = gdk_pixbuf_get_height(pixbuf);
+        int larger = w > h ? w : h;
+        if (settings.max_icon_size && larger > settings.max_icon_size) {
+                GdkPixbuf *scaled;
+                if (w >= h) {
+                        scaled = gdk_pixbuf_scale_simple(pixbuf,
+                                        settings.max_icon_size,
+                                        (int) ((double) settings.max_icon_size / w * h),
+                                        GDK_INTERP_BILINEAR);
+                } else {
+                        scaled = gdk_pixbuf_scale_simple(pixbuf,
+                                        (int) ((double) settings.max_icon_size / h * w),
+                                        settings.max_icon_size,
+                                        GDK_INTERP_BILINEAR);
+                }
+                g_object_unref(pixbuf);
+                pixbuf = scaled;
+        }
+
+        cairo_surface_t *ret = gdk_pixbuf_to_cairo_surface(pixbuf);
+        g_object_unref(pixbuf);
+        return ret;
+}
+
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
