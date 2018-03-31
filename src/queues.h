@@ -86,8 +86,6 @@ bool queues_notification_replace_id(notification *new);
  * @param id The id of the notification to close
  * @param reason The #reason to close
  *
- * @return the reason, why the notification got closed
- *
  * @post Call wake_up() to synchronize the queues with the UI
  *       (which closes the notification on screen)
  */
