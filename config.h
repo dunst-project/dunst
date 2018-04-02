@@ -112,37 +112,15 @@ rule_t default_rules[] = {
                 .timeout         = -1,
                 .urgency         = -1,
                 .markup          = MARKUP_NULL,
-                .history_ignore  = 1,
-                .match_transient = 1,
+                .history_ignore  = -1,
+                .match_transient = -1,
                 .set_transient   = -1,
                 .new_icon        = NULL,
                 .fg              = NULL,
                 .bg              = NULL,
                 .format          = NULL,
                 .script          = NULL,
-        },
-
-        /* ignore transient hints in history by default */
-        {
-                .name = "ignore_transient_in_history",
-                .appname         = NULL,
-                .summary         = NULL,
-                .body            = NULL,
-                .icon            = NULL,
-                .category        = NULL,
-                .msg_urgency     = -1,
-                .timeout         = -1,
-                .urgency         = -1,
-                .markup          = MARKUP_NULL,
-                .history_ignore  = 1,
-                .match_transient = 1,
-                .set_transient   = -1,
-                .new_icon        = NULL,
-                .fg              = NULL,
-                .bg              = NULL,
-                .format          = NULL,
-                .script          = NULL,
-        },
+        }
 };
 
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
