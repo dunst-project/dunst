@@ -380,7 +380,7 @@ static void free_layouts(GSList *layouts)
         g_slist_free_full(layouts, free_colored_layout);
 }
 
-static struct dimensions layout_render(cairo_t *c, colored_layout *cl, colored_layout *cl_next, struct dimensions dim, bool first, bool last)
+static struct dimensions layout_render(cairo_surface_t *srf, colored_layout *cl, colored_layout *cl_next, struct dimensions dim, bool first, bool last)
 {
         int h;
         int h_text = 0;
@@ -396,6 +396,8 @@ static struct dimensions layout_render(cairo_t *c, colored_layout *cl, colored_l
         int bg_height = MAX(settings.notification_height, (2 * settings.padding) + h);
         double bg_half_height = settings.notification_height/2.0;
         int pango_offset = (int) floor(h/2.0);
+
+        cairo_t *c = cairo_create(srf);
 
         if (first) bg_height += settings.frame_width;
         if (last) bg_height += settings.frame_width;
@@ -476,6 +478,7 @@ static struct dimensions layout_render(cairo_t *c, colored_layout *cl, colored_l
                 cairo_fill(c);
         }
 
+        cairo_destroy(c);
         return dim;
 }
 
@@ -514,22 +517,18 @@ void draw(void)
         int height = dim.h;
         int win_x, win_y;
 
-        cairo_t *c;
         cairo_surface_t *image_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-        c = cairo_create(image_surface);
 
         calc_window_pos(dim.w, dim.h, &win_x, &win_y);
         x_win_move(win_x, win_y, width, height);
         cairo_xlib_surface_set_size(root_surface, width, height);
 
-        cairo_move_to(c, 0, 0);
-
         bool first = true;
         for (GSList *iter = layouts; iter; iter = iter->next) {
                 if (iter->next)
-                        dim = layout_render(c, iter->data, iter->next->data, dim, first, iter->next == NULL);
+                        dim = layout_render(image_surface, iter->data, iter->next->data, dim, first, iter->next == NULL);
                 else
-                        dim = layout_render(c, iter->data, NULL, dim, first, iter->next == NULL);
+                        dim = layout_render(image_surface, iter->data, NULL, dim, first, iter->next == NULL);
 
                 first = false;
         }
@@ -540,7 +539,6 @@ void draw(void)
 
         XFlush(xctx.dpy);
 
-        cairo_destroy(c);
         cairo_surface_destroy(image_surface);
         free_layouts(layouts);
 }
