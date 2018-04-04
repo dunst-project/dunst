@@ -421,6 +421,17 @@ static cairo_surface_t *render_background(cairo_surface_t *srf, colored_layout *
         cairo_rectangle(c, x, y, width, height);
         cairo_fill(c);
 
+        if (   settings.sep_color != FRAME
+            && settings.separator_height > 0
+            && !last) {
+                color_t sep_color = layout_get_sepcolor(cl, cl_next);
+                cairo_set_source_rgb(c, sep_color.r, sep_color.g, sep_color.b);
+
+                cairo_rectangle(c, settings.frame_width, y + height, width, settings.separator_height);
+
+                cairo_fill(c);
+        }
+
         cairo_destroy(c);
         return cairo_surface_create_for_rectangle(srf, x, y, width, height);
 }
@@ -481,30 +492,17 @@ static struct dimensions layout_render(cairo_surface_t *srf, colored_layout *cl,
         render_content(c, cl, dim.w);
 
         /* adding frame */
-        if (first) {
+        if (first)
                 dim.y += settings.frame_width;
-        }
+
+        if (!last)
+                dim.y += settings.separator_height;
+
 
         if (settings.notification_height <= (2 * settings.padding) + h)
                 dim.y += h + 2 * settings.padding;
         else
                 dim.y += 2 *( (int) (ceil(bg_half_height) - pango_offset));
-
-        if (settings.separator_height > 0 && !last) {
-                color_t sep_color = layout_get_sepcolor(cl, cl_next);
-                cairo_set_source_rgb(c, sep_color.r, sep_color.g, sep_color.b);
-
-                if (settings.sep_color == FRAME)
-                        // Draw over the borders on both sides to avoid
-                        // the wrong color in the corners.
-                        cairo_rectangle(c, 0, dim.y, dim.w, settings.separator_height);
-                else
-                        cairo_rectangle(c, settings.frame_width, dim.y + settings.frame_width, dim.w - 2 * settings.frame_width, settings.separator_height);
-
-                cairo_fill(c);
-                dim.y += settings.separator_height;
-        }
-        cairo_move_to(c, settings.h_padding, dim.y);
 
         cairo_destroy(c);
         cairo_surface_destroy(content);
