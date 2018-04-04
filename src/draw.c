@@ -380,6 +380,17 @@ static void free_layouts(GSList *layouts)
         g_slist_free_full(layouts, free_colored_layout);
 }
 
+static int layout_get_height(colored_layout *cl)
+{
+        int h;
+        int h_icon = 0;
+        pango_layout_get_pixel_size(cl->l, NULL, &h);
+        if (cl->icon)
+                h_icon = cairo_image_surface_get_height(cl->icon);
+
+        return MAX(h, h_icon);
+}
+
 static cairo_surface_t *render_background(cairo_surface_t *srf, colored_layout *cl, colored_layout *cl_next, int y, int width, int height, bool first, bool last)
 {
         int x = 0;
@@ -416,13 +427,10 @@ static cairo_surface_t *render_background(cairo_surface_t *srf, colored_layout *
 
 static struct dimensions layout_render(cairo_surface_t *srf, colored_layout *cl, colored_layout *cl_next, struct dimensions dim, bool first, bool last)
 {
-        int h;
+        int h = layout_get_height(cl);
+
         int h_text = 0;
-        pango_layout_get_pixel_size(cl->l, NULL, &h);
-        if (cl->icon) {
-                h_text = h;
-                h = MAX(cairo_image_surface_get_height(cl->icon), h);
-        }
+        pango_layout_get_pixel_size(cl->l, NULL, &h_text);
 
         int bg_height = MAX(settings.notification_height, (2 * settings.padding) + h);
         double bg_half_height = settings.notification_height/2.0;
