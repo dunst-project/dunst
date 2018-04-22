@@ -391,7 +391,15 @@ static int layout_get_height(colored_layout *cl)
         return MAX(h, h_icon);
 }
 
-static cairo_surface_t *render_background(cairo_surface_t *srf, colored_layout *cl, colored_layout *cl_next, int y, int width, int height, bool first, bool last, int *ret_width)
+static cairo_surface_t *render_background(cairo_surface_t *srf,
+                                          colored_layout *cl,
+                                          colored_layout *cl_next,
+                                          int y,
+                                          int width,
+                                          int height,
+                                          bool first,
+                                          bool last,
+                                          int *ret_width)
 {
         int x = 0;
 
@@ -481,7 +489,12 @@ static void render_content(cairo_t *c, colored_layout *cl, int width)
 
 }
 
-static struct dimensions layout_render(cairo_surface_t *srf, colored_layout *cl, colored_layout *cl_next, struct dimensions dim, bool first, bool last)
+static struct dimensions layout_render(cairo_surface_t *srf,
+                                       colored_layout *cl,
+                                       colored_layout *cl_next,
+                                       struct dimensions dim,
+                                       bool first,
+                                       bool last)
 {
         const int cl_h = layout_get_height(cl);
 
