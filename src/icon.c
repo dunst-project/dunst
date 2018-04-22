@@ -161,11 +161,11 @@ cairo_surface_t *icon_get_for_notification(const notification *n)
                 if (w >= h) {
                         scaled = gdk_pixbuf_scale_simple(pixbuf,
                                         settings.max_icon_size,
-                                        (int) ((double) settings.max_icon_size / w * h),
+                                        (settings.max_icon_size * h) / w,
                                         GDK_INTERP_BILINEAR);
                 } else {
                         scaled = gdk_pixbuf_scale_simple(pixbuf,
-                                        (int) ((double) settings.max_icon_size / h * w),
+                                        (settings.max_icon_size * w) / h,
                                         settings.max_icon_size,
                                         GDK_INTERP_BILINEAR);
                 }
