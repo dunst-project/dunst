@@ -477,12 +477,12 @@ static void render_content(cairo_t *c, colored_layout *cl, int width)
 
 static struct dimensions layout_render(cairo_surface_t *srf, colored_layout *cl, colored_layout *cl_next, struct dimensions dim, bool first, bool last)
 {
-        const int h = layout_get_height(cl);
+        const int cl_h = layout_get_height(cl);
 
         int h_text = 0;
         pango_layout_get_pixel_size(cl->l, NULL, &h_text);
 
-        int bg_height = MAX(settings.notification_height, (2 * settings.padding) + h);
+        int bg_height = MAX(settings.notification_height, (2 * settings.padding) + cl_h);
 
         cairo_surface_t *content = render_background(srf, cl, cl_next, dim.y, dim.w, bg_height, first, last);
         cairo_t *c = cairo_create(content);
@@ -497,8 +497,8 @@ static struct dimensions layout_render(cairo_surface_t *srf, colored_layout *cl,
                 dim.y += settings.separator_height;
 
 
-        if (settings.notification_height <= (2 * settings.padding) + h)
-                dim.y += h + 2 * settings.padding;
+        if (settings.notification_height <= (2 * settings.padding) + cl_h)
+                dim.y += cl_h + 2 * settings.padding;
         else
                 dim.y += settings.notification_height;
 
