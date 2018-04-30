@@ -225,6 +225,11 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer 
                 case FocusOut:
                         wake_up();
                         break;
+                case CreateNotify:
+                        if (xctx.win.visible &&
+                            ev.xcreatewindow.override_redirect == 0)
+                                XRaiseWindow(xctx.dpy, xctx.win.xwin);
+                        break;
                 case PropertyNotify:
                         fullscreen_now = have_fullscreen_window();
                         scr = get_active_screen();
@@ -485,10 +490,12 @@ static void x_win_setup(void)
                    (unsigned long)((100 - settings.transparency) *
                                    (0xffffffff / 100)));
 
+
+        long root_event_mask = SubstructureNotifyMask;
         if (settings.f_mode != FOLLOW_NONE) {
-                long root_event_mask = FocusChangeMask | PropertyChangeMask;
-                XSelectInput(xctx.dpy, root, root_event_mask);
+                root_event_mask |= FocusChangeMask | PropertyChangeMask;
         }
+        XSelectInput(xctx.dpy, root, root_event_mask);
 }
 
 /*
