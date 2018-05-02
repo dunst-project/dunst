@@ -253,7 +253,7 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer 
                         break;
                 }
         }
-        return true;
+        return G_SOURCE_CONTINUE;
 }
 
 /*
