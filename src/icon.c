@@ -63,8 +63,10 @@ static GdkPixbuf *get_pixbuf_from_file(const char *filename)
         if (is_readable_file(filename)) {
                 GError *error = NULL;
                 pixbuf = gdk_pixbuf_new_from_file(filename, &error);
-                if (!pixbuf)
+                if (!pixbuf) {
+                        LOG_W("%s", error->message);
                         g_error_free(error);
+                }
         }
         return pixbuf;
 }
@@ -116,7 +118,7 @@ GdkPixbuf *get_pixbuf_from_icon(const char *iconname)
                 } while (*(end) != '\0');
         }
         if (!pixbuf)
-                LOG_W("Could not load icon: '%s'", iconname);
+                LOG_W("No icon found for: '%s'", iconname);
 
         g_free(uri_path);
         return pixbuf;
