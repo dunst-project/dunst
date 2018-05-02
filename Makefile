@@ -3,7 +3,7 @@
 
 include config.mk
 
-VERSION := "1.3.0-non-git"
+VERSION := "1.3.1-non-git"
 ifneq ($(wildcard ./.git/),)
 VERSION := $(shell git describe --tags)
 endif

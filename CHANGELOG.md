@@ -6,6 +6,12 @@
 
 - `fullscreen` rule to hide notifications when a fullscreen window is active
 
+## 1.3.1 - 2018-01-30
+
+### Fixed
+
+- Race condition resulting in the service files being empty (#488)
+
 ## 1.3.0 - 2018-01-05
 
 ### Added
