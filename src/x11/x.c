@@ -330,7 +330,7 @@ static GdkPixbuf *get_pixbuf_from_file(const char *icon_path)
                 GError *error = NULL;
                 pixbuf = gdk_pixbuf_new_from_file(icon_path, &error);
                 if (pixbuf == NULL)
-                        g_free(error);
+                        g_error_free(error);
         }
         return pixbuf;
 }

@@ -6,6 +6,12 @@
 
 - `fullscreen` rule to hide notifications when a fullscreen window is active
 
+## 1.3.2 - 2018-05-06
+
+### Fixed
+
+- Crash when trying to load an invalid or corrupt icon (#512)
+
 ## 1.3.1 - 2018-01-30
 
 ### Fixed
