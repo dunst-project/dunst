@@ -43,13 +43,6 @@ static void x_shortcut_setup_error_handler(void);
 static int x_shortcut_tear_down_error_handler(void);
 static void setopacity(Window win, unsigned long opacity);
 static void x_handle_click(XEvent ev);
-static void x_win_setup(void);
-
-cairo_surface_t *x_create_cairo_surface(void)
-{
-        return cairo_xlib_surface_create(xctx.dpy,
-                        xctx.win.xwin, DefaultVisual(xctx.dpy, 0), WIDTH, HEIGHT);
-}
 
 void x_win_move(int x, int y, int width, int height)
 {
@@ -59,14 +52,14 @@ void x_win_move(int x, int y, int width, int height)
 
         /* move and resize */
         if (x != window_dim.x || y != window_dim.y) {
-                XMoveWindow(xctx.dpy, xctx.win.xwin, x, y);
+                XMoveWindow(xctx.dpy, win->xwin, x, y);
 
                 window_dim.x = x;
                 window_dim.y = y;
         }
 
         if (width != window_dim.w || height != window_dim.h) {
-                XResizeWindow(xctx.dpy, xctx.win.xwin, width, height);
+                XResizeWindow(xctx.dpy, win->xwin, width, height);
 
                 window_dim.h = height;
                 window_dim.w = width;
@@ -175,12 +168,12 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer 
 
                 switch (ev.type) {
                 case Expose:
-                        if (ev.xexpose.count == 0 && xctx.win.visible) {
+                        if (ev.xexpose.count == 0 && win->visible) {
                                 draw();
                         }
                         break;
                 case ButtonRelease:
-                        if (ev.xbutton.window == xctx.win.xwin) {
+                        if (ev.xbutton.window == win->xwin) {
                                 x_handle_click(ev);
                                 wake_up();
                         }
@@ -226,9 +219,9 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer 
                         wake_up();
                         break;
                 case CreateNotify:
-                        if (xctx.win.visible &&
+                        if (win->visible &&
                             ev.xcreatewindow.override_redirect == 0)
-                                XRaiseWindow(xctx.dpy, xctx.win.xwin);
+                                XRaiseWindow(xctx.dpy, win->xwin);
                         break;
                 case PropertyNotify:
                         fullscreen_now = have_fullscreen_window();
@@ -242,10 +235,10 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer 
                          * same screen. PropertyNotify is only neccessary
                          * to detect a focus change to another screen
                          */
-                                   && xctx.win.visible
-                                   && scr->id != xctx.win.cur_screen) {
+                                   && win->visible
+                                   && scr->id != win->cur_screen) {
                                 draw();
-                                xctx.win.cur_screen = scr->id;
+                                win->cur_screen = scr->id;
                         }
                         break;
                 default:
@@ -362,7 +355,6 @@ void x_setup(void)
         xctx.screensaver_info = XScreenSaverAllocInfo();
 
         init_screens();
-        x_win_setup();
         x_shortcut_grab(&settings.history_ks);
 }
 
@@ -455,8 +447,9 @@ static void x_set_wm(Window win)
 /*
  * Setup the window
  */
-static void x_win_setup(void)
+window_x11 *x_win_create(void)
 {
+        window_x11 *win = g_malloc0(sizeof(window_x11));
 
         Window root;
         XSetWindowAttributes wa;
@@ -470,7 +463,7 @@ static void x_win_setup(void)
             ButtonReleaseMask | FocusChangeMask| StructureNotifyMask;
 
         screen_info *scr = get_active_screen();
-        xctx.win.xwin = XCreateWindow(xctx.dpy,
+        win->xwin = XCreateWindow(xctx.dpy,
                                  root,
                                  scr->x,
                                  scr->y,
@@ -483,19 +476,34 @@ static void x_win_setup(void)
                                  CWOverrideRedirect | CWBackPixmap | CWEventMask,
                                  &wa);
 
-        x_set_wm(xctx.win.xwin);
+        x_set_wm(win->xwin);
         settings.transparency =
             settings.transparency > 100 ? 100 : settings.transparency;
-        setopacity(xctx.win.xwin,
+        setopacity(win->xwin,
                    (unsigned long)((100 - settings.transparency) *
                                    (0xffffffff / 100)));
 
+        win->root_surface = cairo_xlib_surface_create(xctx.dpy, win->xwin,
+                                                      DefaultVisual(xctx.dpy, 0),
+                                                      WIDTH, HEIGHT);
+        win->c_ctx = cairo_create(win->root_surface);
 
         long root_event_mask = SubstructureNotifyMask;
         if (settings.f_mode != FOLLOW_NONE) {
                 root_event_mask |= FocusChangeMask | PropertyChangeMask;
         }
         XSelectInput(xctx.dpy, root, root_event_mask);
+
+        return win;
+}
+
+void x_win_destroy(window_x11 *win)
+{
+        cairo_destroy(win->c_ctx);
+        cairo_surface_destroy(win->root_surface);
+        XDestroyWindow(xctx.dpy, win->xwin);
+
+        g_free(win);
 }
 
 /*
@@ -504,7 +512,7 @@ static void x_win_setup(void)
 void x_win_show(void)
 {
         /* window is already mapped or there's nothing to show */
-        if (xctx.win.visible || queues_length_displayed() == 0) {
+        if (win->visible || queues_length_displayed() == 0) {
                 return;
         }
 
@@ -516,7 +524,7 @@ void x_win_show(void)
         XGrabButton(xctx.dpy,
                     AnyButton,
                     AnyModifier,
-                    xctx.win.xwin,
+                    win->xwin,
                     false,
                     BUTTONMASK,
                     GrabModeAsync,
@@ -527,8 +535,8 @@ void x_win_show(void)
                 LOG_W("Unable to grab mouse button(s).");
         }
 
-        XMapRaised(xctx.dpy, xctx.win.xwin);
-        xctx.win.visible = true;
+        XMapRaised(xctx.dpy, win->xwin);
+        win->visible = true;
 }
 
 /*
@@ -540,10 +548,10 @@ void x_win_hide(void)
         x_shortcut_ungrab(&settings.close_all_ks);
         x_shortcut_ungrab(&settings.context_ks);
 
-        XUngrabButton(xctx.dpy, AnyButton, AnyModifier, xctx.win.xwin);
-        XUnmapWindow(xctx.dpy, xctx.win.xwin);
+        XUngrabButton(xctx.dpy, AnyButton, AnyModifier, win->xwin);
+        XUnmapWindow(xctx.dpy, win->xwin);
         XFlush(xctx.dpy);
-        xctx.win.visible = false;
+        win->visible = false;
 }
 
 /*

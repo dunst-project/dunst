@@ -31,8 +31,7 @@ typedef struct {
         notification *n;
 } colored_layout;
 
-cairo_surface_t *root_surface;
-cairo_t *c_context;
+window_x11 *win;
 
 PangoFontDescription *pango_fdesc;
 
@@ -40,8 +39,7 @@ void draw_setup(void)
 {
         x_setup();
 
-        root_surface = x_create_cairo_surface();
-        c_context = cairo_create(root_surface);
+        win = x_win_create();
         pango_fdesc = pango_font_description_from_string(settings.font);
 }
 
@@ -555,7 +553,7 @@ static void calc_window_pos(int width, int height, int *ret_x, int *ret_y)
 void draw(void)
 {
 
-        GSList *layouts = create_layouts(c_context);
+        GSList *layouts = create_layouts(win->c_ctx);
 
         struct dimensions dim = calculate_dimensions(layouts);
         int width = dim.w;
@@ -566,7 +564,7 @@ void draw(void)
 
         calc_window_pos(dim.w, dim.h, &win_x, &win_y);
         x_win_move(win_x, win_y, width, height);
-        cairo_xlib_surface_set_size(root_surface, width, height);
+        cairo_xlib_surface_set_size(win->root_surface, width, height);
 
         bool first = true;
         for (GSList *iter = layouts; iter; iter = iter->next) {
@@ -578,9 +576,9 @@ void draw(void)
                 first = false;
         }
 
-        cairo_set_source_surface(c_context, image_surface, 0, 0);
-        cairo_paint(c_context);
-        cairo_show_page(c_context);
+        cairo_set_source_surface(win->c_ctx, image_surface, 0, 0);
+        cairo_paint(win->c_ctx);
+        cairo_show_page(win->c_ctx);
 
         XFlush(xctx.dpy);
 
@@ -590,9 +588,7 @@ void draw(void)
 
 void draw_deinit(void)
 {
-        cairo_destroy(c_context);
-        cairo_surface_destroy(root_surface);
-
+        x_win_destroy(win);
         x_free();
 }
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

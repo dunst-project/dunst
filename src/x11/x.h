@@ -36,6 +36,7 @@ struct dimensions {
 typedef struct {
         Window xwin;
         cairo_surface_t *root_surface;
+        cairo_t *c_ctx;
         int cur_screen;
         bool visible;
         struct dimensions dim;
@@ -43,7 +44,6 @@ typedef struct {
 
 typedef struct _xctx {
         Display *dpy;
-        window_x11 win;
         const char *colors[3][3];
         XScreenSaverInfo *screensaver_info;
 } xctx_t;
@@ -57,9 +57,11 @@ typedef struct _color_t {
 extern xctx_t xctx;
 
 /* window */
+window_x11 *x_win_create(void);
 void x_win_move(int x, int y, int width, int height);
 void x_win_hide(void);
 void x_win_show(void);
+void x_win_destroy(window_x11 *win);
 
 /* shortcut */
 void x_shortcut_init(keyboard_shortcut *shortcut);
@@ -73,8 +75,6 @@ void x_setup(void);
 void x_free(void);
 
 struct geometry x_parse_geometry(const char *geom_str);
-
-cairo_surface_t *x_create_cairo_surface(void);
 
 gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback,
                                 gpointer user_data);

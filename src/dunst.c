@@ -59,19 +59,19 @@ static gboolean run(void *data)
 
         static gint64 next_timeout = 0;
 
-        if (!xctx.win.visible && queues_length_displayed() > 0) {
+        if (!win->visible && queues_length_displayed() > 0) {
                 x_win_show();
         }
 
-        if (xctx.win.visible && queues_length_displayed() == 0) {
+        if (win->visible && queues_length_displayed() == 0) {
                 x_win_hide();
         }
 
-        if (xctx.win.visible) {
+        if (win->visible) {
                 draw();
         }
 
-        if (xctx.win.visible) {
+        if (win->visible) {
                 gint64 now = time_monotonic_now();
                 gint64 sleep = queues_get_next_datachange(now);
                 gint64 timeout_at = now + sleep;
@@ -190,7 +190,7 @@ int dunst_main(int argc, char *argv[])
         GSource *x11_source =
             g_source_new(&x11_source_funcs, sizeof(x11_source_t));
         ((x11_source_t *) x11_source)->dpy = xctx.dpy;
-        ((x11_source_t *) x11_source)->w = xctx.win.xwin;
+        ((x11_source_t *) x11_source)->w = win->xwin;
         g_source_add_poll(x11_source, &dpy_pollfd);
 
         g_source_attach(x11_source, NULL);
