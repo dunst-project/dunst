@@ -33,6 +33,12 @@
 #define WIDTH 400
 #define HEIGHT 400
 
+struct x11_source {
+        GSource source;
+        Display *dpy;
+        Window w;
+};
+
 xctx_t xctx;
 bool dunst_grab_errored = false;
 
@@ -309,6 +315,9 @@ static void x_handle_click(XEvent ev)
 
 void x_free(void)
 {
+        if (xctx.screensaver_info)
+                XFree(xctx.screensaver_info);
+
         if (xctx.dpy)
                 XCloseDisplay(xctx.dpy);
 }
@@ -453,6 +462,39 @@ static void x_set_wm(Window win)
                 PropModeReplace, (unsigned char *) data, 1L);
 }
 
+GSource* x_win_reg_source(window_x11 *win)
+{
+        GPollFD *dpy_pollfd = g_malloc0(sizeof(dpy_pollfd));
+
+        *dpy_pollfd = (GPollFD) {
+                xctx.dpy->fd,
+                G_IO_IN | G_IO_HUP | G_IO_ERR, 0
+        };
+
+        // Static is necessary here because glib keeps the pointer and we need
+        // to keep the reference alive.
+        static GSourceFuncs xsrc_fn = {
+                x_mainloop_fd_prepare,
+                x_mainloop_fd_check,
+                x_mainloop_fd_dispatch,
+                NULL,
+                NULL,
+                NULL
+        };
+
+        struct x11_source *xsrc = (struct x11_source*) g_source_new(&xsrc_fn,
+                                                        sizeof(struct x11_source));
+
+        xsrc->dpy = xctx.dpy;
+        xsrc->w = win->xwin;
+
+        g_source_add_poll((GSource*) xsrc_fn, dpy_pollfd);
+
+        g_source_attach((GSource*) xsrc, NULL);
+
+        return (GSource*)xsrc;
+}
+
 /*
  * Setup the window
  */
@@ -497,6 +539,8 @@ window_x11 *x_win_create(void)
                                                       WIDTH, HEIGHT);
         win->c_ctx = cairo_create(win->root_surface);
 
+        win->esrc = x_win_reg_source(win);
+
         long root_event_mask = SubstructureNotifyMask;
         if (settings.f_mode != FOLLOW_NONE) {
                 root_event_mask |= FocusChangeMask | PropertyChangeMask;
@@ -508,6 +552,9 @@ window_x11 *x_win_create(void)
 
 void x_win_destroy(window_x11 *win)
 {
+        g_source_destroy(win->esrc);
+        g_source_unref(win->esrc);
+
         cairo_destroy(win->c_ctx);
         cairo_surface_destroy(win->root_surface);
         XDestroyWindow(xctx.dpy, win->xwin);

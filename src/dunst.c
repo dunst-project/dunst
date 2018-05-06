@@ -1,7 +1,5 @@
 /* copyright 2012 - 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
 
-#define XLIB_ILLEGAL_ACCESS
-
 #include "dunst.h"
 
 #include <X11/Xlib.h>
@@ -27,12 +25,6 @@
 #ifndef VERSION
 #define VERSION "version info needed"
 #endif
-
-typedef struct _x11_source {
-        GSource source;
-        Display *dpy;
-        Window w;
-} x11_source_t;
 
 /* index of colors fit to urgency level */
 
@@ -155,8 +147,6 @@ int dunst_main(int argc, char *argv[])
 
         int owner_id = initdbus();
 
-        draw_setup();
-
         if (settings.startup_notification) {
                 notification *n = notification_create();
                 n->id = 0;
@@ -174,26 +164,7 @@ int dunst_main(int argc, char *argv[])
 
         mainloop = g_main_loop_new(NULL, FALSE);
 
-        GPollFD dpy_pollfd = { xctx.dpy->fd,
-                G_IO_IN | G_IO_HUP | G_IO_ERR, 0
-        };
-
-        GSourceFuncs x11_source_funcs = {
-                x_mainloop_fd_prepare,
-                x_mainloop_fd_check,
-                x_mainloop_fd_dispatch,
-                NULL,
-                NULL,
-                NULL
-        };
-
-        GSource *x11_source =
-            g_source_new(&x11_source_funcs, sizeof(x11_source_t));
-        ((x11_source_t *) x11_source)->dpy = xctx.dpy;
-        ((x11_source_t *) x11_source)->w = win->xwin;
-        g_source_add_poll(x11_source, &dpy_pollfd);
-
-        g_source_attach(x11_source, NULL);
+        draw_setup();
 
         guint pause_src = g_unix_signal_add(SIGUSR1, pause_signal, NULL);
         guint unpause_src = g_unix_signal_add(SIGUSR2, unpause_signal, NULL);
@@ -212,8 +183,6 @@ int dunst_main(int argc, char *argv[])
         g_source_remove(unpause_src);
         g_source_remove(term_src);
         g_source_remove(int_src);
-
-        g_source_destroy(x11_source);
 
         dbus_tear_down(owner_id);
 

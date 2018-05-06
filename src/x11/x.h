@@ -2,6 +2,8 @@
 #ifndef DUNST_X_H
 #define DUNST_X_H
 
+#define XLIB_ILLEGAL_ACCESS
+
 #include <cairo.h>
 #include <X11/X.h>
 #include <X11/Xlib.h>
@@ -37,6 +39,7 @@ typedef struct {
         Window xwin;
         cairo_surface_t *root_surface;
         cairo_t *c_ctx;
+        GSource *esrc;
         int cur_screen;
         bool visible;
         struct dimensions dim;
