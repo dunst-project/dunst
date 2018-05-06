@@ -58,10 +58,10 @@ extern xctx_t xctx;
 
 /* window */
 window_x11 *x_win_create(void);
-void x_win_move(int x, int y, int width, int height);
 void x_win_hide(void);
 void x_win_show(void);
 void x_win_destroy(window_x11 *win);
+void x_display_surface(cairo_surface_t *srf, window_x11 *win, const struct dimensions *dim);
 
 /* shortcut */
 void x_shortcut_init(keyboard_shortcut *shortcut);

@@ -44,26 +44,35 @@ static int x_shortcut_tear_down_error_handler(void);
 static void setopacity(Window win, unsigned long opacity);
 static void x_handle_click(XEvent ev);
 
-void x_win_move(int x, int y, int width, int height)
+static void x_win_move(window_x11 *win, int x, int y, int width, int height)
 {
-        // Previous dimensions of the window to avoid calling X11 if no change
-        // is needed
-        static struct dimensions window_dim = { 0 };
-
         /* move and resize */
-        if (x != window_dim.x || y != window_dim.y) {
+        if (x != win->dim.x || y != win->dim.y) {
                 XMoveWindow(xctx.dpy, win->xwin, x, y);
 
-                window_dim.x = x;
-                window_dim.y = y;
+                win->dim.x = x;
+                win->dim.y = y;
         }
 
-        if (width != window_dim.w || height != window_dim.h) {
+        if (width != win->dim.w || height != win->dim.h) {
                 XResizeWindow(xctx.dpy, win->xwin, width, height);
 
-                window_dim.h = height;
-                window_dim.w = width;
+                win->dim.h = height;
+                win->dim.w = width;
         }
+}
+
+void x_display_surface(cairo_surface_t *srf, window_x11 *win, const struct dimensions *dim)
+{
+        x_win_move(win, dim->x, dim->y, dim->w, dim->h);
+        cairo_xlib_surface_set_size(win->root_surface, dim->w, dim->h);
+
+        cairo_set_source_surface(win->c_ctx, srf, 0, 0);
+        cairo_paint(win->c_ctx);
+        cairo_show_page(win->c_ctx);
+
+        XFlush(xctx.dpy);
+
 }
 
 static void setopacity(Window win, unsigned long opacity)

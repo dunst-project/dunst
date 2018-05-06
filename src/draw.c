@@ -1,9 +1,7 @@
 #include "draw.h"
 
-#include <X11/Xutil.h> // Temporary
 #include <assert.h>
 #include <cairo.h>
-#include <cairo-xlib.h> // Temporary
 #include <math.h>
 #include <pango/pango-attributes.h>
 #include <pango/pango-font.h>
@@ -556,15 +554,8 @@ void draw(void)
         GSList *layouts = create_layouts(win->c_ctx);
 
         struct dimensions dim = calculate_dimensions(layouts);
-        int width = dim.w;
-        int height = dim.h;
-        int win_x, win_y;
 
-        cairo_surface_t *image_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-
-        calc_window_pos(dim.w, dim.h, &win_x, &win_y);
-        x_win_move(win_x, win_y, width, height);
-        cairo_xlib_surface_set_size(win->root_surface, width, height);
+        cairo_surface_t *image_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, dim.w, dim.h);
 
         bool first = true;
         for (GSList *iter = layouts; iter; iter = iter->next) {
@@ -576,11 +567,8 @@ void draw(void)
                 first = false;
         }
 
-        cairo_set_source_surface(win->c_ctx, image_surface, 0, 0);
-        cairo_paint(win->c_ctx);
-        cairo_show_page(win->c_ctx);
-
-        XFlush(xctx.dpy);
+        calc_window_pos(dim.w, dim.h, &dim.x, &dim.y);
+        x_display_surface(image_surface, win, &dim);
 
         cairo_surface_destroy(image_surface);
         free_layouts(layouts);
