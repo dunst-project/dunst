@@ -44,6 +44,9 @@ bool dunst_grab_errored = false;
 
 static bool fullscreen_last = false;
 
+static void x_shortcut_init(keyboard_shortcut *ks);
+static int x_shortcut_grab(keyboard_shortcut *ks);
+static void x_shortcut_ungrab(keyboard_shortcut *ks);
 /* FIXME refactor setup teardown handlers into one setup and one teardown */
 static void x_shortcut_setup_error_handler(void);
 static int x_shortcut_tear_down_error_handler(void);
@@ -676,7 +679,7 @@ static int x_shortcut_tear_down_error_handler(void)
 /*
  * Grab the given keyboard shortcut.
  */
-int x_shortcut_grab(keyboard_shortcut *ks)
+static int x_shortcut_grab(keyboard_shortcut *ks)
 {
         if (!ks->is_valid)
                 return 1;
@@ -713,7 +716,7 @@ int x_shortcut_grab(keyboard_shortcut *ks)
 /*
  * Ungrab the given keyboard shortcut.
  */
-void x_shortcut_ungrab(keyboard_shortcut *ks)
+static void x_shortcut_ungrab(keyboard_shortcut *ks)
 {
         Window root;
         root = RootWindow(xctx.dpy, DefaultScreen(xctx.dpy));
@@ -726,7 +729,7 @@ void x_shortcut_ungrab(keyboard_shortcut *ks)
 /*
  * Initialize the keyboard shortcut.
  */
-void x_shortcut_init(keyboard_shortcut *ks)
+static void x_shortcut_init(keyboard_shortcut *ks)
 {
         if (ks == NULL || ks->str == NULL)
                 return;

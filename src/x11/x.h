@@ -66,23 +66,12 @@ void x_win_show(void);
 void x_win_destroy(window_x11 *win);
 void x_display_surface(cairo_surface_t *srf, window_x11 *win, const struct dimensions *dim);
 
-/* shortcut */
-void x_shortcut_init(keyboard_shortcut *shortcut);
-void x_shortcut_ungrab(keyboard_shortcut *ks);
-int x_shortcut_grab(keyboard_shortcut *ks);
-KeySym x_shortcut_string_to_mask(const char *str);
-
 /* X misc */
 bool x_is_idle(void);
 void x_setup(void);
 void x_free(void);
 
 struct geometry x_parse_geometry(const char *geom_str);
-
-gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback,
-                                gpointer user_data);
-gboolean x_mainloop_fd_check(GSource *source);
-gboolean x_mainloop_fd_prepare(GSource *source, gint *timeout);
 
 #endif
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
