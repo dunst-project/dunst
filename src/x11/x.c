@@ -467,13 +467,6 @@ static void x_set_wm(Window win)
 
 GSource* x_win_reg_source(window_x11 *win)
 {
-        GPollFD *dpy_pollfd = g_malloc0(sizeof(dpy_pollfd));
-
-        *dpy_pollfd = (GPollFD) {
-                xctx.dpy->fd,
-                G_IO_IN | G_IO_HUP | G_IO_ERR, 0
-        };
-
         // Static is necessary here because glib keeps the pointer and we need
         // to keep the reference alive.
         static GSourceFuncs xsrc_fn = {
@@ -491,7 +484,7 @@ GSource* x_win_reg_source(window_x11 *win)
         xsrc->dpy = xctx.dpy;
         xsrc->w = win->xwin;
 
-        g_source_add_poll((GSource*) xsrc_fn, dpy_pollfd);
+        g_source_add_unix_fd((GSource*) xsrc, xctx.dpy->fd, G_IO_IN | G_IO_HUP | G_IO_ERR);
 
         g_source_attach((GSource*) xsrc, NULL);
 
