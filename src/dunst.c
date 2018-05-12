@@ -147,6 +147,18 @@ int dunst_main(int argc, char *argv[])
 
         int owner_id = initdbus();
 
+        mainloop = g_main_loop_new(NULL, FALSE);
+
+        draw_setup();
+
+        guint pause_src = g_unix_signal_add(SIGUSR1, pause_signal, NULL);
+        guint unpause_src = g_unix_signal_add(SIGUSR2, unpause_signal, NULL);
+
+        /* register SIGINT/SIGTERM handler for
+         * graceful termination */
+        guint term_src = g_unix_signal_add(SIGTERM, quit_signal, NULL);
+        guint int_src = g_unix_signal_add(SIGINT, quit_signal, NULL);
+
         if (settings.startup_notification) {
                 notification *n = notification_create();
                 n->id = 0;
@@ -161,18 +173,6 @@ int dunst_main(int argc, char *argv[])
                 queues_notification_insert(n);
                 // we do not call wakeup now, wake_up does not work here yet
         }
-
-        mainloop = g_main_loop_new(NULL, FALSE);
-
-        draw_setup();
-
-        guint pause_src = g_unix_signal_add(SIGUSR1, pause_signal, NULL);
-        guint unpause_src = g_unix_signal_add(SIGUSR2, unpause_signal, NULL);
-
-        /* register SIGINT/SIGTERM handler for
-         * graceful termination */
-        guint term_src = g_unix_signal_add(SIGTERM, quit_signal, NULL);
-        guint int_src = g_unix_signal_add(SIGINT, quit_signal, NULL);
 
         run(NULL);
         g_main_loop_run(mainloop);
