@@ -93,16 +93,16 @@ static color_t calculate_foreground_color(color_t bg)
 static color_t layout_get_sepcolor(colored_layout *cl, colored_layout *cl_next)
 {
         switch (settings.sep_color) {
-        case FRAME:
+        case SEP_FRAME:
                 if (cl_next->n->urgency > cl->n->urgency)
                         return cl_next->frame;
                 else
                         return cl->frame;
-        case CUSTOM:
+        case SEP_CUSTOM:
                 return string_to_color(settings.sep_custom_color_str);
-        case FOREGROUND:
+        case SEP_FOREGROUND:
                 return cl->fg;
-        case AUTO:
+        case SEP_AUTO:
                 return calculate_foreground_color(cl->bg);
         default:
                 LOG_E("Invalid %s enum value in %s:%d", "sep_color", __FILE__, __LINE__);
@@ -429,7 +429,7 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
         cairo_rectangle(c, x, y, width, height);
         cairo_fill(c);
 
-        if (   settings.sep_color != FRAME
+        if (   settings.sep_color != SEP_FRAME
             && settings.separator_height > 0
             && !last) {
                 color_t sep_color = layout_get_sepcolor(cl, cl_next);

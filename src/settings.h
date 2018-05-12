@@ -9,7 +9,7 @@
 enum alignment { left, center, right };
 enum ellipsize { start, middle, end };
 enum icon_position_t { icons_left, icons_right, icons_off };
-enum separator_color { FOREGROUND, AUTO, FRAME, CUSTOM };
+enum separator_color { SEP_FOREGROUND, SEP_AUTO, SEP_FRAME, SEP_CUSTOM };
 enum follow_mode { FOLLOW_NONE, FOLLOW_MOUSE, FOLLOW_KEYBOARD };
 enum markup_mode { MARKUP_NULL, MARKUP_NO, MARKUP_STRIP, MARKUP_FULL };
 

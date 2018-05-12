@@ -377,13 +377,13 @@ void load_settings(char *cmdline_config_path)
 
                 if (strlen(c) > 0) {
                         if (strcmp(c, "auto") == 0)
-                                settings.sep_color = AUTO;
+                                settings.sep_color = SEP_AUTO;
                         else if (strcmp(c, "foreground") == 0)
-                                settings.sep_color = FOREGROUND;
+                                settings.sep_color = SEP_FOREGROUND;
                         else if (strcmp(c, "frame") == 0)
-                                settings.sep_color = FRAME;
+                                settings.sep_color = SEP_FRAME;
                         else {
-                                settings.sep_color = CUSTOM;
+                                settings.sep_color = SEP_CUSTOM;
                                 settings.sep_custom_color_str = g_strdup(c);
                         }
                 }
