@@ -105,7 +105,8 @@ static color_t layout_get_sepcolor(colored_layout *cl, colored_layout *cl_next)
         case AUTO:
                 return calculate_foreground_color(cl->bg);
         default:
-                LOG_E("Unknown separator color type.");
+                LOG_E("Invalid %s enum value in %s:%d", "sep_color", __FILE__, __LINE__);
+                break;
         }
 }
 
@@ -258,7 +259,8 @@ static colored_layout *layout_init_shared(cairo_t *c, notification *n)
                         ellipsize = PANGO_ELLIPSIZE_END;
                         break;
                 default:
-                        assert(false);
+                        LOG_E("Invalid %s enum value in %s:%d", "ellipsize", __FILE__, __LINE__);
+                        break;
                 }
                 pango_layout_set_ellipsize(cl->l, ellipsize);
         }
