@@ -578,7 +578,7 @@ void x_win_show(void)
                     AnyModifier,
                     win->xwin,
                     false,
-                    BUTTONMASK,
+                    (ButtonPressMask|ButtonReleaseMask),
                     GrabModeAsync,
                     GrabModeSync,
                     None,

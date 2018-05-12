@@ -13,10 +13,6 @@
 
 #include "screen.h"
 
-#define BUTTONMASK (ButtonPressMask|ButtonReleaseMask)
-#define FONT_HEIGHT_BORDER 2
-#define DEFFONT "Monospace-11"
-
 typedef struct _keyboard_shortcut {
         const char *str;
         KeyCode code;
