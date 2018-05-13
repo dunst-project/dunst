@@ -476,8 +476,10 @@ static void render_content(cairo_t *c, colored_layout *cl, int width)
 
                 if (settings.icon_position == icons_left) {
                         image_x = settings.h_padding;
-                } else {
+                } else if (settings.icon_position == icons_right){
                         image_x = width - settings.h_padding - image_width;
+                } else {
+                        LOG_E("Tried to draw icon but icon position is not valid. %s:%d", __FILE__, __LINE__);
                 }
 
                 cairo_set_source_surface(c, cl->icon, image_x, image_y);
