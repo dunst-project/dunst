@@ -16,4 +16,28 @@ struct dimensions {
         int corner_radius;
 };
 
+struct output {
+        void (*init)(void);
+        void (*deinit)(void);
+
+        window (*win_create)(void);
+        void (*win_destroy)(window);
+
+        void (*win_show)(window);
+        void (*win_hide)(window);
+
+        void (*display_surface)(cairo_surface_t *srf, window win, const struct dimensions*);
+
+        bool (*win_visible)(window);
+        cairo_t* (*win_get_context)(window);
+
+        const struct screen_info* (*get_active_screen)(void);
+        double (*get_dpi_for_screen)(const struct screen_info*);
+
+        bool (*is_idle)(void);
+        bool (*have_fullscreen_window)(void);
+};
+
+const struct output* output_create(void);
+
 #endif

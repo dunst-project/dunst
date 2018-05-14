@@ -20,8 +20,6 @@
 #include "queues.h"
 #include "settings.h"
 #include "utils.h"
-#include "x11/screen.h"
-#include "x11/x.h"
 
 GMainLoop *mainloop = NULL;
 
@@ -67,8 +65,8 @@ static gboolean run(void *data)
 
         LOG_D("RUN");
 
-        dunst_status(S_FULLSCREEN, have_fullscreen_window());
-        dunst_status(S_IDLE, x_is_idle());
+        dunst_status(S_FULLSCREEN, output->have_fullscreen_window());
+        dunst_status(S_IDLE, output->is_idle());
 
         queues_update(status);
 

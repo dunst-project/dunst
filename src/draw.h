@@ -3,6 +3,7 @@
 
 #include "output.h"
 extern window win; // Temporary
+extern const struct output *output;
 
 void draw_setup(void);
 

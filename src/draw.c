@@ -16,7 +16,6 @@
 #include "markup.h"
 #include "notification.h"
 #include "queues.h"
-#include "x11/x.h"
 
 struct colored_layout {
         PangoLayout *l;
@@ -29,15 +28,19 @@ struct colored_layout {
         const struct notification *n;
 };
 
+const struct output *output;
 window win;
 
 PangoFontDescription *pango_fdesc;
 
 void draw_setup(void)
 {
-        x_setup();
+        const struct output *out = output_create();
+        output = out;
 
-        win = x_win_create();
+        out->init();
+        win = out->win_create();
+
         pango_fdesc = pango_font_description_from_string(settings.font);
 }
 
@@ -237,7 +240,7 @@ static PangoLayout *layout_create(cairo_t *c)
         struct screen_info *screen = get_active_screen();
 
         PangoContext *context = pango_cairo_create_context(c);
-        pango_cairo_context_set_resolution(context, get_dpi_for_screen(screen));
+        pango_cairo_context_set_resolution(context, output->get_dpi_for_screen(screen));
 
         PangoLayout *layout = pango_layout_new(context);
 
@@ -612,7 +615,7 @@ static void calc_window_pos(int width, int height, int *ret_x, int *ret_y)
 void draw(void)
 {
 
-        GSList *layouts = create_layouts(x_win_get_context(win));
+        GSList *layouts = create_layouts(output->win_get_context(win));
 
         struct dimensions dim = calculate_dimensions(layouts);
 
@@ -630,7 +633,7 @@ void draw(void)
         }
 
         calc_window_pos(dim.w, dim.h, &dim.x, &dim.y);
-        x_display_surface(image_surface, win, &dim);
+        output->display_surface(image_surface, win, &dim);
 
         cairo_surface_destroy(image_surface);
         g_slist_free_full(layouts, free_colored_layout);
@@ -638,7 +641,7 @@ void draw(void)
 
 void draw_deinit(void)
 {
-        x_win_destroy(win);
-        x_free();
+        output->win_destroy(win);
+        output->deinit();
 }
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
