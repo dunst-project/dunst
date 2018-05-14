@@ -51,19 +51,19 @@ static gboolean run(void *data)
 
         static gint64 next_timeout = 0;
 
-        if (!win->visible && queues_length_displayed() > 0) {
-                x_win_show();
+        if (!x_win_visible(win) && queues_length_displayed() > 0) {
+                x_win_show(win);
         }
 
-        if (win->visible && queues_length_displayed() == 0) {
-                x_win_hide();
+        if (x_win_visible(win) && queues_length_displayed() == 0) {
+                x_win_hide(win);
         }
 
-        if (win->visible) {
+        if (x_win_visible(win)) {
                 draw();
         }
 
-        if (win->visible) {
+        if (x_win_visible(win)) {
                 gint64 now = time_monotonic_now();
                 gint64 sleep = queues_get_next_datachange(now);
                 gint64 timeout_at = now + sleep;

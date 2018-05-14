@@ -33,10 +33,19 @@
 #define WIDTH 400
 #define HEIGHT 400
 
+struct window_x11 {
+        Window xwin;
+        cairo_surface_t *root_surface;
+        cairo_t *c_ctx;
+        GSource *esrc;
+        int cur_screen;
+        bool visible;
+        struct dimensions dim;
+};
+
 struct x11_source {
         GSource source;
-        Display *dpy;
-        Window w;
+        window_x11 *win;
 };
 
 xctx_t xctx;
@@ -82,6 +91,16 @@ void x_display_surface(cairo_surface_t *srf, window_x11 *win, const struct dimen
 
         XFlush(xctx.dpy);
 
+}
+
+bool x_win_visible(window_x11 *win)
+{
+        return win->visible;
+}
+
+cairo_t* x_win_get_context(window_x11 *win)
+{
+        return win->c_ctx;
 }
 
 static void setopacity(Window win, unsigned long opacity)
@@ -176,6 +195,8 @@ gboolean x_mainloop_fd_check(GSource *source)
  */
 gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer user_data)
 {
+        window_x11 *win = ((struct x11_source*) source)->win;
+
         bool fullscreen_now;
         screen_info *scr;
         XEvent ev;
@@ -481,8 +502,7 @@ GSource* x_win_reg_source(window_x11 *win)
         struct x11_source *xsrc = (struct x11_source*) g_source_new(&xsrc_fn,
                                                         sizeof(struct x11_source));
 
-        xsrc->dpy = xctx.dpy;
-        xsrc->w = win->xwin;
+        xsrc->win = win;
 
         g_source_add_unix_fd((GSource*) xsrc, xctx.dpy->fd, G_IO_IN | G_IO_HUP | G_IO_ERR);
 
@@ -561,7 +581,7 @@ void x_win_destroy(window_x11 *win)
 /*
  * Show the window and grab shortcuts.
  */
-void x_win_show(void)
+void x_win_show(window_x11 *win)
 {
         /* window is already mapped or there's nothing to show */
         if (win->visible || queues_length_displayed() == 0) {
@@ -594,7 +614,7 @@ void x_win_show(void)
 /*
  * Hide the window and ungrab unused keyboard_shortcuts
  */
-void x_win_hide(void)
+void x_win_hide(window_x11 *win)
 {
         x_shortcut_ungrab(&settings.close_ks);
         x_shortcut_ungrab(&settings.close_all_ks);

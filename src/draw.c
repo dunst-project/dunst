@@ -555,7 +555,7 @@ static void calc_window_pos(int width, int height, int *ret_x, int *ret_y)
 void draw(void)
 {
 
-        GSList *layouts = create_layouts(win->c_ctx);
+        GSList *layouts = create_layouts(x_win_get_context(win));
 
         struct dimensions dim = calculate_dimensions(layouts);
 
