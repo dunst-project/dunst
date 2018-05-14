@@ -126,12 +126,12 @@ void randr_update(void)
         alloc_screen_ar(n);
 
         for (int i = 0; i < n; i++) {
-                screens[i].scr = i;
-                screens[i].dim.x = m[i].x;
-                screens[i].dim.y = m[i].y;
-                screens[i].dim.w = m[i].width;
-                screens[i].dim.h = m[i].height;
-                screens[i].dim.mmh = m[i].mheight;
+                screens[i].id = i;
+                screens[i].x = m[i].x;
+                screens[i].y = m[i].y;
+                screens[i].w = m[i].width;
+                screens[i].h = m[i].height;
+                screens[i].mmh = m[i].mheight;
         }
 
         XRRFreeMonitors(m);
@@ -139,7 +139,7 @@ void randr_update(void)
 
 static int autodetect_dpi(screen_info *scr)
 {
-        return (double)scr->dim.h * 25.4 / (double)scr->dim.mmh;
+        return (double)scr->h * 25.4 / (double)scr->mmh;
 }
 
 void screen_check_event(XEvent event)
@@ -165,11 +165,11 @@ void xinerama_update(void)
         alloc_screen_ar(n);
 
         for (int i = 0; i < n; i++) {
-                screens[i].scr = i;
-                screens[i].dim.x = info[i].x_org;
-                screens[i].dim.y = info[i].y_org;
-                screens[i].dim.h = info[i].height;
-                screens[i].dim.w = info[i].width;
+                screens[i].id = i;
+                screens[i].x = info[i].x_org;
+                screens[i].y = info[i].y_org;
+                screens[i].h = info[i].height;
+                screens[i].w = info[i].width;
         }
         XFree(info);
 }
@@ -184,8 +184,8 @@ void screen_update_fallback(void)
         else
                 screen = DefaultScreen(xctx.dpy);
 
-        screens[0].dim.w = DisplayWidth(xctx.dpy, screen);
-        screens[0].dim.h = DisplayHeight(xctx.dpy, screen);
+        screens[0].w = DisplayWidth(xctx.dpy, screen);
+        screens[0].h = DisplayHeight(xctx.dpy, screen);
 }
 
 /* see screen.h */
@@ -328,8 +328,8 @@ screen_info *get_active_screen(void)
                 }
 
                 for (int i = 0; i < screens_len; i++) {
-                        if (INRECT(x, y, screens[i].dim.x, screens[i].dim.y,
-                                         screens[i].dim.w, screens[i].dim.h)) {
+                        if (INRECT(x, y, screens[i].x, screens[i].y,
+                                         screens[i].w, screens[i].h)) {
                                 ret = i;
                         }
                 }

@@ -80,6 +80,7 @@ test-valgrind: test/test
 			--leak-check=full \
 			--show-leak-kinds=definite \
 			--errors-for-leak-kinds=definite \
+			--num-callers=40 \
 			--error-exitcode=123 \
 			./test
 

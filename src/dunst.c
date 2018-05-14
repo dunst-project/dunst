@@ -1,7 +1,5 @@
 /* copyright 2012 - 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
 
-#define XLIB_ILLEGAL_ACCESS
-
 #include "dunst.h"
 
 #include <X11/Xlib.h>
@@ -13,6 +11,7 @@
 #include <stdlib.h>
 
 #include "dbus.h"
+#include "draw.h"
 #include "log.h"
 #include "menu.h"
 #include "notification.h"
@@ -26,12 +25,6 @@
 #ifndef VERSION
 #define VERSION "version info needed"
 #endif
-
-typedef struct _x11_source {
-        GSource source;
-        Display *dpy;
-        Window w;
-} x11_source_t;
 
 /* index of colors fit to urgency level */
 
@@ -58,19 +51,19 @@ static gboolean run(void *data)
 
         static gint64 next_timeout = 0;
 
-        if (!xctx.visible && queues_length_displayed() > 0) {
-                x_win_show();
+        if (!x_win_visible(win) && queues_length_displayed() > 0) {
+                x_win_show(win);
         }
 
-        if (xctx.visible && queues_length_displayed() == 0) {
-                x_win_hide();
+        if (x_win_visible(win) && queues_length_displayed() == 0) {
+                x_win_hide(win);
         }
 
-        if (xctx.visible) {
-                x_win_draw();
+        if (x_win_visible(win)) {
+                draw();
         }
 
-        if (xctx.visible) {
+        if (x_win_visible(win)) {
                 gint64 now = time_monotonic_now();
                 gint64 sleep = queues_get_next_datachange(now);
                 gint64 timeout_at = now + sleep;
@@ -120,7 +113,7 @@ static void teardown(void)
 
         teardown_queues();
 
-        x_free();
+        draw_deinit();
 }
 
 int dunst_main(int argc, char *argv[])
@@ -154,7 +147,17 @@ int dunst_main(int argc, char *argv[])
 
         int owner_id = initdbus();
 
-        x_setup();
+        mainloop = g_main_loop_new(NULL, FALSE);
+
+        draw_setup();
+
+        guint pause_src = g_unix_signal_add(SIGUSR1, pause_signal, NULL);
+        guint unpause_src = g_unix_signal_add(SIGUSR2, unpause_signal, NULL);
+
+        /* register SIGINT/SIGTERM handler for
+         * graceful termination */
+        guint term_src = g_unix_signal_add(SIGTERM, quit_signal, NULL);
+        guint int_src = g_unix_signal_add(SIGINT, quit_signal, NULL);
 
         if (settings.startup_notification) {
                 notification *n = notification_create();
@@ -171,37 +174,6 @@ int dunst_main(int argc, char *argv[])
                 // we do not call wakeup now, wake_up does not work here yet
         }
 
-        mainloop = g_main_loop_new(NULL, FALSE);
-
-        GPollFD dpy_pollfd = { xctx.dpy->fd,
-                G_IO_IN | G_IO_HUP | G_IO_ERR, 0
-        };
-
-        GSourceFuncs x11_source_funcs = {
-                x_mainloop_fd_prepare,
-                x_mainloop_fd_check,
-                x_mainloop_fd_dispatch,
-                NULL,
-                NULL,
-                NULL
-        };
-
-        GSource *x11_source =
-            g_source_new(&x11_source_funcs, sizeof(x11_source_t));
-        ((x11_source_t *) x11_source)->dpy = xctx.dpy;
-        ((x11_source_t *) x11_source)->w = xctx.win;
-        g_source_add_poll(x11_source, &dpy_pollfd);
-
-        g_source_attach(x11_source, NULL);
-
-        guint pause_src = g_unix_signal_add(SIGUSR1, pause_signal, NULL);
-        guint unpause_src = g_unix_signal_add(SIGUSR2, unpause_signal, NULL);
-
-        /* register SIGINT/SIGTERM handler for
-         * graceful termination */
-        guint term_src = g_unix_signal_add(SIGTERM, quit_signal, NULL);
-        guint int_src = g_unix_signal_add(SIGINT, quit_signal, NULL);
-
         run(NULL);
         g_main_loop_run(mainloop);
         g_main_loop_unref(mainloop);
@@ -211,8 +183,6 @@ int dunst_main(int argc, char *argv[])
         g_source_remove(unpause_src);
         g_source_remove(term_src);
         g_source_remove(int_src);
-
-        g_source_destroy(x11_source);
 
         dbus_tear_down(owner_id);
 

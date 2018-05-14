@@ -120,6 +120,8 @@ SUITE(suite_notification)
         g_free(b);
 
         RUN_TEST(test_notification_replace_single_field);
+
+        g_clear_pointer(&settings.icon_path, g_free);
 }
 
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

@@ -16,7 +16,15 @@ settings_t defaults = {
 .icons = { "dialog-information", "dialog-information", "dialog-warning" }, /* low, normal, critical */
 
 .transparency = 0,           /* transparency */
-.geom = "0x0",               /* geometry */
+.geometry = { .x = 0,        /* geometry */
+              .y = 0,
+              .w = 0,
+              .h = 0,
+              .negative_x = 0,
+              .negative_y = 0,
+              .negative_width = 0,
+              .width_set = 0
+            },
 .title = "Dunst",            /* the title of dunst notification windows */
 .class = "Dunst",            /* the class of dunst notification windows */
 .shrink = false,             /* shrinking */
@@ -37,7 +45,7 @@ settings_t defaults = {
 .separator_height = 2,       /* height of the separator line between two notifications */
 .padding = 0,
 .h_padding = 0,              /* horizontal padding */
-.sep_color = AUTO,           /* AUTO, FOREGROUND, FRAME, CUSTOM */
+.sep_color = SEP_AUTO,       /* SEP_AUTO, SEP_FOREGROUND, SEP_FRAME, SEP_CUSTOM */
 .sep_custom_color_str = NULL,/* custom color if sep_color is set to CUSTOM */
 
 .frame_width = 0,

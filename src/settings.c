@@ -17,6 +17,7 @@
 #include "notification.h"
 #include "option_parser.h"
 #include "utils.h"
+#include "x11/x.h"
 
 settings_t settings;
 
@@ -256,11 +257,24 @@ void load_settings(char *cmdline_config_path)
                 "Define the class of windows spawned by dunst."
         );
 
-        settings.geom = option_get_string(
-                "global",
-                "geometry", "-geom/-geometry", defaults.geom,
-                "Geometry for the window"
-        );
+        {
+
+                char *c = option_get_string(
+                        "global",
+                        "geometry", "-geom/-geometry", NULL,
+                        "Geometry for the window"
+                );
+
+                if (c) {
+                        // TODO: Implement own geometry parsing to get rid of
+                        //       the include dependency on X11
+                        settings.geometry = x_parse_geometry(c);
+                        g_free(c);
+                } else {
+                        settings.geometry = defaults.geometry;
+                }
+
+        }
 
         settings.shrink = option_get_bool(
                 "global",
@@ -363,13 +377,13 @@ void load_settings(char *cmdline_config_path)
 
                 if (strlen(c) > 0) {
                         if (strcmp(c, "auto") == 0)
-                                settings.sep_color = AUTO;
+                                settings.sep_color = SEP_AUTO;
                         else if (strcmp(c, "foreground") == 0)
-                                settings.sep_color = FOREGROUND;
+                                settings.sep_color = SEP_FOREGROUND;
                         else if (strcmp(c, "frame") == 0)
-                                settings.sep_color = FRAME;
+                                settings.sep_color = SEP_FRAME;
                         else {
-                                settings.sep_color = CUSTOM;
+                                settings.sep_color = SEP_CUSTOM;
                                 settings.sep_custom_color_str = g_strdup(c);
                         }
                 }

@@ -2,6 +2,9 @@
 #ifndef DUNST_X_H
 #define DUNST_X_H
 
+#define XLIB_ILLEGAL_ACCESS
+
+#include <cairo.h>
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <X11/extensions/scrnsaver.h>
@@ -9,10 +12,6 @@
 #include <stdbool.h>
 
 #include "screen.h"
-
-#define BUTTONMASK (ButtonPressMask|ButtonReleaseMask)
-#define FONT_HEIGHT_BORDER 2
-#define DEFFONT "Monospace-11"
 
 typedef struct _keyboard_shortcut {
         const char *str;
@@ -22,17 +21,22 @@ typedef struct _keyboard_shortcut {
         bool is_valid;
 } keyboard_shortcut;
 
+// Cyclical dependency
+#include "src/settings.h"
+
+typedef struct window_x11 window_x11;
+
+struct dimensions {
+        int x;
+        int y;
+        int w;
+        int h;
+};
+
 typedef struct _xctx {
-        Atom utf8;
         Display *dpy;
-        int cur_screen;
-        Window win;
-        bool visible;
-        dimension_t geometry;
         const char *colors[3][3];
         XScreenSaverInfo *screensaver_info;
-        dimension_t window_dim;
-        unsigned long sep_custom_col;
 } xctx_t;
 
 typedef struct _color_t {
@@ -44,25 +48,23 @@ typedef struct _color_t {
 extern xctx_t xctx;
 
 /* window */
-void x_win_draw(void);
-void x_win_hide(void);
-void x_win_show(void);
+window_x11 *x_win_create(void);
+void x_win_destroy(window_x11 *win);
 
-/* shortcut */
-void x_shortcut_init(keyboard_shortcut *shortcut);
-void x_shortcut_ungrab(keyboard_shortcut *ks);
-int x_shortcut_grab(keyboard_shortcut *ks);
-KeySym x_shortcut_string_to_mask(const char *str);
+void x_win_show(window_x11 *win);
+void x_win_hide(window_x11 *win);
+
+void x_display_surface(cairo_surface_t *srf, window_x11 *win, const struct dimensions *dim);
+
+bool x_win_visible(window_x11 *win);
+cairo_t* x_win_get_context(window_x11 *win);
 
 /* X misc */
 bool x_is_idle(void);
 void x_setup(void);
 void x_free(void);
 
-gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback,
-                                gpointer user_data);
-gboolean x_mainloop_fd_check(GSource *source);
-gboolean x_mainloop_fd_prepare(GSource *source, gint *timeout);
+struct geometry x_parse_geometry(const char *geom_str);
 
 #endif
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
