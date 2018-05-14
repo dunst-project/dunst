@@ -11,6 +11,8 @@
 #include <X11/X.h>
 #include <X11/Xlib.h>
 
+#include "../output.h"
+
 #include "screen.h"
 
 struct keyboard_shortcut {
@@ -23,17 +25,6 @@ struct keyboard_shortcut {
 
 // Cyclical dependency
 #include "../settings.h"
-
-struct window_x11;
-
-struct dimensions {
-        int x;
-        int y;
-        int w;
-        int h;
-
-        int corner_radius;
-};
 
 struct x_context {
         Display *dpy;
@@ -49,16 +40,16 @@ struct color {
 extern struct x_context xctx;
 
 /* window */
-struct window_x11 *x_win_create(void);
-void x_win_destroy(struct window_x11 *win);
+window x_win_create(void);
+void x_win_destroy(window);
 
-void x_win_show(struct window_x11 *win);
-void x_win_hide(struct window_x11 *win);
+void x_win_show(window);
+void x_win_hide(window);
 
-void x_display_surface(cairo_surface_t *srf, struct window_x11 *win, const struct dimensions *dim);
+void x_display_surface(cairo_surface_t *srf, window, const struct dimensions *dim);
 
-bool x_win_visible(struct window_x11 *win);
-cairo_t* x_win_get_context(struct window_x11 *win);
+bool x_win_visible(window);
+cairo_t* x_win_get_context(window);
 
 /* X misc */
 bool x_is_idle(void);

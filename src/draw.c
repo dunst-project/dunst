@@ -29,7 +29,7 @@ struct colored_layout {
         const struct notification *n;
 };
 
-struct window_x11 *win;
+window win;
 
 PangoFontDescription *pango_fdesc;
 

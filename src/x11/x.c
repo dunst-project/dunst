@@ -64,8 +64,10 @@ static int x_shortcut_tear_down_error_handler(void);
 static void setopacity(Window win, unsigned long opacity);
 static void x_handle_click(XEvent ev);
 
-static void x_win_move(struct window_x11 *win, int x, int y, int width, int height)
+static void x_win_move(window winptr, int x, int y, int width, int height)
 {
+        struct window_x11 *win = (struct window_x11*)winptr;
+
         /* move and resize */
         if (x != win->dim.x || y != win->dim.y) {
                 XMoveWindow(xctx.dpy, win->xwin, x, y);
@@ -149,8 +151,10 @@ static void x_win_round_corners(struct window_x11 *win, const int rad)
                 win->xwin, ShapeNotifyMask);
 }
 
-void x_display_surface(cairo_surface_t *srf, struct window_x11 *win, const struct dimensions *dim)
+void x_display_surface(cairo_surface_t *srf, window winptr, const struct dimensions *dim)
 {
+        struct window_x11 *win = (struct window_x11*)winptr;
+
         x_win_move(win, dim->x, dim->y, dim->w, dim->h);
         cairo_xlib_surface_set_size(win->root_surface, dim->w, dim->h);
 
@@ -165,14 +169,14 @@ void x_display_surface(cairo_surface_t *srf, struct window_x11 *win, const struc
 
 }
 
-bool x_win_visible(struct window_x11 *win)
+bool x_win_visible(window winptr)
 {
-        return win->visible;
+        return ((struct window_x11*)winptr)->visible;
 }
 
-cairo_t* x_win_get_context(struct window_x11 *win)
+cairo_t* x_win_get_context(window winptr)
 {
-        return win->c_ctx;
+        return ((struct window_x11*)win)->c_ctx;
 }
 
 static void setopacity(Window win, unsigned long opacity)
@@ -573,7 +577,7 @@ GSource* x_win_reg_source(struct window_x11 *win)
 /*
  * Setup the window
  */
-struct window_x11 *x_win_create(void)
+window x_win_create(void)
 {
         struct window_x11 *win = g_malloc0(sizeof(struct window_x11));
 
@@ -622,11 +626,13 @@ struct window_x11 *x_win_create(void)
         }
         XSelectInput(xctx.dpy, root, root_event_mask);
 
-        return win;
+        return (window)win;
 }
 
-void x_win_destroy(struct window_x11 *win)
+void x_win_destroy(window winptr)
 {
+        struct window_x11 *win = (struct window_x11*)winptr;
+
         g_source_destroy(win->esrc);
         g_source_unref(win->esrc);
 
@@ -640,8 +646,10 @@ void x_win_destroy(struct window_x11 *win)
 /*
  * Show the window and grab shortcuts.
  */
-void x_win_show(struct window_x11 *win)
+void x_win_show(window winptr)
 {
+        struct window_x11 *win = (struct window_x11*)winptr;
+
         /* window is already mapped or there's nothing to show */
         if (win->visible)
                 return;
@@ -672,8 +680,9 @@ void x_win_show(struct window_x11 *win)
 /*
  * Hide the window and ungrab unused keyboard_shortcuts
  */
-void x_win_hide(struct window_x11 *win)
+void x_win_hide(window winptr)
 {
+        struct window_x11 *win = (struct window_x11*)winptr;
         if (!win->visible)
                 return;
 
