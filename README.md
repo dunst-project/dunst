@@ -54,9 +54,8 @@ Please use the [issue tracker][issue-tracker] provided by GitHub to send us bug 
 
 ## Maintainers
 
-Nikos Tsipinakis <nikos@tsipinakis.com>
-
-Jonathan Lusso <jonilusso@gmail.com>
+- [Nikos Tsipinakis](https://github.com/tsipinakis) <nikos@tsipinakis.com>
+- [Benedikt Heine](https://github.com/bebehei) <bebe@bebehei.de>
 
 ## Author
 
@@ -64,7 +63,7 @@ written by Sascha Kruse <dunst@knopwob.de>
 
 ## Copyright
 
-copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information)
+copyright 2013 Sascha Kruse and contributors (see [`LICENSE`](./LICENSE) for licensing information)
 
 If you feel that copyrights are violated, please send me an email.
 
