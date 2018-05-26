@@ -84,6 +84,7 @@ typedef struct _settings {
         keyboard_shortcut history_ks;
         keyboard_shortcut context_ks;
         bool force_xinerama;
+        int corner_radius;
 } settings_t;
 
 extern settings_t settings;

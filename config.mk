@@ -28,6 +28,7 @@ pkg_config_packs := dbus-1 \
                     pangocairo \
                     x11 \
                     xinerama \
+                    xext \
                     "xrandr >= 1.5" \
                     xscrnsaver
 

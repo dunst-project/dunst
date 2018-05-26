@@ -6,6 +6,7 @@
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <X11/extensions/shape.h>
 #include <assert.h>
 #include <cairo-xlib.h>
 #include <cairo.h>
@@ -80,6 +81,89 @@ static void x_win_move(window_x11 *win, int x, int y, int width, int height)
         }
 }
 
+void x_win_round_corners(window_x11 *win, const int rad)
+{
+        const int width = win->dim.w;
+        const int height = win->dim.h;
+
+        Pixmap mask = XCreatePixmap(xctx.dpy, win->xwin, width, height, 1);
+        XGCValues xgcv;
+
+        GC shape_gc = XCreateGC(xctx.dpy, mask, 0, &xgcv);
+
+        const int dia = 2 * rad;
+
+        XSetForeground(xctx.dpy, shape_gc, 0);
+        XFillRectangle(xctx.dpy,
+                       mask,
+                       shape_gc,
+                       0,
+                       0,
+                       width,
+                       height);
+
+        XSetForeground(xctx.dpy, shape_gc, 1);
+
+        XFillArc(xctx.dpy,
+                 mask,
+                 shape_gc,
+                 0,
+                 0,
+                 dia,
+                 dia,
+                 0,
+                 360 * 64);
+        XFillArc(xctx.dpy,
+                 mask,
+                 shape_gc,
+                 width - dia - 1,
+                 0,
+                 dia,
+                 dia,
+                 0,
+                 360 * 64);
+        XFillArc(xctx.dpy,
+                 mask,
+                 shape_gc,
+                 0,
+                 height - dia - 1,
+                 dia,
+                 dia,
+                 0,
+                 360 * 64);
+        XFillArc(xctx.dpy,
+                 mask,
+                 shape_gc,
+                 width - dia - 1,
+                 height - dia - 1,
+                 dia,
+                 dia,
+                 0,
+                 360 * 64);
+
+        XFillRectangle(xctx.dpy,
+                       mask,
+                       shape_gc,
+                       rad,
+                       0,
+                       width-dia,
+                       height);
+        XFillRectangle(xctx.dpy,
+                       mask,
+                       shape_gc,
+                       0,
+                       rad,
+                       width,
+                       height-dia);
+
+        XShapeCombineMask(xctx.dpy, win->xwin, ShapeBounding, 0, 0, mask, ShapeSet);
+
+        XFreePixmap(xctx.dpy, mask);
+
+        XShapeSelectInput(xctx.dpy,
+                win->xwin, ShapeNotifyMask);
+}
+
 void x_display_surface(cairo_surface_t *srf, window_x11 *win, const struct dimensions *dim)
 {
         x_win_move(win, dim->x, dim->y, dim->w, dim->h);
@@ -88,6 +172,8 @@ void x_display_surface(cairo_surface_t *srf, window_x11 *win, const struct dimen
         cairo_set_source_surface(win->c_ctx, srf, 0, 0);
         cairo_paint(win->c_ctx);
         cairo_show_page(win->c_ctx);
+
+        x_win_round_corners(win, dim->corner_radius);
 
         XFlush(xctx.dpy);
 

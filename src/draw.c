@@ -172,6 +172,8 @@ static struct dimensions calculate_dimensions(GSList *layouts)
         dim.h += 2 * settings.frame_width;
         dim.h += (g_slist_length(layouts) - 1) * settings.separator_height;
 
+        dim.corner_radius = settings.corner_radius;
+
         int text_width = 0, total_width = 0;
         for (GSList *iter = layouts; iter; iter = iter->next) {
                 colored_layout *cl = iter->data;
@@ -217,6 +219,8 @@ static struct dimensions calculate_dimensions(GSList *layouts)
                         dim.h += h;
                         text_width = MAX(w, text_width);
                 }
+
+                dim.corner_radius = MIN(dim.corner_radius, h/2);
         }
 
         if (dim.w <= 0) {
@@ -389,12 +393,103 @@ static int layout_get_height(colored_layout *cl)
         return MAX(h, h_icon);
 }
 
+static void draw_rounded_rect(cairo_t *c, int x, int y, int width, int height, int corner_radius, bool first, bool last)
+{
+        const float degrees = M_PI / 180.0;
+
+        if (first && last) {
+                cairo_new_sub_path(c);
+                cairo_arc(c,
+                          x + width - corner_radius,
+                          y + corner_radius,
+                          corner_radius,
+                          -90 * degrees,
+                          0 * degrees);
+                cairo_arc(c,
+                          x + width - corner_radius,
+                          y + height - corner_radius,
+                          corner_radius,
+                          0 * degrees,
+                          90 * degrees);
+                cairo_arc(c,
+                          x + corner_radius,
+                          y + height - corner_radius,
+                          corner_radius,
+                          90 * degrees,
+                          180 * degrees);
+                cairo_arc(c,
+                          x + corner_radius,
+                          y + corner_radius,
+                          corner_radius,
+                          180 * degrees,
+                          270 * degrees);
+                cairo_close_path(c);
+        } else if (first) {
+                cairo_new_sub_path(c);
+                cairo_arc(c,
+                          x + width - corner_radius,
+                          y + corner_radius,
+                          corner_radius,
+                          -90 * degrees,
+                          0 * degrees);
+                cairo_arc(c,
+                          x + width,
+                          y + height,
+                          0,
+                          0,
+                          0);
+                cairo_arc(c,
+                          x,
+                          y + height,
+                          0,
+                          0,
+                          0);
+                cairo_arc(c,
+                          x + corner_radius,
+                          y + corner_radius,
+                          corner_radius,
+                          180 * degrees,
+                          270 * degrees);
+                cairo_close_path(c);
+        } else if (last) {
+                cairo_new_sub_path(c);
+                cairo_arc(c,
+                          x + width,
+                          y,
+                          0,
+                          0,
+                          0);
+                cairo_arc(c,
+                          x + width - corner_radius,
+                          y + height - corner_radius,
+                          corner_radius,
+                          0 * degrees,
+                          90 * degrees);
+                cairo_arc(c,
+                          x + corner_radius,
+                          y + height - corner_radius,
+                          corner_radius,
+                          90 * degrees,
+                          180 * degrees);
+                cairo_arc(c,
+                          x,
+                          y,
+                          0,
+                          180 * degrees,
+                          270 * degrees);
+                cairo_close_path(c);
+        } else {
+                cairo_rectangle(c, x, y, width, height);
+        }
+}
+
 static cairo_surface_t *render_background(cairo_surface_t *srf,
                                           colored_layout *cl,
                                           colored_layout *cl_next,
                                           int y,
                                           int width,
                                           int height,
+                                          int corner_radius,
                                           bool first,
                                           bool last,
                                           int *ret_width)
@@ -403,12 +498,15 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
 
         cairo_t *c = cairo_create(srf);
 
-        if (first) height += settings.frame_width;
-        if (last) height += settings.frame_width;
-        else height += settings.separator_height;
+        if (first)
+                height += settings.frame_width;
+        if (last)
+                height += settings.frame_width;
+        else
+                height += settings.separator_height;
 
         cairo_set_source_rgb(c, cl->frame.r, cl->frame.g, cl->frame.b);
-        cairo_rectangle(c, x, y, width, height);
+        draw_rounded_rect(c, x, y, width, height, corner_radius, first, last);
         cairo_fill(c);
 
         /* adding frame */
@@ -426,7 +524,7 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
                 height -= settings.separator_height;
 
         cairo_set_source_rgb(c, cl->bg.r, cl->bg.g, cl->bg.b);
-        cairo_rectangle(c, x, y, width, height);
+        draw_rounded_rect(c, x, y, width, height, corner_radius, first, last);
         cairo_fill(c);
 
         if (   settings.sep_color != SEP_FRAME
@@ -504,7 +602,7 @@ static struct dimensions layout_render(cairo_surface_t *srf,
         int bg_width = 0;
         int bg_height = MAX(settings.notification_height, (2 * settings.padding) + cl_h);
 
-        cairo_surface_t *content = render_background(srf, cl, cl_next, dim.y, dim.w, bg_height, first, last, &bg_width);
+        cairo_surface_t *content = render_background(srf, cl, cl_next, dim.y, dim.w, bg_height, dim.corner_radius, first, last, &bg_width);
         cairo_t *c = cairo_create(content);
 
         render_content(c, cl, bg_width);

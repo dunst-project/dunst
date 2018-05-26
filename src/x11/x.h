@@ -31,6 +31,8 @@ struct dimensions {
         int y;
         int w;
         int h;
+
+        int corner_radius;
 };
 
 typedef struct _xctx {
