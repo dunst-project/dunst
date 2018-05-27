@@ -393,94 +393,58 @@ static int layout_get_height(colored_layout *cl)
         return MAX(h, h_icon);
 }
 
+/**
+ * Create a path on the given cairo context to draw the background of a notification.
+ * The top corners will get rounded by `corner_radius`, if `first` is set.
+ * Respectably the same for `last` with the bottom corners.
+ */
 static void draw_rounded_rect(cairo_t *c, int x, int y, int width, int height, int corner_radius, bool first, bool last)
 {
         const float degrees = M_PI / 180.0;
 
-        if (first && last) {
-                cairo_new_sub_path(c);
-                cairo_arc(c,
-                          x + width - corner_radius,
-                          y + corner_radius,
-                          corner_radius,
-                          -90 * degrees,
-                          0 * degrees);
+        cairo_new_sub_path(c);
+
+        if (last) {
+                // bottom right
                 cairo_arc(c,
                           x + width - corner_radius,
                           y + height - corner_radius,
                           corner_radius,
-                          0 * degrees,
-                          90 * degrees);
+                          degrees * 0,
+                          degrees * 90);
+                // bottom left
                 cairo_arc(c,
                           x + corner_radius,
                           y + height - corner_radius,
                           corner_radius,
-                          90 * degrees,
-                          180 * degrees);
-                cairo_arc(c,
-                          x + corner_radius,
-                          y + corner_radius,
-                          corner_radius,
-                          180 * degrees,
-                          270 * degrees);
-                cairo_close_path(c);
-        } else if (first) {
-                cairo_new_sub_path(c);
-                cairo_arc(c,
-                          x + width - corner_radius,
-                          y + corner_radius,
-                          corner_radius,
-                          -90 * degrees,
-                          0 * degrees);
-                cairo_arc(c,
-                          x + width,
-                          y + height,
-                          0,
-                          0,
-                          0);
-                cairo_arc(c,
-                          x,
-                          y + height,
-                          0,
-                          0,
-                          0);
-                cairo_arc(c,
-                          x + corner_radius,
-                          y + corner_radius,
-                          corner_radius,
-                          180 * degrees,
-                          270 * degrees);
-                cairo_close_path(c);
-        } else if (last) {
-                cairo_new_sub_path(c);
-                cairo_arc(c,
-                          x + width,
-                          y,
-                          0,
-                          0,
-                          0);
-                cairo_arc(c,
-                          x + width - corner_radius,
-                          y + height - corner_radius,
-                          corner_radius,
-                          0 * degrees,
-                          90 * degrees);
-                cairo_arc(c,
-                          x + corner_radius,
-                          y + height - corner_radius,
-                          corner_radius,
-                          90 * degrees,
-                          180 * degrees);
-                cairo_arc(c,
-                          x,
-                          y,
-                          0,
-                          180 * degrees,
-                          270 * degrees);
-                cairo_close_path(c);
+                          degrees * 90,
+                          degrees * 180);
         } else {
-                cairo_rectangle(c, x, y, width, height);
+                cairo_line_to(c, x + width, y + height);
+                cairo_line_to(c, x,         y + height);
         }
+
+        if (first) {
+                // top left
+                cairo_arc(c,
+                          x + corner_radius,
+                          y + corner_radius,
+                          corner_radius,
+                          degrees * 180,
+                          degrees * 270);
+                // top right
+                cairo_arc(c,
+                          x + width - corner_radius,
+                          y + corner_radius,
+                          corner_radius,
+                          degrees * 270,
+                          degrees * 360);
+        } else {
+                cairo_line_to(c, x,         y);
+                cairo_line_to(c, x + width, y);
+        }
+
+        cairo_close_path(c);
 }
 
 static cairo_surface_t *render_background(cairo_surface_t *srf,
