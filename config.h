@@ -41,6 +41,7 @@ settings_t defaults = {
 .ignore_newline = false,
 .line_height = 0,            /* if line height < font height, it will be raised to font height */
 .notification_height = 0,    /* if notification height < font height and padding, it will be raised */
+.corner_radius = 0,
 
 .separator_height = 2,       /* height of the separator line between two notifications */
 .padding = 0,
