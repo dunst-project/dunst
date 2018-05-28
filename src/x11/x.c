@@ -81,17 +81,17 @@ static void x_win_move(window_x11 *win, int x, int y, int width, int height)
         }
 }
 
-void x_win_round_corners(window_x11 *win, const int rad)
+static void x_win_round_corners(window_x11 *win, const int rad)
 {
         const int width = win->dim.w;
         const int height = win->dim.h;
+        const int dia = 2 * rad;
+        const int degrees = 64; // the factor to convert degrees to XFillArc's angle param
 
         Pixmap mask = XCreatePixmap(xctx.dpy, win->xwin, width, height, 1);
         XGCValues xgcv;
 
         GC shape_gc = XCreateGC(xctx.dpy, mask, 0, &xgcv);
-
-        const int dia = 2 * rad;
 
         XSetForeground(xctx.dpy, shape_gc, 0);
         XFillRectangle(xctx.dpy,
@@ -104,43 +104,26 @@ void x_win_round_corners(window_x11 *win, const int rad)
 
         XSetForeground(xctx.dpy, shape_gc, 1);
 
-        XFillArc(xctx.dpy,
-                 mask,
-                 shape_gc,
-                 0,
-                 0,
-                 dia,
-                 dia,
-                 0,
-                 360 * 64);
-        XFillArc(xctx.dpy,
-                 mask,
-                 shape_gc,
-                 width - dia - 1,
-                 0,
-                 dia,
-                 dia,
-                 0,
-                 360 * 64);
-        XFillArc(xctx.dpy,
-                 mask,
-                 shape_gc,
-                 0,
-                 height - dia - 1,
-                 dia,
-                 dia,
-                 0,
-                 360 * 64);
-        XFillArc(xctx.dpy,
-                 mask,
-                 shape_gc,
-                 width - dia - 1,
-                 height - dia - 1,
-                 dia,
-                 dia,
-                 0,
-                 360 * 64);
+        /* To mark all pixels, which should get exposed, we
+         * use a circle for every corner and two overlapping rectangles */
+        unsigned const int centercoords[] = {
+                0,               0,
+                width - dia - 1, 0,
+                0,               height - dia - 1,
+                width - dia - 1, height - dia - 1,
+        };
 
+        for (int i = 0; i < sizeof(centercoords)/sizeof(unsigned int); i = i+2) {
+                XFillArc(xctx.dpy,
+                         mask,
+                         shape_gc,
+                         centercoords[i],
+                         centercoords[i+1],
+                         dia,
+                         dia,
+                         degrees * 0,
+                         degrees * 360);
+        }
         XFillRectangle(xctx.dpy,
                        mask,
                        shape_gc,
