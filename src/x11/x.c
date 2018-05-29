@@ -156,7 +156,8 @@ void x_display_surface(cairo_surface_t *srf, window_x11 *win, const struct dimen
         cairo_paint(win->c_ctx);
         cairo_show_page(win->c_ctx);
 
-        x_win_round_corners(win, dim->corner_radius);
+        if (settings.corner_radius != 0)
+                x_win_round_corners(win, dim->corner_radius);
 
         XFlush(xctx.dpy);
 
