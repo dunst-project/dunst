@@ -348,7 +348,7 @@ Set to -1 to disable.
 
 Specifies how very long lines should be handled
 
-If it's set to false, long lines will be truncated an ellipsised.
+If it's set to false, long lines will be truncated and ellipsized.
 
 If it's set to true, long lines will be broken into multiple lines expanding
 the notification window height as necessary for them to fit.
@@ -562,7 +562,7 @@ See TIME FORMAT for valid times.
 =head1 HISTORY
 
 Dunst saves a number of notifications (specified by B<history_length>) in memory.
-These notifications can be recalled (i.e. redesiplayed) by pressing the
+These notifications can be recalled (i.e. redisplayed) by pressing the
 B<history_key> (see the shortcuts section), whether these notifications will
 time out like if they have been just send depends on the value of the
 B<sticky_history> setting.
@@ -669,7 +669,7 @@ actions. Dunst has support for both displaying indicators for these, and
 interacting with these actions.
 
 If "show_indicators" is true and a notification has an action, an "(A)" will be
-prepended to the notification format. Likewise, an "(U)" is preneded to
+prepended to the notification format. Likewise, an "(U)" is prepended to
 notifications with URLs. It is possible to interact with notifications that
 have actions regardless of this setting, though it may not be obvious which
 notifications HAVE actions.

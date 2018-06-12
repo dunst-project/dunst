@@ -341,7 +341,7 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer 
                                 wake_up();
                         } else if (   settings.f_mode != FOLLOW_NONE
                         /* Ignore PropertyNotify, when we're still on the
-                         * same screen. PropertyNotify is only neccessary
+                         * same screen. PropertyNotify is only necessary
                          * to detect a focus change to another screen
                          */
                                    && win->visible

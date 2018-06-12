@@ -317,7 +317,7 @@ screen_info *get_active_screen(void)
                         Window focused = get_focused_window();
 
                         if (focused == 0) {
-                                /* something went wrong. Fallback to default */
+                                /* something went wrong. Fall back to default */
                                 ret = XDefaultScreen(xctx.dpy);
                                 goto sc_cleanup;
                         }
@@ -337,7 +337,7 @@ screen_info *get_active_screen(void)
                 if (ret > 0)
                         goto sc_cleanup;
 
-                /* something seems to be wrong. Fallback to default */
+                /* something seems to be wrong. Fall back to default */
                 ret = XDefaultScreen(xctx.dpy);
                 goto sc_cleanup;
         }

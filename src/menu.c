@@ -51,7 +51,7 @@ void regex_teardown(void)
 }
 
 /*
- * Exctract all urls from a given string.
+ * Extract all urls from a given string.
  *
  * Return: a string of urls separated by \n
  *
