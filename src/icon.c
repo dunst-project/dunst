@@ -8,6 +8,7 @@
 #include "log.h"
 #include "notification.h"
 #include "settings.h"
+#include "utils.h"
 
 static bool is_readable_file(const char *filename)
 {
@@ -60,14 +61,18 @@ cairo_surface_t *gdk_pixbuf_to_cairo_surface(GdkPixbuf *pixbuf)
 static GdkPixbuf *get_pixbuf_from_file(const char *filename)
 {
         GdkPixbuf *pixbuf = NULL;
-        if (is_readable_file(filename)) {
+        char *path = string_to_path(g_strdup(filename));
+
+        if (is_readable_file(path)) {
                 GError *error = NULL;
-                pixbuf = gdk_pixbuf_new_from_file(filename, &error);
+                pixbuf = gdk_pixbuf_new_from_file(path, &error);
                 if (!pixbuf) {
                         LOG_W("%s", error->message);
                         g_error_free(error);
                 }
         }
+
+        g_free(path);
         return pixbuf;
 }
 
