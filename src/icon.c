@@ -58,7 +58,7 @@ cairo_surface_t *gdk_pixbuf_to_cairo_surface(GdkPixbuf *pixbuf)
         return icon_surface;
 }
 
-static GdkPixbuf *get_pixbuf_from_file(const char *filename)
+GdkPixbuf *get_pixbuf_from_file(const char *filename)
 {
         GdkPixbuf *pixbuf = NULL;
         char *path = string_to_path(g_strdup(filename));
