@@ -94,10 +94,8 @@ GdkPixbuf *get_pixbuf_from_icon(const char *iconname)
         /* absolute path? */
         if (iconname[0] == '/' || iconname[0] == '~') {
                 pixbuf = get_pixbuf_from_file(iconname);
-        }
-
+        } else {
         /* search in icon_path */
-        if (!pixbuf) {
                 char *start = settings.icon_path,
                      *end, *current_folder, *maybe_icon_path;
                 do {
