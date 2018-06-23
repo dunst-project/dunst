@@ -141,6 +141,7 @@ static void x_win_round_corners(window_x11 *win, const int rad)
 
         XShapeCombineMask(xctx.dpy, win->xwin, ShapeBounding, 0, 0, mask, ShapeSet);
 
+        XFreeGC(xctx.dpy, shape_gc);
         XFreePixmap(xctx.dpy, mask);
 
         XShapeSelectInput(xctx.dpy,
