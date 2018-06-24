@@ -8,6 +8,14 @@
 
 cairo_surface_t *gdk_pixbuf_to_cairo_surface(GdkPixbuf *pixbuf);
 
+/** Retrieve an icon by its full filepath.
+ *
+ * @param filename A string representing a readable file path
+ *
+ * @return an instance of `GdkPixbuf` or `NULL` if file does not exist
+ */
+GdkPixbuf *get_pixbuf_from_file(const char *filename);
+
 /** Retrieve an icon by its name sent via the notification bus
  *
  * @param iconname A string describing a `file://` URL, an arbitary filename
