@@ -110,7 +110,7 @@ void parse_commandline(int argc, char *argv[])
     }
 
     if (argc > 2) {
-        body = g_strdup(argv[2]);
+        body = g_strcompress(argv[2]);
     }
 
     if (urgency_str) {
