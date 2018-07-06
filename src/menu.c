@@ -23,6 +23,11 @@
 static bool is_initialized = false;
 static regex_t cregex;
 
+struct notification_lock {
+        struct notification *n;
+        gint64 timeout;
+};
+
 static int regex_init(void)
 {
         if (is_initialized)
@@ -199,9 +204,26 @@ void context_menu(void)
         }
         char *dmenu_input = NULL;
 
+        GList *locked_notifications = NULL;
+
         for (const GList *iter = queues_get_displayed(); iter;
              iter = iter->next) {
                 struct notification *n = iter->data;
+
+
+                // Reference and lock the notification if we need it
+                if (n->urls || n->actions) {
+                        notification_ref(n);
+
+                        struct notification_lock *nl =
+                                g_malloc(sizeof(struct notification_lock));
+
+                        nl->n = n;
+                        nl->timeout = n->timeout;
+                        n->timeout = 0;
+
+                        locked_notifications = g_list_prepend(locked_notifications, nl);
+                }
 
                 if (n->urls)
                         dmenu_input = string_append(dmenu_input, n->urls, "\n");
@@ -272,5 +294,20 @@ void context_menu(void)
         dispatch_menu_result(buf);
 
         g_free(dmenu_input);
+
+        // unref all notifications
+        for (GList *iter = locked_notifications;
+                    iter;
+                    iter = iter->next) {
+
+                struct notification_lock *nl = iter->data;
+                struct notification *n = nl->n;
+
+                n->timeout = nl->timeout;
+
+                g_free(nl);
+                notification_unref(n);
+        }
+        g_list_free(locked_notifications);
 }
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
