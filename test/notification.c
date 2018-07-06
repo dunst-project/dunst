@@ -104,21 +104,25 @@ SUITE(suite_notification)
         load_settings("data/dunstrc.default");
 
         struct notification *a = notification_create();
-        a->appname = "Test";
-        a->summary = "Summary";
-        a->body = "Body";
-        a->icon = "Icon";
+        a->appname = g_strdup("Test");
+        a->summary = g_strdup("Summary");
+        a->body = g_strdup("Body");
+        a->icon = g_strdup("Icon");
         a->urgency = URG_NORM;
 
         struct notification *b = notification_create();
-        memcpy(b, a, sizeof(*b));
+        b->appname = g_strdup("Test");
+        b->summary = g_strdup("Summary");
+        b->body = g_strdup("Body");
+        b->icon = g_strdup("Icon");
+        b->urgency = URG_NORM;
 
         //2 equal notifications to be passed for duplicate checking,
         struct notification *n[2] = {a, b};
 
         RUN_TEST1(test_notification_is_duplicate, (void*) n);
-        g_free(a);
-        g_free(b);
+        notification_free(a);
+        notification_free(b);
 
         RUN_TEST(test_notification_replace_single_field);
 
