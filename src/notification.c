@@ -64,6 +64,7 @@ void notification_print(notification *n)
         printf("\tbg: %s\n", n->colors[ColBG]);
         printf("\tframe: %s\n", n->colors[ColFrame]);
         printf("\tfullscreen: %s\n", enum_to_string_fullscreen(n->fullscreen));
+        printf("\tprogress: %d\n", n->progress);
         printf("\tid: %d\n", n->id);
         if (n->urls) {
                 char *urls = string_replace_all("\n", "\t\t\n", g_strdup(n->urls));
