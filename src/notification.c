@@ -42,6 +42,10 @@ const char *enum_to_string_fullscreen(enum behavior_fullscreen in)
         }
 }
 
+struct _notification_private {
+        gint refcount;
+};
+
 /* see notification.h */
 void notification_print(const struct notification *n)
 {
@@ -206,10 +210,26 @@ void rawimage_free(struct raw_image *i)
         g_free(i);
 }
 
+static void notification_private_free(NotificationPrivate *p)
+{
+        g_free(p);
+}
+
 /* see notification.h */
-void notification_free(struct notification *n)
+void notification_ref(struct notification *n)
+{
+        assert(n->priv->refcount > 0);
+        g_atomic_int_inc(&n->priv->refcount);
+}
+
+/* see notification.h */
+void notification_unref(struct notification *n)
 {
         if (!n)
+                return;
+
+        assert(n->priv->refcount > 0);
+        if (!g_atomic_int_dec_and_test(&n->priv->refcount))
                 return;
 
         g_free(n->appname);
@@ -227,6 +247,8 @@ void notification_free(struct notification *n)
 
         actions_free(n->actions);
         rawimage_free(n->raw_icon);
+
+        notification_private_free(n->priv);
 
         g_free(n);
 }
@@ -255,10 +277,20 @@ void notification_replace_single_field(char **haystack,
         g_free(input);
 }
 
+static NotificationPrivate *notification_private_create(void)
+{
+        NotificationPrivate *priv = g_malloc0(sizeof(NotificationPrivate));
+        g_atomic_int_set(&priv->refcount, 1);
+
+        return priv;
+}
+
 /* see notification.h */
 struct notification *notification_create(void)
 {
         struct notification *n = g_malloc0(sizeof(struct notification));
+
+        n->priv = notification_private_create();
 
         /* Unparameterized default values */
         n->first_render = true;

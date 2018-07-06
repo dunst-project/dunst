@@ -282,7 +282,7 @@ static void on_notify(GDBusConnection *connection,
         // The message got discarded
         if (id == 0) {
                 signal_notification_closed(n, 2);
-                notification_free(n);
+                notification_unref(n);
         }
 
         wake_up();

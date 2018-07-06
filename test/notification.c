@@ -121,8 +121,8 @@ SUITE(suite_notification)
         struct notification *n[2] = {a, b};
 
         RUN_TEST1(test_notification_is_duplicate, (void*) n);
-        notification_free(a);
-        notification_free(b);
+        notification_unref(a);
+        notification_unref(b);
 
         RUN_TEST(test_notification_replace_single_field);
 
