@@ -101,7 +101,7 @@ void notification_replace_single_field(char **haystack,
 void notification_update_text_to_render(notification *n);
 void notification_do_action(notification *n);
 
-const char *notification_urgency_to_string(enum urgency urgency);
+const char *notification_urgency_to_string(const enum urgency urgency);
 
 /**
  * Return the string representation for fullscreen behavior

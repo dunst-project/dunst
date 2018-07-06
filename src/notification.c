@@ -98,10 +98,10 @@ void notification_run_script(notification *n)
         if (!n->script || strlen(n->script) < 1)
                 return;
 
-        char *appname = n->appname ? n->appname : "";
-        char *summary = n->summary ? n->summary : "";
-        char *body = n->body ? n->body : "";
-        char *icon = n->icon ? n->icon : "";
+        const char *appname = n->appname ? n->appname : "";
+        const char *summary = n->summary ? n->summary : "";
+        const char *body = n->body ? n->body : "";
+        const char *icon = n->icon ? n->icon : "";
 
         const char *urgency = notification_urgency_to_string(n->urgency);
 
@@ -134,7 +134,7 @@ void notification_run_script(notification *n)
 /*
  * Helper function to convert an urgency to a string
  */
-const char *notification_urgency_to_string(enum urgency urgency)
+const char *notification_urgency_to_string(const enum urgency urgency)
 {
         switch (urgency) {
         case URG_NONE:
