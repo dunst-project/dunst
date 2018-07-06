@@ -48,6 +48,7 @@ struct notification {
         NotificationPrivate *priv;
         int id;
         char *dbus_client;
+        bool dbus_valid;
 
         char *appname;
         char *summary;

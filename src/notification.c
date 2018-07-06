@@ -306,6 +306,7 @@ struct notification *notification_create(void)
         n->progress = -1;
 
         n->script_run = false;
+        n->dbus_valid = false;
 
         n->fullscreen = FS_SHOW;
 
