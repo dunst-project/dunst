@@ -66,9 +66,8 @@ void free_ini(void)
                 g_free(sections[i].entries);
                 g_free(sections[i].name);
         }
-        g_free(sections);
+        g_clear_pointer(&sections, g_free);
         section_count = 0;
-        sections = NULL;
 }
 
 section_t *get_section(const char *name)

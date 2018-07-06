@@ -289,8 +289,7 @@ static notification *dbus_message_to_notification(const gchar *sender, GVariant 
         n->transient = transient;
 
         if (actions->count < 1) {
-                actions_free(actions);
-                actions = NULL;
+                g_clear_pointer(&actions, actions_free);
         }
         n->actions = actions;
 
@@ -484,8 +483,7 @@ static int dbus_get_fdn_daemon_info(GDBusConnection  *connection,
 
         if (error) {
                 /* Ignore the error, we may still be able to retrieve the PID */
-                g_error_free(error);
-                error = NULL;
+                g_clear_pointer(&error, g_error_free);
         } else {
                 g_variant_get(daemoninfo, "(ssss)", name, vendor, NULL, NULL);
         }
