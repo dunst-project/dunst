@@ -625,10 +625,11 @@ void draw(void)
 
         bool first = true;
         for (GSList *iter = layouts; iter; iter = iter->next) {
-                if (iter->next)
-                        dim = layout_render(image_surface, iter->data, iter->next->data, dim, first, iter->next == NULL);
-                else
-                        dim = layout_render(image_surface, iter->data, NULL, dim, first, iter->next == NULL);
+
+                colored_layout *cl_this = iter->data;
+                colored_layout *cl_next = iter->next ? iter->next->data : NULL;
+
+                dim = layout_render(image_surface, cl_this, cl_next, dim, first, !cl_next);
 
                 first = false;
         }
