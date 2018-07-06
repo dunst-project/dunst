@@ -124,7 +124,7 @@ static void on_get_capabilities(GDBusConnection *connection,
                 g_variant_builder_add(builder, "s", "body-markup");
 
         value = g_variant_new("(as)", builder);
-        g_variant_builder_unref(builder);
+        g_clear_pointer(&builder, g_variant_builder_unref);
         g_dbus_method_invocation_return_value(invocation, value);
 
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
@@ -615,8 +615,7 @@ int initdbus(void)
 
 void dbus_tear_down(int owner_id)
 {
-        if (introspection_data)
-                g_dbus_node_info_unref(introspection_data);
+        g_clear_pointer(&introspection_data, g_dbus_node_info_unref);
 
         g_bus_unown_name(owner_id);
 }
