@@ -150,17 +150,11 @@ const char *notification_urgency_to_string(enum urgency urgency)
 }
 
 /*
- * Helper function to compare to given
+ * Helper function to compare two given
  * notifications.
  */
-int notification_cmp(const void *va, const void *vb)
+int notification_cmp(const notification *a, const notification *b)
 {
-        notification *a = (notification *) va;
-        notification *b = (notification *) vb;
-
-        if (!settings.sort)
-                return 1;
-
         if (a->urgency != b->urgency) {
                 return b->urgency - a->urgency;
         } else {
@@ -174,7 +168,13 @@ int notification_cmp(const void *va, const void *vb)
  */
 int notification_cmp_data(const void *va, const void *vb, void *data)
 {
-        return notification_cmp(va, vb);
+        notification *a = (notification *) va;
+        notification *b = (notification *) vb;
+
+        if (!settings.sort)
+                return 1;
+
+        return notification_cmp(a, b);
 }
 
 int notification_is_duplicate(const notification *a, const notification *b)
