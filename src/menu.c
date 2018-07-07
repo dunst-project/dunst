@@ -27,6 +27,7 @@ struct notification_lock {
         struct notification *n;
         gint64 timeout;
 };
+static gpointer context_menu_thread(gpointer data);
 
 static int regex_init(void)
 {
@@ -272,6 +273,20 @@ char *invoke_dmenu(const char *dmenu_input)
  */
 void context_menu(void)
 {
+        GError *err = NULL;
+        g_thread_unref(g_thread_try_new("dmenu",
+                                        context_menu_thread,
+                                        NULL,
+                                        &err));
+
+        if (err) {
+                LOG_C("Cannot start thread to call dmenu: %s", err->message);
+                g_error_free(err);
+        }
+}
+
+static gpointer context_menu_thread(gpointer data)
+{
         char *dmenu_input = NULL;
         char *dmenu_output;
 
@@ -325,5 +340,7 @@ void context_menu(void)
                 notification_unref(n);
         }
         g_list_free(locked_notifications);
+
+        return NULL;
 }
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
