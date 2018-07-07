@@ -176,19 +176,25 @@ void invoke_action(const char *action)
         }
 }
 
-/*
- * Dispatch whatever has been returned
- * by the menu.
+/**
+ * Dispatch whatever has been returned by dmenu.
+ * If the given result of dmenu is empty or NULL, nothing will be done.
+ *
+ * @param input The result from dmenu.
  */
 void dispatch_menu_result(const char *input)
 {
+        if (!input)
+                return;
+
         char *in = g_strdup(input);
         g_strstrip(in);
-        if (in[0] == '#') {
+
+        if (in[0] == '#')
                 invoke_action(in + 1);
-        } else {
+        else if (in[0] != '\0')
                 open_browser(in);
-        }
+
         g_free(in);
 }
 
