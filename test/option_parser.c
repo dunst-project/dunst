@@ -279,7 +279,7 @@ TEST test_option_get_bool(void)
 SUITE(suite_option_parser)
 {
         FILE *config_file = fopen("data/test-ini", "r");
-        if (config_file == NULL) {
+        if (!config_file) {
                 fputs("\nTest config file 'data/test-ini' couldn't be opened, failing.\n", stderr);
                 exit(1);
         }

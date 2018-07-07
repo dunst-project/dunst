@@ -815,7 +815,7 @@ static void x_shortcut_ungrab(keyboard_shortcut *ks)
  */
 static void x_shortcut_init(keyboard_shortcut *ks)
 {
-        if (ks == NULL || ks->str == NULL)
+        if (!ks|| !ks->str)
                 return;
 
         if (!strcmp(ks->str, "none") || (!strcmp(ks->str, ""))) {

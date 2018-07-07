@@ -193,7 +193,7 @@ void dispatch_menu_result(const char *input)
  */
 void context_menu(void)
 {
-        if (settings.dmenu_cmd == NULL) {
+        if (!settings.dmenu_cmd) {
                 LOG_C("Unable to open dmenu: No dmenu command set.");
                 return;
         }

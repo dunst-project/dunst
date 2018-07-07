@@ -46,7 +46,7 @@ static double get_xft_dpi_value(void)
                 XrmInitialize();
                 char *xRMS = XResourceManagerString(xctx.dpy);
 
-                if (xRMS == NULL) {
+                if (!xRMS) {
                         dpi = 0;
                         return 0;
                 }
