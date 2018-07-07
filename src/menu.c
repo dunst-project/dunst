@@ -192,63 +192,31 @@ void dispatch_menu_result(const char *input)
         g_free(in);
 }
 
-/*
- * Open the context menu that let's the user
- * select urls/actions/etc
+/** Call dmenu with the specified input. Blocks until dmenu is finished.
+ *
+ * @param dmenu_input The input string to feed into dmenu
+ * @returns the selected string from dmenu
  */
-void context_menu(void)
+char *invoke_dmenu(const char *dmenu_input)
 {
         if (!settings.dmenu_cmd) {
                 LOG_C("Unable to open dmenu: No dmenu command set.");
-                return;
-        }
-        char *dmenu_input = NULL;
-
-        GList *locked_notifications = NULL;
-
-        for (const GList *iter = queues_get_displayed(); iter;
-             iter = iter->next) {
-                struct notification *n = iter->data;
-
-
-                // Reference and lock the notification if we need it
-                if (n->urls || n->actions) {
-                        notification_ref(n);
-
-                        struct notification_lock *nl =
-                                g_malloc(sizeof(struct notification_lock));
-
-                        nl->n = n;
-                        nl->timeout = n->timeout;
-                        n->timeout = 0;
-
-                        locked_notifications = g_list_prepend(locked_notifications, nl);
-                }
-
-                if (n->urls)
-                        dmenu_input = string_append(dmenu_input, n->urls, "\n");
-
-                if (n->actions)
-                        dmenu_input =
-                            string_append(dmenu_input, n->actions->dmenu_str,
-                                          "\n");
+                return NULL;
         }
 
-        if (!dmenu_input)
-                return;
+        if (!dmenu_input || *dmenu_input == '\0')
+                return NULL;
 
         char buf[1024] = {0};
         int child_io[2];
         int parent_io[2];
         if (pipe(child_io) != 0) {
                 LOG_W("pipe(): error in child: %s", strerror(errno));
-                g_free(dmenu_input);
-                return;
+                return NULL;
         }
         if (pipe(parent_io) != 0) {
                 LOG_W("pipe(): error in parent: %s", strerror(errno));
-                g_free(dmenu_input);
-                return;
+                return NULL;
         }
         int pid = fork();
 
@@ -284,16 +252,58 @@ void context_menu(void)
                 waitpid(pid, NULL, 0);
 
                 if (len == 0) {
-                        g_free(dmenu_input);
-                        return;
+                        return NULL;
                 }
         }
-
         close(parent_io[0]);
 
-        dispatch_menu_result(buf);
+        return g_strdup(buf);
+}
+
+/*
+ * Open the context menu that let's the user
+ * select urls/actions/etc
+ */
+void context_menu(void)
+{
+        char *dmenu_input = NULL;
+        char *dmenu_output;
+
+        GList *locked_notifications = NULL;
+
+        for (const GList *iter = queues_get_displayed(); iter;
+             iter = iter->next) {
+                struct notification *n = iter->data;
+
+
+                // Reference and lock the notification if we need it
+                if (n->urls || n->actions) {
+                        notification_ref(n);
+
+                        struct notification_lock *nl =
+                                g_malloc(sizeof(struct notification_lock));
+
+                        nl->n = n;
+                        nl->timeout = n->timeout;
+                        n->timeout = 0;
+
+                        locked_notifications = g_list_prepend(locked_notifications, nl);
+                }
+
+                if (n->urls)
+                        dmenu_input = string_append(dmenu_input, n->urls, "\n");
+
+                if (n->actions)
+                        dmenu_input =
+                            string_append(dmenu_input, n->actions->dmenu_str,
+                                          "\n");
+        }
+
+        dmenu_output = invoke_dmenu(dmenu_input);
+        dispatch_menu_result(dmenu_output);
 
         g_free(dmenu_input);
+        g_free(dmenu_output);
 
         // unref all notifications
         for (GList *iter = locked_notifications;
