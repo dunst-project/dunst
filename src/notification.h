@@ -84,21 +84,87 @@ typedef struct _notification {
         char *urls;           /**< urllist delimited by '\\n' */
 } notification;
 
+/**
+ * Create notification struct and initialise all fields with either
+ *  - the default (if it's not needed to be freed later)
+ *  - its undefined representation (NULL, -1)
+ *
+ * This function is guaranteed to return a valid pointer.
+ * @returns The generated notification
+ */
 notification *notification_create(void);
+
+/**
+ * Sanitize values of notification, apply all matching rules
+ * and generate derived fields.
+ *
+ * @param n: the notification to sanitize
+ */
 void notification_init(notification *n);
+
+/**
+ * Free the actions structure
+ *
+ * @param a (nullable): Pointer to #Actions
+ */
 void actions_free(Actions *a);
+
+/**
+ * Free a #RawImage
+ *
+ * @param i (nullable): pointer to #RawImage
+ */
 void rawimage_free(RawImage *i);
+
+/**
+ * Free the memory used by the given notification.
+ *
+ * @param n: pointer to #notification
+ */
 void notification_free(notification *n);
+
+/**
+ * Helper function to compare two given notifications.
+ */
 int notification_cmp(const notification *a, const notification *b);
+
+/**
+ * Wrapper for notification_cmp to match glib's
+ * compare functions signature.
+ */
 int notification_cmp_data(const void *va, const void *vb, void *data);
+
 int notification_is_duplicate(const notification *a, const notification *b);
+
+/**
+ * Run the script associated with the
+ * given notification.
+ */
 void notification_run_script(notification *n);
+/**
+ * print a human readable representation
+ * of the given notification to stdout.
+ */
 void notification_print(notification *n);
+
+/**
+ * Replace the two chars where **needle points
+ * with a quoted "replacement", according to the markup settings.
+ *
+ * The needle is a double pointer and gets updated upon return
+ * to point to the first char, which occurs after replacement.
+ */
 void notification_replace_single_field(char **haystack,
                                        char **needle,
                                        const char *replacement,
                                        enum markup_mode markup_mode);
 void notification_update_text_to_render(notification *n);
+
+/**
+ * If the notification has exactly one action, or one is marked as default,
+ * invoke it. If there are multiple and no default, open the context menu. If
+ * there are no actions, proceed similarly with urls.
+ */
 void notification_do_action(notification *n);
 
 const char *notification_urgency_to_string(const enum urgency urgency);

@@ -42,10 +42,7 @@ const char *enum_to_string_fullscreen(enum behavior_fullscreen in)
         }
 }
 
-/*
- * print a human readable representation
- * of the given notification to stdout.
- */
+/* see notification.h */
 void notification_print(notification *n)
 {
         //TODO: use logging info for this
@@ -89,10 +86,7 @@ void notification_print(notification *n)
         printf("}\n");
 }
 
-/*
- * Run the script associated with the
- * given notification.
- */
+/* see notification.h */
 void notification_run_script(notification *n)
 {
         if (!n->script || strlen(n->script) < 1)
@@ -150,10 +144,7 @@ const char *notification_urgency_to_string(const enum urgency urgency)
         }
 }
 
-/*
- * Helper function to compare two given
- * notifications.
- */
+/* see notification.h */
 int notification_cmp(const notification *a, const notification *b)
 {
         if (a->urgency != b->urgency) {
@@ -163,10 +154,7 @@ int notification_cmp(const notification *a, const notification *b)
         }
 }
 
-/*
- * Wrapper for notification_cmp to match glib's
- * compare functions signature.
- */
+/* see notification.h */
 int notification_cmp_data(const void *va, const void *vb, void *data)
 {
         notification *a = (notification *) va;
@@ -192,10 +180,7 @@ int notification_is_duplicate(const notification *a, const notification *b)
             && a->urgency == b->urgency;
 }
 
-/*
- * Free the actions element
- * @a: (nullable): Pointer to #Actions
- */
+/* see notification.h */
 void actions_free(Actions *a)
 {
         if (!a)
@@ -206,10 +191,7 @@ void actions_free(Actions *a)
         g_free(a);
 }
 
-/*
- * Free a #RawImage
- * @i: (nullable): pointer to #RawImage
- */
+/* see notification.h */
 void rawimage_free(RawImage *i)
 {
         if (!i)
@@ -219,9 +201,7 @@ void rawimage_free(RawImage *i)
         g_free(i);
 }
 
-/*
- * Free the memory used by the given notification.
- */
+/* see notification.h */
 void notification_free(notification *n)
 {
         assert(n != NULL);
@@ -244,14 +224,7 @@ void notification_free(notification *n)
         g_free(n);
 }
 
-/*
- * Replace the two chars where **needle points
- * with a quoted "replacement", according to the markup settings.
- *
- * The needle is a double pointer and gets updated upon return
- * to point to the first char, which occurs after replacement.
- *
- */
+/* see notification.h */
 void notification_replace_single_field(char **haystack,
                                        char **needle,
                                        const char *replacement,
@@ -275,14 +248,7 @@ void notification_replace_single_field(char **haystack,
         g_free(input);
 }
 
-/*
- * Create notification struct and initialise all fields with either
- *  - the default (if it's not needed to be freed later)
- *  - its undefined representation (NULL, -1)
- *
- * This function is guaranteed to return a valid pointer.
- * @Returns: The generated notification
- */
+/* see notification.h */
 notification *notification_create(void)
 {
         notification *n = g_malloc0(sizeof(notification));
@@ -305,12 +271,7 @@ notification *notification_create(void)
         return n;
 }
 
-/*
- * Sanitize values of notification, apply all matching rules
- * and generate derived fields.
- *
- * @n: the notification to sanitize
- */
+/* see notification.h */
 void notification_init(notification *n)
 {
         /* default to empty string to avoid further NULL faults */
@@ -558,11 +519,7 @@ void notification_update_text_to_render(notification *n)
         n->text_to_render = buf;
 }
 
-/*
- * If the notification has exactly one action, or one is marked as default,
- * invoke it. If there are multiple and no default, open the context menu. If
- * there are no actions, proceed similarly with urls.
- */
+/* see notification.h */
 void notification_do_action(notification *n)
 {
         if (n->actions) {
