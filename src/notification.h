@@ -119,7 +119,7 @@ void rawimage_free(RawImage *i);
 /**
  * Free the memory used by the given notification.
  *
- * @param n: pointer to #notification
+ * @param n (nullable): pointer to #notification
  */
 void notification_free(notification *n);
 

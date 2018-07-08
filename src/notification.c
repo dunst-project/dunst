@@ -204,7 +204,9 @@ void rawimage_free(RawImage *i)
 /* see notification.h */
 void notification_free(notification *n)
 {
-        assert(n != NULL);
+        if (!n)
+                return;
+
         g_free(n->appname);
         g_free(n->summary);
         g_free(n->body);
