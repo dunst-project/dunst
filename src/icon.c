@@ -60,16 +60,14 @@ cairo_surface_t *gdk_pixbuf_to_cairo_surface(GdkPixbuf *pixbuf)
 
 GdkPixbuf *get_pixbuf_from_file(const char *filename)
 {
-        GdkPixbuf *pixbuf = NULL;
         char *path = string_to_path(g_strdup(filename));
+        GError *error = NULL;
 
-        if (is_readable_file(path)) {
-                GError *error = NULL;
-                pixbuf = gdk_pixbuf_new_from_file(path, &error);
-                if (!pixbuf) {
-                        LOG_W("%s", error->message);
-                        g_error_free(error);
-                }
+        GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file(path, &error);
+
+        if (error) {
+                LOG_W("%s", error->message);
+                g_error_free(error);
         }
 
         g_free(path);
@@ -106,7 +104,8 @@ GdkPixbuf *get_pixbuf_from_icon(const char *iconname)
 
                         for (const char **suf = suffixes; *suf; suf++) {
                                 maybe_icon_path = g_strconcat(current_folder, "/", iconname, *suf, NULL);
-                                pixbuf = get_pixbuf_from_file(maybe_icon_path);
+                                if (is_readable_file(maybe_icon_path))
+                                        pixbuf = get_pixbuf_from_file(maybe_icon_path);
                                 g_free(maybe_icon_path);
 
                                 if (pixbuf)
@@ -119,9 +118,9 @@ GdkPixbuf *get_pixbuf_from_icon(const char *iconname)
 
                         start = end + 1;
                 } while (*(end) != '\0');
+                if (!pixbuf)
+                        LOG_W("No icon found in path: '%s'", iconname);
         }
-        if (!pixbuf)
-                LOG_W("No icon found for: '%s'", iconname);
 
         g_free(uri_path);
         return pixbuf;
