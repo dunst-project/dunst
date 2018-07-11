@@ -77,7 +77,7 @@ void load_settings(char *cmdline_config_path)
 
         xdgInitHandle(&xdg);
 
-        if (cmdline_config_path != NULL) {
+        if (cmdline_config_path) {
                 if (0 == strcmp(cmdline_config_path, "-")) {
                         config_file = stdin;
                 } else {
@@ -88,14 +88,14 @@ void load_settings(char *cmdline_config_path)
                         DIE("Cannot find config file: '%s'", cmdline_config_path);
                 }
         }
-        if (config_file == NULL) {
+        if (!config_file) {
                 config_file = xdgConfigOpen("dunst/dunstrc", "r", &xdg);
         }
-        if (config_file == NULL) {
+        if (!config_file) {
                 /* Fall back to just "dunstrc", which was used before 2013-06-23
                  * (before v0.2). */
                 config_file = xdgConfigOpen("dunstrc", "r", &xdg);
-                if (config_file == NULL) {
+                if (!config_file) {
                         LOG_W("No dunstrc found.");
                         xdgWipeHandle(&xdg);
                 }
@@ -669,7 +669,7 @@ void load_settings(char *cmdline_config_path)
                                 r = match;
                 }
 
-                if (r == NULL) {
+                if (!r) {
                         r = g_malloc(sizeof(rule_t));
                         rule_init(r);
                         rules = g_slist_insert(rules, r, -1);
@@ -689,7 +689,7 @@ void load_settings(char *cmdline_config_path)
                                 "markup", NULL
                         );
 
-                        if (c != NULL) {
+                        if (c) {
                                 r->markup = parse_markup_mode(c);
                                 g_free(c);
                         }

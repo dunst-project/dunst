@@ -176,7 +176,7 @@ int dunst_main(int argc, char *argv[])
 
         run(NULL);
         g_main_loop_run(mainloop);
-        g_main_loop_unref(mainloop);
+        g_clear_pointer(&mainloop, g_main_loop_unref);
 
         /* remove signal handler watches */
         g_source_remove(pause_src);

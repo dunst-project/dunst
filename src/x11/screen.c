@@ -46,7 +46,7 @@ static double get_xft_dpi_value(void)
                 XrmInitialize();
                 char *xRMS = XResourceManagerString(xctx.dpy);
 
-                if (xRMS == NULL) {
+                if (!xRMS) {
                         dpi = 0;
                         return 0;
                 }
@@ -144,10 +144,13 @@ static int autodetect_dpi(screen_info *scr)
 
 void screen_check_event(XEvent event)
 {
-        if (event.type == randr_event_base + RRScreenChangeNotify)
+        if (event.type == randr_event_base + RRScreenChangeNotify) {
+                LOG_D("XEvent: processing 'RRScreenChangeNotify'");
                 randr_update();
-        else
-                LOG_D("XEvent: Ignored '%d'", event.type);
+
+        } else {
+                LOG_D("XEvent: Ignoring '%d'", event.type);
+        }
 }
 
 void xinerama_update(void)

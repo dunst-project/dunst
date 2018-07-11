@@ -13,7 +13,7 @@
 
 static char *markup_quote(char *str)
 {
-        assert(str != NULL);
+        assert(str);
 
         str = string_replace_all("&", "&amp;", str);
         str = string_replace_all("\"", "&quot;", str);
@@ -26,7 +26,7 @@ static char *markup_quote(char *str)
 
 static char *markup_unquote(char *str)
 {
-        assert(str != NULL);
+        assert(str);
 
         str = string_replace_all("&quot;", "\"", str);
         str = string_replace_all("&apos;", "'", str);
@@ -39,7 +39,7 @@ static char *markup_unquote(char *str)
 
 static char *markup_br2nl(char *str)
 {
-        assert(str != NULL);
+        assert(str);
 
         str = string_replace_all("<br>", "\n", str);
         str = string_replace_all("<br/>", "\n", str);
@@ -230,9 +230,8 @@ void markup_strip_img(char **str, char **urls)
  */
 char *markup_strip(char *str)
 {
-        if (str == NULL) {
+        if (!str)
                 return NULL;
-        }
 
         /* strip all tags */
         string_strip_delimited(str, '<', '>');
@@ -249,9 +248,8 @@ char *markup_strip(char *str)
  */
 char *markup_transform(char *str, enum markup_mode markup_mode)
 {
-        if (str == NULL) {
+        if (!str)
                 return NULL;
-        }
 
         switch (markup_mode) {
         case MARKUP_NULL:

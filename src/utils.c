@@ -14,7 +14,7 @@
 char *string_replace_char(char needle, char replacement, char *haystack)
 {
         char *current = haystack;
-        while ((current = strchr(current, needle)) != NULL)
+        while ((current = strchr(current, needle)))
                 *current++ = replacement;
         return haystack;
 }
@@ -49,9 +49,8 @@ char *string_replace(const char *needle, const char *replacement, char *haystack
 {
         char *start;
         start = strstr(haystack, needle);
-        if (start == NULL) {
+        if (!start)
                 return haystack;
-        }
 
         return string_replace_at(haystack, (start - haystack), strlen(needle), replacement);
 }
@@ -70,7 +69,7 @@ char *string_replace_all(const char *needle, const char *replacement, char *hays
         start = strstr(haystack, needle);
         repl_len = strlen(replacement);
 
-        while (start != NULL) {
+        while (start) {
                 needle_pos = start - haystack;
                 haystack = string_replace_at(haystack, needle_pos, needle_len, replacement);
                 start = strstr(haystack + needle_pos + repl_len, needle);

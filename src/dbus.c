@@ -124,7 +124,7 @@ static void on_get_capabilities(GDBusConnection *connection,
                 g_variant_builder_add(builder, "s", "body-markup");
 
         value = g_variant_new("(as)", builder);
-        g_variant_builder_unref(builder);
+        g_clear_pointer(&builder, g_variant_builder_unref);
         g_dbus_method_invocation_return_value(invocation, value);
 
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
@@ -133,23 +133,10 @@ static void on_get_capabilities(GDBusConnection *connection,
 static notification *dbus_message_to_notification(const gchar *sender, GVariant *parameters)
 {
 
-        gchar *appname = NULL;
-        guint replaces_id = 0;
-        gchar *icon = NULL;
-        gchar *summary = NULL;
-        gchar *body = NULL;
-        Actions *actions = g_malloc0(sizeof(Actions));
-        gint timeout = -1;
+        notification *n = notification_create();
 
-        /* hints */
-        gint urgency = 1;
-        gint progress = -1;
-        gboolean transient = 0;
-        gchar *fgcolor = NULL;
-        gchar *bgcolor = NULL;
-        gchar *frcolor = NULL;
-        gchar *category = NULL;
-        RawImage *raw_icon = NULL;
+        n->actions = g_malloc0(sizeof(Actions));
+        n->dbus_client = g_strdup(sender);
 
         {
                 GVariantIter *iter = g_variant_iter_new(parameters);
@@ -161,65 +148,65 @@ static notification *dbus_message_to_notification(const gchar *sender, GVariant 
                         switch (idx) {
                         case 0:
                                 if (g_variant_is_of_type(content, G_VARIANT_TYPE_STRING))
-                                        appname = g_variant_dup_string(content, NULL);
+                                        n->appname = g_variant_dup_string(content, NULL);
                                 break;
                         case 1:
                                 if (g_variant_is_of_type(content, G_VARIANT_TYPE_UINT32))
-                                        replaces_id = g_variant_get_uint32(content);
+                                        n->id = g_variant_get_uint32(content);
                                 break;
                         case 2:
                                 if (g_variant_is_of_type(content, G_VARIANT_TYPE_STRING))
-                                        icon = g_variant_dup_string(content, NULL);
+                                        n->icon = g_variant_dup_string(content, NULL);
                                 break;
                         case 3:
                                 if (g_variant_is_of_type(content, G_VARIANT_TYPE_STRING))
-                                        summary = g_variant_dup_string(content, NULL);
+                                        n->summary = g_variant_dup_string(content, NULL);
                                 break;
                         case 4:
                                 if (g_variant_is_of_type(content, G_VARIANT_TYPE_STRING))
-                                        body = g_variant_dup_string(content, NULL);
+                                        n->body = g_variant_dup_string(content, NULL);
                                 break;
                         case 5:
                                 if (g_variant_is_of_type(content, G_VARIANT_TYPE_STRING_ARRAY))
-                                        actions->actions = g_variant_dup_strv(content, &(actions->count));
+                                        n->actions->actions = g_variant_dup_strv(content, &(n->actions->count));
                                 break;
                         case 6:
                                 if (g_variant_is_of_type(content, G_VARIANT_TYPE_DICTIONARY)) {
 
                                         dict_value = g_variant_lookup_value(content, "urgency", G_VARIANT_TYPE_BYTE);
                                         if (dict_value) {
-                                                urgency = g_variant_get_byte(dict_value);
+                                                n->urgency = g_variant_get_byte(dict_value);
                                                 g_variant_unref(dict_value);
                                         }
 
                                         dict_value = g_variant_lookup_value(content, "fgcolor", G_VARIANT_TYPE_STRING);
                                         if (dict_value) {
-                                                fgcolor = g_variant_dup_string(dict_value, NULL);
+                                                n->colors[ColFG] = g_variant_dup_string(dict_value, NULL);
                                                 g_variant_unref(dict_value);
                                         }
 
                                         dict_value = g_variant_lookup_value(content, "bgcolor", G_VARIANT_TYPE_STRING);
                                         if (dict_value) {
-                                                bgcolor = g_variant_dup_string(dict_value, NULL);
+                                                n->colors[ColBG] = g_variant_dup_string(dict_value, NULL);
                                                 g_variant_unref(dict_value);
                                         }
 
                                         dict_value = g_variant_lookup_value(content, "frcolor", G_VARIANT_TYPE_STRING);
                                         if (dict_value) {
-                                                frcolor = g_variant_dup_string(dict_value, NULL);
+                                                n->colors[ColFrame] = g_variant_dup_string(dict_value, NULL);
                                                 g_variant_unref(dict_value);
                                         }
 
                                         dict_value = g_variant_lookup_value(content, "category", G_VARIANT_TYPE_STRING);
                                         if (dict_value) {
-                                                category = g_variant_dup_string(dict_value, NULL);
+                                                n->category = g_variant_dup_string(dict_value, NULL);
                                                 g_variant_unref(dict_value);
                                         }
 
                                         dict_value = g_variant_lookup_value(content, "image-path", G_VARIANT_TYPE_STRING);
                                         if (dict_value) {
-                                                g_free(icon);
-                                                icon = g_variant_dup_string(dict_value, NULL);
+                                                g_free(n->icon);
+                                                n->icon = g_variant_dup_string(dict_value, NULL);
                                                 g_variant_unref(dict_value);
                                         }
 
@@ -229,7 +216,7 @@ static notification *dbus_message_to_notification(const gchar *sender, GVariant 
                                         if (!dict_value)
                                                 dict_value = g_variant_lookup_value(content, "icon_data", G_VARIANT_TYPE("(iiibiiay)"));
                                         if (dict_value) {
-                                                raw_icon = get_raw_image_from_data_hint(dict_value);
+                                                n->raw_icon = get_raw_image_from_data_hint(dict_value);
                                                 g_variant_unref(dict_value);
                                         }
 
@@ -240,28 +227,28 @@ static notification *dbus_message_to_notification(const gchar *sender, GVariant 
                                          * So let's check for int and boolean until notify-send is fixed.
                                          */
                                         if((dict_value = g_variant_lookup_value(content, "transient", G_VARIANT_TYPE_BOOLEAN))) {
-                                                transient = g_variant_get_boolean(dict_value);
+                                                n->transient = g_variant_get_boolean(dict_value);
                                                 g_variant_unref(dict_value);
                                         } else if((dict_value = g_variant_lookup_value(content, "transient", G_VARIANT_TYPE_UINT32))) {
-                                                transient = g_variant_get_uint32(dict_value) > 0;
+                                                n->transient = g_variant_get_uint32(dict_value) > 0;
                                                 g_variant_unref(dict_value);
                                         } else if((dict_value = g_variant_lookup_value(content, "transient", G_VARIANT_TYPE_INT32))) {
-                                                transient = g_variant_get_int32(dict_value) > 0;
+                                                n->transient = g_variant_get_int32(dict_value) > 0;
                                                 g_variant_unref(dict_value);
                                         }
 
                                         if((dict_value = g_variant_lookup_value(content, "value", G_VARIANT_TYPE_INT32))) {
-                                                progress = g_variant_get_int32(dict_value);
+                                                n->progress = g_variant_get_int32(dict_value);
                                                 g_variant_unref(dict_value);
                                         } else if((dict_value = g_variant_lookup_value(content, "value", G_VARIANT_TYPE_UINT32))) {
-                                                progress = g_variant_get_uint32(dict_value);
+                                                n->progress = g_variant_get_uint32(dict_value);
                                                 g_variant_unref(dict_value);
                                         }
                                 }
                                 break;
                         case 7:
                                 if (g_variant_is_of_type(content, G_VARIANT_TYPE_INT32))
-                                        timeout = g_variant_get_int32(content);
+                                        n->timeout = g_variant_get_int32(content) * 1000;
                                 break;
                         }
                         g_variant_unref(content);
@@ -273,30 +260,8 @@ static notification *dbus_message_to_notification(const gchar *sender, GVariant 
 
         fflush(stdout);
 
-        notification *n = notification_create();
-
-        n->id = replaces_id;
-        n->appname = appname;
-        n->summary = summary;
-        n->body = body;
-        n->icon = icon;
-        n->raw_icon = raw_icon;
-        n->timeout = timeout < 0 ? -1 : timeout * 1000;
-        n->progress = progress;
-        n->urgency = urgency;
-        n->category = category;
-        n->dbus_client = g_strdup(sender);
-        n->transient = transient;
-
-        if (actions->count < 1) {
-                actions_free(actions);
-                actions = NULL;
-        }
-        n->actions = actions;
-
-        n->colors[ColFG] = fgcolor;
-        n->colors[ColBG] = bgcolor;
-        n->colors[ColFrame] = frcolor;
+        if (n->actions->count < 1)
+                g_clear_pointer(&n->actions, actions_free);
 
         notification_init(n);
         return n;
@@ -484,8 +449,7 @@ static int dbus_get_fdn_daemon_info(GDBusConnection  *connection,
 
         if (error) {
                 /* Ignore the error, we may still be able to retrieve the PID */
-                g_error_free(error);
-                error = NULL;
+                g_clear_pointer(&error, g_error_free);
         } else {
                 g_variant_get(daemoninfo, "(ssss)", name, vendor, NULL, NULL);
         }
@@ -617,8 +581,7 @@ int initdbus(void)
 
 void dbus_tear_down(int owner_id)
 {
-        if (introspection_data)
-                g_dbus_node_info_unref(introspection_data);
+        g_clear_pointer(&introspection_data, g_dbus_node_info_unref);
 
         g_bus_unown_name(owner_id);
 }

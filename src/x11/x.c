@@ -274,21 +274,23 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer 
         unsigned int state;
         while (XPending(xctx.dpy) > 0) {
                 XNextEvent(xctx.dpy, &ev);
-                LOG_D("XEvent: processing '%d'", ev.type);
 
                 switch (ev.type) {
                 case Expose:
+                        LOG_D("XEvent: processing 'Expose'");
                         if (ev.xexpose.count == 0 && win->visible) {
                                 draw();
                         }
                         break;
                 case ButtonRelease:
+                        LOG_D("XEvent: processing 'ButtonRelease'");
                         if (ev.xbutton.window == win->xwin) {
                                 x_handle_click(ev);
                                 wake_up();
                         }
                         break;
                 case KeyPress:
+                        LOG_D("XEvent: processing 'KeyPress'");
                         state = ev.xkey.state;
                         /* NumLock is also encoded in the state. Remove it. */
                         state &= ~x_numlock_mod();
@@ -325,15 +327,21 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer 
                         }
                         break;
                 case FocusIn:
+                        LOG_D("XEvent: processing 'FocusIn'");
+                        wake_up();
+                        break;
                 case FocusOut:
+                        LOG_D("XEvent: processing 'FocusOut'");
                         wake_up();
                         break;
                 case CreateNotify:
+                        LOG_D("XEvent: processing 'CreateNotify'");
                         if (win->visible &&
                             ev.xcreatewindow.override_redirect == 0)
                                 XRaiseWindow(xctx.dpy, win->xwin);
                         break;
                 case PropertyNotify:
+                        LOG_D("XEvent: processing 'PropertyNotify'");
                         fullscreen_now = have_fullscreen_window();
                         scr = get_active_screen();
 
@@ -815,7 +823,7 @@ static void x_shortcut_ungrab(keyboard_shortcut *ks)
  */
 static void x_shortcut_init(keyboard_shortcut *ks)
 {
-        if (ks == NULL || ks->str == NULL)
+        if (!ks|| !ks->str)
                 return;
 
         if (!strcmp(ks->str, "none") || (!strcmp(ks->str, ""))) {

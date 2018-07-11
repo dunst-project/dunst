@@ -66,9 +66,8 @@ void free_ini(void)
                 g_free(sections[i].entries);
                 g_free(sections[i].name);
         }
-        g_free(sections);
+        g_clear_pointer(&sections, g_free);
         section_count = 0;
-        sections = NULL;
 }
 
 section_t *get_section(const char *name)
@@ -84,9 +83,8 @@ section_t *get_section(const char *name)
 void add_entry(const char *section_name, const char *key, const char *value)
 {
         section_t *s = get_section(section_name);
-        if (s == NULL) {
+        if (!s)
                 s = new_section(section_name);
-        }
 
         s->entry_count++;
         int len = s->entry_count;
@@ -139,19 +137,19 @@ gint64 ini_get_time(const char *section, const char *key, gint64 def)
 int ini_get_int(const char *section, const char *key, int def)
 {
         const char *value = get_value(section, key);
-        if (value == NULL)
-                return def;
-        else
+        if (value)
                 return atoi(value);
+        else
+                return def;
 }
 
 double ini_get_double(const char *section, const char *key, double def)
 {
         const char *value = get_value(section, key);
-        if (value == NULL)
-                return def;
-        else
+        if (value)
                 return atof(value);
+        else
+                return def;
 }
 
 bool ini_is_set(const char *ini_section, const char *ini_key)
@@ -164,9 +162,8 @@ const char *next_section(const char *section)
         if (section_count == 0)
                 return NULL;
 
-        if (section == NULL) {
+        if (!section)
                 return sections[0].name;
-        }
 
         for (int i = 0; i < section_count; i++) {
                 if (strcmp(section, sections[i].name) == 0) {
@@ -182,9 +179,7 @@ const char *next_section(const char *section)
 int ini_get_bool(const char *section, const char *key, int def)
 {
         const char *value = get_value(section, key);
-        if (value == NULL)
-                return def;
-        else {
+        if (value) {
                 switch (value[0]) {
                 case 'y':
                 case 'Y':
@@ -201,6 +196,8 @@ int ini_get_bool(const char *section, const char *key, int def)
                 default:
                         return def;
                 }
+        } else {
+                return def;
         }
 }
 
@@ -351,10 +348,10 @@ char *cmdline_get_string(const char *key, const char *def, const char *descripti
 
         if (str)
                 return g_strdup(str);
-        if (def == NULL)
-                return NULL;
-        else
+        if (def)
                 return g_strdup(def);
+        else
+                return NULL;
 }
 
 char *cmdline_get_path(const char *key, const char *def, const char *description)
@@ -386,10 +383,10 @@ int cmdline_get_int(const char *key, int def, const char *description)
         cmdline_usage_append(key, "int", description);
         const char *str = cmdline_get_value(key);
 
-        if (str == NULL)
-                return def;
-        else
+        if (str)
                 return atoi(str);
+        else
+                return def;
 }
 
 double cmdline_get_double(const char *key, double def, const char *description)
@@ -397,10 +394,10 @@ double cmdline_get_double(const char *key, double def, const char *description)
         cmdline_usage_append(key, "double", description);
         const char *str = cmdline_get_value(key);
 
-        if (str == NULL)
-                return def;
-        else
+        if (str)
                 return atof(str);
+        else
+                return def;
 }
 
 int cmdline_get_bool(const char *key, int def, const char *description)
