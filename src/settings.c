@@ -516,6 +516,70 @@ void load_settings(char *cmdline_config_path)
                 );
 
         }
+
+        {
+                char *c = option_get_string(
+                        "mouse",
+                        "left_click", "-left_click", "close_current",
+                        "Action of Left click event"
+                );
+
+                if (strlen(c) > 0) {
+                        if (strcmp(c, "do_action") == 0)
+                                settings.left_click = do_action;
+                        else if (strcmp(c, "close_current") == 0)
+                                settings.left_click = close_current;
+                        else if (strcmp(c, "push_all") == 0)
+                                settings.left_click = push_all;
+                        else {
+                                LOG_W("Unknown left_click position: '%s'", c);
+                        }
+                }
+                g_free(c);
+        }
+
+        {
+                char *c = option_get_string(
+                        "mouse",
+                        "middle_click", "-middel_click", "do_action",
+                        "Action of middle click event"
+                );
+
+                if (strlen(c) > 0) {
+                        if (strcmp(c, "do_action") == 0)
+                                settings.middle_click = do_action;
+                        else if (strcmp(c, "close_current") == 0)
+                                settings.middle_click = close_current;
+                        else if (strcmp(c, "push_all") == 0)
+                                settings.middle_click = push_all;
+                        else {
+                                LOG_W("Unknown middle_click position: '%s'", c);
+                        }
+                }
+                g_free(c);
+        }
+
+        {
+                char *c = option_get_string(
+                        "mouse",
+                        "right_click", "-right_click", "push_all",
+                        "Action of right click event"
+                );
+
+                if (strlen(c) > 0) {
+                        if (strcmp(c, "do_action") == 0)
+                                settings.right_click = do_action;
+                        else if (strcmp(c, "close_current") == 0)
+                                settings.right_click = close_current;
+                        else if (strcmp(c, "push_all") == 0)
+                                settings.right_click = push_all;
+                        else {
+                                LOG_W("Unknown right_click position: '%s'", c);
+                        }
+                }
+                g_free(c);
+        }
+
         settings.lowbgcolor = option_get_string(
                 "urgency_low",
                 "background", "-lb", defaults.lowbgcolor,

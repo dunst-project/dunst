@@ -258,6 +258,17 @@
     # Context menu.
     context = ctrl+shift+period
 
+# Defines action of mouse event
+# Possible values are:
+# * do_action: If the notification has exactly one action, or one is marked as default,
+#              invoke it. If there are multiple and no default, open the context menu.
+# * close_current: Close current notification.
+# * push_all: Push all waiting and displayed notifications to history.
+[mouse]
+    left_click = close_current
+    middle_click = do_action
+    right_click = push_all
+
 [urgency_low]
     # IMPORTANT: colors have to be defined in quotation marks.
     # Otherwise the "#" and following would be interpreted as a comment.

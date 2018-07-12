@@ -12,6 +12,7 @@ enum icon_position_t { icons_left, icons_right, icons_off };
 enum separator_color { SEP_FOREGROUND, SEP_AUTO, SEP_FRAME, SEP_CUSTOM };
 enum follow_mode { FOLLOW_NONE, FOLLOW_MOUSE, FOLLOW_KEYBOARD };
 enum markup_mode { MARKUP_NULL, MARKUP_NO, MARKUP_STRIP, MARKUP_FULL };
+enum mouse_action { do_action, close_current, push_all };
 
 struct geometry {
         int x;
@@ -85,6 +86,9 @@ typedef struct _settings {
         keyboard_shortcut context_ks;
         bool force_xinerama;
         int corner_radius;
+        enum mouse_action left_click;
+        enum mouse_action middle_click;
+        enum mouse_action right_click;
 } settings_t;
 
 extern settings_t settings;

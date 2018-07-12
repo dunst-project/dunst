@@ -386,13 +386,27 @@ bool x_is_idle(void)
  */
 static void x_handle_click(XEvent ev)
 {
-        if (ev.xbutton.button == Button3) {
+        enum mouse_action act;
+
+        switch (ev.xbutton.button) {
+                case Button1:
+                        act = settings.left_click;
+                        break;
+                case Button2:
+                        act = settings.middle_click;
+                        break;
+                case Button3:
+                        act = settings.right_click;
+                        break;
+        }
+
+        if (act == push_all) {
                 queues_history_push_all();
 
                 return;
         }
 
-        if (ev.xbutton.button == Button1 || ev.xbutton.button == Button2) {
+        if (act == do_action || act == close_current) {
                 int y = settings.separator_height;
                 notification *n = NULL;
                 int first = true;
@@ -408,7 +422,7 @@ static void x_handle_click(XEvent ev)
                 }
 
                 if (n) {
-                        if (ev.xbutton.button == Button1)
+                        if (act == close_current)
                                 queues_notification_close(n, REASON_USER);
                         else
                                 notification_do_action(n);
