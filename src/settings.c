@@ -537,33 +537,48 @@ void load_settings(char *cmdline_config_path)
         {
                 char *c = option_get_string(
                         "global",
-                        "mouse_left_click", "-left_click", "close_current",
+                        "mouse_left_click", "-left_click", NULL,
                         "Action of Left click event"
                 );
 
-                settings.mouse_left_click = parse_mouse_action(c);
+                if (c) {
+                        settings.mouse_left_click = parse_mouse_action(c);
+                } else {
+                        settings.mouse_left_click = defaults.mouse_left_click;
+                }
+
                 g_free(c);
         }
 
         {
                 char *c = option_get_string(
                         "global",
-                        "mouse_middle_click", "-mouse_middle_click", "do_action",
+                        "mouse_middle_click", "-mouse_middle_click", NULL,
                         "Action of middle click event"
                 );
 
-                settings.mouse_middle_click = parse_mouse_action(c);
+                if (c) {
+                        settings.mouse_middle_click = parse_mouse_action(c);
+                } else {
+                        settings.mouse_middle_click = defaults.mouse_middle_click;
+                }
+
                 g_free(c);
         }
 
         {
                 char *c = option_get_string(
                         "global",
-                        "mouse_right_click", "-mouse_right_click", "close_all",
+                        "mouse_right_click", "-mouse_right_click", NULL,
                         "Action of right click event"
                 );
 
-                settings.mouse_right_click = parse_mouse_action(c);
+                if (c) {
+                        settings.mouse_right_click = parse_mouse_action(c);
+                } else {
+                        settings.mouse_right_click = defaults.mouse_right_click;
+                }
+
                 g_free(c);
         }
 

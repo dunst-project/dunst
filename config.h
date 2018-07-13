@@ -102,6 +102,12 @@ settings_t defaults = {
         .code = 0,.sym = NoSymbol,.is_valid = false
 },                              /* ignore this */
 
+.mouse_left_click = MOUSE_CLOSE_CURRENT,
+
+.mouse_middle_click = MOUSE_DO_ACTION,
+
+.mouse_right_click = MOUSE_CLOSE_ALL,
+
 };
 
 rule_t default_rules[] = {
