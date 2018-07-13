@@ -49,6 +49,23 @@ static enum markup_mode parse_markup_mode(const char *mode)
         }
 }
 
+static enum mouse_action parse_mouse_action(const char *action)
+{
+        if (strcmp(action, "none") == 0)
+                return MOUSE_NONE;
+        else if (strcmp(action, "do_action") == 0)
+                return MOUSE_DO_ACTION;
+        else if (strcmp(action, "close_current") == 0)
+                return MOUSE_CLOSE_CURRENT;
+        else if (strcmp(action, "close_all") == 0)
+                return MOUSE_CLOSE_ALL;
+        else {
+                LOG_W("Unknown mouse action: '%s'", action);
+                return MOUSE_NONE;
+        }
+}
+
+
 static enum urgency ini_get_urgency(const char *section, const char *key, const int def)
 {
         int ret = def;
@@ -519,64 +536,34 @@ void load_settings(char *cmdline_config_path)
 
         {
                 char *c = option_get_string(
-                        "mouse",
-                        "left_click", "-left_click", "close_current",
+                        "global",
+                        "mouse_left_click", "-left_click", "close_current",
                         "Action of Left click event"
                 );
 
-                if (strlen(c) > 0) {
-                        if (strcmp(c, "do_action") == 0)
-                                settings.left_click = do_action;
-                        else if (strcmp(c, "close_current") == 0)
-                                settings.left_click = close_current;
-                        else if (strcmp(c, "push_all") == 0)
-                                settings.left_click = push_all;
-                        else {
-                                LOG_W("Unknown left_click position: '%s'", c);
-                        }
-                }
+                settings.mouse_left_click = parse_mouse_action(c);
                 g_free(c);
         }
 
         {
                 char *c = option_get_string(
-                        "mouse",
-                        "middle_click", "-middel_click", "do_action",
+                        "global",
+                        "mouse_middle_click", "-mouse_middle_click", "do_action",
                         "Action of middle click event"
                 );
 
-                if (strlen(c) > 0) {
-                        if (strcmp(c, "do_action") == 0)
-                                settings.middle_click = do_action;
-                        else if (strcmp(c, "close_current") == 0)
-                                settings.middle_click = close_current;
-                        else if (strcmp(c, "push_all") == 0)
-                                settings.middle_click = push_all;
-                        else {
-                                LOG_W("Unknown middle_click position: '%s'", c);
-                        }
-                }
+                settings.mouse_middle_click = parse_mouse_action(c);
                 g_free(c);
         }
 
         {
                 char *c = option_get_string(
-                        "mouse",
-                        "right_click", "-right_click", "push_all",
+                        "global",
+                        "mouse_right_click", "-mouse_right_click", "close_all",
                         "Action of right click event"
                 );
 
-                if (strlen(c) > 0) {
-                        if (strcmp(c, "do_action") == 0)
-                                settings.right_click = do_action;
-                        else if (strcmp(c, "close_current") == 0)
-                                settings.right_click = close_current;
-                        else if (strcmp(c, "push_all") == 0)
-                                settings.right_click = push_all;
-                        else {
-                                LOG_W("Unknown right_click position: '%s'", c);
-                        }
-                }
+                settings.mouse_right_click = parse_mouse_action(c);
                 g_free(c);
         }
 

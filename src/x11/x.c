@@ -390,23 +390,26 @@ static void x_handle_click(XEvent ev)
 
         switch (ev.xbutton.button) {
                 case Button1:
-                        act = settings.left_click;
+                        act = settings.mouse_left_click;
                         break;
                 case Button2:
-                        act = settings.middle_click;
+                        act = settings.mouse_middle_click;
                         break;
                 case Button3:
-                        act = settings.right_click;
+                        act = settings.mouse_right_click;
                         break;
+                default:
+                        LOG_W("Unsupported mouse button: '%d'", ev.xbutton.button);
+                        return;
         }
 
-        if (act == push_all) {
+        if (act == MOUSE_CLOSE_ALL) {
                 queues_history_push_all();
 
                 return;
         }
 
-        if (act == do_action || act == close_current) {
+        if (act == MOUSE_DO_ACTION || act == MOUSE_CLOSE_CURRENT) {
                 int y = settings.separator_height;
                 notification *n = NULL;
                 int first = true;
@@ -422,7 +425,7 @@ static void x_handle_click(XEvent ev)
                 }
 
                 if (n) {
-                        if (act == close_current)
+                        if (act == MOUSE_CLOSE_CURRENT)
                                 queues_notification_close(n, REASON_USER);
                         else
                                 notification_do_action(n);
