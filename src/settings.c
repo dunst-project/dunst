@@ -49,6 +49,23 @@ static enum markup_mode parse_markup_mode(const char *mode)
         }
 }
 
+static enum mouse_action parse_mouse_action(const char *action)
+{
+        if (strcmp(action, "none") == 0)
+                return MOUSE_NONE;
+        else if (strcmp(action, "do_action") == 0)
+                return MOUSE_DO_ACTION;
+        else if (strcmp(action, "close_current") == 0)
+                return MOUSE_CLOSE_CURRENT;
+        else if (strcmp(action, "close_all") == 0)
+                return MOUSE_CLOSE_ALL;
+        else {
+                LOG_W("Unknown mouse action: '%s'", action);
+                return MOUSE_NONE;
+        }
+}
+
+
 static enum urgency ini_get_urgency(const char *section, const char *key, const int def)
 {
         int ret = def;
@@ -516,6 +533,55 @@ void load_settings(char *cmdline_config_path)
                 );
 
         }
+
+        {
+                char *c = option_get_string(
+                        "global",
+                        "mouse_left_click", "-left_click", NULL,
+                        "Action of Left click event"
+                );
+
+                if (c) {
+                        settings.mouse_left_click = parse_mouse_action(c);
+                } else {
+                        settings.mouse_left_click = defaults.mouse_left_click;
+                }
+
+                g_free(c);
+        }
+
+        {
+                char *c = option_get_string(
+                        "global",
+                        "mouse_middle_click", "-mouse_middle_click", NULL,
+                        "Action of middle click event"
+                );
+
+                if (c) {
+                        settings.mouse_middle_click = parse_mouse_action(c);
+                } else {
+                        settings.mouse_middle_click = defaults.mouse_middle_click;
+                }
+
+                g_free(c);
+        }
+
+        {
+                char *c = option_get_string(
+                        "global",
+                        "mouse_right_click", "-mouse_right_click", NULL,
+                        "Action of right click event"
+                );
+
+                if (c) {
+                        settings.mouse_right_click = parse_mouse_action(c);
+                } else {
+                        settings.mouse_right_click = defaults.mouse_right_click;
+                }
+
+                g_free(c);
+        }
+
         settings.lowbgcolor = option_get_string(
                 "urgency_low",
                 "background", "-lb", defaults.lowbgcolor,

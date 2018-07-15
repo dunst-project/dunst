@@ -386,13 +386,30 @@ bool x_is_idle(void)
  */
 static void x_handle_click(XEvent ev)
 {
-        if (ev.xbutton.button == Button3) {
+        enum mouse_action act;
+
+        switch (ev.xbutton.button) {
+                case Button1:
+                        act = settings.mouse_left_click;
+                        break;
+                case Button2:
+                        act = settings.mouse_middle_click;
+                        break;
+                case Button3:
+                        act = settings.mouse_right_click;
+                        break;
+                default:
+                        LOG_W("Unsupported mouse button: '%d'", ev.xbutton.button);
+                        return;
+        }
+
+        if (act == MOUSE_CLOSE_ALL) {
                 queues_history_push_all();
 
                 return;
         }
 
-        if (ev.xbutton.button == Button1 || ev.xbutton.button == Button2) {
+        if (act == MOUSE_DO_ACTION || act == MOUSE_CLOSE_CURRENT) {
                 int y = settings.separator_height;
                 notification *n = NULL;
                 int first = true;
@@ -408,7 +425,7 @@ static void x_handle_click(XEvent ev)
                 }
 
                 if (n) {
-                        if (ev.xbutton.button == Button1)
+                        if (act == MOUSE_CLOSE_CURRENT)
                                 queues_notification_close(n, REASON_USER);
                         else
                                 notification_do_action(n);

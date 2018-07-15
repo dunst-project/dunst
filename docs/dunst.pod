@@ -472,6 +472,30 @@ single notification.
 To avoid the corners clipping the icon or text the corner radius will be
 automatically lowered to half of the notification height if it exceeds it.
 
+=item B<mouse_left/middle/right_click> (values: [none/do_action/close_current/close_all])
+
+Defines action of mouse click.
+
+=over 4
+
+=item B<none>
+
+Don't do anything.
+
+=item B<do_action> (default for mouse_middle_click)
+
+If the notification has exactly one action, or one is marked as default, invoke it. If there are multiple and no default, open the context menu.
+
+=item B<close_current> (default for mouse_left_click)
+
+Close current notification.
+
+=item B<close_all> (default for mouse_right_click)
+
+Close all notifications.
+
+=back
+
 =back
 
 =head2 Shortcut section
