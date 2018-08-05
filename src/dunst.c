@@ -110,7 +110,7 @@ gboolean quit_signal(gpointer data)
 static void teardown(void)
 {
         regex_teardown();
-
+        g_free(settings.log_path);
         teardown_queues();
 
         draw_deinit();

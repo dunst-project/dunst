@@ -1,0 +1,129 @@
+diff --git a/config.h b/config.h
+index f0432f6..552389c 100644
+--- a/config.h
++++ b/config.h
+@@ -38,6 +38,9 @@ settings_t defaults = {
+ .show_indicators = true,
+ .word_wrap = false,
+ .ellipsize = middle,
++.log_path = "~/dunst.log",
++.log_notifications = true,
++.log_format = "______________________\n>>%s<<\n*%s*\n%s\n",
+ .ignore_newline = false,
+ .line_height = 0,            /* if line height < font height, it will be raised to font height */
+ .notification_height = 0,    /* if notification height < font height and padding, it will be raised */
+diff --git a/dunstrc b/dunstrc
+index b3f99fb..1423441 100644
+--- a/dunstrc
++++ b/dunstrc
+@@ -144,6 +144,15 @@
+     # Possible values are "start", "middle" and "end".
+     ellipsize = middle
+ 
++    # Where to save notification the notification log
++    log_path = "~/.dunst.log"
++
++    # Log all notifications and save them in a FILE
++    log_notifications = no
++
++    # Log format, (%a, %s, %b), (appname, summary, body)
++    log_format = "______________________\n>>%a<<\n*%s*\n%b\n"
++
+     # Ignore newlines '\n' in notifications.
+     ignore_newline = no
+ 
+diff --git a/src/dunst.c b/src/dunst.c
+index 27c2872..76d899c 100644
+--- a/src/dunst.c
++++ b/src/dunst.c
+@@ -110,7 +110,7 @@ gboolean quit_signal(gpointer data)
+ static void teardown(void)
+ {
+         regex_teardown();
+-
++        g_free(settings.log_path);
+         teardown_queues();
+ 
+         draw_deinit();
+diff --git a/src/notification.c b/src/notification.c
+index 6d609cc..fdb2a46 100644
+--- a/src/notification.c
++++ b/src/notification.c
+@@ -282,6 +282,29 @@ void notification_init(notification *n)
+         n->body     = n->body     ? n->body     : g_strdup("");
+         n->category = n->category ? n->category : g_strdup("");
+ 
++        /* log */
++        if (settings.log_notifications) {
++            FILE *log_file;
++            log_file = fopen(settings.log_path, "a");
++
++            for(char *c = settings.log_format; *c; c++) {
++                if(*c == '\\') {
++                    c++;
++                    if(*c == 'n') fprintf(log_file, "\n");
++                } else if(*c == '%') {
++                    c++;
++                    if(*c == '%') fprintf(log_file, "%%");
++                    else if(*c == 'a') fprintf(log_file, "%s", n->appname);
++                    else if(*c == 's') fprintf(log_file, "%s", n->summary);
++                    else if(*c == 'b') fprintf(log_file, "%s", n->body);
++                } else {
++                    fprintf(log_file, "%c", *c);
++                }
++            }
++
++            fclose(log_file);
++        }
++
+         /* sanitize urgency */
+         if (n->urgency < URG_MIN)
+                 n->urgency = URG_LOW;
+diff --git a/src/settings.c b/src/settings.c
+index 5d3fbff..ad0296a 100644
+--- a/src/settings.c
++++ b/src/settings.c
+@@ -231,6 +231,29 @@ void load_settings(char *cmdline_config_path)
+                 g_free(c);
+         }
+ 
++        settings.log_path = option_get_string(
++                "global",
++                "log_path", "-log_path", defaults.log_path,
++                "Log file location"
++        );
++
++        char *home = getenv("HOME");
++        if (g_str_has_prefix(settings.log_path, "~/")) {
++            settings.log_path = g_strconcat(home, settings.log_path + 1, NULL);
++        }
++
++        settings.log_notifications = option_get_bool(
++                "global",
++                "log_notifications", "-log_notifications", defaults.log_notifications,
++                "Log all notifications and save them in a file"
++        );
++
++        settings.log_format = option_get_string(
++                "global",
++                "log_format", "-log_format", defaults.log_format,
++                "How the log should be formatted"
++        );
++
+         settings.ignore_newline = option_get_bool(
+                 "global",
+                 "ignore_newline", "-ignore_newline", defaults.ignore_newline,
+diff --git a/src/settings.h b/src/settings.h
+index 272e079..c23e2a8 100644
+--- a/src/settings.h
++++ b/src/settings.h
+@@ -60,6 +60,9 @@ typedef struct _settings {
+         int show_indicators;
+         int word_wrap;
+         enum ellipsize ellipsize;
++        char *log_path;
++        bool log_notifications;
++        char *log_format;
+         int ignore_newline;
+         int line_height;
+         int notification_height;

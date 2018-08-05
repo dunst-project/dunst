@@ -60,6 +60,9 @@ typedef struct _settings {
         int show_indicators;
         int word_wrap;
         enum ellipsize ellipsize;
+        char *log_path;
+        bool log_notifications;
+        char *log_format;
         int ignore_newline;
         int line_height;
         int notification_height;

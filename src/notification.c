@@ -282,6 +282,29 @@ void notification_init(notification *n)
         n->body     = n->body     ? n->body     : g_strdup("");
         n->category = n->category ? n->category : g_strdup("");
 
+        /* log */
+        if (settings.log_notifications) {
+            FILE *log_file;
+            log_file = fopen(settings.log_path, "a");
+
+            for(char *c = settings.log_format; *c; c++) {
+                if(*c == '\\') {
+                    c++;
+                    if(*c == 'n') fprintf(log_file, "\n");
+                } else if(*c == '%') {
+                    c++;
+                    if(*c == '%') fprintf(log_file, "%%");
+                    else if(*c == 'a') fprintf(log_file, "%s", n->appname);
+                    else if(*c == 's') fprintf(log_file, "%s", n->summary);
+                    else if(*c == 'b') fprintf(log_file, "%s", n->body);
+                } else {
+                    fprintf(log_file, "%c", *c);
+                }
+            }
+
+            fclose(log_file);
+        }
+
         /* sanitize urgency */
         if (n->urgency < URG_MIN)
                 n->urgency = URG_LOW;
