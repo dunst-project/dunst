@@ -14,13 +14,13 @@ static GLogLevelFlags log_level = G_LOG_LEVEL_WARNING;
 static const char *log_level_to_string(GLogLevelFlags level)
 {
         switch (level) {
-        case G_LOG_LEVEL_ERROR: return "ERROR";
-        case G_LOG_LEVEL_CRITICAL: return "CRITICAL";
-        case G_LOG_LEVEL_WARNING: return "WARNING";
-        case G_LOG_LEVEL_MESSAGE: return "MESSAGE";
-        case G_LOG_LEVEL_INFO: return "INFO";
-        case G_LOG_LEVEL_DEBUG: return "DEBUG";
-        default: return "UNKNOWN";
+        case G_LOG_LEVEL_ERROR: return "dunst: ERROR";
+        case G_LOG_LEVEL_CRITICAL: return "dunst: CRITICAL";
+        case G_LOG_LEVEL_WARNING: return "dunst: WARNING";
+        case G_LOG_LEVEL_MESSAGE: return "dunst: MESSAGE";
+        case G_LOG_LEVEL_INFO: return "dunst: INFO";
+        case G_LOG_LEVEL_DEBUG: return "dunst: DEBUG";
+        default: return "dunst: UNKNOWN";
         }
 }
 
