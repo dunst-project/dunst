@@ -95,6 +95,10 @@ int queues_notification_insert(notification *n)
                 pause_displayed = false;
                 return 0;
         }
+        if (strcmp("DUNST_COMMAND_TOGGLE", n->summary) == 0) {
+                pause_displayed = !pause_displayed;
+                return 0;
+        }
 
         if (n->id == 0) {
                 n->id = ++next_notification_id;
