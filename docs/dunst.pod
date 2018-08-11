@@ -719,7 +719,8 @@ Example time: "1000ms" "10m"
 =head1 MISCELLANEOUS
 
 Dunst can be paused by sending a notification with a summary of
-"DUNST_COMMAND_PAUSE" and resumed with a summary of "DUNST_COMMAND_RESUME".
+"DUNST_COMMAND_PAUSE", resumed with a summary of "DUNST_COMMAND_RESUME" and
+toggled with a summary of "DUNST_COMMAND_TOGGLE".
 Alternatively you can send SIGUSR1 and SIGUSR2 to pause and unpause
 respectively. For Example:
 
