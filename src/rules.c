@@ -91,11 +91,11 @@ void rule_init(rule_t *r)
  */
 bool rule_matches_notification(rule_t *r, notification *n)
 {
-        return ((!r->appname || !fnmatch(r->appname, n->appname, 0))
-                && (!r->summary || !fnmatch(r->summary, n->summary, 0))
-                && (!r->body || !fnmatch(r->body, n->body, 0))
-                && (!r->icon || !fnmatch(r->icon, n->icon, 0))
-                && (!r->category || !fnmatch(r->category, n->category, 0))
+        return   ( (!r->appname  || (n->appname  && !fnmatch(r->appname,  n->appname, 0)))
+                && (!r->summary  || (n->summary  && !fnmatch(r->summary,  n->summary, 0)))
+                && (!r->body     || (n->body     && !fnmatch(r->body,     n->body, 0)))
+                && (!r->icon     || (n->icon     && !fnmatch(r->icon,     n->icon, 0)))
+                && (!r->category || (n->category && !fnmatch(r->category, n->category, 0)))
                 && (r->match_transient == -1 || (r->match_transient == n->transient))
                 && (r->msg_urgency == URG_NONE || r->msg_urgency == n->urgency));
 }
