@@ -144,6 +144,15 @@
     # Possible values are "start", "middle" and "end".
     ellipsize = middle
 
+    # Where to save notification the notification log
+    log_path = "~/.dunst.log"
+
+    # Log all notifications and save them in a FILE
+    log_notifications = no
+
+    # Log format, (%a, %s, %b), (appname, summary, body)
+    log_format = "______________________\n>>%a<<\n*%s*\n%b\n"
+
     # Ignore newlines '\n' in notifications.
     ignore_newline = no
 

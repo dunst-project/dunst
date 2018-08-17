@@ -231,6 +231,29 @@ void load_settings(char *cmdline_config_path)
                 g_free(c);
         }
 
+        settings.log_path = option_get_string(
+                "global",
+                "log_path", "-log_path", defaults.log_path,
+                "Log file location"
+        );
+
+        char *home = getenv("HOME");
+        if (g_str_has_prefix(settings.log_path, "~/")) {
+            settings.log_path = g_strconcat(home, settings.log_path + 1, NULL);
+        }
+
+        settings.log_notifications = option_get_bool(
+                "global",
+                "log_notifications", "-log_notifications", defaults.log_notifications,
+                "Log all notifications and save them in a file"
+        );
+
+        settings.log_format = option_get_string(
+                "global",
+                "log_format", "-log_format", defaults.log_format,
+                "How the log should be formatted"
+        );
+
         settings.ignore_newline = option_get_bool(
                 "global",
                 "ignore_newline", "-ignore_newline", defaults.ignore_newline,
