@@ -258,7 +258,7 @@ void queues_history_pop(void)
         n->redisplayed = true;
         n->start = 0;
         n->timeout = settings.sticky_history ? 0 : n->timeout;
-        g_queue_push_head(waiting, n);
+        g_queue_insert_sorted(waiting, n, notification_cmp_data, NULL);
 }
 
 /* see queues.h */
@@ -380,6 +380,40 @@ void queues_update(bool fullscreen)
                 g_queue_insert_sorted(displayed, n, notification_cmp_data, NULL);
 
                 iter = nextiter;
+        }
+
+        /* If displayed is actually full, let the more important notifications
+         * from waiting seep into displayed.
+         */
+        if (settings.sort) {
+                GList *i_waiting, *i_displayed;
+
+                while (   (i_waiting   = g_queue_peek_head_link(waiting))
+                       && (i_displayed = g_queue_peek_tail_link(displayed))) {
+
+                        while (   fullscreen
+                               && i_waiting
+                               && i_waiting->data
+                               && ((notification*) i_waiting->data)->fullscreen != FS_SHOW) {
+                                i_waiting = i_waiting->prev;
+                        }
+
+                        if (i_waiting && notification_cmp(i_displayed->data, i_waiting->data) > 0) {
+                                notification *towait = i_displayed->data;
+                                notification *todisp = i_waiting->data;
+
+                                g_queue_delete_link(displayed, i_displayed);
+                                g_queue_delete_link(waiting,   i_waiting);
+
+                                todisp->start = time_monotonic_now();
+                                notification_run_script(todisp);
+
+                                g_queue_insert_sorted(displayed, todisp, notification_cmp_data, NULL);
+                                g_queue_insert_sorted(waiting, towait, notification_cmp_data, NULL);
+                        } else {
+                                break;
+                        }
+                }
         }
 }
 
