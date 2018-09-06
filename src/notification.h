@@ -77,6 +77,7 @@ typedef struct _notification {
         int dup_count;          /**< amount of duplicate notifications stacked onto this */
         int displayed_height;
         enum behavior_fullscreen fullscreen; //!< The instruction what to do with it, when desktop enters fullscreen
+        bool script_run;        /**< Has the script been executed already? */
 
         /* derived fields */
         char *msg;            /**< formatted message */
@@ -139,6 +140,9 @@ int notification_is_duplicate(const notification *a, const notification *b);
 /**
  * Run the script associated with the
  * given notification.
+ *
+ * If the script of the notification has been executed already and
+ * settings.always_run_script is not set, do nothing.
  */
 void notification_run_script(notification *n);
 /**

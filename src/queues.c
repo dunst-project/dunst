@@ -374,10 +374,7 @@ void queues_update(bool fullscreen)
                 }
 
                 n->start = time_monotonic_now();
-
-                if (!n->redisplayed && n->script) {
-                        notification_run_script(n);
-                }
+                notification_run_script(n);
 
                 g_queue_delete_link(waiting, iter);
                 g_queue_insert_sorted(displayed, n, notification_cmp_data, NULL);
