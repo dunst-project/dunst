@@ -7,6 +7,8 @@
 - `fullscreen` rule to hide notifications when a fullscreen window is active
 - When new notifications arrive, but display is full, important notifications don't
   have to wait for a timeout in a displayed notification (#541)
+- `<I> more` notifications don't occupy space anymore, if there is only a single
+  notification waiting to get displayed. The notification gets displayed directly (#467)
 
 ## 1.3.2 - 2018-05-06
 

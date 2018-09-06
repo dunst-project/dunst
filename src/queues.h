@@ -19,14 +19,6 @@
 void queues_init(void);
 
 /**
- * Set maximum notification count to display
- * and store in displayed queue
- *
- * @param limit The maximum amount
- */
-void queues_displayed_limit(unsigned int limit);
-
-/**
  * Receive the current list of displayed notifications
  *
  * @return read only list of notifications

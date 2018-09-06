@@ -30,7 +30,6 @@ static GQueue *waiting   = NULL; /**< all new notifications get into here */
 static GQueue *displayed = NULL; /**< currently displayed notifications */
 static GQueue *history   = NULL; /**< history of displayed notifications */
 
-unsigned int displayed_limit = 0;
 int next_notification_id = 1;
 bool pause_displayed = false;
 
@@ -42,12 +41,6 @@ void queues_init(void)
         history   = g_queue_new();
         displayed = g_queue_new();
         waiting   = g_queue_new();
-}
-
-/* see queues.h */
-void queues_displayed_limit(unsigned int limit)
-{
-        displayed_limit = limit;
 }
 
 /* see queues.h */
@@ -353,13 +346,23 @@ void queues_update(bool fullscreen)
                 }
         }
 
+        int cur_displayed_limit;
+        if (settings.geometry.h == 0)
+                cur_displayed_limit = INT_MAX;
+        else if (   settings.indicate_hidden
+                 && settings.geometry.h > 1
+                 && displayed->length + waiting->length > settings.geometry.h)
+                cur_displayed_limit = settings.geometry.h-1;
+        else
+                cur_displayed_limit = settings.geometry.h;
+
         /* move notifications from queue to displayed */
         GList *iter = g_queue_peek_head_link(waiting);
         while (iter) {
                 notification *n = iter->data;
                 GList *nextiter = iter->next;
 
-                if (displayed_limit > 0 && displayed->length >= displayed_limit) {
+                if (displayed->length >= cur_displayed_limit) {
                         /* the list is full */
                         break;
                 }
@@ -380,6 +383,12 @@ void queues_update(bool fullscreen)
                 g_queue_insert_sorted(displayed, n, notification_cmp_data, NULL);
 
                 iter = nextiter;
+        }
+
+        /* if necessary, push the overhanging notifications from displayed to waiting again */
+        while (displayed->length > cur_displayed_limit) {
+                notification *n = g_queue_pop_tail(displayed);
+                g_queue_insert_sorted(waiting, n, notification_cmp_data, NULL); //TODO: actually it should be on the head if unsorted
         }
 
         /* If displayed is actually full, let the more important notifications
