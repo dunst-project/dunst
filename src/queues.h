@@ -26,6 +26,13 @@ void queues_init(void);
 const GList *queues_get_displayed(void);
 
 /**
+ * Get the highest notification in line
+ *
+ * @return a notification or NULL, if waiting is empty
+ */
+const notification *queues_get_head_waiting(void);
+
+/**
  * Returns the current amount of notifications,
  * which are waiting to get displayed
  */

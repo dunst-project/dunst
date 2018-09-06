@@ -50,6 +50,14 @@ const GList *queues_get_displayed(void)
 }
 
 /* see queues.h */
+const notification *queues_get_head_waiting(void)
+{
+        if (waiting->length == 0)
+                return NULL;
+        return g_queue_peek_head(waiting);
+}
+
+/* see queues.h */
 unsigned int queues_length_waiting(void)
 {
         return waiting->length;
