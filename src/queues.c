@@ -75,6 +75,51 @@ unsigned int queues_length_history(void)
         return history->length;
 }
 
+/**
+ * Swap two given queue elements. The element's data has to be a notification.
+ *
+ * @pre { elemA has to be part of queueA. }
+ * @pre { elemB has to be part of queueB. }
+ *
+ * @param queueA The queue, which elemB's data will get inserted
+ * @param elemA  The element, which will get removed from queueA
+ * @param queueB The queue, which elemA's data will get inserted
+ * @param elemB  The element, which will get removed from queueB
+ */
+static void queues_swap_notifications(GQueue *queueA,
+                                      GList  *elemA,
+                                      GQueue *queueB,
+                                      GList  *elemB)
+{
+        notification *toB = elemA->data;
+        notification *toA = elemB->data;
+
+        g_queue_delete_link(queueA, elemA);
+        g_queue_delete_link(queueB, elemB);
+
+        if (toA)
+                g_queue_insert_sorted(queueA, toA, notification_cmp_data, NULL);
+        if (toB)
+                g_queue_insert_sorted(queueB, toB, notification_cmp_data, NULL);
+}
+
+/**
+ * Check if a notification is eligible to get shown.
+ *
+ * @param n          The notification to check
+ * @param fullscreen True if a fullscreen window is currently active
+ * @param visible    True if the notification is currently displayed
+ */
+static bool queues_notification_is_ready(const notification *n, bool fullscreen, bool visible)
+{
+        if (fullscreen && visible)
+                return n && n->fullscreen != FS_PUSHBACK;
+        else if (fullscreen && !visible)
+                return n && n->fullscreen == FS_SHOW;
+        else
+                return true;
+}
+
 /* see queues.h */
 int queues_notification_insert(notification *n)
 {
@@ -366,20 +411,14 @@ void queues_update(bool fullscreen)
 
         /* move notifications from queue to displayed */
         GList *iter = g_queue_peek_head_link(waiting);
-        while (iter) {
+        while (displayed->length < cur_displayed_limit && iter) {
                 notification *n = iter->data;
                 GList *nextiter = iter->next;
-
-                if (displayed->length >= cur_displayed_limit) {
-                        /* the list is full */
-                        break;
-                }
 
                 if (!n)
                         return;
 
-                if (fullscreen
-                    && (n->fullscreen == FS_DELAY || n->fullscreen == FS_PUSHBACK)) {
+                if (!queues_notification_is_ready(n, fullscreen, false)) {
                         iter = nextiter;
                         continue;
                 }
@@ -408,25 +447,17 @@ void queues_update(bool fullscreen)
                 while (   (i_waiting   = g_queue_peek_head_link(waiting))
                        && (i_displayed = g_queue_peek_tail_link(displayed))) {
 
-                        while (   fullscreen
-                               && i_waiting
-                               && i_waiting->data
-                               && ((notification*) i_waiting->data)->fullscreen != FS_SHOW) {
+                        while (i_waiting && ! queues_notification_is_ready(i_waiting->data, fullscreen, true)) {
                                 i_waiting = i_waiting->prev;
                         }
 
                         if (i_waiting && notification_cmp(i_displayed->data, i_waiting->data) > 0) {
-                                notification *towait = i_displayed->data;
                                 notification *todisp = i_waiting->data;
-
-                                g_queue_delete_link(displayed, i_displayed);
-                                g_queue_delete_link(waiting,   i_waiting);
 
                                 todisp->start = time_monotonic_now();
                                 notification_run_script(todisp);
 
-                                g_queue_insert_sorted(displayed, todisp, notification_cmp_data, NULL);
-                                g_queue_insert_sorted(waiting, towait, notification_cmp_data, NULL);
+                                queues_swap_notifications(displayed, i_displayed, waiting, i_waiting);
                         } else {
                                 break;
                         }
