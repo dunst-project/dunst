@@ -169,52 +169,31 @@ int queues_notification_insert(notification *n)
  */
 static bool queues_stack_duplicate(notification *n)
 {
-        for (GList *iter = g_queue_peek_head_link(displayed); iter;
-             iter = iter->next) {
-                notification *orig = iter->data;
-                if (notification_is_duplicate(orig, n)) {
-                        /* If the progress differs, probably notify-send was used to update the notification
-                         * So only count it as a duplicate, if the progress was not the same.
-                         * */
-                        if (orig->progress == n->progress) {
-                                orig->dup_count++;
-                        } else {
-                                orig->progress = n->progress;
+        GQueue *allqueues[] = { displayed, waiting };
+        for (int i = 0; i < sizeof(allqueues)/sizeof(GList*); i++) {
+                for (GList *iter = g_queue_peek_head_link(allqueues[i]); iter;
+                     iter = iter->next) {
+                        notification *orig = iter->data;
+                        if (notification_is_duplicate(orig, n)) {
+                                /* If the progress differs, probably notify-send was used to update the notification
+                                 * So only count it as a duplicate, if the progress was not the same.
+                                 * */
+                                if (orig->progress == n->progress) {
+                                        orig->dup_count++;
+                                } else {
+                                        orig->progress = n->progress;
+                                }
+                                iter->data = n;
+
+                                n->dup_count = orig->dup_count;
+                                signal_notification_closed(orig, 1);
+
+                                if ( allqueues[i] == displayed )
+                                        n->start = time_monotonic_now();
+
+                                notification_free(orig);
+                                return true;
                         }
-
-                        iter->data = n;
-
-                        n->start = time_monotonic_now();
-
-                        n->dup_count = orig->dup_count;
-
-                        signal_notification_closed(orig, 1);
-
-                        notification_free(orig);
-                        return true;
-                }
-        }
-
-        for (GList *iter = g_queue_peek_head_link(waiting); iter;
-             iter = iter->next) {
-                notification *orig = iter->data;
-                if (notification_is_duplicate(orig, n)) {
-                        /* If the progress differs, probably notify-send was used to update the notification
-                         * So only count it as a duplicate, if the progress was not the same.
-                         * */
-                        if (orig->progress == n->progress) {
-                                orig->dup_count++;
-                        } else {
-                                orig->progress = n->progress;
-                        }
-                        iter->data = n;
-
-                        n->dup_count = orig->dup_count;
-
-                        signal_notification_closed(orig, 1);
-
-                        notification_free(orig);
-                        return true;
                 }
         }
 
@@ -224,31 +203,26 @@ static bool queues_stack_duplicate(notification *n)
 /* see queues.h */
 bool queues_notification_replace_id(notification *new)
 {
+        GQueue *allqueues[] = { displayed, waiting };
+        for (int i = 0; i < sizeof(allqueues)/sizeof(GList*); i++) {
+                for (GList *iter = g_queue_peek_head_link(allqueues[i]);
+                            iter;
+                            iter = iter->next) {
+                        notification *old = iter->data;
+                        if (old->id == new->id) {
+                                iter->data = new;
+                                new->dup_count = old->dup_count;
 
-        for (GList *iter = g_queue_peek_head_link(displayed);
-                    iter;
-                    iter = iter->next) {
-                notification *old = iter->data;
-                if (old->id == new->id) {
-                        iter->data = new;
-                        new->start = time_monotonic_now();
-                        new->dup_count = old->dup_count;
-                        notification_run_script(new);
-                        notification_free(old);
-                        return true;
-                }
-        }
+                                if ( allqueues[i] == displayed ) {
+                                        new->start = time_monotonic_now();
+                                        notification_run_script(new);
+                                }
 
-        for (GList *iter = g_queue_peek_head_link(waiting);
-                    iter;
-                    iter = iter->next) {
-                notification *old = iter->data;
-                if (old->id == new->id) {
-                        iter->data = new;
-                        new->dup_count = old->dup_count;
-                        notification_free(old);
-                        return true;
+                                notification_free(old);
+                                return true;
+                        }
                 }
+
         }
         return false;
 }
@@ -258,24 +232,16 @@ void queues_notification_close_id(int id, enum reason reason)
 {
         notification *target = NULL;
 
-        for (GList *iter = g_queue_peek_head_link(displayed); iter;
-             iter = iter->next) {
-                notification *n = iter->data;
-                if (n->id == id) {
-                        g_queue_remove(displayed, n);
-                        target = n;
-                        break;
-                }
-        }
-
-        for (GList *iter = g_queue_peek_head_link(waiting); iter;
-             iter = iter->next) {
-                notification *n = iter->data;
-                if (n->id == id) {
-                        assert(target == NULL);
-                        g_queue_remove(waiting, n);
-                        target = n;
-                        break;
+        GQueue *allqueues[] = { displayed, waiting };
+        for (int i = 0; i < sizeof(allqueues)/sizeof(GList*); i++) {
+                for (GList *iter = g_queue_peek_head_link(allqueues[i]); iter;
+                     iter = iter->next) {
+                        notification *n = iter->data;
+                        if (n->id == id) {
+                                g_queue_remove(allqueues[i], n);
+                                target = n;
+                                break;
+                        }
                 }
         }
 
