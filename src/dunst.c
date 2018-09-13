@@ -51,17 +51,17 @@ static gboolean run(void *data)
 
         static gint64 next_timeout = 0;
 
-        if (!x_win_visible(win) && queues_length_displayed() > 0) {
+        // Call draw before showing the window to avoid flickering
+        if (queues_length_displayed() > 0) {
                 draw();
+        }
+
+        if (!x_win_visible(win) && queues_length_displayed() > 0) {
                 x_win_show(win);
         }
 
         if (x_win_visible(win) && queues_length_displayed() == 0) {
                 x_win_hide(win);
-        }
-
-        if (x_win_visible(win)) {
-                draw();
         }
 
         if (x_win_visible(win)) {
