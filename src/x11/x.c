@@ -326,22 +326,16 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer 
                                 wake_up();
                         }
                         break;
-                case FocusIn:
-                        LOG_D("XEvent: processing 'FocusIn'");
-                        wake_up();
-                        break;
-                case FocusOut:
-                        LOG_D("XEvent: processing 'FocusOut'");
-                        wake_up();
-                        break;
                 case CreateNotify:
                         LOG_D("XEvent: processing 'CreateNotify'");
                         if (win->visible &&
                             ev.xcreatewindow.override_redirect == 0)
                                 XRaiseWindow(xctx.dpy, win->xwin);
                         break;
+                case FocusIn:
+                case FocusOut:
                 case PropertyNotify:
-                        LOG_D("XEvent: processing 'PropertyNotify'");
+                        LOG_D("XEvent: Checking for active sceen changes");
                         fullscreen_now = have_fullscreen_window();
                         scr = get_active_screen();
 
