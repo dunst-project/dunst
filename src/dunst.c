@@ -52,6 +52,7 @@ static gboolean run(void *data)
         static gint64 next_timeout = 0;
 
         if (!x_win_visible(win) && queues_length_displayed() > 0) {
+                draw();
                 x_win_show(win);
         }
 
