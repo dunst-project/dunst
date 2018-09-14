@@ -516,17 +516,6 @@ struct geometry x_parse_geometry(const char *geom_str)
         geometry.negative_x = mask & XNegative;
         geometry.negative_y = mask & YNegative;
 
-        /* calculate maximum notification count and push information to queue */
-        if (geometry.h == 0) {
-                queues_displayed_limit(0);
-        } else if (geometry.h == 1) {
-                queues_displayed_limit(1);
-        } else if (settings.indicate_hidden) {
-                queues_displayed_limit(geometry.h - 1);
-        } else {
-                queues_displayed_limit(geometry.h);
-        }
-
         return geometry;
 }
 

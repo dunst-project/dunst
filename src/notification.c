@@ -92,6 +92,11 @@ void notification_run_script(notification *n)
         if (!n->script || strlen(n->script) < 1)
                 return;
 
+        if (n->script_run && !settings.always_run_script)
+                return;
+
+        n->script_run = true;
+
         const char *appname = n->appname ? n->appname : "";
         const char *summary = n->summary ? n->summary : "";
         const char *body = n->body ? n->body : "";
@@ -267,6 +272,8 @@ notification *notification_create(void)
 
         n->transient = false;
         n->progress = -1;
+
+        n->script_run = false;
 
         n->fullscreen = FS_SHOW;
 

@@ -26,7 +26,7 @@ typedef struct {
         char *text;
         PangoAttrList *attr;
         cairo_surface_t *icon;
-        notification *n;
+        const notification *n;
 } colored_layout;
 
 window_x11 *win;
@@ -245,7 +245,7 @@ static PangoLayout *layout_create(cairo_t *c)
         return layout;
 }
 
-static colored_layout *layout_init_shared(cairo_t *c, notification *n)
+static colored_layout *layout_init_shared(cairo_t *c, const notification *n)
 {
         colored_layout *cl = g_malloc(sizeof(colored_layout));
         cl->l = layout_create(c);
@@ -301,7 +301,7 @@ static colored_layout *layout_init_shared(cairo_t *c, notification *n)
         return cl;
 }
 
-static colored_layout *layout_derive_xmore(cairo_t *c, notification *n, int qlen)
+static colored_layout *layout_derive_xmore(cairo_t *c, const notification *n, int qlen)
 {
         colored_layout *cl = layout_init_shared(c, n);
         cl->text = g_strdup_printf("(%d more)", qlen);
@@ -350,12 +350,10 @@ static GSList *create_layouts(cairo_t *c)
         int qlen = queues_length_waiting();
         bool xmore_is_needed = qlen > 0 && settings.indicate_hidden;
 
-        notification *last = NULL;
         for (const GList *iter = queues_get_displayed();
                         iter; iter = iter->next)
         {
                 notification *n = iter->data;
-                last = n;
 
                 notification_update_text_to_render(n);
 
@@ -371,7 +369,7 @@ static GSList *create_layouts(cairo_t *c)
         if (xmore_is_needed && settings.geometry.h != 1) {
                 /* append xmore message as new message */
                 layouts = g_slist_append(layouts,
-                        layout_derive_xmore(c, last, qlen));
+                        layout_derive_xmore(c, queues_get_head_waiting(), qlen));
         }
 
         return layouts;

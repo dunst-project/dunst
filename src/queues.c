@@ -30,7 +30,6 @@ static GQueue *waiting   = NULL; /**< all new notifications get into here */
 static GQueue *displayed = NULL; /**< currently displayed notifications */
 static GQueue *history   = NULL; /**< history of displayed notifications */
 
-unsigned int displayed_limit = 0;
 int next_notification_id = 1;
 bool pause_displayed = false;
 
@@ -45,15 +44,17 @@ void queues_init(void)
 }
 
 /* see queues.h */
-void queues_displayed_limit(unsigned int limit)
-{
-        displayed_limit = limit;
-}
-
-/* see queues.h */
 const GList *queues_get_displayed(void)
 {
         return g_queue_peek_head_link(displayed);
+}
+
+/* see queues.h */
+const notification *queues_get_head_waiting(void)
+{
+        if (waiting->length == 0)
+                return NULL;
+        return g_queue_peek_head(waiting);
 }
 
 /* see queues.h */
@@ -72,6 +73,51 @@ unsigned int queues_length_displayed(void)
 unsigned int queues_length_history(void)
 {
         return history->length;
+}
+
+/**
+ * Swap two given queue elements. The element's data has to be a notification.
+ *
+ * @pre { elemA has to be part of queueA. }
+ * @pre { elemB has to be part of queueB. }
+ *
+ * @param queueA The queue, which elemB's data will get inserted
+ * @param elemA  The element, which will get removed from queueA
+ * @param queueB The queue, which elemA's data will get inserted
+ * @param elemB  The element, which will get removed from queueB
+ */
+static void queues_swap_notifications(GQueue *queueA,
+                                      GList  *elemA,
+                                      GQueue *queueB,
+                                      GList  *elemB)
+{
+        notification *toB = elemA->data;
+        notification *toA = elemB->data;
+
+        g_queue_delete_link(queueA, elemA);
+        g_queue_delete_link(queueB, elemB);
+
+        if (toA)
+                g_queue_insert_sorted(queueA, toA, notification_cmp_data, NULL);
+        if (toB)
+                g_queue_insert_sorted(queueB, toB, notification_cmp_data, NULL);
+}
+
+/**
+ * Check if a notification is eligible to get shown.
+ *
+ * @param n          The notification to check
+ * @param fullscreen True if a fullscreen window is currently active
+ * @param visible    True if the notification is currently displayed
+ */
+static bool queues_notification_is_ready(const notification *n, bool fullscreen, bool visible)
+{
+        if (fullscreen && visible)
+                return n && n->fullscreen != FS_PUSHBACK;
+        else if (fullscreen && !visible)
+                return n && n->fullscreen == FS_SHOW;
+        else
+                return true;
 }
 
 /* see queues.h */
@@ -123,52 +169,31 @@ int queues_notification_insert(notification *n)
  */
 static bool queues_stack_duplicate(notification *n)
 {
-        for (GList *iter = g_queue_peek_head_link(displayed); iter;
-             iter = iter->next) {
-                notification *orig = iter->data;
-                if (notification_is_duplicate(orig, n)) {
-                        /* If the progress differs, probably notify-send was used to update the notification
-                         * So only count it as a duplicate, if the progress was not the same.
-                         * */
-                        if (orig->progress == n->progress) {
-                                orig->dup_count++;
-                        } else {
-                                orig->progress = n->progress;
+        GQueue *allqueues[] = { displayed, waiting };
+        for (int i = 0; i < sizeof(allqueues)/sizeof(GList*); i++) {
+                for (GList *iter = g_queue_peek_head_link(allqueues[i]); iter;
+                     iter = iter->next) {
+                        notification *orig = iter->data;
+                        if (notification_is_duplicate(orig, n)) {
+                                /* If the progress differs, probably notify-send was used to update the notification
+                                 * So only count it as a duplicate, if the progress was not the same.
+                                 * */
+                                if (orig->progress == n->progress) {
+                                        orig->dup_count++;
+                                } else {
+                                        orig->progress = n->progress;
+                                }
+                                iter->data = n;
+
+                                n->dup_count = orig->dup_count;
+                                signal_notification_closed(orig, 1);
+
+                                if ( allqueues[i] == displayed )
+                                        n->start = time_monotonic_now();
+
+                                notification_free(orig);
+                                return true;
                         }
-
-                        iter->data = n;
-
-                        n->start = time_monotonic_now();
-
-                        n->dup_count = orig->dup_count;
-
-                        signal_notification_closed(orig, 1);
-
-                        notification_free(orig);
-                        return true;
-                }
-        }
-
-        for (GList *iter = g_queue_peek_head_link(waiting); iter;
-             iter = iter->next) {
-                notification *orig = iter->data;
-                if (notification_is_duplicate(orig, n)) {
-                        /* If the progress differs, probably notify-send was used to update the notification
-                         * So only count it as a duplicate, if the progress was not the same.
-                         * */
-                        if (orig->progress == n->progress) {
-                                orig->dup_count++;
-                        } else {
-                                orig->progress = n->progress;
-                        }
-                        iter->data = n;
-
-                        n->dup_count = orig->dup_count;
-
-                        signal_notification_closed(orig, 1);
-
-                        notification_free(orig);
-                        return true;
                 }
         }
 
@@ -178,31 +203,26 @@ static bool queues_stack_duplicate(notification *n)
 /* see queues.h */
 bool queues_notification_replace_id(notification *new)
 {
+        GQueue *allqueues[] = { displayed, waiting };
+        for (int i = 0; i < sizeof(allqueues)/sizeof(GList*); i++) {
+                for (GList *iter = g_queue_peek_head_link(allqueues[i]);
+                            iter;
+                            iter = iter->next) {
+                        notification *old = iter->data;
+                        if (old->id == new->id) {
+                                iter->data = new;
+                                new->dup_count = old->dup_count;
 
-        for (GList *iter = g_queue_peek_head_link(displayed);
-                    iter;
-                    iter = iter->next) {
-                notification *old = iter->data;
-                if (old->id == new->id) {
-                        iter->data = new;
-                        new->start = time_monotonic_now();
-                        new->dup_count = old->dup_count;
-                        notification_run_script(new);
-                        notification_free(old);
-                        return true;
-                }
-        }
+                                if ( allqueues[i] == displayed ) {
+                                        new->start = time_monotonic_now();
+                                        notification_run_script(new);
+                                }
 
-        for (GList *iter = g_queue_peek_head_link(waiting);
-                    iter;
-                    iter = iter->next) {
-                notification *old = iter->data;
-                if (old->id == new->id) {
-                        iter->data = new;
-                        new->dup_count = old->dup_count;
-                        notification_free(old);
-                        return true;
+                                notification_free(old);
+                                return true;
+                        }
                 }
+
         }
         return false;
 }
@@ -212,24 +232,16 @@ void queues_notification_close_id(int id, enum reason reason)
 {
         notification *target = NULL;
 
-        for (GList *iter = g_queue_peek_head_link(displayed); iter;
-             iter = iter->next) {
-                notification *n = iter->data;
-                if (n->id == id) {
-                        g_queue_remove(displayed, n);
-                        target = n;
-                        break;
-                }
-        }
-
-        for (GList *iter = g_queue_peek_head_link(waiting); iter;
-             iter = iter->next) {
-                notification *n = iter->data;
-                if (n->id == id) {
-                        assert(target == NULL);
-                        g_queue_remove(waiting, n);
-                        target = n;
-                        break;
+        GQueue *allqueues[] = { displayed, waiting };
+        for (int i = 0; i < sizeof(allqueues)/sizeof(GList*); i++) {
+                for (GList *iter = g_queue_peek_head_link(allqueues[i]); iter;
+                     iter = iter->next) {
+                        notification *n = iter->data;
+                        if (n->id == id) {
+                                g_queue_remove(allqueues[i], n);
+                                target = n;
+                                break;
+                        }
                 }
         }
 
@@ -258,7 +270,7 @@ void queues_history_pop(void)
         n->redisplayed = true;
         n->start = 0;
         n->timeout = settings.sticky_history ? 0 : n->timeout;
-        g_queue_push_head(waiting, n);
+        g_queue_insert_sorted(waiting, n, notification_cmp_data, NULL);
 }
 
 /* see queues.h */
@@ -353,36 +365,69 @@ void queues_update(bool fullscreen)
                 }
         }
 
+        int cur_displayed_limit;
+        if (settings.geometry.h == 0)
+                cur_displayed_limit = INT_MAX;
+        else if (   settings.indicate_hidden
+                 && settings.geometry.h > 1
+                 && displayed->length + waiting->length > settings.geometry.h)
+                cur_displayed_limit = settings.geometry.h-1;
+        else
+                cur_displayed_limit = settings.geometry.h;
+
         /* move notifications from queue to displayed */
         GList *iter = g_queue_peek_head_link(waiting);
-        while (iter) {
+        while (displayed->length < cur_displayed_limit && iter) {
                 notification *n = iter->data;
                 GList *nextiter = iter->next;
-
-                if (displayed_limit > 0 && displayed->length >= displayed_limit) {
-                        /* the list is full */
-                        break;
-                }
 
                 if (!n)
                         return;
 
-                if (fullscreen
-                    && (n->fullscreen == FS_DELAY || n->fullscreen == FS_PUSHBACK)) {
+                if (!queues_notification_is_ready(n, fullscreen, false)) {
                         iter = nextiter;
                         continue;
                 }
 
                 n->start = time_monotonic_now();
-
-                if (!n->redisplayed && n->script) {
-                        notification_run_script(n);
-                }
+                notification_run_script(n);
 
                 g_queue_delete_link(waiting, iter);
                 g_queue_insert_sorted(displayed, n, notification_cmp_data, NULL);
 
                 iter = nextiter;
+        }
+
+        /* if necessary, push the overhanging notifications from displayed to waiting again */
+        while (displayed->length > cur_displayed_limit) {
+                notification *n = g_queue_pop_tail(displayed);
+                g_queue_insert_sorted(waiting, n, notification_cmp_data, NULL); //TODO: actually it should be on the head if unsorted
+        }
+
+        /* If displayed is actually full, let the more important notifications
+         * from waiting seep into displayed.
+         */
+        if (settings.sort) {
+                GList *i_waiting, *i_displayed;
+
+                while (   (i_waiting   = g_queue_peek_head_link(waiting))
+                       && (i_displayed = g_queue_peek_tail_link(displayed))) {
+
+                        while (i_waiting && ! queues_notification_is_ready(i_waiting->data, fullscreen, true)) {
+                                i_waiting = i_waiting->prev;
+                        }
+
+                        if (i_waiting && notification_cmp(i_displayed->data, i_waiting->data) > 0) {
+                                notification *todisp = i_waiting->data;
+
+                                todisp->start = time_monotonic_now();
+                                notification_run_script(todisp);
+
+                                queues_swap_notifications(displayed, i_displayed, waiting, i_waiting);
+                        } else {
+                                break;
+                        }
+                }
         }
 }
 
