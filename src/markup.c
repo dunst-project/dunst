@@ -136,7 +136,7 @@ void markup_strip_a(char **str, char **urls)
  */
 void markup_strip_img(char **str, char **urls)
 {
-        const char *start = *str;
+        const char *start;
 
         if (urls)
                 *urls = NULL;
