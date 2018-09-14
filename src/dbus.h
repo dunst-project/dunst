@@ -17,7 +17,6 @@ enum reason {
 
 int initdbus(void);
 void dbus_tear_down(int id);
-/* void dbus_poll(int timeout); */
 void signal_notification_closed(notification *n, enum reason reason);
 void signal_action_invoked(notification *n, const char *identifier);
 
