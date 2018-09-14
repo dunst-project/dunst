@@ -17,14 +17,19 @@
 #define DIE(...) do { LOG_C(__VA_ARGS__); exit(EXIT_FAILURE); } while (0)
 
 /**
- * @return the string representation of the given `level`
+ * Set the current loglevel to `level`
+ *
+ * @param level The desired log level
+ *
+ * If `level` is `NULL`, nothing will be done.
+ * If `level` is an invalid value, nothing will be done.
  */
 void log_set_level(GLogLevelFlags level);
 
 /**
  * Set the current loglevel to `level`
  *
- * @param level The desired log level
+ * @param level The desired log level as a string
  *
  * If `level` is `NULL`, nothing will be done.
  * If `level` is an invalid value, nothing will be done.

@@ -23,7 +23,6 @@ int dunst_main(int argc, char *argv[]);
 
 void usage(int exit_status);
 void print_version(void);
-char *extract_urls(const char *str);
 void context_menu(void);
 void pause_signal_handler(int sig);
 
