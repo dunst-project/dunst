@@ -258,8 +258,6 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
                 g_variant_iter_free(iter);
         }
 
-        fflush(stdout);
-
         if (n->actions->count < 1)
                 g_clear_pointer(&n->actions, actions_free);
 
