@@ -197,7 +197,7 @@ void actions_free(struct actions *a)
 }
 
 /* see notification.h */
-void rawimage_free(RawImage *i)
+void rawimage_free(struct raw_image *i)
 {
         if (!i)
                 return;

@@ -39,19 +39,19 @@ TEST test_notification_is_duplicate(void *notifications)
         settings.icon_position = icons_off;
         ASSERT(notification_is_duplicate(a, b));
         //Setting pointer to a random value since we are checking for null
-        b->raw_icon = (RawImage*)0xff;
+        b->raw_icon = (struct raw_image*)0xff;
         ASSERT(notification_is_duplicate(a, b));
         b->raw_icon = NULL;
 
         settings.icon_position = icons_left;
         ASSERT_FALSE(notification_is_duplicate(a, b));
-        b->raw_icon = (RawImage*)0xff;
+        b->raw_icon = (struct raw_image*)0xff;
         ASSERT_FALSE(notification_is_duplicate(a, b));
         b->raw_icon = NULL;
 
         settings.icon_position = icons_right;
         ASSERT_FALSE(notification_is_duplicate(a, b));
-        b->raw_icon = (RawImage*)0xff;
+        b->raw_icon = (struct raw_image*)0xff;
         ASSERT_FALSE(notification_is_duplicate(a, b));
         b->raw_icon = NULL;
 

@@ -26,9 +26,9 @@ GdkPixbuf *get_pixbuf_from_file(const char *filename);
  */
 GdkPixbuf *get_pixbuf_from_icon(const char *iconname);
 
-/** Convert a RawImage to a `GdkPixbuf`
+/** Convert a struct raw_image to a `GdkPixbuf`
  */
-GdkPixbuf *get_pixbuf_from_raw_image(const RawImage *raw_image);
+GdkPixbuf *get_pixbuf_from_raw_image(const struct raw_image *raw_image);
 
 /**
  * Get a cairo surface with the appropriate icon for the notification, scaled

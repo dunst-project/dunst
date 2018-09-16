@@ -81,7 +81,7 @@ static void on_get_server_information(GDBusConnection *connection,
                                       const gchar *sender,
                                       const GVariant *parameters,
                                       GDBusMethodInvocation *invocation);
-static RawImage *get_raw_image_from_data_hint(GVariant *icon_data);
+static struct raw_image *get_raw_image_from_data_hint(GVariant *icon_data);
 
 void handle_method_call(GDBusConnection *connection,
                         const gchar *sender,
@@ -520,9 +520,9 @@ static void on_name_lost(GDBusConnection *connection,
         exit(1);
 }
 
-static RawImage *get_raw_image_from_data_hint(GVariant *icon_data)
+static struct raw_image *get_raw_image_from_data_hint(GVariant *icon_data)
 {
-        RawImage *image = g_malloc(sizeof(RawImage));
+        struct raw_image *image = g_malloc(sizeof(struct raw_image));
         GVariant *data_variant;
         gsize expected_len;
 

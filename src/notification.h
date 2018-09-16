@@ -26,7 +26,7 @@ enum urgency {
         URG_MAX = 2,   /**< Maximum value, useful for boundary checking */
 };
 
-typedef struct _raw_image {
+struct raw_image {
         int width;
         int height;
         int rowstride;
@@ -34,7 +34,7 @@ typedef struct _raw_image {
         int bits_per_sample;
         int n_channels;
         unsigned char *data;
-} RawImage;
+};
 
 struct actions {
         char **actions;
@@ -53,7 +53,7 @@ typedef struct _notification {
         enum urgency urgency;
 
         char *icon;          /**< plain icon information (may be a path or just a name) */
-        RawImage *raw_icon;  /**< passed icon data of notification, takes precedence over icon */
+        struct raw_image *raw_icon;  /**< passed icon data of notification, takes precedence over icon */
 
         gint64 start;      /**< begin of current display */
         gint64 timestamp;  /**< arrival time */
@@ -111,11 +111,11 @@ void notification_init(notification *n);
 void actions_free(struct actions *a);
 
 /**
- * Free a #RawImage
+ * Free a #raw_image
  *
- * @param i (nullable): pointer to #RawImage
+ * @param i (nullable): pointer to #raw_image
  */
-void rawimage_free(RawImage *i);
+void rawimage_free(struct raw_image *i);
 
 /**
  * Free the memory used by the given notification.
