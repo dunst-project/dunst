@@ -186,7 +186,7 @@ int notification_is_duplicate(const notification *a, const notification *b)
 }
 
 /* see notification.h */
-void actions_free(Actions *a)
+void actions_free(struct actions *a)
 {
         if (!a)
                 return;

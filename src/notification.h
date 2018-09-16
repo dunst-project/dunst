@@ -36,11 +36,11 @@ typedef struct _raw_image {
         unsigned char *data;
 } RawImage;
 
-typedef struct _actions {
+struct actions {
         char **actions;
         char *dmenu_str;
         gsize count;
-} Actions;
+};
 
 typedef struct _notification {
         int id;
@@ -59,7 +59,7 @@ typedef struct _notification {
         gint64 timestamp;  /**< arrival time */
         gint64 timeout;    /**< time to display */
 
-        Actions *actions;
+        struct actions *actions;
 
         enum markup_mode markup;
         const char *format;
@@ -106,9 +106,9 @@ void notification_init(notification *n);
 /**
  * Free the actions structure
  *
- * @param a (nullable): Pointer to #Actions
+ * @param a (nullable): Pointer to #actions
  */
-void actions_free(Actions *a);
+void actions_free(struct actions *a);
 
 /**
  * Free a #RawImage

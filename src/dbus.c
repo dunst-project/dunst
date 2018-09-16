@@ -135,7 +135,7 @@ static notification *dbus_message_to_notification(const gchar *sender, GVariant 
 
         notification *n = notification_create();
 
-        n->actions = g_malloc0(sizeof(Actions));
+        n->actions = g_malloc0(sizeof(struct actions));
         n->dbus_client = g_strdup(sender);
 
         {
