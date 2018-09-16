@@ -46,24 +46,24 @@ struct window_x11 {
 
 struct x11_source {
         GSource source;
-        window_x11 *win;
+        struct window_x11 *win;
 };
 
-xctx_t xctx;
+struct x_context xctx;
 bool dunst_grab_errored = false;
 
 static bool fullscreen_last = false;
 
-static void x_shortcut_init(keyboard_shortcut *ks);
-static int x_shortcut_grab(keyboard_shortcut *ks);
-static void x_shortcut_ungrab(keyboard_shortcut *ks);
+static void x_shortcut_init(struct keyboard_shortcut *ks);
+static int x_shortcut_grab(struct keyboard_shortcut *ks);
+static void x_shortcut_ungrab(struct keyboard_shortcut *ks);
 /* FIXME refactor setup teardown handlers into one setup and one teardown */
 static void x_shortcut_setup_error_handler(void);
 static int x_shortcut_tear_down_error_handler(void);
 static void setopacity(Window win, unsigned long opacity);
 static void x_handle_click(XEvent ev);
 
-static void x_win_move(window_x11 *win, int x, int y, int width, int height)
+static void x_win_move(struct window_x11 *win, int x, int y, int width, int height)
 {
         /* move and resize */
         if (x != win->dim.x || y != win->dim.y) {
@@ -81,7 +81,7 @@ static void x_win_move(window_x11 *win, int x, int y, int width, int height)
         }
 }
 
-static void x_win_round_corners(window_x11 *win, const int rad)
+static void x_win_round_corners(struct window_x11 *win, const int rad)
 {
         const int width = win->dim.w;
         const int height = win->dim.h;
@@ -148,7 +148,7 @@ static void x_win_round_corners(window_x11 *win, const int rad)
                 win->xwin, ShapeNotifyMask);
 }
 
-void x_display_surface(cairo_surface_t *srf, window_x11 *win, const struct dimensions *dim)
+void x_display_surface(cairo_surface_t *srf, struct window_x11 *win, const struct dimensions *dim)
 {
         x_win_move(win, dim->x, dim->y, dim->w, dim->h);
         cairo_xlib_surface_set_size(win->root_surface, dim->w, dim->h);
@@ -164,12 +164,12 @@ void x_display_surface(cairo_surface_t *srf, window_x11 *win, const struct dimen
 
 }
 
-bool x_win_visible(window_x11 *win)
+bool x_win_visible(struct window_x11 *win)
 {
         return win->visible;
 }
 
-cairo_t* x_win_get_context(window_x11 *win)
+cairo_t* x_win_get_context(struct window_x11 *win)
 {
         return win->c_ctx;
 }
@@ -266,10 +266,10 @@ gboolean x_mainloop_fd_check(GSource *source)
  */
 gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer user_data)
 {
-        window_x11 *win = ((struct x11_source*) source)->win;
+        struct window_x11 *win = ((struct x11_source*) source)->win;
 
         bool fullscreen_now;
-        screen_info *scr;
+        struct screen_info *scr;
         XEvent ev;
         unsigned int state;
         while (XPending(xctx.dpy) > 0) {
@@ -571,7 +571,7 @@ static void x_set_wm(Window win)
                 PropModeReplace, (unsigned char *) data, 1L);
 }
 
-GSource* x_win_reg_source(window_x11 *win)
+GSource* x_win_reg_source(struct window_x11 *win)
 {
         // Static is necessary here because glib keeps the pointer and we need
         // to keep the reference alive.
@@ -599,9 +599,9 @@ GSource* x_win_reg_source(window_x11 *win)
 /*
  * Setup the window
  */
-window_x11 *x_win_create(void)
+struct window_x11 *x_win_create(void)
 {
-        window_x11 *win = g_malloc0(sizeof(window_x11));
+        struct window_x11 *win = g_malloc0(sizeof(struct window_x11));
 
         Window root;
         XSetWindowAttributes wa;
@@ -614,7 +614,7 @@ window_x11 *x_win_create(void)
             ExposureMask | KeyPressMask | VisibilityChangeMask |
             ButtonReleaseMask | FocusChangeMask| StructureNotifyMask;
 
-        screen_info *scr = get_active_screen();
+        struct screen_info *scr = get_active_screen();
         win->xwin = XCreateWindow(xctx.dpy,
                                  root,
                                  scr->x,
@@ -651,7 +651,7 @@ window_x11 *x_win_create(void)
         return win;
 }
 
-void x_win_destroy(window_x11 *win)
+void x_win_destroy(struct window_x11 *win)
 {
         g_source_destroy(win->esrc);
         g_source_unref(win->esrc);
@@ -666,7 +666,7 @@ void x_win_destroy(window_x11 *win)
 /*
  * Show the window and grab shortcuts.
  */
-void x_win_show(window_x11 *win)
+void x_win_show(struct window_x11 *win)
 {
         /* window is already mapped or there's nothing to show */
         if (win->visible || queues_length_displayed() == 0) {
@@ -699,7 +699,7 @@ void x_win_show(window_x11 *win)
 /*
  * Hide the window and ungrab unused keyboard_shortcuts
  */
-void x_win_hide(window_x11 *win)
+void x_win_hide(struct window_x11 *win)
 {
         x_shortcut_ungrab(&settings.close_ks);
         x_shortcut_ungrab(&settings.close_all_ks);
@@ -777,7 +777,7 @@ static int x_shortcut_tear_down_error_handler(void)
 /*
  * Grab the given keyboard shortcut.
  */
-static int x_shortcut_grab(keyboard_shortcut *ks)
+static int x_shortcut_grab(struct keyboard_shortcut *ks)
 {
         if (!ks->is_valid)
                 return 1;
@@ -814,7 +814,7 @@ static int x_shortcut_grab(keyboard_shortcut *ks)
 /*
  * Ungrab the given keyboard shortcut.
  */
-static void x_shortcut_ungrab(keyboard_shortcut *ks)
+static void x_shortcut_ungrab(struct keyboard_shortcut *ks)
 {
         Window root;
         root = RootWindow(xctx.dpy, DefaultScreen(xctx.dpy));
@@ -827,7 +827,7 @@ static void x_shortcut_ungrab(keyboard_shortcut *ks)
 /*
  * Initialize the keyboard shortcut.
  */
-static void x_shortcut_init(keyboard_shortcut *ks)
+static void x_shortcut_init(struct keyboard_shortcut *ks)
 {
         if (!ks|| !ks->str)
                 return;

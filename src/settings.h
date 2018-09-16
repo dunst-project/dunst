@@ -80,10 +80,10 @@ typedef struct _settings {
         char *icon_path;
         enum follow_mode f_mode;
         bool always_run_script;
-        keyboard_shortcut close_ks;
-        keyboard_shortcut close_all_ks;
-        keyboard_shortcut history_ks;
-        keyboard_shortcut context_ks;
+        struct keyboard_shortcut close_ks;
+        struct keyboard_shortcut close_all_ks;
+        struct keyboard_shortcut history_ks;
+        struct keyboard_shortcut context_ks;
         bool force_xinerama;
         int corner_radius;
         enum mouse_action mouse_left_click;

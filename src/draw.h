@@ -2,7 +2,7 @@
 #define DUNST_DRAW_H
 
 #include "src/x11/x.h"
-extern window_x11 *win; // Temporary
+extern struct window_x11 *win; // Temporary
 
 void draw_setup(void);
 
