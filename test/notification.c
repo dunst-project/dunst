@@ -33,24 +33,24 @@ TEST test_notification_is_duplicate(void *notifications)
         ASSERT(notification_is_duplicate(a, b));
 
         char *tmp = b->icon;
-        enum icon_position_t icon_setting_tmp = settings.icon_position;
+        enum icon_position icon_setting_tmp = settings.icon_position;
 
         b->icon = "Test1";
 
-        settings.icon_position = icons_off;
+        settings.icon_position = ICON_OFF;
         ASSERT(notification_is_duplicate(a, b));
         //Setting pointer to a random value since we are checking for null
         b->raw_icon = (struct raw_image*)0xff;
         ASSERT(notification_is_duplicate(a, b));
         b->raw_icon = NULL;
 
-        settings.icon_position = icons_left;
+        settings.icon_position = ICON_LEFT;
         ASSERT_FALSE(notification_is_duplicate(a, b));
         b->raw_icon = (struct raw_image*)0xff;
         ASSERT_FALSE(notification_is_duplicate(a, b));
         b->raw_icon = NULL;
 
-        settings.icon_position = icons_right;
+        settings.icon_position = ICON_RIGHT;
         ASSERT_FALSE(notification_is_duplicate(a, b));
         b->raw_icon = (struct raw_image*)0xff;
         ASSERT_FALSE(notification_is_duplicate(a, b));

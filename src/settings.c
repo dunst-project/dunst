@@ -457,11 +457,11 @@ void load_settings(char *cmdline_config_path)
 
                 if (strlen(c) > 0) {
                         if (strcmp(c, "left") == 0)
-                                settings.icon_position = icons_left;
+                                settings.icon_position = ICON_LEFT;
                         else if (strcmp(c, "right") == 0)
-                                settings.icon_position = icons_right;
+                                settings.icon_position = ICON_RIGHT;
                         else if (strcmp(c, "off") == 0)
-                                settings.icon_position = icons_off;
+                                settings.icon_position = ICON_OFF;
                         else
                                 LOG_W("Unknown icon position: '%s'", c);
                         g_free(c);

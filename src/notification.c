@@ -174,14 +174,14 @@ int notification_cmp_data(const void *va, const void *vb, void *data)
 int notification_is_duplicate(const struct notification *a, const struct notification *b)
 {
         //Comparing raw icons is not supported, assume they are not identical
-        if (settings.icon_position != icons_off
+        if (settings.icon_position != ICON_OFF
                 && (a->raw_icon || b->raw_icon))
                 return false;
 
         return strcmp(a->appname, b->appname) == 0
             && strcmp(a->summary, b->summary) == 0
             && strcmp(a->body,    b->body) == 0
-            && (settings.icon_position != icons_off ? strcmp(a->icon, b->icon) == 0 : 1)
+            && (settings.icon_position != ICON_OFF ? strcmp(a->icon, b->icon) == 0 : 1)
             && a->urgency == b->urgency;
 }
 

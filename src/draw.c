@@ -270,7 +270,7 @@ static struct colored_layout *layout_init_shared(cairo_t *c, const struct notifi
                 pango_layout_set_ellipsize(cl->l, ellipsize);
         }
 
-        if (settings.icon_position != icons_off) {
+        if (settings.icon_position != ICON_OFF) {
                 cl->icon = icon_get_for_notification(n);
         } else {
                 cl->icon = NULL;
@@ -515,10 +515,10 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width)
         int h_text;
         pango_layout_get_pixel_size(cl->l, NULL, &h_text);
 
-        if (cl->icon && settings.icon_position == icons_left) {
+        if (cl->icon && settings.icon_position == ICON_LEFT) {
                 cairo_move_to(c, cairo_image_surface_get_width(cl->icon) + 2 * settings.h_padding,
                                  settings.padding + h/2 - h_text/2);
-        } else if (cl->icon && settings.icon_position == icons_right) {
+        } else if (cl->icon && settings.icon_position == ICON_RIGHT) {
                 cairo_move_to(c, settings.h_padding, settings.padding + h/2 - h_text/2);
         } else {
                 cairo_move_to(c, settings.h_padding, settings.padding);
@@ -535,9 +535,9 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width)
                              image_x,
                              image_y = settings.padding + h/2 - image_height/2;
 
-                if (settings.icon_position == icons_left) {
+                if (settings.icon_position == ICON_LEFT) {
                         image_x = settings.h_padding;
-                } else if (settings.icon_position == icons_right){
+                } else if (settings.icon_position == ICON_RIGHT){
                         image_x = width - settings.h_padding - image_width;
                 } else {
                         LOG_E("Tried to draw icon but icon position is not valid. %s:%d", __FILE__, __LINE__);
