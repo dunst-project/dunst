@@ -41,14 +41,14 @@ void draw_setup(void)
         pango_fdesc = pango_font_description_from_string(settings.font);
 }
 
-static struct color color_hex_to_double(int hexValue)
+static struct color hex_to_color(int hexValue)
 {
-        struct color color;
-        color.r = ((hexValue >> 16) & 0xFF) / 255.0;
-        color.g = ((hexValue >> 8) & 0xFF) / 255.0;
-        color.b = ((hexValue) & 0xFF) / 255.0;
+        struct color ret;
+        ret.r = ((hexValue >> 16) & 0xFF) / 255.0;
+        ret.g = ((hexValue >> 8) & 0xFF) / 255.0;
+        ret.b = ((hexValue) & 0xFF) / 255.0;
 
-        return color;
+        return ret;
 }
 
 static struct color string_to_color(const char *str)
@@ -59,7 +59,7 @@ static struct color string_to_color(const char *str)
                 LOG_W("Invalid color string: '%s'", str);
         }
 
-        return color_hex_to_double(val);
+        return hex_to_color(val);
 }
 
 static double color_apply_delta(double base, double delta)
