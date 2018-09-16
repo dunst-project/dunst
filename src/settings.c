@@ -727,16 +727,16 @@ void load_settings(char *cmdline_config_path)
                         continue;
 
                 /* check for existing rule with same name */
-                rule_t *r = NULL;
+                struct rule *r = NULL;
                 for (GSList *iter = rules; iter; iter = iter->next) {
-                        rule_t *match = iter->data;
+                        struct rule *match = iter->data;
                         if (match->name &&
                             strcmp(match->name, cur_section) == 0)
                                 r = match;
                 }
 
                 if (!r) {
-                        r = g_malloc(sizeof(rule_t));
+                        r = g_malloc(sizeof(struct rule));
                         rule_init(r);
                         rules = g_slist_insert(rules, r, -1);
                 }

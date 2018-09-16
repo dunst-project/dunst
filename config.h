@@ -110,7 +110,7 @@ struct settings defaults = {
 
 };
 
-rule_t default_rules[] = {
+struct rule default_rules[] = {
         /* name can be any unique string. It is used to identify
          * the rule in dunstrc to override it there
          */
