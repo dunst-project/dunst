@@ -76,18 +76,18 @@ static double color_apply_delta(double base, double delta)
 static struct color calculate_foreground_color(struct color bg)
 {
         double c_delta = 0.1;
-        struct color color = bg;
+        struct color fg = bg;
 
         /* do we need to darken or brighten the colors? */
         bool darken = (bg.r + bg.g + bg.b) / 3 > 0.5;
 
         int signedness = darken ? -1 : 1;
 
-        color.r = color_apply_delta(color.r, c_delta * signedness);
-        color.g = color_apply_delta(color.g, c_delta * signedness);
-        color.b = color_apply_delta(color.b, c_delta * signedness);
+        fg.r = color_apply_delta(fg.r, c_delta * signedness);
+        fg.g = color_apply_delta(fg.g, c_delta * signedness);
+        fg.b = color_apply_delta(fg.b, c_delta * signedness);
 
-        return color;
+        return fg;
 }
 
 static struct color layout_get_sepcolor(struct colored_layout *cl,
