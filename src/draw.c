@@ -120,14 +120,14 @@ static void layout_setup_pango(PangoLayout *layout, int width)
 
         PangoAlignment align;
         switch (settings.align) {
-        case left:
+        case ALIGN_LEFT:
         default:
                 align = PANGO_ALIGN_LEFT;
                 break;
-        case center:
+        case ALIGN_CENTER:
                 align = PANGO_ALIGN_CENTER;
                 break;
-        case right:
+        case ALIGN_RIGHT:
                 align = PANGO_ALIGN_RIGHT;
                 break;
         }

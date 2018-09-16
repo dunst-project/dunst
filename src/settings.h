@@ -6,7 +6,7 @@
 
 #include "x11/x.h"
 
-enum alignment { left, center, right };
+enum alignment { ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT };
 enum ellipsize { start, middle, end };
 enum icon_position_t { icons_left, icons_right, icons_off };
 enum separator_color { SEP_FOREGROUND, SEP_AUTO, SEP_FRAME, SEP_CUSTOM };

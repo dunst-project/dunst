@@ -320,11 +320,11 @@ void load_settings(char *cmdline_config_path)
 
                 if (strlen(c) > 0) {
                         if (strcmp(c, "left") == 0)
-                                settings.align = left;
+                                settings.align = ALIGN_LEFT;
                         else if (strcmp(c, "center") == 0)
-                                settings.align = center;
+                                settings.align = ALIGN_CENTER;
                         else if (strcmp(c, "right") == 0)
-                                settings.align = right;
+                                settings.align = ALIGN_RIGHT;
                         else
                                 LOG_W("Unknown alignment value: '%s'", c);
                         g_free(c);
