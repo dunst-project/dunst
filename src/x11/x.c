@@ -411,7 +411,7 @@ static void x_handle_click(XEvent ev)
 
         if (act == MOUSE_DO_ACTION || act == MOUSE_CLOSE_CURRENT) {
                 int y = settings.separator_height;
-                notification *n = NULL;
+                struct notification *n = NULL;
                 int first = true;
                 for (const GList *iter = queues_get_displayed(); iter;
                      iter = iter->next) {

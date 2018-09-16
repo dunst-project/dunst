@@ -42,7 +42,7 @@ struct actions {
         gsize count;
 };
 
-typedef struct _notification {
+struct notification {
         int id;
         char *dbus_client;
 
@@ -83,7 +83,7 @@ typedef struct _notification {
         char *msg;            /**< formatted message */
         char *text_to_render; /**< formatted message (with age and action indicators) */
         char *urls;           /**< urllist delimited by '\\n' */
-} notification;
+};
 
 /**
  * Create notification struct and initialise all fields with either
@@ -93,7 +93,7 @@ typedef struct _notification {
  * This function is guaranteed to return a valid pointer.
  * @returns The generated notification
  */
-notification *notification_create(void);
+struct notification *notification_create(void);
 
 /**
  * Sanitize values of notification, apply all matching rules
@@ -101,7 +101,7 @@ notification *notification_create(void);
  *
  * @param n: the notification to sanitize
  */
-void notification_init(notification *n);
+void notification_init(struct notification *n);
 
 /**
  * Free the actions structure
@@ -122,12 +122,12 @@ void rawimage_free(struct raw_image *i);
  *
  * @param n (nullable): pointer to #notification
  */
-void notification_free(notification *n);
+void notification_free(struct notification *n);
 
 /**
  * Helper function to compare two given notifications.
  */
-int notification_cmp(const notification *a, const notification *b);
+int notification_cmp(const struct notification *a, const struct notification *b);
 
 /**
  * Wrapper for notification_cmp to match glib's
@@ -135,7 +135,7 @@ int notification_cmp(const notification *a, const notification *b);
  */
 int notification_cmp_data(const void *va, const void *vb, void *data);
 
-int notification_is_duplicate(const notification *a, const notification *b);
+int notification_is_duplicate(const struct notification *a, const struct notification *b);
 
 /**
  * Run the script associated with the
@@ -144,12 +144,12 @@ int notification_is_duplicate(const notification *a, const notification *b);
  * If the script of the notification has been executed already and
  * settings.always_run_script is not set, do nothing.
  */
-void notification_run_script(notification *n);
+void notification_run_script(struct notification *n);
 /**
  * print a human readable representation
  * of the given notification to stdout.
  */
-void notification_print(notification *n);
+void notification_print(const struct notification *n);
 
 /**
  * Replace the two chars where **needle points
@@ -162,14 +162,15 @@ void notification_replace_single_field(char **haystack,
                                        char **needle,
                                        const char *replacement,
                                        enum markup_mode markup_mode);
-void notification_update_text_to_render(notification *n);
+
+void notification_update_text_to_render(struct notification *n);
 
 /**
  * If the notification has exactly one action, or one is marked as default,
  * invoke it. If there are multiple and no default, open the context menu. If
  * there are no actions, proceed similarly with urls.
  */
-void notification_do_action(notification *n);
+void notification_do_action(const struct notification *n);
 
 const char *notification_urgency_to_string(const enum urgency urgency);
 

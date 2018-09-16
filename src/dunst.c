@@ -161,7 +161,7 @@ int dunst_main(int argc, char *argv[])
         guint int_src = g_unix_signal_add(SIGINT, quit_signal, NULL);
 
         if (settings.startup_notification) {
-                notification *n = notification_create();
+                struct notification *n = notification_create();
                 n->id = 0;
                 n->appname = g_strdup("dunst");
                 n->summary = g_strdup("startup");

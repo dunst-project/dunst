@@ -10,7 +10,7 @@
 /*
  * Apply rule to notification.
  */
-void rule_apply(struct rule *r, notification *n)
+void rule_apply(struct rule *r, struct notification *n)
 {
         if (r->timeout != -1)
                 n->timeout = r->timeout;
@@ -50,7 +50,7 @@ void rule_apply(struct rule *r, notification *n)
 /*
  * Check all rules if they match n and apply.
  */
-void rule_apply_all(notification *n)
+void rule_apply_all(struct notification *n)
 {
         for (GSList *iter = rules; iter; iter = iter->next) {
                 struct rule *r = iter->data;
@@ -89,7 +89,7 @@ void rule_init(struct rule *r)
 /*
  * Check whether rule should be applied to n.
  */
-bool rule_matches_notification(struct rule *r, notification *n)
+bool rule_matches_notification(struct rule *r, struct notification *n)
 {
         return   ( (!r->appname  || (n->appname  && !fnmatch(r->appname,  n->appname, 0)))
                 && (!r->summary  || (n->summary  && !fnmatch(r->summary,  n->summary, 0)))

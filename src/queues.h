@@ -30,7 +30,7 @@ const GList *queues_get_displayed(void);
  *
  * @return a notification or NULL, if waiting is empty
  */
-const notification *queues_get_head_waiting(void);
+const struct notification *queues_get_head_waiting(void);
 
 /**
  * Returns the current amount of notifications,
@@ -63,7 +63,7 @@ unsigned int queues_length_history(void);
  * @return `0`, the notification was dismissed and freed
  * @return The new value of `n->id`
  */
-int queues_notification_insert(notification *n);
+int queues_notification_insert(struct notification *n);
 
 /**
  * Replace the notification which matches the id field of
@@ -75,7 +75,7 @@ int queues_notification_insert(notification *n);
  * @return true, if a matching notification has been found and is replaced
  * @return false, else
  */
-bool queues_notification_replace_id(notification *new);
+bool queues_notification_replace_id(struct notification *new);
 
 /**
  * Close the notification that has n->id == id
@@ -96,7 +96,7 @@ void queues_notification_close_id(int id, enum reason reason);
  * @param n (transfer full) The notification to close
  * @param reason The #reason to close
  * */
-void queues_notification_close(notification *n, enum reason reason);
+void queues_notification_close(struct notification *n, enum reason reason);
 
 /**
  * Pushes the latest notification of history to the displayed queue
@@ -110,7 +110,7 @@ void queues_history_pop(void);
  *
  * @param n (transfer full) The notification to push to history
  */
-void queues_history_push(notification *n);
+void queues_history_push(struct notification *n);
 
 /**
  * Push all waiting and displayed notifications to history

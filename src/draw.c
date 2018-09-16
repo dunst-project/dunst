@@ -26,7 +26,7 @@ struct colored_layout {
         char *text;
         PangoAttrList *attr;
         cairo_surface_t *icon;
-        const notification *n;
+        const struct notification *n;
 };
 
 struct window_x11 *win;
@@ -246,7 +246,7 @@ static PangoLayout *layout_create(cairo_t *c)
         return layout;
 }
 
-static struct colored_layout *layout_init_shared(cairo_t *c, const notification *n)
+static struct colored_layout *layout_init_shared(cairo_t *c, const struct notification *n)
 {
         struct colored_layout *cl = g_malloc(sizeof(struct colored_layout));
         cl->l = layout_create(c);
@@ -302,7 +302,7 @@ static struct colored_layout *layout_init_shared(cairo_t *c, const notification 
         return cl;
 }
 
-static struct colored_layout *layout_derive_xmore(cairo_t *c, const notification *n, int qlen)
+static struct colored_layout *layout_derive_xmore(cairo_t *c, const struct notification *n, int qlen)
 {
         struct colored_layout *cl = layout_init_shared(c, n);
         cl->text = g_strdup_printf("(%d more)", qlen);
@@ -311,7 +311,7 @@ static struct colored_layout *layout_derive_xmore(cairo_t *c, const notification
         return cl;
 }
 
-static struct colored_layout *layout_from_notification(cairo_t *c, notification *n)
+static struct colored_layout *layout_from_notification(cairo_t *c, struct notification *n)
 {
 
         struct colored_layout *cl = layout_init_shared(c, n);
@@ -354,7 +354,7 @@ static GSList *create_layouts(cairo_t *c)
         for (const GList *iter = queues_get_displayed();
                         iter; iter = iter->next)
         {
-                notification *n = iter->data;
+                struct notification *n = iter->data;
 
                 notification_update_text_to_render(n);
 

@@ -37,9 +37,9 @@ struct rule {
 extern GSList *rules;
 
 void rule_init(struct rule *r);
-void rule_apply(struct rule *r, notification *n);
-void rule_apply_all(notification *n);
-bool rule_matches_notification(struct rule *r, notification *n);
+void rule_apply(struct rule *r, struct notification *n);
+void rule_apply_all(struct notification *n);
+bool rule_matches_notification(struct rule *r, struct notification *n);
 
 #endif
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

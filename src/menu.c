@@ -135,7 +135,7 @@ void open_browser(const char *in)
  */
 void invoke_action(const char *action)
 {
-        notification *invoked = NULL;
+        struct notification *invoked = NULL;
         char *action_identifier = NULL;
 
         char *appname_begin = strchr(action, '[');
@@ -149,7 +149,7 @@ void invoke_action(const char *action)
 
         for (const GList *iter = queues_get_displayed(); iter;
              iter = iter->next) {
-                notification *n = iter->data;
+                struct notification *n = iter->data;
                 if (g_str_has_prefix(appname_begin, n->appname) && strlen(n->appname) == appname_len) {
                         if (!n->actions)
                                 continue;
@@ -201,7 +201,7 @@ void context_menu(void)
 
         for (const GList *iter = queues_get_displayed(); iter;
              iter = iter->next) {
-                notification *n = iter->data;
+                struct notification *n = iter->data;
 
                 if (n->urls)
                         dmenu_input = string_append(dmenu_input, n->urls, "\n");
