@@ -1,6 +1,6 @@
 /* see example dunstrc for additional explanations about these options */
 
-settings_t defaults = {
+struct settings defaults = {
 
 .font = "-*-terminus-medium-r-*-*-16-*-*-*-*-*-*-*",
 .markup = MARKUP_NO,

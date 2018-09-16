@@ -19,7 +19,7 @@
 #include "utils.h"
 #include "x11/x.h"
 
-settings_t settings;
+struct settings settings;
 
 static void parse_follow_mode(const char *mode)
 {

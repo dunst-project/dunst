@@ -26,7 +26,7 @@ struct geometry {
 
 };
 
-typedef struct _settings {
+struct settings {
         bool print_notifications;
         bool per_monitor_dpi;
         enum markup_mode markup;
@@ -89,9 +89,9 @@ typedef struct _settings {
         enum mouse_action mouse_left_click;
         enum mouse_action mouse_middle_click;
         enum mouse_action mouse_right_click;
-} settings_t;
+};
 
-extern settings_t settings;
+extern struct settings settings;
 
 void load_settings(char *cmdline_config_path);
 
