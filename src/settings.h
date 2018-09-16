@@ -7,7 +7,7 @@
 #include "x11/x.h"
 
 enum alignment { ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT };
-enum ellipsize { start, middle, end };
+enum ellipsize { ELLIPSE_START, ELLIPSE_MIDDLE, ELLIPSE_END };
 enum icon_position { ICON_LEFT, ICON_RIGHT, ICON_OFF };
 enum separator_color { SEP_FOREGROUND, SEP_AUTO, SEP_FRAME, SEP_CUSTOM };
 enum follow_mode { FOLLOW_NONE, FOLLOW_MOUSE, FOLLOW_KEYBOARD };

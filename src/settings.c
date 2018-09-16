@@ -219,11 +219,11 @@ void load_settings(char *cmdline_config_path)
                 if (strlen(c) == 0) {
                         settings.ellipsize = defaults.ellipsize;
                 } else if (strcmp(c, "start") == 0) {
-                        settings.ellipsize = start;
+                        settings.ellipsize = ELLIPSE_START;
                 } else if (strcmp(c, "middle") == 0) {
-                        settings.ellipsize = middle;
+                        settings.ellipsize = ELLIPSE_MIDDLE;
                 } else if (strcmp(c, "end") == 0) {
-                        settings.ellipsize = end;
+                        settings.ellipsize = ELLIPSE_END;
                 } else {
                         LOG_W("Unknown ellipsize value: '%s'", c);
                         settings.ellipsize = defaults.ellipsize;

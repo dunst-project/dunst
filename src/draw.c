@@ -254,13 +254,13 @@ static struct colored_layout *layout_init_shared(cairo_t *c, const struct notifi
         if (!settings.word_wrap) {
                 PangoEllipsizeMode ellipsize;
                 switch (settings.ellipsize) {
-                case start:
+                case ELLIPSE_START:
                         ellipsize = PANGO_ELLIPSIZE_START;
                         break;
-                case middle:
+                case ELLIPSE_MIDDLE:
                         ellipsize = PANGO_ELLIPSIZE_MIDDLE;
                         break;
-                case end:
+                case ELLIPSE_END:
                         ellipsize = PANGO_ELLIPSIZE_END;
                         break;
                 default:
