@@ -429,6 +429,24 @@ void load_settings(char *cmdline_config_path)
                 "Scale larger icons down to this size, set to 0 to disable"
         );
 
+        // restrict the icon size to a reasonable limit if we have a fixed width.
+        // Otherwise the layout will be broken by too large icons.
+        // See https://github.com/dunst-project/dunst/issues/540
+        if (settings.geometry.width_set) {
+                const int icon_size_limit = settings.geometry.w / 2;
+                if (   settings.max_icon_size == 0
+                    || settings.max_icon_size > icon_size_limit) {
+                        if (settings.max_icon_size != 0) {
+                                LOG_W("Max width was set to %d but got a max_icon_size of %d, too large to use. Setting max_icon_size=%d",
+                                        settings.geometry.w, settings.max_icon_size, icon_size_limit);
+                        } else {
+                                LOG_I("Max width was set but max_icon_size is unlimited. Limiting icons to %d pixels", icon_size_limit);
+                        }
+
+                        settings.max_icon_size = icon_size_limit;
+                }
+        }
+
         // If the deprecated icon_folders option is used,
         // read it and generate its usage string.
         if (ini_is_set("global", "icon_folders") || cmdline_is_set("-icon_folders")) {
