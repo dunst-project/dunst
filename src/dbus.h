@@ -3,6 +3,7 @@
 #ifndef DUNST_DBUS_H
 #define DUNST_DBUS_H
 
+#include "dunst.h"
 #include "notification.h"
 
 /// The reasons according to the notification spec
@@ -19,6 +20,13 @@ int dbus_init(void);
 void dbus_teardown(int id);
 void signal_notification_closed(struct notification *n, enum reason reason);
 void signal_action_invoked(const struct notification *n, const char *identifier);
+
+/**
+ * Signal a changed status via DBus
+ *
+ * @param status The current status of dunst
+ * */
+void dbus_signal_status_changed(struct dunst_status status);
 
 #endif
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

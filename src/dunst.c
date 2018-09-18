@@ -31,20 +31,26 @@ static struct dunst_status status;
 void dunst_status(const enum dunst_status_field field,
                   bool value)
 {
+        bool changed;
         switch (field) {
         case S_FULLSCREEN:
+                changed = status.fullscreen != value;
                 status.fullscreen = value;
                 break;
         case S_IDLE:
+                changed = status.idle != value;
                 status.idle = value;
                 break;
         case S_RUNNING:
+                changed = status.running != value;
                 status.running = value;
                 break;
         default:
                 LOG_E("Invalid %s enum value in %s:%d", "dunst_status", __FILE__, __LINE__);
                 break;
         }
+        if (changed)
+                dbus_signal_status_changed(status);
 }
 
 /* see dunst.h */
