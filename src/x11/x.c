@@ -674,9 +674,8 @@ void x_win_destroy(window_x11 *win)
 void x_win_show(window_x11 *win)
 {
         /* window is already mapped or there's nothing to show */
-        if (win->visible || queues_length_displayed() == 0) {
+        if (win->visible)
                 return;
-        }
 
         x_shortcut_grab(&settings.close_ks);
         x_shortcut_grab(&settings.close_all_ks);
@@ -706,6 +705,9 @@ void x_win_show(window_x11 *win)
  */
 void x_win_hide(window_x11 *win)
 {
+        if (!win->visible)
+                return;
+
         x_shortcut_ungrab(&settings.close_ks);
         x_shortcut_ungrab(&settings.close_all_ks);
         x_shortcut_ungrab(&settings.context_ks);
