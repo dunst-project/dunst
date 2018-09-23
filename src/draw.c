@@ -376,10 +376,6 @@ static GSList *create_layouts(cairo_t *c)
         return layouts;
 }
 
-static void free_layouts(GSList *layouts)
-{
-        g_slist_free_full(layouts, free_colored_layout);
-}
 
 static int layout_get_height(struct colored_layout *cl)
 {
@@ -637,7 +633,7 @@ void draw(void)
         x_display_surface(image_surface, win, &dim);
 
         cairo_surface_destroy(image_surface);
-        free_layouts(layouts);
+        g_slist_free_full(layouts, free_colored_layout);
 }
 
 void draw_deinit(void)
