@@ -21,17 +21,20 @@
 
 struct settings settings;
 
-static void parse_follow_mode(const char *mode)
+static enum follow_mode parse_follow_mode(const char *mode)
 {
+        if (!mode)
+                return FOLLOW_NONE;
+
         if (strcmp(mode, "mouse") == 0)
-                settings.f_mode = FOLLOW_MOUSE;
+                return FOLLOW_MOUSE;
         else if (strcmp(mode, "keyboard") == 0)
-                settings.f_mode = FOLLOW_KEYBOARD;
+                return FOLLOW_KEYBOARD;
         else if (strcmp(mode, "none") == 0)
-                settings.f_mode = FOLLOW_NONE;
+                return FOLLOW_NONE;
         else {
                 LOG_W("Unknown follow mode: '%s'", mode);
-                settings.f_mode = FOLLOW_NONE;
+                return FOLLOW_NONE;
         }
 }
 
@@ -252,14 +255,12 @@ void load_settings(char *cmdline_config_path)
         {
                 char *c = option_get_string(
                         "global",
-                        "follow", "-follow", "",
+                        "follow", "-follow", NULL,
                         "Follow mouse, keyboard or none?"
                 );
 
-                if (strlen(c) > 0) {
-                        parse_follow_mode(c);
-                        g_free(c);
-                }
+                settings.f_mode = parse_follow_mode(c);
+                g_free(c);
         }
 
         settings.title = option_get_string(
