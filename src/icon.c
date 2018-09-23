@@ -161,18 +161,18 @@ cairo_surface_t *icon_get_for_notification(const struct notification *n)
         int h = gdk_pixbuf_get_height(pixbuf);
         int larger = w > h ? w : h;
         if (settings.max_icon_size && larger > settings.max_icon_size) {
-                GdkPixbuf *scaled;
-                if (w >= h) {
-                        scaled = gdk_pixbuf_scale_simple(pixbuf,
-                                        settings.max_icon_size,
-                                        (settings.max_icon_size * h) / w,
-                                        GDK_INTERP_BILINEAR);
-                } else {
-                        scaled = gdk_pixbuf_scale_simple(pixbuf,
-                                        (settings.max_icon_size * w) / h,
-                                        settings.max_icon_size,
-                                        GDK_INTERP_BILINEAR);
-                }
+                int scaled_w = settings.max_icon_size;
+                int scaled_h = settings.max_icon_size;
+                if (w >= h)
+                        scaled_h = (settings.max_icon_size * h) / w;
+                else
+                        scaled_w = (settings.max_icon_size * w) / h;
+
+                GdkPixbuf *scaled = gdk_pixbuf_scale_simple(
+                                pixbuf,
+                                scaled_w,
+                                scaled_h,
+                                GDK_INTERP_BILINEAR);
                 g_object_unref(pixbuf);
                 pixbuf = scaled;
         }
