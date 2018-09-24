@@ -18,18 +18,18 @@
 #include "queues.h"
 #include "x11/x.h"
 
-typedef struct {
+struct colored_layout {
         PangoLayout *l;
-        color_t fg;
-        color_t bg;
-        color_t frame;
+        struct color fg;
+        struct color bg;
+        struct color frame;
         char *text;
         PangoAttrList *attr;
         cairo_surface_t *icon;
-        const notification *n;
-} colored_layout;
+        const struct notification *n;
+};
 
-window_x11 *win;
+struct window_x11 *win;
 
 PangoFontDescription *pango_fdesc;
 
@@ -41,17 +41,17 @@ void draw_setup(void)
         pango_fdesc = pango_font_description_from_string(settings.font);
 }
 
-static color_t color_hex_to_double(int hexValue)
+static struct color hex_to_color(int hexValue)
 {
-        color_t color;
-        color.r = ((hexValue >> 16) & 0xFF) / 255.0;
-        color.g = ((hexValue >> 8) & 0xFF) / 255.0;
-        color.b = ((hexValue) & 0xFF) / 255.0;
+        struct color ret;
+        ret.r = ((hexValue >> 16) & 0xFF) / 255.0;
+        ret.g = ((hexValue >> 8) & 0xFF) / 255.0;
+        ret.b = ((hexValue) & 0xFF) / 255.0;
 
-        return color;
+        return ret;
 }
 
-static color_t string_to_color(const char *str)
+static struct color string_to_color(const char *str)
 {
         char *end;
         long int val = strtol(str+1, &end, 16);
@@ -59,7 +59,7 @@ static color_t string_to_color(const char *str)
                 LOG_W("Invalid color string: '%s'", str);
         }
 
-        return color_hex_to_double(val);
+        return hex_to_color(val);
 }
 
 static double color_apply_delta(double base, double delta)
@@ -73,24 +73,25 @@ static double color_apply_delta(double base, double delta)
         return base;
 }
 
-static color_t calculate_foreground_color(color_t bg)
+static struct color calculate_foreground_color(struct color bg)
 {
         double c_delta = 0.1;
-        color_t color = bg;
+        struct color fg = bg;
 
         /* do we need to darken or brighten the colors? */
         bool darken = (bg.r + bg.g + bg.b) / 3 > 0.5;
 
         int signedness = darken ? -1 : 1;
 
-        color.r = color_apply_delta(color.r, c_delta * signedness);
-        color.g = color_apply_delta(color.g, c_delta * signedness);
-        color.b = color_apply_delta(color.b, c_delta * signedness);
+        fg.r = color_apply_delta(fg.r, c_delta * signedness);
+        fg.g = color_apply_delta(fg.g, c_delta * signedness);
+        fg.b = color_apply_delta(fg.b, c_delta * signedness);
 
-        return color;
+        return fg;
 }
 
-static color_t layout_get_sepcolor(colored_layout *cl, colored_layout *cl_next)
+static struct color layout_get_sepcolor(struct colored_layout *cl,
+                                        struct colored_layout *cl_next)
 {
         switch (settings.sep_color) {
         case SEP_FRAME:
@@ -119,14 +120,14 @@ static void layout_setup_pango(PangoLayout *layout, int width)
 
         PangoAlignment align;
         switch (settings.align) {
-        case left:
+        case ALIGN_LEFT:
         default:
                 align = PANGO_ALIGN_LEFT;
                 break;
-        case center:
+        case ALIGN_CENTER:
                 align = PANGO_ALIGN_CENTER;
                 break;
-        case right:
+        case ALIGN_RIGHT:
                 align = PANGO_ALIGN_RIGHT;
                 break;
         }
@@ -136,7 +137,7 @@ static void layout_setup_pango(PangoLayout *layout, int width)
 
 static void free_colored_layout(void *data)
 {
-        colored_layout *cl = data;
+        struct colored_layout *cl = data;
         g_object_unref(cl->l);
         pango_attr_list_unref(cl->attr);
         g_free(cl->text);
@@ -153,7 +154,7 @@ static struct dimensions calculate_dimensions(GSList *layouts)
 {
         struct dimensions dim = { 0 };
 
-        screen_info *scr = get_active_screen();
+        struct screen_info *scr = get_active_screen();
         if (have_dynamic_width()) {
                 /* dynamic width */
                 dim.w = 0;
@@ -176,7 +177,7 @@ static struct dimensions calculate_dimensions(GSList *layouts)
 
         int text_width = 0, total_width = 0;
         for (GSList *iter = layouts; iter; iter = iter->next) {
-                colored_layout *cl = iter->data;
+                struct colored_layout *cl = iter->data;
                 int w=0,h=0;
                 pango_layout_get_pixel_size(cl->l, &w, &h);
                 if (cl->icon) {
@@ -233,7 +234,7 @@ static struct dimensions calculate_dimensions(GSList *layouts)
 
 static PangoLayout *layout_create(cairo_t *c)
 {
-        screen_info *screen = get_active_screen();
+        struct screen_info *screen = get_active_screen();
 
         PangoContext *context = pango_cairo_create_context(c);
         pango_cairo_context_set_resolution(context, get_dpi_for_screen(screen));
@@ -245,21 +246,21 @@ static PangoLayout *layout_create(cairo_t *c)
         return layout;
 }
 
-static colored_layout *layout_init_shared(cairo_t *c, const notification *n)
+static struct colored_layout *layout_init_shared(cairo_t *c, const struct notification *n)
 {
-        colored_layout *cl = g_malloc(sizeof(colored_layout));
+        struct colored_layout *cl = g_malloc(sizeof(struct colored_layout));
         cl->l = layout_create(c);
 
         if (!settings.word_wrap) {
                 PangoEllipsizeMode ellipsize;
                 switch (settings.ellipsize) {
-                case start:
+                case ELLIPSE_START:
                         ellipsize = PANGO_ELLIPSIZE_START;
                         break;
-                case middle:
+                case ELLIPSE_MIDDLE:
                         ellipsize = PANGO_ELLIPSIZE_MIDDLE;
                         break;
-                case end:
+                case ELLIPSE_END:
                         ellipsize = PANGO_ELLIPSIZE_END;
                         break;
                 default:
@@ -269,7 +270,7 @@ static colored_layout *layout_init_shared(cairo_t *c, const notification *n)
                 pango_layout_set_ellipsize(cl->l, ellipsize);
         }
 
-        if (settings.icon_position != icons_off) {
+        if (settings.icon_position != ICON_OFF) {
                 cl->icon = icon_get_for_notification(n);
         } else {
                 cl->icon = NULL;
@@ -301,19 +302,19 @@ static colored_layout *layout_init_shared(cairo_t *c, const notification *n)
         return cl;
 }
 
-static colored_layout *layout_derive_xmore(cairo_t *c, const notification *n, int qlen)
+static struct colored_layout *layout_derive_xmore(cairo_t *c, const struct notification *n, int qlen)
 {
-        colored_layout *cl = layout_init_shared(c, n);
+        struct colored_layout *cl = layout_init_shared(c, n);
         cl->text = g_strdup_printf("(%d more)", qlen);
         cl->attr = NULL;
         pango_layout_set_text(cl->l, cl->text, -1);
         return cl;
 }
 
-static colored_layout *layout_from_notification(cairo_t *c, notification *n)
+static struct colored_layout *layout_from_notification(cairo_t *c, struct notification *n)
 {
 
-        colored_layout *cl = layout_init_shared(c, n);
+        struct colored_layout *cl = layout_init_shared(c, n);
 
         /* markup */
         GError *err = NULL;
@@ -353,7 +354,7 @@ static GSList *create_layouts(cairo_t *c)
         for (const GList *iter = queues_get_displayed();
                         iter; iter = iter->next)
         {
-                notification *n = iter->data;
+                struct notification *n = iter->data;
 
                 notification_update_text_to_render(n);
 
@@ -380,7 +381,7 @@ static void free_layouts(GSList *layouts)
         g_slist_free_full(layouts, free_colored_layout);
 }
 
-static int layout_get_height(colored_layout *cl)
+static int layout_get_height(struct colored_layout *cl)
 {
         int h;
         int h_icon = 0;
@@ -446,8 +447,8 @@ static void draw_rounded_rect(cairo_t *c, int x, int y, int width, int height, i
 }
 
 static cairo_surface_t *render_background(cairo_surface_t *srf,
-                                          colored_layout *cl,
-                                          colored_layout *cl_next,
+                                          struct colored_layout *cl,
+                                          struct colored_layout *cl_next,
                                           int y,
                                           int width,
                                           int height,
@@ -492,7 +493,7 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
         if (   settings.sep_color != SEP_FRAME
             && settings.separator_height > 0
             && !last) {
-                color_t sep_color = layout_get_sepcolor(cl, cl_next);
+                struct color sep_color = layout_get_sepcolor(cl, cl_next);
                 cairo_set_source_rgb(c, sep_color.r, sep_color.g, sep_color.b);
 
                 cairo_rectangle(c, settings.frame_width, y + height, width, settings.separator_height);
@@ -508,16 +509,16 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
         return cairo_surface_create_for_rectangle(srf, x, y, width, height);
 }
 
-static void render_content(cairo_t *c, colored_layout *cl, int width)
+static void render_content(cairo_t *c, struct colored_layout *cl, int width)
 {
         const int h = layout_get_height(cl);
         int h_text;
         pango_layout_get_pixel_size(cl->l, NULL, &h_text);
 
-        if (cl->icon && settings.icon_position == icons_left) {
+        if (cl->icon && settings.icon_position == ICON_LEFT) {
                 cairo_move_to(c, cairo_image_surface_get_width(cl->icon) + 2 * settings.h_padding,
                                  settings.padding + h/2 - h_text/2);
-        } else if (cl->icon && settings.icon_position == icons_right) {
+        } else if (cl->icon && settings.icon_position == ICON_RIGHT) {
                 cairo_move_to(c, settings.h_padding, settings.padding + h/2 - h_text/2);
         } else {
                 cairo_move_to(c, settings.h_padding, settings.padding);
@@ -534,9 +535,9 @@ static void render_content(cairo_t *c, colored_layout *cl, int width)
                              image_x,
                              image_y = settings.padding + h/2 - image_height/2;
 
-                if (settings.icon_position == icons_left) {
+                if (settings.icon_position == ICON_LEFT) {
                         image_x = settings.h_padding;
-                } else if (settings.icon_position == icons_right){
+                } else if (settings.icon_position == ICON_RIGHT){
                         image_x = width - settings.h_padding - image_width;
                 } else {
                         LOG_E("Tried to draw icon but icon position is not valid. %s:%d", __FILE__, __LINE__);
@@ -550,8 +551,8 @@ static void render_content(cairo_t *c, colored_layout *cl, int width)
 }
 
 static struct dimensions layout_render(cairo_surface_t *srf,
-                                       colored_layout *cl,
-                                       colored_layout *cl_next,
+                                       struct colored_layout *cl,
+                                       struct colored_layout *cl_next,
                                        struct dimensions dim,
                                        bool first,
                                        bool last)
@@ -593,7 +594,7 @@ static struct dimensions layout_render(cairo_surface_t *srf,
  */
 static void calc_window_pos(int width, int height, int *ret_x, int *ret_y)
 {
-        screen_info *scr = get_active_screen();
+        struct screen_info *scr = get_active_screen();
 
         if (ret_x) {
                 if (settings.geometry.negative_x) {
@@ -624,8 +625,8 @@ void draw(void)
         bool first = true;
         for (GSList *iter = layouts; iter; iter = iter->next) {
 
-                colored_layout *cl_this = iter->data;
-                colored_layout *cl_next = iter->next ? iter->next->data : NULL;
+                struct colored_layout *cl_this = iter->data;
+                struct colored_layout *cl_next = iter->next ? iter->next->data : NULL;
 
                 dim = layout_render(image_surface, cl_this, cl_next, dim, first, !cl_next);
 

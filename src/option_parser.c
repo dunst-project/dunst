@@ -12,22 +12,22 @@
 #include "log.h"
 #include "utils.h"
 
-typedef struct _entry_t {
+struct entry {
         char *key;
         char *value;
-} entry_t;
+};
 
-typedef struct _section_t {
+struct section {
         char *name;
         int entry_count;
-        entry_t *entries;
-} section_t;
+        struct entry *entries;
+};
 
 static int section_count = 0;
-static section_t *sections;
+static struct section *sections;
 
-static section_t *new_section(const char *name);
-static section_t *get_section(const char *name);
+static struct section *new_section(const char *name);
+static struct section *get_section(const char *name);
 static void add_entry(const char *section_name, const char *key, const char *value);
 static const char *get_value(const char *section, const char *key);
 static char *clean_value(const char *value);
@@ -40,7 +40,7 @@ static void cmdline_usage_append(const char *key, const char *type, const char *
 
 static int cmdline_find_option(const char *key);
 
-section_t *new_section(const char *name)
+struct section *new_section(const char *name)
 {
         for (int i = 0; i < section_count; i++) {
                 if (!strcmp(name, sections[i].name)) {
@@ -49,7 +49,7 @@ section_t *new_section(const char *name)
         }
 
         section_count++;
-        sections = g_realloc(sections, sizeof(section_t) * section_count);
+        sections = g_realloc(sections, sizeof(struct section) * section_count);
         sections[section_count - 1].name = g_strdup(name);
         sections[section_count - 1].entries = NULL;
         sections[section_count - 1].entry_count = 0;
@@ -70,7 +70,7 @@ void free_ini(void)
         section_count = 0;
 }
 
-section_t *get_section(const char *name)
+struct section *get_section(const char *name)
 {
         for (int i = 0; i < section_count; i++) {
                 if (strcmp(sections[i].name, name) == 0)
@@ -82,20 +82,20 @@ section_t *get_section(const char *name)
 
 void add_entry(const char *section_name, const char *key, const char *value)
 {
-        section_t *s = get_section(section_name);
+        struct section *s = get_section(section_name);
         if (!s)
                 s = new_section(section_name);
 
         s->entry_count++;
         int len = s->entry_count;
-        s->entries = g_realloc(s->entries, sizeof(entry_t) * len);
+        s->entries = g_realloc(s->entries, sizeof(struct entry) * len);
         s->entries[s->entry_count - 1].key = g_strdup(key);
         s->entries[s->entry_count - 1].value = clean_value(value);
 }
 
 const char *get_value(const char *section, const char *key)
 {
-        section_t *s = get_section(section);
+        struct section *s = get_section(section);
         if (!s) {
                 return NULL;
         }

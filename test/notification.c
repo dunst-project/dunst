@@ -5,8 +5,9 @@
 
 #include <glib.h>
 
-TEST test_notification_is_duplicate_field(char **field, notification *a,
-                                          notification *b)
+TEST test_notification_is_duplicate_field(char **field,
+                                          struct notification *a,
+                                          struct notification *b)
 {
         ASSERT(notification_is_duplicate(a, b));
         char *tmp = *field;
@@ -19,9 +20,9 @@ TEST test_notification_is_duplicate_field(char **field, notification *a,
 
 TEST test_notification_is_duplicate(void *notifications)
 {
-        notification **n = (notification**)notifications;
-        notification *a = n[0];
-        notification *b = n[1];
+        struct notification **n = (struct notification**)notifications;
+        struct notification *a = n[0];
+        struct notification *b = n[1];
 
         ASSERT(notification_is_duplicate(a, b));
 
@@ -32,26 +33,26 @@ TEST test_notification_is_duplicate(void *notifications)
         ASSERT(notification_is_duplicate(a, b));
 
         char *tmp = b->icon;
-        enum icon_position_t icon_setting_tmp = settings.icon_position;
+        enum icon_position icon_setting_tmp = settings.icon_position;
 
         b->icon = "Test1";
 
-        settings.icon_position = icons_off;
+        settings.icon_position = ICON_OFF;
         ASSERT(notification_is_duplicate(a, b));
         //Setting pointer to a random value since we are checking for null
-        b->raw_icon = (RawImage*)0xff;
+        b->raw_icon = (struct raw_image*)0xff;
         ASSERT(notification_is_duplicate(a, b));
         b->raw_icon = NULL;
 
-        settings.icon_position = icons_left;
+        settings.icon_position = ICON_LEFT;
         ASSERT_FALSE(notification_is_duplicate(a, b));
-        b->raw_icon = (RawImage*)0xff;
+        b->raw_icon = (struct raw_image*)0xff;
         ASSERT_FALSE(notification_is_duplicate(a, b));
         b->raw_icon = NULL;
 
-        settings.icon_position = icons_right;
+        settings.icon_position = ICON_RIGHT;
         ASSERT_FALSE(notification_is_duplicate(a, b));
-        b->raw_icon = (RawImage*)0xff;
+        b->raw_icon = (struct raw_image*)0xff;
         ASSERT_FALSE(notification_is_duplicate(a, b));
         b->raw_icon = NULL;
 
@@ -102,18 +103,18 @@ SUITE(suite_notification)
         cmdline_load(0, NULL);
         load_settings("data/dunstrc.default");
 
-        notification *a = notification_create();
+        struct notification *a = notification_create();
         a->appname = "Test";
         a->summary = "Summary";
         a->body = "Body";
         a->icon = "Icon";
         a->urgency = URG_NORM;
 
-        notification *b = notification_create();
+        struct notification *b = notification_create();
         memcpy(b, a, sizeof(*b));
 
         //2 equal notifications to be passed for duplicate checking,
-        notification *n[2] = {a, b};
+        struct notification *n[2] = {a, b};
 
         RUN_TEST1(test_notification_is_duplicate, (void*) n);
         g_free(a);

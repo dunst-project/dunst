@@ -1,6 +1,6 @@
 /* see example dunstrc for additional explanations about these options */
 
-settings_t defaults = {
+struct settings defaults = {
 
 .font = "-*-terminus-medium-r-*-*-16-*-*-*-*-*-*-*",
 .markup = MARKUP_NO,
@@ -32,12 +32,12 @@ settings_t defaults = {
 .indicate_hidden = true,     /* show count of hidden messages */
 .idle_threshold = 0,         /* don't timeout notifications when idle for x seconds */
 .show_age_threshold = -1,    /* show age of notification, when notification is older than x seconds */
-.align = left,               /* text alignment [left/center/right] */
+.align = ALIGN_LEFT,         /* text alignment ALIGN_[LEFT|CENTER|RIGHT] */
 .sticky_history = true,
 .history_length = 20,        /* max amount of notifications kept in history */
 .show_indicators = true,
 .word_wrap = false,
-.ellipsize = middle,
+.ellipsize = ELLIPSE_MIDDLE,
 .ignore_newline = false,
 .line_height = 0,            /* if line height < font height, it will be raised to font height */
 .notification_height = 0,    /* if notification height < font height and padding, it will be raised */
@@ -110,7 +110,7 @@ settings_t defaults = {
 
 };
 
-rule_t default_rules[] = {
+struct rule default_rules[] = {
         /* name can be any unique string. It is used to identify
          * the rule in dunstrc to override it there
          */

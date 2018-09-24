@@ -33,7 +33,7 @@ static GQueue *history   = NULL; /**< history of displayed notifications */
 int next_notification_id = 1;
 bool pause_displayed = false;
 
-static bool queues_stack_duplicate(notification *n);
+static bool queues_stack_duplicate(struct notification *n);
 
 /* see queues.h */
 void queues_init(void)
@@ -50,7 +50,7 @@ const GList *queues_get_displayed(void)
 }
 
 /* see queues.h */
-const notification *queues_get_head_waiting(void)
+const struct notification *queues_get_head_waiting(void)
 {
         if (waiting->length == 0)
                 return NULL;
@@ -91,8 +91,8 @@ static void queues_swap_notifications(GQueue *queueA,
                                       GQueue *queueB,
                                       GList  *elemB)
 {
-        notification *toB = elemA->data;
-        notification *toA = elemB->data;
+        struct notification *toB = elemA->data;
+        struct notification *toA = elemB->data;
 
         g_queue_delete_link(queueA, elemA);
         g_queue_delete_link(queueB, elemB);
@@ -110,7 +110,7 @@ static void queues_swap_notifications(GQueue *queueA,
  * @param fullscreen True if a fullscreen window is currently active
  * @param visible    True if the notification is currently displayed
  */
-static bool queues_notification_is_ready(const notification *n, bool fullscreen, bool visible)
+static bool queues_notification_is_ready(const struct notification *n, bool fullscreen, bool visible)
 {
         if (fullscreen && visible)
                 return n && n->fullscreen != FS_PUSHBACK;
@@ -121,7 +121,7 @@ static bool queues_notification_is_ready(const notification *n, bool fullscreen,
 }
 
 /* see queues.h */
-int queues_notification_insert(notification *n)
+int queues_notification_insert(struct notification *n)
 {
 
         /* do not display the message, if the message is empty */
@@ -167,13 +167,13 @@ int queues_notification_insert(notification *n)
  * @return true, if notification got stacked
  * @return false, if notification did not get stacked
  */
-static bool queues_stack_duplicate(notification *n)
+static bool queues_stack_duplicate(struct notification *n)
 {
         GQueue *allqueues[] = { displayed, waiting };
         for (int i = 0; i < sizeof(allqueues)/sizeof(GList*); i++) {
                 for (GList *iter = g_queue_peek_head_link(allqueues[i]); iter;
                      iter = iter->next) {
-                        notification *orig = iter->data;
+                        struct notification *orig = iter->data;
                         if (notification_is_duplicate(orig, n)) {
                                 /* If the progress differs, probably notify-send was used to update the notification
                                  * So only count it as a duplicate, if the progress was not the same.
@@ -201,14 +201,14 @@ static bool queues_stack_duplicate(notification *n)
 }
 
 /* see queues.h */
-bool queues_notification_replace_id(notification *new)
+bool queues_notification_replace_id(struct notification *new)
 {
         GQueue *allqueues[] = { displayed, waiting };
         for (int i = 0; i < sizeof(allqueues)/sizeof(GList*); i++) {
                 for (GList *iter = g_queue_peek_head_link(allqueues[i]);
                             iter;
                             iter = iter->next) {
-                        notification *old = iter->data;
+                        struct notification *old = iter->data;
                         if (old->id == new->id) {
                                 iter->data = new;
                                 new->dup_count = old->dup_count;
@@ -222,7 +222,6 @@ bool queues_notification_replace_id(notification *new)
                                 return true;
                         }
                 }
-
         }
         return false;
 }
@@ -230,13 +229,13 @@ bool queues_notification_replace_id(notification *new)
 /* see queues.h */
 void queues_notification_close_id(int id, enum reason reason)
 {
-        notification *target = NULL;
+        struct notification *target = NULL;
 
         GQueue *allqueues[] = { displayed, waiting };
         for (int i = 0; i < sizeof(allqueues)/sizeof(GList*); i++) {
                 for (GList *iter = g_queue_peek_head_link(allqueues[i]); iter;
                      iter = iter->next) {
-                        notification *n = iter->data;
+                        struct notification *n = iter->data;
                         if (n->id == id) {
                                 g_queue_remove(allqueues[i], n);
                                 target = n;
@@ -254,7 +253,7 @@ void queues_notification_close_id(int id, enum reason reason)
 }
 
 /* see queues.h */
-void queues_notification_close(notification *n, enum reason reason)
+void queues_notification_close(struct notification *n, enum reason reason)
 {
         assert(n != NULL);
         queues_notification_close_id(n->id, reason);
@@ -266,7 +265,7 @@ void queues_history_pop(void)
         if (g_queue_is_empty(history))
                 return;
 
-        notification *n = g_queue_pop_tail(history);
+        struct notification *n = g_queue_pop_tail(history);
         n->redisplayed = true;
         n->start = 0;
         n->timeout = settings.sticky_history ? 0 : n->timeout;
@@ -274,11 +273,11 @@ void queues_history_pop(void)
 }
 
 /* see queues.h */
-void queues_history_push(notification *n)
+void queues_history_push(struct notification *n)
 {
         if (!n->history_ignore) {
                 if (settings.history_length > 0 && history->length >= settings.history_length) {
-                        notification *to_free = g_queue_pop_head(history);
+                        struct notification *to_free = g_queue_pop_head(history);
                         notification_free(to_free);
                 }
 
@@ -311,7 +310,7 @@ void queues_check_timeouts(bool idle, bool fullscreen)
 
         GList *iter = g_queue_peek_head_link(displayed);
         while (iter) {
-                notification *n = iter->data;
+                struct notification *n = iter->data;
 
                 /*
                  * Update iter to the next item before we either exit the
@@ -353,7 +352,7 @@ void queues_update(bool fullscreen)
         if (fullscreen) {
                 GList *iter = g_queue_peek_head_link(displayed);
                 while (iter) {
-                        notification *n = iter->data;
+                        struct notification *n = iter->data;
                         GList *nextiter = iter->next;
 
                         if (n->fullscreen == FS_PUSHBACK){
@@ -378,7 +377,7 @@ void queues_update(bool fullscreen)
         /* move notifications from queue to displayed */
         GList *iter = g_queue_peek_head_link(waiting);
         while (displayed->length < cur_displayed_limit && iter) {
-                notification *n = iter->data;
+                struct notification *n = iter->data;
                 GList *nextiter = iter->next;
 
                 if (!n)
@@ -400,7 +399,7 @@ void queues_update(bool fullscreen)
 
         /* if necessary, push the overhanging notifications from displayed to waiting again */
         while (displayed->length > cur_displayed_limit) {
-                notification *n = g_queue_pop_tail(displayed);
+                struct notification *n = g_queue_pop_tail(displayed);
                 g_queue_insert_sorted(waiting, n, notification_cmp_data, NULL); //TODO: actually it should be on the head if unsorted
         }
 
@@ -418,7 +417,7 @@ void queues_update(bool fullscreen)
                         }
 
                         if (i_waiting && notification_cmp(i_displayed->data, i_waiting->data) > 0) {
-                                notification *todisp = i_waiting->data;
+                                struct notification *todisp = i_waiting->data;
 
                                 todisp->start = time_monotonic_now();
                                 notification_run_script(todisp);
@@ -438,7 +437,7 @@ gint64 queues_get_next_datachange(gint64 time)
 
         for (GList *iter = g_queue_peek_head_link(displayed); iter;
                         iter = iter->next) {
-                notification *n = iter->data;
+                struct notification *n = iter->data;
                 gint64 ttl = n->timeout - (time - n->start);
 
                 if (n->timeout > 0) {
@@ -488,7 +487,7 @@ bool queues_pause_status(void)
  */
 static void teardown_notification(gpointer data)
 {
-        notification *n = data;
+        struct notification *n = data;
         notification_free(n);
 }
 

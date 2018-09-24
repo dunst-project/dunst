@@ -6,9 +6,9 @@
 
 #include "x11/x.h"
 
-enum alignment { left, center, right };
-enum ellipsize { start, middle, end };
-enum icon_position_t { icons_left, icons_right, icons_off };
+enum alignment { ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT };
+enum ellipsize { ELLIPSE_START, ELLIPSE_MIDDLE, ELLIPSE_END };
+enum icon_position { ICON_LEFT, ICON_RIGHT, ICON_OFF };
 enum separator_color { SEP_FOREGROUND, SEP_AUTO, SEP_FRAME, SEP_CUSTOM };
 enum follow_mode { FOLLOW_NONE, FOLLOW_MOUSE, FOLLOW_KEYBOARD };
 enum markup_mode { MARKUP_NULL, MARKUP_NO, MARKUP_STRIP, MARKUP_FULL };
@@ -26,7 +26,7 @@ struct geometry {
 
 };
 
-typedef struct _settings {
+struct settings {
         bool print_notifications;
         bool per_monitor_dpi;
         enum markup_mode markup;
@@ -75,23 +75,23 @@ typedef struct _settings {
         char *dmenu;
         char **dmenu_cmd;
         char *browser;
-        enum icon_position_t icon_position;
+        enum icon_position icon_position;
         int max_icon_size;
         char *icon_path;
         enum follow_mode f_mode;
         bool always_run_script;
-        keyboard_shortcut close_ks;
-        keyboard_shortcut close_all_ks;
-        keyboard_shortcut history_ks;
-        keyboard_shortcut context_ks;
+        struct keyboard_shortcut close_ks;
+        struct keyboard_shortcut close_all_ks;
+        struct keyboard_shortcut history_ks;
+        struct keyboard_shortcut context_ks;
         bool force_xinerama;
         int corner_radius;
         enum mouse_action mouse_left_click;
         enum mouse_action mouse_middle_click;
         enum mouse_action mouse_right_click;
-} settings_t;
+};
 
-extern settings_t settings;
+extern struct settings settings;
 
 void load_settings(char *cmdline_config_path);
 

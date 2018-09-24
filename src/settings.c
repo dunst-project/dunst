@@ -19,7 +19,7 @@
 #include "utils.h"
 #include "x11/x.h"
 
-settings_t settings;
+struct settings settings;
 
 static void parse_follow_mode(const char *mode)
 {
@@ -219,11 +219,11 @@ void load_settings(char *cmdline_config_path)
                 if (strlen(c) == 0) {
                         settings.ellipsize = defaults.ellipsize;
                 } else if (strcmp(c, "start") == 0) {
-                        settings.ellipsize = start;
+                        settings.ellipsize = ELLIPSE_START;
                 } else if (strcmp(c, "middle") == 0) {
-                        settings.ellipsize = middle;
+                        settings.ellipsize = ELLIPSE_MIDDLE;
                 } else if (strcmp(c, "end") == 0) {
-                        settings.ellipsize = end;
+                        settings.ellipsize = ELLIPSE_END;
                 } else {
                         LOG_W("Unknown ellipsize value: '%s'", c);
                         settings.ellipsize = defaults.ellipsize;
@@ -320,11 +320,11 @@ void load_settings(char *cmdline_config_path)
 
                 if (strlen(c) > 0) {
                         if (strcmp(c, "left") == 0)
-                                settings.align = left;
+                                settings.align = ALIGN_LEFT;
                         else if (strcmp(c, "center") == 0)
-                                settings.align = center;
+                                settings.align = ALIGN_CENTER;
                         else if (strcmp(c, "right") == 0)
-                                settings.align = right;
+                                settings.align = ALIGN_RIGHT;
                         else
                                 LOG_W("Unknown alignment value: '%s'", c);
                         g_free(c);
@@ -457,11 +457,11 @@ void load_settings(char *cmdline_config_path)
 
                 if (strlen(c) > 0) {
                         if (strcmp(c, "left") == 0)
-                                settings.icon_position = icons_left;
+                                settings.icon_position = ICON_LEFT;
                         else if (strcmp(c, "right") == 0)
-                                settings.icon_position = icons_right;
+                                settings.icon_position = ICON_RIGHT;
                         else if (strcmp(c, "off") == 0)
-                                settings.icon_position = icons_off;
+                                settings.icon_position = ICON_OFF;
                         else
                                 LOG_W("Unknown icon position: '%s'", c);
                         g_free(c);
@@ -727,16 +727,16 @@ void load_settings(char *cmdline_config_path)
                         continue;
 
                 /* check for existing rule with same name */
-                rule_t *r = NULL;
+                struct rule *r = NULL;
                 for (GSList *iter = rules; iter; iter = iter->next) {
-                        rule_t *match = iter->data;
+                        struct rule *match = iter->data;
                         if (match->name &&
                             strcmp(match->name, cur_section) == 0)
                                 r = match;
                 }
 
                 if (!r) {
-                        r = g_malloc(sizeof(rule_t));
+                        r = g_malloc(sizeof(struct rule));
                         rule_init(r);
                         rules = g_slist_insert(rules, r, -1);
                 }

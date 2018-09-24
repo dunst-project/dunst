@@ -126,7 +126,7 @@ GdkPixbuf *get_pixbuf_from_icon(const char *iconname)
         return pixbuf;
 }
 
-GdkPixbuf *get_pixbuf_from_raw_image(const RawImage *raw_image)
+GdkPixbuf *get_pixbuf_from_raw_image(const struct raw_image *raw_image)
 {
         GdkPixbuf *pixbuf = NULL;
 
@@ -143,7 +143,7 @@ GdkPixbuf *get_pixbuf_from_raw_image(const RawImage *raw_image)
         return pixbuf;
 }
 
-cairo_surface_t *icon_get_for_notification(const notification *n)
+cairo_surface_t *icon_get_for_notification(const struct notification *n)
 {
         GdkPixbuf *pixbuf;
 

@@ -7,20 +7,20 @@
 
 #define INRECT(x,y,rx,ry,rw,rh) ((x) >= (rx) && (x) < (rx)+(rw) && (y) >= (ry) && (y) < (ry)+(rh))
 
-typedef struct {
+struct screen_info {
         int id;
         int x;
         int y;
         unsigned int h;
         unsigned int mmh;
         unsigned int w;
-} screen_info;
+};
 
 void init_screens(void);
 void screen_check_event(XEvent event);
 
-screen_info *get_active_screen(void);
-double get_dpi_for_screen(screen_info *scr);
+struct screen_info *get_active_screen(void);
+double get_dpi_for_screen(struct screen_info *scr);
 
 /**
  * Find the currently focused window and check if it's in

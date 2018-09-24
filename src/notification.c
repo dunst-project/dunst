@@ -24,9 +24,9 @@
 #include "utils.h"
 #include "x11/x.h"
 
-static void notification_extract_urls(notification *n);
-static void notification_format_message(notification *n);
-static void notification_dmenu_string(notification *n);
+static void notification_extract_urls(struct notification *n);
+static void notification_format_message(struct notification *n);
+static void notification_dmenu_string(struct notification *n);
 
 /* see notification.h */
 const char *enum_to_string_fullscreen(enum behavior_fullscreen in)
@@ -43,7 +43,7 @@ const char *enum_to_string_fullscreen(enum behavior_fullscreen in)
 }
 
 /* see notification.h */
-void notification_print(notification *n)
+void notification_print(const struct notification *n)
 {
         //TODO: use logging info for this
         printf("{\n");
@@ -87,7 +87,7 @@ void notification_print(notification *n)
 }
 
 /* see notification.h */
-void notification_run_script(notification *n)
+void notification_run_script(struct notification *n)
 {
         if (!n->script || strlen(n->script) < 1)
                 return;
@@ -150,7 +150,7 @@ const char *notification_urgency_to_string(const enum urgency urgency)
 }
 
 /* see notification.h */
-int notification_cmp(const notification *a, const notification *b)
+int notification_cmp(const struct notification *a, const struct notification *b)
 {
         if (a->urgency != b->urgency) {
                 return b->urgency - a->urgency;
@@ -162,8 +162,8 @@ int notification_cmp(const notification *a, const notification *b)
 /* see notification.h */
 int notification_cmp_data(const void *va, const void *vb, void *data)
 {
-        notification *a = (notification *) va;
-        notification *b = (notification *) vb;
+        struct notification *a = (struct notification *) va;
+        struct notification *b = (struct notification *) vb;
 
         if (!settings.sort)
                 return 1;
@@ -171,22 +171,22 @@ int notification_cmp_data(const void *va, const void *vb, void *data)
         return notification_cmp(a, b);
 }
 
-int notification_is_duplicate(const notification *a, const notification *b)
+int notification_is_duplicate(const struct notification *a, const struct notification *b)
 {
         //Comparing raw icons is not supported, assume they are not identical
-        if (settings.icon_position != icons_off
+        if (settings.icon_position != ICON_OFF
                 && (a->raw_icon || b->raw_icon))
                 return false;
 
         return strcmp(a->appname, b->appname) == 0
             && strcmp(a->summary, b->summary) == 0
             && strcmp(a->body,    b->body) == 0
-            && (settings.icon_position != icons_off ? strcmp(a->icon, b->icon) == 0 : 1)
+            && (settings.icon_position != ICON_OFF ? strcmp(a->icon, b->icon) == 0 : 1)
             && a->urgency == b->urgency;
 }
 
 /* see notification.h */
-void actions_free(Actions *a)
+void actions_free(struct actions *a)
 {
         if (!a)
                 return;
@@ -197,7 +197,7 @@ void actions_free(Actions *a)
 }
 
 /* see notification.h */
-void rawimage_free(RawImage *i)
+void rawimage_free(struct raw_image *i)
 {
         if (!i)
                 return;
@@ -207,7 +207,7 @@ void rawimage_free(RawImage *i)
 }
 
 /* see notification.h */
-void notification_free(notification *n)
+void notification_free(struct notification *n)
 {
         if (!n)
                 return;
@@ -256,9 +256,9 @@ void notification_replace_single_field(char **haystack,
 }
 
 /* see notification.h */
-notification *notification_create(void)
+struct notification *notification_create(void)
 {
-        notification *n = g_malloc0(sizeof(notification));
+        struct notification *n = g_malloc0(sizeof(struct notification));
 
         /* Unparameterized default values */
         n->first_render = true;
@@ -281,7 +281,7 @@ notification *notification_create(void)
 }
 
 /* see notification.h */
-void notification_init(notification *n)
+void notification_init(struct notification *n)
 {
         /* default to empty string to avoid further NULL faults */
         n->appname  = n->appname  ? n->appname  : g_strdup("unknown");
@@ -326,7 +326,7 @@ void notification_init(notification *n)
         notification_format_message(n);
 }
 
-static void notification_format_message(notification *n)
+static void notification_format_message(struct notification *n)
 {
         g_clear_pointer(&n->msg, g_free);
 
@@ -431,7 +431,7 @@ static void notification_format_message(notification *n)
         }
 }
 
-static void notification_extract_urls(notification *n)
+static void notification_extract_urls(struct notification *n)
 {
         g_clear_pointer(&n->urls, g_free);
 
@@ -455,7 +455,7 @@ static void notification_extract_urls(notification *n)
         g_free(urls_text);
 }
 
-static void notification_dmenu_string(notification *n)
+static void notification_dmenu_string(struct notification *n)
 {
         if (n->actions) {
                 g_clear_pointer(&n->actions->dmenu_str, g_free);
@@ -473,7 +473,7 @@ static void notification_dmenu_string(notification *n)
         }
 }
 
-void notification_update_text_to_render(notification *n)
+void notification_update_text_to_render(struct notification *n)
 {
         g_clear_pointer(&n->text_to_render, g_free);
 
@@ -529,7 +529,7 @@ void notification_update_text_to_render(notification *n)
 }
 
 /* see notification.h */
-void notification_do_action(notification *n)
+void notification_do_action(const struct notification *n)
 {
         if (n->actions) {
                 if (n->actions->count == 2) {

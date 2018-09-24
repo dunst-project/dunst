@@ -81,7 +81,7 @@ static void on_get_server_information(GDBusConnection *connection,
                                       const gchar *sender,
                                       const GVariant *parameters,
                                       GDBusMethodInvocation *invocation);
-static RawImage *get_raw_image_from_data_hint(GVariant *icon_data);
+static struct raw_image *get_raw_image_from_data_hint(GVariant *icon_data);
 
 void handle_method_call(GDBusConnection *connection,
                         const gchar *sender,
@@ -130,12 +130,12 @@ static void on_get_capabilities(GDBusConnection *connection,
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
 }
 
-static notification *dbus_message_to_notification(const gchar *sender, GVariant *parameters)
+static struct notification *dbus_message_to_notification(const gchar *sender, GVariant *parameters)
 {
 
-        notification *n = notification_create();
+        struct notification *n = notification_create();
 
-        n->actions = g_malloc0(sizeof(Actions));
+        n->actions = g_malloc0(sizeof(struct actions));
         n->dbus_client = g_strdup(sender);
 
         {
@@ -272,7 +272,7 @@ static void on_notify(GDBusConnection *connection,
                       GVariant *parameters,
                       GDBusMethodInvocation *invocation)
 {
-        notification *n = dbus_message_to_notification(sender, parameters);
+        struct notification *n = dbus_message_to_notification(sender, parameters);
         int id = queues_notification_insert(n);
 
         GVariant *reply = g_variant_new("(u)", id);
@@ -314,7 +314,7 @@ static void on_get_server_information(GDBusConnection *connection,
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
 }
 
-void signal_notification_closed(notification *n, enum reason reason)
+void signal_notification_closed(struct notification *n, enum reason reason)
 {
         if (reason < REASON_MIN || REASON_MAX < reason) {
                 LOG_W("Closing notification with reason '%d' not supported. "
@@ -344,7 +344,7 @@ void signal_notification_closed(notification *n, enum reason reason)
 
 }
 
-void signal_action_invoked(notification *n, const char *identifier)
+void signal_action_invoked(const struct notification *n, const char *identifier)
 {
         GVariant *body = g_variant_new("(us)", n->id, identifier);
         GError *err = NULL;
@@ -520,9 +520,9 @@ static void on_name_lost(GDBusConnection *connection,
         exit(1);
 }
 
-static RawImage *get_raw_image_from_data_hint(GVariant *icon_data)
+static struct raw_image *get_raw_image_from_data_hint(GVariant *icon_data)
 {
-        RawImage *image = g_malloc(sizeof(RawImage));
+        struct raw_image *image = g_malloc(sizeof(struct raw_image));
         GVariant *data_variant;
         gsize expected_len;
 

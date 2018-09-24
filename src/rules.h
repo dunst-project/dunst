@@ -8,7 +8,7 @@
 #include "notification.h"
 #include "settings.h"
 
-typedef struct _rule_t {
+struct rule {
         char *name;
         /* filters */
         char *appname;
@@ -32,14 +32,14 @@ typedef struct _rule_t {
         const char *format;
         const char *script;
         enum behavior_fullscreen fullscreen;
-} rule_t;
+};
 
 extern GSList *rules;
 
-void rule_init(rule_t *r);
-void rule_apply(rule_t *r, notification *n);
-void rule_apply_all(notification *n);
-bool rule_matches_notification(rule_t *r, notification *n);
+void rule_init(struct rule *r);
+void rule_apply(struct rule *r, struct notification *n);
+void rule_apply_all(struct notification *n);
+bool rule_matches_notification(struct rule *r, struct notification *n);
 
 #endif
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
