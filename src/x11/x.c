@@ -326,22 +326,16 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer 
                                 wake_up();
                         }
                         break;
-                case FocusIn:
-                        LOG_D("XEvent: processing 'FocusIn'");
-                        wake_up();
-                        break;
-                case FocusOut:
-                        LOG_D("XEvent: processing 'FocusOut'");
-                        wake_up();
-                        break;
                 case CreateNotify:
                         LOG_D("XEvent: processing 'CreateNotify'");
                         if (win->visible &&
                             ev.xcreatewindow.override_redirect == 0)
                                 XRaiseWindow(xctx.dpy, win->xwin);
                         break;
+                case FocusIn:
+                case FocusOut:
                 case PropertyNotify:
-                        LOG_D("XEvent: processing 'PropertyNotify'");
+                        LOG_D("XEvent: Checking for active sceen changes");
                         fullscreen_now = have_fullscreen_window();
                         scr = get_active_screen();
 
@@ -669,9 +663,8 @@ void x_win_destroy(struct window_x11 *win)
 void x_win_show(struct window_x11 *win)
 {
         /* window is already mapped or there's nothing to show */
-        if (win->visible || queues_length_displayed() == 0) {
+        if (win->visible)
                 return;
-        }
 
         x_shortcut_grab(&settings.close_ks);
         x_shortcut_grab(&settings.close_all_ks);
@@ -701,6 +694,9 @@ void x_win_show(struct window_x11 *win)
  */
 void x_win_hide(struct window_x11 *win)
 {
+        if (!win->visible)
+                return;
+
         x_shortcut_ungrab(&settings.close_ks);
         x_shortcut_ungrab(&settings.close_all_ks);
         x_shortcut_ungrab(&settings.context_ks);
