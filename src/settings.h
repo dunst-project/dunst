@@ -75,6 +75,7 @@ struct settings {
         char *dmenu;
         char **dmenu_cmd;
         char *browser;
+        char **browser_cmd;
         enum icon_position icon_position;
         int max_icon_size;
         char *icon_path;

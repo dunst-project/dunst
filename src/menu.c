@@ -102,6 +102,11 @@ char *extract_urls(const char *to_match)
  */
 void open_browser(const char *in)
 {
+        if (!settings.browser_cmd) {
+                LOG_C("Unable to open browser: No browser command set.");
+                return;
+        }
+
         char *url = NULL;
 
         // If any, remove leading [ linktext ] from URL
@@ -122,9 +127,16 @@ void open_browser(const char *in)
                 if (browser_pid2) {
                         exit(0);
                 } else {
-                        char *browser_cmd = g_strconcat(settings.browser, " ", url, NULL);
-                        char **cmd = g_strsplit(browser_cmd, " ", 0);
-                        execvp(cmd[0], cmd);
+                        int argc = 2+g_strv_length(settings.browser_cmd);
+                        char **argv = g_malloc_n(argc, sizeof(char*));
+
+                        memcpy(argv, settings.browser_cmd, argc * sizeof(char*));
+                        argv[argc-2] = url;
+                        argv[argc-1] = NULL;
+
+                        execvp(argv[0], argv);
+                        g_free(argv);
+
                         // execvp won't return if it's successful
                         // so, if we're here, it's definitely an error
                         fprintf(stderr, "Warning: failed to execute '%s': %s\n",
