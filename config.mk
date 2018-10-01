@@ -32,10 +32,7 @@ pkg_config_packs := dbus-1 \
                     "xrandr >= 1.5" \
                     xscrnsaver
 
-# check if we need libxdg-basedir
-ifeq (,$(findstring STATIC_CONFIG,$(CFLAGS)))
-	pkg_config_packs += libxdg-basedir
-else
+ifneq (,$(findstring STATIC_CONFIG,$(CFLAGS)))
 $(warning STATIC_CONFIG is deprecated behavior. It will get removed in future releases)
 endif
 

@@ -8,7 +8,6 @@ addons:
       - libxrandr-dev
       - libxinerama-dev
       - libxss-dev
-      - libxdg-basedir-dev
       - libglib2.0-dev
       - libpango1.0-dev
       - libcairo2-dev

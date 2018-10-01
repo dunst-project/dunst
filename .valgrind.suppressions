@@ -1,14 +1,3 @@
-{
-   xdgBaseDir_leak
-   # see https://github.com/devnev/libxdg-basedir/pull/6
-   Memcheck:Leak
-   fun:malloc
-   ...
-   fun:xdgInitHandle
-   ...
-   fun:main
-}
-
 # librsvg leaks some memory, when an invalid svg file is read
 # TODO: find the memory leak and fix it upstream
 {

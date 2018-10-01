@@ -5,10 +5,6 @@
 #include <glib.h>
 #include <stdio.h>
 #include <string.h>
-#ifndef STATIC_CONFIG
-#include <basedir.h>
-#include <basedir_fs.h>
-#endif
 
 #include "rules.h" // put before config.h to fix missing include
 #include "config.h"
@@ -88,14 +84,34 @@ static enum urgency ini_get_urgency(const char *section, const char *key, const 
         return ret;
 }
 
+static FILE *xdg_config(const char *filename)
+{
+        const gchar * const * systemdirs = g_get_system_config_dirs();
+        const gchar * userdir = g_get_user_config_dir();
+
+        FILE *f;
+        char *path;
+
+        path = g_strconcat(userdir, filename, NULL);
+        f = fopen(path, "r");
+        g_free(path);
+
+        for (const gchar * const *d = systemdirs;
+             !f && *d;
+             d++) {
+                path = g_strconcat(*d, filename, NULL);
+                f = fopen(path, "r");
+                g_free(path);
+        }
+
+        return f;
+}
+
 void load_settings(char *cmdline_config_path)
 {
 
 #ifndef STATIC_CONFIG
-        xdgHandle xdg;
         FILE *config_file = NULL;
-
-        xdgInitHandle(&xdg);
 
         if (cmdline_config_path) {
                 if (0 == strcmp(cmdline_config_path, "-")) {
@@ -104,21 +120,23 @@ void load_settings(char *cmdline_config_path)
                         config_file = fopen(cmdline_config_path, "r");
                 }
 
-                if(!config_file) {
+                if (!config_file) {
                         DIE("Cannot find config file: '%s'", cmdline_config_path);
                 }
         }
+
         if (!config_file) {
-                config_file = xdgConfigOpen("dunst/dunstrc", "r", &xdg);
+                config_file = xdg_config("/dunst/dunstrc");
         }
+
         if (!config_file) {
                 /* Fall back to just "dunstrc", which was used before 2013-06-23
                  * (before v0.2). */
-                config_file = xdgConfigOpen("dunstrc", "r", &xdg);
-                if (!config_file) {
-                        LOG_W("No dunstrc found.");
-                        xdgWipeHandle(&xdg);
-                }
+                config_file = xdg_config("/dunstrc");
+        }
+
+        if (!config_file) {
+                LOG_W("No dunstrc found.");
         }
 
         load_ini_file(config_file);
@@ -788,7 +806,6 @@ void load_settings(char *cmdline_config_path)
         if (config_file) {
                 fclose(config_file);
                 free_ini();
-                xdgWipeHandle(&xdg);
         }
 #endif
 }
