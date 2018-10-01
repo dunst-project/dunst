@@ -538,7 +538,10 @@ static void teardown_notification(gpointer data)
 void queues_teardown(void)
 {
         g_queue_free_full(history, teardown_notification);
+        history = NULL;
         g_queue_free_full(displayed, teardown_notification);
+        displayed = NULL;
         g_queue_free_full(waiting, teardown_notification);
+        waiting = NULL;
 }
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
