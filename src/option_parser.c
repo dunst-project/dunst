@@ -30,7 +30,6 @@ static struct section *new_section(const char *name);
 static struct section *get_section(const char *name);
 static void add_entry(const char *section_name, const char *key, const char *value);
 static const char *get_value(const char *section, const char *key);
-static char *clean_value(const char *value);
 
 static int cmdline_argc;
 static char **cmdline_argv;
@@ -90,7 +89,7 @@ void add_entry(const char *section_name, const char *key, const char *value)
         int len = s->entry_count;
         s->entries = g_realloc(s->entries, sizeof(struct entry) * len);
         s->entries[s->entry_count - 1].key = g_strdup(key);
-        s->entries[s->entry_count - 1].value = clean_value(value);
+        s->entries[s->entry_count - 1].value = string_strip_quotes(value);
 }
 
 const char *get_value(const char *section, const char *key)
@@ -199,19 +198,6 @@ int ini_get_bool(const char *section, const char *key, int def)
         } else {
                 return def;
         }
-}
-
-char *clean_value(const char *value)
-{
-        size_t len = strlen(value);
-        char *s;
-
-        if (value[0] == '"' && value[len-1] == '"')
-                s = g_strndup(value + 1, len-2);
-        else
-                s = g_strdup(value);
-
-        return s;
 }
 
 int load_ini_file(FILE *fp)
