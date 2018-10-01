@@ -203,15 +203,13 @@ int ini_get_bool(const char *section, const char *key, int def)
 
 char *clean_value(const char *value)
 {
+        size_t len = strlen(value);
         char *s;
 
-        if (value[0] == '"')
-                s = g_strdup(value + 1);
+        if (value[0] == '"' && value[len-1] == '"')
+                s = g_strndup(value + 1, len-2);
         else
                 s = g_strdup(value);
-
-        if (s[strlen(s) - 1] == '"')
-                s[strlen(s) - 1] = '\0';
 
         return s;
 }

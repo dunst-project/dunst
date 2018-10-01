@@ -53,6 +53,8 @@ TEST test_ini_get_string(void)
         free(ptr);
         ASSERT_STR_EQ("A string \"with quotes\"", (ptr = ini_get_string(string_section, "quoted_with_quotes", "")));
         free(ptr);
+        ASSERT_STR_EQ("A\" string with quotes\"", (ptr = ini_get_string(string_section, "unquoted_with_quotes", "")));
+        free(ptr);
 
         ASSERT_STR_EQ("default value", (ptr = ini_get_string(string_section, "nonexistent", "default value")));
         free(ptr);
