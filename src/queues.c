@@ -1,7 +1,7 @@
 /* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
 
 /**
- * @file queues.c
+ * @file src/queues.c
  * @brief All important functions to handle the notification queues for
  * history, entrance and currently displayed ones.
  *

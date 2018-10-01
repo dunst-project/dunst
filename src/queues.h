@@ -1,7 +1,7 @@
 /* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
 
 /**
- * @file queues.c
+ * @file src/queues.h
  */
 
 #ifndef DUNST_QUEUE_H

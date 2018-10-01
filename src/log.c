@@ -1,6 +1,7 @@
 /* copyright 2012 - 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
 
-/** @file log.c
+/**
+ *  @file src/log.c
  *  @brief logging wrapper to use GLib's logging capabilities
  */
 
