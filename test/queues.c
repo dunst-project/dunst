@@ -75,6 +75,70 @@ TEST test_queue_insert_id_replacement(void)
         PASS();
 }
 
+TEST test_queue_notification_close(void)
+{
+        struct notification *n;
+
+        // Test closing from waiting queue
+        n = test_notification("n", -1);
+
+        queues_init();
+        queues_notification_insert(n);
+        QUEUE_LEN_ALL(1, 0, 0);
+        queues_notification_close(n, REASON_UNDEF);
+        queues_update(NULL);
+        QUEUE_LEN_ALL(0, 0, 1);
+        queues_teardown();
+
+        // Test closing from displayed queue
+        n = test_notification("n", -1);
+
+        queues_init();
+        queues_notification_insert(n);
+        QUEUE_LEN_ALL(1, 0, 0);
+        queues_update(NULL);
+        QUEUE_LEN_ALL(0, 1, 0);
+        queues_notification_close(n, REASON_UNDEF);
+        queues_update(NULL);
+        QUEUE_LEN_ALL(0, 0, 1);
+        queues_teardown();
+
+        PASS();
+}
+
+TEST test_queue_notification_close_histignore(void)
+{
+        struct notification *n;
+
+        // Test closing from waiting queue
+        n = test_notification("n", -1);
+        n->history_ignore = true;
+
+        queues_init();
+        queues_notification_insert(n);
+        QUEUE_LEN_ALL(1, 0, 0);
+        queues_notification_close(n, REASON_UNDEF);
+        queues_update(NULL);
+        QUEUE_LEN_ALL(0, 0, 0);
+        queues_teardown();
+
+        // Test closing from displayed queue
+        n = test_notification("n", -1);
+        n->history_ignore = true;
+
+        queues_init();
+        queues_notification_insert(n);
+        QUEUE_LEN_ALL(1, 0, 0);
+        queues_update(NULL);
+        QUEUE_LEN_ALL(0, 1, 0);
+        queues_notification_close(n, REASON_UNDEF);
+        queues_update(NULL);
+        QUEUE_LEN_ALL(0, 0, 0);
+        queues_teardown();
+
+        PASS();
+}
+
 TEST test_queue_init(void)
 {
         queues_init();
@@ -108,6 +172,8 @@ SUITE(suite_queues)
         RUN_TEST(test_queue_insert_id_invalid);
         RUN_TEST(test_queue_insert_id_replacement);
         RUN_TEST(test_queue_insert_id_valid_newid);
+        RUN_TEST(test_queue_notification_close);
+        RUN_TEST(test_queue_notification_close_histignore);
         RUN_TEST(test_queue_teardown);
 }
 
