@@ -4,6 +4,9 @@
 
 #include <glib.h>
 
+#define STR_EMPTY(s) (!s || (*s == '\0'))
+#define STR_FULL(s) !(STR_EMPTY(s))
+
 /* replace all occurrences of the character needle with the character replacement in haystack */
 char *string_replace_char(char needle, char replacement, char *haystack);
 

@@ -125,7 +125,7 @@ int queues_notification_insert(struct notification *n)
 {
 
         /* do not display the message, if the message is empty */
-        if (strlen(n->msg) == 0) {
+        if (STR_EMPTY(n->msg)) {
                 if (settings.always_run_script) {
                         notification_run_script(n);
                 }

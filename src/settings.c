@@ -80,7 +80,7 @@ static enum urgency ini_get_urgency(const char *section, const char *key, const 
         int ret = def;
         char *urg = ini_get_string(section, key, "");
 
-        if (strlen(urg) > 0) {
+        if (STR_FULL(urg)) {
                 if (strcmp(urg, "low") == 0)
                         ret = URG_LOW;
                 else if (strcmp(urg, "normal") == 0)
@@ -247,7 +247,7 @@ void load_settings(char *cmdline_config_path)
                         "Ellipsize truncated lines on the start/middle/end"
                 );
 
-                if (strlen(c) == 0) {
+                if (STR_EMPTY(c)) {
                         settings.ellipsize = defaults.ellipsize;
                 } else if (strcmp(c, "start") == 0) {
                         settings.ellipsize = ELLIPSE_START;
@@ -346,8 +346,7 @@ void load_settings(char *cmdline_config_path)
                         "alignment", "-align/-alignment", "",
                         "Text alignment left/center/right"
                 );
-
-                if (strlen(c) > 0) {
+                if (STR_FULL(c)) {
                         if (strcmp(c, "left") == 0)
                                 settings.align = ALIGN_LEFT;
                         else if (strcmp(c, "center") == 0)
@@ -427,7 +426,7 @@ void load_settings(char *cmdline_config_path)
                         "Color of the separator line (or 'auto')"
                 );
 
-                if (strlen(c) > 0) {
+                if (STR_FULL(c)) {
                         if (strcmp(c, "auto") == 0)
                                 settings.sep_color = SEP_AUTO;
                         else if (strcmp(c, "foreground") == 0)
@@ -484,7 +483,7 @@ void load_settings(char *cmdline_config_path)
                         "Align icons left/right/off"
                 );
 
-                if (strlen(c) > 0) {
+                if (STR_FULL(c)) {
                         if (strcmp(c, "left") == 0)
                                 settings.icon_position = ICON_LEFT;
                         else if (strcmp(c, "right") == 0)

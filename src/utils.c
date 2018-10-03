@@ -79,11 +79,11 @@ char *string_replace_all(const char *needle, const char *replacement, char *hays
 
 char *string_append(char *a, const char *b, const char *sep)
 {
-        if (!a || *a == '\0') {
+        if (STR_EMPTY(a)) {
                 g_free(a);
                 return g_strdup(b);
         }
-        if (!b || *b == '\0')
+        if (STR_EMPTY(b))
                 return a;
 
         char *new;

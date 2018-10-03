@@ -231,7 +231,7 @@ int load_ini_file(FILE *fp)
 
                 char *start = g_strstrip(line);
 
-                if (*start == ';' || *start == '#' || strlen(start) == 0)
+                if (*start == ';' || *start == '#' || STR_EMPTY(start))
                         continue;
 
                 if (*start == '[') {
@@ -521,7 +521,7 @@ int option_get_bool(const char *ini_section,
 void cmdline_usage_append(const char *key, const char *type, const char *description)
 {
         char *key_type;
-        if (type && strlen(type) > 0)
+        if (STR_FULL(type))
                 key_type = g_strdup_printf("%s (%s)", key, type);
         else
                 key_type = g_strdup(key);

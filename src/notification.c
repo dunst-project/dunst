@@ -89,7 +89,7 @@ void notification_print(const struct notification *n)
 /* see notification.h */
 void notification_run_script(struct notification *n)
 {
-        if (!n->script || strlen(n->script) < 1)
+        if (STR_EMPTY(n->script))
                 return;
 
         if (n->script_run && !settings.always_run_script)
@@ -300,7 +300,7 @@ void notification_init(struct notification *n)
                 n->timeout = settings.timeouts[n->urgency];
 
         /* Icon handling */
-        if (n->icon && strlen(n->icon) <= 0)
+        if (STR_EMPTY(n->icon))
                 g_clear_pointer(&n->icon, g_free);
         if (!n->raw_icon && !n->icon)
                 n->icon = g_strdup(settings.icons[n->urgency]);

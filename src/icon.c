@@ -76,7 +76,7 @@ GdkPixbuf *get_pixbuf_from_file(const char *filename)
 
 GdkPixbuf *get_pixbuf_from_icon(const char *iconname)
 {
-        if (!iconname || iconname[0] == '\0')
+        if (STR_EMPTY(iconname))
                 return NULL;
 
         const char *suffixes[] = { ".svg", ".png", ".xpm", NULL };
@@ -117,7 +117,7 @@ GdkPixbuf *get_pixbuf_from_icon(const char *iconname)
                                 break;
 
                         start = end + 1;
-                } while (*(end) != '\0');
+                } while (STR_FULL(end));
                 if (!pixbuf)
                         LOG_W("No icon found in path: '%s'", iconname);
         }
