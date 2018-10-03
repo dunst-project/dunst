@@ -61,7 +61,7 @@ TEST test_queue_insert_id_replacement(void)
         ASSERT_EQ(a->id, b->id);
         NOT_LAST(a);
 
-        queues_update(false);
+        queues_update(STATUS_NORMAL);
         c = test_notification("c", -1);
         c->id = b->id;
 
@@ -86,7 +86,7 @@ TEST test_queue_notification_close(void)
         queues_notification_insert(n);
         QUEUE_LEN_ALL(1, 0, 0);
         queues_notification_close(n, REASON_UNDEF);
-        queues_update(NULL);
+        queues_update(STATUS_NORMAL);
         QUEUE_LEN_ALL(0, 0, 1);
         queues_teardown();
 
@@ -96,10 +96,10 @@ TEST test_queue_notification_close(void)
         queues_init();
         queues_notification_insert(n);
         QUEUE_LEN_ALL(1, 0, 0);
-        queues_update(NULL);
+        queues_update(STATUS_NORMAL);
         QUEUE_LEN_ALL(0, 1, 0);
         queues_notification_close(n, REASON_UNDEF);
-        queues_update(NULL);
+        queues_update(STATUS_NORMAL);
         QUEUE_LEN_ALL(0, 0, 1);
         queues_teardown();
 
@@ -118,7 +118,7 @@ TEST test_queue_notification_close_histignore(void)
         queues_notification_insert(n);
         QUEUE_LEN_ALL(1, 0, 0);
         queues_notification_close(n, REASON_UNDEF);
-        queues_update(NULL);
+        queues_update(STATUS_NORMAL);
         QUEUE_LEN_ALL(0, 0, 0);
         queues_teardown();
 
@@ -129,10 +129,10 @@ TEST test_queue_notification_close_histignore(void)
         queues_init();
         queues_notification_insert(n);
         QUEUE_LEN_ALL(1, 0, 0);
-        queues_update(NULL);
+        queues_update(STATUS_NORMAL);
         QUEUE_LEN_ALL(0, 1, 0);
         queues_notification_close(n, REASON_UNDEF);
-        queues_update(NULL);
+        queues_update(STATUS_NORMAL);
         QUEUE_LEN_ALL(0, 0, 0);
         queues_teardown();
 

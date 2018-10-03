@@ -8,6 +8,7 @@
 #define DUNST_QUEUE_H
 
 #include "dbus.h"
+#include "dunst.h"
 #include "notification.h"
 
 /**
@@ -120,12 +121,9 @@ void queues_history_push_all(void);
 /**
  * Check timeout of each notification and close it, if necessary
  *
- * @param idle the program's idle status. Important to calculate the
- *             timeout for transient notifications
- * @param fullscreen the desktop's fullscreen status. Important to
- *             calculate the timeout for transient notifications
+ * @param status the current status of dunst
  */
-void queues_check_timeouts(bool idle, bool fullscreen);
+void queues_check_timeouts(struct dunst_status status);
 
 /**
  * Move inserted notifications from waiting queue to displayed queue
@@ -135,10 +133,9 @@ void queues_check_timeouts(bool idle, bool fullscreen);
  * @post Call wake_up() to synchronize the queues with the UI
  *       (which closes old and shows new notifications on screen)
  *
- * @param fullscreen the desktop's fullscreen status. Important to
- *                   move notifications to the right queue
+ * @param status the current status of dunst
  */
-void queues_update(bool fullscreen);
+void queues_update(struct dunst_status status);
 
 /**
  * Calculate the distance to the next event, when an element in the
@@ -153,28 +150,6 @@ void queues_update(bool fullscreen);
  *             - notification's age threshold is hit
  */
 gint64 queues_get_next_datachange(gint64 time);
-
-/**
- * Pause queue-management of dunst
- *
- * @post Calling update_lists() is necessary
- */
-void queues_pause_on(void);
-
-/**
- * Unpause (run) queue-management of dunst
- *
- * @post Calling update_lists() is necessary
- */
-void queues_pause_off(void);
-
-/**
- * Get the current status
- *
- * @return true if paused
- * @return false if running
- */
-bool queues_pause_status(void);
 
 /**
  * Remove all notifications from all list and free the notifications

@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "dunst.h"
 #include "log.h"
 #include "notification.h"
 #include "settings.h"
@@ -31,7 +32,6 @@ static GQueue *displayed = NULL; /**< currently displayed notifications */
 static GQueue *history   = NULL; /**< history of displayed notifications */
 
 int next_notification_id = 1;
-bool pause_displayed = false;
 
 static bool queues_stack_duplicate(struct notification *n);
 static bool queues_stack_by_tag(struct notification *n);
@@ -107,15 +107,15 @@ static void queues_swap_notifications(GQueue *queueA,
 /**
  * Check if a notification is eligible to get shown.
  *
- * @param n          The notification to check
- * @param fullscreen True if a fullscreen window is currently active
- * @param visible    True if the notification is currently displayed
+ * @param n      The notification to check
+ * @param status The current status of dunst
+ * @param shown  True if the notification is currently displayed
  */
-static bool queues_notification_is_ready(const struct notification *n, bool fullscreen, bool visible)
+static bool queues_notification_is_ready(const struct notification *n, struct dunst_status status, bool shown)
 {
-        if (fullscreen && visible)
+        if (status.fullscreen && shown)
                 return n && n->fullscreen != FS_PUSHBACK;
-        else if (fullscreen && !visible)
+        else if (status.fullscreen && !shown)
                 return n && n->fullscreen == FS_SHOW;
         else
                 return true;
@@ -134,15 +134,15 @@ int queues_notification_insert(struct notification *n)
         }
         /* Do not insert the message if it's a command */
         if (STR_EQ("DUNST_COMMAND_PAUSE", n->summary)) {
-                pause_displayed = true;
+                dunst_status(S_RUNNING, false);
                 return 0;
         }
         if (STR_EQ("DUNST_COMMAND_RESUME", n->summary)) {
-                pause_displayed = false;
+                dunst_status(S_RUNNING, true);
                 return 0;
         }
         if (STR_EQ("DUNST_COMMAND_TOGGLE", n->summary)) {
-                pause_displayed = !pause_displayed;
+                dunst_status(S_RUNNING, !dunst_status_get().running);
                 return 0;
         }
 
@@ -343,13 +343,13 @@ void queues_history_push_all(void)
 }
 
 /* see queues.h */
-void queues_check_timeouts(bool idle, bool fullscreen)
+void queues_check_timeouts(struct dunst_status status)
 {
         /* nothing to do */
         if (displayed->length == 0)
                 return;
 
-        bool is_idle = fullscreen ? false : idle;
+        bool is_idle = status.fullscreen ? false : status.idle;
 
         GList *iter = g_queue_peek_head_link(displayed);
         while (iter) {
@@ -381,9 +381,9 @@ void queues_check_timeouts(bool idle, bool fullscreen)
 }
 
 /* see queues.h */
-void queues_update(bool fullscreen)
+void queues_update(struct dunst_status status)
 {
-        if (pause_displayed) {
+        if (!status.running) {
                 while (displayed->length > 0) {
                         g_queue_insert_sorted(
                             waiting, g_queue_pop_head(displayed), notification_cmp_data, NULL);
@@ -392,7 +392,7 @@ void queues_update(bool fullscreen)
         }
 
         /* move notifications back to queue, which are set to pushback */
-        if (fullscreen) {
+        if (status.fullscreen) {
                 GList *iter = g_queue_peek_head_link(displayed);
                 while (iter) {
                         struct notification *n = iter->data;
@@ -426,7 +426,7 @@ void queues_update(bool fullscreen)
                 if (!n)
                         return;
 
-                if (!queues_notification_is_ready(n, fullscreen, false)) {
+                if (!queues_notification_is_ready(n, status, false)) {
                         iter = nextiter;
                         continue;
                 }
@@ -455,7 +455,7 @@ void queues_update(bool fullscreen)
                 while (   (i_waiting   = g_queue_peek_head_link(waiting))
                        && (i_displayed = g_queue_peek_tail_link(displayed))) {
 
-                        while (i_waiting && ! queues_notification_is_ready(i_waiting->data, fullscreen, true)) {
+                        while (i_waiting && ! queues_notification_is_ready(i_waiting->data, status, true)) {
                                 i_waiting = i_waiting->prev;
                         }
 
@@ -503,24 +503,6 @@ gint64 queues_get_next_datachange(gint64 time)
         }
 
         return sleep != G_MAXINT64 ? sleep : -1;
-}
-
-/* see queues.h */
-void queues_pause_on(void)
-{
-        pause_displayed = true;
-}
-
-/* see queues.h */
-void queues_pause_off(void)
-{
-        pause_displayed = false;
-}
-
-/* see queues.h */
-bool queues_pause_status(void)
-{
-        return pause_displayed;
 }
 
 /**
