@@ -17,6 +17,16 @@
 
 struct settings settings;
 
+static const char *follow_mode_to_string(enum follow_mode f_mode)
+{
+        switch(f_mode) {
+        case FOLLOW_NONE: return "none";
+        case FOLLOW_MOUSE: return "mouse";
+        case FOLLOW_KEYBOARD: return "keyboard";
+        default: return "";
+        }
+}
+
 static enum follow_mode parse_follow_mode(const char *mode)
 {
         if (!mode)
@@ -273,7 +283,7 @@ void load_settings(char *cmdline_config_path)
         {
                 char *c = option_get_string(
                         "global",
-                        "follow", "-follow", NULL,
+                        "follow", "-follow", follow_mode_to_string(defaults.f_mode),
                         "Follow mouse, keyboard or none?"
                 );
 
