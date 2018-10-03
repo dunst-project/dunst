@@ -421,11 +421,8 @@ static void notification_format_message(struct notification *n)
         n->msg = g_strchomp(n->msg);
 
         /* truncate overlong messages */
-        if (strlen(n->msg) > DUNST_NOTIF_MAX_CHARS) {
-                char *buffer = g_malloc(DUNST_NOTIF_MAX_CHARS);
-                strncpy(buffer, n->msg, DUNST_NOTIF_MAX_CHARS);
-                buffer[DUNST_NOTIF_MAX_CHARS-1] = '\0';
-
+        if (strnlen(n->msg, DUNST_NOTIF_MAX_CHARS + 1) > DUNST_NOTIF_MAX_CHARS) {
+                char * buffer = g_strndup(n->msg, DUNST_NOTIF_MAX_CHARS);
                 g_free(n->msg);
                 n->msg = buffer;
         }
