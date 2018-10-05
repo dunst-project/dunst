@@ -107,44 +107,40 @@ void open_browser(const char *in)
                 return;
         }
 
-        char *url = NULL;
-
+        char *url, *end;
         // If any, remove leading [ linktext ] from URL
-        const char *end = strstr(in, "] ");
-        if (*in == '[' && end)
+        if (*in == '[' && (end = strstr(in, "] ")))
                 url = g_strdup(end + 2);
         else
                 url = g_strdup(in);
 
-        int browser_pid1 = fork();
+        int argc = 2+g_strv_length(settings.browser_cmd);
+        char **argv = g_malloc_n(argc, sizeof(char*));
 
-        if (browser_pid1) {
-                g_free(url);
-                int status;
-                waitpid(browser_pid1, &status, 0);
-        } else {
-                int browser_pid2 = fork();
-                if (browser_pid2) {
-                        exit(0);
-                } else {
-                        int argc = 2+g_strv_length(settings.browser_cmd);
-                        char **argv = g_malloc_n(argc, sizeof(char*));
+        memcpy(argv, settings.browser_cmd, argc * sizeof(char*));
+        argv[argc-2] = url;
+        argv[argc-1] = NULL;
 
-                        memcpy(argv, settings.browser_cmd, argc * sizeof(char*));
-                        argv[argc-2] = url;
-                        argv[argc-1] = NULL;
+        GError *err = NULL;
+        g_spawn_async(NULL,
+                      argv,
+                      NULL,
+                      G_SPAWN_DEFAULT
+                        | G_SPAWN_SEARCH_PATH
+                        | G_SPAWN_STDOUT_TO_DEV_NULL
+                        | G_SPAWN_STDERR_TO_DEV_NULL,
+                      NULL,
+                      NULL,
+                      NULL,
+                      &err);
 
-                        execvp(argv[0], argv);
-                        g_free(argv);
-
-                        // execvp won't return if it's successful
-                        // so, if we're here, it's definitely an error
-                        fprintf(stderr, "Warning: failed to execute '%s': %s\n",
-                                        settings.browser,
-                                        strerror(errno));
-                        exit(EXIT_FAILURE);
-                }
+        if (err) {
+                LOG_C("Cannot spawn browser: %s", err->message);
+                g_error_free(err);
         }
+
+        g_free(argv);
+        g_free(url);
 }
 
 /*
@@ -226,57 +222,45 @@ char *invoke_dmenu(const char *dmenu_input)
         if (!dmenu_input || *dmenu_input == '\0')
                 return NULL;
 
-        char buf[1024] = {0};
-        int child_io[2];
-        int parent_io[2];
-        if (pipe(child_io) != 0) {
-                LOG_W("pipe(): error in child: %s", strerror(errno));
-                return NULL;
-        }
-        if (pipe(parent_io) != 0) {
-                LOG_W("pipe(): error in parent: %s", strerror(errno));
-                return NULL;
-        }
-        int pid = fork();
+        gint dunst_to_dmenu;
+        gint dmenu_to_dunst;
+        GError *err = NULL;
+        char buf[1024];
+        char *ret = NULL;
 
-        if (pid == 0) {
-                close(child_io[1]);
-                close(parent_io[0]);
-                close(0);
-                if (dup(child_io[0]) == -1) {
-                        LOG_W("dup(): error in child: %s", strerror(errno));
-                        exit(EXIT_FAILURE);
-                }
-                close(1);
-                if (dup(parent_io[1]) == -1) {
-                        LOG_W("dup(): error in parent: %s", strerror(errno));
-                        exit(EXIT_FAILURE);
-                }
-                execvp(settings.dmenu_cmd[0], settings.dmenu_cmd);
-                fprintf(stderr, "Warning: failed to execute '%s': %s\n",
-                                settings.dmenu,
-                                strerror(errno));
-                exit(EXIT_FAILURE);
+        g_spawn_async_with_pipes(NULL,
+                                 settings.dmenu_cmd,
+                                 NULL,
+                                 G_SPAWN_DEFAULT
+                                   | G_SPAWN_SEARCH_PATH,
+                                 NULL,
+                                 NULL,
+                                 NULL,
+                                 &dunst_to_dmenu,
+                                 &dmenu_to_dunst,
+                                 NULL,
+                                 &err);
+
+        if (err) {
+                LOG_C("Cannot spawn dmenu: %s", err->message);
+                g_error_free(err);
         } else {
-                close(child_io[0]);
-                close(parent_io[1]);
                 size_t wlen = strlen(dmenu_input);
-                if (write(child_io[1], dmenu_input, wlen) != wlen) {
-                        LOG_W("write(): error: %s", strerror(errno));
+                if (write(dunst_to_dmenu, dmenu_input, wlen) != wlen) {
+                        LOG_W("Cannot feed dmenu with input: %s", strerror(errno));
                 }
-                close(child_io[1]);
+                close(dunst_to_dmenu);
 
-                size_t len = read(parent_io[0], buf, 1023);
+                ssize_t rlen = read(dmenu_to_dunst, buf, sizeof(buf));
+                close(dmenu_to_dunst);
 
-                waitpid(pid, NULL, 0);
-
-                if (len == 0) {
-                        return NULL;
-                }
+                if (rlen > 0)
+                        ret = g_strndup(buf, rlen);
+                else
+                        LOG_W("Didn't receive input from dmenu.");
         }
-        close(parent_io[0]);
 
-        return g_strdup(buf);
+        return ret;
 }
 
 /*
