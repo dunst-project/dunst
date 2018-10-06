@@ -102,6 +102,11 @@ struct notification {
 struct notification *notification_create(void);
 
 /**
+ * Retrieve the current reference count of the notification
+ */
+gint notification_refcount_get(struct notification *n);
+
+/**
  * Increase the reference counter of the notification.
  */
 void notification_ref(struct notification *n);

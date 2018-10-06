@@ -98,6 +98,24 @@ TEST test_notification_replace_single_field(void)
         PASS();
 }
 
+TEST test_notification_referencing(void)
+{
+        struct notification *n = notification_create();
+        ASSERT(notification_refcount_get(n) == 1);
+
+        notification_ref(n);
+        ASSERT(notification_refcount_get(n) == 2);
+
+        notification_unref(n);
+        ASSERT(notification_refcount_get(n) == 1);
+
+        // Now we have to rely on valgrind to test, that
+        // it gets actually freed
+        notification_unref(n);
+
+        PASS();
+}
+
 SUITE(suite_notification)
 {
         cmdline_load(0, NULL);
@@ -125,6 +143,7 @@ SUITE(suite_notification)
         notification_unref(b);
 
         RUN_TEST(test_notification_replace_single_field);
+        RUN_TEST(test_notification_referencing);
 
         g_clear_pointer(&settings.icon_path, g_free);
 }

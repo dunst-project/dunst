@@ -216,6 +216,13 @@ static void notification_private_free(NotificationPrivate *p)
 }
 
 /* see notification.h */
+gint notification_refcount_get(struct notification *n)
+{
+        assert(n->priv->refcount > 0);
+        return g_atomic_int_get(&n->priv->refcount);
+}
+
+/* see notification.h */
 void notification_ref(struct notification *n)
 {
         assert(n->priv->refcount > 0);
