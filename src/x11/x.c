@@ -335,7 +335,7 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer 
                 case FocusIn:
                 case FocusOut:
                 case PropertyNotify:
-                        LOG_D("XEvent: Checking for active sceen changes");
+                        LOG_D("XEvent: Checking for active screen changes");
                         fullscreen_now = have_fullscreen_window();
                         scr = get_active_screen();
 
