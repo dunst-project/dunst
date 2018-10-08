@@ -3,9 +3,18 @@
 #define DUNST_UTILS_H
 
 #include <glib.h>
+#include <string.h>
 
+//! Test if a string is NULL or empty
 #define STR_EMPTY(s) (!s || (*s == '\0'))
+//! Test if a string is non-NULL and not empty
 #define STR_FULL(s) !(STR_EMPTY(s))
+//! Test if string a and b contain the same chars
+#define STR_EQ(a, b) (strcmp(a, b) == 0)
+//! Test if string a and b are same up to n chars
+#define STRN_EQ(a, b, n) (strncmp(a, b, n) == 0)
+//! Test if string a and b are the same case-insensitively
+#define STR_CASEQ(a, b) (strcasecmp(a, b) == 0)
 
 /* replace all occurrences of the character needle with the character replacement in haystack */
 char *string_replace_char(char needle, char replacement, char *haystack);

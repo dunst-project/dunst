@@ -17,6 +17,7 @@
 
 #include "src/log.h"
 #include "src/settings.h"
+#include "src/utils.h"
 #include "x.h"
 
 struct screen_info *screens;

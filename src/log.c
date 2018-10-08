@@ -8,6 +8,8 @@
 
 #include <glib.h>
 
+#include "utils.h"
+
 static GLogLevelFlags log_level = G_LOG_LEVEL_WARNING;
 
 /* see log.h */
