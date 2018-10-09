@@ -178,10 +178,10 @@ int notification_is_duplicate(const struct notification *a, const struct notific
                 && (a->raw_icon || b->raw_icon))
                 return false;
 
-        return strcmp(a->appname, b->appname) == 0
-            && strcmp(a->summary, b->summary) == 0
-            && strcmp(a->body,    b->body) == 0
-            && (settings.icon_position != ICON_OFF ? strcmp(a->icon, b->icon) == 0 : 1)
+        return STR_EQ(a->appname, b->appname)
+            && STR_EQ(a->summary, b->summary)
+            && STR_EQ(a->body, b->body)
+            && (settings.icon_position != ICON_OFF ? STR_EQ(a->icon, b->icon) : 1)
             && a->urgency == b->urgency;
 }
 
@@ -534,7 +534,7 @@ void notification_do_action(const struct notification *n)
                         return;
                 }
                 for (int i = 0; i < n->actions->count; i += 2) {
-                        if (strcmp(n->actions->actions[i], "default") == 0) {
+                        if (STR_EQ(n->actions->actions[i], "default")) {
                                 signal_action_invoked(n, n->actions->actions[i]);
                                 return;
                         }

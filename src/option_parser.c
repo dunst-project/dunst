@@ -43,7 +43,7 @@ static int cmdline_find_option(const char *key);
 struct section *new_section(const char *name)
 {
         for (int i = 0; i < section_count; i++) {
-                if (!strcmp(name, sections[i].name)) {
+                if (STR_EQ(name, sections[i].name)) {
                         DIE("Duplicated section in dunstrc detected.");
                 }
         }
@@ -73,7 +73,7 @@ void free_ini(void)
 struct section *get_section(const char *name)
 {
         for (int i = 0; i < section_count; i++) {
-                if (strcmp(sections[i].name, name) == 0)
+                if (STR_EQ(sections[i].name, name))
                         return &sections[i];
         }
 
@@ -101,7 +101,7 @@ const char *get_value(const char *section, const char *key)
         }
 
         for (int i = 0; i < s->entry_count; i++) {
-                if (strcmp(s->entries[i].key, key) == 0) {
+                if (STR_EQ(s->entries[i].key, key)) {
                         return s->entries[i].value;
                 }
         }
@@ -166,7 +166,7 @@ const char *next_section(const char *section)
                 return sections[0].name;
 
         for (int i = 0; i < section_count; i++) {
-                if (strcmp(section, sections[i].name) == 0) {
+                if (STR_EQ(section, sections[i].name)) {
                         if (i + 1 >= section_count)
                                 return NULL;
                         else
@@ -306,7 +306,7 @@ int cmdline_find_option(const char *key)
 
         /* look for first key */
         for (int i = 0; i < cmdline_argc; i++) {
-                if (strcmp(key1, cmdline_argv[i]) == 0) {
+                if (STR_EQ(key1, cmdline_argv[i])) {
                         g_free(key1);
                         return i;
                 }
@@ -315,7 +315,7 @@ int cmdline_find_option(const char *key)
         /* look for second key if one was specified */
         if (key2) {
                 for (int i = 0; i < cmdline_argc; i++) {
-                        if (strcmp(key2, cmdline_argv[i]) == 0) {
+                        if (STR_EQ(key2, cmdline_argv[i])) {
                                 g_free(key1);
                                 return i;
                         }
@@ -554,11 +554,11 @@ enum behavior_fullscreen parse_enum_fullscreen(const char *string, enum behavior
         if (!string)
                 return def;
 
-        if (strcmp(string, "show") == 0)
+        if (STR_EQ(string, "show"))
                 return FS_SHOW;
-        else if (strcmp(string, "delay") == 0)
+        else if (STR_EQ(string, "delay"))
                 return FS_DELAY;
-        else if (strcmp(string, "pushback") == 0)
+        else if (STR_EQ(string, "pushback"))
                 return FS_PUSHBACK;
         else {
                 LOG_W("Unknown fullscreen value: '%s'\n", string);

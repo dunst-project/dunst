@@ -133,15 +133,15 @@ int queues_notification_insert(struct notification *n)
                 return 0;
         }
         /* Do not insert the message if it's a command */
-        if (strcmp("DUNST_COMMAND_PAUSE", n->summary) == 0) {
+        if (STR_EQ("DUNST_COMMAND_PAUSE", n->summary)) {
                 pause_displayed = true;
                 return 0;
         }
-        if (strcmp("DUNST_COMMAND_RESUME", n->summary) == 0) {
+        if (STR_EQ("DUNST_COMMAND_RESUME", n->summary)) {
                 pause_displayed = false;
                 return 0;
         }
-        if (strcmp("DUNST_COMMAND_TOGGLE", n->summary) == 0) {
+        if (STR_EQ("DUNST_COMMAND_TOGGLE", n->summary)) {
                 pause_displayed = !pause_displayed;
                 return 0;
         }

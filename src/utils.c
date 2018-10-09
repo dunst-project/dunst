@@ -114,7 +114,7 @@ void string_strip_delimited(char *str, char a, char b)
 char *string_to_path(char *string)
 {
 
-        if (string && 0 == strncmp(string, "~/", 2)) {
+        if (string && STRN_EQ(string, "~/", 2)) {
                 char *home = g_strconcat(getenv("HOME"), "/", NULL);
 
                 string = string_replace("~/", home, string);
@@ -151,15 +151,15 @@ gint64 string_to_time(const char *string)
         while (*endptr == ' ')
                 endptr++;
 
-        if (0 == strncmp(endptr, "ms", 2))
+        if (STRN_EQ(endptr, "ms", 2))
                 return val * 1000;
-        else if (0 == strncmp(endptr, "s", 1))
+        else if (STRN_EQ(endptr, "s", 1))
                 return val * G_USEC_PER_SEC;
-        else if (0 == strncmp(endptr, "m", 1))
+        else if (STRN_EQ(endptr, "m", 1))
                 return val * G_USEC_PER_SEC * 60;
-        else if (0 == strncmp(endptr, "h", 1))
+        else if (STRN_EQ(endptr, "h", 1))
                 return val * G_USEC_PER_SEC * 60 * 60;
-        else if (0 == strncmp(endptr, "d", 1))
+        else if (STRN_EQ(endptr, "d", 1))
                 return val * G_USEC_PER_SEC * 60 * 60 * 24;
         else
                 return 0;

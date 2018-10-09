@@ -92,13 +92,13 @@ void handle_method_call(GDBusConnection *connection,
                         GDBusMethodInvocation *invocation,
                         gpointer user_data)
 {
-        if (g_strcmp0(method_name, "GetCapabilities") == 0) {
+        if (STR_EQ(method_name, "GetCapabilities")) {
                 on_get_capabilities(connection, sender, parameters, invocation);
-        } else if (g_strcmp0(method_name, "Notify") == 0) {
+        } else if (STR_EQ(method_name, "Notify")) {
                 on_notify(connection, sender, parameters, invocation);
-        } else if (g_strcmp0(method_name, "CloseNotification") == 0) {
+        } else if (STR_EQ(method_name, "CloseNotification")) {
                 on_close_notification(connection, sender, parameters, invocation);
-        } else if (g_strcmp0(method_name, "GetServerInformation") == 0) {
+        } else if (STR_EQ(method_name, "GetServerInformation")) {
                 on_get_server_information(connection, sender, parameters, invocation);
         } else {
                 LOG_M("Unknown method name: '%s' (sender: '%s').",
