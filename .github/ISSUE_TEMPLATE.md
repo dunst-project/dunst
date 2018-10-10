@@ -7,7 +7,7 @@ These program calls might help:
 While the notification gets sent:
 `dbus-monitor path=/org/freedesktop/Notifications`
 
-If dunst segfaults (please install the debug symbols or install dunst manually again): 
+If dunst segfaults (please install the debug symbols or install dunst manually again):
 `gdb -ex run dunst -ex bt`
 
 * ISSUE DESCRIPTION GOES BELOW THIS LINE * -->

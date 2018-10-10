@@ -10,7 +10,7 @@ endif
 
 ifeq (,${SYSTEMD})
 # Check for systemctl to avoid discrepancies on systems, where
-# systemd is installed, but systemd.pc is in another package 
+# systemd is installed, but systemd.pc is in another package
 systemctl := $(shell command -v systemctl >/dev/null && echo systemctl)
 ifeq (systemctl,${systemctl})
 SYSTEMD := 1
