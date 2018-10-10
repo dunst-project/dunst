@@ -97,6 +97,23 @@ char *string_append(char *a, const char *b, const char *sep)
 
 }
 
+/* see utils.h */
+char *string_strip_quotes(const char *value)
+{
+        if (!value)
+                return NULL;
+
+        size_t len = strlen(value);
+        char *s;
+
+        if (value[0] == '"' && value[len-1] == '"')
+                s = g_strndup(value + 1, len-2);
+        else
+                s = g_strdup(value);
+
+        return s;
+}
+
 void string_strip_delimited(char *str, char a, char b)
 {
         int iread=-1, iwrite=0, copen=0;

@@ -191,7 +191,7 @@ static bool queues_stack_duplicate(struct notification *n)
                                 if ( allqueues[i] == displayed )
                                         n->start = time_monotonic_now();
 
-                                notification_free(orig);
+                                notification_unref(orig);
                                 return true;
                         }
                 }
@@ -218,7 +218,7 @@ bool queues_notification_replace_id(struct notification *new)
                                         notification_run_script(new);
                                 }
 
-                                notification_free(old);
+                                notification_unref(old);
                                 return true;
                         }
                 }
@@ -278,12 +278,12 @@ void queues_history_push(struct notification *n)
         if (!n->history_ignore) {
                 if (settings.history_length > 0 && history->length >= settings.history_length) {
                         struct notification *to_free = g_queue_pop_head(history);
-                        notification_free(to_free);
+                        notification_unref(to_free);
                 }
 
                 g_queue_push_tail(history, n);
         } else {
-                notification_free(n);
+                notification_unref(n);
         }
 }
 
@@ -488,7 +488,7 @@ bool queues_pause_status(void)
 static void teardown_notification(gpointer data)
 {
         struct notification *n = data;
-        notification_free(n);
+        notification_unref(n);
 }
 
 /* see queues.h */

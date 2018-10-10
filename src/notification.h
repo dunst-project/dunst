@@ -42,9 +42,13 @@ struct actions {
         gsize count;
 };
 
+typedef struct _notification_private NotificationPrivate;
+
 struct notification {
+        NotificationPrivate *priv;
         int id;
         char *dbus_client;
+        bool dbus_valid;
 
         char *appname;
         char *summary;
@@ -90,10 +94,22 @@ struct notification {
  *  - the default (if it's not needed to be freed later)
  *  - its undefined representation (NULL, -1)
  *
+ * The reference counter is set to 1.
+ *
  * This function is guaranteed to return a valid pointer.
  * @returns The generated notification
  */
 struct notification *notification_create(void);
+
+/**
+ * Retrieve the current reference count of the notification
+ */
+gint notification_refcount_get(struct notification *n);
+
+/**
+ * Increase the reference counter of the notification.
+ */
+void notification_ref(struct notification *n);
 
 /**
  * Sanitize values of notification, apply all matching rules
@@ -118,11 +134,11 @@ void actions_free(struct actions *a);
 void rawimage_free(struct raw_image *i);
 
 /**
- * Free the memory used by the given notification.
+ * Decrease the reference counter of the notification.
  *
- * @param n (nullable): pointer to #notification
+ * If the reference count drops to 0, the object gets freed.
  */
-void notification_free(struct notification *n);
+void notification_unref(struct notification *n);
 
 /**
  * Helper function to compare two given notifications.

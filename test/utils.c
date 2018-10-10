@@ -104,6 +104,32 @@ TEST test_string_append(void)
         PASS();
 }
 
+TEST test_string_strip_quotes(void)
+{
+        char *exp = string_strip_quotes(NULL);
+        ASSERT_FALSE(exp);
+
+        ASSERT_STR_EQ("NewString", (exp = string_strip_quotes("NewString")));
+        g_free(exp);
+
+        ASSERT_STR_EQ("becomes unquoted", (exp = string_strip_quotes("\"becomes unquoted\"")));
+        g_free(exp);
+
+        ASSERT_STR_EQ("\"stays quoted", (exp = string_strip_quotes("\"stays quoted")));
+        g_free(exp);
+
+        ASSERT_STR_EQ("stays quoted\"", (exp = string_strip_quotes("stays quoted\"")));
+        g_free(exp);
+
+        ASSERT_STR_EQ("stays \"quoted\"", (exp = string_strip_quotes("stays \"quoted\"")));
+        g_free(exp);
+
+        ASSERT_STR_EQ(" \"stays quoted\"", (exp = string_strip_quotes(" \"stays quoted\"")));
+        g_free(exp);
+
+        PASS();
+}
+
 TEST test_string_strip_delimited(void)
 {
         char *text = malloc(128 * sizeof(char));
@@ -178,6 +204,7 @@ SUITE(suite_utils)
         RUN_TEST(test_string_replace_all);
         RUN_TEST(test_string_replace);
         RUN_TEST(test_string_append);
+        RUN_TEST(test_string_strip_quotes);
         RUN_TEST(test_string_strip_delimited);
         RUN_TEST(test_string_to_path);
         RUN_TEST(test_string_to_time);

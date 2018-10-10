@@ -98,29 +98,52 @@ TEST test_notification_replace_single_field(void)
         PASS();
 }
 
+TEST test_notification_referencing(void)
+{
+        struct notification *n = notification_create();
+        ASSERT(notification_refcount_get(n) == 1);
+
+        notification_ref(n);
+        ASSERT(notification_refcount_get(n) == 2);
+
+        notification_unref(n);
+        ASSERT(notification_refcount_get(n) == 1);
+
+        // Now we have to rely on valgrind to test, that
+        // it gets actually freed
+        notification_unref(n);
+
+        PASS();
+}
+
 SUITE(suite_notification)
 {
         cmdline_load(0, NULL);
         load_settings("data/dunstrc.default");
 
         struct notification *a = notification_create();
-        a->appname = "Test";
-        a->summary = "Summary";
-        a->body = "Body";
-        a->icon = "Icon";
+        a->appname = g_strdup("Test");
+        a->summary = g_strdup("Summary");
+        a->body = g_strdup("Body");
+        a->icon = g_strdup("Icon");
         a->urgency = URG_NORM;
 
         struct notification *b = notification_create();
-        memcpy(b, a, sizeof(*b));
+        b->appname = g_strdup("Test");
+        b->summary = g_strdup("Summary");
+        b->body = g_strdup("Body");
+        b->icon = g_strdup("Icon");
+        b->urgency = URG_NORM;
 
         //2 equal notifications to be passed for duplicate checking,
         struct notification *n[2] = {a, b};
 
         RUN_TEST1(test_notification_is_duplicate, (void*) n);
-        g_free(a);
-        g_free(b);
+        notification_unref(a);
+        notification_unref(b);
 
         RUN_TEST(test_notification_replace_single_field);
+        RUN_TEST(test_notification_referencing);
 
         g_clear_pointer(&settings.icon_path, g_free);
 }

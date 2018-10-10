@@ -21,6 +21,14 @@ char *string_append(char *a, const char *b, const char *sep);
 /* strip content between two delimiter characters (inplace) */
 void string_strip_delimited(char *str, char a, char b);
 
+/**
+ * Strip quotes from a string. Won't touch inner quotes.
+ *
+ * @param value The string to strip the quotes from
+ * @returns A copy of the string value with the outer quotes removed (if any)
+ */
+char *string_strip_quotes(const char *value);
+
 /* replace tilde and path-specific values with its equivalents */
 char *string_to_path(char *string);
 

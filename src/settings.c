@@ -449,6 +449,16 @@ void load_settings(char *cmdline_config_path)
         );
 
         {
+                GError *error = NULL;
+                if (!g_shell_parse_argv(settings.browser, NULL, &settings.browser_cmd, &error)) {
+                        LOG_W("Unable to parse browser command: '%s'."
+                              " URL functionality will be disabled.", error->message);
+                        g_error_free(error);
+                        settings.browser_cmd = NULL;
+                }
+        }
+
+        {
                 char *c = option_get_string(
                         "global",
                         "icon_position", "-icon_position", "off",

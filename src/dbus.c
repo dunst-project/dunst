@@ -137,6 +137,7 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
 
         n->actions = g_malloc0(sizeof(struct actions));
         n->dbus_client = g_strdup(sender);
+        n->dbus_valid = true;
 
         {
                 GVariantIter *iter = g_variant_iter_new(parameters);
@@ -282,7 +283,7 @@ static void on_notify(GDBusConnection *connection,
         // The message got discarded
         if (id == 0) {
                 signal_notification_closed(n, 2);
-                notification_free(n);
+                notification_unref(n);
         }
 
         wake_up();
@@ -316,6 +317,12 @@ static void on_get_server_information(GDBusConnection *connection,
 
 void signal_notification_closed(struct notification *n, enum reason reason)
 {
+        if (!n->dbus_valid) {
+                LOG_W("Closing notification '%s' not supported. "
+                      "Notification already closed.", n->summary);
+                return;
+        }
+
         if (reason < REASON_MIN || REASON_MAX < reason) {
                 LOG_W("Closing notification with reason '%d' not supported. "
                       "Closing it with reason '%d'.", reason, REASON_UNDEF);
@@ -337,6 +344,8 @@ void signal_notification_closed(struct notification *n, enum reason reason)
                                       body,
                                       &err);
 
+        n->dbus_valid = false;
+
         if (err) {
                 LOG_W("Unable to close notification: %s", err->message);
                 g_error_free(err);
@@ -346,6 +355,12 @@ void signal_notification_closed(struct notification *n, enum reason reason)
 
 void signal_action_invoked(const struct notification *n, const char *identifier)
 {
+        if (!n->dbus_valid) {
+                LOG_W("Invoking action '%s' not supported. "
+                      "Notification already closed.", identifier);
+                return;
+        }
+
         GVariant *body = g_variant_new("(us)", n->id, identifier);
         GError *err = NULL;
 
