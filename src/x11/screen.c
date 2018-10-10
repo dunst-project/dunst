@@ -17,6 +17,7 @@
 
 #include "src/log.h"
 #include "src/settings.h"
+#include "src/utils.h"
 #include "x.h"
 
 struct screen_info *screens;
@@ -259,7 +260,7 @@ bool window_is_fullscreen(Window window)
                         char *atom = XGetAtomName(xctx.dpy, ((Atom*)prop_to_return)[i]);
 
                         if (atom) {
-                                if(0 == strcmp("_NET_WM_STATE_FULLSCREEN", atom))
+                                if(STR_EQ("_NET_WM_STATE_FULLSCREEN", atom))
                                         fs = true;
                                 XFree(atom);
                                 if(fs)

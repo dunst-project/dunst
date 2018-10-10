@@ -5,10 +5,6 @@
 #include <glib.h>
 #include <stdio.h>
 #include <string.h>
-#ifndef STATIC_CONFIG
-#include <basedir.h>
-#include <basedir_fs.h>
-#endif
 
 #include "rules.h" // put before config.h to fix missing include
 #include "config.h"
@@ -21,27 +17,40 @@
 
 struct settings settings;
 
-static void parse_follow_mode(const char *mode)
+static const char *follow_mode_to_string(enum follow_mode f_mode)
 {
-        if (strcmp(mode, "mouse") == 0)
-                settings.f_mode = FOLLOW_MOUSE;
-        else if (strcmp(mode, "keyboard") == 0)
-                settings.f_mode = FOLLOW_KEYBOARD;
-        else if (strcmp(mode, "none") == 0)
-                settings.f_mode = FOLLOW_NONE;
+        switch(f_mode) {
+        case FOLLOW_NONE: return "none";
+        case FOLLOW_MOUSE: return "mouse";
+        case FOLLOW_KEYBOARD: return "keyboard";
+        default: return "";
+        }
+}
+
+static enum follow_mode parse_follow_mode(const char *mode)
+{
+        if (!mode)
+                return FOLLOW_NONE;
+
+        if (STR_EQ(mode, "mouse"))
+                return FOLLOW_MOUSE;
+        else if (STR_EQ(mode, "keyboard"))
+                return FOLLOW_KEYBOARD;
+        else if (STR_EQ(mode, "none"))
+                return FOLLOW_NONE;
         else {
                 LOG_W("Unknown follow mode: '%s'", mode);
-                settings.f_mode = FOLLOW_NONE;
+                return FOLLOW_NONE;
         }
 }
 
 static enum markup_mode parse_markup_mode(const char *mode)
 {
-        if (strcmp(mode, "strip") == 0) {
+        if (STR_EQ(mode, "strip")) {
                 return MARKUP_STRIP;
-        } else if (strcmp(mode, "no") == 0) {
+        } else if (STR_EQ(mode, "no")) {
                 return MARKUP_NO;
-        } else if (strcmp(mode, "full") == 0 || strcmp(mode, "yes") == 0) {
+        } else if (STR_EQ(mode, "full") || STR_EQ(mode, "yes")) {
                 return MARKUP_FULL;
         } else {
                 LOG_W("Unknown markup mode: '%s'", mode);
@@ -51,13 +60,13 @@ static enum markup_mode parse_markup_mode(const char *mode)
 
 static enum mouse_action parse_mouse_action(const char *action)
 {
-        if (strcmp(action, "none") == 0)
+        if (STR_EQ(action, "none"))
                 return MOUSE_NONE;
-        else if (strcmp(action, "do_action") == 0)
+        else if (STR_EQ(action, "do_action"))
                 return MOUSE_DO_ACTION;
-        else if (strcmp(action, "close_current") == 0)
+        else if (STR_EQ(action, "close_current"))
                 return MOUSE_CLOSE_CURRENT;
-        else if (strcmp(action, "close_all") == 0)
+        else if (STR_EQ(action, "close_all"))
                 return MOUSE_CLOSE_ALL;
         else {
                 LOG_W("Unknown mouse action: '%s'", action);
@@ -71,12 +80,12 @@ static enum urgency ini_get_urgency(const char *section, const char *key, const 
         int ret = def;
         char *urg = ini_get_string(section, key, "");
 
-        if (strlen(urg) > 0) {
-                if (strcmp(urg, "low") == 0)
+        if (STR_FULL(urg)) {
+                if (STR_EQ(urg, "low"))
                         ret = URG_LOW;
-                else if (strcmp(urg, "normal") == 0)
+                else if (STR_EQ(urg, "normal"))
                         ret = URG_NORM;
-                else if (strcmp(urg, "critical") == 0)
+                else if (STR_EQ(urg, "critical"))
                         ret = URG_CRIT;
                 else
                         LOG_W("Unknown urgency: '%s'", urg);
@@ -85,37 +94,59 @@ static enum urgency ini_get_urgency(const char *section, const char *key, const 
         return ret;
 }
 
+static FILE *xdg_config(const char *filename)
+{
+        const gchar * const * systemdirs = g_get_system_config_dirs();
+        const gchar * userdir = g_get_user_config_dir();
+
+        FILE *f;
+        char *path;
+
+        path = g_strconcat(userdir, filename, NULL);
+        f = fopen(path, "r");
+        g_free(path);
+
+        for (const gchar * const *d = systemdirs;
+             !f && *d;
+             d++) {
+                path = g_strconcat(*d, filename, NULL);
+                f = fopen(path, "r");
+                g_free(path);
+        }
+
+        return f;
+}
+
 void load_settings(char *cmdline_config_path)
 {
 
 #ifndef STATIC_CONFIG
-        xdgHandle xdg;
         FILE *config_file = NULL;
 
-        xdgInitHandle(&xdg);
-
         if (cmdline_config_path) {
-                if (0 == strcmp(cmdline_config_path, "-")) {
+                if (STR_EQ(cmdline_config_path, "-")) {
                         config_file = stdin;
                 } else {
                         config_file = fopen(cmdline_config_path, "r");
                 }
 
-                if(!config_file) {
+                if (!config_file) {
                         DIE("Cannot find config file: '%s'", cmdline_config_path);
                 }
         }
+
         if (!config_file) {
-                config_file = xdgConfigOpen("dunst/dunstrc", "r", &xdg);
+                config_file = xdg_config("/dunst/dunstrc");
         }
+
         if (!config_file) {
                 /* Fall back to just "dunstrc", which was used before 2013-06-23
                  * (before v0.2). */
-                config_file = xdgConfigOpen("dunstrc", "r", &xdg);
-                if (!config_file) {
-                        LOG_W("No dunstrc found.");
-                        xdgWipeHandle(&xdg);
-                }
+                config_file = xdg_config("/dunstrc");
+        }
+
+        if (!config_file) {
+                LOG_W("No dunstrc found.");
         }
 
         load_ini_file(config_file);
@@ -216,13 +247,13 @@ void load_settings(char *cmdline_config_path)
                         "Ellipsize truncated lines on the start/middle/end"
                 );
 
-                if (strlen(c) == 0) {
+                if (STR_EMPTY(c)) {
                         settings.ellipsize = defaults.ellipsize;
-                } else if (strcmp(c, "start") == 0) {
+                } else if (STR_EQ(c, "start")) {
                         settings.ellipsize = ELLIPSE_START;
-                } else if (strcmp(c, "middle") == 0) {
+                } else if (STR_EQ(c, "middle")) {
                         settings.ellipsize = ELLIPSE_MIDDLE;
-                } else if (strcmp(c, "end") == 0) {
+                } else if (STR_EQ(c, "end")) {
                         settings.ellipsize = ELLIPSE_END;
                 } else {
                         LOG_W("Unknown ellipsize value: '%s'", c);
@@ -252,14 +283,12 @@ void load_settings(char *cmdline_config_path)
         {
                 char *c = option_get_string(
                         "global",
-                        "follow", "-follow", "",
+                        "follow", "-follow", follow_mode_to_string(defaults.f_mode),
                         "Follow mouse, keyboard or none?"
                 );
 
-                if (strlen(c) > 0) {
-                        parse_follow_mode(c);
-                        g_free(c);
-                }
+                settings.f_mode = parse_follow_mode(c);
+                g_free(c);
         }
 
         settings.title = option_get_string(
@@ -317,13 +346,12 @@ void load_settings(char *cmdline_config_path)
                         "alignment", "-align/-alignment", "",
                         "Text alignment left/center/right"
                 );
-
-                if (strlen(c) > 0) {
-                        if (strcmp(c, "left") == 0)
+                if (STR_FULL(c)) {
+                        if (STR_EQ(c, "left"))
                                 settings.align = ALIGN_LEFT;
-                        else if (strcmp(c, "center") == 0)
+                        else if (STR_EQ(c, "center"))
                                 settings.align = ALIGN_CENTER;
-                        else if (strcmp(c, "right") == 0)
+                        else if (STR_EQ(c, "right"))
                                 settings.align = ALIGN_RIGHT;
                         else
                                 LOG_W("Unknown alignment value: '%s'", c);
@@ -398,12 +426,12 @@ void load_settings(char *cmdline_config_path)
                         "Color of the separator line (or 'auto')"
                 );
 
-                if (strlen(c) > 0) {
-                        if (strcmp(c, "auto") == 0)
+                if (STR_FULL(c)) {
+                        if (STR_EQ(c, "auto"))
                                 settings.sep_color = SEP_AUTO;
-                        else if (strcmp(c, "foreground") == 0)
+                        else if (STR_EQ(c, "foreground"))
                                 settings.sep_color = SEP_FOREGROUND;
-                        else if (strcmp(c, "frame") == 0)
+                        else if (STR_EQ(c, "frame"))
                                 settings.sep_color = SEP_FRAME;
                         else {
                                 settings.sep_color = SEP_CUSTOM;
@@ -465,12 +493,12 @@ void load_settings(char *cmdline_config_path)
                         "Align icons left/right/off"
                 );
 
-                if (strlen(c) > 0) {
-                        if (strcmp(c, "left") == 0)
+                if (STR_FULL(c)) {
+                        if (STR_EQ(c, "left"))
                                 settings.icon_position = ICON_LEFT;
-                        else if (strcmp(c, "right") == 0)
+                        else if (STR_EQ(c, "right"))
                                 settings.icon_position = ICON_RIGHT;
-                        else if (strcmp(c, "off") == 0)
+                        else if (STR_EQ(c, "off"))
                                 settings.icon_position = ICON_OFF;
                         else
                                 LOG_W("Unknown icon position: '%s'", c);
@@ -727,13 +755,13 @@ void load_settings(char *cmdline_config_path)
                 cur_section = next_section(cur_section);
                 if (!cur_section)
                         break;
-                if (strcmp(cur_section, "global") == 0
-                    || strcmp(cur_section, "frame") == 0
-                    || strcmp(cur_section, "experimental") == 0
-                    || strcmp(cur_section, "shortcuts") == 0
-                    || strcmp(cur_section, "urgency_low") == 0
-                    || strcmp(cur_section, "urgency_normal") == 0
-                    || strcmp(cur_section, "urgency_critical") == 0)
+                if (STR_EQ(cur_section, "global")
+                    || STR_EQ(cur_section, "frame")
+                    || STR_EQ(cur_section, "experimental")
+                    || STR_EQ(cur_section, "shortcuts")
+                    || STR_EQ(cur_section, "urgency_low")
+                    || STR_EQ(cur_section, "urgency_normal")
+                    || STR_EQ(cur_section, "urgency_critical"))
                         continue;
 
                 /* check for existing rule with same name */
@@ -741,7 +769,7 @@ void load_settings(char *cmdline_config_path)
                 for (GSList *iter = rules; iter; iter = iter->next) {
                         struct rule *match = iter->data;
                         if (match->name &&
-                            strcmp(match->name, cur_section) == 0)
+                            STR_EQ(match->name, cur_section))
                                 r = match;
                 }
 
@@ -797,7 +825,6 @@ void load_settings(char *cmdline_config_path)
         if (config_file) {
                 fclose(config_file);
                 free_ini();
-                xdgWipeHandle(&xdg);
         }
 #endif
 }

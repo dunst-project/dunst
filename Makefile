@@ -10,7 +10,7 @@ endif
 
 ifeq (,${SYSTEMD})
 # Check for systemctl to avoid discrepancies on systems, where
-# systemd is installed, but systemd.pc is in another package 
+# systemd is installed, but systemd.pc is in another package
 systemctl := $(shell command -v systemctl >/dev/null && echo systemctl)
 ifeq (systemctl,${systemctl})
 SYSTEMD := 1
@@ -64,10 +64,10 @@ debug: all
 ${OBJ}: config.mk
 
 dunst: ${OBJ} main.o
-	${CC} ${CFLAGS} -o $@ ${OBJ} main.o ${LDFLAGS}
+	${CC} -o ${@} ${OBJ} main.o ${CFLAGS} ${LDFLAGS}
 
 dunstify: dunstify.o
-	${CC} ${CFLAGS} -o $@ dunstify.o ${LDFLAGS}
+	${CC} -o ${@} dunstify.o ${CFLAGS} ${LDFLAGS}
 
 .PHONY: test test-valgrind
 test: test/test
@@ -85,7 +85,7 @@ test-valgrind: test/test
 			./test
 
 test/test: ${OBJ} ${TEST_OBJ}
-	${CC} ${CFLAGS} -o $@ ${TEST_OBJ} ${OBJ} ${LDFLAGS}
+	${CC} -o ${@} ${TEST_OBJ} ${OBJ} ${CFLAGS} ${LDFLAGS}
 
 .PHONY: doc doc-doxygen
 doc: docs/dunst.1

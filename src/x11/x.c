@@ -335,7 +335,7 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer 
                 case FocusIn:
                 case FocusOut:
                 case PropertyNotify:
-                        LOG_D("XEvent: Checking for active sceen changes");
+                        LOG_D("XEvent: Checking for active screen changes");
                         fullscreen_now = have_fullscreen_window();
                         scr = get_active_screen();
 
@@ -712,17 +712,17 @@ void x_win_hide(struct window_x11 *win)
  */
 KeySym x_shortcut_string_to_mask(const char *str)
 {
-        if (!strcmp(str, "ctrl")) {
+        if (STR_EQ(str, "ctrl")) {
                 return ControlMask;
-        } else if (!strcmp(str, "mod4")) {
+        } else if (STR_EQ(str, "mod4")) {
                 return Mod4Mask;
-        } else if (!strcmp(str, "mod3")) {
+        } else if (STR_EQ(str, "mod3")) {
                 return Mod3Mask;
-        } else if (!strcmp(str, "mod2")) {
+        } else if (STR_EQ(str, "mod2")) {
                 return Mod2Mask;
-        } else if (!strcmp(str, "mod1")) {
+        } else if (STR_EQ(str, "mod1")) {
                 return Mod1Mask;
-        } else if (!strcmp(str, "shift")) {
+        } else if (STR_EQ(str, "shift")) {
                 return ShiftMask;
         } else {
                 LOG_W("Unknown Modifier: '%s'", str);
@@ -828,7 +828,7 @@ static void x_shortcut_init(struct keyboard_shortcut *ks)
         if (!ks|| !ks->str)
                 return;
 
-        if (!strcmp(ks->str, "none") || (!strcmp(ks->str, ""))) {
+        if (STR_EQ(ks->str, "none") || (STR_EQ(ks->str, ""))) {
                 ks->is_valid = false;
                 return;
         }

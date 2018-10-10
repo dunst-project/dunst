@@ -8,6 +8,8 @@
 
 #include <glib.h>
 
+#include "utils.h"
+
 static GLogLevelFlags log_level = G_LOG_LEVEL_WARNING;
 
 /* see log.h */
@@ -30,23 +32,23 @@ void log_set_level_from_string(const char *level)
         if (!level)
                 return;
 
-        if (g_ascii_strcasecmp(level, "critical") == 0)
+        if (STR_CASEQ(level, "critical"))
                 log_level = G_LOG_LEVEL_CRITICAL;
-        else if (g_ascii_strcasecmp(level, "crit") == 0)
+        else if (STR_CASEQ(level, "crit"))
                 log_level = G_LOG_LEVEL_CRITICAL;
-        else if (g_ascii_strcasecmp(level, "warning") == 0)
+        else if (STR_CASEQ(level, "warning"))
                 log_level = G_LOG_LEVEL_WARNING;
-        else if (g_ascii_strcasecmp(level, "warn") == 0)
+        else if (STR_CASEQ(level, "warn"))
                 log_level = G_LOG_LEVEL_WARNING;
-        else if (g_ascii_strcasecmp(level, "message") == 0)
+        else if (STR_CASEQ(level, "message"))
                 log_level = G_LOG_LEVEL_MESSAGE;
-        else if (g_ascii_strcasecmp(level, "mesg") == 0)
+        else if (STR_CASEQ(level, "mesg"))
                 log_level = G_LOG_LEVEL_MESSAGE;
-        else if (g_ascii_strcasecmp(level, "info") == 0)
+        else if (STR_CASEQ(level, "info"))
                 log_level = G_LOG_LEVEL_INFO;
-        else if (g_ascii_strcasecmp(level, "debug") == 0)
+        else if (STR_CASEQ(level, "debug"))
                 log_level = G_LOG_LEVEL_DEBUG;
-        else if (g_ascii_strcasecmp(level, "deb") == 0)
+        else if (STR_CASEQ(level, "deb"))
                 log_level = G_LOG_LEVEL_DEBUG;
         else
                 LOG_W("Unknown log level: '%s'", level);

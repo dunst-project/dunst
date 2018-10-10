@@ -93,7 +93,7 @@ void notification_print(const struct notification *n)
 /* see notification.h */
 void notification_run_script(struct notification *n)
 {
-        if (!n->script || strlen(n->script) < 1)
+        if (STR_EMPTY(n->script))
                 return;
 
         if (n->script_run && !settings.always_run_script)
@@ -182,10 +182,10 @@ int notification_is_duplicate(const struct notification *a, const struct notific
                 && (a->raw_icon || b->raw_icon))
                 return false;
 
-        return strcmp(a->appname, b->appname) == 0
-            && strcmp(a->summary, b->summary) == 0
-            && strcmp(a->body,    b->body) == 0
-            && (settings.icon_position != ICON_OFF ? strcmp(a->icon, b->icon) == 0 : 1)
+        return STR_EQ(a->appname, b->appname)
+            && STR_EQ(a->summary, b->summary)
+            && STR_EQ(a->body, b->body)
+            && (settings.icon_position != ICON_OFF ? STR_EQ(a->icon, b->icon) : 1)
             && a->urgency == b->urgency;
 }
 
@@ -340,7 +340,7 @@ void notification_init(struct notification *n)
                 n->timeout = settings.timeouts[n->urgency];
 
         /* Icon handling */
-        if (n->icon && strlen(n->icon) <= 0)
+        if (STR_EMPTY(n->icon))
                 g_clear_pointer(&n->icon, g_free);
         if (!n->raw_icon && !n->icon)
                 n->icon = g_strdup(settings.icons[n->urgency]);
@@ -461,11 +461,8 @@ static void notification_format_message(struct notification *n)
         n->msg = g_strchomp(n->msg);
 
         /* truncate overlong messages */
-        if (strlen(n->msg) > DUNST_NOTIF_MAX_CHARS) {
-                char *buffer = g_malloc(DUNST_NOTIF_MAX_CHARS);
-                strncpy(buffer, n->msg, DUNST_NOTIF_MAX_CHARS);
-                buffer[DUNST_NOTIF_MAX_CHARS-1] = '\0';
-
+        if (strnlen(n->msg, DUNST_NOTIF_MAX_CHARS + 1) > DUNST_NOTIF_MAX_CHARS) {
+                char * buffer = g_strndup(n->msg, DUNST_NOTIF_MAX_CHARS);
                 g_free(n->msg);
                 n->msg = buffer;
         }
@@ -577,7 +574,7 @@ void notification_do_action(const struct notification *n)
                         return;
                 }
                 for (int i = 0; i < n->actions->count; i += 2) {
-                        if (strcmp(n->actions->actions[i], "default") == 0) {
+                        if (STR_EQ(n->actions->actions[i], "default")) {
                                 signal_action_invoked(n, n->actions->actions[i]);
                                 return;
                         }

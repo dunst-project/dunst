@@ -22,7 +22,6 @@ Dunst has a number of build dependencies that must be present before attempting 
 - libxinerama
 - libxrandr
 - libxss
-- libxdg-basedir
 - glib
 - pango/cairo
 - libgtk-3-dev
