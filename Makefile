@@ -96,8 +96,11 @@ test-coverage-report: test-coverage
 		--html-details \
 		-o docs/internal/coverage/index.html
 
+test/%.o: test/%.c src/%.c
+	${CC} -o $@ -c $< ${CFLAGS}
+
 test/test: ${OBJ} ${TEST_OBJ}
-	${CC} -o ${@} ${TEST_OBJ} ${OBJ} ${CFLAGS} ${LDFLAGS}
+	${CC} -o ${@} ${TEST_OBJ} $(filter-out ${TEST_OBJ:test/%=src/%},${OBJ}) ${CFLAGS} ${LDFLAGS}
 
 .PHONY: doc doc-doxygen
 doc: docs/dunst.1

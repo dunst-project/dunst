@@ -1,9 +1,5 @@
+#include "src/option_parser.c"
 #include "greatest.h"
-
-#include <stdbool.h>
-#include <glib.h>
-
-#include "src/option_parser.h"
 
 TEST test_next_section(void)
 {

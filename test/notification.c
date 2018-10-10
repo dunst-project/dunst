@@ -1,9 +1,8 @@
+#include "src/notification.c"
 #include "greatest.h"
-#include "src/notification.h"
+
 #include "src/option_parser.h"
 #include "src/settings.h"
-
-#include <glib.h>
 
 TEST test_notification_is_duplicate_field(char **field,
                                           struct notification *a,

@@ -1,9 +1,5 @@
+#include "../src/icon.c"
 #include "greatest.h"
-#include "../src/icon.h"
-#include "../src/utils.h"
-
-#include <gdk-pixbuf/gdk-pixbuf.h>
-#include <glib.h>
 
 #define ICONPREFIX "/data/icons/path"
 
