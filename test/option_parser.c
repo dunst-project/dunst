@@ -1,6 +1,8 @@
 #include "src/option_parser.c"
 #include "greatest.h"
 
+extern const char *base;
+
 TEST test_next_section(void)
 {
         const char *section = NULL;
@@ -276,7 +278,8 @@ TEST test_option_get_bool(void)
 
 SUITE(suite_option_parser)
 {
-        FILE *config_file = fopen("data/test-ini", "r");
+        char *config_path = g_strconcat(base, "/data/test-ini", NULL);
+        FILE *config_file = fopen(config_path, "r");
         if (!config_file) {
                 fputs("\nTest config file 'data/test-ini' couldn't be opened, failing.\n", stderr);
                 exit(1);
@@ -310,6 +313,8 @@ SUITE(suite_option_parser)
         RUN_TEST(test_option_get_int);
         RUN_TEST(test_option_get_double);
         RUN_TEST(test_option_get_bool);
+
+        g_free(config_path);
         free_ini();
         g_strfreev(argv);
         fclose(config_file);

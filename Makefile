@@ -71,18 +71,17 @@ dunstify: dunstify.o
 
 .PHONY: test test-valgrind test-coverage
 test: test/test clean-coverage-run
-	cd test && ./test
+	./test/test
 
 test-valgrind: test/test
-	cd ./test \
-		&& valgrind \
-			--suppressions=../.valgrind.suppressions \
-			--leak-check=full \
-			--show-leak-kinds=definite \
-			--errors-for-leak-kinds=definite \
-			--num-callers=40 \
-			--error-exitcode=123 \
-			./test
+	valgrind \
+		--suppressions=.valgrind.suppressions \
+		--leak-check=full \
+		--show-leak-kinds=definite \
+		--errors-for-leak-kinds=definite \
+		--num-callers=40 \
+		--error-exitcode=123 \
+		./test/test
 
 test-coverage: CFLAGS += -fprofile-arcs -ftest-coverage -O0
 test-coverage: test

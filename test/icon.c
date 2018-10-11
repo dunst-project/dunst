@@ -10,24 +10,23 @@
 #define IS_ICON_PNG(pb)  4 == gdk_pixbuf_get_width(pb)
 #define IS_ICON_SVG(pb) 16 == gdk_pixbuf_get_width(pb)
 
+extern const char *base;
+
 TEST test_get_pixbuf_from_file_tilde(void)
 {
-        char *cwd  = g_get_current_dir();
         const char *home = g_get_home_dir();
         const char *iconpath = ICONPREFIX;
 
-        if (0 != strncmp(home, cwd, strlen(home))) {
-                g_free(cwd);
+        if (0 != strncmp(home, base, strlen(home))) {
                 SKIPm("Current directory is not a subdirectory from user's home."
                       " Cannot test iconpath tilde expansion.\n");
         }
 
-        gchar *path = g_build_filename(cwd, iconpath, "valid", "icon1.svg", NULL);
+        gchar *path = g_build_filename(base, iconpath, "valid", "icon1.svg", NULL);
         path = string_replace_at(path, 0, strlen(home), "~");
 
         GdkPixbuf *pixbuf = get_pixbuf_from_file(path);
         g_clear_pointer(&path, g_free);
-        g_clear_pointer(&cwd, g_free);
 
         ASSERT(pixbuf);
         ASSERTm("The wrong pixbuf is loaded in the icon file.", IS_ICON_SVG(pixbuf));
@@ -37,14 +36,12 @@ TEST test_get_pixbuf_from_file_tilde(void)
 
 TEST test_get_pixbuf_from_file_absolute(void)
 {
-        char *cwd  = g_get_current_dir();
         const char *iconpath = ICONPREFIX;
 
-        gchar *path = g_build_filename(cwd, iconpath, "valid", "icon1.svg", NULL);
+        gchar *path = g_build_filename(base, iconpath, "valid", "icon1.svg", NULL);
 
         GdkPixbuf *pixbuf = get_pixbuf_from_file(path);
         g_clear_pointer(&path, g_free);
-        g_clear_pointer(&cwd, g_free);
 
         ASSERT(pixbuf);
         ASSERTm("The wrong pixbuf is loaded in the icon file.", IS_ICON_SVG(pixbuf));
@@ -94,7 +91,7 @@ TEST test_get_pixbuf_from_icon_onlypng(void)
 
 TEST test_get_pixbuf_from_icon_filename(void)
 {
-        char *icon = string_append(g_get_current_dir(), "/data/icons/valid.png", NULL);
+        char *icon = g_strconcat(base, "/data/icons/valid.png", NULL);
         GdkPixbuf *pixbuf = get_pixbuf_from_icon(icon);
         ASSERT(pixbuf);
         ASSERTm("PNG pixbuf isn't loaded", IS_ICON_PNG(pixbuf));
@@ -106,24 +103,23 @@ TEST test_get_pixbuf_from_icon_filename(void)
 
 TEST test_get_pixbuf_from_icon_fileuri(void)
 {
-        char *curdir = g_get_current_dir();
-        char *icon = g_strconcat("file://", curdir,"/data/icons/valid.svg", NULL);
+        char *icon = g_strconcat("file://", base, "/data/icons/valid.svg", NULL);
         GdkPixbuf *pixbuf = get_pixbuf_from_icon(icon);
         ASSERT(pixbuf);
         ASSERTm("SVG pixbuf isn't loaded", IS_ICON_SVG(pixbuf));
         g_clear_pointer(&pixbuf, g_object_unref);
 
         g_free(icon);
-        g_free(curdir);
         PASS();
 }
 
 SUITE(suite_icon)
 {
-        settings.icon_path =
-                 "." ICONPREFIX "/invalid"
-                ":." ICONPREFIX "/valid"
-                ":." ICONPREFIX "/both";
+        settings.icon_path = g_strconcat(
+                     base, ICONPREFIX "/invalid"
+                ":", base, ICONPREFIX "/valid"
+                ":", base, ICONPREFIX "/both",
+                NULL);
 
         RUN_TEST(test_get_pixbuf_from_file_tilde);
         RUN_TEST(test_get_pixbuf_from_file_absolute);
@@ -134,6 +130,6 @@ SUITE(suite_icon)
         RUN_TEST(test_get_pixbuf_from_icon_filename);
         RUN_TEST(test_get_pixbuf_from_icon_fileuri);
 
-        settings.icon_path = NULL;
+        g_clear_pointer(&settings.icon_path, g_free);
 }
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
