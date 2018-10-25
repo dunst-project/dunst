@@ -66,6 +66,7 @@ void notification_print(const struct notification *n)
         printf("\tframe: %s\n", n->colors[ColFrame]);
         printf("\tfullscreen: %s\n", enum_to_string_fullscreen(n->fullscreen));
         printf("\tprogress: %d\n", n->progress);
+        printf("\tstack_tag: %s\n", (n->stack_tag ? n->stack_tag : ""));
         printf("\tid: %d\n", n->id);
         if (n->urls) {
                 char *urls = string_replace_all("\n", "\t\t\n", g_strdup(n->urls));
@@ -251,6 +252,7 @@ void notification_unref(struct notification *n)
         g_free(n->colors[ColFG]);
         g_free(n->colors[ColBG]);
         g_free(n->colors[ColFrame]);
+        g_free(n->stack_tag);
 
         actions_free(n->actions);
         rawimage_free(n->raw_icon);

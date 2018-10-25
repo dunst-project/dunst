@@ -47,6 +47,10 @@ void rule_apply(struct rule *r, struct notification *n)
                 n->format = r->format;
         if (r->script)
                 n->script = r->script;
+        if (r->set_stack_tag) {
+                g_free(n->stack_tag);
+                n->stack_tag = g_strdup(r->set_stack_tag);
+        }
 }
 
 /*
@@ -73,6 +77,7 @@ void rule_init(struct rule *r)
         r->body = NULL;
         r->icon = NULL;
         r->category = NULL;
+        r->stack_tag = NULL;
         r->msg_urgency = URG_NONE;
         r->timeout = -1;
         r->urgency = URG_NONE;
@@ -86,6 +91,7 @@ void rule_init(struct rule *r)
         r->bg = NULL;
         r->fc = NULL;
         r->format = NULL;
+        r->set_stack_tag = NULL;
 }
 
 /*
@@ -93,11 +99,12 @@ void rule_init(struct rule *r)
  */
 bool rule_matches_notification(struct rule *r, struct notification *n)
 {
-        return   ( (!r->appname  || (n->appname  && !fnmatch(r->appname,  n->appname, 0)))
-                && (!r->summary  || (n->summary  && !fnmatch(r->summary,  n->summary, 0)))
-                && (!r->body     || (n->body     && !fnmatch(r->body,     n->body, 0)))
-                && (!r->icon     || (n->icon     && !fnmatch(r->icon,     n->icon, 0)))
-                && (!r->category || (n->category && !fnmatch(r->category, n->category, 0)))
+        return   ( (!r->appname   || (n->appname   && !fnmatch(r->appname,   n->appname, 0)))
+                && (!r->summary   || (n->summary   && !fnmatch(r->summary,   n->summary, 0)))
+                && (!r->body      || (n->body      && !fnmatch(r->body,      n->body, 0)))
+                && (!r->icon      || (n->icon      && !fnmatch(r->icon,      n->icon, 0)))
+                && (!r->category  || (n->category  && !fnmatch(r->category,  n->category, 0)))
+                && (!r->stack_tag || (n->stack_tag && !fnmatch(r->stack_tag, n->stack_tag, 0)))
                 && (r->match_transient == -1 || (r->match_transient == n->transient))
                 && (r->msg_urgency == URG_NONE || r->msg_urgency == n->urgency));
 }
