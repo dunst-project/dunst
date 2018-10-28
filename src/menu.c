@@ -21,7 +21,7 @@
 #include "utils.h"
 
 static bool is_initialized = false;
-static regex_t cregex;
+static regex_t url_regex;
 
 struct notification_lock {
         struct notification *n;
@@ -29,29 +29,36 @@ struct notification_lock {
 };
 static gpointer context_menu_thread(gpointer data);
 
-static int regex_init(void)
+/**
+ * Initializes regexes needed for matching.
+ *
+ * @return true if initialization succeeded
+ */
+static bool regex_init(void)
 {
         if (is_initialized)
-                return 1;
+                return true;
 
         char *regex =
             "\\b(https?://|ftps?://|news://|mailto:|file://|www\\.)"
             "[-[:alnum:]_\\@;/?:&=%$.+!*\x27,~#]*"
             "(\\([-[:alnum:]_\\@;/?:&=%$.+!*\x27,~#]*\\)|[-[:alnum:]_\\@;/?:&=%$+*~])+";
-        int ret = regcomp(&cregex, regex, REG_EXTENDED | REG_ICASE);
-        if (ret != 0) {
-                LOG_W("Failed to compile regex.");
-                return 0;
+        int code = regcomp(&url_regex, regex, REG_EXTENDED | REG_ICASE);
+        if (code != 0) {
+                char error_buf[120];
+                regerror(code, &url_regex, error_buf, sizeof(error_buf));
+                LOG_W("Failed to compile URL-matching regex: %s", error_buf);
+                return false;
         } else {
                 is_initialized = true;
-                return 1;
+                return true;
         }
 }
 
 void regex_teardown(void)
 {
         if (is_initialized) {
-                regfree(&cregex);
+                regfree(&url_regex);
                 is_initialized = false;
         }
 }
@@ -73,7 +80,7 @@ char *extract_urls(const char *to_match)
         regmatch_t m;
 
         while (1) {
-                int nomatch = regexec(&cregex, p, 1, &m, 0);
+                int nomatch = regexec(&url_regex, p, 1, &m, 0);
                 if (nomatch) {
                         return urls;
                 }
