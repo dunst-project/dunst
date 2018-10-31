@@ -15,8 +15,8 @@ enum reason {
         REASON_MAX = 4,   /**< Maximum value, useful for boundary checking */
 };
 
-int initdbus(void);
-void dbus_tear_down(int id);
+int dbus_init(void);
+void dbus_teardown(int id);
 void signal_notification_closed(struct notification *n, enum reason reason);
 void signal_action_invoked(const struct notification *n, const char *identifier);
 

@@ -141,7 +141,7 @@ int dunst_main(int argc, char *argv[])
                 usage(EXIT_SUCCESS);
         }
 
-        int owner_id = initdbus();
+        int dbus_owner_id = dbus_init();
 
         mainloop = g_main_loop_new(NULL, FALSE);
 
@@ -180,7 +180,7 @@ int dunst_main(int argc, char *argv[])
         g_source_remove(term_src);
         g_source_remove(int_src);
 
-        dbus_tear_down(owner_id);
+        dbus_teardown(dbus_owner_id);
 
         teardown();
 
