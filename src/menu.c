@@ -63,41 +63,32 @@ void regex_teardown(void)
         }
 }
 
-/*
- * Extract all urls from a given string.
- *
- * Return: a string of urls separated by \n
- *
- */
+/* see menu.h */
 char *extract_urls(const char *to_match)
 {
-        char *urls = NULL;
+        if (!to_match)
+                return NULL;
 
         if (!regex_init())
                 return NULL;
 
+        char *urls = NULL;
         const char *p = to_match;
         regmatch_t m;
 
         while (1) {
                 int nomatch = regexec(&url_regex, p, 1, &m, 0);
-                if (nomatch) {
-                        return urls;
-                }
-                int start;
-                int finish;
-                if (m.rm_so == -1) {
+
+                if (nomatch || m.rm_so == -1)
                         break;
-                }
-                start = m.rm_so + (p - to_match);
-                finish = m.rm_eo + (p - to_match);
+
+                int start = m.rm_so + (p - to_match);
+                int finish = m.rm_eo + (p - to_match);
 
                 char *match = g_strndup(to_match + start, finish - start);
-
                 urls = string_append(urls, match, "\n");
 
                 g_free(match);
-
                 p += m.rm_eo;
         }
         return urls;

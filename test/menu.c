@@ -8,6 +8,9 @@ TEST test_extract_urls_from_empty_string(void)
 {
         char *urls = extract_urls("");
         ASSERT_EQ_FMT(NULL, (void*)urls, "%p");
+
+        urls = extract_urls(NULL);
+        ASSERT_EQ_FMT(NULL, (void*)urls, "%p");
         g_free(urls);
         PASS();
 }

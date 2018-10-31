@@ -2,7 +2,14 @@
 #ifndef DUNST_MENU_H
 #define DUNST_MENU_H
 
+/**
+ * Extract all urls from the given string.
+ *
+ * @param to_match (nullable) String to extract URLs
+ * @return a string of urls separated by '\n'
+ */
 char *extract_urls(const char *to_match);
+
 void open_browser(const char *in);
 void invoke_action(const char *action);
 void regex_teardown(void);
