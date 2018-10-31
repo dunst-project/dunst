@@ -15,13 +15,6 @@ static bool is_readable_file(const char *filename)
         return (access(filename, R_OK) != -1);
 }
 
-const char *get_filename_ext(const char *filename)
-{
-        const char *dot = strrchr(filename, '.');
-        if (!dot || dot == filename) return "";
-        return dot + 1;
-}
-
 static cairo_status_t read_from_buf(void *closure, unsigned char *data, unsigned int size)
 {
         GByteArray *buf = (GByteArray *)closure;
