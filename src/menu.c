@@ -270,10 +270,7 @@ char *invoke_dmenu(const char *dmenu_input)
         return ret;
 }
 
-/*
- * Open the context menu that let's the user
- * select urls/actions/etc
- */
+/* see menu.h */
 void context_menu(void)
 {
         GError *err = NULL;

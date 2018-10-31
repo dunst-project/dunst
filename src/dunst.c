@@ -30,8 +30,6 @@
 
 GMainLoop *mainloop = NULL;
 
-GSList *rules = NULL;
-
 /* misc functions */
 static gboolean run(void *data);
 

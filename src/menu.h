@@ -7,5 +7,10 @@ void open_browser(const char *in);
 void invoke_action(const char *action);
 void regex_teardown(void);
 
+/**
+ * Open the context menu that lets the user select urls/actions/etc.
+ */
+void context_menu(void);
+
 #endif
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
