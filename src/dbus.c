@@ -569,7 +569,7 @@ static struct raw_image *get_raw_image_from_data_hint(GVariant *icon_data)
         return image;
 }
 
-int initdbus(void)
+int dbus_init(void)
 {
         guint owner_id;
 
@@ -592,7 +592,7 @@ int initdbus(void)
         return owner_id;
 }
 
-void dbus_tear_down(int owner_id)
+void dbus_teardown(int owner_id)
 {
         g_clear_pointer(&introspection_data, g_dbus_node_info_unref);
 

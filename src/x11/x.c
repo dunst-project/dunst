@@ -24,6 +24,7 @@
 #include "src/dunst.h"
 #include "src/log.h"
 #include "src/markup.h"
+#include "src/menu.h"
 #include "src/notification.h"
 #include "src/queues.h"
 #include "src/settings.h"

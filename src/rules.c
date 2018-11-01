@@ -7,6 +7,8 @@
 
 #include "dunst.h"
 
+GSList *rules = NULL;
+
 /*
  * Apply rule to notification.
  */
