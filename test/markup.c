@@ -55,6 +55,17 @@ TEST test_markup_transform(void)
         ASSERT_STR_EQ("bar baz",            (ptr=markup_transform(g_strdup("<a href=\"asdf\">bar</a> baz"), MARKUP_FULL)));
         g_free(ptr);
 
+        ASSERT_STR_EQ("&#936;", (ptr=markup_transform(g_strdup("&#936;"), MARKUP_FULL)));
+        free(ptr);
+        ASSERT_STR_EQ("&#x3a8; &#x3A8;", (ptr=markup_transform(g_strdup("&#x3a8; &#x3A8;"), MARKUP_FULL)));
+        free(ptr);
+        ASSERT_STR_EQ("&gt; &lt;", (ptr=markup_transform(g_strdup("&gt; &lt;"), MARKUP_FULL)));
+        free(ptr);
+        ASSERT_STR_EQ("&amp;invalid; &amp;#abc; &amp;#xG;", (ptr=markup_transform(g_strdup("&invalid; &#abc; &#xG;"), MARKUP_FULL)));
+        free(ptr);
+        ASSERT_STR_EQ("&amp;; &amp;#; &amp;#x;", (ptr=markup_transform(g_strdup("&; &#; &#x;"), MARKUP_FULL)));
+        free(ptr);
+
         PASS();
 }
 

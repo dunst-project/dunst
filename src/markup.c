@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <stdbool.h>
 #include <string.h>
+#include <ctype.h>
 #include <stdio.h>
 
 #include "log.h"
@@ -242,6 +243,80 @@ char *markup_strip(char *str)
         return str;
 }
 
+/**
+ * Determine if an & character pointed to by \p str is a markup & entity or
+ * part of the text
+ *
+ * @return true if it's an entity otherwise false
+ */
+static bool markup_is_entity(const char *str)
+{
+        assert(str);
+        assert(*str == '&');
+
+        char *end = strchr(str, ';');
+        if (!end)
+                return false;
+
+        // Parse (hexa)decimal entities with the format &#1234; or &#xABC;
+        if (str[1] == '#') {
+                const char *cur = str + 2;
+
+                if (*cur == 'x') {
+                        cur++;
+
+                        // Reject &#x;
+                        if (*cur == ';')
+                                return false;
+
+                        while (isxdigit(*cur) && cur < end)
+                                cur++;
+                } else {
+
+                        // Reject &#;
+                        if (*cur == ';')
+                                return false;
+
+                        while (isdigit(*cur) && cur < end)
+                                cur++;
+                }
+
+                return (cur == end);
+        } else {
+                const char *supported_tags[] = {"&amp;", "&lt;", "&gt;", "&quot;", "&apos;"};
+                for (int i = 0; i < sizeof(supported_tags)/sizeof(*supported_tags); i++) {
+                        if (g_str_has_prefix(str, supported_tags[i]))
+                                return true;
+                }
+                return false;
+        }
+}
+
+/**
+ * Escape all unsupported and invalid &-entities in a string. If the resulting
+ * string does not fit it will be reallocated.
+ *
+ * @param str The string to be transformed
+ */
+static char *markup_escape_unsupported(char *str)
+{
+        if (!str)
+                return NULL;
+
+        char *match = str;
+        while ((match = strchr(match, '&'))) {
+                if (!markup_is_entity(match)) {
+                        int pos = match - str;
+                        str = string_replace_at(str, pos, 1, "&amp;");
+                        match = str + pos + strlen("&amp;");
+                } else {
+                        match++;
+                }
+        }
+
+        return str;
+}
+
 /*
  * Transform the string in accordance with `markup_mode` and
  * `settings.ignore_newline`
@@ -265,6 +340,7 @@ char *markup_transform(char *str, enum markup_mode markup_mode)
                 str = markup_quote(str);
                 break;
         case MARKUP_FULL:
+                str = markup_escape_unsupported(str);
                 str = markup_br2nl(str);
                 markup_strip_a(&str, NULL);
                 markup_strip_img(&str, NULL);
