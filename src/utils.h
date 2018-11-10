@@ -25,9 +25,6 @@ char *string_replace_all(const char *needle, const char *replacement, char *hays
 /* replace <len> characters with <repl> at position <pos> of the string <buf> */
 char *string_replace_at(char *buf, int pos, int len, const char *repl);
 
-/* replace needle with replacement in haystack */
-char *string_replace(const char *needle, const char *replacement, char *haystack);
-
 char *string_append(char *a, const char *b, const char *sep);
 
 /* strip content between two delimiter characters (inplace) */

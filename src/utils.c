@@ -44,16 +44,6 @@ char *string_replace_at(char *buf, int pos, int len, const char *repl)
         return tmp;
 }
 
-char *string_replace(const char *needle, const char *replacement, char *haystack)
-{
-        char *start;
-        start = strstr(haystack, needle);
-        if (!start)
-                return haystack;
-
-        return string_replace_at(haystack, (start - haystack), strlen(needle), replacement);
-}
-
 char *string_replace_all(const char *needle, const char *replacement, char *haystack)
 {
         char *start;
@@ -134,7 +124,7 @@ char *string_to_path(char *string)
         if (string && STRN_EQ(string, "~/", 2)) {
                 char *home = g_strconcat(getenv("HOME"), "/", NULL);
 
-                string = string_replace("~/", home, string);
+                string = string_replace_at(string, 0, 2, home);
 
                 g_free(home);
         }

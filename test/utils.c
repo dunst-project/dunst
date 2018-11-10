@@ -48,28 +48,6 @@ TEST test_string_replace_all(void)
         PASS();
 }
 
-TEST test_string_replace(void)
-{
-        char *text = malloc(128 * sizeof(char));
-        strcpy(text, "aaaaa");
-        ASSERT_STR_EQ("baaaa", (text = string_replace("a", "b", text)) );
-
-        strcpy(text, "");
-        ASSERT_STR_EQ((text = string_replace("a", "b", text)), "");
-
-        strcpy(text, "Nothing to replace");
-        ASSERT_STR_EQ((text = string_replace("z", "a", text)), "Nothing to replace");
-
-        strcpy(text, "Reverse this");
-        ASSERT_STR_EQ("Reverse sith", (text = string_replace("this", "sith", text)));
-
-        strcpy(text, "abcdabc");
-        ASSERT_STR_EQ("xyzabcdabc", (text = string_replace("a", "xyza", text)));
-
-        free(text);
-        PASS();
-}
-
 TEST test_string_append(void)
 {
         char *exp;
@@ -202,7 +180,6 @@ SUITE(suite_utils)
 {
         RUN_TEST(test_string_replace_char);
         RUN_TEST(test_string_replace_all);
-        RUN_TEST(test_string_replace);
         RUN_TEST(test_string_append);
         RUN_TEST(test_string_strip_quotes);
         RUN_TEST(test_string_strip_delimited);
