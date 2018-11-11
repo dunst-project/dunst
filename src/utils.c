@@ -2,6 +2,7 @@
 #include "utils.h"
 
 #include <assert.h>
+#include <ctype.h>
 #include <errno.h>
 #include <glib.h>
 #include <stdio.h>
@@ -134,7 +135,6 @@ char *string_to_path(char *string)
 
 gint64 string_to_time(const char *string)
 {
-
         assert(string);
 
         errno = 0;
@@ -155,7 +155,7 @@ gint64 string_to_time(const char *string)
         }
 
         // endptr may point to a separating space
-        while (*endptr == ' ')
+        while (isspace(*endptr))
                 endptr++;
 
         if (STRN_EQ(endptr, "ms", 2))
