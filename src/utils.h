@@ -16,22 +16,48 @@
 //! Test if string a and b are the same case-insensitively
 #define STR_CASEQ(a, b) (strcasecmp(a, b) == 0)
 
-/* replace all occurrences of the character needle with the character replacement in haystack */
+/**
+ * Replaces all occurrences of the char \p needle with the char \p replacement in \p haystack.
+ *
+ * Does not allocate a new string.
+ *
+ * @param needle The char to replace with replacement
+ * @param replacement The char which is the new one
+ * @param haystack (nullable) The string to replace
+ *
+ * @returns The exact value of the haystack paramater (to allow nesting)
+ */
 char *string_replace_char(char needle, char replacement, char *haystack);
 
-/* replace all occurrences of needle with replacement in haystack */
-char *string_replace_all(const char *needle, const char *replacement, char *haystack);
-
-/* replace <len> characters with <repl> at position <pos> of the string <buf> */
+/**
+ * Replace a substring inside a string with another string.
+ *
+ * May reallocate memory. Free the result with `g_free`.
+ *
+ * @param buf The string to replace
+ * @param pos The position of the substring to replace
+ * @param len The length of the substring to replace
+ * @param repl The new contents of the substring.
+ */
 char *string_replace_at(char *buf, int pos, int len, const char *repl);
 
-/* replace needle with replacement in haystack */
-char *string_replace(const char *needle, const char *replacement, char *haystack);
+/**
+ * Replace all occurences of a substring.
+ *
+ * @param needle The substring to search
+ * @param replacement The substring to replace
+ * @param haystack (nullable) The string to search the substring for
+ */
+char *string_replace_all(const char *needle, const char *replacement, char *haystack);
 
+/**
+ * Append \p b to string \p a. And concatenate both strings with \p concat, if both are non-empty.
+ *
+ * @param a (nullable) The left side of the string
+ * @param b (nullable) The right side of the string
+ * @param sep (nullable) The concatenator to concatenate if a and b given
+ */
 char *string_append(char *a, const char *b, const char *sep);
-
-/* strip content between two delimiter characters (inplace) */
-void string_strip_delimited(char *str, char a, char b);
 
 /**
  * Strip quotes from a string. Won't touch inner quotes.
@@ -41,10 +67,32 @@ void string_strip_delimited(char *str, char a, char b);
  */
 char *string_strip_quotes(const char *value);
 
-/* replace tilde and path-specific values with its equivalents */
+/**
+ * Strip content between two delimiter characters
+ *
+ * @param str The string to operate in place
+ * @param a Starting delimiter
+ * @param b Ending delimiter
+ */
+void string_strip_delimited(char *str, char a, char b);
+
+/**
+ * Replace tilde and path-specific values with its equivalents
+ *
+ * The string gets invalidated. The new valid representation is the return value.
+ *
+ * @param string (nullable) The string to convert to a path.
+ * @returns The tilde-replaced string.
+ */
 char *string_to_path(char *string);
 
-/* convert time units (ms, s, m) to internal gint64 microseconds */
+/**
+ * Convert time units (ms, s, m) to the internal `gint64` microseconds format
+ *
+ * If no unit is given, 's' (seconds) is assumed by default.
+ *
+ * @param string The string to parse the time format from.
+ */
 gint64 string_to_time(const char *string);
 
 /**

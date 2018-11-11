@@ -2,6 +2,7 @@
 #include "utils.h"
 
 #include <assert.h>
+#include <ctype.h>
 #include <errno.h>
 #include <glib.h>
 #include <stdio.h>
@@ -10,16 +11,24 @@
 
 #include "log.h"
 
+/* see utils.h */
 char *string_replace_char(char needle, char replacement, char *haystack)
 {
+        if (!haystack)
+                return NULL;
+
         char *current = haystack;
         while ((current = strchr(current, needle)))
                 *current++ = replacement;
         return haystack;
 }
 
+/* see utils.h */
 char *string_replace_at(char *buf, int pos, int len, const char *repl)
 {
+        assert(buf);
+        assert(repl);
+
         char *tmp;
         int size, buf_len, repl_len;
 
@@ -44,18 +53,14 @@ char *string_replace_at(char *buf, int pos, int len, const char *repl)
         return tmp;
 }
 
-char *string_replace(const char *needle, const char *replacement, char *haystack)
-{
-        char *start;
-        start = strstr(haystack, needle);
-        if (!start)
-                return haystack;
-
-        return string_replace_at(haystack, (start - haystack), strlen(needle), replacement);
-}
-
+/* see utils.h */
 char *string_replace_all(const char *needle, const char *replacement, char *haystack)
 {
+        if (!haystack)
+                return NULL;
+        assert(needle);
+        assert(replacement);
+
         char *start;
         int needle_pos;
         int needle_len, repl_len;
@@ -76,6 +81,7 @@ char *string_replace_all(const char *needle, const char *replacement, char *hays
         return haystack;
 }
 
+/* see utils.h */
 char *string_append(char *a, const char *b, const char *sep)
 {
         if (STR_EMPTY(a)) {
@@ -93,7 +99,6 @@ char *string_append(char *a, const char *b, const char *sep)
         g_free(a);
 
         return new;
-
 }
 
 /* see utils.h */
@@ -113,8 +118,11 @@ char *string_strip_quotes(const char *value)
         return s;
 }
 
+/* see utils.h */
 void string_strip_delimited(char *str, char a, char b)
 {
+        assert(str);
+
         int iread=-1, iwrite=0, copen=0;
         while (str[++iread] != 0) {
                 if (str[iread] == a) {
@@ -128,13 +136,14 @@ void string_strip_delimited(char *str, char a, char b)
         str[iwrite] = 0;
 }
 
+/* see utils.h */
 char *string_to_path(char *string)
 {
 
         if (string && STRN_EQ(string, "~/", 2)) {
                 char *home = g_strconcat(getenv("HOME"), "/", NULL);
 
-                string = string_replace("~/", home, string);
+                string = string_replace_at(string, 0, 2, home);
 
                 g_free(home);
         }
@@ -142,9 +151,9 @@ char *string_to_path(char *string)
         return string;
 }
 
+/* see utils.h */
 gint64 string_to_time(const char *string)
 {
-
         assert(string);
 
         errno = 0;
@@ -165,7 +174,7 @@ gint64 string_to_time(const char *string)
         }
 
         // endptr may point to a separating space
-        while (*endptr == ' ')
+        while (isspace(*endptr))
                 endptr++;
 
         if (STRN_EQ(endptr, "ms", 2))
