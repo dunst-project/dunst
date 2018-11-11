@@ -14,7 +14,8 @@
 
 static char *markup_quote(char *str)
 {
-        assert(str);
+        if (!str)
+                return NULL;
 
         str = string_replace_all("&", "&amp;", str);
         str = string_replace_all("\"", "&quot;", str);
@@ -27,7 +28,8 @@ static char *markup_quote(char *str)
 
 static char *markup_unquote(char *str)
 {
-        assert(str);
+        if (!str)
+                return NULL;
 
         str = string_replace_all("&quot;", "\"", str);
         str = string_replace_all("&apos;", "'", str);
@@ -40,7 +42,8 @@ static char *markup_unquote(char *str)
 
 static char *markup_br2nl(char *str)
 {
-        assert(str);
+        if (!str)
+                return NULL;
 
         str = string_replace_all("<br>", "\n", str);
         str = string_replace_all("<br/>", "\n", str);
@@ -57,6 +60,7 @@ static char *markup_br2nl(char *str)
  */
 void markup_strip_a(char **str, char **urls)
 {
+        assert(*str);
         char *tag1 = NULL;
 
         if (urls)

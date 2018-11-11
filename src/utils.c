@@ -13,6 +13,9 @@
 
 char *string_replace_char(char needle, char replacement, char *haystack)
 {
+        if (!haystack)
+                return NULL;
+
         char *current = haystack;
         while ((current = strchr(current, needle)))
                 *current++ = replacement;
@@ -21,6 +24,9 @@ char *string_replace_char(char needle, char replacement, char *haystack)
 
 char *string_replace_at(char *buf, int pos, int len, const char *repl)
 {
+        assert(buf);
+        assert(repl);
+
         char *tmp;
         int size, buf_len, repl_len;
 
@@ -47,6 +53,11 @@ char *string_replace_at(char *buf, int pos, int len, const char *repl)
 
 char *string_replace_all(const char *needle, const char *replacement, char *haystack)
 {
+        if (!haystack)
+                return NULL;
+        assert(needle);
+        assert(replacement);
+
         char *start;
         int needle_pos;
         int needle_len, repl_len;
@@ -106,6 +117,8 @@ char *string_strip_quotes(const char *value)
 
 void string_strip_delimited(char *str, char a, char b)
 {
+        assert(str);
+
         int iread=-1, iwrite=0, copen=0;
         while (str[++iread] != 0) {
                 if (str[iread] == a) {
