@@ -11,6 +11,7 @@
 
 #include "log.h"
 
+/* see utils.h */
 char *string_replace_char(char needle, char replacement, char *haystack)
 {
         if (!haystack)
@@ -22,6 +23,7 @@ char *string_replace_char(char needle, char replacement, char *haystack)
         return haystack;
 }
 
+/* see utils.h */
 char *string_replace_at(char *buf, int pos, int len, const char *repl)
 {
         assert(buf);
@@ -51,6 +53,7 @@ char *string_replace_at(char *buf, int pos, int len, const char *repl)
         return tmp;
 }
 
+/* see utils.h */
 char *string_replace_all(const char *needle, const char *replacement, char *haystack)
 {
         if (!haystack)
@@ -78,6 +81,7 @@ char *string_replace_all(const char *needle, const char *replacement, char *hays
         return haystack;
 }
 
+/* see utils.h */
 char *string_append(char *a, const char *b, const char *sep)
 {
         if (STR_EMPTY(a)) {
@@ -95,7 +99,6 @@ char *string_append(char *a, const char *b, const char *sep)
         g_free(a);
 
         return new;
-
 }
 
 /* see utils.h */
@@ -115,6 +118,7 @@ char *string_strip_quotes(const char *value)
         return s;
 }
 
+/* see utils.h */
 void string_strip_delimited(char *str, char a, char b)
 {
         assert(str);
@@ -132,6 +136,7 @@ void string_strip_delimited(char *str, char a, char b)
         str[iwrite] = 0;
 }
 
+/* see utils.h */
 char *string_to_path(char *string)
 {
 
@@ -146,6 +151,7 @@ char *string_to_path(char *string)
         return string;
 }
 
+/* see utils.h */
 gint64 string_to_time(const char *string)
 {
         assert(string);

@@ -12,6 +12,10 @@
 #include "settings.h"
 #include "utils.h"
 
+/**
+ * Convert all HTML special symbols to HTML entities.
+ * @param str (nullable)
+ */
 static char *markup_quote(char *str)
 {
         if (!str)
@@ -26,6 +30,10 @@ static char *markup_quote(char *str)
         return str;
 }
 
+/**
+ * Convert all HTML special entities to their actual char.
+ * @param str (nullable)
+ */
 static char *markup_unquote(char *str)
 {
         if (!str)
@@ -40,6 +48,10 @@ static char *markup_unquote(char *str)
         return str;
 }
 
+/**
+ * Convert all HTML linebreak tags to a newline character
+ * @param str (nullable)
+ */
 static char *markup_br2nl(char *str)
 {
         if (!str)
@@ -51,13 +63,7 @@ static char *markup_br2nl(char *str)
         return str;
 }
 
-/*
- * Remove HTML hyperlinks of a string.
- *
- * @str: The string to replace a tags
- * @urls: (nullable): If any href-attributes found, an '\n' concatenated
- *        string of the URLs in format '[<text between tags>] <href>'
- */
+/* see markup.h */
 void markup_strip_a(char **str, char **urls)
 {
         assert(*str);
@@ -132,13 +138,7 @@ void markup_strip_a(char **str, char **urls)
         }
 }
 
-/*
- * Remove img-tags of a string. If alt attribute given, use this as replacement.
- *
- * @str: The string to replace img tags
- * @urls: (nullable): If any src-attributes found, an '\n' concatenated string of
- *        the URLs in format '[<alt>] <src>'
- */
+/* see markup.h */
 void markup_strip_img(char **str, char **urls)
 {
         const char *start;
@@ -221,18 +221,7 @@ void markup_strip_img(char **str, char **urls)
         }
 }
 
-/*
- * Strip any markup from text; turn it in to plain text.
- *
- * For well-formed markup, the following two commands should be
- * roughly equivalent:
- *
- *     out = markup_strip(in);
- *     pango_parse_markup(in, -1, 0, NULL, &out, NULL, NULL);
- *
- * However, `pango_parse_markup()` balks at invalid markup;
- * `markup_strip()` shouldn't care if there is invalid markup.
- */
+/* see markup.h */
 char *markup_strip(char *str)
 {
         if (!str)
@@ -321,10 +310,7 @@ static char *markup_escape_unsupported(char *str)
         return str;
 }
 
-/*
- * Transform the string in accordance with `markup_mode` and
- * `settings.ignore_newline`
- */
+/* see markup.h */
 char *markup_transform(char *str, enum markup_mode markup_mode)
 {
         if (!str)
