@@ -22,7 +22,7 @@ struct keyboard_shortcut {
 };
 
 // Cyclical dependency
-#include "src/settings.h"
+#include "../settings.h"
 
 struct window_x11;
 

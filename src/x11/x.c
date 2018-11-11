@@ -19,16 +19,16 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "src/draw.h"
-#include "src/dbus.h"
-#include "src/dunst.h"
-#include "src/log.h"
-#include "src/markup.h"
-#include "src/menu.h"
-#include "src/notification.h"
-#include "src/queues.h"
-#include "src/settings.h"
-#include "src/utils.h"
+#include "../draw.h"
+#include "../dbus.h"
+#include "../dunst.h"
+#include "../log.h"
+#include "../markup.h"
+#include "../menu.h"
+#include "../notification.h"
+#include "../queues.h"
+#include "../settings.h"
+#include "../utils.h"
 
 #include "screen.h"
 

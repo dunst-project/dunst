@@ -1,4 +1,4 @@
-#include "src/markup.c"
+#include "../src/markup.c"
 #include "greatest.h"
 
 TEST test_markup_strip(void)

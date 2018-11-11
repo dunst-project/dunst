@@ -42,8 +42,8 @@ $(error "$(PKG_CONFIG) failed!")
 endif
 endif
 
-CFLAGS  := ${DEFAULT_CPPFLAGS} ${CPPFLAGS} ${DEFAULT_CFLAGS} ${CFLAGS} -I. ${INCS}
-LDFLAGS := ${DEFAULT_LDFLAGS} ${LDFLAGS} -L. ${LIBS}
+CFLAGS  := ${DEFAULT_CPPFLAGS} ${CPPFLAGS} ${DEFAULT_CFLAGS} ${CFLAGS} ${INCS}
+LDFLAGS := ${DEFAULT_LDFLAGS} ${LDFLAGS} ${LIBS}
 
 SRC := $(sort $(shell find src/ -name '*.c'))
 OBJ := ${SRC:.c=.o}

@@ -1,4 +1,4 @@
-#include "src/utils.c"
+#include "../src/utils.c"
 #include "greatest.h"
 
 TEST test_string_replace_char(void)

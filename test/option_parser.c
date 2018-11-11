@@ -1,4 +1,4 @@
-#include "src/option_parser.c"
+#include "../src/option_parser.c"
 #include "greatest.h"
 
 extern const char *base;

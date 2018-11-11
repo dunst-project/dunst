@@ -1,8 +1,8 @@
-#include "src/notification.c"
+#include "../src/notification.c"
 #include "greatest.h"
 
-#include "src/option_parser.h"
-#include "src/settings.h"
+#include "../src/option_parser.h"
+#include "../src/settings.h"
 
 extern const char *base;
 

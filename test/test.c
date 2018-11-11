@@ -5,7 +5,7 @@
 #include <libgen.h>
 #include <errno.h>
 
-#include "src/log.h"
+#include "../src/log.h"
 
 const char *base;
 

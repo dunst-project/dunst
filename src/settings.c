@@ -7,7 +7,7 @@
 #include <string.h>
 
 #include "rules.h" // put before config.h to fix missing include
-#include "config.h"
+#include "../config.h"
 #include "dunst.h"
 #include "log.h"
 #include "notification.h"

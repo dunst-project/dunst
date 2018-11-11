@@ -15,9 +15,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "src/log.h"
-#include "src/settings.h"
-#include "src/utils.h"
+#include "../log.h"
+#include "../settings.h"
+#include "../utils.h"
 #include "x.h"
 
 struct screen_info *screens;
