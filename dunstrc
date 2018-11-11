@@ -147,10 +147,10 @@
     # Ignore newlines '\n' in notifications.
     ignore_newline = no
 
-    # Merge multiple notifications with the same content
+    # Stack together notifications with the same content
     stack_duplicates = true
 
-    # Hide the count of merged notifications with the same content
+    # Hide the count of stacked notifications with the same content
     hide_duplicate_count = false
 
     # Display indicators for URLs (U) and actions (A).
@@ -299,7 +299,8 @@
 # override settings for certain messages.
 # Messages can be matched by "appname", "summary", "body", "icon", "category",
 # "msg_urgency" and you can override the "timeout", "urgency", "foreground",
-# "background", "frame_color", "new_icon" and "format", "fullscreen".
+# "background", "frame_color", "new_icon" and "format", "fullscreen",
+# "stack_tag".
 # Shell-like globbing will get expanded.
 #
 # SCRIPTING
@@ -364,5 +365,9 @@
 #    appname = Pidgin
 #    summary = *twitter.com*
 #    urgency = normal
+#
+#[stack-volumes]
+#    appname = "some_volume_notifiers"
+#    set_stack_tag = "volume"
 #
 # vim: ft=cfg

@@ -16,6 +16,7 @@ struct rule {
         char *body;
         char *icon;
         char *category;
+        char *stack_tag;
         int msg_urgency;
 
         /* actions */
@@ -32,6 +33,7 @@ struct rule {
         const char *format;
         const char *script;
         enum behavior_fullscreen fullscreen;
+        char *set_stack_tag;
 };
 
 extern GSList *rules;

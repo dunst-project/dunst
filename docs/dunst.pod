@@ -611,9 +611,9 @@ matched.
 =item B<filtering>
 
 Notifications can be matched for any of the following attributes: appname,
-summary, body, icon, category, match_transient and msg_urgency where each is
-the respective notification attribute to be matched and 'msg_urgency' is the
-urgency of the notification, it is named so to not conflict with trying to
+summary, body, icon, category, match_transient, msg_urgency, and stack_tag where
+each is the respective notification attribute to be matched and 'msg_urgency' is
+the urgency of the notification, it is named so to not conflict with trying to
 modify the urgency.
 
 To define a matching rule simply assign the specified value to the value that
@@ -630,15 +630,20 @@ Shell-like globing is supported.
 =item B<modifying>
 
 The following attributes can be overridden: timeout, urgency, foreground,
-background, frame_color, new_icon, set_transient, format, fullscreen where,
-as with the filtering attributes, each one corresponds to the respective
-notification attribute to be modified.
+background, frame_color, new_icon, set_transient, format, fullscreen,
+set_stack_tag where, as with the filtering attributes, each one corresponds to
+the respective notification attribute to be modified.
 
 As with filtering, to make a rule modify an attribute simply assign it in the
 rule definition.
 
 If the format is set to an empty string, the notification will not be
 suppressed.
+
+Notifications with the same non-empty stack_tag value will be stacked
+together. The default stack_stag value is set from the string hints
+"synchronous", "private-synchronous", "x-canonical-private-synchronous", and
+"x-dunst-stack-tag".
 
 =back
 

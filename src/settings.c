@@ -368,7 +368,7 @@ void load_settings(char *cmdline_config_path)
         settings.hide_duplicate_count = option_get_bool(
                 "global",
                 "hide_duplicate_count", "-hide_duplicate_count", false,
-                "Hide the count of merged notifications with the same content"
+                "Hide the count of stacked notifications with the same content"
         );
 
         settings.sticky_history = option_get_bool(
@@ -444,7 +444,7 @@ void load_settings(char *cmdline_config_path)
         settings.stack_duplicates = option_get_bool(
                 "global",
                 "stack_duplicates", "-stack_duplicates", true,
-                "Merge multiple notifications with the same content"
+                "Stack together notifications with the same content"
         );
 
         settings.startup_notification = option_get_bool(
@@ -785,6 +785,7 @@ void load_settings(char *cmdline_config_path)
                 r->body = ini_get_string(cur_section, "body", r->body);
                 r->icon = ini_get_string(cur_section, "icon", r->icon);
                 r->category = ini_get_string(cur_section, "category", r->category);
+                r->stack_tag = ini_get_string(cur_section, "stack_tag", r->stack_tag);
                 r->timeout = ini_get_time(cur_section, "timeout", r->timeout);
 
                 {
@@ -819,6 +820,7 @@ void load_settings(char *cmdline_config_path)
                         g_free(c);
                 }
                 r->script = ini_get_path(cur_section, "script", NULL);
+                r->set_stack_tag = ini_get_string(cur_section, "set_stack_tag", r->set_stack_tag);
         }
 
 #ifndef STATIC_CONFIG

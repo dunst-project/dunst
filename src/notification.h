@@ -70,6 +70,8 @@ struct notification {
         const char *script;
         char *colors[3];
 
+        char *stack_tag;    /**< stack notifications by tag */
+
         /* Hints */
         bool transient;     /**< timeout albeit user is idle */
         int progress;       /**< percentage (-1: undefined) */

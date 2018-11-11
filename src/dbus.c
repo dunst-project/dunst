@@ -65,6 +65,13 @@ static const char *introspection_xml =
     "   </interface>"
     "</node>";
 
+static const char *stack_tag_hints[] = {
+        "synchronous",
+        "private-synchronous",
+        "x-canonical-private-synchronous",
+        "x-dunst-stack-tag"
+};
+
 static void on_get_capabilities(GDBusConnection *connection,
                                 const gchar *sender,
                                 const GVariant *parameters,
@@ -119,6 +126,9 @@ static void on_get_capabilities(GDBusConnection *connection,
         g_variant_builder_add(builder, "s", "actions");
         g_variant_builder_add(builder, "s", "body");
         g_variant_builder_add(builder, "s", "body-hyperlinks");
+
+        for (int i = 0; i < sizeof(stack_tag_hints)/sizeof(*stack_tag_hints); ++i)
+                g_variant_builder_add(builder, "s", stack_tag_hints[i]);
 
         if (settings.markup != MARKUP_NO)
                 g_variant_builder_add(builder, "s", "body-markup");
@@ -245,6 +255,20 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
                                                 n->progress = g_variant_get_uint32(dict_value);
                                                 g_variant_unref(dict_value);
                                         }
+
+                                        /* Check for hints that define the stack_tag
+                                         *
+                                         * Only accept to first one we find.
+                                         */
+                                        for (int i = 0; i < sizeof(stack_tag_hints)/sizeof(*stack_tag_hints); ++i) {
+                                                dict_value = g_variant_lookup_value(content, stack_tag_hints[i], G_VARIANT_TYPE_STRING);
+                                                if (dict_value) {
+                                                        n->stack_tag = g_variant_dup_string(dict_value, NULL);
+                                                        g_variant_unref(dict_value);
+                                                        break;
+                                                }
+                                        }
+
                                 }
                                 break;
                         case 7:
