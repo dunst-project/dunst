@@ -5,7 +5,8 @@
 
 TEST test_string_replace_char(void)
 {
-        char *text = malloc(128 * sizeof(char));
+        char *text = g_malloc(128 * sizeof(char));
+
         strcpy(text, "a aa aaa");
         ASSERT_STR_EQ("b bb bbb", string_replace_char('a', 'b', text));
 
@@ -14,8 +15,8 @@ TEST test_string_replace_char(void)
 
         strcpy(text, "");
         ASSERT_STR_EQ("", string_replace_char('a', 'b', text));
-        free(text);
 
+        g_free(text);
         PASS();
 }
 
@@ -27,8 +28,8 @@ TEST test_string_replace_char(void)
 
 TEST test_string_replace_all(void)
 {
+        char *text = g_malloc(128 * sizeof(char));
 
-        char *text = malloc(128 * sizeof(char));
         strcpy(text, "aaaaa");
         ASSERT_STR_EQ("bbbbb", (text = string_replace_all("a", "b", text)));
 
@@ -44,7 +45,7 @@ TEST test_string_replace_all(void)
         strcpy(text, "abcdabc");
         ASSERT_STR_EQ("xyzabcdxyzabc", (text = string_replace_all("a", "xyza", text)));
 
-        free(text);
+        g_free(text);
         PASS();
 }
 
@@ -110,7 +111,7 @@ TEST test_string_strip_quotes(void)
 
 TEST test_string_strip_delimited(void)
 {
-        char *text = malloc(128 * sizeof(char));
+        char *text = g_malloc(128 * sizeof(char));
 
         strcpy(text, "A <simple> string_strip_delimited test");
         string_strip_delimited(text, '<', '>');
@@ -132,7 +133,7 @@ TEST test_string_strip_delimited(void)
         string_strip_delimited(text, '<', '>');
         ASSERT_STR_EQ("Nothing is done if there are no delimiters in the string", text);
 
-        free(text);
+        g_free(text);
         PASS();
 }
 
