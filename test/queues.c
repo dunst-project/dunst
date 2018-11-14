@@ -364,6 +364,65 @@ TEST test_datachange_ttl(void)
         PASS();
 }
 
+TEST test_queue_stacking(void)
+{
+        settings.stack_duplicates = true;
+        struct notification *n1, *n2, *n3;
+
+        queues_init();
+
+        n1 = test_notification("n1", -1);
+        n2 = test_notification("n1", -1);
+        n3 = test_notification("n1", -1);
+
+        queues_notification_insert(n1);
+        QUEUE_LEN_ALL(1, 0, 0);
+
+        notification_ref(n1);
+        queues_notification_insert(n2);
+        NOT_LAST(n1);
+
+        notification_ref(n2);
+        queues_update(STATUS_NORMAL);
+        queues_notification_insert(n3);
+        QUEUE_LEN_ALL(0, 1, 0);
+        NOT_LAST(n2);
+
+        queues_teardown();
+        PASS();
+}
+
+TEST test_queue_stacktag(void)
+{
+        const char *stacktag = "THIS IS A SUPER WIERD STACK TAG";
+        struct notification *n1, *n2, *n3;
+
+        queues_init();
+
+        n1 = test_notification("n1", 1);
+        n2 = test_notification("n2", 1);
+        n3 = test_notification("n3", 1);
+        n1->stack_tag = g_strdup(stacktag);
+        n2->stack_tag = g_strdup(stacktag);
+        n3->stack_tag = g_strdup(stacktag);
+
+        queues_notification_insert(n1);
+        QUEUE_LEN_ALL(1, 0, 0);
+
+        notification_ref(n1);
+        queues_notification_insert(n2);
+        NOT_LAST(n1);
+
+        notification_ref(n2);
+        queues_update(STATUS_NORMAL);
+        queues_notification_insert(n3);
+        QUEUE_LEN_ALL(0, 1, 0);
+        NOT_LAST(n2);
+
+        queues_teardown();
+        PASS();
+}
+
 
 SUITE(suite_queues)
 {
@@ -381,6 +440,8 @@ SUITE(suite_queues)
         RUN_TEST(test_queue_length);
         RUN_TEST(test_queue_notification_close);
         RUN_TEST(test_queue_notification_close_histignore);
+        RUN_TEST(test_queue_stacking);
+        RUN_TEST(test_queue_stacktag);
         RUN_TEST(test_queue_teardown);
 }
 
