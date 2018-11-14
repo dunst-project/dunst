@@ -376,7 +376,7 @@ static void notification_format_message(struct notification *n)
 
         /* replace all formatter */
         for(char *substr = strchr(n->msg, '%');
-                  substr;
+                  substr && *substr;
                   substr = strchr(substr, '%')) {
 
                 char pg[16];
@@ -450,6 +450,7 @@ static void notification_format_message(struct notification *n)
                 case '\0':
                         LOG_W("format_string has trailing %% character. "
                               "To escape it use %%%%.");
+                        substr++;
                         break;
                 default:
                         LOG_W("format_string %%%c is unknown.", substr[1]);
