@@ -469,6 +469,43 @@ TEST test_queue_timeout(void)
         PASS();
 }
 
+TEST test_queues_update_fullscreen(void)
+{
+        settings.geometry.h = 5;
+        struct notification *n_show, *n_dela, *n_push;
+
+        queues_init();
+
+        n_show = test_notification("show", 10);
+        n_dela = test_notification("dela", 10);
+        n_push = test_notification("push", 10);
+        n_show->fullscreen = FS_SHOW;
+        n_dela->fullscreen = FS_DELAY;
+        n_push->fullscreen = FS_PUSHBACK;
+
+        queues_notification_insert(n_show);
+        queues_notification_insert(n_dela);
+        queues_notification_insert(n_push);
+
+        queues_update(STATUS_FS);
+        QUEUE_CONTAINS(DISP, n_show);
+        QUEUE_CONTAINS(WAIT, n_dela);
+        QUEUE_CONTAINS(WAIT, n_push);
+
+        queues_update(STATUS_NORMAL);
+        QUEUE_CONTAINS(DISP, n_show);
+        QUEUE_CONTAINS(DISP, n_dela);
+        QUEUE_CONTAINS(DISP, n_push);
+
+        queues_update(STATUS_FS);
+        QUEUE_CONTAINS(DISP, n_show);
+        QUEUE_CONTAINS(DISP, n_dela);
+        QUEUE_CONTAINS(WAIT, n_push);
+
+        queues_teardown();
+        PASS();
+}
+
 
 SUITE(suite_queues)
 {
@@ -490,6 +527,7 @@ SUITE(suite_queues)
         RUN_TEST(test_queue_stacktag);
         RUN_TEST(test_queue_teardown);
         RUN_TEST(test_queue_timeout);
+        RUN_TEST(test_queues_update_fullscreen);
 }
 
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
