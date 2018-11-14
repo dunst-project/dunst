@@ -6,14 +6,15 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "rules.h" // put before config.h to fix missing include
-#include "../config.h"
 #include "dunst.h"
 #include "log.h"
 #include "notification.h"
 #include "option_parser.h"
+#include "rules.h"
 #include "utils.h"
 #include "x11/x.h"
+
+#include "../config.h"
 
 struct settings settings;
 

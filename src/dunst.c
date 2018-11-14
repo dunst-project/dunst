@@ -2,13 +2,13 @@
 
 #include "dunst.h"
 
-#include <X11/Xlib.h>
-#include <glib-unix.h>
 #include <glib.h>
+#include <glib-unix.h>
 #include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <X11/Xlib.h>
 
 #include "dbus.h"
 #include "draw.h"

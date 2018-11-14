@@ -1,9 +1,9 @@
 #include "greatest.h"
 
+#include <errno.h>
+#include <libgen.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include <libgen.h>
-#include <errno.h>
 
 #include "../src/log.h"
 

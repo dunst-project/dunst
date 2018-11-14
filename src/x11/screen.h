@@ -2,8 +2,8 @@
 #ifndef DUNST_SCREEN_H
 #define DUNST_SCREEN_H
 
-#include <X11/Xlib.h>
 #include <stdbool.h>
+#include <X11/Xlib.h>
 
 #define INRECT(x,y,rx,ry,rw,rh) ((x) >= (rx) && (x) < (rx)+(rw) && (y) >= (ry) && (y) < (ry)+(rh))
 
