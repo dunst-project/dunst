@@ -535,6 +535,67 @@ TEST test_queues_update_paused(void)
         PASS();
 }
 
+TEST test_queues_update_seeping(void)
+{
+        settings.geometry.h = 5;
+        settings.sort = true;
+        settings.indicate_hidden = false;
+        struct notification *nl1, *nl2, *nl3, *nl4, *nl5;
+        struct notification *nc1, *nc2, *nc3, *nc4, *nc5;
+        queues_init();
+
+        nl1 = test_notification("nl1", 0);
+        nl2 = test_notification("nl2", 0);
+        nl3 = test_notification("nl3", 0);
+        nl4 = test_notification("nl4", 0);
+        nl5 = test_notification("nl5", 0);
+
+        nc1 = test_notification("nc1", 0);
+        nc2 = test_notification("nc2", 0);
+        nc3 = test_notification("nc3", 0);
+        nc4 = test_notification("nc4", 0);
+        nc5 = test_notification("nc5", 0);
+        nc1->urgency = URG_CRIT;
+        nc2->urgency = URG_CRIT;
+        nc3->urgency = URG_CRIT;
+        nc4->urgency = URG_CRIT;
+        nc5->urgency = URG_CRIT;
+
+        queues_notification_insert(nl1);
+        queues_notification_insert(nl2);
+        queues_notification_insert(nl3);
+        queues_notification_insert(nl4);
+        queues_notification_insert(nl5);
+
+        QUEUE_LEN_ALL(5,0,0);
+        queues_update(STATUS_NORMAL);
+        QUEUE_LEN_ALL(0,5,0);
+
+        queues_notification_insert(nc1);
+        queues_notification_insert(nc2);
+        queues_notification_insert(nc3);
+        queues_notification_insert(nc4);
+        queues_notification_insert(nc5);
+
+        QUEUE_LEN_ALL(5,5,0);
+        queues_update(STATUS_NORMAL);
+        QUEUE_LEN_ALL(5,5,0);
+
+        QUEUE_CONTAINS(DISP, nc1);
+        QUEUE_CONTAINS(DISP, nc2);
+        QUEUE_CONTAINS(DISP, nc3);
+        QUEUE_CONTAINS(DISP, nc4);
+        QUEUE_CONTAINS(DISP, nc5);
+
+        QUEUE_CONTAINS(WAIT, nl1);
+        QUEUE_CONTAINS(WAIT, nl2);
+        QUEUE_CONTAINS(WAIT, nl3);
+        QUEUE_CONTAINS(WAIT, nl4);
+        QUEUE_CONTAINS(WAIT, nl5);
+
+        queues_teardown();
+        PASS();
+}
 
 SUITE(suite_queues)
 {
@@ -558,6 +619,7 @@ SUITE(suite_queues)
         RUN_TEST(test_queue_timeout);
         RUN_TEST(test_queues_update_fullscreen);
         RUN_TEST(test_queues_update_paused);
+        RUN_TEST(test_queues_update_seeping);
 }
 
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
