@@ -12,7 +12,7 @@ struct settings defaults = {
 .lowfgcolor = "#000000",
 .format = "%s %b",         /* default format */
 
-.timeouts = { 10*G_USEC_PER_SEC, 10*G_USEC_PER_SEC, 0 }, /* low, normal, critical */
+.timeouts = { S2US(10), S2US(10), S2US(0) }, /* low, normal, critical */
 .icons = { "dialog-information", "dialog-information", "dialog-warning" }, /* low, normal, critical */
 
 .transparency = 0,           /* transparency */

@@ -156,7 +156,7 @@ int dunst_main(int argc, char *argv[])
                 n->summary = g_strdup("startup");
                 n->body = g_strdup("dunst is up and running");
                 n->progress = -1;
-                n->timeout = 10 * G_USEC_PER_SEC;
+                n->timeout = S2US(10);
                 n->markup = MARKUP_NO;
                 n->urgency = URG_LOW;
                 notification_init(n);

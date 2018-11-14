@@ -170,7 +170,7 @@ gint64 string_to_time(const char *string)
                 LOG_W("Time: '%s': Unknown error.", string);
                 return 0;
         } else if (errno == 0 && !*endptr) {
-                return val * G_USEC_PER_SEC;
+                return S2US(val);
         }
 
         // endptr may point to a separating space
@@ -180,13 +180,13 @@ gint64 string_to_time(const char *string)
         if (STRN_EQ(endptr, "ms", 2))
                 return val * 1000;
         else if (STRN_EQ(endptr, "s", 1))
-                return val * G_USEC_PER_SEC;
+                return S2US(val);
         else if (STRN_EQ(endptr, "m", 1))
-                return val * G_USEC_PER_SEC * 60;
+                return S2US(val) * 60;
         else if (STRN_EQ(endptr, "h", 1))
-                return val * G_USEC_PER_SEC * 60 * 60;
+                return S2US(val) * 60 * 60;
         else if (STRN_EQ(endptr, "d", 1))
-                return val * G_USEC_PER_SEC * 60 * 60 * 24;
+                return S2US(val) * 60 * 60 * 24;
         else
                 return 0;
 }
@@ -205,7 +205,6 @@ gint64 time_monotonic_now(void)
 #else
         clock_gettime(CLOCK_MONOTONIC, &tv_now);
 #endif
-        return (gint64)tv_now.tv_sec  * G_USEC_PER_SEC
-                     + tv_now.tv_nsec / 1000;
+        return S2US(tv_now.tv_sec) + tv_now.tv_nsec / 1000;
 }
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
