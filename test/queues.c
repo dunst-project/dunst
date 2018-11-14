@@ -597,6 +597,38 @@ TEST test_queues_update_seeping(void)
         PASS();
 }
 
+TEST test_queues_update_xmore(void)
+{
+        settings.indicate_hidden = true;
+        settings.geometry.h = 4;
+        struct notification *n1, *n2, *n3, *n4, *n5;
+        queues_init();
+
+        n1 = test_notification("n1", 0);
+        n2 = test_notification("n2", 0);
+        n3 = test_notification("n3", 0);
+        n4 = test_notification("n4", 0);
+        n5 = test_notification("n5", 0);
+
+        queues_notification_insert(n1);
+        queues_notification_insert(n2);
+        queues_notification_insert(n3);
+
+        queues_update(STATUS_NORMAL);
+        QUEUE_LEN_ALL(0,3,0);
+
+        queues_notification_insert(n4);
+        queues_update(STATUS_NORMAL);
+        QUEUE_LEN_ALL(0,4,0);
+
+        queues_notification_insert(n5);
+        queues_update(STATUS_NORMAL);
+        QUEUE_LEN_ALL(2,3,0);
+
+        queues_teardown();
+        PASS();
+}
+
 SUITE(suite_queues)
 {
         RUN_TEST(test_datachange_beginning_empty);
@@ -620,6 +652,7 @@ SUITE(suite_queues)
         RUN_TEST(test_queues_update_fullscreen);
         RUN_TEST(test_queues_update_paused);
         RUN_TEST(test_queues_update_seeping);
+        RUN_TEST(test_queues_update_xmore);
 }
 
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
