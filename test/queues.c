@@ -506,6 +506,35 @@ TEST test_queues_update_fullscreen(void)
         PASS();
 }
 
+TEST test_queues_update_paused(void)
+{
+        settings.geometry.h = 5;
+        struct notification *n1, *n2, *n3;
+        queues_init();
+
+        n1 = test_notification("n1", 0);
+        n2 = test_notification("n2", 0);
+        n3 = test_notification("n3", 0);
+
+        queues_notification_insert(n1);
+        queues_notification_insert(n2);
+        queues_notification_insert(n3);
+
+        QUEUE_LEN_ALL(3,0,0);
+
+        queues_update(STATUS_PAUSE);
+        QUEUE_LEN_ALL(3,0,0);
+
+        queues_update(STATUS_NORMAL);
+        QUEUE_LEN_ALL(0,3,0);
+
+        queues_update(STATUS_PAUSE);
+        QUEUE_LEN_ALL(3,0,0);
+
+        queues_teardown();
+        PASS();
+}
+
 
 SUITE(suite_queues)
 {
@@ -528,6 +557,7 @@ SUITE(suite_queues)
         RUN_TEST(test_queue_teardown);
         RUN_TEST(test_queue_timeout);
         RUN_TEST(test_queues_update_fullscreen);
+        RUN_TEST(test_queues_update_paused);
 }
 
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
