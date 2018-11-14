@@ -423,6 +423,52 @@ TEST test_queue_stacktag(void)
         PASS();
 }
 
+TEST test_queue_timeout(void)
+{
+        settings.geometry.h = 5;
+        struct notification *n1, *n2, *n3;
+
+        queues_init();
+
+        // Usually this shouldn't do anything, but we may abort ;-)
+        queues_check_timeouts(STATUS_NORMAL);
+
+        n1 = test_notification("n1", 0);
+        n2 = test_notification("n2", 10);
+        n3 = test_notification("n3", 10);
+        n3->transient = true;
+
+        queues_notification_insert(n1);
+        queues_notification_insert(n2);
+        queues_notification_insert(n3);
+
+        queues_update(STATUS_NORMAL);
+
+        // hacky way to shift time
+        n1->start -= S2US(11);
+        n2->start -= S2US(11);
+        n3->start -= S2US(11);
+        queues_check_timeouts(STATUS_IDLE);
+        queues_update(STATUS_IDLE);
+
+        QUEUE_LEN_ALL(0,2,1);
+        QUEUE_CONTAINS(HIST, n3);
+
+        // hacky way to shift time
+        n1->start -= S2US(11);
+        n2->start -= S2US(11);
+        queues_check_timeouts(STATUS_NORMAL);
+        queues_update(STATUS_NORMAL);
+
+        QUEUE_LEN_ALL(0,1,2);
+        QUEUE_CONTAINS(DISP, n1);
+        QUEUE_CONTAINS(HIST, n2);
+        QUEUE_CONTAINS(HIST, n3);
+
+        queues_teardown();
+        PASS();
+}
+
 
 SUITE(suite_queues)
 {
@@ -443,6 +489,7 @@ SUITE(suite_queues)
         RUN_TEST(test_queue_stacking);
         RUN_TEST(test_queue_stacktag);
         RUN_TEST(test_queue_teardown);
+        RUN_TEST(test_queue_timeout);
 }
 
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
