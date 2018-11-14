@@ -6,6 +6,36 @@
 #include "greatest.h"
 #include "queues.h"
 
+TEST test_queue_length(void)
+{
+        queues_init();
+
+        struct notification *n;
+
+        n = test_notification("n1", 0);
+        queues_notification_insert(n);
+        queues_notification_close(n, REASON_UNDEF);
+
+        n = test_notification("n2", 0);
+        queues_notification_insert(n);
+        queues_update(STATUS_NORMAL);
+
+        n = test_notification("n3", 0);
+        queues_notification_insert(n);
+
+        QUEUE_LEN_ALL(1,1,1);
+
+        ASSERT_EQm("Queue waiting has to contain an element",
+                   1, queues_length_waiting());
+        ASSERT_EQm("Queue displayed has to contain an element",
+                   1, queues_length_displayed());
+        ASSERT_EQm("Queue history has to contain an element",
+                   1, queues_length_history());
+
+        queues_teardown();
+        PASS();
+}
+
 TEST test_queue_insert_id_valid_newid(void)
 {
         struct notification *n;
@@ -284,6 +314,7 @@ SUITE(suite_queues)
         RUN_TEST(test_queue_insert_id_invalid);
         RUN_TEST(test_queue_insert_id_replacement);
         RUN_TEST(test_queue_insert_id_valid_newid);
+        RUN_TEST(test_queue_length);
         RUN_TEST(test_queue_notification_close);
         RUN_TEST(test_queue_notification_close_histignore);
         RUN_TEST(test_queue_teardown);
