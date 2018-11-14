@@ -1,4 +1,8 @@
 #include "../src/queues.c"
+
+#define GREATEST_FLOAT gint64
+#define GREATEST_FLOAT_FMT "%ld"
+
 #include "greatest.h"
 #include "queues.h"
 
@@ -166,8 +170,116 @@ TEST test_queue_teardown(void)
         PASS();
 }
 
+TEST test_datachange_beginning_empty(void)
+{
+        queues_init();
+
+        ASSERTm("There are no notifications at all, the timeout has to be less than 0.",
+                queues_get_next_datachange(time_monotonic_now()) < 0);
+
+        queues_teardown();
+        PASS();
+}
+
+TEST test_datachange_endless(void)
+{
+        queues_init();
+
+        settings.show_age_threshold = -1;
+
+        struct notification *n = test_notification("n", 0);
+
+        queues_notification_insert(n);
+        queues_update(STATUS_NORMAL);
+
+        ASSERTm("Age threshold is deactivated and the notification is infinite, there is no wakeup necessary.",
+                queues_get_next_datachange(time_monotonic_now()) < 0);
+
+        queues_teardown();
+        PASS();
+}
+
+TEST test_datachange_endless_agethreshold(void)
+{
+        settings.show_age_threshold = S2US(5);
+
+        queues_init();
+
+        struct notification *n = test_notification("n", 0);
+
+        queues_notification_insert(n);
+        queues_update(STATUS_NORMAL);
+
+        ASSERT_IN_RANGEm("Age threshold is activated and the next wakeup should be less than a second away",
+                S2US(1)/2, queues_get_next_datachange(time_monotonic_now() + S2US(4)), S2US(1)/2);
+
+        ASSERT_IN_RANGEm("Age threshold is activated and the next wakeup should be less than the age threshold",
+                settings.show_age_threshold/2, queues_get_next_datachange(time_monotonic_now()), settings.show_age_threshold/2);
+
+        settings.show_age_threshold = S2US(0);
+        ASSERT_IN_RANGEm("Age threshold is activated and the next wakeup should be less than a second away",
+                S2US(1)/2, queues_get_next_datachange(time_monotonic_now()), S2US(1)/2);
+
+        queues_teardown();
+        PASS();
+}
+
+TEST test_datachange_queues(void)
+{
+        queues_init();
+
+        struct notification *n = test_notification("n", 10);
+
+        queues_notification_insert(n);
+        ASSERTm("The inserted notification is inside the waiting queue, so it should get ignored.",
+               queues_get_next_datachange(time_monotonic_now()) < S2US(0));
+
+        queues_update(STATUS_NORMAL);
+        ASSERT_IN_RANGEm("The notification has to get closed in less than its timeout",
+               S2US(10)/2, queues_get_next_datachange(time_monotonic_now()), S2US(10)/2);
+
+        queues_notification_close(n, REASON_UNDEF);
+        ASSERTm("The inserted notification is inside the history queue, so it should get ignored",
+               queues_get_next_datachange(time_monotonic_now()) < S2US(0));
+
+        queues_teardown();
+        PASS();
+}
+
+TEST test_datachange_ttl(void)
+{
+        struct notification *n;
+        queues_init();
+
+        n = test_notification("n1", 15);
+
+        queues_notification_insert(n);
+        queues_update(STATUS_NORMAL);
+        ASSERT_IN_RANGEm("The notification has to get closed in less than its timeout.",
+               n->timeout/2, queues_get_next_datachange(time_monotonic_now()), n->timeout/2);
+
+        n = test_notification("n2", 10);
+
+        queues_notification_insert(n);
+        queues_update(STATUS_NORMAL);
+        ASSERT_IN_RANGEm("The timeout of the second notification has to get used as sleep time now.",
+               n->timeout/2, queues_get_next_datachange(time_monotonic_now()), n->timeout/2);
+
+        ASSERT_EQm("The notification already timed out. You have to answer with 0.",
+               S2US(0), queues_get_next_datachange(time_monotonic_now() + S2US(10)));
+
+        queues_teardown();
+        PASS();
+}
+
+
 SUITE(suite_queues)
 {
+        RUN_TEST(test_datachange_beginning_empty);
+        RUN_TEST(test_datachange_endless);
+        RUN_TEST(test_datachange_endless_agethreshold);
+        RUN_TEST(test_datachange_queues);
+        RUN_TEST(test_datachange_ttl);
         RUN_TEST(test_queue_init);
         RUN_TEST(test_queue_insert_id_invalid);
         RUN_TEST(test_queue_insert_id_replacement);
