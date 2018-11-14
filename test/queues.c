@@ -173,6 +173,68 @@ TEST test_queue_notification_close_histignore(void)
         PASS();
 }
 
+TEST test_queue_history_overfull(void)
+{
+        settings.history_length = 10;
+        queues_init();
+
+        struct notification *n;
+
+        for (int i = 0; i < 10; i++) {
+                char name[] = { 'n', '0'+i, '\0' }; // n<i>
+                n = test_notification(name, -1);
+                queues_notification_insert(n);
+                queues_update(STATUS_NORMAL);
+                queues_notification_close(n, REASON_UNDEF);
+        }
+
+        QUEUE_LEN_ALL(0, 0, 10);
+
+        n = test_notification("n", -1);
+        queues_notification_insert(n);
+        queues_notification_close(n, REASON_UNDEF);
+
+        QUEUE_CONTAINS(HIST, n);
+        QUEUE_LEN_ALL(0, 0, 10);
+
+        queues_teardown();
+        PASS();
+}
+
+TEST test_queue_history_pushall(void)
+{
+        settings.history_length = 5;
+        settings.indicate_hidden = false;
+        settings.geometry.h = 0;
+
+        queues_init();
+
+        struct notification *n;
+
+        for (int i = 0; i < 10; i++) {
+                char name[] = { 'n', '0'+i, '\0' }; // n<i>
+                n = test_notification(name, -1);
+                queues_notification_insert(n);
+        }
+        queues_update(STATUS_NORMAL);
+
+        for (int i = 0; i < 10; i++) {
+                char name[] = { '2', 'n', '0'+i, '\0' }; // 2n<i>
+                n = test_notification(name, -1);
+                queues_notification_insert(n);
+        }
+
+        QUEUE_LEN_ALL(10, 10, 0);
+
+        queues_history_push_all();
+
+        QUEUE_CONTAINS(HIST, n);
+        QUEUE_LEN_ALL(0, 0, 5);
+
+        queues_teardown();
+        PASS();
+}
+
 TEST test_queue_init(void)
 {
         queues_init();
@@ -310,6 +372,8 @@ SUITE(suite_queues)
         RUN_TEST(test_datachange_endless_agethreshold);
         RUN_TEST(test_datachange_queues);
         RUN_TEST(test_datachange_ttl);
+        RUN_TEST(test_queue_history_overfull);
+        RUN_TEST(test_queue_history_pushall);
         RUN_TEST(test_queue_init);
         RUN_TEST(test_queue_insert_id_invalid);
         RUN_TEST(test_queue_insert_id_replacement);
