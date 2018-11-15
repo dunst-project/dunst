@@ -124,8 +124,6 @@ static bool queues_notification_is_ready(const struct notification *n, bool full
 /* see queues.h */
 int queues_notification_insert(struct notification *n)
 {
-        bool inserted = false;
-
         /* do not display the message, if the message is empty */
         if (STR_EMPTY(n->msg)) {
                 if (settings.always_run_script) {
@@ -148,15 +146,23 @@ int queues_notification_insert(struct notification *n)
                 return 0;
         }
 
-        if (!inserted && n->id != 0 && queues_notification_replace_id(n))
+        bool inserted = false;
+        if (n->id != 0) {
+                if (!queues_notification_replace_id(n)) {
+                        // Requested id was not valid, but play nice and assign it anyway
+                        g_queue_insert_sorted(waiting, n, notification_cmp_data, NULL);
+                }
                 inserted = true;
-        else
+        } else {
                 n->id = ++next_notification_id;
+        }
 
         if (!inserted && STR_FULL(n->stack_tag) && queues_stack_by_tag(n))
                 inserted = true;
+
         if (!inserted && settings.stack_duplicates && queues_stack_duplicate(n))
                 inserted = true;
+
         if (!inserted)
                 g_queue_insert_sorted(waiting, n, notification_cmp_data, NULL);
 
