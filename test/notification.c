@@ -19,12 +19,9 @@ TEST test_notification_is_duplicate_field(char **field,
         PASS();
 }
 
-TEST test_notification_is_duplicate(void *notifications)
+TEST test_notification_is_duplicate(struct notification *a,
+                                    struct notification *b)
 {
-        struct notification **n = (struct notification**)notifications;
-        struct notification *a = n[0];
-        struct notification *b = n[1];
-
         ASSERT(notification_is_duplicate(a, b));
 
         CHECK_CALL(test_notification_is_duplicate_field(&(b->appname), a, b));
@@ -172,11 +169,9 @@ SUITE(suite_notification)
         b->urgency = URG_NORM;
 
         //2 equal notifications to be passed for duplicate checking,
-        struct notification *n[2] = {a, b};
-
-        RUN_TEST1(test_notification_is_duplicate, (void*) n);
-        notification_unref(a);
-        notification_unref(b);
+        RUN_TESTp(test_notification_is_duplicate, a, b);
+        g_clear_pointer(&a, notification_unref);
+        g_clear_pointer(&b, notification_unref);
 
         RUN_TEST(test_notification_replace_single_field);
         RUN_TEST(test_notification_referencing);
