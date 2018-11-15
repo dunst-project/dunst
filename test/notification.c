@@ -127,6 +127,29 @@ TEST test_notification_format_message(struct notification *n, const char *format
         PASS();
 }
 
+TEST test_notification_maxlength(void)
+{
+        unsigned int len = 5005;
+        struct notification *n = notification_create();
+        n->format = "%a";
+
+        n->appname = g_malloc(len + 1);
+        n->appname[len] = '\0';
+
+        static const char sigma[] =
+                            " 0123456789"
+                            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                            "abcdefghijklmnopqrstuvwxyz";
+        for (int i = 0; i < len; ++i)
+                n->appname[i] = sigma[rand() % (sizeof(sigma) - 1)];
+
+        notification_format_message(n);
+        ASSERT(STRN_EQ(n->appname, n->msg, 5000));
+
+        notification_unref(n);
+        PASS();
+}
+
 
 SUITE(suite_notification)
 {
@@ -188,6 +211,8 @@ SUITE(suite_notification)
                 out+=2;
         }
         g_clear_pointer(&a, notification_unref);
+
+        RUN_TEST(test_notification_maxlength);
 
         g_clear_pointer(&settings.icon_path, g_free);
         g_free(config_path);
