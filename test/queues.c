@@ -629,6 +629,42 @@ TEST test_queues_update_xmore(void)
         PASS();
 }
 
+TEST test_queues_update_seep_showlowurg(void)
+{
+        // Test 3 notifications during fullscreen and only the one
+        // with the lowest priority is eligible to get shown
+        settings.geometry.h = 4;
+        struct notification *n1, *n2, *n3;
+        queues_init();
+
+        n1 = test_notification("n1", 0);
+        n2 = test_notification("n2", 0);
+        n3 = test_notification("n3", 0);
+
+        n1->fullscreen = FS_DELAY;
+        n2->fullscreen = FS_DELAY;
+        n3->fullscreen = FS_SHOW;
+
+        n3->urgency = URG_LOW;
+
+        queues_notification_insert(n1);
+        queues_notification_insert(n2);
+        queues_update(STATUS_FS);
+        QUEUE_LEN_ALL(2,0,0);
+
+        queues_notification_insert(n3);
+
+        queues_update(STATUS_FS);
+
+        QUEUE_LEN_ALL(2,1,0);
+        QUEUE_CONTAINS(WAIT, n1);
+        QUEUE_CONTAINS(WAIT, n2);
+        QUEUE_CONTAINS(DISP, n3);
+
+        queues_teardown();
+        PASS();
+}
+
 SUITE(suite_queues)
 {
         RUN_TEST(test_datachange_beginning_empty);
@@ -651,6 +687,7 @@ SUITE(suite_queues)
         RUN_TEST(test_queue_timeout);
         RUN_TEST(test_queues_update_fullscreen);
         RUN_TEST(test_queues_update_paused);
+        RUN_TEST(test_queues_update_seep_showlowurg);
         RUN_TEST(test_queues_update_seeping);
         RUN_TEST(test_queues_update_xmore);
 }
