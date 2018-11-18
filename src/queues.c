@@ -455,7 +455,7 @@ void queues_update(struct dunst_status status)
                 while (   (i_waiting   = g_queue_peek_head_link(waiting))
                        && (i_displayed = g_queue_peek_tail_link(displayed))) {
 
-                        while (i_waiting && ! queues_notification_is_ready(i_waiting->data, status, true)) {
+                        while (i_waiting && ! queues_notification_is_ready(i_waiting->data, status, false)) {
                                 i_waiting = i_waiting->prev;
                         }
 
