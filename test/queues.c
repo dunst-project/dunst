@@ -430,9 +430,6 @@ TEST test_queue_timeout(void)
 
         queues_init();
 
-        // Usually this shouldn't do anything, but we may abort ;-)
-        queues_check_timeouts(STATUS_NORMAL);
-
         n1 = test_notification("n1", 0);
         n2 = test_notification("n2", 10);
         n3 = test_notification("n3", 10);
@@ -448,7 +445,6 @@ TEST test_queue_timeout(void)
         n1->start -= S2US(11);
         n2->start -= S2US(11);
         n3->start -= S2US(11);
-        queues_check_timeouts(STATUS_IDLE);
         queues_update(STATUS_IDLE);
 
         QUEUE_LEN_ALL(0,2,1);
@@ -457,7 +453,6 @@ TEST test_queue_timeout(void)
         // hacky way to shift time
         n1->start -= S2US(11);
         n2->start -= S2US(11);
-        queues_check_timeouts(STATUS_NORMAL);
         queues_update(STATUS_NORMAL);
 
         QUEUE_LEN_ALL(0,1,2);
@@ -665,6 +660,25 @@ TEST test_queues_update_seep_showlowurg(void)
         PASS();
 }
 
+TEST test_queues_timeout_before_paused(void)
+{
+        struct notification *n;
+        queues_init();
+
+        n = test_notification("n", 10);
+
+        queues_notification_insert(n);
+        queues_update(STATUS_NORMAL);
+
+        n->start -= S2US(11);
+        queues_update(STATUS_PAUSE);
+
+        QUEUE_LEN_ALL(0,0,1);
+
+        queues_teardown();
+        PASS();
+}
+
 SUITE(suite_queues)
 {
         RUN_TEST(test_datachange_beginning_empty);
@@ -690,6 +704,7 @@ SUITE(suite_queues)
         RUN_TEST(test_queues_update_seep_showlowurg);
         RUN_TEST(test_queues_update_seeping);
         RUN_TEST(test_queues_update_xmore);
+        RUN_TEST(test_queues_timeout_before_paused);
 }
 
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

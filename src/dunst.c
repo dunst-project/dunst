@@ -68,7 +68,6 @@ static gboolean run(void *data)
         dunst_status(S_FULLSCREEN, have_fullscreen_window());
         dunst_status(S_IDLE, x_is_idle());
 
-        queues_check_timeouts(status);
         queues_update(status);
 
         static gint64 next_timeout = 0;

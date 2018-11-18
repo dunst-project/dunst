@@ -113,12 +113,46 @@ static void queues_swap_notifications(GQueue *queueA,
  */
 static bool queues_notification_is_ready(const struct notification *n, struct dunst_status status, bool shown)
 {
+        if (!status.running)
+                return false;
         if (status.fullscreen && shown)
                 return n && n->fullscreen != FS_PUSHBACK;
         else if (status.fullscreen && !shown)
                 return n && n->fullscreen == FS_SHOW;
         else
                 return true;
+}
+
+/**
+ * Check if a notification has timed out
+ *
+ * @param n the notification to check
+ * @param status the current status of dunst
+ * @returns true, if the notification is timed out, otherwise false
+ */
+static bool queues_notification_is_finished(struct notification *n, struct dunst_status status)
+{
+        assert(n);
+
+        if (n->timeout == 0) // sticky
+                return false;
+        if (n->start == 0)   // hidden // TODO: is this really the implication of hidden?
+                return false;
+
+        bool is_idle = status.fullscreen ? false : status.idle;
+
+        /* don't timeout when user is idle */
+        if (is_idle && !n->transient) {
+                n->start = time_monotonic_now();
+                return false;
+        }
+
+        /* remove old message */
+        if (time_monotonic_now() - n->start > n->timeout) {
+                return true;
+        }
+
+        return false;
 }
 
 /* see queues.h */
@@ -343,68 +377,32 @@ void queues_history_push_all(void)
 }
 
 /* see queues.h */
-void queues_check_timeouts(struct dunst_status status)
-{
-        /* nothing to do */
-        if (displayed->length == 0)
-                return;
-
-        bool is_idle = status.fullscreen ? false : status.idle;
-
-        GList *iter = g_queue_peek_head_link(displayed);
-        while (iter) {
-                struct notification *n = iter->data;
-
-                /*
-                 * Update iter to the next item before we either exit the
-                 * current iteration of the loop or potentially delete the
-                 * notification which would invalidate the pointer.
-                 */
-                iter = iter->next;
-
-                /* don't timeout when user is idle */
-                if (is_idle && !n->transient) {
-                        n->start = time_monotonic_now();
-                        continue;
-                }
-
-                /* skip hidden and sticky messages */
-                if (n->start == 0 || n->timeout == 0) {
-                        continue;
-                }
-
-                /* remove old message */
-                if (time_monotonic_now() - n->start > n->timeout) {
-                        queues_notification_close(n, REASON_TIME);
-                }
-        }
-}
-
-/* see queues.h */
 void queues_update(struct dunst_status status)
 {
-        if (!status.running) {
-                while (displayed->length > 0) {
-                        g_queue_insert_sorted(
-                            waiting, g_queue_pop_head(displayed), notification_cmp_data, NULL);
-                }
-                return;
-        }
+        GList *iter, *nextiter;
 
-        /* move notifications back to queue, which are set to pushback */
-        if (status.fullscreen) {
-                GList *iter = g_queue_peek_head_link(displayed);
-                while (iter) {
-                        struct notification *n = iter->data;
-                        GList *nextiter = iter->next;
+        /* Move back all notifications, which aren't eligible to get shown anymore
+         * Will move the notifications back to waiting, if dunst isn't running or fullscreen
+         * and notifications is not eligible to get shown anymore */
+        iter = g_queue_peek_head_link(displayed);
+        while (iter) {
+                struct notification *n = iter->data;
+                nextiter = iter->next;
 
-                        if (n->fullscreen == FS_PUSHBACK){
-                                g_queue_delete_link(displayed, iter);
-                                g_queue_insert_sorted(waiting, n, notification_cmp_data, NULL);
-                        }
-
+                if (queues_notification_is_finished(n, status)){
+                        queues_notification_close(n, REASON_TIME);
                         iter = nextiter;
+                        continue;
                 }
+
+                if (!queues_notification_is_ready(n, status, true)) {
+                        g_queue_delete_link(displayed, iter);
+                        g_queue_insert_sorted(waiting, n, notification_cmp_data, NULL);
+                        iter = nextiter;
+                        continue;
+                }
+
+                iter = nextiter;
         }
 
         int cur_displayed_limit;
@@ -418,10 +416,10 @@ void queues_update(struct dunst_status status)
                 cur_displayed_limit = settings.geometry.h;
 
         /* move notifications from queue to displayed */
-        GList *iter = g_queue_peek_head_link(waiting);
+        iter = g_queue_peek_head_link(waiting);
         while (displayed->length < cur_displayed_limit && iter) {
                 struct notification *n = iter->data;
-                GList *nextiter = iter->next;
+                nextiter = iter->next;
 
                 if (!n)
                         return;

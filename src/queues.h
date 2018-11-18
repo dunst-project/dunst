@@ -119,13 +119,6 @@ void queues_history_push(struct notification *n);
 void queues_history_push_all(void);
 
 /**
- * Check timeout of each notification and close it, if necessary
- *
- * @param status the current status of dunst
- */
-void queues_check_timeouts(struct dunst_status status);
-
-/**
  * Move inserted notifications from waiting queue to displayed queue
  * and show them. In displayed queue, the amount of elements is limited
  * to the amount set via queues_displayed_limit()
