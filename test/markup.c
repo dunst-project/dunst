@@ -1,9 +1,5 @@
+#include "../src/markup.c"
 #include "greatest.h"
-
-#include <stdbool.h>
-#include <glib.h>
-
-#include "src/markup.h"
 
 TEST test_markup_strip(void)
 {

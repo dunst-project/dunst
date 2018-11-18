@@ -1,12 +1,5 @@
 #include "screen.h"
 
-#include <X11/X.h>
-#include <X11/Xatom.h>
-#include <X11/Xlib.h>
-#include <X11/Xresource.h>
-#include <X11/extensions/Xinerama.h>
-#include <X11/extensions/Xrandr.h>
-#include <X11/extensions/randr.h>
 #include <assert.h>
 #include <glib.h>
 #include <locale.h>
@@ -14,10 +7,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <X11/extensions/randr.h>
+#include <X11/extensions/Xinerama.h>
+#include <X11/extensions/Xrandr.h>
+#include <X11/Xatom.h>
+#include <X11/X.h>
+#include <X11/Xlib.h>
+#include <X11/Xresource.h>
 
-#include "src/log.h"
-#include "src/settings.h"
-#include "src/utils.h"
+#include "../log.h"
+#include "../settings.h"
+#include "../utils.h"
 #include "x.h"
 
 struct screen_info *screens;

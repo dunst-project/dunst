@@ -4,17 +4,17 @@
 #include <cairo.h>
 #include <math.h>
 #include <pango/pango-attributes.h>
+#include <pango/pangocairo.h>
 #include <pango/pango-font.h>
 #include <pango/pango-layout.h>
 #include <pango/pango-types.h>
-#include <pango/pangocairo.h>
 #include <stdlib.h>
 
 #include "dunst.h"
 #include "icon.h"
+#include "log.h"
 #include "markup.h"
 #include "notification.h"
-#include "log.h"
 #include "queues.h"
 #include "x11/x.h"
 

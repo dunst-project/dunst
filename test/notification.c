@@ -1,9 +1,10 @@
+#include "../src/notification.c"
 #include "greatest.h"
-#include "src/notification.h"
-#include "src/option_parser.h"
-#include "src/settings.h"
 
-#include <glib.h>
+#include "../src/option_parser.h"
+#include "../src/settings.h"
+
+extern const char *base;
 
 TEST test_notification_is_duplicate_field(char **field,
                                           struct notification *a,
@@ -119,7 +120,8 @@ TEST test_notification_referencing(void)
 SUITE(suite_notification)
 {
         cmdline_load(0, NULL);
-        load_settings("data/dunstrc.default");
+        char *config_path = g_strconcat(base, "/data/dunstrc.default", NULL);
+        load_settings(config_path);
 
         struct notification *a = notification_create();
         a->appname = g_strdup("Test");
@@ -146,6 +148,7 @@ SUITE(suite_notification)
         RUN_TEST(test_notification_referencing);
 
         g_clear_pointer(&settings.icon_path, g_free);
+        g_free(config_path);
 }
 
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

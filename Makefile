@@ -42,8 +42,8 @@ $(error "$(PKG_CONFIG) failed!")
 endif
 endif
 
-CFLAGS  := ${DEFAULT_CPPFLAGS} ${CPPFLAGS} ${DEFAULT_CFLAGS} ${CFLAGS} -I. ${INCS}
-LDFLAGS := ${DEFAULT_LDFLAGS} ${LDFLAGS} -L. ${LIBS}
+CFLAGS  := ${DEFAULT_CPPFLAGS} ${CPPFLAGS} ${DEFAULT_CFLAGS} ${CFLAGS} ${INCS}
+LDFLAGS := ${DEFAULT_LDFLAGS} ${LDFLAGS} ${LIBS}
 
 SRC := $(sort $(shell find src/ -name '*.c'))
 OBJ := ${SRC:.c=.o}
@@ -69,23 +69,37 @@ dunst: ${OBJ} main.o
 dunstify: dunstify.o
 	${CC} -o ${@} dunstify.o ${CFLAGS} ${LDFLAGS}
 
-.PHONY: test test-valgrind
-test: test/test
-	cd test && ./test
+.PHONY: test test-valgrind test-coverage
+test: test/test clean-coverage-run
+	./test/test
 
 test-valgrind: test/test
-	cd ./test \
-		&& valgrind \
-			--suppressions=../.valgrind.suppressions \
-			--leak-check=full \
-			--show-leak-kinds=definite \
-			--errors-for-leak-kinds=definite \
-			--num-callers=40 \
-			--error-exitcode=123 \
-			./test
+	valgrind \
+		--suppressions=.valgrind.suppressions \
+		--leak-check=full \
+		--show-leak-kinds=definite \
+		--errors-for-leak-kinds=definite \
+		--num-callers=40 \
+		--error-exitcode=123 \
+		./test/test
+
+test-coverage: CFLAGS += -fprofile-arcs -ftest-coverage -O0
+test-coverage: test
+
+test-coverage-report: test-coverage
+	mkdir -p docs/internal/coverage
+	gcovr \
+		-r . \
+		--exclude=test \
+		--html \
+		--html-details \
+		-o docs/internal/coverage/index.html
+
+test/%.o: test/%.c src/%.c
+	${CC} -o $@ -c $< ${CFLAGS}
 
 test/test: ${OBJ} ${TEST_OBJ}
-	${CC} -o ${@} ${TEST_OBJ} ${OBJ} ${CFLAGS} ${LDFLAGS}
+	${CC} -o ${@} ${TEST_OBJ} $(filter-out ${TEST_OBJ:test/%=src/%},${OBJ}) ${CFLAGS} ${LDFLAGS}
 
 .PHONY: doc doc-doxygen
 doc: docs/dunst.1
@@ -104,8 +118,8 @@ service-systemd:
 	@sed "s|##PREFIX##|$(PREFIX)|" dunst.systemd.service.in > dunst.systemd.service
 endif
 
-.PHONY: clean clean-dunst clean-dunstify clean-doc clean-tests
-clean: clean-dunst clean-dunstify clean-doc clean-tests
+.PHONY: clean clean-dunst clean-dunstify clean-doc clean-tests clean-coverage clean-coverage-run
+clean: clean-dunst clean-dunstify clean-doc clean-tests clean-coverage clean-coverage-run
 
 clean-dunst:
 	rm -f dunst ${OBJ} main.o
@@ -119,9 +133,18 @@ clean-dunstify:
 clean-doc:
 	rm -f docs/dunst.1
 	rm -fr docs/internal/html
+	rm -fr docs/internal/coverage
 
 clean-tests:
 	rm -f test/test test/*.o
+
+clean-coverage: clean-coverage-run
+	find . -type f -name '*.gcno' -delete
+	find . -type f -name '*.gcna' -delete
+# Cleans the coverage data before every run to not double count any lines
+clean-coverage-run:
+	find . -type f -name '*.gcov' -delete
+	find . -type f -name '*.gcda' -delete
 
 .PHONY: install install-dunst install-doc \
         install-service install-service-dbus install-service-systemd \

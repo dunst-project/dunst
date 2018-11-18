@@ -1,15 +1,9 @@
 /* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
 #include "x.h"
 
-#include <X11/X.h>
-#include <X11/XKBlib.h>
-#include <X11/Xatom.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/extensions/shape.h>
 #include <assert.h>
-#include <cairo-xlib.h>
 #include <cairo.h>
+#include <cairo-xlib.h>
 #include <glib-object.h>
 #include <locale.h>
 #include <math.h>
@@ -18,17 +12,23 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <X11/extensions/shape.h>
+#include <X11/Xatom.h>
+#include <X11/X.h>
+#include <X11/XKBlib.h>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
 
-#include "src/draw.h"
-#include "src/dbus.h"
-#include "src/dunst.h"
-#include "src/log.h"
-#include "src/markup.h"
-#include "src/menu.h"
-#include "src/notification.h"
-#include "src/queues.h"
-#include "src/settings.h"
-#include "src/utils.h"
+#include "../dbus.h"
+#include "../draw.h"
+#include "../dunst.h"
+#include "../log.h"
+#include "../markup.h"
+#include "../menu.h"
+#include "../notification.h"
+#include "../queues.h"
+#include "../settings.h"
+#include "../utils.h"
 
 #include "screen.h"
 

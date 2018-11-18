@@ -2,13 +2,13 @@
 
 #include "dunst.h"
 
-#include <X11/Xlib.h>
-#include <glib-unix.h>
 #include <glib.h>
+#include <glib-unix.h>
 #include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <X11/Xlib.h>
 
 #include "dbus.h"
 #include "draw.h"
@@ -21,12 +21,6 @@
 #include "utils.h"
 #include "x11/screen.h"
 #include "x11/x.h"
-
-#ifndef VERSION
-#define VERSION "version info needed"
-#endif
-
-/* index of colors fit to urgency level */
 
 GMainLoop *mainloop = NULL;
 
@@ -162,7 +156,7 @@ int dunst_main(int argc, char *argv[])
                 n->summary = g_strdup("startup");
                 n->body = g_strdup("dunst is up and running");
                 n->progress = -1;
-                n->timeout = 10 * G_USEC_PER_SEC;
+                n->timeout = S2US(10);
                 n->markup = MARKUP_NO;
                 n->urgency = URG_LOW;
                 notification_init(n);

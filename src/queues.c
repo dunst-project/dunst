@@ -490,7 +490,7 @@ gint64 queues_get_next_datachange(gint64 time)
 
                         if (age > settings.show_age_threshold)
                                 // sleep exactly until the next shift of the second happens
-                                sleep = MIN(sleep, ((G_USEC_PER_SEC) - (age % (G_USEC_PER_SEC))));
+                                sleep = MIN(sleep, (S2US(1) - (age % S2US(1))));
                         else if (n->timeout == 0 || ttl > settings.show_age_threshold)
                                 sleep = MIN(sleep, settings.show_age_threshold);
                 }

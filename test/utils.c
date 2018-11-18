@@ -1,7 +1,5 @@
+#include "../src/utils.c"
 #include "greatest.h"
-#include "src/utils.h"
-
-#include <glib.h>
 
 TEST test_string_replace_char(void)
 {

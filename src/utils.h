@@ -16,6 +16,9 @@
 //! Test if string a and b are the same case-insensitively
 #define STR_CASEQ(a, b) (strcasecmp(a, b) == 0)
 
+//! Convert a second into the internal time representation
+#define S2US(s) (((gint64)(s)) * 1000 * 1000)
+
 /**
  * Replaces all occurrences of the char \p needle with the char \p replacement in \p haystack.
  *

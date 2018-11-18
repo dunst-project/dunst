@@ -5,11 +5,11 @@
 #define XLIB_ILLEGAL_ACCESS
 
 #include <cairo.h>
-#include <X11/X.h>
-#include <X11/Xlib.h>
-#include <X11/extensions/scrnsaver.h>
 #include <glib.h>
 #include <stdbool.h>
+#include <X11/extensions/scrnsaver.h>
+#include <X11/X.h>
+#include <X11/Xlib.h>
 
 #include "screen.h"
 
@@ -22,7 +22,7 @@ struct keyboard_shortcut {
 };
 
 // Cyclical dependency
-#include "src/settings.h"
+#include "../settings.h"
 
 struct window_x11;
 
