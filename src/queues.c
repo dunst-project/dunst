@@ -449,7 +449,7 @@ void queues_update(struct dunst_status status)
         /* If displayed is actually full, let the more important notifications
          * from waiting seep into displayed.
          */
-        if (settings.sort) {
+        if (settings.sort && displayed->length == cur_displayed_limit) {
                 GList *i_waiting, *i_displayed;
 
                 while (   (i_waiting   = g_queue_peek_head_link(waiting))
