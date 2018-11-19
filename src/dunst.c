@@ -63,14 +63,14 @@ void wake_up(void)
 
 static gboolean run(void *data)
 {
+        static gint64 next_timeout = 0;
+
         LOG_D("RUN");
 
         dunst_status(S_FULLSCREEN, have_fullscreen_window());
         dunst_status(S_IDLE, x_is_idle());
 
         queues_update(status);
-
-        static gint64 next_timeout = 0;
 
         bool active = queues_length_displayed() > 0;
 
