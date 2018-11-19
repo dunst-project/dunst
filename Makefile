@@ -58,7 +58,7 @@ debug: LDFLAGS  += ${LDFLAGS_DEBUG}
 debug: CPPFLAGS += ${CPPFLAGS_DEBUG}
 debug: all
 
-.c.o:
+%.o: %.c
 	${CC} -o $@ -c $< ${CFLAGS}
 
 ${OBJ}: config.mk
