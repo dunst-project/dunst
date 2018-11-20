@@ -136,8 +136,6 @@ static bool queues_notification_is_finished(struct notification *n, struct dunst
 
         if (n->timeout == 0) // sticky
                 return false;
-        if (n->start == 0)   // hidden // TODO: is this really the implication of hidden?
-                return false;
 
         bool is_idle = status.fullscreen ? false : status.idle;
 
@@ -344,7 +342,6 @@ void queues_history_pop(void)
 
         struct notification *n = g_queue_pop_tail(history);
         n->redisplayed = true;
-        n->start = 0;
         n->timeout = settings.sticky_history ? 0 : n->timeout;
         g_queue_insert_sorted(waiting, n, notification_cmp_data, NULL);
 }
