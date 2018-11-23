@@ -101,7 +101,7 @@ static void teardown(void)
 {
         regex_teardown();
 
-        teardown_queues();
+        queues_teardown();
 
         draw_deinit();
 }

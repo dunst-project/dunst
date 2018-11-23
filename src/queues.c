@@ -518,7 +518,7 @@ bool queues_pause_status(void)
 }
 
 /**
- * Helper function for teardown_queues() to free a single notification
+ * Helper function for queues_teardown() to free a single notification
  *
  * @param data The notification to free
  */
@@ -529,7 +529,7 @@ static void teardown_notification(gpointer data)
 }
 
 /* see queues.h */
-void teardown_queues(void)
+void queues_teardown(void)
 {
         g_queue_free_full(history, teardown_notification);
         g_queue_free_full(displayed, teardown_notification);

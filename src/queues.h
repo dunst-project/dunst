@@ -181,7 +181,7 @@ bool queues_pause_status(void);
  *
  * @pre At least one time queues_init() called
  */
-void teardown_queues(void);
+void queues_teardown(void);
 
 #endif
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
