@@ -1,0 +1,73 @@
+version: 2.1
+jobs:
+  misc-doxygen:
+    docker:
+      - image: bebehei/dunst:misc-doxygen-dev
+    environment:
+      SYSTEMD: 0
+      SERVICEDIR_DBUS: /tmp/none
+      SERVICEDIR_SYSTEMD: /tmp/none
+      PKG_CONFIG: echo
+    steps:
+      - checkout
+      - run: make -j doc-doxygen
+
+  compileandtest:
+    environment:
+      CFLAGS: -Werror
+    parameters:
+      distro:
+        type: string
+    docker:
+      - image: bebehei/dunst:<<parameters.distro>>-dev
+    steps:
+      - checkout
+      - run: make -j all dunstify
+      - run: make -j test-valgrind
+      - run: make -j clean
+      - run: make -j test-coverage
+
+workflows:
+  version: 2
+  build-in-docker:
+    jobs:
+      - misc-doxygen
+      - compileandtest:
+          name: Alpine
+          distro: alpine
+      - compileandtest:
+          name: Debian Stretch
+          distro: debian-stretch
+          requires:
+            - misc-doxygen
+            - Alpine
+      - compileandtest:
+          name: Arch Linux
+          distro: archlinux
+          requires:
+            - misc-doxygen
+            - Alpine
+      - compileandtest:
+          name: Fedora 27
+          distro: fedora27
+          requires:
+            - misc-doxygen
+            - Alpine
+      - compileandtest:
+          name: Ubuntu 14.04
+          distro: ubuntu-trusty
+          requires:
+            - misc-doxygen
+            - Alpine
+      - compileandtest:
+          name: Ubuntu 16.04
+          distro: ubuntu-xenial
+          requires:
+            - misc-doxygen
+            - Alpine
+      - compileandtest:
+          name: Ubuntu 18.04
+          distro: ubuntu-bionic
+          requires:
+            - misc-doxygen
+            - Alpine
