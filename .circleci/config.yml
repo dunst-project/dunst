@@ -22,10 +22,13 @@ jobs:
       - image: bebehei/dunst:<<parameters.distro>>-dev
     steps:
       - checkout
-      - run: make -j all dunstify
-      - run: make -j test-valgrind
-      - run: make    clean
-      - run: make -j test-coverage
+      - run: make CC=clang -j all dunstify test/test
+      - run: make CC=clang -j test-valgrind
+      - run: make             clean
+      - run: make CC=gcc   -j all dunstify test/test
+      - run: make CC=gcc   -j test-valgrind
+      - run: make             clean
+      - run: make          -j test-coverage
 
 workflows:
   version: 2
