@@ -71,7 +71,7 @@ dunstify: dunstify.o
 
 .PHONY: test test-valgrind test-coverage
 test: test/test clean-coverage-run
-	./test/test
+	./test/test -v
 
 test-valgrind: test/test
 	valgrind \
@@ -81,7 +81,7 @@ test-valgrind: test/test
 		--errors-for-leak-kinds=definite \
 		--num-callers=40 \
 		--error-exitcode=123 \
-		./test/test
+		./test/test -v
 
 test-coverage: CFLAGS += -fprofile-arcs -ftest-coverage -O0
 test-coverage: test

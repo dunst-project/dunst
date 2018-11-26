@@ -19,12 +19,9 @@ TEST test_notification_is_duplicate_field(char **field,
         PASS();
 }
 
-TEST test_notification_is_duplicate(void *notifications)
+TEST test_notification_is_duplicate(struct notification *a,
+                                    struct notification *b)
 {
-        struct notification **n = (struct notification**)notifications;
-        struct notification *a = n[0];
-        struct notification *b = n[1];
-
         ASSERT(notification_is_duplicate(a, b));
 
         CHECK_CALL(test_notification_is_duplicate_field(&(b->appname), a, b));
@@ -117,6 +114,40 @@ TEST test_notification_referencing(void)
         PASS();
 }
 
+TEST test_notification_format_message(struct notification *n, const char *format, const char *exp)
+{
+        n->format = format;
+        notification_format_message(n);
+
+        ASSERT_STR_EQ(exp, n->msg);
+
+        PASS();
+}
+
+TEST test_notification_maxlength(void)
+{
+        unsigned int len = 5005;
+        struct notification *n = notification_create();
+        n->format = "%a";
+
+        n->appname = g_malloc(len + 1);
+        n->appname[len] = '\0';
+
+        static const char sigma[] =
+                            " 0123456789"
+                            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                            "abcdefghijklmnopqrstuvwxyz";
+        for (int i = 0; i < len; ++i)
+                n->appname[i] = sigma[rand() % (sizeof(sigma) - 1)];
+
+        notification_format_message(n);
+        ASSERT(STRN_EQ(n->appname, n->msg, 5000));
+
+        notification_unref(n);
+        PASS();
+}
+
+
 SUITE(suite_notification)
 {
         cmdline_load(0, NULL);
@@ -138,14 +169,45 @@ SUITE(suite_notification)
         b->urgency = URG_NORM;
 
         //2 equal notifications to be passed for duplicate checking,
-        struct notification *n[2] = {a, b};
-
-        RUN_TEST1(test_notification_is_duplicate, (void*) n);
-        notification_unref(a);
-        notification_unref(b);
+        RUN_TESTp(test_notification_is_duplicate, a, b);
+        g_clear_pointer(&a, notification_unref);
+        g_clear_pointer(&b, notification_unref);
 
         RUN_TEST(test_notification_replace_single_field);
         RUN_TEST(test_notification_referencing);
+
+        // TEST notification_format_message
+        a = notification_create();
+        a->appname = g_strdup("MyApp");
+        a->summary = g_strdup("I've got a summary!");
+        a->body =    g_strdup("Look at my shiny <notification>");
+        a->icon =    g_strdup("/this/is/my/icoknpath.png");
+        a->progress = 95;
+
+        const char *strings[] = {
+                "%a", "MyApp",
+                "%s", "I&apos;ve got a summary!",
+                "%b", "Look at my shiny <notification>",
+                "%I", "icoknpath.png",
+                "%i", "/this/is/my/icoknpath.png",
+                "%p", "[ 95%]",
+                "%n", "95",
+                "%%", "%",
+                "%",  "%",
+                "%UNKNOWN", "%UNKNOWN",
+                NULL
+        };
+
+        const char **in = strings;
+        const char **out = strings+1;
+        while (*in && *out) {
+                RUN_TESTp(test_notification_format_message, a, *in, *out);
+                in +=2;
+                out+=2;
+        }
+        g_clear_pointer(&a, notification_unref);
+
+        RUN_TEST(test_notification_maxlength);
 
         g_clear_pointer(&settings.icon_path, g_free);
         g_free(config_path);

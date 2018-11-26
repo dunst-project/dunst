@@ -97,6 +97,10 @@ TEST test_ini_get_int(void)
 
 TEST test_ini_get_double(void)
 {
+        if (2.3 != atof("2.3")) {
+                SKIPm("Skipping test_ini_get_double, as it seems we're running under musl+valgrind!");
+        }
+
         char *double_section = "double";
         ASSERT_EQ(1, ini_get_double(double_section, "simple", 0));
         ASSERT_EQ(1.5, ini_get_double(double_section, "decimal", 0));
@@ -152,6 +156,10 @@ TEST test_cmdline_get_int(void)
 
 TEST test_cmdline_get_double(void)
 {
+        if (2.3 != atof("2.3")) {
+                SKIPm("Skipping test_cmdline_get_double, as it seems we're running under musl+valgrind!");
+        }
+
         ASSERT_EQ(2, cmdline_get_double("-simple_double", 0, ""));
         ASSERT_EQ(5.2, cmdline_get_double("-double", 0, ""));
         ASSERT_EQ(3.14, cmdline_get_double("-nonexistent", 3.14, ""));
@@ -258,6 +266,10 @@ TEST test_option_get_int(void)
 
 TEST test_option_get_double(void)
 {
+        if (2.3 != atof("2.3")) {
+                SKIPm("Skipping test_option_get_double, as it seems we're running under musl+valgrind!");
+        }
+
         char *double_section = "double";
         ASSERT_EQ(2, option_get_double(double_section, "simple", "-simple_double", 0, ""));
         ASSERT_EQ(5.2, option_get_double(double_section, "simple", "-double", 0, ""));

@@ -1,28 +1,43 @@
-# librsvg leaks some memory, when an invalid svg file is read
-# TODO: find the memory leak and fix it upstream
+# rsvg_error_handle_close got fixed in
+# - GNOME/librsvg@7bf1014
+# (2018-11-12, first tags: v2.45.0, v2.44.9)
+# but the release has to seep into the distros
 {
-   invalid_svgs1
+   rsvg_error_handle_close
    Memcheck:Leak
-   ...
-   fun:gdk_pixbuf__svg_image_load_increment
-   ...
+   match-leak-kinds: definite
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_error_new_valist
+   fun:g_set_error
+   obj:*/librsvg-2.so*
+   obj:*/librsvg-2.so*
+   obj:*/loaders/libpixbufloader-svg.so
+   obj:*/libgdk_pixbuf-2.0.so*
+   fun:gdk_pixbuf_new_from_file
    fun:get_pixbuf_from_file
+   ...
 }
 
+# rsvg_error_writehandler got fixed in
+# - GNOME/librsvg@7b4cc9b
+# (2018-11-12, first tags: v2.45.0, v2.44.9)
+# but the release has to seep into the distros
 {
-   invalid_svgs2
+   rsvg_error_writehandler
    Memcheck:Leak
-   ...
-   fun:gdk_pixbuf__svg_image_begin_load
-   ...
-   fun:get_pixbuf_from_file
-}
-
-{
-   invalid_svgs3
-   Memcheck:Leak
-   ...
+   match-leak-kinds: definite
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_error_new_valist
+   fun:g_set_error
+   obj:*/librsvg-2.so*
    fun:rsvg_handle_write
-   ...
+   obj:*/loaders/libpixbufloader-svg.so
+   obj:*/libgdk_pixbuf-2.0.so*
+   fun:gdk_pixbuf_new_from_file
    fun:get_pixbuf_from_file
+   ...
 }
