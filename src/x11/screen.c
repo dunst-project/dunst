@@ -138,7 +138,7 @@ void randr_update(void)
         XRRFreeMonitors(m);
 }
 
-static int autodetect_dpi(struct screen_info *scr)
+static int autodetect_dpi(const struct screen_info *scr)
 {
         return (double)scr->h * 25.4 / (double)scr->mmh;
 }
@@ -279,7 +279,7 @@ bool window_is_fullscreen(Window window)
  * Select the screen on which the Window
  * should be displayed.
  */
-struct screen_info *get_active_screen(void)
+const struct screen_info *get_active_screen(void)
 {
         int ret = 0;
         if (settings.monitor > 0 && settings.monitor < screens_len) {
@@ -352,7 +352,7 @@ sc_cleanup:
         return &screens[ret];
 }
 
-double get_dpi_for_screen(struct screen_info *scr)
+double get_dpi_for_screen(const struct screen_info *scr)
 {
         double dpi = 0;
         if ((!settings.force_xinerama && settings.per_monitor_dpi &&

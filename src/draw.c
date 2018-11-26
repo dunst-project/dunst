@@ -157,7 +157,7 @@ static struct dimensions calculate_dimensions(GSList *layouts)
 {
         struct dimensions dim = { 0 };
 
-        struct screen_info *scr = get_active_screen();
+        const struct screen_info *scr = output->get_active_screen();
         if (have_dynamic_width()) {
                 /* dynamic width */
                 dim.w = 0;
@@ -237,7 +237,7 @@ static struct dimensions calculate_dimensions(GSList *layouts)
 
 static PangoLayout *layout_create(cairo_t *c)
 {
-        struct screen_info *screen = get_active_screen();
+        const struct screen_info *screen = output->get_active_screen();
 
         PangoContext *context = pango_cairo_create_context(c);
         pango_cairo_context_set_resolution(context, output->get_dpi_for_screen(screen));
@@ -593,7 +593,7 @@ static struct dimensions layout_render(cairo_surface_t *srf,
  */
 static void calc_window_pos(int width, int height, int *ret_x, int *ret_y)
 {
-        struct screen_info *scr = get_active_screen();
+        const struct screen_info *scr = output->get_active_screen();
 
         if (ret_x) {
                 if (settings.geometry.negative_x) {

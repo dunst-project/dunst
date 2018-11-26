@@ -274,7 +274,7 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer 
         struct window_x11 *win = ((struct x11_source*) source)->win;
 
         bool fullscreen_now;
-        struct screen_info *scr;
+        const struct screen_info *scr;
         XEvent ev;
         unsigned int state;
         while (XPending(xctx.dpy) > 0) {
@@ -592,7 +592,7 @@ window x_win_create(void)
             ExposureMask | KeyPressMask | VisibilityChangeMask |
             ButtonReleaseMask | FocusChangeMask| StructureNotifyMask;
 
-        struct screen_info *scr = get_active_screen();
+        const struct screen_info *scr = get_active_screen();
         win->xwin = XCreateWindow(xctx.dpy,
                                  root,
                                  scr->x,

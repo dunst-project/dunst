@@ -28,3 +28,4 @@ const struct output* output_create(void)
 {
         return &output_x11;
 }
+/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

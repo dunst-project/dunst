@@ -16,6 +16,15 @@ struct dimensions {
         int corner_radius;
 };
 
+struct screen_info {
+        int id;
+        int x;
+        int y;
+        unsigned int h;
+        unsigned int mmh;
+        unsigned int w;
+};
+
 struct output {
         void (*init)(void);
         void (*deinit)(void);
@@ -41,3 +50,4 @@ struct output {
 const struct output* output_create(void);
 
 #endif
+/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
