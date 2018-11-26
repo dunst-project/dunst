@@ -24,7 +24,7 @@ jobs:
       - checkout
       - run: make -j all dunstify
       - run: make -j test-valgrind
-      - run: make -j clean
+      - run: make    clean
       - run: make -j test-coverage
 
 workflows:
