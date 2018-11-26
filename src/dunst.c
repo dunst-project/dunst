@@ -2,6 +2,7 @@
 
 #include "dunst.h"
 
+#include <assert.h>
 #include <glib.h>
 #include <glib-unix.h>
 #include <signal.h>
@@ -24,6 +25,34 @@
 
 GMainLoop *mainloop = NULL;
 
+static struct dunst_status status;
+
+/* see dunst.h */
+void dunst_status(const enum dunst_status_field field,
+                  bool value)
+{
+        switch (field) {
+        case S_FULLSCREEN:
+                status.fullscreen = value;
+                break;
+        case S_IDLE:
+                status.idle = value;
+                break;
+        case S_RUNNING:
+                status.running = value;
+                break;
+        default:
+                LOG_E("Invalid %s enum value in %s:%d", "dunst_status", __FILE__, __LINE__);
+                break;
+        }
+}
+
+/* see dunst.h */
+struct dunst_status dunst_status_get(void)
+{
+        return status;
+}
+
 /* misc functions */
 static gboolean run(void *data);
 
@@ -34,14 +63,14 @@ void wake_up(void)
 
 static gboolean run(void *data)
 {
+        static gint64 next_timeout = 0;
+
         LOG_D("RUN");
 
-        bool fullscreen = have_fullscreen_window();
+        dunst_status(S_FULLSCREEN, have_fullscreen_window());
+        dunst_status(S_IDLE, x_is_idle());
 
-        queues_check_timeouts(x_is_idle(), fullscreen);
-        queues_update(fullscreen);
-
-        static gint64 next_timeout = 0;
+        queues_update(status);
 
         bool active = queues_length_displayed() > 0;
 
@@ -76,7 +105,7 @@ static gboolean run(void *data)
 
 gboolean pause_signal(gpointer data)
 {
-        queues_pause_on();
+        dunst_status(S_RUNNING, false);
         wake_up();
 
         return G_SOURCE_CONTINUE;
@@ -84,7 +113,7 @@ gboolean pause_signal(gpointer data)
 
 gboolean unpause_signal(gpointer data)
 {
-        queues_pause_off();
+        dunst_status(S_RUNNING, true);
         wake_up();
 
         return G_SOURCE_CONTINUE;
@@ -101,13 +130,16 @@ static void teardown(void)
 {
         regex_teardown();
 
-        teardown_queues();
+        queues_teardown();
 
         draw_deinit();
 }
 
 int dunst_main(int argc, char *argv[])
 {
+
+        dunst_status(S_RUNNING, true);
+        dunst_status(S_IDLE, false);
 
         queues_init();
 

@@ -1,7 +1,7 @@
 /* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
 
 /**
- * @file queues.c
+ * @file src/queues.c
  * @brief All important functions to handle the notification queues for
  * history, entrance and currently displayed ones.
  *
@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "dunst.h"
 #include "log.h"
 #include "notification.h"
 #include "settings.h"
@@ -31,7 +32,6 @@ static GQueue *displayed = NULL; /**< currently displayed notifications */
 static GQueue *history   = NULL; /**< history of displayed notifications */
 
 int next_notification_id = 1;
-bool pause_displayed = false;
 
 static bool queues_stack_duplicate(struct notification *n);
 static bool queues_stack_by_tag(struct notification *n);
@@ -107,25 +107,55 @@ static void queues_swap_notifications(GQueue *queueA,
 /**
  * Check if a notification is eligible to get shown.
  *
- * @param n          The notification to check
- * @param fullscreen True if a fullscreen window is currently active
- * @param visible    True if the notification is currently displayed
+ * @param n      The notification to check
+ * @param status The current status of dunst
+ * @param shown  True if the notification is currently displayed
  */
-static bool queues_notification_is_ready(const struct notification *n, bool fullscreen, bool visible)
+static bool queues_notification_is_ready(const struct notification *n, struct dunst_status status, bool shown)
 {
-        if (fullscreen && visible)
+        if (!status.running)
+                return false;
+        if (status.fullscreen && shown)
                 return n && n->fullscreen != FS_PUSHBACK;
-        else if (fullscreen && !visible)
+        else if (status.fullscreen && !shown)
                 return n && n->fullscreen == FS_SHOW;
         else
                 return true;
 }
 
+/**
+ * Check if a notification has timed out
+ *
+ * @param n the notification to check
+ * @param status the current status of dunst
+ * @returns true, if the notification is timed out, otherwise false
+ */
+static bool queues_notification_is_finished(struct notification *n, struct dunst_status status)
+{
+        assert(n);
+
+        if (n->timeout == 0) // sticky
+                return false;
+
+        bool is_idle = status.fullscreen ? false : status.idle;
+
+        /* don't timeout when user is idle */
+        if (is_idle && !n->transient) {
+                n->start = time_monotonic_now();
+                return false;
+        }
+
+        /* remove old message */
+        if (time_monotonic_now() - n->start > n->timeout) {
+                return true;
+        }
+
+        return false;
+}
+
 /* see queues.h */
 int queues_notification_insert(struct notification *n)
 {
-        bool inserted = false;
-
         /* do not display the message, if the message is empty */
         if (STR_EMPTY(n->msg)) {
                 if (settings.always_run_script) {
@@ -136,27 +166,35 @@ int queues_notification_insert(struct notification *n)
         }
         /* Do not insert the message if it's a command */
         if (STR_EQ("DUNST_COMMAND_PAUSE", n->summary)) {
-                pause_displayed = true;
+                dunst_status(S_RUNNING, false);
                 return 0;
         }
         if (STR_EQ("DUNST_COMMAND_RESUME", n->summary)) {
-                pause_displayed = false;
+                dunst_status(S_RUNNING, true);
                 return 0;
         }
         if (STR_EQ("DUNST_COMMAND_TOGGLE", n->summary)) {
-                pause_displayed = !pause_displayed;
+                dunst_status(S_RUNNING, !dunst_status_get().running);
                 return 0;
         }
 
-        if (!inserted && n->id != 0 && queues_notification_replace_id(n))
+        bool inserted = false;
+        if (n->id != 0) {
+                if (!queues_notification_replace_id(n)) {
+                        // Requested id was not valid, but play nice and assign it anyway
+                        g_queue_insert_sorted(waiting, n, notification_cmp_data, NULL);
+                }
                 inserted = true;
-        else
+        } else {
                 n->id = ++next_notification_id;
+        }
 
         if (!inserted && STR_FULL(n->stack_tag) && queues_stack_by_tag(n))
                 inserted = true;
+
         if (!inserted && settings.stack_duplicates && queues_stack_duplicate(n))
                 inserted = true;
+
         if (!inserted)
                 g_queue_insert_sorted(waiting, n, notification_cmp_data, NULL);
 
@@ -304,7 +342,6 @@ void queues_history_pop(void)
 
         struct notification *n = g_queue_pop_tail(history);
         n->redisplayed = true;
-        n->start = 0;
         n->timeout = settings.sticky_history ? 0 : n->timeout;
         g_queue_insert_sorted(waiting, n, notification_cmp_data, NULL);
 }
@@ -337,68 +374,32 @@ void queues_history_push_all(void)
 }
 
 /* see queues.h */
-void queues_check_timeouts(bool idle, bool fullscreen)
+void queues_update(struct dunst_status status)
 {
-        /* nothing to do */
-        if (displayed->length == 0)
-                return;
+        GList *iter, *nextiter;
 
-        bool is_idle = fullscreen ? false : idle;
-
-        GList *iter = g_queue_peek_head_link(displayed);
+        /* Move back all notifications, which aren't eligible to get shown anymore
+         * Will move the notifications back to waiting, if dunst isn't running or fullscreen
+         * and notifications is not eligible to get shown anymore */
+        iter = g_queue_peek_head_link(displayed);
         while (iter) {
                 struct notification *n = iter->data;
+                nextiter = iter->next;
 
-                /*
-                 * Update iter to the next item before we either exit the
-                 * current iteration of the loop or potentially delete the
-                 * notification which would invalidate the pointer.
-                 */
-                iter = iter->next;
-
-                /* don't timeout when user is idle */
-                if (is_idle && !n->transient) {
-                        n->start = time_monotonic_now();
-                        continue;
-                }
-
-                /* skip hidden and sticky messages */
-                if (n->start == 0 || n->timeout == 0) {
-                        continue;
-                }
-
-                /* remove old message */
-                if (time_monotonic_now() - n->start > n->timeout) {
+                if (queues_notification_is_finished(n, status)){
                         queues_notification_close(n, REASON_TIME);
-                }
-        }
-}
-
-/* see queues.h */
-void queues_update(bool fullscreen)
-{
-        if (pause_displayed) {
-                while (displayed->length > 0) {
-                        g_queue_insert_sorted(
-                            waiting, g_queue_pop_head(displayed), notification_cmp_data, NULL);
-                }
-                return;
-        }
-
-        /* move notifications back to queue, which are set to pushback */
-        if (fullscreen) {
-                GList *iter = g_queue_peek_head_link(displayed);
-                while (iter) {
-                        struct notification *n = iter->data;
-                        GList *nextiter = iter->next;
-
-                        if (n->fullscreen == FS_PUSHBACK){
-                                g_queue_delete_link(displayed, iter);
-                                g_queue_insert_sorted(waiting, n, notification_cmp_data, NULL);
-                        }
-
                         iter = nextiter;
+                        continue;
                 }
+
+                if (!queues_notification_is_ready(n, status, true)) {
+                        g_queue_delete_link(displayed, iter);
+                        g_queue_insert_sorted(waiting, n, notification_cmp_data, NULL);
+                        iter = nextiter;
+                        continue;
+                }
+
+                iter = nextiter;
         }
 
         int cur_displayed_limit;
@@ -412,15 +413,15 @@ void queues_update(bool fullscreen)
                 cur_displayed_limit = settings.geometry.h;
 
         /* move notifications from queue to displayed */
-        GList *iter = g_queue_peek_head_link(waiting);
+        iter = g_queue_peek_head_link(waiting);
         while (displayed->length < cur_displayed_limit && iter) {
                 struct notification *n = iter->data;
-                GList *nextiter = iter->next;
+                nextiter = iter->next;
 
                 if (!n)
                         return;
 
-                if (!queues_notification_is_ready(n, fullscreen, false)) {
+                if (!queues_notification_is_ready(n, status, false)) {
                         iter = nextiter;
                         continue;
                 }
@@ -443,13 +444,13 @@ void queues_update(bool fullscreen)
         /* If displayed is actually full, let the more important notifications
          * from waiting seep into displayed.
          */
-        if (settings.sort) {
+        if (settings.sort && displayed->length == cur_displayed_limit) {
                 GList *i_waiting, *i_displayed;
 
                 while (   (i_waiting   = g_queue_peek_head_link(waiting))
                        && (i_displayed = g_queue_peek_tail_link(displayed))) {
 
-                        while (i_waiting && ! queues_notification_is_ready(i_waiting->data, fullscreen, true)) {
+                        while (i_waiting && ! queues_notification_is_ready(i_waiting->data, status, false)) {
                                 i_waiting = i_waiting->prev;
                         }
 
@@ -488,37 +489,19 @@ gint64 queues_get_next_datachange(gint64 time)
                 if (settings.show_age_threshold >= 0) {
                         gint64 age = time - n->timestamp;
 
-                        if (age > settings.show_age_threshold)
-                                // sleep exactly until the next shift of the second happens
+                        // sleep exactly until the next shift of the second happens
+                        if (age > settings.show_age_threshold - S2US(1))
                                 sleep = MIN(sleep, (S2US(1) - (age % S2US(1))));
-                        else if (n->timeout == 0 || ttl > settings.show_age_threshold)
-                                sleep = MIN(sleep, settings.show_age_threshold);
+                        else
+                                sleep = MIN(sleep, settings.show_age_threshold - age);
                 }
         }
 
         return sleep != G_MAXINT64 ? sleep : -1;
 }
 
-/* see queues.h */
-void queues_pause_on(void)
-{
-        pause_displayed = true;
-}
-
-/* see queues.h */
-void queues_pause_off(void)
-{
-        pause_displayed = false;
-}
-
-/* see queues.h */
-bool queues_pause_status(void)
-{
-        return pause_displayed;
-}
-
 /**
- * Helper function for teardown_queues() to free a single notification
+ * Helper function for queues_teardown() to free a single notification
  *
  * @param data The notification to free
  */
@@ -529,10 +512,13 @@ static void teardown_notification(gpointer data)
 }
 
 /* see queues.h */
-void teardown_queues(void)
+void queues_teardown(void)
 {
         g_queue_free_full(history, teardown_notification);
+        history = NULL;
         g_queue_free_full(displayed, teardown_notification);
+        displayed = NULL;
         g_queue_free_full(waiting, teardown_notification);
+        waiting = NULL;
 }
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

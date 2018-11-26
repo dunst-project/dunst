@@ -15,6 +15,8 @@ SUITE_EXTERN(suite_notification);
 SUITE_EXTERN(suite_markup);
 SUITE_EXTERN(suite_misc);
 SUITE_EXTERN(suite_icon);
+SUITE_EXTERN(suite_queues);
+SUITE_EXTERN(suite_dunst);
 
 GREATEST_MAIN_DEFS();
 
@@ -36,6 +38,8 @@ int main(int argc, char *argv[]) {
         RUN_SUITE(suite_markup);
         RUN_SUITE(suite_misc);
         RUN_SUITE(suite_icon);
+        RUN_SUITE(suite_queues);
+        RUN_SUITE(suite_dunst);
         GREATEST_MAIN_END();
 
         base = NULL;
