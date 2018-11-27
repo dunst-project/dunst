@@ -6,27 +6,6 @@
    obj:/lib/ld-musl-x86_64.so.1
 }
 
-# MemLeak under Fedora 27
-{
-   rsvg_fedora_unknown_source
-   Memcheck:Leak
-   match-leak-kinds: definite
-   fun:malloc
-   fun:g_malloc
-   fun:g_slice_alloc
-   fun:g_slice_alloc0
-   fun:g_type_create_instance
-   obj:*libgobject-2.0.so*
-   fun:g_object_new_valist
-   fun:g_object_new
-   fun:gdk_pixbuf_new_from_data
-   fun:gdk_pixbuf_new
-   obj:*/libgdk_pixbuf-2.0.so*
-   fun:gdk_pixbuf_new_from_file
-   fun:get_pixbuf_from_file
-   ...
-}
-
 # rsvg_error_handle_close got fixed in
 # - GNOME/librsvg@7bf1014
 # (2018-11-12, first tags: v2.45.0, v2.44.9)

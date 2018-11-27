@@ -51,8 +51,8 @@ workflows:
             - misc-doxygen
             - Alpine
       - compileandtest:
-          name: Fedora 27
-          distro: fedora27
+          name: Fedora 30
+          distro: fedora30
           requires:
             - misc-doxygen
             - Alpine
