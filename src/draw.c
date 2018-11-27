@@ -17,6 +17,12 @@
 #include "notification.h"
 #include "queues.h"
 
+struct color {
+        double r;
+        double g;
+        double b;
+};
+
 struct colored_layout {
         PangoLayout *l;
         struct color fg;

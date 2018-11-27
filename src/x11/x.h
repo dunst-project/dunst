@@ -31,12 +31,6 @@ struct x_context {
         XScreenSaverInfo *screensaver_info;
 };
 
-struct color {
-        double r;
-        double g;
-        double b;
-};
-
 extern struct x_context xctx;
 
 /* window */
