@@ -14,7 +14,7 @@ addons:
       - libnotify-dev
       - libgtk-3-dev
       - valgrind
-dist: trusty
+dist: xenial
 sudo: false
 language: c
 

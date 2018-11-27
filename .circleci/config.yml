@@ -57,12 +57,6 @@ workflows:
             - misc-doxygen
             - Alpine
       - compileandtest:
-          name: Ubuntu 14.04
-          distro: ubuntu-trusty
-          requires:
-            - misc-doxygen
-            - Alpine
-      - compileandtest:
           name: Ubuntu 16.04
           distro: ubuntu-xenial
           requires:

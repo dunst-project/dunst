@@ -25,7 +25,6 @@
 
 static void notification_extract_urls(struct notification *n);
 static void notification_format_message(struct notification *n);
-static void notification_dmenu_string(struct notification *n);
 
 /* see notification.h */
 const char *enum_to_string_fullscreen(enum behavior_fullscreen in)
@@ -75,16 +74,16 @@ void notification_print(const struct notification *n)
                 printf("\t}\n");
                 g_free(urls);
         }
-
-        if (n->actions) {
-                printf("\tactions:\n");
-                printf("\t{\n");
-                for (int i = 0; i < n->actions->count; i += 2) {
-                        printf("\t\t[%s,%s]\n", n->actions->actions[i],
-                               n->actions->actions[i + 1]);
-                }
+        if (g_hash_table_size(n->actions) == 0) {
+                printf("\tactions: {}\n");
+        } else {
+                gpointer p_key, p_value;
+                GHashTableIter iter;
+                g_hash_table_iter_init(&iter, n->actions);
+                printf("\tactions: {\n");
+                while (g_hash_table_iter_next(&iter, &p_key, &p_value))
+                        printf("\t\t\"%s\": \"%s\"\n", (char*)p_key, (char*)p_value);
                 printf("\t}\n");
-                printf("\tactions_dmenu: %s\n", n->actions->dmenu_str);
         }
         printf("\tscript: %s\n", n->script);
         printf("}\n");
@@ -190,17 +189,6 @@ int notification_is_duplicate(const struct notification *a, const struct notific
 }
 
 /* see notification.h */
-void actions_free(struct actions *a)
-{
-        if (!a)
-                return;
-
-        g_strfreev(a->actions);
-        g_free(a->dmenu_str);
-        g_free(a);
-}
-
-/* see notification.h */
 void rawimage_free(struct raw_image *i)
 {
         if (!i)
@@ -253,7 +241,7 @@ void notification_unref(struct notification *n)
         g_free(n->colors.frame);
         g_free(n->stack_tag);
 
-        actions_free(n->actions);
+        g_hash_table_unref(n->actions);
         rawimage_free(n->raw_icon);
 
         notification_private_free(n->priv);
@@ -318,6 +306,8 @@ struct notification *notification_create(void)
 
         n->fullscreen = FS_SHOW;
 
+        n->actions = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+
         return n;
 }
 
@@ -377,7 +367,6 @@ void notification_init(struct notification *n)
 
         /* UPDATE derived fields */
         notification_extract_urls(n);
-        notification_dmenu_string(n);
         notification_format_message(n);
 }
 
@@ -508,23 +497,6 @@ static void notification_extract_urls(struct notification *n)
         g_free(urls_text);
 }
 
-static void notification_dmenu_string(struct notification *n)
-{
-        if (n->actions) {
-                g_clear_pointer(&n->actions->dmenu_str, g_free);
-                for (int i = 0; i < n->actions->count; i += 2) {
-                        char *human_readable = n->actions->actions[i + 1];
-                        string_replace_char('[', '(', human_readable); // kill square brackets
-                        string_replace_char(']', ')', human_readable);
-
-                        char *act_str = g_strdup_printf("#%s [%s]", human_readable, n->appname);
-                        if (act_str) {
-                                n->actions->dmenu_str = string_append(n->actions->dmenu_str, act_str, "\n");
-                                g_free(act_str);
-                        }
-                }
-        }
-}
 
 void notification_update_text_to_render(struct notification *n)
 {
@@ -536,14 +508,14 @@ void notification_update_text_to_render(struct notification *n)
 
         /* print dup_count and msg */
         if ((n->dup_count > 0 && !settings.hide_duplicate_count)
-            && (n->actions || n->urls) && settings.show_indicators) {
+            && (g_hash_table_size(n->actions) || n->urls) && settings.show_indicators) {
                 buf = g_strdup_printf("(%d%s%s) %s",
                                       n->dup_count,
-                                      n->actions ? "A" : "",
+                                      g_hash_table_size(n->actions) ? "A" : "",
                                       n->urls ? "U" : "", msg);
-        } else if ((n->actions || n->urls) && settings.show_indicators) {
+        } else if ((g_hash_table_size(n->actions) || n->urls) && settings.show_indicators) {
                 buf = g_strdup_printf("(%s%s) %s",
-                                      n->actions ? "A" : "",
+                                      g_hash_table_size(n->actions) ? "A" : "",
                                       n->urls ? "U" : "", msg);
         } else if (n->dup_count > 0 && !settings.hide_duplicate_count) {
                 buf = g_strdup_printf("(%d) %s", n->dup_count, msg);
@@ -584,16 +556,16 @@ void notification_update_text_to_render(struct notification *n)
 /* see notification.h */
 void notification_do_action(const struct notification *n)
 {
-        if (n->actions) {
-                if (n->actions->count == 2) {
-                        signal_action_invoked(n, n->actions->actions[0]);
+        if (g_hash_table_size(n->actions)) {
+                if (g_hash_table_contains(n->actions, "default")) {
+                        signal_action_invoked(n, "default");
                         return;
                 }
-                for (int i = 0; i < n->actions->count; i += 2) {
-                        if (STR_EQ(n->actions->actions[i], "default")) {
-                                signal_action_invoked(n, n->actions->actions[i]);
-                                return;
-                        }
+                if (g_hash_table_size(n->actions) == 1) {
+                        GList *keys = g_hash_table_get_keys(n->actions);
+                        signal_action_invoked(n, keys->data);
+                        g_list_free(keys);
+                        return;
                 }
                 context_menu();
 

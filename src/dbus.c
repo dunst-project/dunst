@@ -145,7 +145,6 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
 
         struct notification *n = notification_create();
 
-        n->actions = g_malloc0(sizeof(struct actions));
         n->dbus_client = g_strdup(sender);
         n->dbus_valid = true;
 
@@ -178,8 +177,15 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
                                         n->body = g_variant_dup_string(content, NULL);
                                 break;
                         case 5:
-                                if (g_variant_is_of_type(content, G_VARIANT_TYPE_STRING_ARRAY))
-                                        n->actions->actions = g_variant_dup_strv(content, &(n->actions->count));
+                                if (g_variant_is_of_type(content, G_VARIANT_TYPE_STRING_ARRAY)) {
+                                        gsize amount;
+                                        const gchar **out = g_variant_get_strv(content, &amount);
+
+                                        for(gsize i = 0; i+1 < amount; i+=2)
+                                                g_hash_table_insert(n->actions, g_strdup(out[i]), g_strdup(out[i+1]));
+
+                                        g_free(out);
+                                }
                                 break;
                         case 6:
                                 if (g_variant_is_of_type(content, G_VARIANT_TYPE_DICTIONARY)) {
@@ -282,9 +288,6 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
 
                 g_variant_iter_free(iter);
         }
-
-        if (n->actions->count < 1)
-                g_clear_pointer(&n->actions, actions_free);
 
         notification_init(n);
         return n;
