@@ -192,19 +192,19 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
 
                                         dict_value = g_variant_lookup_value(content, "fgcolor", G_VARIANT_TYPE_STRING);
                                         if (dict_value) {
-                                                n->colors[ColFG] = g_variant_dup_string(dict_value, NULL);
+                                                n->colors.fg = g_variant_dup_string(dict_value, NULL);
                                                 g_variant_unref(dict_value);
                                         }
 
                                         dict_value = g_variant_lookup_value(content, "bgcolor", G_VARIANT_TYPE_STRING);
                                         if (dict_value) {
-                                                n->colors[ColBG] = g_variant_dup_string(dict_value, NULL);
+                                                n->colors.bg = g_variant_dup_string(dict_value, NULL);
                                                 g_variant_unref(dict_value);
                                         }
 
                                         dict_value = g_variant_lookup_value(content, "frcolor", G_VARIANT_TYPE_STRING);
                                         if (dict_value) {
-                                                n->colors[ColFrame] = g_variant_dup_string(dict_value, NULL);
+                                                n->colors.frame = g_variant_dup_string(dict_value, NULL);
                                                 g_variant_unref(dict_value);
                                         }
 

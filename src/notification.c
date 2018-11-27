@@ -22,7 +22,6 @@
 #include "rules.h"
 #include "settings.h"
 #include "utils.h"
-#include "x11/x.h"
 
 static void notification_extract_urls(struct notification *n);
 static void notification_format_message(struct notification *n);
@@ -61,9 +60,9 @@ void notification_print(const struct notification *n)
         printf("\turgency: %s\n", notification_urgency_to_string(n->urgency));
         printf("\ttransient: %d\n", n->transient);
         printf("\tformatted: '%s'\n", n->msg);
-        printf("\tfg: %s\n", n->colors[ColFG]);
-        printf("\tbg: %s\n", n->colors[ColBG]);
-        printf("\tframe: %s\n", n->colors[ColFrame]);
+        printf("\tfg: %s\n", n->colors.fg);
+        printf("\tbg: %s\n", n->colors.bg);
+        printf("\tframe: %s\n", n->colors.frame);
         printf("\tfullscreen: %s\n", enum_to_string_fullscreen(n->fullscreen));
         printf("\tprogress: %d\n", n->progress);
         printf("\tstack_tag: %s\n", (n->stack_tag ? n->stack_tag : ""));
@@ -249,9 +248,9 @@ void notification_unref(struct notification *n)
         g_free(n->category);
         g_free(n->text_to_render);
         g_free(n->urls);
-        g_free(n->colors[ColFG]);
-        g_free(n->colors[ColBG]);
-        g_free(n->colors[ColFrame]);
+        g_free(n->colors.fg);
+        g_free(n->colors.bg);
+        g_free(n->colors.frame);
         g_free(n->stack_tag);
 
         actions_free(n->actions);
@@ -348,12 +347,26 @@ void notification_init(struct notification *n)
                 n->icon = g_strdup(settings.icons[n->urgency]);
 
         /* Color hints */
-        if (!n->colors[ColFG])
-                n->colors[ColFG] = g_strdup(xctx.colors[ColFG][n->urgency]);
-        if (!n->colors[ColBG])
-                n->colors[ColBG] = g_strdup(xctx.colors[ColBG][n->urgency]);
-        if (!n->colors[ColFrame])
-                n->colors[ColFrame] = g_strdup(xctx.colors[ColFrame][n->urgency]);
+        struct notification_colors defcolors;
+        switch (n->urgency) {
+                case URG_LOW:
+                        defcolors = settings.colors_low;
+                        break;
+                case URG_NORM:
+                        defcolors = settings.colors_norm;
+                        break;
+                case URG_CRIT:
+                        defcolors = settings.colors_crit;
+                        break;
+                default:
+                        g_error("Unhandled urgency type: %d", n->urgency);
+        }
+        if (!n->colors.fg)
+                n->colors.fg = g_strdup(defcolors.fg);
+        if (!n->colors.bg)
+                n->colors.bg = g_strdup(defcolors.bg);
+        if (!n->colors.frame)
+                n->colors.frame = g_strdup(defcolors.frame);
 
         /* Sanitize misc hints */
         if (n->progress < 0)

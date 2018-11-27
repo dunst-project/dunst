@@ -5,7 +5,7 @@
 #include <glib.h>
 #include <stdbool.h>
 
-#include "settings.h"
+#include "markup.h"
 
 #define DUNST_NOTIF_MAX_CHARS 5000
 
@@ -44,6 +44,12 @@ struct actions {
 
 typedef struct _notification_private NotificationPrivate;
 
+struct notification_colors {
+        char *frame;
+        char *bg;
+        char *fg;
+};
+
 struct notification {
         NotificationPrivate *priv;
         int id;
@@ -68,7 +74,7 @@ struct notification {
         enum markup_mode markup;
         const char *format;
         const char *script;
-        char *colors[3];
+        struct notification_colors colors;
 
         char *stack_tag;    /**< stack notifications by tag */
 

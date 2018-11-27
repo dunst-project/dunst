@@ -464,27 +464,6 @@ void x_setup(void)
         x_shortcut_grab(&settings.context_ks);
         x_shortcut_ungrab(&settings.context_ks);
 
-        xctx.colors[ColFG][URG_LOW] = settings.lowfgcolor;
-        xctx.colors[ColFG][URG_NORM] = settings.normfgcolor;
-        xctx.colors[ColFG][URG_CRIT] = settings.critfgcolor;
-
-        xctx.colors[ColBG][URG_LOW] = settings.lowbgcolor;
-        xctx.colors[ColBG][URG_NORM] = settings.normbgcolor;
-        xctx.colors[ColBG][URG_CRIT] = settings.critbgcolor;
-
-        if (settings.lowframecolor)
-                xctx.colors[ColFrame][URG_LOW] = settings.lowframecolor;
-        else
-                xctx.colors[ColFrame][URG_LOW] = settings.frame_color;
-        if (settings.normframecolor)
-                xctx.colors[ColFrame][URG_NORM] = settings.normframecolor;
-        else
-                xctx.colors[ColFrame][URG_NORM] = settings.frame_color;
-        if (settings.critframecolor)
-                xctx.colors[ColFrame][URG_CRIT] = settings.critframecolor;
-        else
-                xctx.colors[ColFrame][URG_CRIT] = settings.frame_color;
-
         xctx.screensaver_info = XScreenSaverAllocInfo();
 
         init_screens();

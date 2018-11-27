@@ -10,11 +10,6 @@
 
 #include "notification.h"
 
-#define ColLast 3
-#define ColFrame 2
-#define ColFG 1
-#define ColBG 0
-
 //!< A structure to describe dunst's global window status
 struct dunst_status {
         bool fullscreen; //!< a fullscreen window is currently focused
@@ -37,8 +32,6 @@ void dunst_status(const enum dunst_status_field field,
                   bool value);
 
 struct dunst_status dunst_status_get(void);
-
-extern const char *colors[3][3];
 
 void wake_up(void);
 

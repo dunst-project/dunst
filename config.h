@@ -4,12 +4,12 @@ struct settings defaults = {
 
 .font = "-*-terminus-medium-r-*-*-16-*-*-*-*-*-*-*",
 .markup = MARKUP_NO,
-.normbgcolor = "#1793D1",
-.normfgcolor = "#DDDDDD",
-.critbgcolor = "#ffaaaa",
-.critfgcolor = "#000000",
-.lowbgcolor = "#aaaaff",
-.lowfgcolor = "#000000",
+.colors_norm.bg = "#1793D1",
+.colors_norm.fg = "#DDDDDD",
+.colors_crit.bg = "#ffaaaa",
+.colors_crit.fg = "#000000",
+.colors_low.bg = "#aaaaff",
+.colors_low.fg = "#000000",
 .format = "%s %b",         /* default format */
 
 .timeouts = { S2US(10), S2US(10), S2US(0) }, /* low, normal, critical */
