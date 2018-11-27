@@ -16,6 +16,7 @@
 #include "markup.h"
 #include "notification.h"
 #include "queues.h"
+#include "settings.h"
 
 struct color {
         double r;
