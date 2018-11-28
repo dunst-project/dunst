@@ -19,6 +19,7 @@ SUITE_EXTERN(suite_queues);
 SUITE_EXTERN(suite_dunst);
 SUITE_EXTERN(suite_log);
 SUITE_EXTERN(suite_menu);
+SUITE_EXTERN(suite_dbus);
 
 GREATEST_MAIN_DEFS();
 
@@ -44,6 +45,7 @@ int main(int argc, char *argv[]) {
         RUN_SUITE(suite_dunst);
         RUN_SUITE(suite_log);
         RUN_SUITE(suite_menu);
+        RUN_SUITE(suite_dbus);
         GREATEST_MAIN_END();
 
         base = NULL;
