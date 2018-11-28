@@ -168,6 +168,38 @@ TEST test_basic_notification(void)
         dbus_notification_free(n);
         PASS();
 }
+
+TEST test_server_caps(enum markup_mode markup)
+{
+        GVariant *reply;
+        GVariant *caps = NULL;
+        const char **capsarray;
+
+        settings.markup = markup;
+
+        reply = dbus_invoke("GetCapabilities", NULL);
+
+        caps = g_variant_get_child_value(reply, 0);
+        capsarray = g_variant_get_strv(caps, NULL);
+
+        ASSERT(capsarray);
+        ASSERT(g_strv_contains(capsarray, "actions"));
+        ASSERT(g_strv_contains(capsarray, "body"));
+        ASSERT(g_strv_contains(capsarray, "body-hyperlinks"));
+        ASSERT(g_strv_contains(capsarray, "x-dunst-stack-tag"));
+
+        if (settings.markup != MARKUP_NO)
+                ASSERT(g_strv_contains(capsarray, "body-markup"));
+        else
+                ASSERT_FALSE(g_strv_contains(capsarray, "body-markup"));
+
+        g_free(capsarray);
+        g_variant_unref(caps);
+        g_variant_unref(reply);
+        PASS();
+}
+
+
 // TESTS END
 
 GMainLoop *loop;
@@ -178,6 +210,9 @@ gpointer run_threaded_tests(gpointer data)
         RUN_TEST(test_dbus_init);
 
         RUN_TEST(test_basic_notification);
+        RUN_TESTp(test_server_caps, MARKUP_FULL);
+        RUN_TESTp(test_server_caps, MARKUP_STRIP);
+        RUN_TESTp(test_server_caps, MARKUP_NO);
 
         RUN_TEST(test_dbus_teardown);
         g_main_loop_quit(loop);
