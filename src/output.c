@@ -24,8 +24,19 @@ const struct output output_x11 = {
         have_fullscreen_window
 };
 
+struct output selected_out = {0};
+
+void output_set(struct output out)
+{
+        selected_out = out;
+}
+
 const struct output* output_create(void)
 {
-        return &output_x11;
+        if (selected_out.init != NULL) { // Hacky way to check if there are actual pointers assigned
+                return &selected_out;
+        } else {
+                return &output_x11;
+        }
 }
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
