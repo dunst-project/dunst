@@ -130,11 +130,11 @@ TEST test_dbus_init(void)
 {
         owner_id = dbus_init();
         uint waiting = 0;
-        while (!dbus_conn && waiting < 20) {
+        while (!dbus_conn && waiting < 2000) {
                 usleep(500);
                 waiting++;
         }
-        ASSERTm("After 10ms, there is still no dbus connection available.",
+        ASSERTm("After 1s, there is still no dbus connection available.",
                 dbus_conn);
         PASS();
 }
