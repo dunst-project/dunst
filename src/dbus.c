@@ -394,9 +394,9 @@ static const GDBusInterfaceVTable interface_vtable = {
         handle_method_call
 };
 
-static void on_bus_acquired(GDBusConnection *connection,
-                            const gchar *name,
-                            gpointer user_data)
+static void dbus_cb_bus_acquired(GDBusConnection *connection,
+                                 const gchar *name,
+                                 gpointer user_data)
 {
         guint registration_id;
 
@@ -415,9 +415,9 @@ static void on_bus_acquired(GDBusConnection *connection,
         }
 }
 
-static void on_name_acquired(GDBusConnection *connection,
-                             const gchar *name,
-                             gpointer user_data)
+static void dbus_cb_name_acquired(GDBusConnection *connection,
+                                  const gchar *name,
+                                  gpointer user_data)
 {
         dbus_conn = connection;
 }
@@ -533,9 +533,9 @@ static bool dbus_get_fdn_daemon_info(GDBusConnection  *connection,
 }
 
 
-static void on_name_lost(GDBusConnection *connection,
-                         const gchar *name,
-                         gpointer user_data)
+static void dbus_cb_name_lost(GDBusConnection *connection,
+                              const gchar *name,
+                              gpointer user_data)
 {
         if (connection) {
                 char *name;
@@ -598,9 +598,9 @@ int dbus_init(void)
         owner_id = g_bus_own_name(G_BUS_TYPE_SESSION,
                                   FDN_NAME,
                                   G_BUS_NAME_OWNER_FLAGS_NONE,
-                                  on_bus_acquired,
-                                  on_name_acquired,
-                                  on_name_lost,
+                                  dbus_cb_bus_acquired,
+                                  dbus_cb_name_acquired,
+                                  dbus_cb_name_lost,
                                   NULL,
                                   NULL);
 
