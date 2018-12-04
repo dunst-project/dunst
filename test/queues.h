@@ -50,5 +50,8 @@ static inline struct notification *test_notification(const char *name, gint64 ti
         return n;
 }
 
+/* Retrieve a notification by its id. Solely for debugging purposes */
+struct notification *queues_debug_find_notification_by_id(int id);
+
 #endif
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

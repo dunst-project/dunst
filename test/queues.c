@@ -6,6 +6,23 @@
 #include "greatest.h"
 #include "queues.h"
 
+struct notification *queues_debug_find_notification_by_id(int id)
+{
+        assert(id > 0);
+
+        GQueue *allqueues[] = { displayed, waiting, history };
+        for (int i = 0; i < sizeof(allqueues)/sizeof(GQueue*); i++) {
+                for (GList *iter = g_queue_peek_head_link(allqueues[i]); iter;
+                     iter = iter->next) {
+                        struct notification *cur = iter->data;
+                        if (cur->id == id)
+                                return cur;
+                }
+        }
+
+        return NULL;
+}
+
 TEST test_queue_length(void)
 {
         queues_init();
