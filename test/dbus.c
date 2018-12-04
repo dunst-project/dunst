@@ -158,6 +158,19 @@ TEST test_invalid_notification(void)
         PASS();
 }
 
+TEST test_empty_notification(void)
+{
+        struct dbus_notification *n = dbus_notification_new();
+        gsize len = queues_length_waiting();
+
+        guint id;
+        ASSERT(dbus_notification_fire(n, &id));
+        ASSERT(id != 0);
+
+        ASSERT_EQ(queues_length_waiting(), len+1);
+        dbus_notification_free(n);
+        PASS();
+}
 
 TEST test_basic_notification(void)
 {
@@ -265,6 +278,7 @@ gpointer run_threaded_tests(gpointer data)
 {
         RUN_TEST(test_dbus_init);
 
+        RUN_TEST(test_empty_notification);
         RUN_TEST(test_basic_notification);
         RUN_TEST(test_invalid_notification);
         RUN_TEST(test_dbus_notify_colors);
