@@ -145,6 +145,18 @@ TEST test_dbus_teardown(void)
         PASS();
 }
 
+TEST test_invalid_notification(void)
+{
+        GVariant *faulty = g_variant_new_boolean(true);
+
+        ASSERT(NULL == dbus_message_to_notification(":123", faulty));
+        ASSERT(NULL == dbus_invoke("Notify", faulty));
+
+        g_variant_unref(faulty);
+        PASS();
+}
+
+
 TEST test_basic_notification(void)
 {
         struct dbus_notification *n = dbus_notification_new();
@@ -210,6 +222,7 @@ gpointer run_threaded_tests(gpointer data)
         RUN_TEST(test_dbus_init);
 
         RUN_TEST(test_basic_notification);
+        RUN_TEST(test_invalid_notification);
         RUN_TESTp(test_server_caps, MARKUP_FULL);
         RUN_TESTp(test_server_caps, MARKUP_STRIP);
         RUN_TESTp(test_server_caps, MARKUP_NO);
