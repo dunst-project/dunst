@@ -71,23 +71,19 @@ static const char *stack_tag_hints[] = {
         "x-canonical-private-synchronous",
         "x-dunst-stack-tag"
 };
+#define DBUS_METHOD(name) static void dbus_cb_##name( \
+                        GDBusConnection *connection, \
+                        const gchar *sender, \
+                        GVariant *parameters, \
+                        GDBusMethodInvocation *invocation)
 
-static void on_get_capabilities(GDBusConnection *connection,
-                                const gchar *sender,
-                                const GVariant *parameters,
-                                GDBusMethodInvocation *invocation);
-static void on_notify(GDBusConnection *connection,
-                      const gchar *sender,
-                      GVariant *parameters,
-                      GDBusMethodInvocation *invocation);
-static void on_close_notification(GDBusConnection *connection,
-                                  const gchar *sender,
-                                  GVariant *parameters,
-                                  GDBusMethodInvocation *invocation);
-static void on_get_server_information(GDBusConnection *connection,
-                                      const gchar *sender,
-                                      const GVariant *parameters,
-                                      GDBusMethodInvocation *invocation);
+#define CALL_METHOD(name) dbus_cb_##name(connection, sender, parameters, invocation)
+
+DBUS_METHOD(Notify);
+DBUS_METHOD(CloseNotification);
+DBUS_METHOD(GetCapabilities);
+DBUS_METHOD(GetServerInformation);
+
 static struct raw_image *get_raw_image_from_data_hint(GVariant *icon_data);
 
 void handle_method_call(GDBusConnection *connection,
@@ -100,13 +96,13 @@ void handle_method_call(GDBusConnection *connection,
                         gpointer user_data)
 {
         if (STR_EQ(method_name, "GetCapabilities")) {
-                on_get_capabilities(connection, sender, parameters, invocation);
+                CALL_METHOD(GetCapabilities);
         } else if (STR_EQ(method_name, "Notify")) {
-                on_notify(connection, sender, parameters, invocation);
+                CALL_METHOD(Notify);
         } else if (STR_EQ(method_name, "CloseNotification")) {
-                on_close_notification(connection, sender, parameters, invocation);
+                CALL_METHOD(CloseNotification);
         } else if (STR_EQ(method_name, "GetServerInformation")) {
-                on_get_server_information(connection, sender, parameters, invocation);
+                CALL_METHOD(GetServerInformation);
         } else {
                 LOG_M("Unknown method name: '%s' (sender: '%s').",
                       method_name,
@@ -114,10 +110,11 @@ void handle_method_call(GDBusConnection *connection,
         }
 }
 
-static void on_get_capabilities(GDBusConnection *connection,
-                                const gchar *sender,
-                                const GVariant *parameters,
-                                GDBusMethodInvocation *invocation)
+static void dbus_cb_GetCapabilities(
+                GDBusConnection *connection,
+                const gchar *sender,
+                GVariant *parameters,
+                GDBusMethodInvocation *invocation)
 {
         GVariantBuilder *builder;
         GVariant *value;
@@ -273,10 +270,11 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
         return n;
 }
 
-static void on_notify(GDBusConnection *connection,
-                      const gchar *sender,
-                      GVariant *parameters,
-                      GDBusMethodInvocation *invocation)
+static void dbus_cb_Notify(
+                GDBusConnection *connection,
+                const gchar *sender,
+                GVariant *parameters,
+                GDBusMethodInvocation *invocation)
 {
         struct notification *n = dbus_message_to_notification(sender, parameters);
         if (!n) {
@@ -301,10 +299,11 @@ static void on_notify(GDBusConnection *connection,
         wake_up();
 }
 
-static void on_close_notification(GDBusConnection *connection,
-                                  const gchar *sender,
-                                  GVariant *parameters,
-                                  GDBusMethodInvocation *invocation)
+static void dbus_cb_CloseNotification(
+                GDBusConnection *connection,
+                const gchar *sender,
+                GVariant *parameters,
+                GDBusMethodInvocation *invocation)
 {
         guint32 id;
         g_variant_get(parameters, "(u)", &id);
@@ -314,10 +313,11 @@ static void on_close_notification(GDBusConnection *connection,
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
 }
 
-static void on_get_server_information(GDBusConnection *connection,
-                                      const gchar *sender,
-                                      const GVariant *parameters,
-                                      GDBusMethodInvocation *invocation)
+static void dbus_cb_GetServerInformation(
+                GDBusConnection *connection,
+                const gchar *sender,
+                GVariant *parameters,
+                GDBusMethodInvocation *invocation)
 {
         GVariant *value;
 
