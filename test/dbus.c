@@ -268,6 +268,17 @@ TEST test_server_caps(enum markup_mode markup)
         PASS();
 }
 
+TEST assert_methodlists_sorted(void)
+{
+        for (size_t i = 0; i+1 < G_N_ELEMENTS(methods_fdn); i++) {
+                ASSERT(0 > strcmp(
+                                methods_fdn[i].method_name,
+                                methods_fdn[i+1].method_name));
+        }
+
+        PASS();
+}
+
 
 // TESTS END
 
@@ -285,6 +296,8 @@ gpointer run_threaded_tests(gpointer data)
         RUN_TESTp(test_server_caps, MARKUP_FULL);
         RUN_TESTp(test_server_caps, MARKUP_STRIP);
         RUN_TESTp(test_server_caps, MARKUP_NO);
+
+        RUN_TEST(assert_methodlists_sorted);
 
         RUN_TEST(test_dbus_teardown);
         g_main_loop_quit(loop);

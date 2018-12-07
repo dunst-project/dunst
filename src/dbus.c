@@ -71,20 +71,42 @@ static const char *stack_tag_hints[] = {
         "x-canonical-private-synchronous",
         "x-dunst-stack-tag"
 };
+
+struct dbus_method {
+  const char *method_name;
+  void (*method)  (GDBusConnection *connection,
+                   const gchar *sender,
+                   GVariant *parameters,
+                   GDBusMethodInvocation *invocation);
+};
+
 #define DBUS_METHOD(name) static void dbus_cb_##name( \
                         GDBusConnection *connection, \
                         const gchar *sender, \
                         GVariant *parameters, \
                         GDBusMethodInvocation *invocation)
 
-#define CALL_METHOD(name) dbus_cb_##name(connection, sender, parameters, invocation)
+static struct raw_image *get_raw_image_from_data_hint(GVariant *icon_data);
+
+int cmp_methods(const void *vkey, const void *velem)
+{
+        const char *key = (const char*)vkey;
+        const struct dbus_method *m = (const struct dbus_method*)velem;
+
+        return strcmp(key, m->method_name);
+}
 
 DBUS_METHOD(Notify);
 DBUS_METHOD(CloseNotification);
 DBUS_METHOD(GetCapabilities);
 DBUS_METHOD(GetServerInformation);
 
-static struct raw_image *get_raw_image_from_data_hint(GVariant *icon_data);
+static struct dbus_method methods_fdn[] = {
+        {"CloseNotification",     dbus_cb_CloseNotification},
+        {"GetCapabilities",       dbus_cb_GetCapabilities},
+        {"GetServerInformation",  dbus_cb_GetServerInformation},
+        {"Notify",                dbus_cb_Notify},
+};
 
 void handle_method_call(GDBusConnection *connection,
                         const gchar *sender,
@@ -95,14 +117,15 @@ void handle_method_call(GDBusConnection *connection,
                         GDBusMethodInvocation *invocation,
                         gpointer user_data)
 {
-        if (STR_EQ(method_name, "GetCapabilities")) {
-                CALL_METHOD(GetCapabilities);
-        } else if (STR_EQ(method_name, "Notify")) {
-                CALL_METHOD(Notify);
-        } else if (STR_EQ(method_name, "CloseNotification")) {
-                CALL_METHOD(CloseNotification);
-        } else if (STR_EQ(method_name, "GetServerInformation")) {
-                CALL_METHOD(GetServerInformation);
+        struct dbus_method *m = bsearch(
+                        method_name,
+                        &methods_fdn,
+                        G_N_ELEMENTS(methods_fdn),
+                        sizeof(struct dbus_method),
+                        cmp_methods);
+
+        if (m) {
+                m->method(connection, sender, parameters, invocation);
         } else {
                 LOG_M("Unknown method name: '%s' (sender: '%s').",
                       method_name,
