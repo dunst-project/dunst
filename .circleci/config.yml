@@ -2,7 +2,7 @@ version: 2.1
 jobs:
   misc-doxygen:
     docker:
-      - image: bebehei/dunst:misc-doxygen-dev
+      - image: dunst/ci:misc-doxygen
     environment:
       SYSTEMD: 0
       SERVICEDIR_DBUS: /tmp/none
@@ -19,7 +19,7 @@ jobs:
       distro:
         type: string
     docker:
-      - image: bebehei/dunst:<<parameters.distro>>-dev
+      - image: dunst/ci:<<parameters.distro>>
     steps:
       - checkout
       - run: make CC=clang -j all dunstify test/test
