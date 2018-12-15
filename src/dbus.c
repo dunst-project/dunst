@@ -451,7 +451,7 @@ static void dbus_cb_name_acquired(GDBusConnection *connection,
  * If name or vendor specified, the name and vendor
  * will get additionally get via the FDN GetServerInformation method
  *
- * @param connection The dbus connection
+ * @param connection The DBus connection
  * @param pid The place to report the PID to
  * @param name The place to report the name to, if not required set to NULL
  * @param vendor The place to report the vendor to, if not required set to NULL
@@ -459,9 +459,9 @@ static void dbus_cb_name_acquired(GDBusConnection *connection,
  * @returns `true` on success, otherwise `false`
  */
 static bool dbus_get_fdn_daemon_info(GDBusConnection  *connection,
-                                    int   *pid,
-                                    char **name,
-                                    char **vendor)
+                                     guint   *pid,
+                                     char   **name,
+                                     char   **vendor)
 {
         g_return_val_if_fail(pid, false);
         g_return_val_if_fail(connection, false);
@@ -542,17 +542,19 @@ static bool dbus_get_fdn_daemon_info(GDBusConnection  *connection,
                 return false;
         }
 
-        g_variant_get(pidinfo, "(u)", &pid);
-
         g_object_unref(proxy_fdn);
         g_object_unref(proxy_dbus);
         g_free(owner);
         if (daemoninfo)
                 g_variant_unref(daemoninfo);
-        if (pidinfo)
-                g_variant_unref(pidinfo);
 
-        return true;
+        if (pidinfo) {
+                g_variant_get(pidinfo, "(u)", &pid);
+                g_variant_unref(pidinfo);
+                return true;
+        } else {
+                return false;
+        }
 }
 
 
@@ -562,7 +564,7 @@ static void dbus_cb_name_lost(GDBusConnection *connection,
 {
         if (connection) {
                 char *name;
-                int pid;
+                unsigned int pid;
                 if (dbus_get_fdn_daemon_info(connection, &pid, &name, NULL)) {
                         DIE("Cannot acquire '"FDN_NAME"': "
                             "Name is acquired by '%s' with PID '%d'.", name, pid);

@@ -362,6 +362,29 @@ TEST test_close_and_signal(void)
         PASS();
 }
 
+TEST test_get_fdn_daemon_info(void)
+{
+        unsigned int pid_is;
+        pid_t pid_should;
+        char *name, *vendor;
+        GDBusConnection *conn;
+
+        pid_should = getpid();
+        conn = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, NULL);
+
+        ASSERT(dbus_get_fdn_daemon_info(conn, &pid_is, &name, &vendor));
+
+        ASSERT_EQ_FMT(pid_should, pid_is, "%d");
+        ASSERT_STR_EQ("dunst", name);
+        ASSERT_STR_EQ("knopwob", vendor);
+
+        g_free(name);
+        g_free(vendor);
+
+        g_object_unref(conn);
+        PASS();
+}
+
 TEST assert_methodlists_sorted(void)
 {
         for (size_t i = 0; i+1 < G_N_ELEMENTS(methods_fdn); i++) {
@@ -382,6 +405,8 @@ GThread *thread_tests;
 gpointer run_threaded_tests(gpointer data)
 {
         RUN_TEST(test_dbus_init);
+
+        RUN_TEST(test_get_fdn_daemon_info);
 
         RUN_TEST(test_empty_notification);
         RUN_TEST(test_basic_notification);
