@@ -35,5 +35,3 @@ matrix:
       after_success:
         - coveralls
     - compiler: clang
-      after_success:
-        - coveralls --gcov llvm-cov --gcov-options gcov
