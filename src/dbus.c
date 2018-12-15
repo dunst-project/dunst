@@ -549,7 +549,7 @@ static bool dbus_get_fdn_daemon_info(GDBusConnection  *connection,
                 g_variant_unref(daemoninfo);
 
         if (pidinfo) {
-                g_variant_get(pidinfo, "(u)", &pid);
+                g_variant_get(pidinfo, "(u)", pid);
                 g_variant_unref(pidinfo);
                 return true;
         } else {
