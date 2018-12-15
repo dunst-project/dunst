@@ -343,6 +343,51 @@ TEST test_hint_transient(void)
         PASS();
 }
 
+TEST test_hint_progress(void)
+{
+        static char msg[50];
+        struct notification *n;
+        struct dbus_notification *n_dbus;
+
+        gsize len = queues_length_waiting();
+
+        n_dbus = dbus_notification_new();
+        n_dbus->app_name = "dunstteststack";
+        n_dbus->app_icon = "NONE";
+        n_dbus->summary = "test_hint_progress";
+        n_dbus->body = "Summary of it";
+
+        int values[] = { 99, 12, 123, 123, -1, -1 };
+        GVariant *variants[] = {
+                g_variant_new_int32(99),
+                g_variant_new_uint32(12),
+                g_variant_new_int32(123), // allow higher than 100
+                g_variant_new_uint32(123),
+                g_variant_new_int32(-192),
+                g_variant_new_uint32(-192),
+        };
+        for (size_t i = 0; i < G_N_ELEMENTS(variants); i++) {
+                g_hash_table_insert(n_dbus->hints,
+                                    g_strdup("value"),
+                                    g_variant_ref_sink(variants[i]));
+
+                guint id;
+                ASSERT(dbus_notification_fire(n_dbus, &id));
+                ASSERT(id != 0);
+
+                ASSERT_EQ(queues_length_waiting(), len+1);
+
+                n = queues_debug_find_notification_by_id(id);
+
+                snprintf(msg, sizeof(msg), "In round %ld", i);
+                ASSERT_EQm(msg, values[i], n->progress);
+        }
+
+        dbus_notification_free(n_dbus);
+
+        PASS();
+}
+
 TEST test_server_caps(enum markup_mode markup)
 {
         GVariant *reply;
@@ -458,6 +503,7 @@ gpointer run_threaded_tests(gpointer data)
         RUN_TEST(test_basic_notification);
         RUN_TEST(test_invalid_notification);
         RUN_TEST(test_hint_transient);
+        RUN_TEST(test_hint_progress);
         RUN_TEST(test_dbus_notify_colors);
         RUN_TESTp(test_server_caps, MARKUP_FULL);
         RUN_TESTp(test_server_caps, MARKUP_STRIP);
