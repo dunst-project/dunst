@@ -488,7 +488,7 @@ static bool dbus_get_fdn_daemon_info(GDBusConnection  *connection,
                 return false;
         }
 
-        GVariant *daemoninfo;
+        GVariant *daemoninfo = NULL;
         if (name || vendor) {
                 daemoninfo = g_dbus_proxy_call_sync(
                                      proxy_fdn,
