@@ -421,6 +421,39 @@ TEST test_hint_icons(void)
         PASS();
 }
 
+TEST test_hint_category(void)
+{
+        struct notification *n;
+        struct dbus_notification *n_dbus;
+        const char *category = "VOLUME";
+
+        gsize len = queues_length_waiting();
+
+        n_dbus = dbus_notification_new();
+        n_dbus->app_name = "dunstteststack";
+        n_dbus->app_icon = "NONE";
+        n_dbus->summary = "test_hint_category";
+        n_dbus->body = "Summary of it";
+
+        g_hash_table_insert(n_dbus->hints,
+                            g_strdup("category"),
+                            g_variant_ref_sink(g_variant_new_string(category)));
+
+        guint id;
+        ASSERT(dbus_notification_fire(n_dbus, &id));
+        ASSERT(id != 0);
+
+        ASSERT_EQ(queues_length_waiting(), len+1);
+
+        n = queues_debug_find_notification_by_id(id);
+
+        ASSERT_STR_EQ(category, n->category);
+
+        dbus_notification_free(n_dbus);
+
+        PASS();
+}
+
 TEST test_server_caps(enum markup_mode markup)
 {
         GVariant *reply;
@@ -538,6 +571,7 @@ gpointer run_threaded_tests(gpointer data)
         RUN_TEST(test_hint_transient);
         RUN_TEST(test_hint_progress);
         RUN_TEST(test_hint_icons);
+        RUN_TEST(test_hint_category);
         RUN_TEST(test_dbus_notify_colors);
         RUN_TESTp(test_server_caps, MARKUP_FULL);
         RUN_TESTp(test_server_caps, MARKUP_STRIP);
