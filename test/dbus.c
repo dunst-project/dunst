@@ -297,6 +297,52 @@ TEST test_dbus_notify_colors(void)
         PASS();
 }
 
+TEST test_hint_transient(void)
+{
+        static char msg[50];
+        struct notification *n;
+        struct dbus_notification *n_dbus;
+
+        gsize len = queues_length_waiting();
+
+        n_dbus = dbus_notification_new();
+        n_dbus->app_name = "dunstteststack";
+        n_dbus->app_icon = "NONE";
+        n_dbus->summary = "test_hint_transient";
+        n_dbus->body = "Summary of it";
+
+        bool values[] = { true, true, true, false, false, false, false };
+        GVariant *variants[] = {
+                g_variant_new_boolean(true),
+                g_variant_new_int32(1),
+                g_variant_new_uint32(1),
+                g_variant_new_boolean(false),
+                g_variant_new_int32(0),
+                g_variant_new_uint32(0),
+                g_variant_new_int32(-1),
+        };
+        for (size_t i = 0; i < G_N_ELEMENTS(variants); i++) {
+                g_hash_table_insert(n_dbus->hints,
+                                    g_strdup("transient"),
+                                    g_variant_ref_sink(variants[i]));
+
+                guint id;
+                ASSERT(dbus_notification_fire(n_dbus, &id));
+                ASSERT(id != 0);
+
+                ASSERT_EQ(queues_length_waiting(), len+1);
+
+                n = queues_debug_find_notification_by_id(id);
+
+                snprintf(msg, sizeof(msg), "In round %ld", i);
+                ASSERT_EQm(msg, values[i], n->transient);
+        }
+
+        dbus_notification_free(n_dbus);
+
+        PASS();
+}
+
 TEST test_server_caps(enum markup_mode markup)
 {
         GVariant *reply;
@@ -411,6 +457,7 @@ gpointer run_threaded_tests(gpointer data)
         RUN_TEST(test_empty_notification);
         RUN_TEST(test_basic_notification);
         RUN_TEST(test_invalid_notification);
+        RUN_TEST(test_hint_transient);
         RUN_TEST(test_dbus_notify_colors);
         RUN_TESTp(test_server_caps, MARKUP_FULL);
         RUN_TESTp(test_server_caps, MARKUP_STRIP);
