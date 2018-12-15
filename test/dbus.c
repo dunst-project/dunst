@@ -159,6 +159,9 @@ bool dbus_notification_fire(struct dbus_notification *n, uint *id)
                 g_variant_builder_add(&b, "s", (char*)p_key);
                 g_variant_builder_add(&b, "s", (char*)p_value);
         }
+        // Add an invalid appendix to cover odd numbered action arrays
+        // Shouldn't interfere with normal testing
+        g_variant_builder_add(&b, "s", "invalid appendix");
         g_variant_builder_close(&b);
         g_variant_type_free(t);
 
