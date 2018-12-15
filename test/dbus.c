@@ -9,6 +9,65 @@
 
 void wake_up_void(void) {  }
 
+struct signal_closed {
+        guint32 id;
+        guint32 reason;
+        guint subscription_id;
+        GDBusConnection *conn;
+};
+
+void dbus_signal_cb_closed(GDBusConnection *connection,
+                 const gchar *sender_name,
+                 const gchar *object_path,
+                 const gchar *interface_name,
+                 const gchar *signal_name,
+                 GVariant *parameters,
+                 gpointer user_data)
+{
+        g_return_if_fail(user_data);
+
+        guint32 id;
+        guint32 reason;
+
+        struct signal_closed *sig = (struct signal_closed*) user_data;
+        g_variant_get(parameters, "(uu)", &id, &reason);
+
+        if (id == sig->id) {
+                sig->id = id;
+                sig->reason = reason;
+        }
+}
+
+void dbus_signal_subscribe_closed(struct signal_closed *closed)
+{
+        assert(closed);
+
+        closed->conn = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, NULL);
+        closed->subscription_id =
+                g_dbus_connection_signal_subscribe(
+                        closed->conn,
+                        FDN_NAME,
+                        FDN_IFAC,
+                        "NotificationClosed",
+                        FDN_PATH,
+                        NULL,
+                        G_DBUS_SIGNAL_FLAGS_NONE,
+                        dbus_signal_cb_closed,
+                        closed,
+                        NULL);
+}
+
+void dbus_signal_unsubscribe_closed(struct signal_closed *closed)
+{
+        assert(closed);
+
+        g_dbus_connection_signal_unsubscribe(closed->conn, closed->subscription_id);
+        g_object_unref(closed->conn);
+
+        closed->conn = NULL;
+        closed->subscription_id = -1;
+}
+
 GVariant *dbus_invoke(const char *method, GVariant *params)
 {
         GDBusConnection *connection_client;
@@ -268,6 +327,41 @@ TEST test_server_caps(enum markup_mode markup)
         PASS();
 }
 
+TEST test_close_and_signal(void)
+{
+        GVariant *data, *ret;
+        struct dbus_notification *n;
+        struct signal_closed sig = {0, REASON_MIN-1, -1};
+
+        dbus_signal_subscribe_closed(&sig);
+
+        n = dbus_notification_new();
+        n->app_name = "dunstteststack";
+        n->app_icon = "NONE2";
+        n->summary = "Headline for New";
+        n->body = "Text";
+
+        dbus_notification_fire(n, &sig.id);
+
+        data = g_variant_new("(u)", sig.id);
+        ret = dbus_invoke("CloseNotification", data);
+
+        ASSERT(ret);
+
+        uint waiting = 0;
+        while (sig.reason == REASON_MIN-1 && waiting < 2000) {
+                usleep(500);
+                waiting++;
+        }
+
+        ASSERT(sig.reason != REASON_MIN-1);
+
+        dbus_notification_free(n);
+        dbus_signal_unsubscribe_closed(&sig);
+        g_variant_unref(ret);
+        PASS();
+}
+
 TEST assert_methodlists_sorted(void)
 {
         for (size_t i = 0; i+1 < G_N_ELEMENTS(methods_fdn); i++) {
@@ -296,6 +390,7 @@ gpointer run_threaded_tests(gpointer data)
         RUN_TESTp(test_server_caps, MARKUP_FULL);
         RUN_TESTp(test_server_caps, MARKUP_STRIP);
         RUN_TESTp(test_server_caps, MARKUP_NO);
+        RUN_TEST(test_close_and_signal);
 
         RUN_TEST(assert_methodlists_sorted);
 
