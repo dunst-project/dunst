@@ -30,8 +30,7 @@ static const char *follow_mode_to_string(enum follow_mode f_mode)
 
 static enum follow_mode parse_follow_mode(const char *mode)
 {
-        if (!mode)
-                return FOLLOW_NONE;
+        ASSERT_OR_RET(mode, FOLLOW_NONE);
 
         if (STR_EQ(mode, "mouse"))
                 return FOLLOW_MOUSE;

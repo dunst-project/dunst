@@ -30,8 +30,7 @@ static const char *log_level_to_string(GLogLevelFlags level)
 /* see log.h */
 void log_set_level_from_string(const char *level)
 {
-        if (!level)
-                return;
+        ASSERT_OR_RET(level,);
 
         if (STR_CASEQ(level, "critical"))
                 log_level = G_LOG_LEVEL_CRITICAL;

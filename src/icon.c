@@ -147,8 +147,7 @@ cairo_surface_t *icon_get_for_notification(const struct notification *n)
         else
                 return NULL;
 
-        if (!pixbuf)
-                return NULL;
+        ASSERT_OR_RET(pixbuf, NULL);
 
         int w = gdk_pixbuf_get_width(pixbuf);
         int h = gdk_pixbuf_get_height(pixbuf);

@@ -95,9 +95,7 @@ void add_entry(const char *section_name, const char *key, const char *value)
 const char *get_value(const char *section, const char *key)
 {
         struct section *s = get_section(section);
-        if (!s) {
-                return NULL;
-        }
+        ASSERT_OR_RET(s, NULL);
 
         for (int i = 0; i < s->entry_count; i++) {
                 if (STR_EQ(s->entries[i].key, key)) {
@@ -158,11 +156,8 @@ bool ini_is_set(const char *ini_section, const char *ini_key)
 
 const char *next_section(const char *section)
 {
-        if (section_count == 0)
-                return NULL;
-
-        if (!section)
-                return sections[0].name;
+        ASSERT_OR_RET(section_count > 0, NULL);
+        ASSERT_OR_RET(section, sections[0].name);
 
         for (int i = 0; i < section_count; i++) {
                 if (STR_EQ(section, sections[i].name)) {
@@ -202,8 +197,7 @@ int ini_get_bool(const char *section, const char *key, int def)
 
 int load_ini_file(FILE *fp)
 {
-        if (!fp)
-                return 1;
+        ASSERT_OR_RET(fp, 1);
 
         char *line = NULL;
         size_t line_len = 0;
@@ -277,9 +271,8 @@ void cmdline_load(int argc, char *argv[])
 
 int cmdline_find_option(const char *key)
 {
-        if (!key) {
-                return -1;
-        }
+        ASSERT_OR_RET(key, -1);
+
         char *key1 = g_strdup(key);
         char *key2 = strchr(key1, '/');
 
@@ -535,8 +528,7 @@ const char *cmdline_create_usage(void)
 /* see option_parser.h */
 enum behavior_fullscreen parse_enum_fullscreen(const char *string, enum behavior_fullscreen def)
 {
-        if (!string)
-                return def;
+        ASSERT_OR_RET(string, def);
 
         if (STR_EQ(string, "show"))
                 return FS_SHOW;

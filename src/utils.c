@@ -14,8 +14,7 @@
 /* see utils.h */
 char *string_replace_char(char needle, char replacement, char *haystack)
 {
-        if (!haystack)
-                return NULL;
+        ASSERT_OR_RET(haystack, NULL);
 
         char *current = haystack;
         while ((current = strchr(current, needle)))
@@ -56,8 +55,7 @@ char *string_replace_at(char *buf, int pos, int len, const char *repl)
 /* see utils.h */
 char *string_replace_all(const char *needle, const char *replacement, char *haystack)
 {
-        if (!haystack)
-                return NULL;
+        ASSERT_OR_RET(haystack, NULL);
         assert(needle);
         assert(replacement);
 
@@ -104,8 +102,7 @@ char *string_append(char *a, const char *b, const char *sep)
 /* see utils.h */
 char *string_strip_quotes(const char *value)
 {
-        if (!value)
-                return NULL;
+        ASSERT_OR_RET(value, NULL);
 
         size_t len = strlen(value);
         char *s;
