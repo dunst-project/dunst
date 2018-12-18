@@ -7,6 +7,17 @@
 #include <stdio.h>
 
 #include "dunst.h"
+#include "settings.h"
+
+bool string_parse_alignment(const char *s, enum alignment *ret);
+bool string_parse_ellipsize(const char *s, enum ellipsize *ret);
+bool string_parse_follow_mode(const char *s, enum follow_mode *ret);
+bool string_parse_fullscreen(const char *s, enum behavior_fullscreen *ret);
+bool string_parse_icon_position(const char *s, enum icon_position *ret);
+bool string_parse_markup_mode(const char *s, enum markup_mode *ret);
+bool string_parse_mouse_action(const char *s, enum mouse_action *ret);
+bool string_parse_sepcolor(const char *s, struct separator_color_data *ret);
+bool string_parse_urgency(const char *s, enum urgency *ret);
 
 int load_ini_file(FILE *);
 char *ini_get_path(const char *section, const char *key, const char *def);
@@ -64,18 +75,6 @@ int option_get_bool(const char *ini_section,
  * returns NULL if no more sections are available
  */
 const char *next_section(const char *section);
-
-/**
- * Parse the fullscreen behavior value of the given string
- *
- * @param string the string representation of #behavior_fullscreen.
- *               The string must not contain any waste characters.
- * @param def value to return in case of errors
- *
- * @return the #behavior_fullscreen representation of `string`
- * @return `def` if `string` is invalid or `NULL`
- */
-enum behavior_fullscreen parse_enum_fullscreen(const char *string, enum behavior_fullscreen def);
 
 #endif
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
