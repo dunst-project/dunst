@@ -9,12 +9,72 @@
 
 void wake_up_void(void) {  }
 
+struct signal_actioninvoked {
+        guint id;
+        gchar *key;
+        guint subscription_id;
+        GDBusConnection *conn;
+};
+
 struct signal_closed {
         guint32 id;
         guint32 reason;
         guint subscription_id;
         GDBusConnection *conn;
 };
+
+void dbus_signal_cb_actioninvoked(GDBusConnection *connection,
+                                  const gchar *sender_name,
+                                  const gchar *object_path,
+                                  const gchar *interface_name,
+                                  const gchar *signal_name,
+                                  GVariant *parameters,
+                                  gpointer user_data)
+{
+        g_return_if_fail(user_data);
+
+        guint32 id;
+        gchar *key;
+
+        struct signal_actioninvoked *sig = (struct signal_actioninvoked*) user_data;
+
+        g_variant_get(parameters, "(us)", &id, &key);
+
+        if (id == sig->id) {
+                sig->id = id;
+                sig->key = key;
+        }
+}
+
+void dbus_signal_subscribe_actioninvoked(struct signal_actioninvoked *actioninvoked)
+{
+        assert(actioninvoked);
+
+        actioninvoked->conn = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, NULL);
+        actioninvoked->subscription_id =
+                g_dbus_connection_signal_subscribe(
+                        actioninvoked->conn,
+                        FDN_NAME,
+                        FDN_IFAC,
+                        "ActionInvoked",
+                        FDN_PATH,
+                        NULL,
+                        G_DBUS_SIGNAL_FLAGS_NONE,
+                        dbus_signal_cb_actioninvoked,
+                        actioninvoked,
+                        NULL);
+}
+
+void dbus_signal_unsubscribe_actioninvoked(struct signal_actioninvoked *actioninvoked)
+{
+        assert(actioninvoked);
+
+        g_dbus_connection_signal_unsubscribe(actioninvoked->conn, actioninvoked->subscription_id);
+        g_object_unref(actioninvoked->conn);
+
+        actioninvoked->conn = NULL;
+        actioninvoked->subscription_id = -1;
+}
 
 void dbus_signal_cb_closed(GDBusConnection *connection,
                  const gchar *sender_name,
@@ -532,6 +592,40 @@ TEST test_server_caps(enum markup_mode markup)
         PASS();
 }
 
+TEST test_signal_actioninvoked(void)
+{
+        const struct notification *n;
+        struct dbus_notification *n_dbus;
+        struct signal_actioninvoked sig = {0, NULL, -1};
+
+        dbus_signal_subscribe_actioninvoked(&sig);
+
+        n_dbus = dbus_notification_new();
+        n_dbus->app_name = "dunstteststack";
+        n_dbus->app_icon = "NONE2";
+        n_dbus->summary = "Headline for New";
+        n_dbus->body = "Text";
+        g_hash_table_insert(n_dbus->actions, g_strdup("actionkey"), g_strdup("Print this text"));
+
+        dbus_notification_fire(n_dbus, &sig.id);
+        n = queues_debug_find_notification_by_id(sig.id);
+
+        signal_action_invoked(n, "actionkey");
+
+        uint waiting = 0;
+        while (!sig.key && waiting < 2000) {
+                usleep(500);
+                waiting++;
+        }
+
+        ASSERT_STR_EQ("actionkey", sig.key);
+
+        g_free(sig.key);
+        dbus_notification_free(n_dbus);
+        dbus_signal_unsubscribe_actioninvoked(&sig);
+        PASS();
+}
+
 TEST test_close_and_signal(void)
 {
         GVariant *data, *ret;
@@ -626,6 +720,7 @@ gpointer run_threaded_tests(gpointer data)
         RUN_TESTp(test_server_caps, MARKUP_STRIP);
         RUN_TESTp(test_server_caps, MARKUP_NO);
         RUN_TEST(test_close_and_signal);
+        RUN_TEST(test_signal_actioninvoked);
 
         RUN_TEST(assert_methodlists_sorted);
 
