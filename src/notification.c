@@ -15,6 +15,7 @@
 
 #include "dbus.h"
 #include "dunst.h"
+#include "icon.h"
 #include "log.h"
 #include "markup.h"
 #include "menu.h"
@@ -23,6 +24,7 @@
 #include "settings.h"
 #include "utils.h"
 
+static void notification_update_icon(struct notification *n);
 static void notification_extract_urls(struct notification *n);
 static void notification_format_message(struct notification *n);
 
@@ -363,8 +365,23 @@ void notification_init(struct notification *n)
         rule_apply_all(n);
 
         /* UPDATE derived fields */
+        notification_update_icon(n);
         notification_extract_urls(n);
         notification_format_message(n);
+}
+
+static void notification_update_icon(struct notification *n)
+{
+        g_return_if_fail(n);
+
+        g_clear_object(&n->icon);
+
+        if (n->raw_icon)
+                n->icon = get_pixbuf_from_raw_image(n->raw_icon);
+        else if (n->iconname)
+                n->icon = get_pixbuf_from_icon(n->iconname);
+
+        n->icon = icon_pixbuf_scale(n->icon);
 }
 
 static void notification_format_message(struct notification *n)

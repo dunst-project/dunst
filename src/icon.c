@@ -224,22 +224,7 @@ GdkPixbuf *get_pixbuf_from_raw_image(const struct raw_image *raw_image)
 
 cairo_surface_t *icon_get_for_notification(const struct notification *n)
 {
-        GdkPixbuf *pixbuf;
-
-        if (n->raw_icon)
-                pixbuf = get_pixbuf_from_raw_image(n->raw_icon);
-        else if (n->iconname)
-                pixbuf = get_pixbuf_from_icon(n->iconname);
-        else
-                return NULL;
-
-        ASSERT_OR_RET(pixbuf, NULL);
-
-        pixbuf = icon_pixbuf_scale(pixbuf);
-
-        cairo_surface_t *ret = gdk_pixbuf_to_cairo_surface(pixbuf);
-        g_object_unref(pixbuf);
-        return ret;
+        return gdk_pixbuf_to_cairo_surface(n->icon);
 }
 
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

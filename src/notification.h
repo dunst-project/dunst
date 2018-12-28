@@ -2,6 +2,7 @@
 #ifndef DUNST_NOTIFICATION_H
 #define DUNST_NOTIFICATION_H
 
+#include <gdk-pixbuf/gdk-pixbuf.h>
 #include <glib.h>
 #include <stdbool.h>
 
@@ -56,6 +57,7 @@ struct notification {
         char *category;
         enum urgency urgency;
 
+        GdkPixbuf *icon;
         char *iconname;          /**< plain icon information (may be a path or just a name) */
         struct raw_image *raw_icon;  /**< passed icon data of notification, takes precedence over icon */
 
