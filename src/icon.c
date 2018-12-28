@@ -110,6 +110,33 @@ cairo_surface_t *gdk_pixbuf_to_cairo_surface(GdkPixbuf *pixbuf)
         return icon_surface;
 }
 
+GdkPixbuf *icon_pixbuf_scale(GdkPixbuf *pixbuf)
+{
+        ASSERT_OR_RET(pixbuf, NULL);
+
+        int w = gdk_pixbuf_get_width(pixbuf);
+        int h = gdk_pixbuf_get_height(pixbuf);
+        int larger = w > h ? w : h;
+        if (settings.max_icon_size && larger > settings.max_icon_size) {
+                int scaled_w = settings.max_icon_size;
+                int scaled_h = settings.max_icon_size;
+                if (w >= h)
+                        scaled_h = (settings.max_icon_size * h) / w;
+                else
+                        scaled_w = (settings.max_icon_size * w) / h;
+
+                GdkPixbuf *scaled = gdk_pixbuf_scale_simple(
+                                pixbuf,
+                                scaled_w,
+                                scaled_h,
+                                GDK_INTERP_BILINEAR);
+                g_object_unref(pixbuf);
+                pixbuf = scaled;
+        }
+
+        return pixbuf;
+}
+
 GdkPixbuf *get_pixbuf_from_file(const char *filename)
 {
         char *path = string_to_path(g_strdup(filename));
@@ -208,25 +235,7 @@ cairo_surface_t *icon_get_for_notification(const struct notification *n)
 
         ASSERT_OR_RET(pixbuf, NULL);
 
-        int w = gdk_pixbuf_get_width(pixbuf);
-        int h = gdk_pixbuf_get_height(pixbuf);
-        int larger = w > h ? w : h;
-        if (settings.max_icon_size && larger > settings.max_icon_size) {
-                int scaled_w = settings.max_icon_size;
-                int scaled_h = settings.max_icon_size;
-                if (w >= h)
-                        scaled_h = (settings.max_icon_size * h) / w;
-                else
-                        scaled_w = (settings.max_icon_size * w) / h;
-
-                GdkPixbuf *scaled = gdk_pixbuf_scale_simple(
-                                pixbuf,
-                                scaled_w,
-                                scaled_h,
-                                GDK_INTERP_BILINEAR);
-                g_object_unref(pixbuf);
-                pixbuf = scaled;
-        }
+        pixbuf = icon_pixbuf_scale(pixbuf);
 
         cairo_surface_t *ret = gdk_pixbuf_to_cairo_surface(pixbuf);
         g_object_unref(pixbuf);

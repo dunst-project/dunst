@@ -8,6 +8,17 @@
 
 cairo_surface_t *gdk_pixbuf_to_cairo_surface(GdkPixbuf *pixbuf);
 
+/**
+ * Scales the given GdkPixbuf if necessary according to the settings.
+ *
+ * @param pixbuf (nullable) The pixbuf, which may be too big.
+ *                          Takes ownership of the reference.
+ * @return the scaled version of the pixbuf. If scaling wasn't
+ *         necessary, it returns the same pixbuf. Transfers full
+ *         ownership of the reference.
+ */
+GdkPixbuf *icon_pixbuf_scale(GdkPixbuf *pixbuf);
+
 /** Retrieve an icon by its full filepath.
  *
  * @param filename A string representing a readable file path
