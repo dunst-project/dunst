@@ -56,7 +56,7 @@ struct notification {
         char *category;
         enum urgency urgency;
 
-        char *icon;          /**< plain icon information (may be a path or just a name) */
+        char *iconname;          /**< plain icon information (may be a path or just a name) */
         struct raw_image *raw_icon;  /**< passed icon data of notification, takes precedence over icon */
 
         gint64 start;      /**< begin of current display */

@@ -511,7 +511,7 @@ TEST test_hint_icons(void)
 
         n = queues_debug_find_notification_by_id(id);
 
-        ASSERT_STR_EQ(iconname, n->icon);
+        ASSERT_STR_EQ(iconname, n->iconname);
 
         dbus_notification_free(n_dbus);
 

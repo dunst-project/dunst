@@ -52,7 +52,7 @@ void notification_print(const struct notification *n)
         printf("\tappname: '%s'\n", n->appname);
         printf("\tsummary: '%s'\n", n->summary);
         printf("\tbody: '%s'\n", n->body);
-        printf("\ticon: '%s'\n", n->icon);
+        printf("\ticon: '%s'\n", n->iconname);
         printf("\traw_icon set: %s\n", (n->raw_icon ? "true" : "false"));
         printf("\tcategory: %s\n", n->category);
         printf("\ttimeout: %ld\n", n->timeout/1000);
@@ -103,7 +103,7 @@ void notification_run_script(struct notification *n)
         const char *appname = n->appname ? n->appname : "";
         const char *summary = n->summary ? n->summary : "";
         const char *body = n->body ? n->body : "";
-        const char *icon = n->icon ? n->icon : "";
+        const char *icon = n->iconname ? n->iconname : "";
 
         const char *urgency = notification_urgency_to_string(n->urgency);
 
@@ -183,7 +183,7 @@ int notification_is_duplicate(const struct notification *a, const struct notific
         return STR_EQ(a->appname, b->appname)
             && STR_EQ(a->summary, b->summary)
             && STR_EQ(a->body, b->body)
-            && (settings.icon_position != ICON_OFF ? STR_EQ(a->icon, b->icon) : 1)
+            && (settings.icon_position != ICON_OFF ? STR_EQ(a->iconname, b->iconname) : 1)
             && a->urgency == b->urgency;
 }
 
@@ -227,7 +227,7 @@ void notification_unref(struct notification *n)
         g_free(n->appname);
         g_free(n->summary);
         g_free(n->body);
-        g_free(n->icon);
+        g_free(n->iconname);
         g_free(n->msg);
         g_free(n->dbus_client);
         g_free(n->category);
@@ -328,10 +328,10 @@ void notification_init(struct notification *n)
                 n->timeout = settings.timeouts[n->urgency];
 
         /* Icon handling */
-        if (STR_EMPTY(n->icon))
-                g_clear_pointer(&n->icon, g_free);
-        if (!n->raw_icon && !n->icon)
-                n->icon = g_strdup(settings.icons[n->urgency]);
+        if (STR_EMPTY(n->iconname))
+                g_clear_pointer(&n->iconname, g_free);
+        if (!n->raw_icon && !n->iconname)
+                n->iconname = g_strdup(settings.icons[n->urgency]);
 
         /* Color hints */
         struct notification_colors defcolors;
@@ -404,7 +404,7 @@ static void notification_format_message(struct notification *n)
                                 n->markup);
                         break;
                 case 'I':
-                        icon_tmp = g_strdup(n->icon);
+                        icon_tmp = g_strdup(n->iconname);
                         notification_replace_single_field(
                                 &n->msg,
                                 &substr,
@@ -416,7 +416,7 @@ static void notification_format_message(struct notification *n)
                         notification_replace_single_field(
                                 &n->msg,
                                 &substr,
-                                n->icon ? n->icon : "",
+                                n->iconname ? n->iconname : "",
                                 MARKUP_NO);
                         break;
                 case 'p':

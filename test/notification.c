@@ -25,14 +25,14 @@ TEST test_notification_is_duplicate(void)
         a->appname = g_strdup("Test");
         a->summary = g_strdup("Summary");
         a->body = g_strdup("Body");
-        a->icon = g_strdup("Icon");
+        a->iconname = g_strdup("Icon");
         a->urgency = URG_NORM;
 
         struct notification *b = notification_create();
         b->appname = g_strdup("Test");
         b->summary = g_strdup("Summary");
         b->body = g_strdup("Body");
-        b->icon = g_strdup("Icon");
+        b->iconname = g_strdup("Icon");
         b->urgency = URG_NORM;
 
         CHECK_CALL(test_notification_is_duplicate_field(&(b->appname), a, b));
@@ -52,13 +52,13 @@ TEST test_notification_is_duplicate(void)
         b->raw_icon = NULL;
 
         settings.icon_position = ICON_LEFT;
-        CHECK_CALL(test_notification_is_duplicate_field(&(b->icon), a, b));
+        CHECK_CALL(test_notification_is_duplicate_field(&(b->iconname), a, b));
         b->raw_icon = (struct raw_image*)0xff;
         ASSERT_FALSE(notification_is_duplicate(a, b));
         b->raw_icon = NULL;
 
         settings.icon_position = ICON_RIGHT;
-        CHECK_CALL(test_notification_is_duplicate_field(&(b->icon), a, b));
+        CHECK_CALL(test_notification_is_duplicate_field(&(b->iconname), a, b));
         b->raw_icon = (struct raw_image*)0xff;
         ASSERT_FALSE(notification_is_duplicate(a, b));
         b->raw_icon = NULL;
@@ -173,7 +173,7 @@ SUITE(suite_notification)
         a->appname = g_strdup("MyApp");
         a->summary = g_strdup("I've got a summary!");
         a->body =    g_strdup("Look at my shiny <notification>");
-        a->icon =    g_strdup("/this/is/my/icoknpath.png");
+        a->iconname =    g_strdup("/this/is/my/icoknpath.png");
         a->progress = 95;
 
         const char *strings[] = {

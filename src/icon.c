@@ -228,8 +228,8 @@ cairo_surface_t *icon_get_for_notification(const struct notification *n)
 
         if (n->raw_icon)
                 pixbuf = get_pixbuf_from_raw_image(n->raw_icon);
-        else if (n->icon)
-                pixbuf = get_pixbuf_from_icon(n->icon);
+        else if (n->iconname)
+                pixbuf = get_pixbuf_from_icon(n->iconname);
         else
                 return NULL;
 
