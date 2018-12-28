@@ -270,8 +270,8 @@ static struct colored_layout *layout_init_shared(cairo_t *c, const struct notifi
                 pango_layout_set_ellipsize(cl->l, ellipsize);
         }
 
-        if (settings.icon_position != ICON_OFF) {
-                cl->icon = icon_get_for_notification(n);
+        if (settings.icon_position != ICON_OFF && n->icon) {
+                cl->icon = gdk_pixbuf_to_cairo_surface(n->icon);
         } else {
                 cl->icon = NULL;
         }
