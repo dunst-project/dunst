@@ -10,16 +10,14 @@ TEST test_extract_urls_from_empty_string(void)
         ASSERT_EQ_FMT(NULL, (void*)urls, "%p");
 
         urls = extract_urls(NULL);
-        ASSERT_EQ_FMT(NULL, (void*)urls, "%p");
-        g_free(urls);
+        ASSERT(!urls);
         PASS();
 }
 
 TEST test_extract_urls_from_no_urls_string(void)
 {
         char *urls = extract_urls("You got a new message from your friend");
-        ASSERT_EQ_FMT(NULL, (void*)urls, "%p");
-        g_free(urls);
+        ASSERT(!urls);
         PASS();
 }
 
