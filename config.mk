@@ -23,7 +23,7 @@ LDFLAGS_DEBUG  :=
 
 pkg_config_packs := gio-2.0 \
                     gdk-pixbuf-2.0 \
-                    "glib-2.0 >= 2.36" \
+                    "glib-2.0 >= 2.44" \
                     pangocairo \
                     x11 \
                     xinerama \

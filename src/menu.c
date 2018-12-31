@@ -141,6 +141,27 @@ void open_browser(const char *in)
         g_free(url);
 }
 
+char *notification_dmenu_string(struct notification *n)
+{
+        char *dmenu_str = NULL;
+
+        gpointer p_key;
+        gpointer p_value;
+        GHashTableIter iter;
+        g_hash_table_iter_init(&iter, n->actions);
+        while (g_hash_table_iter_next(&iter, &p_key, &p_value)) {
+
+                char *key   = (char*) p_key;
+                char *value = (char*) p_value;
+
+                char *act_str = g_strdup_printf("#%s (%s) [%d,%s]", value, n->summary, n->id, key);
+                dmenu_str = string_append(dmenu_str, act_str, "\n");
+
+                g_free(act_str);
+        }
+        return dmenu_str;
+}
+
 /*
  * Notify the corresponding client
  * that an action has been invoked
@@ -148,39 +169,49 @@ void open_browser(const char *in)
 void invoke_action(const char *action)
 {
         struct notification *invoked = NULL;
-        char *action_identifier = NULL;
+        uint id;
 
-        char *appname_begin = strchr(action, '[');
-        if (!appname_begin) {
+        char *data_start, *data_comma, *data_end;
+
+        /* format: #<human readable> (<summary>)[<id>,<action>] */
+        data_start = strrchr(action, '[');
+        if (!data_start) {
                 LOG_W("Invalid action: '%s'", action);
                 return;
         }
-        appname_begin++;
-        int appname_len = strlen(appname_begin) - 1; // remove ]
-        int action_len = strlen(action) - appname_len - 3; // remove space, [, ]
 
-        for (const GList *iter = queues_get_displayed(); iter;
-             iter = iter->next) {
+        id = strtol(++data_start, &data_comma, 10);
+        if (*data_comma != ',') {
+                LOG_W("Invalid action: '%s'", action);
+                return;
+        }
+
+        data_end = strchr(data_comma+1, ']');
+        if (!data_end) {
+                LOG_W("Invalid action: '%s'", action);
+                return;
+        }
+
+        char *action_key = g_strndup(data_comma+1, data_end-data_comma-1);
+
+        for (const GList *iter = queues_get_displayed();
+                          iter;
+                          iter = iter->next) {
                 struct notification *n = iter->data;
-                if (g_str_has_prefix(appname_begin, n->appname) && strlen(n->appname) == appname_len) {
-                        if (!n->actions)
-                                continue;
+                if (n->id != id)
+                        continue;
 
-                        for (int i = 0; i < n->actions->count; i += 2) {
-                                char *a_identifier = n->actions->actions[i];
-                                char *name = n->actions->actions[i + 1];
-                                if (g_str_has_prefix(action, name) && strlen(name) == action_len) {
-                                        invoked = n;
-                                        action_identifier = a_identifier;
-                                        break;
-                                }
-                        }
+                if (g_hash_table_contains(n->actions, action_key)) {
+                        invoked = n;
+                        break;
                 }
         }
 
-        if (invoked && action_identifier) {
-                signal_action_invoked(invoked, action_identifier);
+        if (invoked && action_key) {
+                signal_action_invoked(invoked, action_key);
         }
+
+        g_free(action_key);
 }
 
 /**
@@ -289,7 +320,7 @@ static gpointer context_menu_thread(gpointer data)
 
 
                 // Reference and lock the notification if we need it
-                if (n->urls || n->actions) {
+                if (n->urls || g_hash_table_size(n->actions)) {
                         notification_ref(n);
 
                         struct notification_lock *nl =
@@ -302,13 +333,12 @@ static gpointer context_menu_thread(gpointer data)
                         locked_notifications = g_list_prepend(locked_notifications, nl);
                 }
 
+                char *dmenu_str = notification_dmenu_string(n);
+                dmenu_input = string_append(dmenu_input, dmenu_str, "\n");
+                g_free(dmenu_str);
+
                 if (n->urls)
                         dmenu_input = string_append(dmenu_input, n->urls, "\n");
-
-                if (n->actions)
-                        dmenu_input =
-                            string_append(dmenu_input, n->actions->dmenu_str,
-                                          "\n");
         }
 
         dmenu_output = invoke_dmenu(dmenu_input);

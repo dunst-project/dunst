@@ -36,12 +36,6 @@ struct raw_image {
         unsigned char *data;
 };
 
-struct actions {
-        char **actions;
-        char *dmenu_str;
-        gsize count;
-};
-
 typedef struct _notification_private NotificationPrivate;
 
 struct notification_colors {
@@ -69,7 +63,7 @@ struct notification {
         gint64 timestamp;  /**< arrival time */
         gint64 timeout;    /**< time to display */
 
-        struct actions *actions;
+        GHashTable *actions;
 
         enum markup_mode markup;
         const char *format;
@@ -126,13 +120,6 @@ void notification_ref(struct notification *n);
  * @param n: the notification to sanitize
  */
 void notification_init(struct notification *n);
-
-/**
- * Free the actions structure
- *
- * @param a (nullable): Pointer to #actions
- */
-void actions_free(struct actions *a);
 
 /**
  * Free a #raw_image

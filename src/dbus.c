@@ -72,23 +72,41 @@ static const char *stack_tag_hints[] = {
         "x-dunst-stack-tag"
 };
 
-static void on_get_capabilities(GDBusConnection *connection,
-                                const gchar *sender,
-                                const GVariant *parameters,
-                                GDBusMethodInvocation *invocation);
-static void on_notify(GDBusConnection *connection,
-                      const gchar *sender,
-                      GVariant *parameters,
-                      GDBusMethodInvocation *invocation);
-static void on_close_notification(GDBusConnection *connection,
-                                  const gchar *sender,
-                                  GVariant *parameters,
-                                  GDBusMethodInvocation *invocation);
-static void on_get_server_information(GDBusConnection *connection,
-                                      const gchar *sender,
-                                      const GVariant *parameters,
-                                      GDBusMethodInvocation *invocation);
+struct dbus_method {
+  const char *method_name;
+  void (*method)  (GDBusConnection *connection,
+                   const gchar *sender,
+                   GVariant *parameters,
+                   GDBusMethodInvocation *invocation);
+};
+
+#define DBUS_METHOD(name) static void dbus_cb_##name( \
+                        GDBusConnection *connection, \
+                        const gchar *sender, \
+                        GVariant *parameters, \
+                        GDBusMethodInvocation *invocation)
+
 static struct raw_image *get_raw_image_from_data_hint(GVariant *icon_data);
+
+int cmp_methods(const void *vkey, const void *velem)
+{
+        const char *key = (const char*)vkey;
+        const struct dbus_method *m = (const struct dbus_method*)velem;
+
+        return strcmp(key, m->method_name);
+}
+
+DBUS_METHOD(Notify);
+DBUS_METHOD(CloseNotification);
+DBUS_METHOD(GetCapabilities);
+DBUS_METHOD(GetServerInformation);
+
+static struct dbus_method methods_fdn[] = {
+        {"CloseNotification",     dbus_cb_CloseNotification},
+        {"GetCapabilities",       dbus_cb_GetCapabilities},
+        {"GetServerInformation",  dbus_cb_GetServerInformation},
+        {"Notify",                dbus_cb_Notify},
+};
 
 void handle_method_call(GDBusConnection *connection,
                         const gchar *sender,
@@ -99,14 +117,15 @@ void handle_method_call(GDBusConnection *connection,
                         GDBusMethodInvocation *invocation,
                         gpointer user_data)
 {
-        if (STR_EQ(method_name, "GetCapabilities")) {
-                on_get_capabilities(connection, sender, parameters, invocation);
-        } else if (STR_EQ(method_name, "Notify")) {
-                on_notify(connection, sender, parameters, invocation);
-        } else if (STR_EQ(method_name, "CloseNotification")) {
-                on_close_notification(connection, sender, parameters, invocation);
-        } else if (STR_EQ(method_name, "GetServerInformation")) {
-                on_get_server_information(connection, sender, parameters, invocation);
+        struct dbus_method *m = bsearch(
+                        method_name,
+                        &methods_fdn,
+                        G_N_ELEMENTS(methods_fdn),
+                        sizeof(struct dbus_method),
+                        cmp_methods);
+
+        if (m) {
+                m->method(connection, sender, parameters, invocation);
         } else {
                 LOG_M("Unknown method name: '%s' (sender: '%s').",
                       method_name,
@@ -114,10 +133,11 @@ void handle_method_call(GDBusConnection *connection,
         }
 }
 
-static void on_get_capabilities(GDBusConnection *connection,
-                                const gchar *sender,
-                                const GVariant *parameters,
-                                GDBusMethodInvocation *invocation)
+static void dbus_cb_GetCapabilities(
+                GDBusConnection *connection,
+                const gchar *sender,
+                GVariant *parameters,
+                GDBusMethodInvocation *invocation)
 {
         GVariantBuilder *builder;
         GVariant *value;
@@ -142,160 +162,151 @@ static void on_get_capabilities(GDBusConnection *connection,
 
 static struct notification *dbus_message_to_notification(const gchar *sender, GVariant *parameters)
 {
+        /* Assert that the parameters' type is actually correct. Albeit usually DBus
+         * already rejects ill typed parameters, it may not be always the case. */
+        GVariantType *required_type = g_variant_type_new("(susssasa{sv}i)");
+        if (!g_variant_is_of_type(parameters, required_type)) {
+                g_variant_type_free(required_type);
+                return NULL;
+        }
 
         struct notification *n = notification_create();
-
-        n->actions = g_malloc0(sizeof(struct actions));
         n->dbus_client = g_strdup(sender);
         n->dbus_valid = true;
 
-        {
-                GVariantIter *iter = g_variant_iter_new(parameters);
-                GVariant *content;
-                GVariant *dict_value;
-                int idx = 0;
-                while ((content = g_variant_iter_next_value(iter))) {
+        GVariant *hints;
+        gchar **actions;
+        int timeout;
 
-                        switch (idx) {
-                        case 0:
-                                if (g_variant_is_of_type(content, G_VARIANT_TYPE_STRING))
-                                        n->appname = g_variant_dup_string(content, NULL);
-                                break;
-                        case 1:
-                                if (g_variant_is_of_type(content, G_VARIANT_TYPE_UINT32))
-                                        n->id = g_variant_get_uint32(content);
-                                break;
-                        case 2:
-                                if (g_variant_is_of_type(content, G_VARIANT_TYPE_STRING))
-                                        n->icon = g_variant_dup_string(content, NULL);
-                                break;
-                        case 3:
-                                if (g_variant_is_of_type(content, G_VARIANT_TYPE_STRING))
-                                        n->summary = g_variant_dup_string(content, NULL);
-                                break;
-                        case 4:
-                                if (g_variant_is_of_type(content, G_VARIANT_TYPE_STRING))
-                                        n->body = g_variant_dup_string(content, NULL);
-                                break;
-                        case 5:
-                                if (g_variant_is_of_type(content, G_VARIANT_TYPE_STRING_ARRAY))
-                                        n->actions->actions = g_variant_dup_strv(content, &(n->actions->count));
-                                break;
-                        case 6:
-                                if (g_variant_is_of_type(content, G_VARIANT_TYPE_DICTIONARY)) {
+        GVariantIter i;
+        g_variant_iter_init(&i, parameters);
 
-                                        dict_value = g_variant_lookup_value(content, "urgency", G_VARIANT_TYPE_BYTE);
-                                        if (dict_value) {
-                                                n->urgency = g_variant_get_byte(dict_value);
-                                                g_variant_unref(dict_value);
-                                        }
+        g_variant_iter_next(&i, "s", &n->appname);
+        g_variant_iter_next(&i, "u", &n->id);
+        g_variant_iter_next(&i, "s", &n->icon);
+        g_variant_iter_next(&i, "s", &n->summary);
+        g_variant_iter_next(&i, "s", &n->body);
+        g_variant_iter_next(&i, "^a&s", &actions);
+        g_variant_iter_next(&i, "@a{?*}", &hints);
+        g_variant_iter_next(&i, "i", &timeout);
 
-                                        dict_value = g_variant_lookup_value(content, "fgcolor", G_VARIANT_TYPE_STRING);
-                                        if (dict_value) {
-                                                n->colors.fg = g_variant_dup_string(dict_value, NULL);
-                                                g_variant_unref(dict_value);
-                                        }
-
-                                        dict_value = g_variant_lookup_value(content, "bgcolor", G_VARIANT_TYPE_STRING);
-                                        if (dict_value) {
-                                                n->colors.bg = g_variant_dup_string(dict_value, NULL);
-                                                g_variant_unref(dict_value);
-                                        }
-
-                                        dict_value = g_variant_lookup_value(content, "frcolor", G_VARIANT_TYPE_STRING);
-                                        if (dict_value) {
-                                                n->colors.frame = g_variant_dup_string(dict_value, NULL);
-                                                g_variant_unref(dict_value);
-                                        }
-
-                                        dict_value = g_variant_lookup_value(content, "category", G_VARIANT_TYPE_STRING);
-                                        if (dict_value) {
-                                                n->category = g_variant_dup_string(dict_value, NULL);
-                                                g_variant_unref(dict_value);
-                                        }
-
-                                        dict_value = g_variant_lookup_value(content, "image-path", G_VARIANT_TYPE_STRING);
-                                        if (dict_value) {
-                                                g_free(n->icon);
-                                                n->icon = g_variant_dup_string(dict_value, NULL);
-                                                g_variant_unref(dict_value);
-                                        }
-
-                                        dict_value = g_variant_lookup_value(content, "image-data", G_VARIANT_TYPE("(iiibiiay)"));
-                                        if (!dict_value)
-                                                dict_value = g_variant_lookup_value(content, "image_data", G_VARIANT_TYPE("(iiibiiay)"));
-                                        if (!dict_value)
-                                                dict_value = g_variant_lookup_value(content, "icon_data", G_VARIANT_TYPE("(iiibiiay)"));
-                                        if (dict_value) {
-                                                n->raw_icon = get_raw_image_from_data_hint(dict_value);
-                                                g_variant_unref(dict_value);
-                                        }
-
-                                        /* Check for transient hints
-                                         *
-                                         * According to the spec, the transient hint should be boolean.
-                                         * But notify-send does not support hints of type 'boolean'.
-                                         * So let's check for int and boolean until notify-send is fixed.
-                                         */
-                                        if((dict_value = g_variant_lookup_value(content, "transient", G_VARIANT_TYPE_BOOLEAN))) {
-                                                n->transient = g_variant_get_boolean(dict_value);
-                                                g_variant_unref(dict_value);
-                                        } else if((dict_value = g_variant_lookup_value(content, "transient", G_VARIANT_TYPE_UINT32))) {
-                                                n->transient = g_variant_get_uint32(dict_value) > 0;
-                                                g_variant_unref(dict_value);
-                                        } else if((dict_value = g_variant_lookup_value(content, "transient", G_VARIANT_TYPE_INT32))) {
-                                                n->transient = g_variant_get_int32(dict_value) > 0;
-                                                g_variant_unref(dict_value);
-                                        }
-
-                                        if((dict_value = g_variant_lookup_value(content, "value", G_VARIANT_TYPE_INT32))) {
-                                                n->progress = g_variant_get_int32(dict_value);
-                                                g_variant_unref(dict_value);
-                                        } else if((dict_value = g_variant_lookup_value(content, "value", G_VARIANT_TYPE_UINT32))) {
-                                                n->progress = g_variant_get_uint32(dict_value);
-                                                g_variant_unref(dict_value);
-                                        }
-
-                                        /* Check for hints that define the stack_tag
-                                         *
-                                         * Only accept to first one we find.
-                                         */
-                                        for (int i = 0; i < sizeof(stack_tag_hints)/sizeof(*stack_tag_hints); ++i) {
-                                                dict_value = g_variant_lookup_value(content, stack_tag_hints[i], G_VARIANT_TYPE_STRING);
-                                                if (dict_value) {
-                                                        n->stack_tag = g_variant_dup_string(dict_value, NULL);
-                                                        g_variant_unref(dict_value);
-                                                        break;
-                                                }
-                                        }
-
-                                }
-                                break;
-                        case 7:
-                                if (g_variant_is_of_type(content, G_VARIANT_TYPE_INT32))
-                                        n->timeout = g_variant_get_int32(content) * 1000;
-                                break;
-                        }
-                        g_variant_unref(content);
-                        idx++;
+        gsize num = 0;
+        while (actions[num]) {
+                if (actions[num+1]) {
+                        g_hash_table_insert(n->actions,
+                                        g_strdup(actions[num]),
+                                        g_strdup(actions[num+1]));
+                        num+=2;
+                } else {
+                        LOG_W("Odd length in actions array. Ignoring element: %s", actions[num]);
+                        break;
                 }
-
-                g_variant_iter_free(iter);
         }
 
-        if (n->actions->count < 1)
-                g_clear_pointer(&n->actions, actions_free);
+        GVariant *dict_value;
+        if ((dict_value = g_variant_lookup_value(hints, "urgency", G_VARIANT_TYPE_BYTE))) {
+                n->urgency = g_variant_get_byte(dict_value);
+                g_variant_unref(dict_value);
+        }
+
+        if ((dict_value = g_variant_lookup_value(hints, "fgcolor", G_VARIANT_TYPE_STRING))) {
+                n->colors.fg = g_variant_dup_string(dict_value, NULL);
+                g_variant_unref(dict_value);
+        }
+
+        if ((dict_value = g_variant_lookup_value(hints, "bgcolor", G_VARIANT_TYPE_STRING))) {
+                n->colors.bg = g_variant_dup_string(dict_value, NULL);
+                g_variant_unref(dict_value);
+        }
+
+        if ((dict_value = g_variant_lookup_value(hints, "frcolor", G_VARIANT_TYPE_STRING))) {
+                n->colors.frame = g_variant_dup_string(dict_value, NULL);
+                g_variant_unref(dict_value);
+        }
+
+        if ((dict_value = g_variant_lookup_value(hints, "category", G_VARIANT_TYPE_STRING))) {
+                n->category = g_variant_dup_string(dict_value, NULL);
+                g_variant_unref(dict_value);
+        }
+
+        if ((dict_value = g_variant_lookup_value(hints, "image-path", G_VARIANT_TYPE_STRING))) {
+                g_free(n->icon);
+                n->icon = g_variant_dup_string(dict_value, NULL);
+                g_variant_unref(dict_value);
+        }
+
+        dict_value = g_variant_lookup_value(hints, "image-data", G_VARIANT_TYPE("(iiibiiay)"));
+        if (!dict_value)
+                dict_value = g_variant_lookup_value(hints, "image_data", G_VARIANT_TYPE("(iiibiiay)"));
+        if (!dict_value)
+                dict_value = g_variant_lookup_value(hints, "icon_data", G_VARIANT_TYPE("(iiibiiay)"));
+        if (dict_value) {
+                n->raw_icon = get_raw_image_from_data_hint(dict_value);
+                g_variant_unref(dict_value);
+        }
+
+        /* Check for transient hints
+         *
+         * According to the spec, the transient hint should be boolean.
+         * But notify-send does not support hints of type 'boolean'.
+         * So let's check for int and boolean until notify-send is fixed.
+         */
+        if ((dict_value = g_variant_lookup_value(hints, "transient", G_VARIANT_TYPE_BOOLEAN))) {
+                n->transient = g_variant_get_boolean(dict_value);
+                g_variant_unref(dict_value);
+        } else if ((dict_value = g_variant_lookup_value(hints, "transient", G_VARIANT_TYPE_UINT32))) {
+                n->transient = g_variant_get_uint32(dict_value) > 0;
+                g_variant_unref(dict_value);
+        } else if ((dict_value = g_variant_lookup_value(hints, "transient", G_VARIANT_TYPE_INT32))) {
+                n->transient = g_variant_get_int32(dict_value) > 0;
+                g_variant_unref(dict_value);
+        }
+
+        if ((dict_value = g_variant_lookup_value(hints, "value", G_VARIANT_TYPE_INT32))) {
+                n->progress = g_variant_get_int32(dict_value);
+                g_variant_unref(dict_value);
+        } else if ((dict_value = g_variant_lookup_value(hints, "value", G_VARIANT_TYPE_UINT32))) {
+                n->progress = g_variant_get_uint32(dict_value);
+                g_variant_unref(dict_value);
+        }
+
+        /* Check for hints that define the stack_tag
+         *
+         * Only accept to first one we find.
+         */
+        for (int i = 0; i < sizeof(stack_tag_hints)/sizeof(*stack_tag_hints); ++i) {
+                if ((dict_value = g_variant_lookup_value(hints, stack_tag_hints[i], G_VARIANT_TYPE_STRING))) {
+                        n->stack_tag = g_variant_dup_string(dict_value, NULL);
+                        g_variant_unref(dict_value);
+                        break;
+                }
+        }
+
+        if (timeout >= 0)
+                n->timeout = timeout * 1000;
+
+        g_variant_unref(hints);
+        g_variant_type_free(required_type);
+        g_free(actions); // the strv is only a shallow copy
 
         notification_init(n);
         return n;
 }
 
-static void on_notify(GDBusConnection *connection,
-                      const gchar *sender,
-                      GVariant *parameters,
-                      GDBusMethodInvocation *invocation)
+static void dbus_cb_Notify(
+                GDBusConnection *connection,
+                const gchar *sender,
+                GVariant *parameters,
+                GDBusMethodInvocation *invocation)
 {
         struct notification *n = dbus_message_to_notification(sender, parameters);
+        if (!n) {
+                g_dbus_method_invocation_return_dbus_error(
+                                invocation,
+                                "Cannot decode notification!",
+                                "");
+        }
+
         int id = queues_notification_insert(n);
 
         GVariant *reply = g_variant_new("(u)", id);
@@ -311,10 +322,11 @@ static void on_notify(GDBusConnection *connection,
         wake_up();
 }
 
-static void on_close_notification(GDBusConnection *connection,
-                                  const gchar *sender,
-                                  GVariant *parameters,
-                                  GDBusMethodInvocation *invocation)
+static void dbus_cb_CloseNotification(
+                GDBusConnection *connection,
+                const gchar *sender,
+                GVariant *parameters,
+                GDBusMethodInvocation *invocation)
 {
         guint32 id;
         g_variant_get(parameters, "(u)", &id);
@@ -324,10 +336,11 @@ static void on_close_notification(GDBusConnection *connection,
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
 }
 
-static void on_get_server_information(GDBusConnection *connection,
-                                      const gchar *sender,
-                                      const GVariant *parameters,
-                                      GDBusMethodInvocation *invocation)
+static void dbus_cb_GetServerInformation(
+                GDBusConnection *connection,
+                const gchar *sender,
+                GVariant *parameters,
+                GDBusMethodInvocation *invocation)
 {
         GVariant *value;
 
@@ -404,9 +417,9 @@ static const GDBusInterfaceVTable interface_vtable = {
         handle_method_call
 };
 
-static void on_bus_acquired(GDBusConnection *connection,
-                            const gchar *name,
-                            gpointer user_data)
+static void dbus_cb_bus_acquired(GDBusConnection *connection,
+                                 const gchar *name,
+                                 gpointer user_data)
 {
         guint registration_id;
 
@@ -425,9 +438,9 @@ static void on_bus_acquired(GDBusConnection *connection,
         }
 }
 
-static void on_name_acquired(GDBusConnection *connection,
-                             const gchar *name,
-                             gpointer user_data)
+static void dbus_cb_name_acquired(GDBusConnection *connection,
+                                  const gchar *name,
+                                  gpointer user_data)
 {
         dbus_conn = connection;
 }
@@ -438,7 +451,7 @@ static void on_name_acquired(GDBusConnection *connection,
  * If name or vendor specified, the name and vendor
  * will get additionally get via the FDN GetServerInformation method
  *
- * @param connection The dbus connection
+ * @param connection The DBus connection
  * @param pid The place to report the PID to
  * @param name The place to report the name to, if not required set to NULL
  * @param vendor The place to report the vendor to, if not required set to NULL
@@ -446,9 +459,9 @@ static void on_name_acquired(GDBusConnection *connection,
  * @returns `true` on success, otherwise `false`
  */
 static bool dbus_get_fdn_daemon_info(GDBusConnection  *connection,
-                                    int   *pid,
-                                    char **name,
-                                    char **vendor)
+                                     guint   *pid,
+                                     char   **name,
+                                     char   **vendor)
 {
         g_return_val_if_fail(pid, false);
         g_return_val_if_fail(connection, false);
@@ -475,7 +488,7 @@ static bool dbus_get_fdn_daemon_info(GDBusConnection  *connection,
                 return false;
         }
 
-        GVariant *daemoninfo;
+        GVariant *daemoninfo = NULL;
         if (name || vendor) {
                 daemoninfo = g_dbus_proxy_call_sync(
                                      proxy_fdn,
@@ -529,27 +542,29 @@ static bool dbus_get_fdn_daemon_info(GDBusConnection  *connection,
                 return false;
         }
 
-        g_variant_get(pidinfo, "(u)", &pid);
-
         g_object_unref(proxy_fdn);
         g_object_unref(proxy_dbus);
         g_free(owner);
         if (daemoninfo)
                 g_variant_unref(daemoninfo);
-        if (pidinfo)
-                g_variant_unref(pidinfo);
 
-        return true;
+        if (pidinfo) {
+                g_variant_get(pidinfo, "(u)", pid);
+                g_variant_unref(pidinfo);
+                return true;
+        } else {
+                return false;
+        }
 }
 
 
-static void on_name_lost(GDBusConnection *connection,
-                         const gchar *name,
-                         gpointer user_data)
+static void dbus_cb_name_lost(GDBusConnection *connection,
+                              const gchar *name,
+                              gpointer user_data)
 {
         if (connection) {
                 char *name;
-                int pid;
+                unsigned int pid;
                 if (dbus_get_fdn_daemon_info(connection, &pid, &name, NULL)) {
                         DIE("Cannot acquire '"FDN_NAME"': "
                             "Name is acquired by '%s' with PID '%d'.", name, pid);
@@ -608,9 +623,9 @@ int dbus_init(void)
         owner_id = g_bus_own_name(G_BUS_TYPE_SESSION,
                                   FDN_NAME,
                                   G_BUS_NAME_OWNER_FLAGS_NONE,
-                                  on_bus_acquired,
-                                  on_name_acquired,
-                                  on_name_lost,
+                                  dbus_cb_bus_acquired,
+                                  dbus_cb_name_acquired,
+                                  dbus_cb_name_lost,
                                   NULL,
                                   NULL);
 
