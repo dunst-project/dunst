@@ -26,6 +26,7 @@ TEST test_notification_is_duplicate(void)
         a->summary = g_strdup("Summary");
         a->body = g_strdup("Body");
         a->iconname = g_strdup("Icon");
+        a->icon_id = g_strdup("Icon");
         a->urgency = URG_NORM;
 
         struct notification *b = notification_create();
@@ -33,7 +34,10 @@ TEST test_notification_is_duplicate(void)
         b->summary = g_strdup("Summary");
         b->body = g_strdup("Body");
         b->iconname = g_strdup("Icon");
+        b->icon_id = g_strdup("Icon");
         b->urgency = URG_NORM;
+
+        ASSERT(notification_is_duplicate(a, b));
 
         CHECK_CALL(test_notification_is_duplicate_field(&(b->appname), a, b));
         CHECK_CALL(test_notification_is_duplicate_field(&(b->summary), a, b));
@@ -47,21 +51,17 @@ TEST test_notification_is_duplicate(void)
         settings.icon_position = ICON_OFF;
         ASSERT(notification_is_duplicate(a, b));
         //Setting pointer to a random value since we are checking for null
-        b->raw_icon = (struct raw_image*)0xff;
-        ASSERT(notification_is_duplicate(a, b));
-        b->raw_icon = NULL;
+        char *icon_id = b->icon_id;
+        b->icon_id = "false";
+        ASSERTm("Icons have to get ignored for duplicate check when icons are off",
+                notification_is_duplicate(a, b));
+        b->icon_id = icon_id;
 
         settings.icon_position = ICON_LEFT;
-        CHECK_CALL(test_notification_is_duplicate_field(&(b->iconname), a, b));
-        b->raw_icon = (struct raw_image*)0xff;
-        ASSERT_FALSE(notification_is_duplicate(a, b));
-        b->raw_icon = NULL;
+        CHECK_CALL(test_notification_is_duplicate_field(&(b->icon_id), a, b));
 
         settings.icon_position = ICON_RIGHT;
-        CHECK_CALL(test_notification_is_duplicate_field(&(b->iconname), a, b));
-        b->raw_icon = (struct raw_image*)0xff;
-        ASSERT_FALSE(notification_is_duplicate(a, b));
-        b->raw_icon = NULL;
+        CHECK_CALL(test_notification_is_duplicate_field(&(b->icon_id), a, b));
 
         settings.icon_position = icon_setting_tmp;
 

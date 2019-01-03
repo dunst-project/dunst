@@ -618,7 +618,8 @@ TEST test_hint_raw_image(void)
         ASSERT_EQ(queues_length_waiting(), len+1);
         n = queues_debug_find_notification_by_id(id);
 
-        ASSERT(n->raw_icon);
+        ASSERT(n->icon);
+        ASSERT(!STR_EQ(n->icon_id, n_dbus->app_icon));
 
         dbus_notification_free(n_dbus);
         g_free(path);

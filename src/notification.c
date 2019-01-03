@@ -24,7 +24,6 @@
 #include "settings.h"
 #include "utils.h"
 
-static void notification_update_icon(struct notification *n);
 static void notification_extract_urls(struct notification *n);
 static void notification_format_message(struct notification *n);
 
@@ -55,7 +54,8 @@ void notification_print(const struct notification *n)
         printf("\tsummary: '%s'\n", n->summary);
         printf("\tbody: '%s'\n", n->body);
         printf("\ticon: '%s'\n", n->iconname);
-        printf("\traw_icon set: %s\n", (n->raw_icon ? "true" : "false"));
+        printf("\traw_icon set: %s\n", (n->icon_id && !STR_EQ(n->iconname, n->icon_id)) ? "true" : "false");
+        printf("\ticon_id: '%s'\n", n->icon_id);
         printf("\tcategory: %s\n", n->category);
         printf("\ttimeout: %ld\n", n->timeout/1000);
         printf("\turgency: %s\n", notification_urgency_to_string(n->urgency));
@@ -175,27 +175,13 @@ int notification_cmp_data(const void *va, const void *vb, void *data)
         return notification_cmp(a, b);
 }
 
-int notification_is_duplicate(const struct notification *a, const struct notification *b)
+bool notification_is_duplicate(const struct notification *a, const struct notification *b)
 {
-        //Comparing raw icons is not supported, assume they are not identical
-        if (settings.icon_position != ICON_OFF
-                && (a->raw_icon || b->raw_icon))
-                return false;
-
         return STR_EQ(a->appname, b->appname)
             && STR_EQ(a->summary, b->summary)
             && STR_EQ(a->body, b->body)
-            && (settings.icon_position != ICON_OFF ? STR_EQ(a->iconname, b->iconname) : 1)
+            && (settings.icon_position != ICON_OFF ? STR_EQ(a->icon_id, b->icon_id) : 1)
             && a->urgency == b->urgency;
-}
-
-/* see notification.h */
-void rawimage_free(struct raw_image *i)
-{
-        ASSERT_OR_RET(i,);
-
-        g_free(i->data);
-        g_free(i);
 }
 
 static void notification_private_free(NotificationPrivate *p)
@@ -241,11 +227,42 @@ void notification_unref(struct notification *n)
         g_free(n->stack_tag);
 
         g_hash_table_unref(n->actions);
-        rawimage_free(n->raw_icon);
+
+        if (n->icon)
+                g_object_unref(n->icon);
+        g_free(n->icon_id);
 
         notification_private_free(n->priv);
 
         g_free(n);
+}
+
+void notification_icon_replace_path(struct notification *n, const char *new_icon)
+{
+        ASSERT_OR_RET(n,);
+        ASSERT_OR_RET(new_icon,);
+        ASSERT_OR_RET(n->iconname != new_icon,);
+
+        g_free(n->iconname);
+        n->iconname = g_strdup(new_icon);
+
+        g_clear_object(&n->icon);
+        g_clear_pointer(&n->icon_id, g_free);
+
+        n->icon = icon_get_for_name(new_icon, &n->icon_id);
+        n->icon = icon_pixbuf_scale(n->icon);
+}
+
+void notification_icon_replace_data(struct notification *n, GVariant *new_icon)
+{
+        ASSERT_OR_RET(n,);
+        ASSERT_OR_RET(new_icon,);
+
+        g_clear_object(&n->icon);
+        g_clear_pointer(&n->icon_id, g_free);
+
+        n->icon = icon_get_for_data(new_icon, &n->icon_id);
+        n->icon = icon_pixbuf_scale(n->icon);
 }
 
 /* see notification.h */
@@ -332,8 +349,13 @@ void notification_init(struct notification *n)
         /* Icon handling */
         if (STR_EMPTY(n->iconname))
                 g_clear_pointer(&n->iconname, g_free);
-        if (!n->raw_icon && !n->iconname)
-                n->iconname = g_strdup(settings.icons[n->urgency]);
+        if (!n->icon && n->iconname) {
+                char *icon = g_strdup(n->iconname);
+                notification_icon_replace_path(n, icon);
+                g_free(icon);
+        }
+        if (!n->icon && !n->iconname)
+                notification_icon_replace_path(n, settings.icons[n->urgency]);
 
         /* Color hints */
         struct notification_colors defcolors;
@@ -365,23 +387,8 @@ void notification_init(struct notification *n)
         rule_apply_all(n);
 
         /* UPDATE derived fields */
-        notification_update_icon(n);
         notification_extract_urls(n);
         notification_format_message(n);
-}
-
-static void notification_update_icon(struct notification *n)
-{
-        g_return_if_fail(n);
-
-        g_clear_object(&n->icon);
-
-        if (n->raw_icon)
-                n->icon = get_pixbuf_from_raw_image(n->raw_icon);
-        else if (n->iconname)
-                n->icon = get_pixbuf_from_icon(n->iconname);
-
-        n->icon = icon_pixbuf_scale(n->icon);
 }
 
 static void notification_format_message(struct notification *n)

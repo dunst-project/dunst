@@ -86,8 +86,6 @@ struct dbus_method {
                         GVariant *parameters, \
                         GDBusMethodInvocation *invocation)
 
-static struct raw_image *get_raw_image_from_data_hint(GVariant *icon_data);
-
 int cmp_methods(const void *vkey, const void *velem)
 {
         const char *key = (const char*)vkey;
@@ -241,7 +239,7 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
         if (!dict_value)
                 dict_value = g_variant_lookup_value(hints, "icon_data", G_VARIANT_TYPE("(iiibiiay)"));
         if (dict_value) {
-                n->raw_icon = get_raw_image_from_data_hint(dict_value);
+                notification_icon_replace_data(n, dict_value);
                 g_variant_unref(dict_value);
         }
 
@@ -575,42 +573,6 @@ static void dbus_cb_name_lost(GDBusConnection *connection,
                 DIE("Cannot connect to DBus.");
         }
         exit(1);
-}
-
-static struct raw_image *get_raw_image_from_data_hint(GVariant *icon_data)
-{
-        struct raw_image *image = g_malloc(sizeof(struct raw_image));
-        GVariant *data_variant;
-        gsize expected_len;
-
-        g_variant_get(icon_data,
-                      "(iiibii@ay)",
-                      &image->width,
-                      &image->height,
-                      &image->rowstride,
-                      &image->has_alpha,
-                      &image->bits_per_sample,
-                      &image->n_channels,
-                      &data_variant);
-
-        expected_len = (image->height - 1) * image->rowstride + image->width
-                * ((image->n_channels * image->bits_per_sample + 7) / 8);
-
-        if (expected_len != g_variant_get_size (data_variant)) {
-                LOG_W("Expected image data to be of length %" G_GSIZE_FORMAT
-                      " but got a length of %" G_GSIZE_FORMAT,
-                      expected_len,
-                      g_variant_get_size(data_variant));
-                g_free(image);
-                g_variant_unref(data_variant);
-                return NULL;
-        }
-
-        image->data = (guchar *) g_memdup(g_variant_get_data(data_variant),
-                                          g_variant_get_size(data_variant));
-        g_variant_unref(data_variant);
-
-        return image;
 }
 
 int dbus_init(void)

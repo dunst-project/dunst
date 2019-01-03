@@ -37,9 +37,34 @@ GdkPixbuf *get_pixbuf_from_file(const char *filename);
  */
 GdkPixbuf *get_pixbuf_from_icon(const char *iconname);
 
-/** Convert a struct raw_image to a `GdkPixbuf`
+/** Read an icon from disk and convert it to a GdkPixbuf.
+ *
+ * The returned id will be a unique identifier. To check if two given
+ * GdkPixbufs are equal, it's sufficient to just compare the id strings.
+ *
+ * @param name A string describing and icon. May be a full path, a file path or
+ *             just a simple name. If it's a name without a slash, the icon will
+ *             get searched in the folders of the icon_path setting.
+ * @param id   (necessary) A unique identifier of the returned pixbuf. Only filled,
+ *             if the return value is non-NULL.
+ * @return     a pixbuf representing name's image.
+ *             If an invalid path given, it will return NULL.
  */
-GdkPixbuf *get_pixbuf_from_raw_image(const struct raw_image *raw_image);
+GdkPixbuf *icon_get_for_name(const char *name, char **id);
+
+/** Convert a GVariant like described in GdkPixbuf
+ *
+ * The returned id will be a unique identifier. To check if two given
+ * GdkPixbufs are equal, it's sufficient to just compare the id strings.
+ *
+ * @param data A GVariant in the format "(iiibii@ay)" filled with values
+ *             like described in the notification spec.
+ * @param id   (necessary) A unique identifier of the returned pixbuf.
+ *             Only filled, if the return value is non-NULL.
+ * @return     a pixbuf representing name's image.
+ *             If an invalid GVariant is passed, it will return NULL.
+ */
+GdkPixbuf *icon_get_for_data(GVariant *data, char **id);
 
 #endif
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

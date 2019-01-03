@@ -26,11 +26,8 @@ void rule_apply(struct rule *r, struct notification *n)
                 n->transient = r->set_transient;
         if (r->markup != MARKUP_NULL)
                 n->markup = r->markup;
-        if (r->new_icon) {
-                g_free(n->iconname);
-                n->iconname = g_strdup(r->new_icon);
-                g_clear_pointer(&n->raw_icon, rawimage_free);
-        }
+        if (r->new_icon)
+                notification_icon_replace_path(n, r->new_icon);
         if (r->fg) {
                 g_free(n->colors.fg);
                 n->colors.fg = g_strdup(r->fg);
