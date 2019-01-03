@@ -10,7 +10,7 @@
 //! Test if a string is non-NULL and not empty
 #define STR_FULL(s) !(STR_EMPTY(s))
 //! Test if string a and b contain the same chars
-#define STR_EQ(a, b) (strcmp(a, b) == 0)
+#define STR_EQ(a, b) (g_strcmp0(a, b) == 0)
 //! Test if string a and b are same up to n chars
 #define STRN_EQ(a, b, n) (strncmp(a, b, n) == 0)
 //! Test if string a and b are the same case-insensitively
