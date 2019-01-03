@@ -30,10 +30,7 @@ TEST test_notification_is_duplicate(struct notification *a,
 
         ASSERT(notification_is_duplicate(a, b));
 
-        char *tmp = b->icon;
         enum icon_position icon_setting_tmp = settings.icon_position;
-
-        b->icon = "Test1";
 
         settings.icon_position = ICON_OFF;
         ASSERT(notification_is_duplicate(a, b));
@@ -43,18 +40,17 @@ TEST test_notification_is_duplicate(struct notification *a,
         b->raw_icon = NULL;
 
         settings.icon_position = ICON_LEFT;
-        ASSERT_FALSE(notification_is_duplicate(a, b));
+        CHECK_CALL(test_notification_is_duplicate_field(&(b->icon), a, b));
         b->raw_icon = (struct raw_image*)0xff;
         ASSERT_FALSE(notification_is_duplicate(a, b));
         b->raw_icon = NULL;
 
         settings.icon_position = ICON_RIGHT;
-        ASSERT_FALSE(notification_is_duplicate(a, b));
+        CHECK_CALL(test_notification_is_duplicate_field(&(b->icon), a, b));
         b->raw_icon = (struct raw_image*)0xff;
         ASSERT_FALSE(notification_is_duplicate(a, b));
         b->raw_icon = NULL;
 
-        b->icon = tmp;
         settings.icon_position = icon_setting_tmp;
 
         ASSERT(notification_is_duplicate(a, b));
