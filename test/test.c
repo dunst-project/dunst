@@ -31,8 +31,11 @@ int main(int argc, char *argv[]) {
         }
         base = dirname(prog);
 
-        // do not print out warning messages, when executing tests
-        dunst_log_init(true);
+        /* By default do not print out warning messages, when executing tests.
+         * But allow, if DUNST_TEST_LOG=1 is set in environment. */
+        const char *log = getenv("DUNST_TEST_LOG");
+        bool printlog = log && atoi(log) ? true : false;
+        dunst_log_init(!printlog);
 
         GREATEST_MAIN_BEGIN();
         RUN_SUITE(suite_utils);
