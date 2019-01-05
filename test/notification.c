@@ -19,21 +19,30 @@ TEST test_notification_is_duplicate_field(char **field,
         PASS();
 }
 
-TEST test_notification_is_duplicate(struct notification *a,
-                                    struct notification *b)
+TEST test_notification_is_duplicate(void)
 {
-        ASSERT(notification_is_duplicate(a, b));
+        struct notification *a = notification_create();
+        a->appname = g_strdup("Test");
+        a->summary = g_strdup("Summary");
+        a->body = g_strdup("Body");
+        a->icon = g_strdup("Icon");
+        a->urgency = URG_NORM;
+
+        struct notification *b = notification_create();
+        b->appname = g_strdup("Test");
+        b->summary = g_strdup("Summary");
+        b->body = g_strdup("Body");
+        b->icon = g_strdup("Icon");
+        b->urgency = URG_NORM;
 
         CHECK_CALL(test_notification_is_duplicate_field(&(b->appname), a, b));
         CHECK_CALL(test_notification_is_duplicate_field(&(b->summary), a, b));
         CHECK_CALL(test_notification_is_duplicate_field(&(b->body), a, b));
 
-        ASSERT(notification_is_duplicate(a, b));
+        ASSERTm("One of the notifications got corrupted during test",
+                notification_is_duplicate(a, b));
 
-        char *tmp = b->icon;
         enum icon_position icon_setting_tmp = settings.icon_position;
-
-        b->icon = "Test1";
 
         settings.icon_position = ICON_OFF;
         ASSERT(notification_is_duplicate(a, b));
@@ -43,18 +52,17 @@ TEST test_notification_is_duplicate(struct notification *a,
         b->raw_icon = NULL;
 
         settings.icon_position = ICON_LEFT;
-        ASSERT_FALSE(notification_is_duplicate(a, b));
+        CHECK_CALL(test_notification_is_duplicate_field(&(b->icon), a, b));
         b->raw_icon = (struct raw_image*)0xff;
         ASSERT_FALSE(notification_is_duplicate(a, b));
         b->raw_icon = NULL;
 
         settings.icon_position = ICON_RIGHT;
-        ASSERT_FALSE(notification_is_duplicate(a, b));
+        CHECK_CALL(test_notification_is_duplicate_field(&(b->icon), a, b));
         b->raw_icon = (struct raw_image*)0xff;
         ASSERT_FALSE(notification_is_duplicate(a, b));
         b->raw_icon = NULL;
 
-        b->icon = tmp;
         settings.icon_position = icon_setting_tmp;
 
         ASSERT(notification_is_duplicate(a, b));
@@ -66,6 +74,8 @@ TEST test_notification_is_duplicate(struct notification *a,
         b->urgency = URG_CRIT;
         ASSERT_FALSE(notification_is_duplicate(a, b));
 
+        notification_unref(a);
+        notification_unref(b);
         PASS();
 }
 
@@ -154,30 +164,12 @@ SUITE(suite_notification)
         char *config_path = g_strconcat(base, "/data/dunstrc.default", NULL);
         load_settings(config_path);
 
-        struct notification *a = notification_create();
-        a->appname = g_strdup("Test");
-        a->summary = g_strdup("Summary");
-        a->body = g_strdup("Body");
-        a->icon = g_strdup("Icon");
-        a->urgency = URG_NORM;
-
-        struct notification *b = notification_create();
-        b->appname = g_strdup("Test");
-        b->summary = g_strdup("Summary");
-        b->body = g_strdup("Body");
-        b->icon = g_strdup("Icon");
-        b->urgency = URG_NORM;
-
-        //2 equal notifications to be passed for duplicate checking,
-        RUN_TESTp(test_notification_is_duplicate, a, b);
-        g_clear_pointer(&a, notification_unref);
-        g_clear_pointer(&b, notification_unref);
-
+        RUN_TEST(test_notification_is_duplicate);
         RUN_TEST(test_notification_replace_single_field);
         RUN_TEST(test_notification_referencing);
 
         // TEST notification_format_message
-        a = notification_create();
+        struct notification *a = notification_create();
         a->appname = g_strdup("MyApp");
         a->summary = g_strdup("I've got a summary!");
         a->body =    g_strdup("Look at my shiny <notification>");
