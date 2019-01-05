@@ -3,9 +3,12 @@
 #include "greatest.h"
 
 #include <assert.h>
+#include <gdk-pixbuf/gdk-pixbuf.h>
 #include <gio/gio.h>
 
 #include "queues.h"
+
+extern const char *base;
 
 void wake_up_void(void) {  }
 
@@ -245,6 +248,37 @@ bool dbus_notification_fire(struct dbus_notification *n, uint *id)
         } else {
                 return false;
         }
+}
+
+void dbus_notification_set_raw_image(struct dbus_notification *n_dbus, const char *path)
+{
+        GdkPixbuf *pb = gdk_pixbuf_new_from_file(path, NULL);
+
+        if (!pb)
+                return;
+
+        GVariant *hint_data = g_variant_new_from_data(
+                                G_VARIANT_TYPE("ay"),
+                                gdk_pixbuf_read_pixels(pb),
+                                gdk_pixbuf_get_byte_length(pb),
+                                TRUE,
+                                (GDestroyNotify) g_object_unref,
+                                g_object_ref(pb));
+
+        GVariant *hint = g_variant_new(
+                                "(iiibii@ay)",
+                                gdk_pixbuf_get_width(pb),
+                                gdk_pixbuf_get_height(pb),
+                                gdk_pixbuf_get_rowstride(pb),
+                                gdk_pixbuf_get_has_alpha(pb),
+                                gdk_pixbuf_get_bits_per_sample(pb),
+                                gdk_pixbuf_get_n_channels(pb),
+                                hint_data);
+
+        g_hash_table_insert(n_dbus->hints,
+                            g_strdup("image-data"),
+                            g_variant_ref_sink(hint));
+        g_object_unref(pb);
 }
 
 /////// TESTS
@@ -562,6 +596,36 @@ TEST test_hint_urgency(void)
         PASS();
 }
 
+TEST test_hint_raw_image(void)
+{
+        guint id;
+        struct notification *n;
+        struct dbus_notification *n_dbus;
+
+        char *path = g_strconcat(base, "/data/icons/valid.png", NULL);
+        gsize len = queues_length_waiting();
+
+        n_dbus = dbus_notification_new();
+        dbus_notification_set_raw_image(n_dbus, path);
+        n_dbus->app_name = "dunstteststack";
+        n_dbus->app_icon = "NONE";
+        n_dbus->summary = "test_hint_raw_image";
+        n_dbus->body = "Summary of it";
+
+        ASSERT(dbus_notification_fire(n_dbus, &id));
+        ASSERT(id != 0);
+
+        ASSERT_EQ(queues_length_waiting(), len+1);
+        n = queues_debug_find_notification_by_id(id);
+
+        ASSERT(n->raw_icon);
+
+        dbus_notification_free(n_dbus);
+        g_free(path);
+
+        PASS();
+}
+
 TEST test_server_caps(enum markup_mode markup)
 {
         GVariant *reply;
@@ -715,6 +779,7 @@ gpointer run_threaded_tests(gpointer data)
         RUN_TEST(test_hint_icons);
         RUN_TEST(test_hint_category);
         RUN_TEST(test_hint_urgency);
+        RUN_TEST(test_hint_raw_image);
         RUN_TEST(test_dbus_notify_colors);
         RUN_TESTp(test_server_caps, MARKUP_FULL);
         RUN_TESTp(test_server_caps, MARKUP_STRIP);
