@@ -18,8 +18,7 @@
  */
 static char *markup_quote(char *str)
 {
-        if (!str)
-                return NULL;
+        ASSERT_OR_RET(str, NULL);
 
         str = string_replace_all("&", "&amp;", str);
         str = string_replace_all("\"", "&quot;", str);
@@ -36,8 +35,7 @@ static char *markup_quote(char *str)
  */
 static char *markup_unquote(char *str)
 {
-        if (!str)
-                return NULL;
+        ASSERT_OR_RET(str, NULL);
 
         str = string_replace_all("&quot;", "\"", str);
         str = string_replace_all("&apos;", "'", str);
@@ -54,8 +52,7 @@ static char *markup_unquote(char *str)
  */
 static char *markup_br2nl(char *str)
 {
-        if (!str)
-                return NULL;
+        ASSERT_OR_RET(str, NULL);
 
         str = string_replace_all("<br>", "\n", str);
         str = string_replace_all("<br/>", "\n", str);
@@ -224,8 +221,7 @@ void markup_strip_img(char **str, char **urls)
 /* see markup.h */
 char *markup_strip(char *str)
 {
-        if (!str)
-                return NULL;
+        ASSERT_OR_RET(str, NULL);
 
         /* strip all tags */
         string_strip_delimited(str, '<', '>');
@@ -248,8 +244,7 @@ static bool markup_is_entity(const char *str)
         assert(*str == '&');
 
         char *end = strchr(str, ';');
-        if (!end)
-                return false;
+        ASSERT_OR_RET(end, false);
 
         // Parse (hexa)decimal entities with the format &#1234; or &#xABC;
         if (str[1] == '#') {
@@ -293,8 +288,7 @@ static bool markup_is_entity(const char *str)
  */
 static char *markup_escape_unsupported(char *str)
 {
-        if (!str)
-                return NULL;
+        ASSERT_OR_RET(str, NULL);
 
         char *match = str;
         while ((match = strchr(match, '&'))) {
@@ -313,8 +307,7 @@ static char *markup_escape_unsupported(char *str)
 /* see markup.h */
 char *markup_transform(char *str, enum markup_mode markup_mode)
 {
-        if (!str)
-                return NULL;
+        ASSERT_OR_RET(str, NULL);
 
         switch (markup_mode) {
         case MARKUP_NULL:

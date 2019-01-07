@@ -11,6 +11,7 @@
 #include "dunst.h"
 #include "log.h"
 #include "utils.h"
+#include "settings.h"
 
 struct entry {
         char *key;
@@ -38,6 +39,122 @@ static char *usage_str = NULL;
 static void cmdline_usage_append(const char *key, const char *type, const char *description);
 
 static int cmdline_find_option(const char *key);
+
+#define STRING_PARSE_RET(string, value) if (STR_EQ(s, string)) { *ret = value; return true; }
+
+bool string_parse_alignment(const char *s, enum alignment *ret)
+{
+        ASSERT_OR_RET(s, false);
+        ASSERT_OR_RET(ret, false);
+
+        STRING_PARSE_RET("left",   ALIGN_LEFT);
+        STRING_PARSE_RET("center", ALIGN_CENTER);
+        STRING_PARSE_RET("right",  ALIGN_RIGHT);
+
+        return false;
+}
+
+bool string_parse_ellipsize(const char *s, enum ellipsize *ret)
+{
+        ASSERT_OR_RET(s, false);
+        ASSERT_OR_RET(ret, false);
+
+        STRING_PARSE_RET("start",  ELLIPSE_START);
+        STRING_PARSE_RET("middle", ELLIPSE_MIDDLE);
+        STRING_PARSE_RET("end",    ELLIPSE_END);
+
+        return false;
+}
+
+bool string_parse_follow_mode(const char *s, enum follow_mode *ret)
+{
+        ASSERT_OR_RET(s, false);
+        ASSERT_OR_RET(ret, false);
+
+        STRING_PARSE_RET("mouse",    FOLLOW_MOUSE);
+        STRING_PARSE_RET("keyboard", FOLLOW_KEYBOARD);
+        STRING_PARSE_RET("none",     FOLLOW_NONE);
+
+        return false;
+}
+
+
+bool string_parse_fullscreen(const char *s, enum behavior_fullscreen *ret)
+{
+        ASSERT_OR_RET(s, false);
+        ASSERT_OR_RET(ret, false);
+
+        STRING_PARSE_RET("show",     FS_SHOW);
+        STRING_PARSE_RET("delay",    FS_DELAY);
+        STRING_PARSE_RET("pushback", FS_PUSHBACK);
+
+        return false;
+}
+
+bool string_parse_icon_position(const char *s, enum icon_position *ret)
+{
+        ASSERT_OR_RET(s, false);
+        ASSERT_OR_RET(ret, false);
+
+        STRING_PARSE_RET("left",  ICON_LEFT);
+        STRING_PARSE_RET("right", ICON_RIGHT);
+        STRING_PARSE_RET("off",   ICON_OFF);
+
+        return false;
+}
+
+bool string_parse_markup_mode(const char *s, enum markup_mode *ret)
+{
+        ASSERT_OR_RET(s, false);
+        ASSERT_OR_RET(ret, false);
+
+        STRING_PARSE_RET("strip", MARKUP_STRIP);
+        STRING_PARSE_RET("no",    MARKUP_NO);
+        STRING_PARSE_RET("full",  MARKUP_FULL);
+        STRING_PARSE_RET("yes",   MARKUP_FULL);
+
+        return false;
+}
+
+bool string_parse_mouse_action(const char *s, enum mouse_action *ret)
+{
+        ASSERT_OR_RET(s, false);
+        ASSERT_OR_RET(ret, false);
+
+        STRING_PARSE_RET("none",           MOUSE_NONE);
+        STRING_PARSE_RET("do_action",      MOUSE_DO_ACTION);
+        STRING_PARSE_RET("close_current",  MOUSE_CLOSE_CURRENT);
+        STRING_PARSE_RET("close_all",      MOUSE_CLOSE_ALL);
+
+        return false;
+}
+
+bool string_parse_sepcolor(const char *s, struct separator_color_data *ret)
+{
+        ASSERT_OR_RET(s, false);
+        ASSERT_OR_RET(ret, false);
+
+        STRING_PARSE_RET("auto",       (struct separator_color_data){.type = SEP_AUTO});
+        STRING_PARSE_RET("foreground", (struct separator_color_data){.type = SEP_FOREGROUND});
+        STRING_PARSE_RET("frame",      (struct separator_color_data){.type = SEP_FRAME});
+
+        ret->type = SEP_CUSTOM;
+        ret->sep_color = g_strdup(s);
+
+        return true;
+}
+
+bool string_parse_urgency(const char *s, enum urgency *ret)
+{
+        ASSERT_OR_RET(s, false);
+        ASSERT_OR_RET(ret, false);
+
+        STRING_PARSE_RET("low",      URG_LOW);
+        STRING_PARSE_RET("normal",   URG_NORM);
+        STRING_PARSE_RET("critical", URG_CRIT);
+
+        return false;
+}
 
 struct section *new_section(const char *name)
 {
@@ -95,9 +212,7 @@ void add_entry(const char *section_name, const char *key, const char *value)
 const char *get_value(const char *section, const char *key)
 {
         struct section *s = get_section(section);
-        if (!s) {
-                return NULL;
-        }
+        ASSERT_OR_RET(s, NULL);
 
         for (int i = 0; i < s->entry_count; i++) {
                 if (STR_EQ(s->entries[i].key, key)) {
@@ -158,11 +273,8 @@ bool ini_is_set(const char *ini_section, const char *ini_key)
 
 const char *next_section(const char *section)
 {
-        if (section_count == 0)
-                return NULL;
-
-        if (!section)
-                return sections[0].name;
+        ASSERT_OR_RET(section_count > 0, NULL);
+        ASSERT_OR_RET(section, sections[0].name);
 
         for (int i = 0; i < section_count; i++) {
                 if (STR_EQ(section, sections[i].name)) {
@@ -202,8 +314,7 @@ int ini_get_bool(const char *section, const char *key, int def)
 
 int load_ini_file(FILE *fp)
 {
-        if (!fp)
-                return 1;
+        ASSERT_OR_RET(fp, 1);
 
         char *line = NULL;
         size_t line_len = 0;
@@ -277,9 +388,8 @@ void cmdline_load(int argc, char *argv[])
 
 int cmdline_find_option(const char *key)
 {
-        if (!key) {
-                return -1;
-        }
+        ASSERT_OR_RET(key, -1);
+
         char *key1 = g_strdup(key);
         char *key2 = strchr(key1, '/');
 
@@ -530,24 +640,6 @@ void cmdline_usage_append(const char *key, const char *type, const char *descrip
 const char *cmdline_create_usage(void)
 {
         return usage_str;
-}
-
-/* see option_parser.h */
-enum behavior_fullscreen parse_enum_fullscreen(const char *string, enum behavior_fullscreen def)
-{
-        if (!string)
-                return def;
-
-        if (STR_EQ(string, "show"))
-                return FS_SHOW;
-        else if (STR_EQ(string, "delay"))
-                return FS_DELAY;
-        else if (STR_EQ(string, "pushback"))
-                return FS_PUSHBACK;
-        else {
-                LOG_W("Unknown fullscreen value: '%s'\n", string);
-                return def;
-        }
 }
 
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

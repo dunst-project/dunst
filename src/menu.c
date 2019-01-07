@@ -222,8 +222,7 @@ void invoke_action(const char *action)
  */
 void dispatch_menu_result(const char *input)
 {
-        if (!input)
-                return;
+        ASSERT_OR_RET(input,);
 
         char *in = g_strdup(input);
         g_strstrip(in);
@@ -248,8 +247,7 @@ char *invoke_dmenu(const char *dmenu_input)
                 return NULL;
         }
 
-        if (!dmenu_input || *dmenu_input == '\0')
-                return NULL;
+        ASSERT_OR_RET(STR_FULL(dmenu_input), NULL);
 
         gint dunst_to_dmenu;
         gint dmenu_to_dunst;

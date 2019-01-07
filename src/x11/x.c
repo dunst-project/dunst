@@ -674,8 +674,7 @@ void x_win_show(struct window_x11 *win)
  */
 void x_win_hide(struct window_x11 *win)
 {
-        if (!win->visible)
-                return;
+        ASSERT_OR_RET(win->visible,);
 
         x_shortcut_ungrab(&settings.close_ks);
         x_shortcut_ungrab(&settings.close_all_ks);
@@ -755,8 +754,7 @@ static int x_shortcut_tear_down_error_handler(void)
  */
 static int x_shortcut_grab(struct keyboard_shortcut *ks)
 {
-        if (!ks->is_valid)
-                return 1;
+        ASSERT_OR_RET(ks->is_valid, 1);
         Window root;
         root = RootWindow(xctx.dpy, DefaultScreen(xctx.dpy));
 
@@ -805,8 +803,7 @@ static void x_shortcut_ungrab(struct keyboard_shortcut *ks)
  */
 static void x_shortcut_init(struct keyboard_shortcut *ks)
 {
-        if (!ks|| !ks->str)
-                return;
+        ASSERT_OR_RET(ks && ks->str,);
 
         if (STR_EQ(ks->str, "none") || (STR_EQ(ks->str, ""))) {
                 ks->is_valid = false;

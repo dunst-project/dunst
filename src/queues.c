@@ -113,8 +113,7 @@ static void queues_swap_notifications(GQueue *queueA,
  */
 static bool queues_notification_is_ready(const struct notification *n, struct dunst_status status, bool shown)
 {
-        if (!status.running)
-                return false;
+        ASSERT_OR_RET(status.running, false);
         if (status.fullscreen && shown)
                 return n && n->fullscreen != FS_PUSHBACK;
         else if (status.fullscreen && !shown)
@@ -418,8 +417,7 @@ void queues_update(struct dunst_status status)
                 struct notification *n = iter->data;
                 nextiter = iter->next;
 
-                if (!n)
-                        return;
+                ASSERT_OR_RET(n,);
 
                 if (!queues_notification_is_ready(n, status, false)) {
                         iter = nextiter;

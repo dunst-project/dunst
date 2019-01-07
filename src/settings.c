@@ -18,80 +18,18 @@
 
 struct settings settings;
 
-static const char *follow_mode_to_string(enum follow_mode f_mode)
+static enum urgency ini_get_urgency(const char *section, const char *key, const enum urgency def)
 {
-        switch(f_mode) {
-        case FOLLOW_NONE: return "none";
-        case FOLLOW_MOUSE: return "mouse";
-        case FOLLOW_KEYBOARD: return "keyboard";
-        default: return "";
+        enum urgency ret;
+        char *c = ini_get_string(section, key, NULL);
+
+        if (!string_parse_urgency(c, &ret)) {
+                if (c)
+                        LOG_W("Unknown urgency: '%s'", c);
+                ret = def;
         }
-}
 
-static enum follow_mode parse_follow_mode(const char *mode)
-{
-        if (!mode)
-                return FOLLOW_NONE;
-
-        if (STR_EQ(mode, "mouse"))
-                return FOLLOW_MOUSE;
-        else if (STR_EQ(mode, "keyboard"))
-                return FOLLOW_KEYBOARD;
-        else if (STR_EQ(mode, "none"))
-                return FOLLOW_NONE;
-        else {
-                LOG_W("Unknown follow mode: '%s'", mode);
-                return FOLLOW_NONE;
-        }
-}
-
-static enum markup_mode parse_markup_mode(const char *mode)
-{
-        if (STR_EQ(mode, "strip")) {
-                return MARKUP_STRIP;
-        } else if (STR_EQ(mode, "no")) {
-                return MARKUP_NO;
-        } else if (STR_EQ(mode, "full") || STR_EQ(mode, "yes")) {
-                return MARKUP_FULL;
-        } else {
-                LOG_W("Unknown markup mode: '%s'", mode);
-                return MARKUP_NO;
-        }
-}
-
-static enum mouse_action parse_mouse_action(const char *action)
-{
-        if (STR_EQ(action, "none"))
-                return MOUSE_NONE;
-        else if (STR_EQ(action, "do_action"))
-                return MOUSE_DO_ACTION;
-        else if (STR_EQ(action, "close_current"))
-                return MOUSE_CLOSE_CURRENT;
-        else if (STR_EQ(action, "close_all"))
-                return MOUSE_CLOSE_ALL;
-        else {
-                LOG_W("Unknown mouse action: '%s'", action);
-                return MOUSE_NONE;
-        }
-}
-
-
-static enum urgency ini_get_urgency(const char *section, const char *key, const int def)
-{
-        int ret = def;
-        char *urg = ini_get_string(section, key, "");
-
-        if (STR_FULL(urg)) {
-                if (STR_EQ(urg, "low"))
-                        ret = URG_LOW;
-                else if (STR_EQ(urg, "normal"))
-                        ret = URG_NORM;
-                else if (STR_EQ(urg, "critical"))
-                        ret = URG_CRIT;
-                else
-                        LOG_W("Unknown urgency: '%s'", urg);
-        }
-        g_free(urg);
+        g_free(c);
         return ret;
 }
 
@@ -206,13 +144,11 @@ void load_settings(char *cmdline_config_path)
                         "Specify how markup should be handled"
                 );
 
-                //Use markup if set
-                //Use default if settings.markup not set yet
-                //  (=>c empty&&!allow_markup)
-                if (c) {
-                        settings.markup = parse_markup_mode(c);
-                } else if (!settings.markup) {
-                        settings.markup = defaults.markup;
+                if (!string_parse_markup_mode(c, &settings.markup)) {
+                        if (c)
+                                LOG_W("Cannot parse markup mode value: '%s'", c);
+                        if (!settings.markup)
+                                settings.markup = defaults.markup;
                 }
                 g_free(c);
         }
@@ -244,20 +180,13 @@ void load_settings(char *cmdline_config_path)
         {
                 char *c = option_get_string(
                         "global",
-                        "ellipsize", "-ellipsize", "",
+                        "ellipsize", "-ellipsize", NULL,
                         "Ellipsize truncated lines on the start/middle/end"
                 );
 
-                if (STR_EMPTY(c)) {
-                        settings.ellipsize = defaults.ellipsize;
-                } else if (STR_EQ(c, "start")) {
-                        settings.ellipsize = ELLIPSE_START;
-                } else if (STR_EQ(c, "middle")) {
-                        settings.ellipsize = ELLIPSE_MIDDLE;
-                } else if (STR_EQ(c, "end")) {
-                        settings.ellipsize = ELLIPSE_END;
-                } else {
-                        LOG_W("Unknown ellipsize value: '%s'", c);
+                if (!string_parse_ellipsize(c, &settings.ellipsize)) {
+                        if (c)
+                                LOG_W("Unknown ellipsize value: '%s'", c);
                         settings.ellipsize = defaults.ellipsize;
                 }
                 g_free(c);
@@ -284,11 +213,15 @@ void load_settings(char *cmdline_config_path)
         {
                 char *c = option_get_string(
                         "global",
-                        "follow", "-follow", follow_mode_to_string(defaults.f_mode),
+                        "follow", "-follow", NULL,
                         "Follow mouse, keyboard or none?"
                 );
 
-                settings.f_mode = parse_follow_mode(c);
+                if (!string_parse_follow_mode(c, &settings.f_mode)) {
+                        if (c)
+                                LOG_W("Cannot parse follow mode: %s", c);
+                        settings.f_mode = defaults.f_mode;
+                }
                 g_free(c);
         }
 
@@ -347,17 +280,14 @@ void load_settings(char *cmdline_config_path)
                         "alignment", "-align/-alignment", "",
                         "Text alignment left/center/right"
                 );
-                if (STR_FULL(c)) {
-                        if (STR_EQ(c, "left"))
-                                settings.align = ALIGN_LEFT;
-                        else if (STR_EQ(c, "center"))
-                                settings.align = ALIGN_CENTER;
-                        else if (STR_EQ(c, "right"))
-                                settings.align = ALIGN_RIGHT;
-                        else
+
+                if (!string_parse_alignment(c, &settings.align)) {
+                        if (c)
                                 LOG_W("Unknown alignment value: '%s'", c);
-                        g_free(c);
+                        settings.align = defaults.align;
                 }
+
+                g_free(c);
         }
 
         settings.show_age_threshold = option_get_time(
@@ -427,17 +357,8 @@ void load_settings(char *cmdline_config_path)
                         "Color of the separator line (or 'auto')"
                 );
 
-                if (STR_FULL(c)) {
-                        if (STR_EQ(c, "auto"))
-                                settings.sep_color = SEP_AUTO;
-                        else if (STR_EQ(c, "foreground"))
-                                settings.sep_color = SEP_FOREGROUND;
-                        else if (STR_EQ(c, "frame"))
-                                settings.sep_color = SEP_FRAME;
-                        else {
-                                settings.sep_color = SEP_CUSTOM;
-                                settings.sep_custom_color_str = g_strdup(c);
-                        }
+                if (!string_parse_sepcolor(c, &settings.sep_color)) {
+                        settings.sep_color = defaults.sep_color;
                 }
                 g_free(c);
         }
@@ -494,17 +415,12 @@ void load_settings(char *cmdline_config_path)
                         "Align icons left/right/off"
                 );
 
-                if (STR_FULL(c)) {
-                        if (STR_EQ(c, "left"))
-                                settings.icon_position = ICON_LEFT;
-                        else if (STR_EQ(c, "right"))
-                                settings.icon_position = ICON_RIGHT;
-                        else if (STR_EQ(c, "off"))
-                                settings.icon_position = ICON_OFF;
-                        else
+                if (!string_parse_icon_position(c, &settings.icon_position)) {
+                        if (c)
                                 LOG_W("Unknown icon position: '%s'", c);
-                        g_free(c);
+                        settings.icon_position = defaults.icon_position;
                 }
+                g_free(c);
         }
 
         settings.max_icon_size = option_get_int(
@@ -580,12 +496,11 @@ void load_settings(char *cmdline_config_path)
                         "Action of Left click event"
                 );
 
-                if (c) {
-                        settings.mouse_left_click = parse_mouse_action(c);
-                } else {
+                if (!string_parse_mouse_action(c, &settings.mouse_left_click)) {
+                        if (c)
+                                LOG_W("Unknown mouse action value: '%s'", c);
                         settings.mouse_left_click = defaults.mouse_left_click;
                 }
-
                 g_free(c);
         }
 
@@ -596,12 +511,11 @@ void load_settings(char *cmdline_config_path)
                         "Action of middle click event"
                 );
 
-                if (c) {
-                        settings.mouse_middle_click = parse_mouse_action(c);
-                } else {
+                if (!string_parse_mouse_action(c, &settings.mouse_middle_click)) {
+                        if (c)
+                                LOG_W("Unknown mouse action value: '%s'", c);
                         settings.mouse_middle_click = defaults.mouse_middle_click;
                 }
-
                 g_free(c);
         }
 
@@ -612,12 +526,11 @@ void load_settings(char *cmdline_config_path)
                         "Action of right click event"
                 );
 
-                if (c) {
-                        settings.mouse_right_click = parse_mouse_action(c);
-                } else {
+                if (!string_parse_mouse_action(c, &settings.mouse_right_click)) {
+                        if (c)
+                                LOG_W("Unknown mouse action value: '%s'", c);
                         settings.mouse_right_click = defaults.mouse_right_click;
                 }
-
                 g_free(c);
         }
 
@@ -795,10 +708,11 @@ void load_settings(char *cmdline_config_path)
                                 "markup", NULL
                         );
 
-                        if (c) {
-                                r->markup = parse_markup_mode(c);
-                                g_free(c);
+                        if (!string_parse_markup_mode(c, &r->markup)) {
+                                if (c)
+                                        LOG_W("Invalid markup mode value: %s", c);
                         }
+                        g_free(c);
                 }
 
                 r->urgency = ini_get_urgency(cur_section, "urgency", r->urgency);
@@ -817,7 +731,10 @@ void load_settings(char *cmdline_config_path)
                                 "fullscreen", NULL
                         );
 
-                        r->fullscreen = parse_enum_fullscreen(c, r->fullscreen);
+                        if (!string_parse_fullscreen(c, &r->fullscreen)) {
+                                if (c)
+                                        LOG_W("Invalid fullscreen value: %s", c);
+                        }
                         g_free(c);
                 }
                 r->script = ini_get_path(cur_section, "script", NULL);

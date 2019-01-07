@@ -168,8 +168,7 @@ int notification_cmp_data(const void *va, const void *vb, void *data)
         struct notification *a = (struct notification *) va;
         struct notification *b = (struct notification *) vb;
 
-        if (!settings.sort)
-                return 1;
+        ASSERT_OR_RET(settings.sort, 1);
 
         return notification_cmp(a, b);
 }
@@ -191,8 +190,7 @@ int notification_is_duplicate(const struct notification *a, const struct notific
 /* see notification.h */
 void rawimage_free(struct raw_image *i)
 {
-        if (!i)
-                return;
+        ASSERT_OR_RET(i,);
 
         g_free(i->data);
         g_free(i);
@@ -220,8 +218,7 @@ void notification_ref(struct notification *n)
 /* see notification.h */
 void notification_unref(struct notification *n)
 {
-        if (!n)
-                return;
+        ASSERT_OR_RET(n,);
 
         assert(n->priv->refcount > 0);
         if (!g_atomic_int_dec_and_test(&n->priv->refcount))

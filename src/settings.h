@@ -15,6 +15,11 @@ enum separator_color { SEP_FOREGROUND, SEP_AUTO, SEP_FRAME, SEP_CUSTOM };
 enum follow_mode { FOLLOW_NONE, FOLLOW_MOUSE, FOLLOW_KEYBOARD };
 enum mouse_action { MOUSE_NONE, MOUSE_DO_ACTION, MOUSE_CLOSE_CURRENT, MOUSE_CLOSE_ALL };
 
+struct separator_color_data {
+        enum separator_color type;
+        char *sep_color;
+};
+
 struct geometry {
         int x;
         int y;
@@ -24,7 +29,6 @@ struct geometry {
         bool negative_y;
         bool negative_width;
         bool width_set;
-
 };
 
 struct settings {
@@ -61,8 +65,7 @@ struct settings {
         int separator_height;
         int padding;
         int h_padding;
-        enum separator_color sep_color;
-        char *sep_custom_color_str;
+        struct separator_color_data sep_color;
         int frame_width;
         char *frame_color;
         int startup_notification;

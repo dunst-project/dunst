@@ -93,14 +93,14 @@ static struct color calculate_foreground_color(struct color bg)
 static struct color layout_get_sepcolor(struct colored_layout *cl,
                                         struct colored_layout *cl_next)
 {
-        switch (settings.sep_color) {
+        switch (settings.sep_color.type) {
         case SEP_FRAME:
                 if (cl_next->n->urgency > cl->n->urgency)
                         return cl_next->frame;
                 else
                         return cl->frame;
         case SEP_CUSTOM:
-                return string_to_color(settings.sep_custom_color_str);
+                return string_to_color(settings.sep_color.sep_color);
         case SEP_FOREGROUND:
                 return cl->fg;
         case SEP_AUTO:
@@ -486,7 +486,7 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
         draw_rounded_rect(c, x, y, width, height, corner_radius, first, last);
         cairo_fill(c);
 
-        if (   settings.sep_color != SEP_FRAME
+        if (   settings.sep_color.type != SEP_FRAME
             && settings.separator_height > 0
             && !last) {
                 struct color sep_color = layout_get_sepcolor(cl, cl_next);

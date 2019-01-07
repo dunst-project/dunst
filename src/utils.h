@@ -16,6 +16,9 @@
 //! Test if string a and b are the same case-insensitively
 #define STR_CASEQ(a, b) (strcasecmp(a, b) == 0)
 
+//! Assert that expr evaluates to true, if not return with val
+#define ASSERT_OR_RET(expr, val) if (!(expr)) return val;
+
 //! Convert a second into the internal time representation
 #define S2US(s) (((gint64)(s)) * 1000 * 1000)
 

@@ -463,8 +463,8 @@ static bool dbus_get_fdn_daemon_info(GDBusConnection  *connection,
                                      char   **name,
                                      char   **vendor)
 {
-        g_return_val_if_fail(pid, false);
-        g_return_val_if_fail(connection, false);
+        ASSERT_OR_RET(pid, false);
+        ASSERT_OR_RET(connection, false);
 
         char *owner = NULL;
         GError *error = NULL;
