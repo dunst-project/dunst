@@ -1,5 +1,6 @@
 #include "icon.h"
 
+#include <assert.h>
 #include <cairo.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <stdbool.h>
@@ -15,38 +16,96 @@ static bool is_readable_file(const char *filename)
         return (access(filename, R_OK) != -1);
 }
 
-static cairo_status_t read_from_buf(void *closure, unsigned char *data, unsigned int size)
+/**
+ * Reassemble the data parts of a GdkPixbuf into a cairo_surface_t's data field.
+ *
+ * Requires to call on the surface flush before and mark_dirty after the execution.
+ */
+static void pixbuf_data_to_cairo_data(
+                const unsigned char *pixels_p,
+                      unsigned char *pixels_c,
+                size_t rowstride_p,
+                size_t rowstride_c,
+                int width,
+                int height,
+                int n_channels)
 {
-        GByteArray *buf = (GByteArray *)closure;
+#if G_BYTE_ORDER == G_LITTLE_ENDIAN
+        static const size_t CAIRO_B = 0;
+        static const size_t CAIRO_G = 1;
+        static const size_t CAIRO_R = 2;
+        static const size_t CAIRO_A = 3;
+#elif G_BYTE_ORDER == G_BIG_ENDIAN
+        static const size_t CAIRO_A = 0;
+        static const size_t CAIRO_R = 1;
+        static const size_t CAIRO_G = 2;
+        static const size_t CAIRO_B = 3;
+#elif G_BYTE_ORDER == G_PDP_ENDIAN
+        static const size_t CAIRO_R = 0;
+        static const size_t CAIRO_A = 1;
+        static const size_t CAIRO_B = 2;
+        static const size_t CAIRO_G = 3;
+#else
+// GLib doesn't support any other endiannesses
+#error Unsupported Endianness
+#endif
 
-        unsigned int cpy = MIN(size, buf->len);
-        memcpy(data, buf->data, cpy);
-        g_byte_array_remove_range(buf, 0, cpy);
+        assert(pixels_p);
+        assert(pixels_c);
+        assert(width > 0);
+        assert(height > 0);
 
-        return CAIRO_STATUS_SUCCESS;
+        if (n_channels == 3) {
+                for (int h = 0; h < height; h++) {
+                              unsigned char *iter_c = pixels_c + h * rowstride_c;
+                        const unsigned char *iter_p = pixels_p + h * rowstride_p;
+                        for (int w = 0; w < width; w++) {
+                                iter_c[CAIRO_R] = iter_p[0];
+                                iter_c[CAIRO_G] = iter_p[1];
+                                iter_c[CAIRO_B] = iter_p[2];
+                                iter_c[CAIRO_A] = 0xff;
+                                iter_c += 4;
+                                iter_p += n_channels;
+                        }
+                }
+        } else {
+                for (int h = 0; h < height; h++) {
+                              unsigned char *iter_c = pixels_c + h * rowstride_c;
+                        const unsigned char *iter_p = pixels_p + h * rowstride_p;
+                        for (int w = 0; w < width; w++) {
+                                double alpha_factor = iter_p[3] / (double)0xff;
+                                iter_c[CAIRO_R] = (unsigned char)(iter_p[0] * alpha_factor + .5);
+                                iter_c[CAIRO_G] = (unsigned char)(iter_p[1] * alpha_factor + .5);
+                                iter_c[CAIRO_B] = (unsigned char)(iter_p[2] * alpha_factor + .5);
+                                iter_c[CAIRO_A] =                 iter_p[3];
+                                iter_c += 4;
+                                iter_p += n_channels;
+                        }
+                }
+
+        }
 }
-
 
 cairo_surface_t *gdk_pixbuf_to_cairo_surface(GdkPixbuf *pixbuf)
 {
-        /*
-         * Export the gdk pixbuf into buffer as a png and import the png buffer
-         * via cairo again as a cairo_surface_t.
-         * It looks counterintuitive, as there is gdk_cairo_set_source_pixbuf,
-         * which does the job faster. But this would require gtk3 as a dependency
-         * for a single function call. See discussion in #334 and #376.
-         */
-        cairo_surface_t *icon_surface = NULL;
-        GByteArray *buffer;
-        char *bufstr;
-        gsize buflen;
+        assert(pixbuf);
 
-        gdk_pixbuf_save_to_buffer(pixbuf, &bufstr, &buflen, "png", NULL, NULL);
+        int width  = gdk_pixbuf_get_width(pixbuf);
+        int height = gdk_pixbuf_get_height(pixbuf);
 
-        buffer = g_byte_array_new_take((guint8*)bufstr, buflen);
-        icon_surface = cairo_image_surface_create_from_png_stream(read_from_buf, buffer);
+        cairo_format_t fmt = gdk_pixbuf_get_has_alpha(pixbuf) ? CAIRO_FORMAT_ARGB32 : CAIRO_FORMAT_RGB24;
+        cairo_surface_t *icon_surface = cairo_image_surface_create(fmt, width, height);
 
-        g_byte_array_free(buffer, TRUE);
+        /* Copy pixel data from pixbuf to surface */
+        cairo_surface_flush(icon_surface);
+        pixbuf_data_to_cairo_data(gdk_pixbuf_read_pixels(pixbuf),
+                                  cairo_image_surface_get_data(icon_surface),
+                                  gdk_pixbuf_get_rowstride(pixbuf),
+                                  cairo_format_stride_for_width(fmt, width),
+                                  gdk_pixbuf_get_width(pixbuf),
+                                  gdk_pixbuf_get_height(pixbuf),
+                                  gdk_pixbuf_get_n_channels(pixbuf));
+        cairo_surface_mark_dirty(icon_surface);
 
         return icon_surface;
 }
