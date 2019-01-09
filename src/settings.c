@@ -277,7 +277,7 @@ void load_settings(char *cmdline_config_path)
         {
                 char *c = option_get_string(
                         "global",
-                        "alignment", "-align/-alignment", "",
+                        "alignment", "-align/-alignment", NULL,
                         "Text alignment left/center/right"
                 );
 
