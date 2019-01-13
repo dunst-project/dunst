@@ -299,10 +299,12 @@ static void dbus_cb_Notify(
 {
         struct notification *n = dbus_message_to_notification(sender, parameters);
         if (!n) {
+                LOG_W("A notification failed to decode.");
                 g_dbus_method_invocation_return_dbus_error(
                                 invocation,
-                                "Cannot decode notification!",
-                                "");
+                                FDN_IFAC".Error",
+                                "Cannot decode notification!");
+                return;
         }
 
         int id = queues_notification_insert(n);
