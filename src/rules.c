@@ -26,11 +26,8 @@ void rule_apply(struct rule *r, struct notification *n)
                 n->transient = r->set_transient;
         if (r->markup != MARKUP_NULL)
                 n->markup = r->markup;
-        if (r->new_icon) {
-                g_free(n->icon);
-                n->icon = g_strdup(r->new_icon);
-                g_clear_pointer(&n->raw_icon, rawimage_free);
-        }
+        if (r->new_icon)
+                notification_icon_replace_path(n, r->new_icon);
         if (r->fg) {
                 g_free(n->colors.fg);
                 n->colors.fg = g_strdup(r->fg);
@@ -102,7 +99,7 @@ bool rule_matches_notification(struct rule *r, struct notification *n)
         return   ( (!r->appname   || (n->appname   && !fnmatch(r->appname,   n->appname, 0)))
                 && (!r->summary   || (n->summary   && !fnmatch(r->summary,   n->summary, 0)))
                 && (!r->body      || (n->body      && !fnmatch(r->body,      n->body, 0)))
-                && (!r->icon      || (n->icon      && !fnmatch(r->icon,      n->icon, 0)))
+                && (!r->icon      || (n->iconname  && !fnmatch(r->icon,      n->iconname,0)))
                 && (!r->category  || (n->category  && !fnmatch(r->category,  n->category, 0)))
                 && (!r->stack_tag || (n->stack_tag && !fnmatch(r->stack_tag, n->stack_tag, 0)))
                 && (r->match_transient == -1 || (r->match_transient == n->transient))

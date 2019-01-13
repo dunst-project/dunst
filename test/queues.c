@@ -698,6 +698,8 @@ TEST test_queues_timeout_before_paused(void)
 
 SUITE(suite_queues)
 {
+        settings.icon_path = "";
+
         RUN_TEST(test_datachange_beginning_empty);
         RUN_TEST(test_datachange_endless);
         RUN_TEST(test_datachange_endless_agethreshold);
@@ -722,6 +724,8 @@ SUITE(suite_queues)
         RUN_TEST(test_queues_update_seeping);
         RUN_TEST(test_queues_update_xmore);
         RUN_TEST(test_queues_timeout_before_paused);
+
+        settings.icon_path = NULL;
 }
 
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

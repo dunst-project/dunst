@@ -110,6 +110,33 @@ cairo_surface_t *gdk_pixbuf_to_cairo_surface(GdkPixbuf *pixbuf)
         return icon_surface;
 }
 
+GdkPixbuf *icon_pixbuf_scale(GdkPixbuf *pixbuf)
+{
+        ASSERT_OR_RET(pixbuf, NULL);
+
+        int w = gdk_pixbuf_get_width(pixbuf);
+        int h = gdk_pixbuf_get_height(pixbuf);
+        int larger = w > h ? w : h;
+        if (settings.max_icon_size && larger > settings.max_icon_size) {
+                int scaled_w = settings.max_icon_size;
+                int scaled_h = settings.max_icon_size;
+                if (w >= h)
+                        scaled_h = (settings.max_icon_size * h) / w;
+                else
+                        scaled_w = (settings.max_icon_size * w) / h;
+
+                GdkPixbuf *scaled = gdk_pixbuf_scale_simple(
+                                pixbuf,
+                                scaled_w,
+                                scaled_h,
+                                GDK_INTERP_BILINEAR);
+                g_object_unref(pixbuf);
+                pixbuf = scaled;
+        }
+
+        return pixbuf;
+}
+
 GdkPixbuf *get_pixbuf_from_file(const char *filename)
 {
         char *path = string_to_path(g_strdup(filename));
@@ -178,59 +205,122 @@ GdkPixbuf *get_pixbuf_from_icon(const char *iconname)
         return pixbuf;
 }
 
-GdkPixbuf *get_pixbuf_from_raw_image(const struct raw_image *raw_image)
+GdkPixbuf *icon_get_for_name(const char *name, char **id)
 {
-        GdkPixbuf *pixbuf = NULL;
+        ASSERT_OR_RET(name, NULL);
+        ASSERT_OR_RET(id, NULL);
 
-        pixbuf = gdk_pixbuf_new_from_data(raw_image->data,
-                                          GDK_COLORSPACE_RGB,
-                                          raw_image->has_alpha,
-                                          raw_image->bits_per_sample,
-                                          raw_image->width,
-                                          raw_image->height,
-                                          raw_image->rowstride,
-                                          NULL,
-                                          NULL);
-
-        return pixbuf;
+        GdkPixbuf *pb = get_pixbuf_from_icon(name);
+        if (pb)
+                *id = g_strdup(name);
+        return pb;
 }
 
-cairo_surface_t *icon_get_for_notification(const struct notification *n)
+GdkPixbuf *icon_get_for_data(GVariant *data, char **id)
 {
-        GdkPixbuf *pixbuf;
+        ASSERT_OR_RET(data, NULL);
+        ASSERT_OR_RET(id, NULL);
 
-        if (n->raw_icon)
-                pixbuf = get_pixbuf_from_raw_image(n->raw_icon);
-        else if (n->icon)
-                pixbuf = get_pixbuf_from_icon(n->icon);
-        else
+        if (!STR_EQ("(iiibiiay)", g_variant_get_type_string(data))) {
+                LOG_W("Invalid data for pixbuf given.");
                 return NULL;
-
-        ASSERT_OR_RET(pixbuf, NULL);
-
-        int w = gdk_pixbuf_get_width(pixbuf);
-        int h = gdk_pixbuf_get_height(pixbuf);
-        int larger = w > h ? w : h;
-        if (settings.max_icon_size && larger > settings.max_icon_size) {
-                int scaled_w = settings.max_icon_size;
-                int scaled_h = settings.max_icon_size;
-                if (w >= h)
-                        scaled_h = (settings.max_icon_size * h) / w;
-                else
-                        scaled_w = (settings.max_icon_size * w) / h;
-
-                GdkPixbuf *scaled = gdk_pixbuf_scale_simple(
-                                pixbuf,
-                                scaled_w,
-                                scaled_h,
-                                GDK_INTERP_BILINEAR);
-                g_object_unref(pixbuf);
-                pixbuf = scaled;
         }
 
-        cairo_surface_t *ret = gdk_pixbuf_to_cairo_surface(pixbuf);
-        g_object_unref(pixbuf);
-        return ret;
+        /* The raw image is a big array of char data.
+         *
+         * The image is serialised rowwise pixel by pixel. The rows are aligned
+         * by a spacer full of garbage. The overall data length of data + garbage
+         * is called the rowstride.
+         *
+         * Mind the missing spacer at the last row.
+         *
+         * len:     |<--------------rowstride---------------->|
+         * len:     |<-width*pixelstride->|
+         * row 1:   |   data for row 1    | spacer of garbage |
+         * row 2:   |   data for row 2    | spacer of garbage |
+         *          |         .           | spacer of garbage |
+         *          |         .           | spacer of garbage |
+         *          |         .           | spacer of garbage |
+         * row n-1: |   data for row n-1  | spacer of garbage |
+         * row n:   |   data for row n    |
+         */
+
+        GdkPixbuf *pixbuf = NULL;
+        GVariant *data_variant = NULL;
+        unsigned char *data_pb;
+
+        gsize len_expected;
+        gsize len_actual;
+        gsize pixelstride;
+
+        int width;
+        int height;
+        int rowstride;
+        int has_alpha;
+        int bits_per_sample;
+        int n_channels;
+
+        g_variant_get(data,
+                      "(iiibii@ay)",
+                      &width,
+                      &height,
+                      &rowstride,
+                      &has_alpha,
+                      &bits_per_sample,
+                      &n_channels,
+                      &data_variant);
+
+        // note: (A+7)/8 rounds up A to the next byte boundary
+        pixelstride = (n_channels * bits_per_sample + 7)/8;
+        len_expected = (height - 1) * rowstride + width * pixelstride;
+        len_actual = g_variant_get_size(data_variant);
+
+        if (len_actual != len_expected) {
+                LOG_W("Expected image data to be of length %" G_GSIZE_FORMAT
+                      " but got a length of %" G_GSIZE_FORMAT,
+                      len_expected,
+                      len_actual);
+                g_variant_unref(data_variant);
+                return NULL;
+        }
+
+        data_pb = (guchar *) g_memdup(g_variant_get_data(data_variant), len_actual);
+
+        pixbuf = gdk_pixbuf_new_from_data(data_pb,
+                                          GDK_COLORSPACE_RGB,
+                                          has_alpha,
+                                          bits_per_sample,
+                                          width,
+                                          height,
+                                          rowstride,
+                                          (GdkPixbufDestroyNotify) g_free,
+                                          data_pb);
+        if (!pixbuf) {
+                /* Dear user, I'm sorry, I'd like to give you a more specific
+                 * error message. But sadly, I can't */
+                LOG_W("Cannot serialise raw icon data into pixbuf.");
+                return NULL;
+        }
+
+        /* To calculate a checksum of the current image, we have to remove
+         * all excess spacers, so that our checksummed memory only contains
+         * real data. */
+        size_t data_chk_len = pixelstride * width * height;
+        unsigned char *data_chk = g_malloc(data_chk_len);
+        size_t rowstride_short = pixelstride * width;
+
+        for (int i = 0; i < height; i++) {
+                memcpy(data_chk + (i*rowstride_short),
+                       data_pb  + (i*rowstride),
+                       rowstride_short);
+        }
+
+        *id = g_compute_checksum_for_data(G_CHECKSUM_MD5, data_chk, data_chk_len);
+
+        g_free(data_chk);
+        g_variant_unref(data_variant);
+
+        return pixbuf;
 }
 
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

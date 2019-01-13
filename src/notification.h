@@ -2,6 +2,7 @@
 #ifndef DUNST_NOTIFICATION_H
 #define DUNST_NOTIFICATION_H
 
+#include <gdk-pixbuf/gdk-pixbuf.h>
 #include <glib.h>
 #include <stdbool.h>
 
@@ -26,16 +27,6 @@ enum urgency {
         URG_MAX = 2,   /**< Maximum value, useful for boundary checking */
 };
 
-struct raw_image {
-        int width;
-        int height;
-        int rowstride;
-        int has_alpha;
-        int bits_per_sample;
-        int n_channels;
-        unsigned char *data;
-};
-
 typedef struct _notification_private NotificationPrivate;
 
 struct notification_colors {
@@ -56,8 +47,11 @@ struct notification {
         char *category;
         enum urgency urgency;
 
-        char *icon;          /**< plain icon information (may be a path or just a name) */
-        struct raw_image *raw_icon;  /**< passed icon data of notification, takes precedence over icon */
+        GdkPixbuf *icon;         /**< The raw cached icon data used to draw */
+        char *icon_id;           /**< plain icon information, which acts as the pixbuf's id, which is saved in .icon
+                                      May be a hash for a raw icon or a name/path for a regular app icon. */
+        char *iconname;          /**< plain icon information (may be a path or just a name)
+                                      Use this to compare the icon name with rules.*/
 
         gint64 start;      /**< begin of current display */
         gint64 timestamp;  /**< arrival time */
@@ -122,13 +116,6 @@ void notification_ref(struct notification *n);
 void notification_init(struct notification *n);
 
 /**
- * Free a #raw_image
- *
- * @param i (nullable): pointer to #raw_image
- */
-void rawimage_free(struct raw_image *i);
-
-/**
  * Decrease the reference counter of the notification.
  *
  * If the reference count drops to 0, the object gets freed.
@@ -146,7 +133,26 @@ int notification_cmp(const struct notification *a, const struct notification *b)
  */
 int notification_cmp_data(const void *va, const void *vb, void *data);
 
-int notification_is_duplicate(const struct notification *a, const struct notification *b);
+bool notification_is_duplicate(const struct notification *a, const struct notification *b);
+
+/**Replace the current notification's icon with the icon specified by path.
+ *
+ * Removes the reference for the previous icon automatically and will also free the
+ * iconname field. So passing n->iconname as new_icon is invalid.
+ *
+ * @param n the notification to replace the icon
+ * @param new_icon The path of the new icon. May be an absolute path or an icon name.
+ */
+void notification_icon_replace_path(struct notification *n, const char *new_icon);
+
+/**Replace the current notification's icon with the raw icon given in the GVariant.
+ *
+ * Removes the reference for the previous icon automatically.
+ *
+ * @param n the notification to replace the icon
+ * @param new_icon The icon's data. Has to be in the format of the notification spec.
+ */
+void notification_icon_replace_data(struct notification *n, GVariant *new_icon);
 
 /**
  * Run the script associated with the
