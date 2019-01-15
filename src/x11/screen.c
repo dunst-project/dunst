@@ -256,15 +256,19 @@ bool window_is_fullscreen(Window window)
 
         if (result == Success) {
                 for(int i = 0; i < n_items; i++) {
-                        char *atom = XGetAtomName(xctx.dpy, ((Atom*)prop_to_return)[i]);
+                        Atom atom = ((Atom*) prop_to_return)[i];
+                        if (!atom)
+                                continue;
 
-                        if (atom) {
-                                if(STR_EQ("_NET_WM_STATE_FULLSCREEN", atom))
-                                        fs = true;
-                                XFree(atom);
-                                if(fs)
-                                        break;
-                        }
+                        char *s = XGetAtomName(xctx.dpy, atom);
+                        if (!s)
+                                continue;
+
+                        if (STR_EQ(s, "_NET_WM_STATE_FULLSCREEN"))
+                                fs = true;
+                        XFree(s);
+                        if (fs)
+                                break;
                 }
         }
 
