@@ -690,10 +690,6 @@ together. The default stack_stag value is set from the string hints
 "synchronous", "private-synchronous", "x-canonical-private-synchronous", and
 "x-dunst-stack-tag".
 
-If you want to skip display of a notification, but still have it in
-history, setting 'timeout' to "1ms" will essentially skip initial
-display.
-
 =back
 
 =head2 SCRIPTING
