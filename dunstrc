@@ -368,6 +368,11 @@
 #    summary = "foobar"
 #    history_ignore = yes
 
+#[skip-display]
+#    # This notification will not be displayed, but will be included in the history
+#    summary = "foobar"
+#    skip_display = yes
+
 #[signed_on]
 #    appname = Pidgin
 #    summary = "*signed on*"

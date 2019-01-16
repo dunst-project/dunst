@@ -71,6 +71,7 @@ struct notification {
         bool transient;     /**< timeout albeit user is idle */
         int progress;       /**< percentage (-1: undefined) */
         int history_ignore; /**< push to history or free directly */
+        int skip_display;   /**< insert notification into history, skipping initial waiting and display */
 
         /* internal */
         bool redisplayed;       /**< has been displayed before? */

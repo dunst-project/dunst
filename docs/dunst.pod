@@ -690,6 +690,10 @@ together. The default stack_stag value is set from the string hints
 "synchronous", "private-synchronous", "x-canonical-private-synchronous", and
 "x-dunst-stack-tag".
 
+If you want to skip initial display of a notification, but still have
+it in history, you can set 'skip_display' to 'true' to get this
+behavior.
+
 =back
 
 =head2 SCRIPTING

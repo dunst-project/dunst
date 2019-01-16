@@ -27,6 +27,7 @@ struct rule {
         int history_ignore;
         int match_transient;
         int set_transient;
+        int skip_display;
         char *new_icon;
         char *fg;
         char *bg;

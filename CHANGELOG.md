@@ -11,6 +11,8 @@
   have to wait for a timeout in a displayed notification (#541)
 - `<I> more` notifications don't occupy space anymore, if there is only a single
   notification waiting to get displayed. The notification gets displayed directly (#467)
+- Added `skip_display` rule option to skip initial notification display, and
+  include the notification in the history.
 
 ## 1.3.2 - 2018-05-06
 

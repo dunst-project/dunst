@@ -190,6 +190,50 @@ TEST test_queue_notification_close_histignore(void)
         PASS();
 }
 
+TEST test_queue_notification_skip_display(void)
+{
+        struct notification *n;
+
+        // Test skipping display
+        n = test_notification("n", -1);
+        n->skip_display = true;
+
+        queues_init();
+        queues_notification_insert(n);
+        QUEUE_LEN_ALL(1, 0, 0);
+        queues_update(STATUS_NORMAL);
+        QUEUE_LEN_ALL(0, 0, 1);
+        queues_teardown();
+
+        PASS();
+}
+
+TEST test_queue_notification_skip_display_redisplayed(void)
+{
+        struct notification *n;
+
+        // Test skipping display
+        n = test_notification("n", -1);
+        n->skip_display = true;
+
+        queues_init();
+        queues_notification_insert(n);
+        QUEUE_LEN_ALL(1, 0, 0);
+        queues_update(STATUS_NORMAL);
+        QUEUE_LEN_ALL(0, 0, 1);
+
+        queues_history_pop();
+        QUEUE_LEN_ALL(1, 0, 0);
+        queues_update(STATUS_NORMAL);
+        QUEUE_CONTAINSm("A skip display notification should stay in displayed "
+                        "queue when it got pulled out of history queue",
+                        DISP, n);
+
+        queues_teardown();
+
+        PASS();
+}
+
 TEST test_queue_history_overfull(void)
 {
         settings.history_length = 10;
@@ -714,6 +758,8 @@ SUITE(suite_queues)
         RUN_TEST(test_queue_length);
         RUN_TEST(test_queue_notification_close);
         RUN_TEST(test_queue_notification_close_histignore);
+        RUN_TEST(test_queue_notification_skip_display);
+        RUN_TEST(test_queue_notification_skip_display_redisplayed);
         RUN_TEST(test_queue_stacking);
         RUN_TEST(test_queue_stacktag);
         RUN_TEST(test_queue_teardown);

@@ -24,6 +24,8 @@ void rule_apply(struct rule *r, struct notification *n)
                 n->history_ignore = r->history_ignore;
         if (r->set_transient != -1)
                 n->transient = r->set_transient;
+        if (r->skip_display != -1)
+                n->skip_display = r->skip_display;
         if (r->markup != MARKUP_NULL)
                 n->markup = r->markup;
         if (r->new_icon)
@@ -75,6 +77,7 @@ struct rule *rule_new(void)
         r->history_ignore = false;
         r->match_transient = -1;
         r->set_transient = -1;
+        r->skip_display = -1;
 
         return r;
 }

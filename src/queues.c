@@ -133,6 +133,9 @@ static bool queues_notification_is_finished(struct notification *n, struct dunst
 {
         assert(n);
 
+        if (n->skip_display && !n->redisplayed)
+                return true;
+
         if (n->timeout == 0) // sticky
                 return false;
 
@@ -428,7 +431,12 @@ void queues_update(struct dunst_status status)
                 notification_run_script(n);
 
                 g_queue_delete_link(waiting, iter);
-                g_queue_insert_sorted(displayed, n, notification_cmp_data, NULL);
+
+                if (n->skip_display && !n->redisplayed) {
+                        queues_history_push(n);
+                } else {
+                        g_queue_insert_sorted(displayed, n, notification_cmp_data, NULL);
+                }
 
                 iter = nextiter;
         }
