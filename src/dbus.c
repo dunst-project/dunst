@@ -227,6 +227,11 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
                 g_variant_unref(dict_value);
         }
 
+        if ((dict_value = g_variant_lookup_value(hints, "desktop-entry", G_VARIANT_TYPE_STRING))) {
+                n->desktop_entry = g_variant_dup_string(dict_value, NULL);
+                g_variant_unref(dict_value);
+        }
+
         if ((dict_value = g_variant_lookup_value(hints, "image-path", G_VARIANT_TYPE_STRING))) {
                 g_free(n->iconname);
                 n->iconname = g_variant_dup_string(dict_value, NULL);

@@ -17,6 +17,7 @@ struct rule {
         char *icon;
         char *category;
         char *stack_tag;
+        char *desktop_entry;
         int msg_urgency;
 
         /* actions */

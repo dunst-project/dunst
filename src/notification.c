@@ -56,6 +56,7 @@ void notification_print(const struct notification *n)
         printf("\ticon: '%s'\n", n->iconname);
         printf("\traw_icon set: %s\n", (n->icon_id && !STR_EQ(n->iconname, n->icon_id)) ? "true" : "false");
         printf("\ticon_id: '%s'\n", n->icon_id);
+        printf("\tdesktop_entry: '%s'\n", n->desktop_entry ? n->desktop_entry : "");
         printf("\tcategory: %s\n", n->category);
         printf("\ttimeout: %ld\n", n->timeout/1000);
         printf("\turgency: %s\n", notification_urgency_to_string(n->urgency));
@@ -225,6 +226,7 @@ void notification_unref(struct notification *n)
         g_free(n->colors.bg);
         g_free(n->colors.frame);
         g_free(n->stack_tag);
+        g_free(n->desktop_entry);
 
         g_hash_table_unref(n->actions);
 
