@@ -688,8 +688,7 @@ void load_settings(char *cmdline_config_path)
                 }
 
                 if (!r) {
-                        r = g_malloc(sizeof(struct rule));
-                        rule_init(r);
+                        r = rule_new();
                         rules = g_slist_insert(rules, r, -1);
                 }
 

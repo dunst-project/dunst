@@ -63,32 +63,20 @@ void rule_apply_all(struct notification *n)
         }
 }
 
-/*
- * Initialize rule with default values.
- */
-void rule_init(struct rule *r)
+struct rule *rule_new(void)
 {
-        r->name = NULL;
-        r->appname = NULL;
-        r->summary = NULL;
-        r->body = NULL;
-        r->icon = NULL;
-        r->category = NULL;
-        r->stack_tag = NULL;
+        struct rule *r = g_malloc0(sizeof(struct rule));
+
         r->msg_urgency = URG_NONE;
         r->timeout = -1;
         r->urgency = URG_NONE;
         r->fullscreen = FS_NULL;
         r->markup = MARKUP_NULL;
-        r->new_icon = NULL;
         r->history_ignore = false;
         r->match_transient = -1;
         r->set_transient = -1;
-        r->fg = NULL;
-        r->bg = NULL;
-        r->fc = NULL;
-        r->format = NULL;
-        r->set_stack_tag = NULL;
+
+        return r;
 }
 
 static inline bool rule_field_matches_string(const char *value, const char *pattern)

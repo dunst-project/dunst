@@ -38,7 +38,13 @@ struct rule {
 
 extern GSList *rules;
 
-void rule_init(struct rule *r);
+/**
+ * Allocate a new rule. The rule is fully initialised.
+ *
+ * @returns A new initialised rule.
+ */
+struct rule *rule_new(void);
+
 void rule_apply(struct rule *r, struct notification *n);
 void rule_apply_all(struct notification *n);
 bool rule_matches_notification(struct rule *r, struct notification *n);
