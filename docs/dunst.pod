@@ -610,11 +610,28 @@ matched.
 
 =item B<filtering>
 
-Notifications can be matched for any of the following attributes: appname,
-summary, body, icon, category, match_transient, msg_urgency, and stack_tag where
-each is the respective notification attribute to be matched and 'msg_urgency' is
-the urgency of the notification, it is named so to not conflict with trying to
-modify the urgency.
+Notifications can be matched for any of the following attributes:
+
+=over 4
+
+=item C<appname>
+
+=item C<body>
+
+=item C<category>
+
+=item C<icon>
+
+=item C<msg_urgency>
+
+=item C<stack_tag>
+
+=item C<summary>
+
+=back
+
+C<msg_urgency> is the urgency of the notification, it is named so to not conflict
+with trying to modify the urgency.
 
 To define a matching rule simply assign the specified value to the value that
 should be matched, for example:
@@ -629,9 +646,31 @@ Shell-like globing is supported.
 
 =item B<modifying>
 
-The following attributes can be overridden: timeout, urgency, foreground,
-background, frame_color, new_icon, set_transient, format, fullscreen,
-set_stack_tag where, as with the filtering attributes, each one corresponds to
+The following attributes can be overridden:
+
+=over 4
+
+=item C<background>
+
+=item C<foreground>
+
+=item C<format>
+
+=item C<frame_color>
+
+=item C<fullscreen>
+
+=item C<new_icon>
+
+=item C<set_stack_tag>
+
+=item C<timeout>
+
+=item C<urgency>
+
+=back
+
+As with the filtering attributes, each one corresponds to
 the respective notification attribute to be modified.
 
 As with filtering, to make a rule modify an attribute simply assign it in the

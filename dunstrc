@@ -297,10 +297,27 @@
 
 # Every section that isn't one of the above is interpreted as a rules to
 # override settings for certain messages.
-# Messages can be matched by "appname", "summary", "body", "icon", "category",
-# "msg_urgency" and you can override the "timeout", "urgency", "foreground",
-# "background", "frame_color", "new_icon" and "format", "fullscreen",
-# "stack_tag".
+#
+# Messages can be matched by
+#    appname
+#    body
+#    category
+#    icon
+#    msg_urgency
+#    stack_tag
+#    summary
+#
+# and you can override the
+#    background
+#    foreground
+#    format
+#    frame_color
+#    fullscreen
+#    new_icon
+#    set_stack_tag
+#    timeout
+#    urgency
+#
 # Shell-like globbing will get expanded.
 #
 # SCRIPTING
