@@ -299,9 +299,10 @@
 # override settings for certain messages.
 #
 # Messages can be matched by
-#    appname
+#    appname (discouraged, see desktop_entry)
 #    body
 #    category
+#    desktop_entry
 #    icon
 #    msg_urgency
 #    stack_tag
@@ -319,6 +320,10 @@
 #    urgency
 #
 # Shell-like globbing will get expanded.
+#
+# Instead of the appname filter, it's recommended to use the desktop_entry filter.
+# GLib based applications export their desktop-entry name. In comparison to the appname,
+# the desktop-entry won't get localized.
 #
 # SCRIPTING
 # You can specify a script that gets run when the rule matches by

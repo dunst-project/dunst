@@ -614,11 +614,13 @@ Notifications can be matched for any of the following attributes:
 
 =over 4
 
-=item C<appname>
+=item C<appname> (discouraged, see desktop_entry)
 
 =item C<body>
 
 =item C<category>
+
+=item C<desktop_entry>
 
 =item C<icon>
 
@@ -632,6 +634,10 @@ Notifications can be matched for any of the following attributes:
 
 C<msg_urgency> is the urgency of the notification, it is named so to not conflict
 with trying to modify the urgency.
+
+Instead of the appname filter, it's recommended to use the desktop_entry filter.
+GLib based applications export their desktop-entry name. In comparison to the appname,
+the desktop-entry won't get localized.
 
 To define a matching rule simply assign the specified value to the value that
 should be matched, for example:
