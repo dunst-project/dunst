@@ -4,6 +4,7 @@
 
 ### Added
 
+- Introduce new desktop-entry filter (#470)
 - Remove libxdg-basedir dependency (GLib's function is used instead)
 - `fullscreen` rule to hide notifications when a fullscreen window is active
 - When new notifications arrive, but display is full, important notifications don't

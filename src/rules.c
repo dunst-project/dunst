@@ -63,32 +63,25 @@ void rule_apply_all(struct notification *n)
         }
 }
 
-/*
- * Initialize rule with default values.
- */
-void rule_init(struct rule *r)
+struct rule *rule_new(void)
 {
-        r->name = NULL;
-        r->appname = NULL;
-        r->summary = NULL;
-        r->body = NULL;
-        r->icon = NULL;
-        r->category = NULL;
-        r->stack_tag = NULL;
+        struct rule *r = g_malloc0(sizeof(struct rule));
+
         r->msg_urgency = URG_NONE;
         r->timeout = -1;
         r->urgency = URG_NONE;
         r->fullscreen = FS_NULL;
         r->markup = MARKUP_NULL;
-        r->new_icon = NULL;
         r->history_ignore = false;
         r->match_transient = -1;
         r->set_transient = -1;
-        r->fg = NULL;
-        r->bg = NULL;
-        r->fc = NULL;
-        r->format = NULL;
-        r->set_stack_tag = NULL;
+
+        return r;
+}
+
+static inline bool rule_field_matches_string(const char *value, const char *pattern)
+{
+        return !pattern || (value && !fnmatch(pattern, value, 0));
 }
 
 /*
@@ -96,13 +89,14 @@ void rule_init(struct rule *r)
  */
 bool rule_matches_notification(struct rule *r, struct notification *n)
 {
-        return   ( (!r->appname   || (n->appname   && !fnmatch(r->appname,   n->appname, 0)))
-                && (!r->summary   || (n->summary   && !fnmatch(r->summary,   n->summary, 0)))
-                && (!r->body      || (n->body      && !fnmatch(r->body,      n->body, 0)))
-                && (!r->icon      || (n->iconname  && !fnmatch(r->icon,      n->iconname,0)))
-                && (!r->category  || (n->category  && !fnmatch(r->category,  n->category, 0)))
-                && (!r->stack_tag || (n->stack_tag && !fnmatch(r->stack_tag, n->stack_tag, 0)))
+        return     (r->msg_urgency == URG_NONE || r->msg_urgency == n->urgency)
                 && (r->match_transient == -1 || (r->match_transient == n->transient))
-                && (r->msg_urgency == URG_NONE || r->msg_urgency == n->urgency));
+                && rule_field_matches_string(n->appname,        r->appname)
+                && rule_field_matches_string(n->desktop_entry,  r->desktop_entry)
+                && rule_field_matches_string(n->summary,        r->summary)
+                && rule_field_matches_string(n->body,           r->body)
+                && rule_field_matches_string(n->iconname,       r->icon)
+                && rule_field_matches_string(n->category,       r->category)
+                && rule_field_matches_string(n->stack_tag,      r->stack_tag);
 }
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

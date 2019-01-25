@@ -688,8 +688,7 @@ void load_settings(char *cmdline_config_path)
                 }
 
                 if (!r) {
-                        r = g_malloc(sizeof(struct rule));
-                        rule_init(r);
+                        r = rule_new();
                         rules = g_slist_insert(rules, r, -1);
                 }
 
@@ -725,6 +724,7 @@ void load_settings(char *cmdline_config_path)
                 r->history_ignore = ini_get_bool(cur_section, "history_ignore", r->history_ignore);
                 r->match_transient = ini_get_bool(cur_section, "match_transient", r->match_transient);
                 r->set_transient = ini_get_bool(cur_section, "set_transient", r->set_transient);
+                r->desktop_entry = ini_get_string(cur_section, "desktop_entry", r->desktop_entry);
                 {
                         char *c = ini_get_string(
                                 cur_section,

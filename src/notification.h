@@ -45,6 +45,7 @@ struct notification {
         char *summary;
         char *body;
         char *category;
+        char *desktop_entry;     /**< The desktop entry hint sent via every GApplication */
         enum urgency urgency;
 
         GdkPixbuf *icon;         /**< The raw cached icon data used to draw */

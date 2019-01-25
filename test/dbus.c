@@ -551,6 +551,39 @@ TEST test_hint_category(void)
         PASS();
 }
 
+TEST test_hint_desktop_entry(void)
+{
+        struct notification *n;
+        struct dbus_notification *n_dbus;
+        const char *desktop_entry = "org.dunst-project.dunst";
+
+        gsize len = queues_length_waiting();
+
+        n_dbus = dbus_notification_new();
+        n_dbus->app_name = "dunstteststack";
+        n_dbus->app_icon = "NONE";
+        n_dbus->summary = "test_hint_desktopentry";
+        n_dbus->body = "Summary of my desktop_entry";
+
+        g_hash_table_insert(n_dbus->hints,
+                            g_strdup("desktop-entry"),
+                            g_variant_ref_sink(g_variant_new_string(desktop_entry)));
+
+        guint id;
+        ASSERT(dbus_notification_fire(n_dbus, &id));
+        ASSERT(id != 0);
+
+        ASSERT_EQ(queues_length_waiting(), len+1);
+
+        n = queues_debug_find_notification_by_id(id);
+
+        ASSERT_STR_EQ(desktop_entry, n->desktop_entry);
+
+        dbus_notification_free(n_dbus);
+
+        PASS();
+}
+
 TEST test_hint_urgency(void)
 {
         static char msg[50];
@@ -779,6 +812,7 @@ gpointer run_threaded_tests(gpointer data)
         RUN_TEST(test_hint_progress);
         RUN_TEST(test_hint_icons);
         RUN_TEST(test_hint_category);
+        RUN_TEST(test_hint_desktop_entry);
         RUN_TEST(test_hint_urgency);
         RUN_TEST(test_hint_raw_image);
         RUN_TEST(test_dbus_notify_colors);
