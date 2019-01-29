@@ -1,4 +1,5 @@
 *.o
+*.d
 *.gcda
 *.gcno
 *.gcov

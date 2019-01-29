@@ -42,13 +42,15 @@ $(error "$(PKG_CONFIG) failed!")
 endif
 endif
 
-CFLAGS  := ${DEFAULT_CPPFLAGS} ${CPPFLAGS} ${DEFAULT_CFLAGS} ${CFLAGS} ${INCS}
+CFLAGS  := ${DEFAULT_CPPFLAGS} ${CPPFLAGS} ${DEFAULT_CFLAGS} ${CFLAGS} ${INCS} -MMD -MP
 LDFLAGS := ${DEFAULT_LDFLAGS} ${LDFLAGS} ${LIBS}
 
 SRC := $(sort $(shell find src/ -name '*.c'))
 OBJ := ${SRC:.c=.o}
 TEST_SRC := $(sort $(shell find test/ -name '*.c'))
 TEST_OBJ := $(TEST_SRC:.c=.o)
+DEPS := ${SRC:.c=.d} ${TEST_SRC:.c=.d}
+
 
 .PHONY: all debug
 all: doc dunst service
@@ -58,10 +60,12 @@ debug: LDFLAGS  += ${LDFLAGS_DEBUG}
 debug: CPPFLAGS += ${CPPFLAGS_DEBUG}
 debug: all
 
+-include $(DEPS)
+
+${OBJ} ${TEST_OBJ}: Makefile config.mk
+
 %.o: %.c
 	${CC} -o $@ -c $< ${CFLAGS}
-
-${OBJ}: config.mk
 
 dunst: ${OBJ} main.o
 	${CC} -o ${@} ${OBJ} main.o ${CFLAGS} ${LDFLAGS}
@@ -122,7 +126,7 @@ endif
 clean: clean-dunst clean-dunstify clean-doc clean-tests clean-coverage clean-coverage-run
 
 clean-dunst:
-	rm -f dunst ${OBJ} main.o
+	rm -f dunst ${OBJ} main.o main.d ${DEPS}
 	rm -f org.knopwob.dunst.service
 	rm -f dunst.systemd.service
 
@@ -136,7 +140,7 @@ clean-doc:
 	rm -fr docs/internal/coverage
 
 clean-tests:
-	rm -f test/test test/*.o
+	rm -f test/test test/*.o test/*.d
 
 clean-coverage: clean-coverage-run
 	find . -type f -name '*.gcno' -delete
