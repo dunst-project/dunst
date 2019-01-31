@@ -36,6 +36,7 @@ struct rule {
         const char *script;
         enum behavior_fullscreen fullscreen;
         char *set_stack_tag;
+        int set_max_icon_size;
 };
 
 extern GSList *rules;

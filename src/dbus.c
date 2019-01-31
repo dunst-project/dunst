@@ -238,15 +238,6 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
                 g_variant_unref(dict_value);
         }
 
-        dict_value = g_variant_lookup_value(hints, "image-data", G_VARIANT_TYPE("(iiibiiay)"));
-        if (!dict_value)
-                dict_value = g_variant_lookup_value(hints, "image_data", G_VARIANT_TYPE("(iiibiiay)"));
-        if (!dict_value)
-                dict_value = g_variant_lookup_value(hints, "icon_data", G_VARIANT_TYPE("(iiibiiay)"));
-        if (dict_value) {
-                notification_icon_replace_data(n, dict_value);
-                g_variant_unref(dict_value);
-        }
 
         /* Check for transient hints
          *
@@ -293,6 +284,20 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
         g_free(actions); // the strv is only a shallow copy
 
         notification_init(n);
+
+        // TODO: inefficient because notification_init above will
+        // probably set / rescale the default icon since icon /
+        // iconname aren't yet set.
+        dict_value = g_variant_lookup_value(hints, "image-data", G_VARIANT_TYPE("(iiibiiay)"));
+        if (!dict_value)
+                dict_value = g_variant_lookup_value(hints, "image_data", G_VARIANT_TYPE("(iiibiiay)"));
+        if (!dict_value)
+                dict_value = g_variant_lookup_value(hints, "icon_data", G_VARIANT_TYPE("(iiibiiay)"));
+        if (dict_value) {
+                notification_icon_replace_data(n, dict_value);
+                g_variant_unref(dict_value);
+        }
+
         return n;
 }
 

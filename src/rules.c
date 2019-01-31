@@ -50,6 +50,9 @@ void rule_apply(struct rule *r, struct notification *n)
                 g_free(n->stack_tag);
                 n->stack_tag = g_strdup(r->set_stack_tag);
         }
+        if (r->set_max_icon_size) {
+                n->max_icon_size = r->set_max_icon_size;
+        }
 }
 
 /*

@@ -17,7 +17,7 @@ cairo_surface_t *gdk_pixbuf_to_cairo_surface(GdkPixbuf *pixbuf);
  *         necessary, it returns the same pixbuf. Transfers full
  *         ownership of the reference.
  */
-GdkPixbuf *icon_pixbuf_scale(GdkPixbuf *pixbuf);
+GdkPixbuf *icon_pixbuf_scale(GdkPixbuf *pixbuf, int max_size);
 
 /** Retrieve an icon by its full filepath.
  *

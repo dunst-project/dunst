@@ -53,6 +53,7 @@ struct notification {
                                       May be a hash for a raw icon or a name/path for a regular app icon. */
         char *iconname;          /**< plain icon information (may be a path or just a name)
                                       Use this to compare the icon name with rules.*/
+        int max_icon_size;       /**< maximum pixel size of width and height of icon. */
 
         gint64 start;      /**< begin of current display */
         gint64 timestamp;  /**< arrival time */

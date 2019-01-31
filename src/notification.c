@@ -252,7 +252,7 @@ void notification_icon_replace_path(struct notification *n, const char *new_icon
         g_clear_pointer(&n->icon_id, g_free);
 
         n->icon = icon_get_for_name(new_icon, &n->icon_id);
-        n->icon = icon_pixbuf_scale(n->icon);
+        n->icon = icon_pixbuf_scale(n->icon, n->max_icon_size);
 }
 
 void notification_icon_replace_data(struct notification *n, GVariant *new_icon)
@@ -264,7 +264,7 @@ void notification_icon_replace_data(struct notification *n, GVariant *new_icon)
         g_clear_pointer(&n->icon_id, g_free);
 
         n->icon = icon_get_for_data(new_icon, &n->icon_id);
-        n->icon = icon_pixbuf_scale(n->icon);
+        n->icon = icon_pixbuf_scale(n->icon, n->max_icon_size);
 }
 
 /* see notification.h */
@@ -310,6 +310,7 @@ struct notification *notification_create(void)
         n->first_render = true;
         n->markup = settings.markup;
         n->format = settings.format;
+        n->max_icon_size = settings.max_icon_size;
 
         n->timestamp = time_monotonic_now();
 
@@ -358,6 +359,7 @@ void notification_init(struct notification *n)
         }
         if (!n->icon && !n->iconname)
                 notification_icon_replace_path(n, settings.icons[n->urgency]);
+        n->max_icon_size = settings.max_icon_size;
 
         /* Color hints */
         struct notification_colors defcolors;

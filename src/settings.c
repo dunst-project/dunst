@@ -740,6 +740,7 @@ void load_settings(char *cmdline_config_path)
                 }
                 r->script = ini_get_path(cur_section, "script", NULL);
                 r->set_stack_tag = ini_get_string(cur_section, "set_stack_tag", r->set_stack_tag);
+                r->set_max_icon_size = ini_get_int(cur_section, "set_max_icon_size", r->set_max_icon_size);
         }
 
 #ifndef STATIC_CONFIG

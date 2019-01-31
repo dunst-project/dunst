@@ -110,20 +110,20 @@ cairo_surface_t *gdk_pixbuf_to_cairo_surface(GdkPixbuf *pixbuf)
         return icon_surface;
 }
 
-GdkPixbuf *icon_pixbuf_scale(GdkPixbuf *pixbuf)
+GdkPixbuf *icon_pixbuf_scale(GdkPixbuf *pixbuf, int max_size)
 {
         ASSERT_OR_RET(pixbuf, NULL);
 
         int w = gdk_pixbuf_get_width(pixbuf);
         int h = gdk_pixbuf_get_height(pixbuf);
         int larger = w > h ? w : h;
-        if (settings.max_icon_size && larger > settings.max_icon_size) {
-                int scaled_w = settings.max_icon_size;
-                int scaled_h = settings.max_icon_size;
+        if (max_size && larger > max_size) {
+                int scaled_w = max_size;
+                int scaled_h = max_size;
                 if (w >= h)
-                        scaled_h = (settings.max_icon_size * h) / w;
+                        scaled_h = (max_size * h) / w;
                 else
-                        scaled_w = (settings.max_icon_size * w) / h;
+                        scaled_w = (max_size * w) / h;
 
                 GdkPixbuf *scaled = gdk_pixbuf_scale_simple(
                                 pixbuf,
