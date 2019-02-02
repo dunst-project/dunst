@@ -1,6 +1,9 @@
 # paths
 PREFIX ?= /usr/local
-MANPREFIX = ${PREFIX}/share/man
+BINDIR ?= ${PREFIX}/bin
+DATADIR ?= ${PREFIX}/share
+MANPREFIX ?= ${DATADIR}/man # around for backwards compatibility
+MANDIR ?= ${MANPREFIX}
 
 PKG_CONFIG ?= pkg-config
 
