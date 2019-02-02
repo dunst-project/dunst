@@ -2,6 +2,20 @@
 Frequently asked questions
 ==========================
 
+Why are my notifications prefixed with an ``(A)``?
+==================================================
+
+The notification has got an attached action. You can activate the notification. For example in chat applications, this activates the chat window of the corresponding chat.
+
+If you want to get rid of it, set the ``show_indicators`` option to ``no``.
+
+Why are my notifications prefixed with an ``(U)``?
+==================================================
+
+The notification text contains an URL. You can activate the notification and the browser will get opened with the URL.
+
+If you want to get rid of it, set the ``show_indicators`` option to ``no``.
+
 How do I restart dunst?
 =======================
 
