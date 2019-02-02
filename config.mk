@@ -5,7 +5,15 @@ DATADIR ?= ${PREFIX}/share
 MANPREFIX ?= ${DATADIR}/man # around for backwards compatibility
 MANDIR ?= ${MANPREFIX}
 
+DOXYGEN ?= doxygen
+FIND ?= find
+GCOVR ?= gcovr
+GIT ?= git
 PKG_CONFIG ?= pkg-config
+POD2MAN ?= pod2man
+SED ?= sed
+SYSTEMCTL ?= systemctl
+VALGRIND ?= valgrind
 
 # Disable systemd service file installation,
 # if you don't want to use systemd albeit installed
