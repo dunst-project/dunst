@@ -5,13 +5,13 @@ include config.mk
 
 VERSION := "1.3.2-non-git"
 ifneq ($(wildcard ./.git/),)
-VERSION := $(shell git describe --tags)
+VERSION := $(shell ${GIT} describe --tags)
 endif
 
 ifeq (,${SYSTEMD})
 # Check for systemctl to avoid discrepancies on systems, where
 # systemd is installed, but systemd.pc is in another package
-systemctl := $(shell command -v systemctl >/dev/null && echo systemctl)
+systemctl := $(shell command -v ${SYSTEMCTL} >/dev/null && echo systemctl)
 ifeq (systemctl,${systemctl})
 SYSTEMD := 1
 else
@@ -45,9 +45,9 @@ endif
 CFLAGS  := ${DEFAULT_CPPFLAGS} ${CPPFLAGS} ${DEFAULT_CFLAGS} ${CFLAGS} ${INCS} -MMD -MP
 LDFLAGS := ${DEFAULT_LDFLAGS} ${LDFLAGS} ${LIBS}
 
-SRC := $(sort $(shell find src/ -name '*.c'))
+SRC := $(sort $(shell ${FIND} src/ -name '*.c'))
 OBJ := ${SRC:.c=.o}
-TEST_SRC := $(sort $(shell find test/ -name '*.c'))
+TEST_SRC := $(sort $(shell ${FIND} test/ -name '*.c'))
 TEST_OBJ := $(TEST_SRC:.c=.o)
 DEPS := ${SRC:.c=.d} ${TEST_SRC:.c=.d}
 
@@ -78,7 +78,7 @@ test: test/test clean-coverage-run
 	./test/test -v
 
 test-valgrind: test/test
-	valgrind \
+	${VALGRIND} \
 		--suppressions=.valgrind.suppressions \
 		--leak-check=full \
 		--show-leak-kinds=definite \
@@ -92,7 +92,7 @@ test-coverage: test
 
 test-coverage-report: test-coverage
 	mkdir -p docs/internal/coverage
-	gcovr \
+	${GCOVR} \
 		-r . \
 		--exclude=test \
 		--html \
@@ -108,18 +108,18 @@ test/test: ${OBJ} ${TEST_OBJ}
 .PHONY: doc doc-doxygen
 doc: docs/dunst.1
 docs/dunst.1: docs/dunst.pod
-	pod2man --name=dunst -c "Dunst Reference" --section=1 --release=${VERSION} $< > $@
+	${POD2MAN} --name=dunst -c "Dunst Reference" --section=1 --release=${VERSION} $< > $@
 doc-doxygen:
-	doxygen docs/internal/Doxyfile
+	${DOXYGEN} docs/internal/Doxyfile
 
 .PHONY: service service-dbus service-systemd
 service: service-dbus
 service-dbus:
-	@sed "s|##PREFIX##|$(PREFIX)|" org.knopwob.dunst.service.in > org.knopwob.dunst.service
+	@${SED} "s|##PREFIX##|$(PREFIX)|" org.knopwob.dunst.service.in > org.knopwob.dunst.service
 ifneq (0,${SYSTEMD})
 service: service-systemd
 service-systemd:
-	@sed "s|##PREFIX##|$(PREFIX)|" dunst.systemd.service.in > dunst.systemd.service
+	@${SED} "s|##PREFIX##|$(PREFIX)|" dunst.systemd.service.in > dunst.systemd.service
 endif
 
 .PHONY: clean clean-dunst clean-dunstify clean-doc clean-tests clean-coverage clean-coverage-run
@@ -143,12 +143,12 @@ clean-tests:
 	rm -f test/test test/*.o test/*.d
 
 clean-coverage: clean-coverage-run
-	find . -type f -name '*.gcno' -delete
-	find . -type f -name '*.gcna' -delete
+	${FIND} . -type f -name '*.gcno' -delete
+	${FIND} . -type f -name '*.gcna' -delete
 # Cleans the coverage data before every run to not double count any lines
 clean-coverage-run:
-	find . -type f -name '*.gcov' -delete
-	find . -type f -name '*.gcda' -delete
+	${FIND} . -type f -name '*.gcov' -delete
+	${FIND} . -type f -name '*.gcda' -delete
 
 .PHONY: install install-dunst install-doc \
         install-service install-service-dbus install-service-systemd \
@@ -157,11 +157,11 @@ clean-coverage-run:
 install: install-dunst install-doc install-service
 
 install-dunst: dunst doc
-	install -Dm755 dunst ${DESTDIR}${PREFIX}/bin/dunst
+	install -Dm755 dunst ${DESTDIR}${BINDIR}/dunst
 	install -Dm644 docs/dunst.1 ${DESTDIR}${MANPREFIX}/man1/dunst.1
 
 install-doc:
-	install -Dm644 dunstrc ${DESTDIR}${PREFIX}/share/dunst/dunstrc
+	install -Dm644 dunstrc ${DESTDIR}${DATADIR}/dunst/dunstrc
 
 install-service: install-service-dbus
 install-service-dbus: service-dbus
@@ -173,9 +173,9 @@ install-service-systemd: service-systemd
 endif
 
 uninstall: uninstall-service
-	rm -f ${DESTDIR}${PREFIX}/bin/dunst
+	rm -f ${DESTDIR}${BINDIR}/dunst
 	rm -f ${DESTDIR}${MANPREFIX}/man1/dunst.1
-	rm -rf ${DESTDIR}${PREFIX}/share/dunst
+	rm -rf ${DESTDIR}${DATADIR}/dunst
 
 uninstall-service: uninstall-service-dbus
 uninstall-service-dbus:
