@@ -2,7 +2,8 @@
 PREFIX ?= /usr/local
 BINDIR ?= ${PREFIX}/bin
 DATADIR ?= ${PREFIX}/share
-MANPREFIX ?= ${DATADIR}/man # around for backwards compatibility
+# around for backwards compatibility
+MANPREFIX ?= ${DATADIR}/man
 MANDIR ?= ${MANPREFIX}
 
 DOXYGEN ?= doxygen
