@@ -24,6 +24,7 @@ jobs:
       - checkout
       - run: make CC=clang -j all dunstify test/test
       - run: make CC=clang -j test-valgrind
+      - run: ./test/test-install.sh
       - run: make             clean
       - run: make CC=gcc   -j all dunstify test/test
       - run: make CC=gcc   -j test-valgrind

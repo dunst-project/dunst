@@ -26,6 +26,7 @@ before_install:
 
 script:
   - CFLAGS="-Werror" make all dunstify test-valgrind doc-doxygen
+  - ./test/test-install.sh
   - CFLAGS="-Werror" make clean
   - CFLAGS="-Werror" make test-coverage
 
