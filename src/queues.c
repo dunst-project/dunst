@@ -430,11 +430,10 @@ void queues_update(struct dunst_status status)
                 n->start = time_monotonic_now();
                 notification_run_script(n);
 
-                g_queue_delete_link(waiting, iter);
-
                 if (n->skip_display && !n->redisplayed) {
-                        queues_history_push(n);
+                        queues_notification_close(n, REASON_USER);
                 } else {
+                        g_queue_delete_link(waiting, iter);
                         g_queue_insert_sorted(displayed, n, notification_cmp_data, NULL);
                 }
 
