@@ -591,7 +591,7 @@ int dbus_init(void)
 
         owner_id = g_bus_own_name(G_BUS_TYPE_SESSION,
                                   FDN_NAME,
-                                  G_BUS_NAME_OWNER_FLAGS_NONE,
+                                  G_BUS_NAME_OWNER_FLAGS_REPLACE,
                                   dbus_cb_bus_acquired,
                                   dbus_cb_name_acquired,
                                   dbus_cb_name_lost,
