@@ -320,7 +320,7 @@ static void dbus_cb_Notify(
 
         // The message got discarded
         if (id == 0) {
-                signal_notification_closed(n, 2);
+                signal_notification_closed(n, REASON_USER);
                 notification_unref(n);
         }
 

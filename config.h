@@ -129,6 +129,7 @@ struct rule default_rules[] = {
                 .history_ignore  = -1,
                 .match_transient = -1,
                 .set_transient   = -1,
+                .skip_display    = -1,
                 .new_icon        = NULL,
                 .fg              = NULL,
                 .bg              = NULL,

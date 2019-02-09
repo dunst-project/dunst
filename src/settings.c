@@ -725,6 +725,7 @@ void load_settings(char *cmdline_config_path)
                 r->match_transient = ini_get_bool(cur_section, "match_transient", r->match_transient);
                 r->set_transient = ini_get_bool(cur_section, "set_transient", r->set_transient);
                 r->desktop_entry = ini_get_string(cur_section, "desktop_entry", r->desktop_entry);
+                r->skip_display = ini_get_bool(cur_section, "skip_display", r->skip_display);
                 {
                         char *c = ini_get_string(
                                 cur_section,
