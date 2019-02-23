@@ -75,7 +75,7 @@ struct rule *rule_new(void)
         r->fullscreen = FS_NULL;
         r->markup = MARKUP_NULL;
         r->history_ignore = false;
-        r->match_transient = -1;
+        r->transient = -1;
         r->idle_threshold = -1;
         r->skip_display = -1;
 
@@ -93,7 +93,7 @@ static inline bool rule_field_matches_string(const char *value, const char *patt
 bool rule_matches_notification(struct rule *r, struct notification *n)
 {
         return     (r->msg_urgency == URG_NONE || r->msg_urgency == n->urgency)
-                && (r->match_transient == -1 || (r->match_transient == n->transient))
+                && (r->transient == -1 || (r->transient == n->transient))
                 && rule_field_matches_string(n->appname,        r->appname)
                 && rule_field_matches_string(n->desktop_entry,  r->desktop_entry)
                 && rule_field_matches_string(n->summary,        r->summary)

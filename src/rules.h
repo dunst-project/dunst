@@ -25,7 +25,7 @@ struct rule {
         enum urgency urgency;
         enum markup_mode markup;
         int history_ignore;
-        int match_transient;
+        int transient;
         int idle_threshold;
         int skip_display;
         char *new_icon;
