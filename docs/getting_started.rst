@@ -33,7 +33,7 @@ A small window should pop up saying ``dunst is up and running`` for at least a f
 Relogin to your session
 -----------------------
 
-Now, after you've installed and made sure that dunst is able to start, please log out and log in again. Dunst ist now running and receives notifications.
+Now, after you've installed and made sure that dunst is able to start, please log out and log in again. Dunst is now running and receives notifications.
 
 Configuring dunst
 -----------------

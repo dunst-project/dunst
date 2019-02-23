@@ -21,6 +21,7 @@ perfection.
    :caption: Customisation
 
    configuration
+   rules
 
 .. toctree::
    :maxdepth: 2
