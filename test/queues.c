@@ -494,7 +494,7 @@ TEST test_queue_timeout(void)
         n1 = test_notification("n1", 0);
         n2 = test_notification("n2", 10);
         n3 = test_notification("n3", 10);
-        n3->transient = true;
+        n3->idle_threshold = 0;
 
         queues_notification_insert(n1);
         queues_notification_insert(n2);

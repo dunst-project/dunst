@@ -142,7 +142,7 @@ static bool queues_notification_is_finished(struct notification *n, struct dunst
         bool is_idle = status.fullscreen ? false : status.idle;
 
         /* don't timeout when user is idle */
-        if (is_idle && !n->transient) {
+        if (is_idle && n->idle_threshold == -1) {
                 n->start = time_monotonic_now();
                 return false;
         }

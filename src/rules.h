@@ -26,7 +26,7 @@ struct rule {
         enum markup_mode markup;
         int history_ignore;
         int match_transient;
-        int set_transient;
+        int idle_threshold;
         int skip_display;
         char *new_icon;
         char *fg;

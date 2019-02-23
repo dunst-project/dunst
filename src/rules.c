@@ -22,8 +22,8 @@ void rule_apply(struct rule *r, struct notification *n)
                 n->fullscreen = r->fullscreen;
         if (r->history_ignore != -1)
                 n->history_ignore = r->history_ignore;
-        if (r->set_transient != -1)
-                n->transient = r->set_transient;
+        if (r->idle_threshold != -1)
+                n->idle_threshold = r->idle_threshold;
         if (r->skip_display != -1)
                 n->skip_display = r->skip_display;
         if (r->markup != MARKUP_NULL)
@@ -76,7 +76,7 @@ struct rule *rule_new(void)
         r->markup = MARKUP_NULL;
         r->history_ignore = false;
         r->match_transient = -1;
-        r->set_transient = -1;
+        r->idle_threshold = -1;
         r->skip_display = -1;
 
         return r;

@@ -60,6 +60,7 @@ void notification_print(const struct notification *n)
         printf("\tcategory: %s\n", n->category);
         printf("\ttimeout: %ld\n", n->timeout/1000);
         printf("\turgency: %s\n", notification_urgency_to_string(n->urgency));
+        printf("\tidle_threshold: %d\n", n->idle_threshold);
         printf("\ttransient: %d\n", n->transient);
         printf("\tformatted: '%s'\n", n->msg);
         printf("\tfg: %s\n", n->colors.fg);
@@ -315,6 +316,8 @@ struct notification *notification_create(void)
 
         n->urgency = URG_NORM;
         n->timeout = -1;
+
+        n->idle_threshold = -1;
 
         n->transient = false;
         n->progress = -1;

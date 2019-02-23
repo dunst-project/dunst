@@ -66,9 +66,11 @@ struct notification {
         struct notification_colors colors;
 
         char *stack_tag;    /**< stack notifications by tag */
+        int idle_threshold;     /**< possible values are 0 and -1, if 0 the notification times out albeit the user is
+                                      idle, if -1 (default) respect settings.idle_threshold */
 
         /* Hints */
-        bool transient;     /**< timeout albeit user is idle */
+        bool transient;
         int progress;       /**< percentage (-1: undefined) */
         int history_ignore; /**< push to history or free directly */
         int skip_display;   /**< insert notification into history, skipping initial waiting and display */
