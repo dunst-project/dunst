@@ -307,6 +307,7 @@
 #    msg_urgency
 #    stack_tag
 #    summary
+#    transient
 #
 # and you can override the
 #    background
@@ -318,6 +319,7 @@
 #    set_stack_tag
 #    timeout
 #    urgency
+#    idle_threshold (limited, see man page for more details)
 #
 # Shell-like globbing will get expanded.
 #

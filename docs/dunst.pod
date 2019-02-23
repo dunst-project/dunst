@@ -235,9 +235,6 @@ See TIME FORMAT for valid times.
 
 Set to 0 to disable.
 
-Transient notifications will ignore this setting and timeout anyway.
-Use a rule overwriting with 'set_transient = no' to disable this behavior.
-
 =item B<font> (default: "Monospace 8")
 
 Defines the font or font set used. Optionally set the size as a decimal number
@@ -630,6 +627,12 @@ Notifications can be matched for any of the following attributes:
 
 =item C<summary>
 
+=item C<transient>
+
+Transient is boolean value that any notification client can set when deemed
+appropriate. Dunst does modify its behaviour if it's set by default but you can
+match it in rules if necessary
+
 =back
 
 C<msg_urgency> is the urgency of the notification, it is named so to not conflict
@@ -673,6 +676,12 @@ The following attributes can be overridden:
 =item C<timeout>
 
 =item C<urgency>
+
+=item C<idle_threshold>
+
+This version of idle_threshold is currently more limited than the global one.
+The possible values are -1, which respects the existing global value or 0 which
+makes the notification bypass it and timeout anyway.
 
 =back
 
