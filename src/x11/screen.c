@@ -77,12 +77,8 @@ void init_screens(void)
 void alloc_screen_ar(int n)
 {
         assert(n > 0);
-        if (n <= screens_len) return;
-
-        screens = g_realloc(screens, n * sizeof(struct screen_info));
-
-        memset(screens, 0, n * sizeof(struct screen_info));
-
+        g_free(screens);
+        screens = g_malloc0(n * sizeof(struct screen_info));
         screens_len = n;
 }
 
