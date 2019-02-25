@@ -25,8 +25,6 @@ int screens_len;
 
 bool dunst_follow_errored = false;
 
-int randr_event_base = 0;
-
 static int randr_major_version = 0;
 static int randr_minor_version = 0;
 
@@ -90,8 +88,8 @@ void alloc_screen_ar(int n)
 
 void randr_init(void)
 {
-        int randr_error_base = 0;
-        if (!XRRQueryExtension(xctx.dpy, &randr_event_base, &randr_error_base)) {
+        int ignored;
+        if (!XRRQueryExtension(xctx.dpy, &ignored, &ignored)) {
                 LOG_W("Could not initialize the RandR extension. "
                       "Falling back to single monitor mode.");
                 return;
@@ -145,7 +143,7 @@ static int autodetect_dpi(struct screen_info *scr)
 
 void screen_check_event(XEvent event)
 {
-        if (event.type == randr_event_base + RRScreenChangeNotify) {
+        if (XRRUpdateConfiguration(&event)) {
                 LOG_D("XEvent: processing 'RRScreenChangeNotify'");
                 randr_update();
 
