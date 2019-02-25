@@ -37,7 +37,7 @@ static int x_follow_tear_down_error_handler(void);
 static int FollowXErrorHandler(Display *display, XErrorEvent *e);
 static Window get_focused_window(void);
 
-static double get_xft_dpi_value(void)
+static double screen_dpi_get_from_xft(void)
 {
         static double dpi = -1;
         //Only run this once, we don't expect dpi changes during runtime
@@ -62,6 +62,30 @@ static double get_xft_dpi_value(void)
                 XrmDestroyDatabase(xDB);
         }
         return dpi;
+}
+
+static double screen_dpi_get_from_monitor(struct screen_info *scr)
+{
+        return (double)scr->h * 25.4 / (double)scr->mmh;
+}
+
+double screen_dpi_get(struct screen_info *scr)
+{
+        if (  ! settings.force_xinerama
+             && settings.per_monitor_dpi)
+                return screen_dpi_get_from_monitor(scr);
+
+        if (screen_dpi_get_from_xft() > 0)
+                return screen_dpi_get_from_xft();
+
+        // Calculate the DPI on the overall screen size.
+        // xrandr --dpi <DPI> does only change the overall screen's millimeters,
+        // but not the physical screen's sizes.
+        //
+        // The screen parameter is XDefaultScreen(), as our scr->id references
+        // the xrandr monitor and not the xrandr screen
+        return ((((double)DisplayWidth  (xctx.dpy, XDefaultScreen(xctx.dpy))) * 25.4) /
+                 ((double)DisplayWidthMM(xctx.dpy, XDefaultScreen(xctx.dpy))));
 }
 
 void init_screens(void)
@@ -130,11 +154,6 @@ void randr_update(void)
         }
 
         XRRFreeMonitors(m);
-}
-
-static int autodetect_dpi(struct screen_info *scr)
-{
-        return (double)scr->h * 25.4 / (double)scr->mmh;
 }
 
 void screen_check_event(XEvent event)
@@ -347,18 +366,6 @@ sc_cleanup:
         assert(screens);
         assert(ret >= 0 && ret < screens_len);
         return &screens[ret];
-}
-
-double get_dpi_for_screen(struct screen_info *scr)
-{
-        double dpi = 0;
-        if ((!settings.force_xinerama && settings.per_monitor_dpi &&
-                (dpi = autodetect_dpi(scr))))
-                return dpi;
-        else if ((dpi = get_xft_dpi_value()))
-                return dpi;
-        else
-                return 96;
 }
 
 /*
