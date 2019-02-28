@@ -90,11 +90,11 @@ double screen_dpi_get(struct screen_info *scr)
 
 void init_screens(void)
 {
-        if (!settings.force_xinerama) {
+        if (settings.force_xinerama) {
+                xinerama_update();
+        } else {
                 randr_init();
                 randr_update();
-        } else {
-                xinerama_update();
         }
 }
 
