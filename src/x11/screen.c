@@ -37,31 +37,42 @@ static int x_follow_tear_down_error_handler(void);
 static int FollowXErrorHandler(Display *display, XErrorEvent *e);
 static Window get_focused_window(void);
 
+
+/**
+ * A cache variable to cache the Xft.dpi xrdb values.
+ * We do not expect to change xrdb often, but there's much
+ * overhead to query it once.
+ *
+ * @retval -DBL_MAX: uncached
+ * @retval     <=0: Invalid and unusable value
+ * @retval      >0: valid
+ */
+double screen_dpi_xft_cache = -DBL_MAX;
+
+void screen_dpi_xft_cache_purge(void)
+{
+        screen_dpi_xft_cache = -DBL_MAX;
+}
+
 static double screen_dpi_get_from_xft(void)
 {
-        static double dpi = -1;
-        //Only run this once, we don't expect dpi changes during runtime
-        if (dpi <= -1) {
+        if (screen_dpi_xft_cache == -DBL_MAX) {
+                screen_dpi_xft_cache = 0;
+
                 XrmInitialize();
                 char *xRMS = XResourceManagerString(xctx.dpy);
 
-                if (!xRMS) {
-                        dpi = 0;
-                        return 0;
-                }
+                ASSERT_OR_RET(xRMS, screen_dpi_xft_cache);
 
                 XrmDatabase xDB = XrmGetStringDatabase(xRMS);
                 char *xrmType;
                 XrmValue xrmValue;
 
-                if (XrmGetResource(xDB, "Xft.dpi", "Xft.dpi", &xrmType, &xrmValue)) {
-                        dpi = strtod(xrmValue.addr, NULL);
-                } else {
-                        dpi = 0;
-                }
+                if (XrmGetResource(xDB, "Xft.dpi", "Xft.dpi", &xrmType, &xrmValue))
+                        screen_dpi_xft_cache = strtod(xrmValue.addr, NULL);
                 XrmDestroyDatabase(xDB);
         }
-        return dpi;
+        return screen_dpi_xft_cache;
 }
 
 static double screen_dpi_get_from_monitor(struct screen_info *scr)
