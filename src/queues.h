@@ -29,7 +29,8 @@ const GList *queues_get_displayed(void);
 /**
  * Get the highest notification in line
  *
- * @return a notification or NULL, if waiting is empty
+ * @returns the first notification in waiting
+ * @retval NULL: waiting is empty
  */
 const struct notification *queues_get_head_waiting(void);
 
@@ -61,8 +62,8 @@ unsigned int queues_length_history(void);
  * - If n->id != 0, n replaces notification n with id n->id
  * - If n->id == 0, n gets a new id assigned
  *
- * @return `0`, the notification was dismissed and freed
- * @return The new value of `n->id`
+ * @returns The new value of `n->id`
+ * @retval 0: the notification was dismissed and freed
  */
 int queues_notification_insert(struct notification *n);
 
@@ -73,8 +74,8 @@ int queues_notification_insert(struct notification *n);
  *
  * @param new replacement for the old notification
  *
- * @return true, if a matching notification has been found and is replaced
- * @return false, else
+ * @retval true: a matching notification has been found and is replaced
+ * @retval false: otherwise
  */
 bool queues_notification_replace_id(struct notification *new);
 

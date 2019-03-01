@@ -6,6 +6,8 @@
 
 - Comment system is held similar to JavaDoc
     - Use `@param` to describe all input parameters
+    - Use `@return` to describe the output value
+    - Use `@retval` to describe special return values (like `NULL`)
     - Documentation comments should start with a double star (`/**`)
     - Append `()` to function names and prepend variables with `#` to properly reference them in the docs
 - Add comments to all functions and methods

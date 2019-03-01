@@ -461,7 +461,8 @@ static void dbus_cb_name_acquired(GDBusConnection *connection,
  * @param name The place to report the name to, if not required set to NULL
  * @param vendor The place to report the vendor to, if not required set to NULL
  *
- * @returns `true` on success, otherwise `false`
+ * @retval true: on success
+ * @retval false: Any error happened
  */
 static bool dbus_get_fdn_daemon_info(GDBusConnection  *connection,
                                      guint   *pid,

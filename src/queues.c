@@ -127,7 +127,8 @@ static bool queues_notification_is_ready(const struct notification *n, struct du
  *
  * @param n the notification to check
  * @param status the current status of dunst
- * @returns true, if the notification is timed out, otherwise false
+ * @retval true: the notification is timed out
+ * @retval false: otherwise
  */
 static bool queues_notification_is_finished(struct notification *n, struct dunst_status status)
 {
@@ -206,8 +207,8 @@ int queues_notification_insert(struct notification *n)
 /**
  * Replaces duplicate notification and stacks it
  *
- * @return true, if notification got stacked
- * @return false, if notification did not get stacked
+ * @retval true: notification got stacked
+ * @retval false: notification did not get stacked
  */
 static bool queues_stack_duplicate(struct notification *n)
 {
@@ -245,8 +246,8 @@ static bool queues_stack_duplicate(struct notification *n)
 /**
  * Replaces the first notification of the same stack_tag
  *
- * @return true, if notification got stacked
- * @return false, if notification did not get stacked
+ * @retval true: notification got stacked
+ * @retval false: notification did not get stacked
  */
 static bool queues_stack_by_tag(struct notification *new)
 {
