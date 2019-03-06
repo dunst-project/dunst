@@ -471,6 +471,8 @@ void x_setup(void)
 
         init_screens();
         x_shortcut_grab(&settings.history_ks);
+
+        XrmInitialize();
 }
 
 struct geometry x_parse_geometry(const char *geom_str)

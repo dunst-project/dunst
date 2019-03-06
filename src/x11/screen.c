@@ -59,8 +59,6 @@ static double screen_dpi_get_from_xft(void)
         if (screen_dpi_xft_cache == -DBL_MAX) {
                 screen_dpi_xft_cache = 0;
 
-                XrmInitialize();
-
                 char *xrmType;
                 XrmValue xrmValue;
                 XrmDatabase db = XrmGetDatabase(xctx.dpy);
