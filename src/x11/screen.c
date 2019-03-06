@@ -60,17 +60,13 @@ static double screen_dpi_get_from_xft(void)
                 screen_dpi_xft_cache = 0;
 
                 XrmInitialize();
-                char *xRMS = XResourceManagerString(xctx.dpy);
 
-                ASSERT_OR_RET(xRMS, screen_dpi_xft_cache);
-
-                XrmDatabase xDB = XrmGetStringDatabase(xRMS);
                 char *xrmType;
                 XrmValue xrmValue;
-
-                if (XrmGetResource(xDB, "Xft.dpi", "Xft.dpi", &xrmType, &xrmValue))
+                XrmDatabase db = XrmGetDatabase(xctx.dpy);
+                ASSERT_OR_RET(db, screen_dpi_xft_cache);
+                if (XrmGetResource(db, "Xft.dpi", "Xft.dpi", &xrmType, &xrmValue))
                         screen_dpi_xft_cache = strtod(xrmValue.addr, NULL);
-                XrmDestroyDatabase(xDB);
         }
         return screen_dpi_xft_cache;
 }
