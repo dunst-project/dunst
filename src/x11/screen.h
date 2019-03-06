@@ -18,7 +18,7 @@ struct screen_info {
 
 void init_screens(void);
 void screen_dpi_xft_cache_purge(void);
-void screen_check_event(XEvent event);
+bool screen_check_event(XEvent *ev);
 
 struct screen_info *get_active_screen(void);
 double screen_dpi_get(struct screen_info *scr);

@@ -355,7 +355,10 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer 
                         }
                         break;
                 default:
-                        screen_check_event(ev);
+                        if (!screen_check_event(&ev)) {
+                                LOG_D("XEvent: Ignoring '%d'", ev.type);
+                        }
+
                         break;
                 }
         }

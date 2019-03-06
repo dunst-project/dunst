@@ -167,15 +167,15 @@ void randr_update(void)
         XRRFreeMonitors(m);
 }
 
-void screen_check_event(XEvent event)
+bool screen_check_event(XEvent *ev)
 {
-        if (XRRUpdateConfiguration(&event)) {
+        if (XRRUpdateConfiguration(ev)) {
                 LOG_D("XEvent: processing 'RRScreenChangeNotify'");
                 randr_update();
 
-        } else {
-                LOG_D("XEvent: Ignoring '%d'", event.type);
+                return true;
         }
+        return false;
 }
 
 void xinerama_update(void)
