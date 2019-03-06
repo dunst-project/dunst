@@ -17,6 +17,7 @@
 #include <X11/X.h>
 #include <X11/XKBlib.h>
 #include <X11/Xlib.h>
+#include <X11/Xresource.h>
 #include <X11/Xutil.h>
 
 #include "../dbus.h"
@@ -54,6 +55,8 @@ struct x_context xctx;
 bool dunst_grab_errored = false;
 
 static bool fullscreen_last = false;
+
+static void XRM_update_db(void);
 
 static void x_shortcut_init(struct keyboard_shortcut *ks);
 static int x_shortcut_grab(struct keyboard_shortcut *ks);
@@ -333,9 +336,18 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer 
                             ev.xcreatewindow.override_redirect == 0)
                                 XRaiseWindow(xctx.dpy, win->xwin);
                         break;
+                case PropertyNotify:
+                        if (ev.xproperty.atom == XA_RESOURCE_MANAGER) {
+                                LOG_D("XEvent: processing PropertyNotify for Resource manager");
+                                XRM_update_db();
+                                screen_dpi_xft_cache_purge();
+                                draw();
+                                break;
+                        }
+                        /* Explicitly fallthrough. Other PropertyNotify events, e.g. catching
+                         * _NET_WM get handled in the Focus(In|Out) section */
                 case FocusIn:
                 case FocusOut:
-                case PropertyNotify:
                         LOG_D("XEvent: Checking for active screen changes");
                         fullscreen_now = have_fullscreen_window();
                         scr = get_active_screen();
@@ -438,6 +450,47 @@ void x_free(void)
 
         if (xctx.dpy)
                 XCloseDisplay(xctx.dpy);
+}
+
+static int XErrorHandlerDB(Display *display, XErrorEvent *e)
+{
+        char err_buf[BUFSIZ];
+        XGetErrorText(display, e->error_code, err_buf, BUFSIZ);
+        LOG_W("%s", err_buf);
+        return 0;
+}
+
+static void XRM_update_db(void)
+{
+        XrmDatabase db;
+        XTextProperty prop;
+        Window root;
+        // We shouldn't destroy the first DB coming
+        // from the display object itself
+        static bool runonce = false;
+
+        XFlush(xctx.dpy);
+        XSetErrorHandler(XErrorHandlerDB);
+
+        root = RootWindow(xctx.dpy, DefaultScreen(xctx.dpy));
+
+        XLockDisplay(xctx.dpy);
+        if (XGetTextProperty(xctx.dpy, root, &prop, XA_RESOURCE_MANAGER)) {
+                if (runonce) {
+                        db = XrmGetDatabase(xctx.dpy);
+                        XrmDestroyDatabase(db);
+                }
+
+                db = XrmGetStringDatabase((const char*)prop.value);
+                XrmSetDatabase(xctx.dpy, db);
+        }
+        XUnlockDisplay(xctx.dpy);
+
+        runonce = true;
+
+        XFlush(xctx.dpy);
+        XSync(xctx.dpy, false);
+        XSetErrorHandler(NULL);
 }
 
 /*
