@@ -7,6 +7,7 @@
  *
  * @param to_match (nullable) String to extract URLs
  * @return a string of urls separated by '\n'
+ * @retval NULL: No URLs found
  */
 char *extract_urls(const char *to_match);
 

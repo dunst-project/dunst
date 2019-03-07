@@ -29,7 +29,8 @@ double get_dpi_for_screen(struct screen_info *scr);
  * @see window_is_fullscreen()
  * @see get_focused_window()
  *
- * @return `true` if the focused window is in fullscreen mode
+ * @retval true: the focused window is in fullscreen mode
+ * @retval false: otherwise
  */
 bool have_fullscreen_window(void);
 
@@ -37,7 +38,8 @@ bool have_fullscreen_window(void);
  * Check if window is in fullscreen mode
  *
  * @param window the x11 window object
- * @return `true` if `window` is in fullscreen mode
+ * @retval true: \p window is in fullscreen mode
+ * @retval false: otherwise
  */
 bool window_is_fullscreen(Window window);
 

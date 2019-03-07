@@ -23,7 +23,8 @@ GdkPixbuf *icon_pixbuf_scale(GdkPixbuf *pixbuf);
  *
  * @param filename A string representing a readable file path
  *
- * @return an instance of `GdkPixbuf` or `NULL` if file does not exist
+ * @return an instance of `GdkPixbuf`
+ * @retval NULL: file does not exist, not readable, etc..
  */
 GdkPixbuf *get_pixbuf_from_file(const char *filename);
 
@@ -33,7 +34,8 @@ GdkPixbuf *get_pixbuf_from_file(const char *filename);
  *                 or an icon name, which then gets searched for in the
  *                 settings.icon_path
  *
- * @return an instance of `GdkPixbuf` or `NULL` if not found
+ * @return an instance of `GdkPixbuf`
+ * @retval NULL: file does not exist, not readable, etc..
  */
 GdkPixbuf *get_pixbuf_from_icon(const char *iconname);
 
@@ -47,8 +49,8 @@ GdkPixbuf *get_pixbuf_from_icon(const char *iconname);
  *             get searched in the folders of the icon_path setting.
  * @param id   (necessary) A unique identifier of the returned pixbuf. Only filled,
  *             if the return value is non-NULL.
- * @return     a pixbuf representing name's image.
- *             If an invalid path given, it will return NULL.
+ * @return an instance of `GdkPixbuf`, representing the name's image
+ * @retval NULL: Invalid path given
  */
 GdkPixbuf *icon_get_for_name(const char *name, char **id);
 
@@ -61,8 +63,8 @@ GdkPixbuf *icon_get_for_name(const char *name, char **id);
  *             like described in the notification spec.
  * @param id   (necessary) A unique identifier of the returned pixbuf.
  *             Only filled, if the return value is non-NULL.
- * @return     a pixbuf representing name's image.
- *             If an invalid GVariant is passed, it will return NULL.
+ * @return an instance of `GdkPixbuf` derived from the GVariant
+ * @retval NULL: GVariant parameter nulled, invalid or in wrong format
  */
 GdkPixbuf *icon_get_for_data(GVariant *data, char **id);
 
