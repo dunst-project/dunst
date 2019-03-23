@@ -17,6 +17,7 @@
 #include <X11/X.h>
 #include <X11/XKBlib.h>
 #include <X11/Xlib.h>
+#include <X11/Xresource.h>
 #include <X11/Xutil.h>
 
 #include "../dbus.h"
@@ -54,6 +55,8 @@ struct x_context xctx;
 bool dunst_grab_errored = false;
 
 static bool fullscreen_last = false;
+
+static void XRM_update_db(void);
 
 static void x_shortcut_init(struct keyboard_shortcut *ks);
 static int x_shortcut_grab(struct keyboard_shortcut *ks);
@@ -333,9 +336,18 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer 
                             ev.xcreatewindow.override_redirect == 0)
                                 XRaiseWindow(xctx.dpy, win->xwin);
                         break;
+                case PropertyNotify:
+                        if (ev.xproperty.atom == XA_RESOURCE_MANAGER) {
+                                LOG_D("XEvent: processing PropertyNotify for Resource manager");
+                                XRM_update_db();
+                                screen_dpi_xft_cache_purge();
+                                draw();
+                                break;
+                        }
+                        /* Explicitly fallthrough. Other PropertyNotify events, e.g. catching
+                         * _NET_WM get handled in the Focus(In|Out) section */
                 case FocusIn:
                 case FocusOut:
-                case PropertyNotify:
                         LOG_D("XEvent: Checking for active screen changes");
                         fullscreen_now = have_fullscreen_window();
                         scr = get_active_screen();
@@ -355,7 +367,10 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer 
                         }
                         break;
                 default:
-                        screen_check_event(ev);
+                        if (!screen_check_event(&ev)) {
+                                LOG_D("XEvent: Ignoring '%d'", ev.type);
+                        }
+
                         break;
                 }
         }
@@ -437,6 +452,47 @@ void x_free(void)
                 XCloseDisplay(xctx.dpy);
 }
 
+static int XErrorHandlerDB(Display *display, XErrorEvent *e)
+{
+        char err_buf[BUFSIZ];
+        XGetErrorText(display, e->error_code, err_buf, BUFSIZ);
+        LOG_W("%s", err_buf);
+        return 0;
+}
+
+static void XRM_update_db(void)
+{
+        XrmDatabase db;
+        XTextProperty prop;
+        Window root;
+        // We shouldn't destroy the first DB coming
+        // from the display object itself
+        static bool runonce = false;
+
+        XFlush(xctx.dpy);
+        XSetErrorHandler(XErrorHandlerDB);
+
+        root = RootWindow(xctx.dpy, DefaultScreen(xctx.dpy));
+
+        XLockDisplay(xctx.dpy);
+        if (XGetTextProperty(xctx.dpy, root, &prop, XA_RESOURCE_MANAGER)) {
+                if (runonce) {
+                        db = XrmGetDatabase(xctx.dpy);
+                        XrmDestroyDatabase(db);
+                }
+
+                db = XrmGetStringDatabase((const char*)prop.value);
+                XrmSetDatabase(xctx.dpy, db);
+        }
+        XUnlockDisplay(xctx.dpy);
+
+        runonce = true;
+
+        XFlush(xctx.dpy);
+        XSync(xctx.dpy, false);
+        XSetErrorHandler(NULL);
+}
+
 /*
  * Setup X11 stuff
  */
@@ -468,6 +524,8 @@ void x_setup(void)
 
         init_screens();
         x_shortcut_grab(&settings.history_ks);
+
+        XrmInitialize();
 }
 
 struct geometry x_parse_geometry(const char *geom_str)
@@ -616,9 +674,17 @@ struct window_x11 *x_win_create(void)
 
         win->esrc = x_win_reg_source(win);
 
-        long root_event_mask = SubstructureNotifyMask;
+        /* SubstructureNotifyMask is required for receiving CreateNotify events
+         * in order to raise the window when something covers us. See #160
+         *
+         * PropertyChangeMask is requred for getting screen change events when follow_mode != none
+         *                    and it's also needed to receive
+         *                    XA_RESOURCE_MANAGER events to update the dpi when
+         *                    the xresource value is updated
+         */
+        long root_event_mask = SubstructureNotifyMask | PropertyChangeMask;
         if (settings.f_mode != FOLLOW_NONE) {
-                root_event_mask |= FocusChangeMask | PropertyChangeMask;
+                root_event_mask |= FocusChangeMask;
         }
         XSelectInput(xctx.dpy, root, root_event_mask);
 

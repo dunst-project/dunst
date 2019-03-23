@@ -237,7 +237,7 @@ static PangoLayout *layout_create(cairo_t *c)
         struct screen_info *screen = get_active_screen();
 
         PangoContext *context = pango_cairo_create_context(c);
-        pango_cairo_context_set_resolution(context, get_dpi_for_screen(screen));
+        pango_cairo_context_set_resolution(context, screen_dpi_get(screen));
 
         PangoLayout *layout = pango_layout_new(context);
 

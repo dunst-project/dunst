@@ -25,8 +25,6 @@ int screens_len;
 
 bool dunst_follow_errored = false;
 
-int randr_event_base = 0;
-
 static int randr_major_version = 0;
 static int randr_minor_version = 0;
 
@@ -39,59 +37,84 @@ static int x_follow_tear_down_error_handler(void);
 static int FollowXErrorHandler(Display *display, XErrorEvent *e);
 static Window get_focused_window(void);
 
-static double get_xft_dpi_value(void)
+
+/**
+ * A cache variable to cache the Xft.dpi xrdb values.
+ * We do not expect to change xrdb often, but there's much
+ * overhead to query it once.
+ *
+ * @retval -DBL_MAX: uncached
+ * @retval     <=0: Invalid and unusable value
+ * @retval      >0: valid
+ */
+double screen_dpi_xft_cache = -DBL_MAX;
+
+void screen_dpi_xft_cache_purge(void)
 {
-        static double dpi = -1;
-        //Only run this once, we don't expect dpi changes during runtime
-        if (dpi <= -1) {
-                XrmInitialize();
-                char *xRMS = XResourceManagerString(xctx.dpy);
+        screen_dpi_xft_cache = -DBL_MAX;
+}
 
-                if (!xRMS) {
-                        dpi = 0;
-                        return 0;
-                }
+static double screen_dpi_get_from_xft(void)
+{
+        if (screen_dpi_xft_cache == -DBL_MAX) {
+                screen_dpi_xft_cache = 0;
 
-                XrmDatabase xDB = XrmGetStringDatabase(xRMS);
                 char *xrmType;
                 XrmValue xrmValue;
-
-                if (XrmGetResource(xDB, "Xft.dpi", "Xft.dpi", &xrmType, &xrmValue)) {
-                        dpi = strtod(xrmValue.addr, NULL);
-                } else {
-                        dpi = 0;
-                }
-                XrmDestroyDatabase(xDB);
+                XrmDatabase db = XrmGetDatabase(xctx.dpy);
+                ASSERT_OR_RET(db, screen_dpi_xft_cache);
+                if (XrmGetResource(db, "Xft.dpi", "Xft.dpi", &xrmType, &xrmValue))
+                        screen_dpi_xft_cache = strtod(xrmValue.addr, NULL);
         }
-        return dpi;
+        return screen_dpi_xft_cache;
+}
+
+static double screen_dpi_get_from_monitor(struct screen_info *scr)
+{
+        return (double)scr->h * 25.4 / (double)scr->mmh;
+}
+
+double screen_dpi_get(struct screen_info *scr)
+{
+        if (  ! settings.force_xinerama
+             && settings.per_monitor_dpi)
+                return screen_dpi_get_from_monitor(scr);
+
+        if (screen_dpi_get_from_xft() > 0)
+                return screen_dpi_get_from_xft();
+
+        // Calculate the DPI on the overall screen size.
+        // xrandr --dpi <DPI> does only change the overall screen's millimeters,
+        // but not the physical screen's sizes.
+        //
+        // The screen parameter is XDefaultScreen(), as our scr->id references
+        // the xrandr monitor and not the xrandr screen
+        return ((((double)DisplayWidth  (xctx.dpy, XDefaultScreen(xctx.dpy))) * 25.4) /
+                 ((double)DisplayWidthMM(xctx.dpy, XDefaultScreen(xctx.dpy))));
 }
 
 void init_screens(void)
 {
-        if (!settings.force_xinerama) {
+        if (settings.force_xinerama) {
+                xinerama_update();
+        } else {
                 randr_init();
                 randr_update();
-        } else {
-                xinerama_update();
         }
 }
 
 void alloc_screen_ar(int n)
 {
         assert(n > 0);
-        if (n <= screens_len) return;
-
-        screens = g_realloc(screens, n * sizeof(struct screen_info));
-
-        memset(screens, 0, n * sizeof(struct screen_info));
-
+        g_free(screens);
+        screens = g_malloc0(n * sizeof(struct screen_info));
         screens_len = n;
 }
 
 void randr_init(void)
 {
-        int randr_error_base = 0;
-        if (!XRRQueryExtension(xctx.dpy, &randr_event_base, &randr_error_base)) {
+        int ignored;
+        if (!XRRQueryExtension(xctx.dpy, &ignored, &ignored)) {
                 LOG_W("Could not initialize the RandR extension. "
                       "Falling back to single monitor mode.");
                 return;
@@ -138,20 +161,15 @@ void randr_update(void)
         XRRFreeMonitors(m);
 }
 
-static int autodetect_dpi(struct screen_info *scr)
+bool screen_check_event(XEvent *ev)
 {
-        return (double)scr->h * 25.4 / (double)scr->mmh;
-}
-
-void screen_check_event(XEvent event)
-{
-        if (event.type == randr_event_base + RRScreenChangeNotify) {
+        if (XRRUpdateConfiguration(ev)) {
                 LOG_D("XEvent: processing 'RRScreenChangeNotify'");
                 randr_update();
 
-        } else {
-                LOG_D("XEvent: Ignoring '%d'", event.type);
+                return true;
         }
+        return false;
 }
 
 void xinerama_update(void)
@@ -353,18 +371,6 @@ sc_cleanup:
         assert(screens);
         assert(ret >= 0 && ret < screens_len);
         return &screens[ret];
-}
-
-double get_dpi_for_screen(struct screen_info *scr)
-{
-        double dpi = 0;
-        if ((!settings.force_xinerama && settings.per_monitor_dpi &&
-                (dpi = autodetect_dpi(scr))))
-                return dpi;
-        else if ((dpi = get_xft_dpi_value()))
-                return dpi;
-        else
-                return 96;
 }
 
 /*
