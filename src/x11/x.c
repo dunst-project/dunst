@@ -674,9 +674,17 @@ struct window_x11 *x_win_create(void)
 
         win->esrc = x_win_reg_source(win);
 
-        long root_event_mask = SubstructureNotifyMask;
+        /* SubstructureNotifyMask is required for receiving CreateNotify events
+         * in order to raise the window when something covers us. See #160
+         *
+         * PropertyChangeMask is requred for getting screen change events when follow_mode != none
+         *                    and it's also needed to receive
+         *                    XA_RESOURCE_MANAGER events to update the dpi when
+         *                    the xresource value is updated
+         */
+        long root_event_mask = SubstructureNotifyMask | PropertyChangeMask;
         if (settings.f_mode != FOLLOW_NONE) {
-                root_event_mask |= FocusChangeMask | PropertyChangeMask;
+                root_event_mask |= FocusChangeMask;
         }
         XSelectInput(xctx.dpy, root, root_event_mask);
 
