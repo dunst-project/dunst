@@ -616,21 +616,50 @@ Notifications can be matched for any of the following attributes:
 
 =item C<appname> (discouraged, see desktop_entry)
 
+The name of the application as reported by the client. Be aware that the name
+can often differ depending on the locale used.
+
 =item C<body>
+
+The body of the notification
 
 =item C<category>
 
+The category of the notification as defined by the notification spec. See
+https://developer.gnome.org/notification-spec/#categories
+
 =item C<desktop_entry>
+
+GLib based applications export their desktop-entry name. In comparison to the appname,
+the desktop-entry won't get localized.
 
 =item C<icon>
 
+The icon of the notification in the form of a file path. Can be empty if no icon
+is available or a raw icon is used instead.
+
 =item C<match_transient>
+
+Match if the notification has been declared as transient by the client or by
+some other rule.
+
+See C<set_transient> for more details about this attribute.
 
 =item C<msg_urgency>
 
+Matches the urgency of the notification as set by the client or by some other
+rule.
+
 =item C<stack_tag>
 
+Matches the stack tag of the notification as set by the client or by some other
+rule.
+
+See set_stack_tag for more information about stack tags.
+
 =item C<summary>
+
+Matches the summary, 'title', of the notification.
 
 =back
 
@@ -638,8 +667,7 @@ C<msg_urgency> is the urgency of the notification, it is named so to not conflic
 with trying to modify the urgency.
 
 Instead of the appname filter, it's recommended to use the desktop_entry filter.
-GLib based applications export their desktop-entry name. In comparison to the appname,
-the desktop-entry won't get localized.
+
 
 To define a matching rule simply assign the specified value to the value that
 should be matched, for example:
@@ -660,23 +688,74 @@ The following attributes can be overridden:
 
 =item C<background>
 
+The background color of the notification. See COLORS for possible values.
+
 =item C<foreground>
+
+The background color of the notification. See COLORS for possible values.
 
 =item C<format>
 
+Equivalent to the C<format> setting.
+
 =item C<frame_color>
+
+The frame color color of the notification. See COLORS for possible values.
 
 =item C<fullscreen>
 
+One of show, delay, or pushback.
+
+This attribute speicifies how notifications are handled if a fullscreen window
+is focused. By default it's set to show so notifications are being shown.
+
+Other possible values are delay: Already shown notifications are continued to be
+displayed until they are dismissed or time out but new notifications will be
+held back and displayed when the focus to the fullscreen window is lost.
+
+Or pushback which is equivalent to delay with the difference that already
+existing notifications are paused and hidden until the focus to the fullscreen
+window is lost.
+
 =item C<new_icon>
+
+Updates the icon of the notification, it should be a path to a valid image.
 
 =item C<set_stack_tag>
 
+Sets the stack tag for the notification, notifications with the same (non-empty)
+stack tag will replace each-other so only the newest one is visible. This can be
+useful for example in volume or brightness notifications where only want one of
+the same type visible.
+
+The stack tag can be set by the client with the 'synchronous',
+'private-synchronous' 'x-canonical-private-synchronous' or the
+'x-dunst-stack-tag' hints.
+
 =item C<set_transient>
+
+Sets whether the notification is considered transient.
+Transient notifications will bypass the idle_threshold setting.
+
+By default notifications are _not_ considered transient but clients can set the
+value of this by specifying the 'transient' hint when sending notifications.
 
 =item C<timeout>
 
+Equivalent to the C<timeout> setting in the urgency sections.
+
 =item C<urgency>
+
+This sets the notification urgency.
+
+B<IMPORTANT NOTE>: This currently DOES NOT re-apply the attributes from the
+urgency_* sections. The changed urgency will only be visible in rules defined
+later. Use C<msg_urgency> to match it.
+
+=item C<skip_display>
+
+Setting this to true will prevent the notification from being displayed
+initially but will be saved in history for later viewing.
 
 =back
 
@@ -688,15 +767,6 @@ rule definition.
 
 If the format is set to an empty string, the notification will not be
 suppressed.
-
-Notifications with the same non-empty stack_tag value will be stacked
-together. The default stack_stag value is set from the string hints
-"synchronous", "private-synchronous", "x-canonical-private-synchronous", and
-"x-dunst-stack-tag".
-
-If you want to skip initial display of a notification, but still have
-it in history, you can set 'skip_display' to 'true' to get this
-behavior.
 
 =back
 
