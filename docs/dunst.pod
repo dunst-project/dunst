@@ -235,8 +235,8 @@ See TIME FORMAT for valid times.
 
 Set to 0 to disable.
 
-Transient notifications will ignore this setting and timeout anyway.
-Use a rule overwriting with 'set_transient = no' to disable this behavior.
+A client can mark a notification as transient to bypass this setting and timeout
+anyway. Use a rule with 'set_transient = no' to disable this behavior.
 
 =item B<font> (default: "Monospace 8")
 
@@ -624,6 +624,8 @@ Notifications can be matched for any of the following attributes:
 
 =item C<icon>
 
+=item C<match_transient>
+
 =item C<msg_urgency>
 
 =item C<stack_tag>
@@ -669,6 +671,8 @@ The following attributes can be overridden:
 =item C<new_icon>
 
 =item C<set_stack_tag>
+
+=item C<set_transient>
 
 =item C<timeout>
 
