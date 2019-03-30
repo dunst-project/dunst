@@ -1,18 +1,44 @@
 # Dunst changelog
 
-## Unreleased
+## 1.4.0 - 2019-03-30
 
 ### Added
 
+- Add support to override `frame_color` via rules (#498)
+- Support for round corners (#420)
+- Ability to reference `$HOME` in icon paths with `~/` (#520)
+- Support to customize the mouse bindings (#530)
+- Command to toggle pause status (#535)
+- Ability to automatically replace similar notifications (like volume changes)
+  via `stack_tag` (#552)
+- Comparison of raw icons for duplicate notifications (#571)
 - Introduce new desktop-entry filter (#470)
-- Remove libxdg-basedir dependency (GLib's function is used instead)
-- `fullscreen` rule to hide notifications when a fullscreen window is active
+- `fullscreen` rule to hide notifications when a fullscreen window is active (#472)
+- Added `skip_display` rule option to skip initial notification display, and
+  include the notification in the history. (#590)
+
+### Fixed
+
+- Notification age not counting the time while the computer was suspended (#492)
+- Dunst losing always-on-top status on a window manager restart (#160)
+- Xpm icons not being recognized
 - When new notifications arrive, but display is full, important notifications don't
   have to wait for a timeout in a displayed notification (#541)
+- Dunst hanging while the context menu is open (#456)
+- Having & inside a notification breaking markup (#546)
 - `<I> more` notifications don't occupy space anymore, if there is only a single
   notification waiting to get displayed. The notification gets displayed directly (#467)
-- Added `skip_display` rule option to skip initial notification display, and
-  include the notification in the history.
+- Segfault when comparing icon name with a notification with a raw icon (#536)
+- Icon size can no longer be larger than the notification when a fixed width is specified (#540)
+
+### Changed
+
+- Transient notifications no longer skip history by default (#508)
+- The notification summary no longer accepts markup (#497)
+
+### Removed
+
+- Dependency on libxdg-basedir (#550)
 
 ## 1.3.2 - 2018-05-06
 
