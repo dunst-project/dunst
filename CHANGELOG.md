@@ -1,5 +1,10 @@
 # Dunst changelog
 
+## Unreleased
+
+### Added
+### Fixed
+
 ## 1.4.0 - 2019-03-30
 
 ### Added
