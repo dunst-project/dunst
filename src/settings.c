@@ -432,7 +432,7 @@ void load_settings(char *cmdline_config_path)
         // restrict the icon size to a reasonable limit if we have a fixed width.
         // Otherwise the layout will be broken by too large icons.
         // See https://github.com/dunst-project/dunst/issues/540
-        if (settings.geometry.width_set) {
+        if (settings.geometry.width_set && settings.geometry.w != 0) {
                 const int icon_size_limit = settings.geometry.w / 2;
                 if (   settings.max_icon_size == 0
                     || settings.max_icon_size > icon_size_limit) {
