@@ -40,7 +40,7 @@ static bool regex_init(void)
                 return true;
 
         char *regex =
-            "\\b(https?://|ftps?://|news://|mailto:|file://|www\\.)"
+            "\\<(https?://|ftps?://|news://|mailto:|file://|www\\.)"
             "[-[:alnum:]_\\@;/?:&=%$.+!*\x27,~#]*"
             "(\\([-[:alnum:]_\\@;/?:&=%$.+!*\x27,~#]*\\)|[-[:alnum:]_\\@;/?:&=%$+*~])+";
         int code = regcomp(&url_regex, regex, REG_EXTENDED | REG_ICASE);
