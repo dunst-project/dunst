@@ -355,17 +355,21 @@ int load_ini_file(FILE *fp)
                 char *value = g_strstrip(equal + 1);
 
                 char *quote = strchr(value, '"');
+                char *value_end = NULL;
                 if (quote) {
-                        char *closing_quote = strchr(quote + 1, '"');
-                        if (!closing_quote) {
+                        value_end = strchr(quote + 1, '"');
+                        if (!value_end) {
                                 LOG_W("Invalid config file at line %d: Missing '\"'.", line_num);
                                 continue;
                         }
                 } else {
-                        char *comment = strpbrk(value, "#;");
-                        if (comment)
-                                *comment = '\0';
+                        value_end = value;
                 }
+
+                char *comment = strpbrk(value_end, "#;");
+                if (comment)
+                        *comment = '\0';
+
                 value = g_strstrip(value);
 
                 if (!current_section) {

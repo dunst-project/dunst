@@ -23,6 +23,9 @@
 	quoted = "A quoted string"
 	quoted_with_quotes = "A string "with quotes""
 	unquoted_with_quotes = A" string with quotes"
+	quoted_comment = "String with a" # comment
+	unquoted_comment = String with a # comment
+	color_comment = "#ffffff" # comment
 
 [path]
 	expand_tilde    = ~/.path/to/tilde
