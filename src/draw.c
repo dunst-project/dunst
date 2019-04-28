@@ -512,7 +512,7 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width)
         pango_layout_get_pixel_size(cl->l, NULL, &h_text);
 
         if (cl->icon && settings.icon_position == ICON_LEFT) {
-                cairo_move_to(c, cairo_image_surface_get_width(cl->icon) + 2 * settings.h_padding,
+                cairo_move_to(c, cairo_image_surface_get_width(cl->icon) + 2 * settings.h_padding + settings.image_padding,
                                  settings.padding + h/2 - h_text/2);
         } else if (cl->icon && settings.icon_position == ICON_RIGHT) {
                 cairo_move_to(c, settings.h_padding, settings.padding + h/2 - h_text/2);

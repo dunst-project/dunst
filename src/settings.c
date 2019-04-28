@@ -338,6 +338,12 @@ void load_settings(char *cmdline_config_path)
                 "horizontal padding"
         );
 
+        settings.image_padding = option_get_int(
+                "global",
+                "image_padding", "-image_padding", defaults.image_padding,
+                "Padding between image and text"
+        );
+
         settings.transparency = option_get_int(
                 "global",
                 "transparency", "-transparency", defaults.transparency,
