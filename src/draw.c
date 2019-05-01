@@ -295,7 +295,7 @@ static struct colored_layout *layout_init_shared(cairo_t *c, const struct notifi
         } else {
                 width -= 2 * settings.h_padding;
                 width -= 2 * settings.frame_width;
-                if (cl->icon) width -= cairo_image_surface_get_width(cl->icon) + settings.h_padding;
+                if (cl->icon) width -= cairo_image_surface_get_width(cl->icon) + settings.h_padding + 2 * settings.image_padding;
                 layout_setup_pango(cl->l, width);
         }
 
