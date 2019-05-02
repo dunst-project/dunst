@@ -531,15 +531,14 @@ void x_setup(void)
 struct geometry x_parse_geometry(const char *geom_str)
 {
         assert(geom_str);
+        struct geometry geometry = { 0 };
 
         if (geom_str[0] == '-') {
-                settings.geometry.negative_width = true;
+                geometry.negative_width = true;
                 geom_str++;
         } else {
-                settings.geometry.negative_width = false;
+                geometry.negative_width = false;
         }
-
-        struct geometry geometry = { 0 };
 
         int mask = XParseGeometry(geom_str,
                                   &geometry.x, &geometry.y,
