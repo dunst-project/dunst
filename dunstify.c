@@ -22,8 +22,6 @@ static gboolean printid = false;
 static guint32 replace_id = 0;
 static guint32 close_id = 0;
 static gboolean block = false;
-static guint32 xoffset = 0;
-static guint32 yoffset = 0;
 
 static GOptionEntry entries[] =
 {
@@ -40,8 +38,6 @@ static GOptionEntry entries[] =
     { "replace",      'r', 0, G_OPTION_ARG_INT,          &replace_id,     "Set id of this notification.", "ID"},
     { "close",        'C', 0, G_OPTION_ARG_INT,          &close_id,       "Close the notification with the specified ID", "ID"},
     { "block",        'b', 0, G_OPTION_ARG_NONE,         &block,          "Block until notification is closed and print close reason", NULL},
-    { "xoffset",      'x', 0, G_OPTION_ARG_INT,          &xoffset,        "Offset in X direction for notification", NULL},
-    { "yoffset",      'y', 0, G_OPTION_ARG_INT,          &yoffset,        "Offset in Y direction for notification", NULL},
     { NULL }
 };
 

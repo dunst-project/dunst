@@ -532,7 +532,7 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width)
                              image_y = settings.padding + h/2 - image_height/2;
 
                 if (settings.icon_position == ICON_LEFT) {
-                        image_x = settings.h_padding;
+                        image_x = settings.h_padding + settings.image_padding/2;
                 } else if (settings.icon_position == ICON_RIGHT){
                         image_x = width - settings.h_padding - image_width;
                 } else {
