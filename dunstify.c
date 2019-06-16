@@ -76,6 +76,33 @@ void print_serverinfo(void)
                                                                  spec_version);
 }
 
+/*
+ * Glib leaves the option terminator "--" in the argv after parsing in some
+ * cases. This function gets the specified argv element ignoring the first
+ * terminator.
+ *
+ * See https://developer.gnome.org/glib/stable/glib-Commandline-option-parser.html#g-option-context-parse for details
+ */
+char *get_argv(char *argv[], int index)
+{
+    for (int i = 0; i <= index; i++) {
+        if (strcmp(argv[i], "--") == 0) {
+            return argv[index + 1];
+        }
+    }
+    return argv[index];
+}
+
+/* Count the number of arguments in argv excluding the terminator "--" */
+int count_args(char *argv[], int argc) {
+    for (int i = 0; i < argc; i++) {
+        if (strcmp(argv[i], "--") == 0)
+            return argc - 1;
+    }
+
+    return argc;
+}
+
 void parse_commandline(int argc, char *argv[])
 {
     GError *error = NULL;
@@ -100,17 +127,18 @@ void parse_commandline(int argc, char *argv[])
         die(0);
     }
 
-    if (argc < 2 && close_id < 1) {
+    int n_args = count_args(argv, argc);
+    if (n_args < 2 && close_id < 1) {
         g_printerr("I need at least a summary\n");
         die(1);
-    } else if (argc < 2) {
+    } else if (n_args < 2) {
         summary = g_strdup("These are not the summaries you are looking for");
     } else {
-        summary = g_strdup(argv[1]);
+        summary = g_strdup(get_argv(argv, 1));
     }
 
-    if (argc > 2) {
-        body = g_strcompress(argv[2]);
+    if (n_args > 2) {
+        body = g_strcompress(get_argv(argv, 2));
     }
 
     if (urgency_str) {
