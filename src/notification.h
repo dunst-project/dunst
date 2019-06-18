@@ -8,7 +8,7 @@
 
 #include "markup.h"
 
-#define DUNST_NOTIF_MAX_CHARS 5000
+#define DUNST_NOTIF_MAX_CHARS 50000
 
 enum behavior_fullscreen {
         FS_NULL,      //!< Invalid value
