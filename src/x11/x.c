@@ -341,7 +341,10 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer 
                                 LOG_D("XEvent: processing PropertyNotify for Resource manager");
                                 XRM_update_db();
                                 screen_dpi_xft_cache_purge();
-                                draw();
+
+                                if (win->visible) {
+                                        draw();
+                                }
                                 break;
                         }
                         /* Explicitly fallthrough. Other PropertyNotify events, e.g. catching

@@ -611,6 +611,7 @@ static void calc_window_pos(int width, int height, int *ret_x, int *ret_y)
 
 void draw(void)
 {
+        assert(queues_length_displayed() > 0);
 
         GSList *layouts = create_layouts(x_win_get_context(win));
 
