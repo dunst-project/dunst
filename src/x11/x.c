@@ -349,6 +349,7 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer 
                         }
                         /* Explicitly fallthrough. Other PropertyNotify events, e.g. catching
                          * _NET_WM get handled in the Focus(In|Out) section */
+                case ConfigureNotify:
                 case FocusIn:
                 case FocusOut:
                         LOG_D("XEvent: Checking for active screen changes");
