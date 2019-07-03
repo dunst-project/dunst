@@ -1,9 +1,15 @@
 # Dunst changelog
 
-## Unreleased
+## 1.4.1 - 2019-07-03
 
-### Added
 ### Fixed
+
+- `max_icon_size` not working with dynamic width (#614)
+- Failure to parse color strings with trailing comments in the config (#626)
+- Negative width in geometry being ignored (#628)
+- Incorrect handling of the argument terminator `--` in dunstify
+- Crash when changing DPI while no notifications are displayed (#630)
+- Fullscreen status change not being detected in some cases (#613)
 
 ## 1.4.0 - 2019-03-30
 
