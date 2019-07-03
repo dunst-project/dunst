@@ -132,6 +132,7 @@ clean-dunst:
 
 clean-dunstify:
 	rm -f dunstify.o
+	rm -f dunstify.d
 	rm -f dunstify
 
 clean-doc:
