@@ -286,7 +286,7 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
         }
 
         if (timeout >= 0)
-                n->timeout = timeout * 1000;
+                n->timeout = ((gint64)timeout) * 1000;
 
         g_variant_unref(hints);
         g_variant_type_free(required_type);

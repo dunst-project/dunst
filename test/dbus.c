@@ -660,6 +660,34 @@ TEST test_hint_raw_image(void)
         PASS();
 }
 
+/* We didn't process the timeout parameter via DBus correctly
+ * and it got limited to an int instead of a long int
+ * See: Issue #646 (The timeout value in dunst wraps around) */
+TEST test_timeout_overflow(void)
+{
+        struct notification *n;
+        struct dbus_notification *n_dbus;
+
+        n_dbus = dbus_notification_new();
+        n_dbus->app_name = "dunstteststack";
+        n_dbus->app_icon = "NONE";
+        n_dbus->summary = "test_hint_urgency";
+        n_dbus->body = "Summary of it";
+        n_dbus->expire_timeout = 2147484;
+        gint64 expected_timeout = G_GINT64_CONSTANT(2147484000);
+
+        guint id;
+        ASSERT(dbus_notification_fire(n_dbus, &id));
+        ASSERT(id != 0);
+
+        n = queues_debug_find_notification_by_id(id);
+        ASSERT_EQ_FMT(expected_timeout, n->timeout, "%" G_GINT64_FORMAT);
+
+        dbus_notification_free(n_dbus);
+
+        PASS();
+}
+
 TEST test_server_caps(enum markup_mode markup)
 {
         GVariant *reply;
@@ -821,6 +849,7 @@ gpointer run_threaded_tests(gpointer data)
         RUN_TESTp(test_server_caps, MARKUP_NO);
         RUN_TEST(test_close_and_signal);
         RUN_TEST(test_signal_actioninvoked);
+        RUN_TEST(test_timeout_overflow);
 
         RUN_TEST(assert_methodlists_sorted);
 
