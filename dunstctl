@@ -1,0 +1,89 @@
+#!/bin/sh -eu
+
+dbus_name="org.freedesktop.Notifications"
+dbus_path="/org/freedesktop/Notifications"
+dbus_ifac="org.dunstproject.cmd0"
+dbus_property="org.freedesktop.DBus.Properties"
+
+usage() {
+	echo "Usage: dunstctl <command> [options...]"
+	echo ""
+	echo "Commands:"
+	echo "  close [-a|--all]         Close the last or all notifications"
+	echo "  context                  Open context menu of latest notification"
+	echo "  display                  Redisplay closed notifications"
+	echo "  status                   Reload the configuration file"
+	echo "  help                     Show this help"
+}
+
+method_call() {
+	dbus-send --print-reply=literal --dest=$dbus_name $dbus_path $dbus_ifac."$*"
+}
+
+property_get() {
+	result=$(dbus-send --print-reply=literal --dest=$dbus_name $dbus_path $dbus_property.Get string:$dbus_ifac string:"$*")
+	if test "${result#*'true'}" != "$result"; then
+		echo "dunst notifications are enabled"
+	else
+		echo "dunst notifications are disabled"
+	fi
+}
+
+property_set() {
+	dbus-send --print-reply=literal --dest=$dbus_name $dbus_path $dbus_property.Set string:$dbus_ifac string:"$@"
+}
+
+if [ $# -eq 0 ] || [ $# -gt 3 ]; then
+   usage
+   exit 1
+fi
+
+case "$1" in
+"close")
+	[ $# -lt 2 ] && param="" || param="$2"
+	case "$param" in
+	"-a"|"--all")
+		method_call NotificationCloseAll
+		;;
+	"")
+		method_call NotificationCloseLast
+		;;
+	*)
+		echo "dunstctl: unrecognized option '$2'"
+		exit 1
+		;;
+	esac
+	;;
+"context")
+	method_call ContextMenuCall
+	;;
+"display")
+	method_call NotificationShow
+	;;
+"status")
+	[ $# -lt 2 ] && action="" || action="$2"
+	case "$action" in
+	"disable")
+		property_set running variant:boolean:false
+		;;
+	"enable")
+		property_set running variant:boolean:true
+		;;
+	""|"get")
+		property_get running
+		;;
+	*)
+		echo "dunstctl status: unrecognized option '$2'"
+		exit 1
+		;;
+	esac
+	;;
+"help"|"--help"|"-h")
+	usage
+	;;
+*)
+	echo "dunstctl: unrecognized command '$1'"
+	exit 1
+	;;
+esac
+
