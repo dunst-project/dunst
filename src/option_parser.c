@@ -44,7 +44,7 @@ static int cmdline_find_option(const char *key);
 
 bool string_parse_alignment(const char *s, enum alignment *ret)
 {
-        ASSERT_OR_RET(s, false);
+        ASSERT_OR_RET(STR_FULL(s), false);
         ASSERT_OR_RET(ret, false);
 
         STRING_PARSE_RET("left",   ALIGN_LEFT);
@@ -56,7 +56,7 @@ bool string_parse_alignment(const char *s, enum alignment *ret)
 
 bool string_parse_ellipsize(const char *s, enum ellipsize *ret)
 {
-        ASSERT_OR_RET(s, false);
+        ASSERT_OR_RET(STR_FULL(s), false);
         ASSERT_OR_RET(ret, false);
 
         STRING_PARSE_RET("start",  ELLIPSE_START);
@@ -68,7 +68,7 @@ bool string_parse_ellipsize(const char *s, enum ellipsize *ret)
 
 bool string_parse_follow_mode(const char *s, enum follow_mode *ret)
 {
-        ASSERT_OR_RET(s, false);
+        ASSERT_OR_RET(STR_FULL(s), false);
         ASSERT_OR_RET(ret, false);
 
         STRING_PARSE_RET("mouse",    FOLLOW_MOUSE);
@@ -81,7 +81,7 @@ bool string_parse_follow_mode(const char *s, enum follow_mode *ret)
 
 bool string_parse_fullscreen(const char *s, enum behavior_fullscreen *ret)
 {
-        ASSERT_OR_RET(s, false);
+        ASSERT_OR_RET(STR_FULL(s), false);
         ASSERT_OR_RET(ret, false);
 
         STRING_PARSE_RET("show",     FS_SHOW);
@@ -93,7 +93,7 @@ bool string_parse_fullscreen(const char *s, enum behavior_fullscreen *ret)
 
 bool string_parse_icon_position(const char *s, enum icon_position *ret)
 {
-        ASSERT_OR_RET(s, false);
+        ASSERT_OR_RET(STR_FULL(s), false);
         ASSERT_OR_RET(ret, false);
 
         STRING_PARSE_RET("left",  ICON_LEFT);
@@ -105,7 +105,7 @@ bool string_parse_icon_position(const char *s, enum icon_position *ret)
 
 bool string_parse_markup_mode(const char *s, enum markup_mode *ret)
 {
-        ASSERT_OR_RET(s, false);
+        ASSERT_OR_RET(STR_FULL(s), false);
         ASSERT_OR_RET(ret, false);
 
         STRING_PARSE_RET("strip", MARKUP_STRIP);
@@ -118,7 +118,7 @@ bool string_parse_markup_mode(const char *s, enum markup_mode *ret)
 
 bool string_parse_mouse_action(const char *s, enum mouse_action *ret)
 {
-        ASSERT_OR_RET(s, false);
+        ASSERT_OR_RET(STR_FULL(s), false);
         ASSERT_OR_RET(ret, false);
 
         STRING_PARSE_RET("none",           MOUSE_NONE);
@@ -131,7 +131,7 @@ bool string_parse_mouse_action(const char *s, enum mouse_action *ret)
 
 bool string_parse_sepcolor(const char *s, struct separator_color_data *ret)
 {
-        ASSERT_OR_RET(s, false);
+        ASSERT_OR_RET(STR_FULL(s), false);
         ASSERT_OR_RET(ret, false);
 
         STRING_PARSE_RET("auto",       (struct separator_color_data){.type = SEP_AUTO});
@@ -146,7 +146,7 @@ bool string_parse_sepcolor(const char *s, struct separator_color_data *ret)
 
 bool string_parse_urgency(const char *s, enum urgency *ret)
 {
-        ASSERT_OR_RET(s, false);
+        ASSERT_OR_RET(STR_FULL(s), false);
         ASSERT_OR_RET(ret, false);
 
         STRING_PARSE_RET("low",      URG_LOW);
