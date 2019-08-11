@@ -151,15 +151,18 @@ clean-coverage-run:
 	${FIND} . -type f -name '*.gcov' -delete
 	${FIND} . -type f -name '*.gcda' -delete
 
-.PHONY: install install-dunst install-doc \
+.PHONY: install install-dunst install-dunstctl install-doc \
         install-service install-service-dbus install-service-systemd \
-        uninstall \
+        uninstall uninstall-dunstctl \
         uninstall-service uninstall-service-dbus uninstall-service-systemd
-install: install-dunst install-doc install-service install-dunstify
+install: install-dunst install-dunstctl install-doc install-service install-dunstify
 
 install-dunst: dunst doc
 	install -Dm755 dunst ${DESTDIR}${BINDIR}/dunst
 	install -Dm644 docs/dunst.1 ${DESTDIR}${MANPREFIX}/man1/dunst.1
+
+install-dunstctl: dunstctl
+	install -Dm755 dunstctl ${DESTDIR}${BINDIR}/dunstctl
 
 install-doc:
 	install -Dm644 dunstrc ${DESTDIR}${DATADIR}/dunst/dunstrc
@@ -176,11 +179,14 @@ endif
 install-dunstify: dunstify
 	install -Dm755 dunstify ${DESTDIR}${BINDIR}/dunstify
 
-uninstall: uninstall-service
+uninstall: uninstall-service uninstall-dunstctl
 	rm -f ${DESTDIR}${BINDIR}/dunst
 	rm -f ${DESTDIR}${BINDIR}/dunstify
 	rm -f ${DESTDIR}${MANPREFIX}/man1/dunst.1
 	rm -rf ${DESTDIR}${DATADIR}/dunst
+
+uninstall-dunstctl:
+	rm -f ${DESTDIR}${BINDIR}/dunstctl
 
 uninstall-service: uninstall-service-dbus
 uninstall-service-dbus:
