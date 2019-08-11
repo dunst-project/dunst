@@ -1,89 +1,75 @@
-#!/bin/sh -eu
+#!/bin/sh
 
-dbus_name="org.freedesktop.Notifications"
-dbus_path="/org/freedesktop/Notifications"
-dbus_ifac="org.dunstproject.cmd0"
-dbus_property="org.freedesktop.DBus.Properties"
+set -eu
 
-usage() {
-	echo "Usage: dunstctl <command> [options...]"
-	echo ""
-	echo "Commands:"
-	echo "  close [-a|--all]         Close the last or all notifications"
-	echo "  context                  Open context menu of latest notification"
-	echo "  display                  Redisplay closed notifications"
-	echo "  status                   Reload the configuration file"
-	echo "  help                     Show this help"
+DBUS_NAME="org.freedesktop.Notifications"
+DBUS_PATH="/org/freedesktop/Notifications"
+DBUS_IFAC_DUNST="org.dunstproject.cmd0"
+DBUS_IFAC_PROP="org.freedesktop.DBus.Properties"
+DBUS_IFAC_FDN="org.freedesktop.Notifications"
+
+function die(){ printf "%s\n" "${1}" >&2; exit 1; }
+
+function show_help() {
+	cat <<-EOH
+	Usage: dunstctl <command> [parameters]"
+	Commands:
+	  close                    Close the last notification
+	  close-all                Close the all notifications
+	  context                  Open context menu of latest notification
+	  history-pop              Pop one notification from history
+	  status                   Check if
+	  status-set [true|false]  Set the status
+	  help                     Show this help
+	EOH
 }
 
-method_call() {
-	dbus-send --print-reply=literal --dest=$dbus_name $dbus_path $dbus_ifac."$*"
+function method_call() {
+	dbus-send --print-reply=literal --dest="${DBUS_NAME}" "${DBUS_PATH}" "${1}"
 }
 
-property_get() {
-	result=$(dbus-send --print-reply=literal --dest=$dbus_name $dbus_path $dbus_property.Get string:$dbus_ifac string:"$*")
-	if test "${result#*'true'}" != "$result"; then
-		echo "dunst notifications are enabled"
-	else
-		echo "dunst notifications are disabled"
-	fi
+function property_get() {
+	dbus-send --print-reply=literal --dest="${DBUS_NAME}" "${DBUS_PATH}" "${DBUS_IFAC_PROP}.Get" "string:${DBUS_IFAC_DUNST}" "string:${1}"
 }
 
-property_set() {
-	dbus-send --print-reply=literal --dest=$dbus_name $dbus_path $dbus_property.Set string:$dbus_ifac string:"$@"
+function property_set() {
+	dbus-send --print-reply=literal --dest="${DBUS_NAME}" "${DBUS_PATH}" "${DBUS_IFAC_PROP}.Set" "string:${DBUS_IFAC_DUNST}" "string:${1}" "${2}"
 }
 
-if [ $# -eq 0 ] || [ $# -gt 3 ]; then
-   usage
-   exit 1
-fi
+command -v dbus-send >/dev/null 2>/dev/null || \
+	die "Command dbus-send not found"
 
-case "$1" in
-"close")
-	[ $# -lt 2 ] && param="" || param="$2"
-	case "$param" in
-	"-a"|"--all")
-		method_call NotificationCloseAll
+
+case "${1:-}" in
+	"close")
+		method_call "${DBUS_IFAC_DUNST}.NotificationCloseLast" >/dev/null
+		;;
+	"close-all")
+		method_call "${DBUS_IFAC_DUNST}.NotificationCloseAll" >/dev/null
+		;;
+	"context")
+		method_call "${DBUS_IFAC_DUNST}.ContextMenuCall" >/dev/null
+		;;
+	"history-pop")
+		method_call "${DBUS_IFAC_DUNST}.NotificationShow" >/dev/null
+		;;
+	"status")
+		property_get running | ( read _ _ status; printf "%s\n" "${status}"; )
+		;;
+	"status-set")
+		[ "${2:-}" ] \
+			|| die "No status parameter specified. Please give either 'true' or 'false' as running parameter."
+		[ "${2}" == "true" ] || [ "${2}" == "false" ] \
+			|| die "Please give either 'true' or 'false' as running parameter."
+		property_set running variant:boolean:"${2}"
+		;;
+	"help"|"--help"|"-h")
+		show_help
 		;;
 	"")
-		method_call NotificationCloseLast
+		die "dunstctl: No command specified. Please consult the usage."
 		;;
 	*)
-		echo "dunstctl: unrecognized option '$2'"
-		exit 1
+		die "dunstctl: unrecognized command '${1:-}'. Please consult the usage."
 		;;
-	esac
-	;;
-"context")
-	method_call ContextMenuCall
-	;;
-"display")
-	method_call NotificationShow
-	;;
-"status")
-	[ $# -lt 2 ] && action="" || action="$2"
-	case "$action" in
-	"disable")
-		property_set running variant:boolean:false
-		;;
-	"enable")
-		property_set running variant:boolean:true
-		;;
-	""|"get")
-		property_get running
-		;;
-	*)
-		echo "dunstctl status: unrecognized option '$2'"
-		exit 1
-		;;
-	esac
-	;;
-"help"|"--help"|"-h")
-	usage
-	;;
-*)
-	echo "dunstctl: unrecognized command '$1'"
-	exit 1
-	;;
 esac
-
