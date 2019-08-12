@@ -20,6 +20,7 @@ function show_help() {
 	  history-pop              Pop one notification from history
 	  status                   Check if
 	  status-set [true|false]  Set the status
+	  debug                    Print debugging information
 	  help                     Show this help
 	EOH
 }
@@ -65,6 +66,21 @@ case "${1:-}" in
 		;;
 	"help"|"--help"|"-h")
 		show_help
+		;;
+	"debug")
+		dbus-send --print-reply=literal --dest="${DBUS_NAME}" "${DBUS_PATH}" "${DBUS_IFAC_FDN}.GetServerInformation" >/dev/null 2>/dev/null \
+			|| die "Dunst is not running."
+
+		dbus-send --print-reply=literal --dest="${DBUS_NAME}" "${DBUS_PATH}" "${DBUS_IFAC_FDN}.GetServerInformation" \
+			| (
+					read name vendor version protocol_version
+					[ "${name}" == dunst ]
+					printf "dunst version: %s\n" "${version}"
+				) \
+			|| die "Another notification manager is running. It's not dunst"
+
+		dbus-send --print-reply=literal --dest="${DBUS_NAME}" "${DBUS_PATH}" "${DBUS_IFAC_DUNST}.Ping" >/dev/null 2>/dev/null \
+			|| die "Dunst controlling interface not available. Is the version too old?"
 		;;
 	"")
 		die "dunstctl: No command specified. Please consult the usage."

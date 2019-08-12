@@ -76,6 +76,7 @@ static const char *introspection_xml =
     "        <method name=\"NotificationCloseLast\" />"
     "        <method name=\"NotificationCloseAll\"  />"
     "        <method name=\"NotificationShow\"      />"
+    "        <method name=\"Ping\"                  />"
 
     "        <property name=\"running\" type=\"b\" access=\"readwrite\">"
     "            <annotation name=\"org.freedesktop.DBus.Property.EmitsChangedSignal\" value=\"true\"/>"
@@ -154,11 +155,13 @@ DBUS_METHOD(dunst_ContextMenuCall);
 DBUS_METHOD(dunst_NotificationCloseAll);
 DBUS_METHOD(dunst_NotificationCloseLast);
 DBUS_METHOD(dunst_NotificationShow);
+DBUS_METHOD(dunst_Ping);
 static struct dbus_method methods_dunst[] = {
         {"ContextMenuCall",        dbus_cb_dunst_ContextMenuCall},
         {"NotificationCloseAll",   dbus_cb_dunst_NotificationCloseAll},
         {"NotificationCloseLast",  dbus_cb_dunst_NotificationCloseLast},
         {"NotificationShow",       dbus_cb_dunst_NotificationShow},
+        {"Ping",                   dbus_cb_dunst_Ping},
 };
 
 void dbus_cb_dunst_methods(GDBusConnection *connection,
@@ -237,6 +240,17 @@ static void dbus_cb_dunst_NotificationShow(GDBusConnection *connection,
         queues_history_pop();
         wake_up();
 
+        g_dbus_method_invocation_return_value(invocation, NULL);
+        g_dbus_connection_flush(connection, NULL, NULL, NULL);
+}
+
+/* Just a simple Ping command to give the ability to dunstctl to test for the existence of this interface
+ * Any other way requires parsing the XML of the Introspection or other foo. Just calling the Ping on an old dunst version will fail. */
+static void dbus_cb_dunst_Ping(GDBusConnection *connection,
+                               const gchar *sender,
+                               GVariant *parameters,
+                               GDBusMethodInvocation *invocation)
+{
         g_dbus_method_invocation_return_value(invocation, NULL);
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
 }
