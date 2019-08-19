@@ -529,6 +529,12 @@ B<command line flag>: -context_key <key>
 
 Specifies the keyboard shortcut that opens the context menu.
 
+=item B<do_action>
+
+B<command line flag>: -do_action_key <key>
+
+Specifies the keyboard shortcut that invokes the current action or context menu.
+
 =back
 
 =head2 Urgency sections

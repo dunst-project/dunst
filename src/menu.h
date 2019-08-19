@@ -20,5 +20,10 @@ void regex_teardown(void);
  */
 void context_menu(void);
 
+/**
+ * Do action using the keyboard shortcut.
+ */
+void shortcut_do_action(void);
+
 #endif
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

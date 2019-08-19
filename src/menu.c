@@ -362,4 +362,14 @@ static gpointer context_menu_thread(gpointer data)
 
         return NULL;
 }
+
+void shortcut_do_action(void)
+{
+        for (const GList *iter = queues_get_displayed(); iter;
+             iter = iter->next) {
+                struct notification *n = iter->data;
+                notification_do_action(n);
+                return;
+        }
+}
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

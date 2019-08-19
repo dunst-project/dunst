@@ -666,6 +666,12 @@ void load_settings(char *cmdline_config_path)
                 "Shortcut for context menu"
         );
 
+        settings.do_action_ks.str = option_get_string(
+                "shortcuts",
+                "do_action", "-do_action_key", defaults.do_action_ks.str,
+                "Shortcut for invoking the action or context menu"
+        );
+
         settings.print_notifications = cmdline_get_bool(
                 "-print", false,
                 "Print notifications to cmdline (DEBUG)"

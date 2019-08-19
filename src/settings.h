@@ -83,6 +83,7 @@ struct settings {
         struct keyboard_shortcut close_all_ks;
         struct keyboard_shortcut history_ks;
         struct keyboard_shortcut context_ks;
+        struct keyboard_shortcut do_action_ks;
         bool force_xinerama;
         int corner_radius;
         enum mouse_action mouse_left_click;

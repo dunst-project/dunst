@@ -101,6 +101,10 @@ struct settings defaults = {
         .code = 0,.sym = NoSymbol,.is_valid = false
 },                              /* ignore this */
 
+.do_action_ks = {.str = "none",
+        .code = 0,.sym = NoSymbol,.is_valid = false
+},                              /* ignore this */
+
 .mouse_left_click = MOUSE_CLOSE_CURRENT,
 
 .mouse_middle_click = MOUSE_DO_ACTION,

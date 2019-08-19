@@ -272,6 +272,11 @@
     # Context menu.
     context = ctrl+shift+period
 
+    # Do action.
+    # * do_action: If the notification has exactly one action, or one is marked as default,
+    #              invoke it. If there are multiple and no default, open the context menu.
+    do_action = ctrl+shift+comma
+
 [urgency_low]
     # IMPORTANT: colors have to be defined in quotation marks.
     # Otherwise the "#" and following would be interpreted as a comment.

@@ -329,6 +329,13 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer 
                                 context_menu();
                                 wake_up();
                         }
+                        if (settings.do_action_ks.str
+                            && XLookupKeysym(&ev.xkey,
+                                             0) == settings.do_action_ks.sym
+                            && settings.do_action_ks.mask == state) {
+                                shortcut_do_action();
+                                wake_up();
+                        }
                         break;
                 case CreateNotify:
                         LOG_D("XEvent: processing 'CreateNotify'");
@@ -514,6 +521,7 @@ void x_setup(void)
         x_shortcut_init(&settings.close_all_ks);
         x_shortcut_init(&settings.history_ks);
         x_shortcut_init(&settings.context_ks);
+        x_shortcut_init(&settings.do_action_ks);
 
         x_shortcut_grab(&settings.close_ks);
         x_shortcut_ungrab(&settings.close_ks);
@@ -523,6 +531,8 @@ void x_setup(void)
         x_shortcut_ungrab(&settings.history_ks);
         x_shortcut_grab(&settings.context_ks);
         x_shortcut_ungrab(&settings.context_ks);
+        x_shortcut_grab(&settings.do_action_ks);
+        x_shortcut_ungrab(&settings.do_action_ks);
 
         xctx.screensaver_info = XScreenSaverAllocInfo();
 
@@ -718,6 +728,7 @@ void x_win_show(struct window_x11 *win)
         x_shortcut_grab(&settings.close_ks);
         x_shortcut_grab(&settings.close_all_ks);
         x_shortcut_grab(&settings.context_ks);
+        x_shortcut_grab(&settings.do_action_ks);
 
         x_shortcut_setup_error_handler();
         XGrabButton(xctx.dpy,
@@ -748,6 +759,7 @@ void x_win_hide(struct window_x11 *win)
         x_shortcut_ungrab(&settings.close_ks);
         x_shortcut_ungrab(&settings.close_all_ks);
         x_shortcut_ungrab(&settings.context_ks);
+        x_shortcut_ungrab(&settings.do_action_ks);
 
         XUngrabButton(xctx.dpy, AnyButton, AnyModifier, win->xwin);
         XUnmapWindow(xctx.dpy, win->xwin);
