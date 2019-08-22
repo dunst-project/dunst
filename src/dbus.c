@@ -73,6 +73,10 @@ static const char *introspection_xml =
     "    <interface name=\""DUNST_IFAC"\">"
 
     "        <method name=\"ContextMenuCall\"       />"
+// TODO: add an optional parmater definining the action of notification number X to invoke
+    "        <method name=\"NotificationAction\">"
+    "            <arg name=\"number\"     type=\"i\"/>"
+    "        </method>"
     "        <method name=\"NotificationCloseLast\" />"
     "        <method name=\"NotificationCloseAll\"  />"
     "        <method name=\"NotificationShow\"      />"
@@ -152,12 +156,14 @@ void dbus_cb_fdn_methods(GDBusConnection *connection,
 }
 
 DBUS_METHOD(dunst_ContextMenuCall);
+DBUS_METHOD(dunst_NotificationAction);
 DBUS_METHOD(dunst_NotificationCloseAll);
 DBUS_METHOD(dunst_NotificationCloseLast);
 DBUS_METHOD(dunst_NotificationShow);
 DBUS_METHOD(dunst_Ping);
 static struct dbus_method methods_dunst[] = {
         {"ContextMenuCall",        dbus_cb_dunst_ContextMenuCall},
+        {"NotificationAction",     dbus_cb_dunst_NotificationAction},
         {"NotificationCloseAll",   dbus_cb_dunst_NotificationCloseAll},
         {"NotificationCloseLast",  dbus_cb_dunst_NotificationCloseLast},
         {"NotificationShow",       dbus_cb_dunst_NotificationShow},
@@ -196,6 +202,33 @@ static void dbus_cb_dunst_ContextMenuCall(GDBusConnection *connection,
 {
         LOG_D("CMD: Calling context menu");
         context_menu();
+
+        g_dbus_method_invocation_return_value(invocation, NULL);
+        g_dbus_connection_flush(connection, NULL, NULL, NULL);
+}
+
+static void dbus_cb_dunst_NotificationAction(GDBusConnection *connection,
+                                             const gchar *sender,
+                                             GVariant *parameters,
+                                             GDBusMethodInvocation *invocation)
+{
+        int notification_nr = 0;
+        g_variant_get(parameters, "(i)", &notification_nr);
+
+        LOG_D("CMD: Calling action for notification %d", notification_nr);
+
+        if (notification_nr < 0 || queues_length_waiting() < notification_nr)
+                return; //FIXME return error
+
+        const GList *list = g_list_nth_data(queues_get_displayed(), notification_nr);
+
+        if (list && list->data) {
+                struct notification *n = list->data;
+                LOG_D("CMD: Calling action for notification %s", n->summary);
+                notification_do_action(n);
+                // TODO: do we need to wake up after notification action?
+                wake_up();
+        }
 
         g_dbus_method_invocation_return_value(invocation, NULL);
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
@@ -606,10 +639,16 @@ gboolean dbus_cb_dunst_Properties_Set(GDBusConnection *connection,
                                       GError **error,
                                       gpointer user_data)
 {
-        if (STR_EQ(property_name, "running"))
+        if (STR_EQ(property_name, "running")) {
                 dunst_status(S_RUNNING, g_variant_get_boolean(value));
+                return true;
+        }
+        
 
-        return true;
+        //FIXME: don't we have to return true on successful setting, but return false, if e.g. the parameter name is wrong?
+        //return true;
+        // so like this?
+        return false;
 }
 
 

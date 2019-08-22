@@ -26,7 +26,7 @@ function show_help() {
 }
 
 function method_call() {
-	dbus-send --print-reply=literal --dest="${DBUS_NAME}" "${DBUS_PATH}" "${1}"
+	dbus-send --print-reply=literal --dest="${DBUS_NAME}" "${DBUS_PATH}" $*
 }
 
 function property_get() {
@@ -42,6 +42,9 @@ command -v dbus-send >/dev/null 2>/dev/null || \
 
 
 case "${1:-}" in
+	"action")
+		method_call "${DBUS_IFAC_DUNST}.NotificationAction" "int32:${2:-0}" >/dev/null
+		;;
 	"close")
 		method_call "${DBUS_IFAC_DUNST}.NotificationCloseLast" >/dev/null
 		;;
