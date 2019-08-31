@@ -678,7 +678,9 @@ Matches only messages that were send via notify-send. If multiple filter
 expressions are present, all of them have to match for the rule to be applied
 (logical AND).
 
-Shell-like globing is supported.
+Shell-like globing is supported. For more information see fnmatch(3). Support
+for extended patterns is enabled (EXTMATCH) but I<they are only available on GNU
+libc>
 
 =item B<modifying>
 

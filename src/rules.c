@@ -1,11 +1,20 @@
 /* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
 
+// Needed for FNM_EXTMATCH flag
+#define _GNU_SOURCE
+
 #include "rules.h"
 
 #include <fnmatch.h>
 #include <glib.h>
 
 #include "dunst.h"
+
+#ifdef FNM_EXTMATCH
+#define FNMATCH_FLAGS FNM_EXTMATCH
+#else
+#define FNMATCH_FLAGS 0
+#endif
 
 GSList *rules = NULL;
 
@@ -84,7 +93,7 @@ struct rule *rule_new(void)
 
 static inline bool rule_field_matches_string(const char *value, const char *pattern)
 {
-        return !pattern || (value && !fnmatch(pattern, value, 0));
+        return !pattern || (value && !fnmatch(pattern, value, FNMATCH_FLAGS));
 }
 
 /*
