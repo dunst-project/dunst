@@ -115,6 +115,7 @@ cairo_surface_t *gdk_pixbuf_to_cairo_surface(GdkPixbuf *pixbuf)
  *
  * @param w a pointer to the image width, to be modified in-place
  * @param h a pointer to the image height, to be modified in-place
+ * @return TRUE if the dimensions were updated, FALSE if they were left unchanged
  */
 static bool icon_size_clamp(int *w, int *h) {
         int _w = *w, _h = *h;
@@ -155,11 +156,11 @@ static GdkPixbuf *icon_pixbuf_scale(GdkPixbuf *pixbuf)
         int h = gdk_pixbuf_get_height(pixbuf);
 
         if (icon_size_clamp(&w, &h)) {
-                GdkPixbuf *scaled;
-                scaled = gdk_pixbuf_scale_simple(pixbuf,
-                                                 w,
-                                                 h,
-                                                 GDK_INTERP_BILINEAR);
+                GdkPixbuf *scaled = gdk_pixbuf_scale_simple(
+                                pixbuf,
+                                w,
+                                h,
+                                GDK_INTERP_BILINEAR);
                 g_object_unref(pixbuf);
                 pixbuf = scaled;
         }
