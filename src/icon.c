@@ -177,7 +177,6 @@ GdkPixbuf *get_pixbuf_from_file(const char *filename)
         if (!gdk_pixbuf_get_file_info (path, &w, &h)) {
                 LOG_W("Failed to load image info for %s", filename);
                 g_free(path);
-                g_error_free(error);
                 return NULL;
         }
         icon_size_clamp(&w, &h);
