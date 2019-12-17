@@ -6,6 +6,7 @@
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <gio/gio.h>
 
+#include "helpers.h"
 #include "queues.h"
 
 extern const char *base;
@@ -252,33 +253,13 @@ bool dbus_notification_fire(struct dbus_notification *n, uint *id)
 
 void dbus_notification_set_raw_image(struct dbus_notification *n_dbus, const char *path)
 {
-        GdkPixbuf *pb = gdk_pixbuf_new_from_file(path, NULL);
-
-        if (!pb)
+        GVariant *hint = notification_setup_raw_image(path);
+        if (!hint)
                 return;
-
-        GVariant *hint_data = g_variant_new_from_data(
-                                G_VARIANT_TYPE("ay"),
-                                gdk_pixbuf_read_pixels(pb),
-                                gdk_pixbuf_get_byte_length(pb),
-                                TRUE,
-                                (GDestroyNotify) g_object_unref,
-                                g_object_ref(pb));
-
-        GVariant *hint = g_variant_new(
-                                "(iiibii@ay)",
-                                gdk_pixbuf_get_width(pb),
-                                gdk_pixbuf_get_height(pb),
-                                gdk_pixbuf_get_rowstride(pb),
-                                gdk_pixbuf_get_has_alpha(pb),
-                                gdk_pixbuf_get_bits_per_sample(pb),
-                                gdk_pixbuf_get_n_channels(pb),
-                                hint_data);
 
         g_hash_table_insert(n_dbus->hints,
                             g_strdup("image-data"),
                             g_variant_ref_sink(hint));
-        g_object_unref(pb);
 }
 
 /////// TESTS

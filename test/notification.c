@@ -1,5 +1,6 @@
 #include "../src/notification.c"
 #include "greatest.h"
+#include "helpers.h"
 
 #include "../src/option_parser.h"
 #include "../src/settings.h"
@@ -124,6 +125,76 @@ TEST test_notification_referencing(void)
         PASS();
 }
 
+
+static struct notification *notification_load_icon_with_scaling(int min_icon_size, int max_icon_size)
+{
+        struct notification *n = notification_create();
+
+        char *path = g_strconcat(base, "/data/icons/valid.svg", NULL); // 16x16
+
+        GVariant *rawIcon = notification_setup_raw_image(path);
+
+        settings.min_icon_size = min_icon_size;
+        settings.max_icon_size = max_icon_size;
+        notification_icon_replace_data(n, rawIcon);
+        settings.min_icon_size = 0;
+        settings.max_icon_size = 0;
+
+        g_variant_unref(rawIcon);
+        g_free(path);
+
+        return n;
+}
+
+TEST test_notification_icon_scaling_toosmall(void)
+{
+        struct notification *n = notification_load_icon_with_scaling(20, 100);
+
+        ASSERT_EQ(gdk_pixbuf_get_width(n->icon), 20);
+        ASSERT_EQ(gdk_pixbuf_get_height(n->icon), 20);
+
+        notification_unref(n);
+
+        PASS();
+}
+
+
+TEST test_notification_icon_scaling_toolarge(void)
+{
+        struct notification *n = notification_load_icon_with_scaling(5, 10);
+
+        ASSERT_EQ(gdk_pixbuf_get_width(n->icon), 10);
+        ASSERT_EQ(gdk_pixbuf_get_height(n->icon), 10);
+
+        notification_unref(n);
+
+        PASS();
+}
+
+TEST test_notification_icon_scaling_notconfigured(void)
+{
+        struct notification *n = notification_load_icon_with_scaling(0, 0);
+
+        ASSERT_EQ(gdk_pixbuf_get_width(n->icon), 16);
+        ASSERT_EQ(gdk_pixbuf_get_height(n->icon), 16);
+
+        notification_unref(n);
+
+        PASS();
+}
+
+TEST test_notification_icon_scaling_notneeded(void)
+{
+        struct notification *n = notification_load_icon_with_scaling(10, 20);
+
+        ASSERT_EQ(gdk_pixbuf_get_width(n->icon), 16);
+        ASSERT_EQ(gdk_pixbuf_get_height(n->icon), 16);
+
+        notification_unref(n);
+
+        PASS();
+}
+
 TEST test_notification_format_message(struct notification *n, const char *format, const char *exp)
 {
         n->format = format;
@@ -167,6 +238,10 @@ SUITE(suite_notification)
         RUN_TEST(test_notification_is_duplicate);
         RUN_TEST(test_notification_replace_single_field);
         RUN_TEST(test_notification_referencing);
+        RUN_TEST(test_notification_icon_scaling_toosmall);
+        RUN_TEST(test_notification_icon_scaling_toolarge);
+        RUN_TEST(test_notification_icon_scaling_notconfigured);
+        RUN_TEST(test_notification_icon_scaling_notneeded);
 
         // TEST notification_format_message
         struct notification *a = notification_create();
