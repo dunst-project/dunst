@@ -252,7 +252,6 @@ void notification_icon_replace_path(struct notification *n, const char *new_icon
         g_clear_pointer(&n->icon_id, g_free);
 
         n->icon = icon_get_for_name(new_icon, &n->icon_id);
-        n->icon = icon_pixbuf_scale(n->icon);
 }
 
 void notification_icon_replace_data(struct notification *n, GVariant *new_icon)
@@ -264,7 +263,6 @@ void notification_icon_replace_data(struct notification *n, GVariant *new_icon)
         g_clear_pointer(&n->icon_id, g_free);
 
         n->icon = icon_get_for_data(new_icon, &n->icon_id);
-        n->icon = icon_pixbuf_scale(n->icon);
 }
 
 /* see notification.h */

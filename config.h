@@ -65,6 +65,7 @@ struct settings defaults = {
 
 .browser = "/usr/bin/firefox",
 
+.min_icon_size = 0,
 .max_icon_size = 0,
 
 /* paths to default icons */

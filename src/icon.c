@@ -110,25 +110,56 @@ cairo_surface_t *gdk_pixbuf_to_cairo_surface(GdkPixbuf *pixbuf)
         return icon_surface;
 }
 
-GdkPixbuf *icon_pixbuf_scale(GdkPixbuf *pixbuf)
+/**
+ * Scales the given image dimensions if necessary according to the settings.
+ *
+ * @param w a pointer to the image width, to be modified in-place
+ * @param h a pointer to the image height, to be modified in-place
+ * @return TRUE if the dimensions were updated, FALSE if they were left unchanged
+ */
+static bool icon_size_clamp(int *w, int *h) {
+        int _w = *w, _h = *h;
+        int landscape = _w > _h;
+        int orig_larger = landscape ? _w : _h;
+        double larger = orig_larger;
+        double smaller = landscape ? _h : _w;
+        if (settings.min_icon_size && smaller < settings.min_icon_size) {
+                larger = larger / smaller * settings.min_icon_size;
+                smaller = settings.min_icon_size;
+        }
+        if (settings.max_icon_size && larger > settings.max_icon_size) {
+                smaller = smaller / larger * settings.max_icon_size;
+                larger = settings.max_icon_size;
+        }
+        if ((int) larger != orig_larger) {
+                *w = (int) (landscape ? larger : smaller);
+                *h = (int) (landscape ? smaller : larger);
+                return TRUE;
+        }
+        return FALSE;
+}
+
+/**
+ * Scales the given GdkPixbuf if necessary according to the settings.
+ *
+ * @param pixbuf (nullable) The pixbuf, which may be too big.
+ *                          Takes ownership of the reference.
+ * @return the scaled version of the pixbuf. If scaling wasn't
+ *         necessary, it returns the same pixbuf. Transfers full
+ *         ownership of the reference.
+ */
+static GdkPixbuf *icon_pixbuf_scale(GdkPixbuf *pixbuf)
 {
         ASSERT_OR_RET(pixbuf, NULL);
 
         int w = gdk_pixbuf_get_width(pixbuf);
         int h = gdk_pixbuf_get_height(pixbuf);
-        int larger = w > h ? w : h;
-        if (settings.max_icon_size && larger > settings.max_icon_size) {
-                int scaled_w = settings.max_icon_size;
-                int scaled_h = settings.max_icon_size;
-                if (w >= h)
-                        scaled_h = (settings.max_icon_size * h) / w;
-                else
-                        scaled_w = (settings.max_icon_size * w) / h;
 
+        if (icon_size_clamp(&w, &h)) {
                 GdkPixbuf *scaled = gdk_pixbuf_scale_simple(
                                 pixbuf,
-                                scaled_w,
-                                scaled_h,
+                                w,
+                                h,
                                 GDK_INTERP_BILINEAR);
                 g_object_unref(pixbuf);
                 pixbuf = scaled;
@@ -141,8 +172,19 @@ GdkPixbuf *get_pixbuf_from_file(const char *filename)
 {
         char *path = string_to_path(g_strdup(filename));
         GError *error = NULL;
+        gint w, h;
 
-        GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file(path, &error);
+        if (!gdk_pixbuf_get_file_info (path, &w, &h)) {
+                LOG_W("Failed to load image info for %s", filename);
+                g_free(path);
+                return NULL;
+        }
+        icon_size_clamp(&w, &h);
+        GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file_at_scale(path,
+                                                              w,
+                                                              h,
+                                                              TRUE,
+                                                              &error);
 
         if (error) {
                 LOG_W("%s", error->message);
@@ -319,6 +361,8 @@ GdkPixbuf *icon_get_for_data(GVariant *data, char **id)
 
         g_free(data_chk);
         g_variant_unref(data_variant);
+
+        pixbuf = icon_pixbuf_scale(pixbuf);
 
         return pixbuf;
 }

@@ -113,6 +113,61 @@ TEST test_get_pixbuf_from_icon_fileuri(void)
         PASS();
 }
 
+TEST test_icon_size_clamp_too_small(void)
+{
+        int w = 12, h = 24;
+        bool resized = icon_size_clamp(&w, &h);
+        ASSERT(resized);
+        ASSERT_EQ(w, 16);
+        ASSERT_EQ(h, 32);
+
+        PASS();
+}
+
+TEST test_icon_size_clamp_not_necessary(void)
+{
+        int w = 20, h = 30;
+        bool resized = icon_size_clamp(&w, &h);
+        ASSERT(!resized);
+        ASSERT_EQ(w, 20);
+        ASSERT_EQ(h, 30);
+
+        PASS();
+}
+
+TEST test_icon_size_clamp_too_big(void)
+{
+        int w = 75, h = 150;
+        bool resized = icon_size_clamp(&w, &h);
+        ASSERT(resized);
+        ASSERT_EQ(w, 50);
+        ASSERT_EQ(h, 100);
+
+        PASS();
+}
+
+TEST test_icon_size_clamp_too_small_then_too_big(void)
+{
+        int w = 8, h = 80;
+        bool resized = icon_size_clamp(&w, &h);
+        ASSERT(resized);
+        ASSERT_EQ(w, 10);
+        ASSERT_EQ(h, 100);
+
+        PASS();
+}
+
+TEST test_get_pixbuf_from_icon_both_is_scaled(void)
+{
+        GdkPixbuf *pixbuf = get_pixbuf_from_icon("onlypng");
+        ASSERT(pixbuf);
+        ASSERT_EQ(gdk_pixbuf_get_width(pixbuf), 16);
+        ASSERT_EQ(gdk_pixbuf_get_height(pixbuf), 16);
+        g_clear_pointer(&pixbuf, g_object_unref);
+
+        PASS();
+}
+
 SUITE(suite_icon)
 {
         settings.icon_path = g_strconcat(
@@ -129,6 +184,31 @@ SUITE(suite_icon)
         RUN_TEST(test_get_pixbuf_from_icon_onlypng);
         RUN_TEST(test_get_pixbuf_from_icon_filename);
         RUN_TEST(test_get_pixbuf_from_icon_fileuri);
+        RUN_TEST(test_icon_size_clamp_not_necessary);
+
+        settings.min_icon_size = 16;
+        settings.max_icon_size = 100;
+
+        RUN_TEST(test_get_pixbuf_from_icon_both_is_scaled);
+        RUN_TEST(test_icon_size_clamp_too_small);
+        RUN_TEST(test_icon_size_clamp_not_necessary);
+        RUN_TEST(test_icon_size_clamp_too_big);
+        RUN_TEST(test_icon_size_clamp_too_small_then_too_big);
+
+        settings.min_icon_size = 16;
+        settings.max_icon_size = 0;
+
+        RUN_TEST(test_icon_size_clamp_too_small);
+        RUN_TEST(test_icon_size_clamp_not_necessary);
+
+        settings.min_icon_size = 0;
+        settings.max_icon_size = 100;
+
+        RUN_TEST(test_icon_size_clamp_not_necessary);
+        RUN_TEST(test_icon_size_clamp_too_big);
+
+        settings.min_icon_size = 0;
+        settings.max_icon_size = 0;
 
         g_clear_pointer(&settings.icon_path, g_free);
 }

@@ -20,10 +20,30 @@
    fun:g_error_new_valist
    fun:g_set_error
    obj:*/librsvg-2.so*
+   fun:rsvg_handle_close
+   obj:*/loaders/libpixbufloader-svg.so
+   fun:gdk_pixbuf_loader_close
+   fun:gdk_pixbuf_get_file_info
+   fun:get_pixbuf_from_file
+   ...
+}
+
+# same as above, but as occurs in CI environment
+{
+   rsvg_error_handle_close2
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_error_new_valist
+   fun:g_set_error
+   obj:*/librsvg-2.so*
    obj:*/librsvg-2.so*
    obj:*/loaders/libpixbufloader-svg.so
    obj:*/libgdk_pixbuf-2.0.so*
-   fun:gdk_pixbuf_new_from_file
+   fun:gdk_pixbuf_loader_close
+   fun:gdk_pixbuf_get_file_info
    fun:get_pixbuf_from_file
    ...
 }
@@ -45,7 +65,8 @@
    fun:rsvg_handle_write
    obj:*/loaders/libpixbufloader-svg.so
    obj:*/libgdk_pixbuf-2.0.so*
-   fun:gdk_pixbuf_new_from_file
+   fun:gdk_pixbuf_loader_close
+   fun:gdk_pixbuf_get_file_info
    fun:get_pixbuf_from_file
    ...
 }
