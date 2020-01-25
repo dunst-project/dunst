@@ -423,6 +423,21 @@ void load_settings(char *cmdline_config_path)
                 g_free(c);
         }
 
+        {
+                char *c = option_get_string(
+                        "global",
+                        "content_alignment", "-content_alignment", "center",
+                        "Align icon and text top/center/bottom"
+                );
+                if (!string_parse_content_alignment(c, &settings.content_alignment)) {
+                        if (c)
+                                LOG_W("Unknown content alignment: '%s'", c);
+                        settings.content_alignment = defaults.content_alignment;
+                }
+                g_free(c);
+
+        }
+
         settings.min_icon_size = option_get_int(
                 "global",
                 "min_icon_size", "-min_icon_size", defaults.min_icon_size,

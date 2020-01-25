@@ -511,32 +511,65 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width)
         int h_text;
         pango_layout_get_pixel_size(cl->l, NULL, &h_text);
 
-        if (cl->icon && settings.icon_position == ICON_LEFT) {
-                cairo_move_to(c, cairo_image_surface_get_width(cl->icon) + 2 * settings.h_padding,
-                                 settings.padding + h/2 - h_text/2);
-        } else if (cl->icon && settings.icon_position == ICON_RIGHT) {
-                cairo_move_to(c, settings.h_padding, settings.padding + h/2 - h_text/2);
-        } else {
-                cairo_move_to(c, settings.h_padding, settings.padding);
+        int text_x = settings.h_padding,
+            text_y = settings.padding + h / 2 - h_text / 2;
+
+        // text positioning
+        if (cl->icon) {
+                // vertical alignment
+                switch (settings.content_alignment) {
+                        case CONTENT_TOP:
+                                text_y = settings.padding;
+                                break;
+                        case CONTENT_BOTTOM:
+                                text_y = h + settings.padding - h_text;
+                                if (text_y < 0) text_y = settings.padding;
+                                break;
+                        default:    // CONTENT_CENTER
+                                break;
+                }
+                // icon position
+                switch (settings.icon_position) {
+                        case ICON_LEFT:
+                                text_x = cairo_image_surface_get_width(cl->icon) + 2 * settings.h_padding;
+                                break;
+                        default:    // ICON_RIGHT
+                                break;
+                }
         }
+        cairo_move_to(c, text_x, text_y);
 
         cairo_set_source_rgb(c, cl->fg.r, cl->fg.g, cl->fg.b);
         pango_cairo_update_layout(c, cl->l);
         pango_cairo_show_layout(c, cl->l);
 
 
+        // icon positioning
         if (cl->icon) {
                 unsigned int image_width = cairo_image_surface_get_width(cl->icon),
                              image_height = cairo_image_surface_get_height(cl->icon),
-                             image_x,
+                             image_x = width - settings.h_padding - image_width,
                              image_y = settings.padding + h/2 - image_height/2;
 
-                if (settings.icon_position == ICON_LEFT) {
-                        image_x = settings.h_padding;
-                } else if (settings.icon_position == ICON_RIGHT){
-                        image_x = width - settings.h_padding - image_width;
-                } else {
-                        LOG_E("Tried to draw icon but icon position is not valid. %s:%d", __FILE__, __LINE__);
+                // vertical alignment
+                switch (settings.content_alignment) {
+                        case CONTENT_TOP:
+                                image_y = settings.padding;
+                                break;
+                        case CONTENT_BOTTOM:
+                                image_y = h + settings.padding - image_height;
+                                if (image_y < 0 || image_y > h) image_y = settings.padding;
+                                break;
+                        default:    // CONTENT_CENTER
+                                break;
+                }
+                // icon position
+                switch (settings.icon_position) {
+                        case ICON_LEFT:
+                                image_x = settings.h_padding;
+                                break;
+                        default:    // ICON_RIGHT
+                                break;
                 }
 
                 cairo_set_source_surface(c, cl->icon, image_x, image_y);
