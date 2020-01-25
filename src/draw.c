@@ -558,7 +558,7 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width)
                                 break;
                         case CONTENT_BOTTOM:
                                 image_y = h + settings.padding - image_height;
-                                if (image_y < 0 || image_y > h) image_y = settings.padding;
+                                if (image_y < settings.padding || image_y > h) image_y = settings.padding;
                                 break;
                         default:    // CONTENT_CENTER
                                 break;
