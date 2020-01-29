@@ -103,14 +103,14 @@ bool string_parse_icon_position(const char *s, enum icon_position *ret)
         return false;
 }
 
-bool string_parse_content_alignment(const char *s, enum content_alignment *ret)
+bool string_parse_vertical_alignment(const char *s, enum vertical_alignment *ret)
 {
         ASSERT_OR_RET(STR_FULL(s), false);
         ASSERT_OR_RET(ret, false);
 
-        STRING_PARSE_RET("top",     CONTENT_TOP);
-        STRING_PARSE_RET("center",  CONTENT_CENTER);
-        STRING_PARSE_RET("bottom",  CONTENT_BOTTOM);
+        STRING_PARSE_RET("top",     VERTICAL_TOP);
+        STRING_PARSE_RET("center",  VERTICAL_CENTER);
+        STRING_PARSE_RET("bottom",  VERTICAL_BOTTOM);
 
         return false;
 }

@@ -517,25 +517,18 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width)
         // text positioning
         if (cl->icon) {
                 // vertical alignment
-                switch (settings.content_alignment) {
-                        case CONTENT_TOP:
+                if (settings.vertical_alignment == VERTICAL_TOP) {
+                        text_y = settings.padding;
+                } else if (settings.vertical_alignment == VERTICAL_BOTTOM) {
+                        text_y = h + settings.padding - h_text;
+                        if (text_y < 0)
                                 text_y = settings.padding;
-                                break;
-                        case CONTENT_BOTTOM:
-                                text_y = h + settings.padding - h_text;
-                                if (text_y < 0) text_y = settings.padding;
-                                break;
-                        default:    // CONTENT_CENTER
-                                break;
-                }
+                } // else VERTICAL_CENTER
+
                 // icon position
-                switch (settings.icon_position) {
-                        case ICON_LEFT:
-                                text_x = cairo_image_surface_get_width(cl->icon) + 2 * settings.h_padding;
-                                break;
-                        default:    // ICON_RIGHT
-                                break;
-                }
+                if (settings.icon_position == ICON_LEFT) {
+                        text_x = cairo_image_surface_get_width(cl->icon) + 2 * settings.h_padding;
+                } // else ICON_RIGHT
         }
         cairo_move_to(c, text_x, text_y);
 
@@ -552,25 +545,18 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width)
                              image_y = settings.padding + h/2 - image_height/2;
 
                 // vertical alignment
-                switch (settings.content_alignment) {
-                        case CONTENT_TOP:
+                if (settings.vertical_alignment == VERTICAL_TOP) {
+                        image_y = settings.padding;
+                } else if (settings.vertical_alignment == VERTICAL_BOTTOM) {
+                        image_y = h + settings.padding - image_height;
+                        if (image_y < settings.padding || image_y > h)
                                 image_y = settings.padding;
-                                break;
-                        case CONTENT_BOTTOM:
-                                image_y = h + settings.padding - image_height;
-                                if (image_y < settings.padding || image_y > h) image_y = settings.padding;
-                                break;
-                        default:    // CONTENT_CENTER
-                                break;
-                }
+                } // else VERTICAL_CENTER
+
                 // icon position
-                switch (settings.icon_position) {
-                        case ICON_LEFT:
-                                image_x = settings.h_padding;
-                                break;
-                        default:    // ICON_RIGHT
-                                break;
-                }
+                if (settings.icon_position == ICON_LEFT) {
+                        image_x = settings.h_padding;
+                } // else ICON_RIGHT
 
                 cairo_set_source_surface(c, cl->icon, image_x, image_y);
                 cairo_rectangle(c, image_x, image_y, image_width, image_height);

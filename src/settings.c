@@ -426,13 +426,13 @@ void load_settings(char *cmdline_config_path)
         {
                 char *c = option_get_string(
                         "global",
-                        "content_alignment", "-content_alignment", "center",
+                        "vertical_alignment", "-vertical_alignment", "center",
                         "Align icon and text top/center/bottom"
                 );
-                if (!string_parse_content_alignment(c, &settings.content_alignment)) {
+                if (!string_parse_vertical_alignment(c, &settings.vertical_alignment)) {
                         if (c)
-                                LOG_W("Unknown content alignment: '%s'", c);
-                        settings.content_alignment = defaults.content_alignment;
+                                LOG_W("Unknown vertical alignment: '%s'", c);
+                        settings.vertical_alignment = defaults.vertical_alignment;
                 }
                 g_free(c);
 

@@ -14,7 +14,7 @@ bool string_parse_ellipsize(const char *s, enum ellipsize *ret);
 bool string_parse_follow_mode(const char *s, enum follow_mode *ret);
 bool string_parse_fullscreen(const char *s, enum behavior_fullscreen *ret);
 bool string_parse_icon_position(const char *s, enum icon_position *ret);
-bool string_parse_content_alignment(const char *s, enum content_alignment *ret);
+bool string_parse_vertical_alignment(const char *s, enum vertical_alignment *ret);
 bool string_parse_markup_mode(const char *s, enum markup_mode *ret);
 bool string_parse_mouse_action(const char *s, enum mouse_action *ret);
 bool string_parse_sepcolor(const char *s, struct separator_color_data *ret);
