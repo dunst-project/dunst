@@ -337,6 +337,11 @@ removed from the format.
 
 Defines how the text should be aligned within the notification.
 
+=item B<vertical_alignment> (values: [top/center/bottom], default: center)
+
+Defines how the text and icon should be aligned vertically within the
+notification. If icons are disabled, this option has no effect.
+
 =item B<show_age_threshold> (default: -1)
 
 Show age of message if message is older than this time.

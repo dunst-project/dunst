@@ -11,6 +11,7 @@
 enum alignment { ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT };
 enum ellipsize { ELLIPSE_START, ELLIPSE_MIDDLE, ELLIPSE_END };
 enum icon_position { ICON_LEFT, ICON_RIGHT, ICON_OFF };
+enum vertical_alignment { VERTICAL_TOP, VERTICAL_CENTER, VERTICAL_BOTTOM };
 enum separator_color { SEP_FOREGROUND, SEP_AUTO, SEP_FRAME, SEP_CUSTOM };
 enum follow_mode { FOLLOW_NONE, FOLLOW_MOUSE, FOLLOW_KEYBOARD };
 enum mouse_action { MOUSE_NONE, MOUSE_DO_ACTION, MOUSE_CLOSE_CURRENT, MOUSE_CLOSE_ALL };
@@ -75,6 +76,7 @@ struct settings {
         char *browser;
         char **browser_cmd;
         enum icon_position icon_position;
+        enum vertical_alignment vertical_alignment;
         int min_icon_size;
         int max_icon_size;
         char *icon_path;

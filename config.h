@@ -33,6 +33,7 @@ struct settings defaults = {
 .idle_threshold = 0,         /* don't timeout notifications when idle for x seconds */
 .show_age_threshold = -1,    /* show age of notification, when notification is older than x seconds */
 .align = ALIGN_LEFT,         /* text alignment ALIGN_[LEFT|CENTER|RIGHT] */
+.vertical_alignment = VERTICAL_CENTER,  /* vertical content alignment VERTICAL_[TOP|CENTER|BOTTOM] */
 .sticky_history = true,
 .history_length = 20,        /* max amount of notifications kept in history */
 .show_indicators = true,
