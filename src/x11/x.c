@@ -20,6 +20,7 @@
 #include <X11/Xresource.h>
 #include <X11/Xutil.h>
 
+#include "../clipboard.h"
 #include "../dbus.h"
 #include "../draw.h"
 #include "../dunst.h"
@@ -329,6 +330,13 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer 
                                 context_menu();
                                 wake_up();
                         }
+                        if (settings.copy_ks.str
+                            && XLookupKeysym(&ev.xkey,
+                                             0) == settings.copy_ks.sym
+                            && settings.copy_ks.mask == state) {
+                                copy_alert_contents();
+                                wake_up();
+                        }
                         break;
                 case CreateNotify:
                         LOG_D("XEvent: processing 'CreateNotify'");
@@ -514,6 +522,7 @@ void x_setup(void)
         x_shortcut_init(&settings.close_all_ks);
         x_shortcut_init(&settings.history_ks);
         x_shortcut_init(&settings.context_ks);
+        x_shortcut_init(&settings.copy_ks);
 
         x_shortcut_grab(&settings.close_ks);
         x_shortcut_ungrab(&settings.close_ks);
@@ -523,6 +532,8 @@ void x_setup(void)
         x_shortcut_ungrab(&settings.history_ks);
         x_shortcut_grab(&settings.context_ks);
         x_shortcut_ungrab(&settings.context_ks);
+        x_shortcut_grab(&settings.copy_ks);
+        x_shortcut_ungrab(&settings.copy_ks);
 
         xctx.screensaver_info = XScreenSaverAllocInfo();
 
@@ -718,6 +729,7 @@ void x_win_show(struct window_x11 *win)
         x_shortcut_grab(&settings.close_ks);
         x_shortcut_grab(&settings.close_all_ks);
         x_shortcut_grab(&settings.context_ks);
+        x_shortcut_grab(&settings.copy_ks);
 
         x_shortcut_setup_error_handler();
         XGrabButton(xctx.dpy,
@@ -748,6 +760,7 @@ void x_win_hide(struct window_x11 *win)
         x_shortcut_ungrab(&settings.close_ks);
         x_shortcut_ungrab(&settings.close_all_ks);
         x_shortcut_ungrab(&settings.context_ks);
+        x_shortcut_ungrab(&settings.copy_ks);
 
         XUngrabButton(xctx.dpy, AnyButton, AnyModifier, win->xwin);
         XUnmapWindow(xctx.dpy, win->xwin);

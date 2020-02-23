@@ -33,6 +33,7 @@ struct rule {
         char *bg;
         char *fc;
         const char *format;
+        const char *clipboard_format;
         const char *script;
         enum behavior_fullscreen fullscreen;
         char *set_stack_tag;

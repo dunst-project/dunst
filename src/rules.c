@@ -44,6 +44,8 @@ void rule_apply(struct rule *r, struct notification *n)
         }
         if (r->format)
                 n->format = r->format;
+        if (r->clipboard_format)
+                n->clipboard_format = r->clipboard_format;
         if (r->script)
                 n->script = r->script;
         if (r->set_stack_tag) {

@@ -26,6 +26,7 @@
 
 static void notification_extract_urls(struct notification *n);
 static void notification_format_message(struct notification *n);
+static void notification_format_clipboard_message(struct notification *n);
 
 /* see notification.h */
 const char *enum_to_string_fullscreen(enum behavior_fullscreen in)
@@ -308,6 +309,7 @@ struct notification *notification_create(void)
         n->first_render = true;
         n->markup = settings.markup;
         n->format = settings.format;
+        n->clipboard_format = settings.clipboard_format;
 
         n->timestamp = time_monotonic_now();
 
@@ -389,6 +391,110 @@ void notification_init(struct notification *n)
         /* UPDATE derived fields */
         notification_extract_urls(n);
         notification_format_message(n);
+        notification_format_clipboard_message(n);
+}
+
+static void notification_format_clipboard_message(struct notification *n)
+{
+        g_clear_pointer(&n->clipboard_msg, g_free);
+
+        n->clipboard_msg = string_replace_all("\\n", "\n", g_strdup(n->clipboard_format));
+
+        /* replace all formatter */
+        for(char *substr = strchr(n->clipboard_msg, '%');
+                  substr && *substr;
+                  substr = strchr(substr, '%')) {
+
+                char pg[16];
+                char *icon_tmp;
+
+                switch(substr[1]) {
+                case 'a':
+                        notification_replace_single_field(
+                                &n->clipboard_msg,
+                                &substr,
+                                n->appname,
+                                MARKUP_NO);
+                        break;
+                case 's':
+                        notification_replace_single_field(
+                                &n->clipboard_msg,
+                                &substr,
+                                n->summary,
+                                MARKUP_NO);
+                        break;
+                case 'b':
+                        notification_replace_single_field(
+                                &n->clipboard_msg,
+                                &substr,
+                                n->body,
+                                n->markup);
+                        break;
+                case 'I':
+                        icon_tmp = g_strdup(n->iconname);
+                        notification_replace_single_field(
+                                &n->clipboard_msg,
+                                &substr,
+                                icon_tmp ? basename(icon_tmp) : "",
+                                MARKUP_NO);
+                        g_free(icon_tmp);
+                        break;
+                case 'i':
+                        notification_replace_single_field(
+                                &n->clipboard_msg,
+                                &substr,
+                                n->iconname ? n->iconname : "",
+                                MARKUP_NO);
+                        break;
+                case 'p':
+                        if (n->progress != -1)
+                                sprintf(pg, "[%3d%%]", n->progress);
+
+                        notification_replace_single_field(
+                                &n->clipboard_msg,
+                                &substr,
+                                n->progress != -1 ? pg : "",
+                                MARKUP_NO);
+                        break;
+                case 'n':
+                        if (n->progress != -1)
+                                sprintf(pg, "%d", n->progress);
+
+                        notification_replace_single_field(
+                                &n->clipboard_msg,
+                                &substr,
+                                n->progress != -1 ? pg : "",
+                                MARKUP_NO);
+                        break;
+                case '%':
+                        notification_replace_single_field(
+                                &n->clipboard_msg,
+                                &substr,
+                                "%",
+                                MARKUP_NO);
+                        break;
+                case '\0':
+                        LOG_W("format_string has trailing %% character. "
+                              "To escape it use %%%%.");
+                        substr++;
+                        break;
+                default:
+                        LOG_W("format_string %%%c is unknown.", substr[1]);
+                        // shift substr pointer forward,
+                        // as we can't interpret the format string
+                        substr++;
+                        break;
+                }
+        }
+
+        n->clipboard_msg = g_strchomp(n->clipboard_msg);
+
+        /* truncate overlong messages */
+        if (strnlen(n->clipboard_msg, DUNST_NOTIF_MAX_CHARS + 1) > DUNST_NOTIF_MAX_CHARS) {
+                char * buffer = g_strndup(n->clipboard_msg, DUNST_NOTIF_MAX_CHARS);
+                g_free(n->clipboard_msg);
+                n->clipboard_msg = buffer;
+        }
 }
 
 static void notification_format_message(struct notification *n)

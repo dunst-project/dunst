@@ -43,6 +43,7 @@ struct settings {
         struct notification_colors colors_norm;
         struct notification_colors colors_crit;
         char *format;
+        char *clipboard_format;
         gint64 timeouts[3];
         char *icons[3];
         unsigned int transparency;
@@ -75,6 +76,8 @@ struct settings {
         char **dmenu_cmd;
         char *browser;
         char **browser_cmd;
+        char *xclip;
+        char **xclip_cmd;
         enum icon_position icon_position;
         enum vertical_alignment vertical_alignment;
         int min_icon_size;
@@ -86,6 +89,7 @@ struct settings {
         struct keyboard_shortcut close_all_ks;
         struct keyboard_shortcut history_ks;
         struct keyboard_shortcut context_ks;
+        struct keyboard_shortcut copy_ks;
         bool force_xinerama;
         int corner_radius;
         enum mouse_action mouse_left_click;

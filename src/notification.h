@@ -62,6 +62,7 @@ struct notification {
 
         enum markup_mode markup;
         const char *format;
+        const char *clipboard_format;
         const char *script;
         struct notification_colors colors;
 
@@ -83,6 +84,7 @@ struct notification {
 
         /* derived fields */
         char *msg;            /**< formatted message */
+        char *clipboard_msg;  /**< formatted message (in the manner the user prefers for the clipboard) */
         char *text_to_render; /**< formatted message (with age and action indicators) */
         char *urls;           /**< urllist delimited by '\\n' */
 };

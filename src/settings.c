@@ -159,6 +159,12 @@ void load_settings(char *cmdline_config_path)
                 "The format template for the notifications"
         );
 
+        settings.clipboard_format = option_get_string(
+                "global",
+                "clipboard_format", "-clipboard_format", defaults.clipboard_format,
+                "The format template for how the notification will look if copied to the clipboard"
+        );
+
         settings.sort = option_get_bool(
                 "global",
                 "sort", "-sort", defaults.sort,
@@ -391,6 +397,21 @@ void load_settings(char *cmdline_config_path)
                 }
         }
 
+        settings.xclip = option_get_path(
+                "global",
+                "xclip", "-xclip", defaults.xclip,
+                "path to xclip"
+        );
+
+        {
+                GError *error = NULL;
+                if (!g_shell_parse_argv(settings.xclip, NULL, &settings.xclip_cmd, &error)) {
+                        LOG_W("Unable to parse xclip command: '%s'."
+                              "xclip functionality will be disabled.", error->message);
+                        g_error_free(error);
+                        settings.xclip_cmd = NULL;
+                }
+        }
 
         settings.browser = option_get_path(
                 "global",
@@ -687,6 +708,12 @@ void load_settings(char *cmdline_config_path)
                 "Shortcut for context menu"
         );
 
+        settings.copy_ks.str = option_get_string(
+                "shortcuts",
+                "copy", "-copy_key", defaults.copy_ks.str,
+                "Shortcut to copy the contents of the notification to the clipboard"
+        );
+
         settings.print_notifications = cmdline_get_bool(
                 "-print", false,
                 "Print notifications to cmdline (DEBUG)"
@@ -759,6 +786,7 @@ void load_settings(char *cmdline_config_path)
                 r->bg = ini_get_string(cur_section, "background", r->bg);
                 r->fc = ini_get_string(cur_section, "frame_color", r->fc);
                 r->format = ini_get_string(cur_section, "format", r->format);
+                r->clipboard_format = ini_get_string(cur_section, "clipboard_format", r->clipboard_format);
                 r->new_icon = ini_get_string(cur_section, "new_icon", r->new_icon);
                 r->history_ignore = ini_get_bool(cur_section, "history_ignore", r->history_ignore);
                 r->match_transient = ini_get_bool(cur_section, "match_transient", r->match_transient);
