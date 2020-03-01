@@ -142,6 +142,11 @@ the notification on the left border of the screen while a horizontal offset of
 
 =back
 
+=item B<override_redirect> (values: [true/false], default: false)
+
+Dicates whether or not the window managers manages notifications. This should be
+false if you want notifications to always be on top.
+
 =item B<indicate_hidden> (values: [true/false], default: true)
 
 If this is set to true, a notification indicating how many notifications are

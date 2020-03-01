@@ -47,6 +47,7 @@ struct settings {
         char *icons[3];
         unsigned int transparency;
         struct geometry geometry;
+        bool override_redirect;
         char *title;
         char *class;
         int shrink;

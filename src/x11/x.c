@@ -643,7 +643,7 @@ struct window_x11 *x_win_create(void)
 
         root = RootWindow(xctx.dpy, DefaultScreen(xctx.dpy));
 
-        wa.override_redirect = true;
+        wa.override_redirect = settings.override_redirect;
         wa.background_pixmap = ParentRelative;
         wa.event_mask =
             ExposureMask | KeyPressMask | VisibilityChangeMask |

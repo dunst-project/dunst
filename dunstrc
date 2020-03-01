@@ -31,6 +31,9 @@
     # screen width minus the width defined in within the geometry option.
     geometry = "300x5-30+20"
 
+    # When true the window manager won't manage this window
+    override_redirect = false
+
     # Show how many messages are currently hidden (because of geometry).
     indicate_hidden = yes
 

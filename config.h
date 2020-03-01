@@ -25,6 +25,7 @@ struct settings defaults = {
               .negative_width = 0,
               .width_set = 0
             },
+.override_redirect = false,  /* prevent window manager from managing this window */
 .title = "Dunst",            /* the title of dunst notification windows */
 .class = "Dunst",            /* the class of dunst notification windows */
 .shrink = false,             /* shrinking */
