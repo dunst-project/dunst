@@ -751,7 +751,7 @@ void x_win_hide(struct window_x11 *win)
         x_shortcut_ungrab(&settings.context_ks);
 
         XUngrabButton(xctx.dpy, AnyButton, AnyModifier, win->xwin);
-        XUnmapWindow(xctx.dpy, win->xwin);
+        XWithdrawWindow(xctx.dpy, win->xwin, XDefaultScreen(xctx.dpy));
         XFlush(xctx.dpy);
         win->visible = false;
 }
