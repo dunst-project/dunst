@@ -601,9 +601,10 @@ static void x_set_wm(Window win)
                 XInternAtom(xctx.dpy, "_NET_WM_STATE", false);
 
         data[0] = XInternAtom(xctx.dpy, "_NET_WM_STATE_ABOVE", false);
+        data[1] = XInternAtom(xctx.dpy, "_NET_WM_STATE_STICKY", false);
 
         XChangeProperty(xctx.dpy, win, net_wm_state, XA_ATOM, 32,
-                PropModeReplace, (unsigned char *) data, 1L);
+                PropModeReplace, (unsigned char *) data, 2);
 }
 
 GSource* x_win_reg_source(struct window_x11 *win)

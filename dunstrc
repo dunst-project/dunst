@@ -32,7 +32,7 @@
     geometry = "300x5-30+20"
 
     # When true the window manager won't manage this window
-    override_redirect = false
+    override_redirect = yes
 
     # Show how many messages are currently hidden (because of geometry).
     indicate_hidden = yes
