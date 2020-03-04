@@ -256,9 +256,9 @@ void load_settings(char *cmdline_config_path)
 
         }
 
-        settings.override_redirect = !option_get_bool(
+        settings.override_redirect = option_get_bool(
                 "global",
-                "override_redirect", "-no-override_redirect", false,
+                "override_redirect", NULL, false,
                 "Determines if notifications are managed by the window manager."
         );
 
