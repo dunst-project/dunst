@@ -110,5 +110,12 @@ gint64 string_to_time(const char *string);
  */
 gint64 time_monotonic_now(void);
 
+/**
+ * Retrieve the HOME directory of the user running dunst
+ *
+ * @returns: A string of the current home directory
+ */
+const char *user_get_home(void);
+
 #endif
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
