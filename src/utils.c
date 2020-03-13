@@ -5,9 +5,11 @@
 #include <ctype.h>
 #include <errno.h>
 #include <glib.h>
+#include <pwd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "log.h"
 
@@ -138,7 +140,7 @@ char *string_to_path(char *string)
 {
 
         if (string && STRN_EQ(string, "~/", 2)) {
-                char *home = g_strconcat(getenv("HOME"), "/", NULL);
+                char *home = g_strconcat(user_get_home(), "/", NULL);
 
                 string = string_replace_at(string, 0, 2, home);
 
@@ -204,4 +206,21 @@ gint64 time_monotonic_now(void)
 #endif
         return S2US(tv_now.tv_sec) + tv_now.tv_nsec / 1000;
 }
+
+/* see utils.h */
+const char *user_get_home(void)
+{
+        static const char *home_directory = NULL;
+        ASSERT_OR_RET(!home_directory, home_directory);
+
+        // Check the HOME variable for the user's home
+        home_directory = getenv("HOME");
+        ASSERT_OR_RET(!home_directory, home_directory);
+
+        // Check the /etc/passwd entry for the user's home
+        home_directory = getpwuid(getuid())->pw_dir;
+
+        return home_directory;
+}
+
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
