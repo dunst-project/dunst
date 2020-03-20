@@ -22,6 +22,7 @@
 
 #include "dunst.h"
 #include "log.h"
+#include "menu.h"
 #include "notification.h"
 #include "settings.h"
 #include "utils.h"
@@ -178,6 +179,29 @@ int queues_notification_insert(struct notification *n)
         }
         if (STR_EQ("DUNST_COMMAND_TOGGLE", n->summary)) {
                 dunst_status(S_RUNNING, !dunst_status_get().running);
+                return 0;
+        }
+        if (STR_EQ("DUNST_COMMAND_CLOSE", n->summary)) {
+                const GList *displayed = queues_get_displayed();
+                if (displayed && displayed->data) {
+                        queues_notification_close(displayed->data, REASON_USER);
+                        wake_up();
+                }
+                return 0;
+        }
+        if (STR_EQ("DUNST_COMMAND_CLOSE_ALL", n->summary)) {
+                queues_history_push_all();
+                wake_up();
+                return 0;
+        }
+        if (STR_EQ("DUNST_COMMAND_HISTORY", n->summary)) {
+                queues_history_pop();
+                wake_up();
+                return 0;
+        }
+        if (STR_EQ("DUNST_COMMAND_CONTEXT", n->summary)) {
+                context_menu();
+                wake_up();
                 return 0;
         }
 
