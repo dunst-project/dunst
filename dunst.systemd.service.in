@@ -7,7 +7,3 @@ PartOf=graphical-session.target
 Type=dbus
 BusName=org.freedesktop.Notifications
 ExecStart=##PREFIX##/bin/dunst
-
-[Install]
-WantedBy=default.target
-
