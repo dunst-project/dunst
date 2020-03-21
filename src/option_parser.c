@@ -260,6 +260,15 @@ gint64 ini_get_time(const char *section, const char *key, gint64 def)
         return val;
 }
 
+char **ini_get_list(const char *section, const char *key, const char *def)
+{
+        const char *value = get_value(section, key);
+        if (value)
+                return string_to_array(value);
+        else
+                return string_to_array(def);
+}
+
 int ini_get_int(const char *section, const char *key, int def)
 {
         const char *value = get_value(section, key);
@@ -475,6 +484,16 @@ char *cmdline_get_path(const char *key, const char *def, const char *description
                 return string_to_path(g_strdup(def));
 }
 
+char **cmdline_get_list(const char *key, const char *def, const char *description){
+        cmdline_usage_append(key, "list", description);
+        const char *str = cmdline_get_value(key);
+
+        if (str)
+                return string_to_array(str);
+        else
+                return string_to_array(def);
+}
+
 gint64 cmdline_get_time(const char *key, gint64 def, const char *description)
 {
         cmdline_usage_append(key, "time", description);
@@ -572,6 +591,23 @@ gint64 option_get_time(const char *ini_section,
 {
         gint64 ini_val = ini_get_time(ini_section, ini_key, def);
         return cmdline_get_time(cmdline_key, ini_val, description);
+}
+
+
+char **option_get_list(const char *ini_section,
+                       const char *ini_key,
+                       const char *cmdline_key,
+                       const char *def,
+                       const char *description)
+{
+        char **val = NULL;
+        if (cmdline_key)
+                val = cmdline_get_list(cmdline_key, NULL, description);
+
+        if (val)
+                return val;
+        else
+                return ini_get_list(ini_section, ini_key, def);
 }
 
 int option_get_int(const char *ini_section,

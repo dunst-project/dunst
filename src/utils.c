@@ -14,6 +14,17 @@
 #include "log.h"
 
 /* see utils.h */
+void free_string_array(char **arr)
+{
+        if (arr){
+                for (int i = 0; arr[i]; i++){
+                        g_free(arr[i]);
+                }
+        }
+        g_free(arr);
+}
+
+/* see utils.h */
 char *string_replace_char(char needle, char replacement, char *haystack)
 {
         ASSERT_OR_RET(haystack, NULL);
@@ -133,6 +144,27 @@ void string_strip_delimited(char *str, char a, char b)
                 }
         }
         str[iwrite] = 0;
+}
+
+/* see utils.h */
+char **string_to_array(const char *string)
+{
+        char **arr = NULL;
+        if (string) {
+                char* dup = g_strdup(string);
+                char* tmp = dup;
+                int num_tokens = 0;
+                char *token = strsep(&tmp, ",");
+                while (token) {
+                        arr = g_realloc_n(arr, num_tokens + 2, sizeof(char*));
+                        arr[num_tokens] = g_strdup(g_strstrip(token));
+                        num_tokens++;
+                        token = strsep(&tmp, ",");
+                }
+                arr[num_tokens] = NULL;
+                g_free(dup);
+        }
+        return arr;
 }
 
 /* see utils.h */

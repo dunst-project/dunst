@@ -23,6 +23,15 @@
 #define S2US(s) (((gint64)(s)) * 1000 * 1000)
 
 /**
+ * Frees an array of strings whose last element is a NULL pointer.
+ *
+ * Assumes the last element is a NULL pointer, otherwise will result in a buffer overflow.
+
+ * @param arr The array of strings to free
+ */
+void free_string_array(char **arr);
+
+/**
  * Replaces all occurrences of the char \p needle with the char \p replacement in \p haystack.
  *
  * Does not allocate a new string.
@@ -81,6 +90,17 @@ char *string_strip_quotes(const char *value);
  * @param b Ending delimiter
  */
 void string_strip_delimited(char *str, char a, char b);
+
+/**
+ * Parse a comma-delimited string into a dynamic array of tokens
+ *
+ * The string is split on commas and strips spaces from tokens. The last element
+ * of the array is NULL in order to avoid passing around a length variable.
+ *
+ * @param string The string to convert to an array
+ * @returns The array of tokens.
+ */
+char **string_to_array(const char *string);
 
 /**
  * Replace tilde and path-specific values with its equivalents
