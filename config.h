@@ -103,11 +103,11 @@ struct settings defaults = {
         .code = 0,.sym = NoSymbol,.is_valid = false
 },                              /* ignore this */
 
-.mouse_left_click = MOUSE_CLOSE_CURRENT,
+.mouse_left_click = (enum mouse_action []){MOUSE_CLOSE_CURRENT, -1},
 
-.mouse_middle_click = MOUSE_DO_ACTION,
+.mouse_middle_click = (enum mouse_action []){MOUSE_DO_ACTION, -1},
 
-.mouse_right_click = MOUSE_CLOSE_ALL,
+.mouse_right_click = (enum mouse_action []){MOUSE_CLOSE_ALL, -1},
 
 };
 

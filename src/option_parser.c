@@ -141,6 +141,27 @@ bool string_parse_mouse_action(const char *s, enum mouse_action *ret)
         return false;
 }
 
+bool string_parse_mouse_action_list(char **s, enum mouse_action **ret)
+{
+        ASSERT_OR_RET(s, false);
+        ASSERT_OR_RET(ret, false);
+
+        int len = 0;
+        while (s[len])
+                len++;
+
+        *ret = g_malloc((len + 1) * sizeof(enum mouse_action));
+        for (int i = 0; i < len; i++) {
+                if (!string_parse_mouse_action(s[i], *ret + i)) {
+                        LOG_W("Unknown mouse action value: '%s'", s[i]);
+                        g_free(*ret);
+                        return false;
+                }
+        }
+        (*ret)[len] = -1; // sentinel end value
+        return true;
+}
+
 bool string_parse_sepcolor(const char *s, struct separator_color_data *ret)
 {
         ASSERT_OR_RET(STR_FULL(s), false);
@@ -484,7 +505,8 @@ char *cmdline_get_path(const char *key, const char *def, const char *description
                 return string_to_path(g_strdup(def));
 }
 
-char **cmdline_get_list(const char *key, const char *def, const char *description){
+char **cmdline_get_list(const char *key, const char *def, const char *description)
+{
         cmdline_usage_append(key, "list", description);
         const char *str = cmdline_get_value(key);
 

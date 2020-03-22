@@ -17,6 +17,7 @@ bool string_parse_icon_position(const char *s, enum icon_position *ret);
 bool string_parse_vertical_alignment(const char *s, enum vertical_alignment *ret);
 bool string_parse_markup_mode(const char *s, enum markup_mode *ret);
 bool string_parse_mouse_action(const char *s, enum mouse_action *ret);
+bool string_parse_mouse_action_list(char **s, enum mouse_action **ret);
 bool string_parse_sepcolor(const char *s, struct separator_color_data *ret);
 bool string_parse_urgency(const char *s, enum urgency *ret);
 
