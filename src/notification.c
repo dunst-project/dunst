@@ -598,4 +598,8 @@ void notification_do_action(const struct notification *n)
         }
 }
 
+void notification_invalidate_actions(struct notification *n) {
+        g_hash_table_remove_all(n->actions);
+}
+
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

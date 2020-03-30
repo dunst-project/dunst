@@ -384,6 +384,8 @@ void signal_notification_closed(struct notification *n, enum reason reason)
                                       body,
                                       &err);
 
+        notification_invalidate_actions(n);
+
         n->dbus_valid = false;
 
         if (err) {
