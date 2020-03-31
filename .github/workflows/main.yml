@@ -63,30 +63,19 @@ jobs:
         make clean
         make -j test-coverage
 
-    - name: Coveralls assemble with lcov
+    - name: Generate coverage report
       run: lcov -c -d . -o lcov.info
       if: "matrix.CC == 'gcc'"
 
-    - name: Coveralls upload
-      uses: coverallsapp/github-action@master
-      if: "matrix.CC == 'gcc'"
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1
       with:
-        parallel: true
-        path-to-lcov: "./lcov.info"
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.CODECOV_TOKEN }}
+        flags: unittests
+        name: ${{ matrix.distro }}-${{ matrix.CC }}
+        fail_ci_if_error: true
+      if: "matrix.CC == 'gcc'"
 
     runs-on: ubuntu-latest
     container:
       image: dunst/ci:${{ matrix.distro }}
-
-# Just send the signal to coveralls to finish
-# the build and finalise coverage stats
-  finish-coverage:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-    - name: Coveralls finish
-      uses: coverallsapp/github-action@master
-      with:
-        parallel-finish: true
-        github-token: ${{ secrets.GITHUB_TOKEN }}
