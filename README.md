@@ -1,4 +1,4 @@
-[![Coverage Status](https://coveralls.io/repos/github/dunst-project/dunst/badge.svg?branch=master)](https://coveralls.io/github/dunst-project/dunst?branch=master)
+[![main](https://github.com/dunst-project/dunst/workflows/main/badge.svg)](https://github.com/dunst-project/dunst/actions?query=workflow%3Amain) [![Coverage Status](https://coveralls.io/repos/github/dunst-project/dunst/badge.svg?branch=master)](https://coveralls.io/github/dunst-project/dunst?branch=master)
 
 ## Dunst
 
