@@ -3,6 +3,7 @@
 *.gcda
 *.gcno
 *.gcov
+/lcov.info
 
 core
 vgcore.*

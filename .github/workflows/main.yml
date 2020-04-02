@@ -1,0 +1,81 @@
+name: main
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        CC:
+          - clang
+          - gcc
+        distro:
+          - alpine
+          - archlinux
+          - debian-stretch
+          - fedora
+          - ubuntu-xenial
+          - ubuntu-bionic
+
+    env:
+      CC: ${{ matrix.CC }}
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        # Clone the whole branch, we have to fetch tags later
+        fetch-depth: 0
+
+    # Fetch tags to determine proper version number inside git
+    - name: fetch tags
+      run: git fetch --tags
+      # We cannot pull tags with old distros, since there is no `.git`. See below.
+      if: "! (matrix.distro == 'ubuntu-bionic' || matrix.distro == 'ubuntu-xenial' || matrix.distro == 'debian-stretch')"
+
+    # The Github checkout Action doesn't support distros with git older than 2.18
+    # With git<2.18 it downloads the code via API and does not clone it via git :facepalm:
+    # To succeed the tests, we have to manually replace the VERSION macro
+    - name: fix version number for old distros
+      run: 'sed -i "s/1.4.1-non-git/1.4.1-ci-oldgit-$GITHUB_SHA/" Makefile'
+      if: "  (matrix.distro == 'ubuntu-bionic' || matrix.distro == 'ubuntu-xenial' || matrix.distro == 'debian-stretch')"
+
+    - name: build
+      run: make -j all dunstify test/test
+
+    - name: test
+      run: make -j test
+
+    - name: installation
+      run: ./test/test-install.sh
+
+    - name: valgrind memleaks
+      run: |
+        make clean
+        make -j test-valgrind
+
+    - name: coverage
+      run: |
+        make clean
+        make -j test-coverage
+
+    - name: Generate coverage report
+      run: lcov -c -d . -o lcov.info
+      if: "matrix.CC == 'gcc'"
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        flags: unittests
+        name: ${{ matrix.distro }}-${{ matrix.CC }}
+        fail_ci_if_error: true
+      if: "matrix.CC == 'gcc'"
+
+    runs-on: ubuntu-latest
+    container:
+      image: dunst/ci:${{ matrix.distro }}
