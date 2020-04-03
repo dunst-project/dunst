@@ -155,7 +155,7 @@ clean-coverage-run:
         install-service install-service-dbus install-service-systemd \
         uninstall \
         uninstall-service uninstall-service-dbus uninstall-service-systemd
-install: install-dunst install-doc install-service
+install: install-dunst install-doc install-service install-dunstify
 
 install-dunst: dunst doc
 	install -Dm755 dunst ${DESTDIR}${BINDIR}/dunst
@@ -173,8 +173,12 @@ install-service-systemd: service-systemd
 	install -Dm644 dunst.systemd.service ${DESTDIR}${SERVICEDIR_SYSTEMD}/dunst.service
 endif
 
+install-dunstify: dunstify
+	install -Dm755 dunstify ${DESTDIR}${BINDIR}/dunstify
+
 uninstall: uninstall-service
 	rm -f ${DESTDIR}${BINDIR}/dunst
+	rm -f ${DESTDIR}${BINDIR}/dunstify
 	rm -f ${DESTDIR}${MANPREFIX}/man1/dunst.1
 	rm -rf ${DESTDIR}${DATADIR}/dunst
 
