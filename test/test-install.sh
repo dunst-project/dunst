@@ -9,6 +9,7 @@ make -C "${BASE}" SYSTEMD=1 SERVICEDIR_SYSTEMD="${PREFIX}/systemd" SERVICEDIR_DB
 
 diff -u <(find "${PREFIX}" -type f -printf "%P\n" | sort) - <<EOF
 bin/dunst
+bin/dunstify
 dbus/org.knopwob.dunst.service
 share/dunst/dunstrc
 share/man/man1/dunst.1
