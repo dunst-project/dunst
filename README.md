@@ -25,6 +25,7 @@ Dunst has a number of build dependencies that must be present before attempting 
 - glib
 - pango/cairo
 - libgtk-3-dev
+- libnotify (for dunstify only)
 
 ### Building
 
