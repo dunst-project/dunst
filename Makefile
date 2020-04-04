@@ -53,7 +53,7 @@ DEPS := ${SRC:.c=.d} ${TEST_SRC:.c=.d}
 
 
 .PHONY: all debug
-all: doc dunst service
+all: doc dunst dunstify service
 
 debug: CFLAGS   += ${CPPFLAGS_DEBUG} ${CFLAGS_DEBUG}
 debug: LDFLAGS  += ${LDFLAGS_DEBUG}

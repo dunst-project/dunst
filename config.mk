@@ -43,9 +43,9 @@ pkg_config_packs := gio-2.0 \
                     "xrandr >= 1.5" \
                     xscrnsaver
 
+# dunstify also needs libnotify
+pkg_config_packs += libnotify
+
 ifneq (,$(findstring STATIC_CONFIG,$(CFLAGS)))
 $(warning STATIC_CONFIG is deprecated behavior. It will get removed in future releases)
 endif
-
-# dunstify also needs libnotify
-pkg_config_packs += libnotify
