@@ -48,6 +48,4 @@ $(warning STATIC_CONFIG is deprecated behavior. It will get removed in future re
 endif
 
 # dunstify also needs libnotify
-ifneq (,$(findstring dunstify,${MAKECMDGOALS}))
-	pkg_config_packs += libnotify
-endif
+pkg_config_packs += libnotify
