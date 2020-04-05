@@ -150,7 +150,7 @@ bool string_parse_mouse_action_list(char **s, enum mouse_action **ret)
         while (s[len])
                 len++;
 
-        *ret = g_malloc((len + 1) * sizeof(enum mouse_action));
+        *ret = g_malloc_n((len + 1), sizeof(enum mouse_action));
         for (int i = 0; i < len; i++) {
                 if (!string_parse_mouse_action(s[i], *ret + i)) {
                         LOG_W("Unknown mouse action value: '%s'", s[i]);

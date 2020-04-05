@@ -151,18 +151,10 @@ char **string_to_array(const char *string)
 {
         char **arr = NULL;
         if (string) {
-                char* dup = g_strdup(string);
-                char* tmp = dup;
-                int num_tokens = 0;
-                char *token = strsep(&tmp, ",");
-                while (token) {
-                        arr = g_realloc_n(arr, num_tokens + 2, sizeof(char*));
-                        arr[num_tokens] = g_strdup(g_strstrip(token));
-                        num_tokens++;
-                        token = strsep(&tmp, ",");
+                arr = g_strsplit(string, ",", 0);
+                for (int i = 0; arr[i]; i++){
+                        g_strstrip(arr[i]);
                 }
-                arr[num_tokens] = NULL;
-                g_free(dup);
         }
         return arr;
 }
