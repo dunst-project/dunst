@@ -8,6 +8,7 @@ TEST test_next_section(void)
         const char *section = NULL;
         ASSERT_STR_EQ("bool", (section = next_section(section)));
         ASSERT_STR_EQ("string", (section = next_section(section)));
+        ASSERT_STR_EQ("list", (section = next_section(section)));
         ASSERT_STR_EQ("path", (section = next_section(section)));
         ASSERT_STR_EQ("int", (section = next_section(section)));
         ASSERT_STR_EQ("double", (section = next_section(section)));
@@ -64,6 +65,55 @@ TEST test_ini_get_string(void)
 
         ASSERT_STR_EQ("default value", (ptr = ini_get_string(string_section, "nonexistent", "default value")));
         free(ptr);
+
+        PASS();
+}
+
+enum greatest_test_res ARRAY_EQ(char **a, char **b){
+        ASSERT(a);
+        ASSERT(b);
+        int i = 0;
+        while (a[i] && b[i]){
+                ASSERT_STR_EQ(a[i], b[i]);
+                i++;
+        }
+        ASSERT_FALSE(a[i]);
+        ASSERT_FALSE(b[i]);
+        PASS();
+}
+
+TEST test_ini_get_list(void)
+{
+        char *list_section = "list";
+
+        char *cmp1[] = {"A", "simple", "list", NULL};
+        char *cmp2[] = {"A", "list", "with", "spaces", NULL};
+        char *cmp3[] = {"A list", "with", "multiword entries", NULL};
+        char *cmp4[] = {"A", "quoted", "list", NULL};
+        char *cmp5[] = {"A", "list", "\"with quotes\"", NULL};
+        char *cmp6[] = {"List", "with", "a", NULL};
+
+        char **ptr;
+        CHECK_CALL(ARRAY_EQ(cmp1, (ptr = ini_get_list(list_section, "simple", ""))));
+        free_string_array(ptr);
+
+        CHECK_CALL(ARRAY_EQ(cmp2, (ptr = ini_get_list(list_section, "spaces", ""))));
+        free_string_array(ptr);
+
+        CHECK_CALL(ARRAY_EQ(cmp3, (ptr = ini_get_list(list_section, "multiword", ""))));
+        free_string_array(ptr);
+        CHECK_CALL(ARRAY_EQ(cmp4, (ptr = ini_get_list(list_section, "quoted", ""))));
+        free_string_array(ptr);
+
+        CHECK_CALL(ARRAY_EQ(cmp5, (ptr = ini_get_list(list_section, "quoted_with_quotes", ""))));
+        free_string_array(ptr);
+        CHECK_CALL(ARRAY_EQ(cmp5, (ptr = ini_get_list(list_section, "unquoted_with_quotes", ""))));
+        free_string_array(ptr);
+
+        CHECK_CALL(ARRAY_EQ(cmp6, (ptr = ini_get_list(list_section, "quoted_comment", ""))));
+        free_string_array(ptr);
+        CHECK_CALL(ARRAY_EQ(cmp6, (ptr = ini_get_list(list_section, "unquoted_comment", ""))));
+        free_string_array(ptr);
 
         PASS();
 }
@@ -151,6 +201,22 @@ TEST test_cmdline_get_string(void)
         PASS();
 }
 
+TEST test_cmdline_get_list(void)
+{
+        char **ptr;
+        char *cmp1[] = {"A", "simple", "list", "from", "the", "cmdline", NULL};
+        char *cmp2[] = {"A", "list", "with", "spaces", NULL};
+        char *cmp3[] = {"A", "default", "list", NULL};
+
+        CHECK_CALL(ARRAY_EQ(cmp1, (ptr = cmdline_get_list("-list", "", ""))));
+        free_string_array(ptr);
+        CHECK_CALL(ARRAY_EQ(cmp2, (ptr = cmdline_get_list("-list2", "", ""))));
+        free_string_array(ptr);
+        CHECK_CALL(ARRAY_EQ(cmp3, (ptr = cmdline_get_list("-nonexistent", "A, default, list", ""))));
+        free_string_array(ptr);
+        PASS();
+}
+
 TEST test_cmdline_get_int(void)
 {
         ASSERT_EQ(3, cmdline_get_int("-int", 0, ""));
@@ -218,6 +284,29 @@ TEST test_option_get_string(void)
         free(ptr);
         ASSERT_STR_EQ("Default", (ptr = option_get_string(string_section, "nonexistent", "-nonexistent", "Default", "")));
         free(ptr);
+        PASS();
+}
+
+TEST test_option_get_list(void)
+{
+        char *list_section = "list";
+        char **ptr;
+
+        char *cmp1[] = {"A", "simple", "list", NULL};
+        char *cmp2[] = {"A", "list", "with", "spaces", NULL};
+        char *cmp3[] = {"A", "simple", "list", "from", "the", "cmdline", NULL};
+        char *cmp4[] = {"A", "default", "list", NULL};
+
+        CHECK_CALL(ARRAY_EQ(cmp1, (ptr = option_get_list(list_section, "simple", "-nonexistent", "", ""))));
+        free_string_array(ptr);
+        CHECK_CALL(ARRAY_EQ(cmp2, (ptr = option_get_list(list_section, "quoted", "-list2", "", ""))));
+        free_string_array(ptr);
+        CHECK_CALL(ARRAY_EQ(cmp3, (ptr = option_get_list(list_section, "simple", "-list", "", ""))));
+        free_string_array(ptr);
+        CHECK_CALL(ARRAY_EQ(cmp3, (ptr = option_get_list(list_section, "simple", "-list/-l", "", ""))));
+        free_string_array(ptr);
+        CHECK_CALL(ARRAY_EQ(cmp4, (ptr = option_get_list(list_section, "nonexistent", "-nonexistent", "A, default, list", ""))));
+        free_string_array(ptr);
         PASS();
 }
 
@@ -308,11 +397,13 @@ SUITE(suite_option_parser)
         RUN_TEST(test_next_section);
         RUN_TEST(test_ini_get_bool);
         RUN_TEST(test_ini_get_string);
+        RUN_TEST(test_ini_get_list);
         RUN_TEST(test_ini_get_path);
         RUN_TEST(test_ini_get_int);
         RUN_TEST(test_ini_get_double);
         char cmdline[] = "dunst -bool -b "
                 "-string \"A simple string from the cmdline\" -s Single_word_string "
+                "-list A,simple,list,from,the,cmdline -list2 \"A, list, with, spaces\" "
                 "-int 3 -i 2 -negative -7 -zeroes 04 -intdecim 2.5 "
                 "-path ~/path/from/cmdline "
                 "-simple_double 2 -double 5.2"
@@ -322,6 +413,7 @@ SUITE(suite_option_parser)
         g_shell_parse_argv(&cmdline[0], &argc, &argv, NULL);
         cmdline_load(argc, argv);
         RUN_TEST(test_cmdline_get_string);
+        RUN_TEST(test_cmdline_get_list);
         RUN_TEST(test_cmdline_get_path);
         RUN_TEST(test_cmdline_get_int);
         RUN_TEST(test_cmdline_get_double);
@@ -329,6 +421,7 @@ SUITE(suite_option_parser)
         RUN_TEST(test_cmdline_create_usage);
 
         RUN_TEST(test_option_get_string);
+        RUN_TEST(test_option_get_list);
         RUN_TEST(test_option_get_path);
         RUN_TEST(test_option_get_int);
         RUN_TEST(test_option_get_double);
