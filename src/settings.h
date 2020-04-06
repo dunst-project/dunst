@@ -88,9 +88,9 @@ struct settings {
         struct keyboard_shortcut context_ks;
         bool force_xinerama;
         int corner_radius;
-        enum mouse_action mouse_left_click;
-        enum mouse_action mouse_middle_click;
-        enum mouse_action mouse_right_click;
+        enum mouse_action *mouse_left_click;
+        enum mouse_action *mouse_middle_click;
+        enum mouse_action *mouse_right_click;
 };
 
 extern struct settings settings;

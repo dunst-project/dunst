@@ -400,49 +400,51 @@ bool x_is_idle(void)
  */
 static void x_handle_click(XEvent ev)
 {
-        enum mouse_action act;
+        enum mouse_action *acts;
 
         switch (ev.xbutton.button) {
                 case Button1:
-                        act = settings.mouse_left_click;
+                        acts = settings.mouse_left_click;
                         break;
                 case Button2:
-                        act = settings.mouse_middle_click;
+                        acts = settings.mouse_middle_click;
                         break;
                 case Button3:
-                        act = settings.mouse_right_click;
+                        acts = settings.mouse_right_click;
                         break;
                 default:
                         LOG_W("Unsupported mouse button: '%d'", ev.xbutton.button);
                         return;
         }
 
-        if (act == MOUSE_CLOSE_ALL) {
-                queues_history_push_all();
-
-                return;
-        }
-
-        if (act == MOUSE_DO_ACTION || act == MOUSE_CLOSE_CURRENT) {
-                int y = settings.separator_height;
-                struct notification *n = NULL;
-                int first = true;
-                for (const GList *iter = queues_get_displayed(); iter;
-                     iter = iter->next) {
-                        n = iter->data;
-                        if (ev.xbutton.y > y && ev.xbutton.y < y + n->displayed_height)
-                                break;
-
-                        y += n->displayed_height + settings.separator_height;
-                        if (first)
-                                y += settings.frame_width;
+        for (int i = 0; acts[i]; i++) {
+                enum mouse_action act = acts[i];
+                if (act == MOUSE_CLOSE_ALL) {
+                        queues_history_push_all();
+                        return;
                 }
 
-                if (n) {
-                        if (act == MOUSE_CLOSE_CURRENT)
-                                queues_notification_close(n, REASON_USER);
-                        else
-                                notification_do_action(n);
+                if (act == MOUSE_DO_ACTION || act == MOUSE_CLOSE_CURRENT) {
+                        int y = settings.separator_height;
+                        struct notification *n = NULL;
+                        int first = true;
+                        for (const GList *iter = queues_get_displayed(); iter;
+                             iter = iter->next) {
+                                n = iter->data;
+                                if (ev.xbutton.y > y && ev.xbutton.y < y + n->displayed_height)
+                                        break;
+
+                                y += n->displayed_height + settings.separator_height;
+                                if (first)
+                                        y += settings.frame_width;
+                        }
+
+                        if (n) {
+                                if (act == MOUSE_CLOSE_CURRENT)
+                                        queues_notification_close(n, REASON_USER);
+                                else
+                                        notification_do_action(n);
+                        }
                 }
         }
 }

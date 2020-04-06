@@ -529,48 +529,42 @@ void load_settings(char *cmdline_config_path)
         }
 
         {
-                char *c = option_get_string(
+                char **c = option_get_list(
                         "global",
-                        "mouse_left_click", "-left_click", NULL,
+                        "mouse_left_click", "-mouse_left_click", NULL,
                         "Action of Left click event"
                 );
 
-                if (!string_parse_mouse_action(c, &settings.mouse_left_click)) {
-                        if (c)
-                                LOG_W("Unknown mouse action value: '%s'", c);
+                if (!string_parse_mouse_action_list(c, &settings.mouse_left_click)) {
                         settings.mouse_left_click = defaults.mouse_left_click;
                 }
-                g_free(c);
+                free_string_array(c);
         }
 
         {
-                char *c = option_get_string(
+                char **c = option_get_list(
                         "global",
                         "mouse_middle_click", "-mouse_middle_click", NULL,
                         "Action of middle click event"
                 );
 
-                if (!string_parse_mouse_action(c, &settings.mouse_middle_click)) {
-                        if (c)
-                                LOG_W("Unknown mouse action value: '%s'", c);
+                if (!string_parse_mouse_action_list(c, &settings.mouse_middle_click)) {
                         settings.mouse_middle_click = defaults.mouse_middle_click;
                 }
-                g_free(c);
+                free_string_array(c);
         }
 
         {
-                char *c = option_get_string(
+                char **c = option_get_list(
                         "global",
                         "mouse_right_click", "-mouse_right_click", NULL,
                         "Action of right click event"
                 );
 
-                if (!string_parse_mouse_action(c, &settings.mouse_right_click)) {
-                        if (c)
-                                LOG_W("Unknown mouse action value: '%s'", c);
+                if (!string_parse_mouse_action_list(c, &settings.mouse_right_click)) {
                         settings.mouse_right_click = defaults.mouse_right_click;
                 }
-                g_free(c);
+                free_string_array(c);
         }
 
         settings.colors_low.bg = option_get_string(

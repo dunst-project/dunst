@@ -27,6 +27,16 @@
 	unquoted_comment = String with a # comment
 	color_comment = "#ffffff" # comment
 
+[list]
+	simple = A,simple,list
+	spaces = A, list, with, spaces
+	multiword = A list, with, multiword entries
+	quoted = "A, quoted, list"
+	quoted_with_quotes = "A, list, "with quotes""
+	unquoted_with_quotes = A, list, "with quotes"
+	quoted_comment = "List, with, a" # comment
+	unquoted_comment = List, with, a # comment
+
 [path]
 	expand_tilde    = ~/.path/to/tilde
 
