@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -eu
+set -u
 
 DBUS_NAME="org.freedesktop.Notifications"
 DBUS_PATH="/org/freedesktop/Notifications"
@@ -24,17 +24,26 @@ show_help() {
 	  help                     Show this help
 	EOH
 }
+dbus_send_checked() {
+	dbus-send "$@"
+	rc="$?"
+	if [ "$rc" -eq "1" ]; then
+		echo "Failed to communicate with dunst, is it running? Or maybe the version is outdated." >&2
+		echo "Hint: You can try 'dunstctl debug' as a next debugging step." >&2
+		exit 1
+	fi
+}
 
 method_call() {
-	dbus-send --print-reply=literal --dest="${DBUS_NAME}" "${DBUS_PATH}" "$@"
+	dbus_send_checked --print-reply=literal --dest="${DBUS_NAME}" "${DBUS_PATH}" "$@"
 }
 
 property_get() {
-	dbus-send --print-reply=literal --dest="${DBUS_NAME}" "${DBUS_PATH}" "${DBUS_IFAC_PROP}.Get" "string:${DBUS_IFAC_DUNST}" "string:${1}"
+	dbus_send_checked --print-reply=literal --dest="${DBUS_NAME}" "${DBUS_PATH}" "${DBUS_IFAC_PROP}.Get" "string:${DBUS_IFAC_DUNST}" "string:${1}"
 }
 
 property_set() {
-	dbus-send --print-reply=literal --dest="${DBUS_NAME}" "${DBUS_PATH}" "${DBUS_IFAC_PROP}.Set" "string:${DBUS_IFAC_DUNST}" "string:${1}" "${2}"
+	dbus_send_checked --print-reply=literal --dest="${DBUS_NAME}" "${DBUS_PATH}" "${DBUS_IFAC_PROP}.Set" "string:${DBUS_IFAC_DUNST}" "string:${1}" "${2}"
 }
 
 command -v dbus-send >/dev/null 2>/dev/null || \
