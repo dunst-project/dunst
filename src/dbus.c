@@ -73,7 +73,6 @@ static const char *introspection_xml =
     "    <interface name=\""DUNST_IFAC"\">"
 
     "        <method name=\"ContextMenuCall\"       />"
-// TODO: add an optional parmater definining the action of notification number X to invoke
     "        <method name=\"NotificationAction\">"
     "            <arg name=\"number\"     type=\"i\"/>"
     "        </method>"
@@ -226,8 +225,6 @@ static void dbus_cb_dunst_NotificationAction(GDBusConnection *connection,
                 struct notification *n = list->data;
                 LOG_D("CMD: Calling action for notification %s", n->summary);
                 notification_do_action(n);
-                // TODO: do we need to wake up after notification action?
-                wake_up();
         }
 
         g_dbus_method_invocation_return_value(invocation, NULL);
