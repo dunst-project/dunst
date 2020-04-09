@@ -26,7 +26,7 @@ show_help() {
 }
 
 method_call() {
-	dbus-send --print-reply=literal --dest="${DBUS_NAME}" "${DBUS_PATH}" $*
+	dbus-send --print-reply=literal --dest="${DBUS_NAME}" "${DBUS_PATH}" "$@"
 }
 
 property_get() {
@@ -58,7 +58,7 @@ case "${1:-}" in
 		method_call "${DBUS_IFAC_DUNST}.NotificationShow" >/dev/null
 		;;
 	"status")
-		property_get running | ( read _ _ status; printf "%s\n" "${status}"; )
+		property_get running | ( read -r _ _ status; printf "%s\n" "${status}"; )
 		;;
 	"status-set")
 		[ "${2:-}" ] \
@@ -76,7 +76,7 @@ case "${1:-}" in
 
 		dbus-send --print-reply=literal --dest="${DBUS_NAME}" "${DBUS_PATH}" "${DBUS_IFAC_FDN}.GetServerInformation" \
 			| (
-					read name vendor version protocol_version
+					read -r name _ version _
 					[ "${name}" = "dunst" ]
 					printf "dunst version: %s\n" "${version}"
 				) \
