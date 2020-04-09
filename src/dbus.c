@@ -583,11 +583,13 @@ GVariant *dbus_cb_dunst_Properties_Get(GDBusConnection *connection,
 {
         struct dunst_status status = dunst_status_get();
 
-        if (STR_EQ(property_name, "running"))
+        if (STR_EQ(property_name, "running")) {
                 return g_variant_new_boolean(status.running);
-        else
-                //TODO: is NULL as return value allowed?
+        } else {
+                LOG_W("Unknown property!\n");
+                *error = g_error_new(G_DBUS_ERROR, G_DBUS_ERROR_UNKNOWN_PROPERTY, "Unknown property");
                 return NULL;
+        }
 }
 
 gboolean dbus_cb_dunst_Properties_Set(GDBusConnection *connection,
@@ -604,11 +606,9 @@ gboolean dbus_cb_dunst_Properties_Set(GDBusConnection *connection,
                 wake_up();
                 return true;
         }
-        
 
-        //FIXME: don't we have to return true on successful setting, but return false, if e.g. the parameter name is wrong?
-        //return true;
-        // so like this?
+        *error = g_error_new(G_DBUS_ERROR, G_DBUS_ERROR_UNKNOWN_PROPERTY, "Unknown property");
+
         return false;
 }
 
