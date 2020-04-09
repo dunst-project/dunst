@@ -103,7 +103,6 @@ struct dbus_method {
                    GDBusMethodInvocation *invocation);
 };
 
-// TODO: call it interface methods
 #define DBUS_METHOD(name) static void dbus_cb_##name( \
                         GDBusConnection *connection, \
                         const gchar *sender, \
@@ -216,8 +215,14 @@ static void dbus_cb_dunst_NotificationAction(GDBusConnection *connection,
 
         LOG_D("CMD: Calling action for notification %d", notification_nr);
 
-        if (notification_nr < 0 || queues_length_waiting() < notification_nr)
-                return; //FIXME return error
+        if (notification_nr < 0 || queues_length_waiting() < notification_nr) {
+                g_dbus_method_invocation_return_error(invocation,
+                        G_DBUS_ERROR,
+                        G_DBUS_ERROR_INVALID_ARGS,
+                        "Couldn't activate action for notification in position %d, %d notifications currently open",
+                        notification_nr, queues_length_waiting());
+                return;
+        }
 
         const GList *list = g_list_nth_data(queues_get_displayed(), notification_nr);
 
@@ -627,7 +632,6 @@ static void dbus_cb_bus_acquired(GDBusConnection *connection,
                                  const gchar *name,
                                  gpointer user_data)
 {
-        // TODO: deduplicate the code
         GError *err = NULL;
         if(!g_dbus_connection_register_object(
                                 connection,
