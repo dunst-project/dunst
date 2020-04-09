@@ -641,6 +641,7 @@ gboolean dbus_cb_dunst_Properties_Set(GDBusConnection *connection,
 {
         if (STR_EQ(property_name, "running")) {
                 dunst_status(S_RUNNING, g_variant_get_boolean(value));
+                wake_up();
                 return true;
         }
         
