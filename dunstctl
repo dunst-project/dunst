@@ -8,9 +8,9 @@ DBUS_IFAC_DUNST="org.dunstproject.cmd0"
 DBUS_IFAC_PROP="org.freedesktop.DBus.Properties"
 DBUS_IFAC_FDN="org.freedesktop.Notifications"
 
-function die(){ printf "%s\n" "${1}" >&2; exit 1; }
+die(){ printf "%s\n" "${1}" >&2; exit 1; }
 
-function show_help() {
+show_help() {
 	cat <<-EOH
 	Usage: dunstctl <command> [parameters]"
 	Commands:
@@ -25,15 +25,15 @@ function show_help() {
 	EOH
 }
 
-function method_call() {
+method_call() {
 	dbus-send --print-reply=literal --dest="${DBUS_NAME}" "${DBUS_PATH}" $*
 }
 
-function property_get() {
+property_get() {
 	dbus-send --print-reply=literal --dest="${DBUS_NAME}" "${DBUS_PATH}" "${DBUS_IFAC_PROP}.Get" "string:${DBUS_IFAC_DUNST}" "string:${1}"
 }
 
-function property_set() {
+property_set() {
 	dbus-send --print-reply=literal --dest="${DBUS_NAME}" "${DBUS_PATH}" "${DBUS_IFAC_PROP}.Set" "string:${DBUS_IFAC_DUNST}" "string:${1}" "${2}"
 }
 
