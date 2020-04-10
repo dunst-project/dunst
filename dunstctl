@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -u
+set -eu
 
 DBUS_NAME="org.freedesktop.Notifications"
 DBUS_PATH="/org/freedesktop/Notifications"
@@ -28,13 +28,8 @@ show_help() {
 	EOH
 }
 dbus_send_checked() {
-	dbus-send "$@"
-	rc="$?"
-	if [ "$rc" -eq "1" ]; then
-		echo "Failed to communicate with dunst, is it running? Or maybe the version is outdated." >&2
-		echo "Hint: You can try 'dunstctl debug' as a next debugging step." >&2
-		exit 1
-	fi
+	dbus-send "$@" \
+		|| die "Failed to communicate with dunst, is it running? Or maybe the version is outdated. You can try 'dunstctl debug' as a next debugging step."
 }
 
 method_call() {
