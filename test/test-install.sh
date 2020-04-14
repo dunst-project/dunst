@@ -14,6 +14,7 @@ bin/dunstify
 dbus/org.knopwob.dunst.service
 share/dunst/dunstrc
 share/man/man1/dunst.1
+share/man/man1/dunstctl.1
 systemd/dunst.service
 EOF
 
