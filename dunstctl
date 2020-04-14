@@ -21,8 +21,8 @@ show_help() {
 	  close-all                Close the all notifications
 	  context                  Open context menu
 	  history-pop              Pop one notification from history
-	  status                   Check if
-	  status-set [true|false]  Set the status
+	  running                  Check if dunst is running or paused
+	  set-running [true|false] Set the pause status
 	  debug                    Print debugging information
 	  help                     Show this help
 	EOH
@@ -64,10 +64,10 @@ case "${1:-}" in
 	"history-pop")
 		method_call "${DBUS_IFAC_DUNST}.NotificationShow" >/dev/null
 		;;
-	"status")
-		property_get running | ( read -r _ _ status; printf "%s\n" "${status}"; )
+	"running")
+		property_get running | ( read -r _ _ paused; printf "%s\n" "${paused}"; )
 		;;
-	"status-set")
+	"set-running")
 		[ "${2:-}" ] \
 			|| die "No status parameter specified. Please give either 'true' or 'false' as running parameter."
 		[ "${2}" = "true" ] || [ "${2}" = "false" ] \
