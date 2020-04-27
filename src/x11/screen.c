@@ -303,6 +303,7 @@ bool window_is_fullscreen(Window window)
 struct screen_info *get_active_screen(void)
 {
         int ret = 0;
+        bool force_follow_mouse = false;
         if (settings.monitor > 0 && settings.monitor < screens_len) {
                 ret = settings.monitor;
                 goto sc_cleanup;
@@ -321,7 +322,26 @@ struct screen_info *get_active_screen(void)
                 Window root =
                         RootWindow(xctx.dpy, DefaultScreen(xctx.dpy));
 
-                if (settings.f_mode == FOLLOW_MOUSE) {
+                if (settings.f_mode == FOLLOW_KEYBOARD) {
+                        Window focused = get_focused_window();
+
+                        if (focused == 0) {
+                                /*
+                                 * This can happen in the case that the user
+                                 * just has the root window open, eg. in empty
+                                 * tags in dwm or similar window managers. In
+                                 * that case, fall back to FOLLOW_MOUSE, since
+                                 * it probably still has the right screen.
+                                 */
+                                force_follow_mouse = true;
+                        } else {
+                                Window child_return;
+                                XTranslateCoordinates(xctx.dpy, focused, root,
+                                                0, 0, &x, &y, &child_return);
+                        }
+                }
+
+                if (settings.f_mode == FOLLOW_MOUSE || force_follow_mouse) {
                         int dummy;
                         unsigned int dummy_ui;
                         Window dummy_win;
@@ -335,21 +355,6 @@ struct screen_info *get_active_screen(void)
                                       &dummy,
                                       &dummy,
                                       &dummy_ui);
-                }
-
-                if (settings.f_mode == FOLLOW_KEYBOARD) {
-
-                        Window focused = get_focused_window();
-
-                        if (focused == 0) {
-                                /* something went wrong. Fall back to default */
-                                ret = XDefaultScreen(xctx.dpy);
-                                goto sc_cleanup;
-                        }
-
-                        Window child_return;
-                        XTranslateCoordinates(xctx.dpy, focused, root,
-                                        0, 0, &x, &y, &child_return);
                 }
 
                 for (int i = 0; i < screens_len; i++) {
