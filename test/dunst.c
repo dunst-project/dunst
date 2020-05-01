@@ -1,5 +1,14 @@
+#define dbus_signal_status_changed(status) signal_sent_stub(status)
 #include "../src/dunst.c"
 #include "greatest.h"
+
+static bool signal_sent = false;
+
+void signal_sent_stub(struct dunst_status status)
+{
+        signal_sent = true;
+        return;
+}
 
 TEST test_dunst_status(void)
 {

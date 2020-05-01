@@ -8,6 +8,7 @@
 
 #include "dunst.h"
 #include "log.h"
+#include "menu.h"
 #include "notification.h"
 #include "queues.h"
 #include "settings.h"
@@ -16,6 +17,12 @@
 #define FDN_PATH "/org/freedesktop/Notifications"
 #define FDN_IFAC "org.freedesktop.Notifications"
 #define FDN_NAME "org.freedesktop.Notifications"
+
+#define DUNST_PATH "/org/freedesktop/Notifications"
+#define DUNST_IFAC "org.dunstproject.cmd0"
+#define DUNST_NAME "org.freedesktop.Notifications"
+
+#define PROPERTIES_IFAC "org.freedesktop.DBus.Properties"
 
 GDBusConnection *dbus_conn;
 
@@ -62,7 +69,23 @@ static const char *introspection_xml =
     "            <arg name=\"id\"         type=\"u\"/>"
     "            <arg name=\"action_key\" type=\"s\"/>"
     "        </signal>"
-    "   </interface>"
+    "    </interface>"
+    "    <interface name=\""DUNST_IFAC"\">"
+
+    "        <method name=\"ContextMenuCall\"       />"
+    "        <method name=\"NotificationAction\">"
+    "            <arg name=\"number\"     type=\"i\"/>"
+    "        </method>"
+    "        <method name=\"NotificationCloseLast\" />"
+    "        <method name=\"NotificationCloseAll\"  />"
+    "        <method name=\"NotificationShow\"      />"
+    "        <method name=\"Ping\"                  />"
+
+    "        <property name=\"running\" type=\"b\" access=\"readwrite\">"
+    "            <annotation name=\"org.freedesktop.DBus.Property.EmitsChangedSignal\" value=\"true\"/>"
+    "        </property>"
+
+    "    </interface>"
     "</node>";
 
 static const char *stack_tag_hints[] = {
@@ -98,7 +121,6 @@ DBUS_METHOD(Notify);
 DBUS_METHOD(CloseNotification);
 DBUS_METHOD(GetCapabilities);
 DBUS_METHOD(GetServerInformation);
-
 static struct dbus_method methods_fdn[] = {
         {"CloseNotification",     dbus_cb_CloseNotification},
         {"GetCapabilities",       dbus_cb_GetCapabilities},
@@ -106,7 +128,7 @@ static struct dbus_method methods_fdn[] = {
         {"Notify",                dbus_cb_Notify},
 };
 
-void handle_method_call(GDBusConnection *connection,
+void dbus_cb_fdn_methods(GDBusConnection *connection,
                         const gchar *sender,
                         const gchar *object_path,
                         const gchar *interface_name,
@@ -115,12 +137,12 @@ void handle_method_call(GDBusConnection *connection,
                         GDBusMethodInvocation *invocation,
                         gpointer user_data)
 {
-        struct dbus_method *m = bsearch(
-                        method_name,
-                        &methods_fdn,
-                        G_N_ELEMENTS(methods_fdn),
-                        sizeof(struct dbus_method),
-                        cmp_methods);
+
+        struct dbus_method *m = bsearch(method_name,
+                                        methods_fdn,
+                                        G_N_ELEMENTS(methods_fdn),
+                                        sizeof(struct dbus_method),
+                                        cmp_methods);
 
         if (m) {
                 m->method(connection, sender, parameters, invocation);
@@ -130,6 +152,144 @@ void handle_method_call(GDBusConnection *connection,
                       sender);
         }
 }
+
+DBUS_METHOD(dunst_ContextMenuCall);
+DBUS_METHOD(dunst_NotificationAction);
+DBUS_METHOD(dunst_NotificationCloseAll);
+DBUS_METHOD(dunst_NotificationCloseLast);
+DBUS_METHOD(dunst_NotificationShow);
+DBUS_METHOD(dunst_Ping);
+static struct dbus_method methods_dunst[] = {
+        {"ContextMenuCall",        dbus_cb_dunst_ContextMenuCall},
+        {"NotificationAction",     dbus_cb_dunst_NotificationAction},
+        {"NotificationCloseAll",   dbus_cb_dunst_NotificationCloseAll},
+        {"NotificationCloseLast",  dbus_cb_dunst_NotificationCloseLast},
+        {"NotificationShow",       dbus_cb_dunst_NotificationShow},
+        {"Ping",                   dbus_cb_dunst_Ping},
+};
+
+void dbus_cb_dunst_methods(GDBusConnection *connection,
+                           const gchar *sender,
+                           const gchar *object_path,
+                           const gchar *interface_name,
+                           const gchar *method_name,
+                           GVariant *parameters,
+                           GDBusMethodInvocation *invocation,
+                           gpointer user_data)
+{
+
+        struct dbus_method *m = bsearch(method_name,
+                                        methods_dunst,
+                                        G_N_ELEMENTS(methods_dunst),
+                                        sizeof(struct dbus_method),
+                                        cmp_methods);
+
+        if (m) {
+                m->method(connection, sender, parameters, invocation);
+        } else {
+                LOG_M("Unknown method name: '%s' (sender: '%s').",
+                      method_name,
+                      sender);
+        }
+}
+
+static void dbus_cb_dunst_ContextMenuCall(GDBusConnection *connection,
+                                          const gchar *sender,
+                                          GVariant *parameters,
+                                          GDBusMethodInvocation *invocation)
+{
+        LOG_D("CMD: Calling context menu");
+        context_menu();
+
+        g_dbus_method_invocation_return_value(invocation, NULL);
+        g_dbus_connection_flush(connection, NULL, NULL, NULL);
+}
+
+static void dbus_cb_dunst_NotificationAction(GDBusConnection *connection,
+                                             const gchar *sender,
+                                             GVariant *parameters,
+                                             GDBusMethodInvocation *invocation)
+{
+        int notification_nr = 0;
+        g_variant_get(parameters, "(i)", &notification_nr);
+
+        LOG_D("CMD: Calling action for notification %d", notification_nr);
+
+        if (notification_nr < 0 || queues_length_waiting() < notification_nr) {
+                g_dbus_method_invocation_return_error(invocation,
+                        G_DBUS_ERROR,
+                        G_DBUS_ERROR_INVALID_ARGS,
+                        "Couldn't activate action for notification in position %d, %d notifications currently open",
+                        notification_nr, queues_length_waiting());
+                return;
+        }
+
+        const GList *list = g_list_nth_data(queues_get_displayed(), notification_nr);
+
+        if (list && list->data) {
+                struct notification *n = list->data;
+                LOG_D("CMD: Calling action for notification %s", n->summary);
+                notification_do_action(n);
+        }
+
+        g_dbus_method_invocation_return_value(invocation, NULL);
+        g_dbus_connection_flush(connection, NULL, NULL, NULL);
+}
+
+static void dbus_cb_dunst_NotificationCloseAll(GDBusConnection *connection,
+                                              const gchar *sender,
+                                              GVariant *parameters,
+                                              GDBusMethodInvocation *invocation)
+{
+        LOG_D("CMD: Pushing all to history");
+        queues_history_push_all();
+        wake_up();
+
+        g_dbus_method_invocation_return_value(invocation, NULL);
+        g_dbus_connection_flush(connection, NULL, NULL, NULL);
+}
+
+static void dbus_cb_dunst_NotificationCloseLast(GDBusConnection *connection,
+                                                const gchar *sender,
+                                                GVariant *parameters,
+                                                GDBusMethodInvocation *invocation)
+{
+        LOG_D("CMD: Closing last notification");
+        const GList *list = queues_get_displayed();
+        if (list && list->data) {
+                struct notification *n = list->data;
+                queues_notification_close_id(n->id, REASON_USER);
+                wake_up();
+        }
+
+        g_dbus_method_invocation_return_value(invocation, NULL);
+        g_dbus_connection_flush(connection, NULL, NULL, NULL);
+}
+
+static void dbus_cb_dunst_NotificationShow(GDBusConnection *connection,
+                                           const gchar *sender,
+                                           GVariant *parameters,
+                                           GDBusMethodInvocation *invocation)
+{
+        LOG_D("CMD: Showing last notification from history");
+        queues_history_pop();
+        wake_up();
+
+        g_dbus_method_invocation_return_value(invocation, NULL);
+        g_dbus_connection_flush(connection, NULL, NULL, NULL);
+}
+
+/* Just a simple Ping command to give the ability to dunstctl to test for the existence of this interface
+ * Any other way requires parsing the XML of the Introspection or other foo. Just calling the Ping on an old dunst version will fail. */
+static void dbus_cb_dunst_Ping(GDBusConnection *connection,
+                               const gchar *sender,
+                               GVariant *parameters,
+                               GDBusMethodInvocation *invocation)
+{
+        g_dbus_method_invocation_return_value(invocation, NULL);
+        g_dbus_connection_flush(connection, NULL, NULL, NULL);
+}
+
 
 static void dbus_cb_GetCapabilities(
                 GDBusConnection *connection,
@@ -347,11 +507,9 @@ static void dbus_cb_GetServerInformation(
                 GVariant *parameters,
                 GDBusMethodInvocation *invocation)
 {
-        GVariant *value;
+        GVariant *answer = g_variant_new("(ssss)", "dunst", "knopwob", VERSION, "1.2");
 
-        value = g_variant_new("(ssss)", "dunst", "knopwob", VERSION, "1.2");
-        g_dbus_method_invocation_return_value(invocation, value);
-
+        g_dbus_method_invocation_return_value(invocation, answer);
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
 }
 
@@ -420,28 +578,81 @@ void signal_action_invoked(const struct notification *n, const char *identifier)
         }
 }
 
-static const GDBusInterfaceVTable interface_vtable = {
-        handle_method_call
+GVariant *dbus_cb_dunst_Properties_Get(GDBusConnection *connection,
+                                       const gchar *sender,
+                                       const gchar *object_path,
+                                       const gchar *interface_name,
+                                       const gchar *property_name,
+                                       GError **error,
+                                       gpointer user_data)
+{
+        struct dunst_status status = dunst_status_get();
+
+        if (STR_EQ(property_name, "running")) {
+                return g_variant_new_boolean(status.running);
+        } else {
+                LOG_W("Unknown property!\n");
+                *error = g_error_new(G_DBUS_ERROR, G_DBUS_ERROR_UNKNOWN_PROPERTY, "Unknown property");
+                return NULL;
+        }
+}
+
+gboolean dbus_cb_dunst_Properties_Set(GDBusConnection *connection,
+                                      const gchar *sender,
+                                      const gchar *object_path,
+                                      const gchar *interface_name,
+                                      const gchar *property_name,
+                                      GVariant *value,
+                                      GError **error,
+                                      gpointer user_data)
+{
+        if (STR_EQ(property_name, "running")) {
+                dunst_status(S_RUNNING, g_variant_get_boolean(value));
+                wake_up();
+                return true;
+        }
+
+        *error = g_error_new(G_DBUS_ERROR, G_DBUS_ERROR_UNKNOWN_PROPERTY, "Unknown property");
+
+        return false;
+}
+
+
+static const GDBusInterfaceVTable interface_vtable_fdn = {
+        dbus_cb_fdn_methods
+};
+
+static const GDBusInterfaceVTable interface_vtable_dunst = {
+        dbus_cb_dunst_methods,
+        dbus_cb_dunst_Properties_Get,
+        dbus_cb_dunst_Properties_Set,
 };
 
 static void dbus_cb_bus_acquired(GDBusConnection *connection,
                                  const gchar *name,
                                  gpointer user_data)
 {
-        guint registration_id;
-
         GError *err = NULL;
+        if(!g_dbus_connection_register_object(
+                                connection,
+                                FDN_PATH,
+                                introspection_data->interfaces[0],
+                                &interface_vtable_fdn,
+                                NULL,
+                                NULL,
+                                &err)) {
+                DIE("Unable to register dbus connection interface '%s': %s", introspection_data->interfaces[0]->name, err->message);
+        }
 
-        registration_id = g_dbus_connection_register_object(connection,
-                                                            FDN_PATH,
-                                                            introspection_data->interfaces[0],
-                                                            &interface_vtable,
-                                                            NULL,
-                                                            NULL,
-                                                            &err);
-
-        if (registration_id == 0) {
-                DIE("Unable to register dbus connection: %s", err->message);
+        if(!g_dbus_connection_register_object(
+                                connection,
+                                FDN_PATH,
+                                introspection_data->interfaces[1],
+                                &interface_vtable_dunst,
+                                NULL,
+                                NULL,
+                                &err)) {
+                DIE("Unable to register dbus connection interface '%s': %s", introspection_data->interfaces[1]->name, err->message);
         }
 }
 
@@ -449,7 +660,9 @@ static void dbus_cb_name_acquired(GDBusConnection *connection,
                                   const gchar *name,
                                   gpointer user_data)
 {
-        dbus_conn = connection;
+        // If we're not able to get org.fd.N bus, we've still got a problem
+        if (STR_EQ(name, FDN_NAME))
+                dbus_conn = connection;
 }
 
 /**

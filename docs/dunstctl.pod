@@ -1,0 +1,59 @@
+=head1 NAME
+
+dunstctl - Command line control utility for dunst, a customizable and lightweight notification-daemon
+
+=head1 SYNOPSIS
+
+dunstctl COMMAND [PARAMETER]
+
+=head1 COMMANDS
+
+=over 4
+
+=item B<action> notification_position
+
+Performs the default action or, if not available, opens the context menu of the
+notification at the given position (starting count at the top, first
+notification being 0). 
+
+=item B<close>
+
+Close the topmost notification currently being displayed.
+
+=item B<close-all>
+
+Close all notifications currently being displayed
+
+=item B<context>
+
+Open the context menu, presenting all available actions and urls for the
+currently open notifications.
+
+=item B<history-pop>
+
+Redisplay the notification that was most recently closed. This can be called
+multiple times to show older notifications, up to the history limit configured
+in dunst.
+
+=item B<running>
+
+Check if dunst is currently running or paused. If dunst is paused notifications
+will be kept but not shown until it is unpaused.
+
+=item B<set-running> true/false
+
+Set the paused status of dunst. If true, dunst is running normally, if false,
+dunst is paused. See the running command and the dunst man page for more
+information.
+
+=item B<debug>
+
+Tries to contact dunst and checks for common faults between dunstctl and dunst.
+Useful if something isn't working
+
+=item B<help>
+
+Show all available commands with a brief description
+
+=back
+

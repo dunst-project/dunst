@@ -517,7 +517,7 @@ Close all notifications.
 
 =back
 
-=head2 Shortcut section
+=head2 Shortcut section B<DEPRECATED SEE DUNSTCTL>
 
 Keyboard shortcuts are defined in the following format: "Modifier+key" where the
 modifier is one of ctrl,mod1,mod2,mod3,mod4 and key is any keyboard key.
@@ -601,6 +601,13 @@ respectively.
 See TIME FORMAT for valid times.
 
 =back
+
+=head1 DUNSTCTL
+
+Dunst now contains a command line control command that can be used to interact
+with it. It supports all functions previously done only via keyboard shortcuts
+but also has a lot of extra functionality. So see more see the dunstctl man
+page.
 
 =head1 HISTORY
 
@@ -865,9 +872,8 @@ Example time: "1000ms" "10m"
 
 =head1 MISCELLANEOUS
 
-Dunst can be paused by sending a notification with a summary of
-"DUNST_COMMAND_PAUSE", resumed with a summary of "DUNST_COMMAND_RESUME" and
-toggled with a summary of "DUNST_COMMAND_TOGGLE".
+Dunst can be paused via the `dunstctl set-running false` command. To unpause dunst use
+`dunstctl set-status true` and to unpause `dunstctl set-status false`.
 Alternatively you can send SIGUSR1 and SIGUSR2 to pause and unpause
 respectively. For Example:
 
@@ -908,4 +914,4 @@ If you feel that copyrights are violated, please send me an email.
 
 =head1 SEE ALSO
 
-dwm(1), dmenu(1), twmn(1), notify-send(1)
+dunstctl(1), dwm(1), dmenu(1), twmn(1), notify-send(1)

@@ -3,6 +3,7 @@
 #ifndef DUNST_DBUS_H
 #define DUNST_DBUS_H
 
+#include "dunst.h"
 #include "notification.h"
 
 /// The reasons according to the notification spec

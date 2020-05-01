@@ -799,6 +799,12 @@ TEST assert_methodlists_sorted(void)
                                 methods_fdn[i+1].method_name));
         }
 
+        for (size_t i = 0; i+1 < G_N_ELEMENTS(methods_dunst); i++) {
+                ASSERT(0 > strcmp(
+                                methods_dunst[i].method_name,
+                                methods_dunst[i+1].method_name));
+        }
+
         PASS();
 }
 
