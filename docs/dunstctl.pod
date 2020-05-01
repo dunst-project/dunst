@@ -35,15 +35,15 @@ Redisplay the notification that was most recently closed. This can be called
 multiple times to show older notifications, up to the history limit configured
 in dunst.
 
-=item B<running>
+=item B<is-paused>
 
 Check if dunst is currently running or paused. If dunst is paused notifications
 will be kept but not shown until it is unpaused.
 
-=item B<set-running> true/false/toggle
+=item B<set-paused> true/false/toggle
 
-Set the paused status of dunst. If true, dunst is running normally, if false,
-dunst is paused. See the running command and the dunst man page for more
+Set the paused status of dunst. If false, dunst is running normally, if true,
+dunst is paused. See the is-paused command and the dunst man page for more
 information.
 
 =item B<debug>

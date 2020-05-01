@@ -872,8 +872,8 @@ Example time: "1000ms" "10m"
 
 =head1 MISCELLANEOUS
 
-Dunst can be paused via the `dunstctl set-running false` command. To unpause dunst use
-`dunstctl set-status true` and to unpause `dunstctl set-status false`.
+Dunst can be paused via the `dunstctl set-paused true` command. To unpause dunst use
+`dunstctl set-paused false`.
 Alternatively you can send SIGUSR1 and SIGUSR2 to pause and unpause
 respectively. For Example:
 
