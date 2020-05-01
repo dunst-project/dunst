@@ -40,7 +40,7 @@ in dunst.
 Check if dunst is currently running or paused. If dunst is paused notifications
 will be kept but not shown until it is unpaused.
 
-=item B<set-running> true/false
+=item B<set-running> true/false/toggle
 
 Set the paused status of dunst. If true, dunst is running normally, if false,
 dunst is paused. See the running command and the dunst man page for more
