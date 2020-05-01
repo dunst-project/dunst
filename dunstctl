@@ -45,11 +45,11 @@ property_set() {
 }
 
 invert_boolean() {
-        if [ "${1}" = "true" ]; then
-            printf "%s\n" "false"
-        elif [ "${1}" = "false" ]; then
-            printf "%s\n" "true"
-        fi
+	if [ "${1}" = "true" ]; then
+		printf "%s\n" "false"
+	elif [ "${1}" = "false" ]; then
+		printf "%s\n" "true"
+	fi
 }
 
 command -v dbus-send >/dev/null 2>/dev/null || \
@@ -73,28 +73,28 @@ case "${1:-}" in
 		method_call "${DBUS_IFAC_DUNST}.NotificationShow" >/dev/null
 		;;
 	"is-paused")
-                running=$(property_get running | ( read -r _ _ running; printf "%s\n" "${running}"; ))
-                # invert boolean to indiciate pause status rather than running one
-                paused=$(invert_boolean "${running}")
-                printf "%s\n" "${paused}"
+		running=$(property_get running | ( read -r _ _ running; printf "%s\n" "${running}"; ))
+		# invert boolean to indiciate pause status rather than running one
+		paused=$(invert_boolean "${running}")
+		printf "%s\n" "${paused}"
 		;;
 	"set-paused")
 		[ "${2:-}" ] \
 			|| die "No status parameter specified. Please give either 'true', 'false' or 'toggle' as paused parameter."
 		[ "${2}" = "true" ] || [ "${2}" = "false" ] || [ "${2}" = "toggle" ] \
 			|| die "Please give either 'true', 'false' or 'toggle' as paused parameter."
-                if [ "${2}" = "toggle" ]; then
-                    running=$(property_get running | ( read -r _ _ running; printf "%s\n" "${running}"; ))
-                    if [ "${running}" = "true" ]; then
-                        property_set running variant:boolean:false
-                    else
-                        property_set running variant:boolean:true
-                    fi
-                else
-                    # invert boolean to indiciate running status rather than pause one
-                    running=$(invert_boolean "${2}")
-		    property_set running variant:boolean:"${running}"
-                fi
+		if [ "${2}" = "toggle" ]; then
+			running=$(property_get running | ( read -r _ _ running; printf "%s\n" "${running}"; ))
+			if [ "${running}" = "true" ]; then
+				property_set running variant:boolean:false
+			else
+				property_set running variant:boolean:true
+			fi
+		else
+			# invert boolean to indiciate running status rather than pause one
+			running=$(invert_boolean "${2}")
+			property_set running variant:boolean:"${running}"
+		fi
 		;;
 	"help"|"--help"|"-h")
 		show_help
