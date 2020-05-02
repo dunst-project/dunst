@@ -81,7 +81,7 @@ static const char *introspection_xml =
     "        <method name=\"NotificationShow\"      />"
     "        <method name=\"Ping\"                  />"
 
-    "        <property name=\"running\" type=\"b\" access=\"readwrite\">"
+    "        <property name=\"paused\" type=\"b\" access=\"readwrite\">"
     "            <annotation name=\"org.freedesktop.DBus.Property.EmitsChangedSignal\" value=\"true\"/>"
     "        </property>"
 
