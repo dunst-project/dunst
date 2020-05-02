@@ -589,7 +589,7 @@ GVariant *dbus_cb_dunst_Properties_Get(GDBusConnection *connection,
         struct dunst_status status = dunst_status_get();
 
         if (STR_EQ(property_name, "paused")) {
-                return !g_variant_new_boolean(status.running);
+                return g_variant_new_boolean(!status.running);
         } else {
                 LOG_W("Unknown property!\n");
                 *error = g_error_new(G_DBUS_ERROR, G_DBUS_ERROR_UNKNOWN_PROPERTY, "Unknown property");
