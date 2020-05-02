@@ -14,17 +14,17 @@ show_help() {
 	cat <<-EOH
 	Usage: dunstctl <command> [parameters]"
 	Commands:
-	  action                   Perform the default action, or open the
-	                           context menu of the notification at the
-	                           given position
-	  close                    Close the last notification
-	  close-all                Close the all notifications
-	  context                  Open context menu
-	  history-pop              Pop one notification from history
-	  running                  Check if dunst is running or paused
-	  set-running [true|false] Set the pause status
-	  debug                    Print debugging information
-	  help                     Show this help
+	  action                         Perform the default action, or open the
+	                                 context menu of the notification at the
+	                                 given position
+	  close                          Close the last notification
+	  close-all                      Close the all notifications
+	  context                        Open context menu
+	  history-pop                    Pop one notification from history
+	  is-paused                      Check if dunst is running or paused
+	  set-paused [true|false|toggle] Set the pause status
+	  debug                          Print debugging information
+	  help                           Show this help
 	EOH
 }
 dbus_send_checked() {
@@ -64,15 +64,24 @@ case "${1:-}" in
 	"history-pop")
 		method_call "${DBUS_IFAC_DUNST}.NotificationShow" >/dev/null
 		;;
-	"running")
-		property_get running | ( read -r _ _ paused; printf "%s\n" "${paused}"; )
+	"is-paused")
+		property_get paused | ( read -r _ _ paused; printf "%s\n" "${paused}"; )
 		;;
-	"set-running")
+	"set-paused")
 		[ "${2:-}" ] \
-			|| die "No status parameter specified. Please give either 'true' or 'false' as running parameter."
-		[ "${2}" = "true" ] || [ "${2}" = "false" ] \
-			|| die "Please give either 'true' or 'false' as running parameter."
-		property_set running variant:boolean:"${2}"
+			|| die "No status parameter specified. Please give either 'true', 'false' or 'toggle' as paused parameter."
+		[ "${2}" = "true" ] || [ "${2}" = "false" ] || [ "${2}" = "toggle" ] \
+			|| die "Please give either 'true', 'false' or 'toggle' as paused parameter."
+		if [ "${2}" = "toggle" ]; then
+			paused=$(property_get paused | ( read -r _ _ paused; printf "%s\n" "${paused}"; ))
+			if [ "${paused}" = "true" ]; then
+				property_set paused variant:boolean:false
+			else
+				property_set paused variant:boolean:true
+			fi
+		else
+			property_set paused variant:boolean:"$2"
+		fi
 		;;
 	"help"|"--help"|"-h")
 		show_help

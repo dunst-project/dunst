@@ -81,7 +81,7 @@ static const char *introspection_xml =
     "        <method name=\"NotificationShow\"      />"
     "        <method name=\"Ping\"                  />"
 
-    "        <property name=\"running\" type=\"b\" access=\"readwrite\">"
+    "        <property name=\"paused\" type=\"b\" access=\"readwrite\">"
     "            <annotation name=\"org.freedesktop.DBus.Property.EmitsChangedSignal\" value=\"true\"/>"
     "        </property>"
 
@@ -588,8 +588,8 @@ GVariant *dbus_cb_dunst_Properties_Get(GDBusConnection *connection,
 {
         struct dunst_status status = dunst_status_get();
 
-        if (STR_EQ(property_name, "running")) {
-                return g_variant_new_boolean(status.running);
+        if (STR_EQ(property_name, "paused")) {
+                return g_variant_new_boolean(!status.running);
         } else {
                 LOG_W("Unknown property!\n");
                 *error = g_error_new(G_DBUS_ERROR, G_DBUS_ERROR_UNKNOWN_PROPERTY, "Unknown property");
@@ -606,8 +606,8 @@ gboolean dbus_cb_dunst_Properties_Set(GDBusConnection *connection,
                                       GError **error,
                                       gpointer user_data)
 {
-        if (STR_EQ(property_name, "running")) {
-                dunst_status(S_RUNNING, g_variant_get_boolean(value));
+        if (STR_EQ(property_name, "paused")) {
+                dunst_status(S_RUNNING, !g_variant_get_boolean(value));
                 wake_up();
                 return true;
         }
