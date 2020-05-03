@@ -110,9 +110,9 @@ static void x_win_round_corners(struct window_x11 *win, const int rad)
 
         /* To mark all pixels, which should get exposed, we
          * use a circle for every corner and two overlapping rectangles */
-	int fw = settings.frame_width / 2 + settings.frame_width % 2;
-	if (fw < 1)
-		fw=1;
+        int fw = settings.frame_width / 2 + settings.frame_width % 2;
+        if (fw < 1)
+                fw=1;
         unsigned const int centercoords[] = {
                 -fw,             -fw,
                 width - dia - 1, -fw,
