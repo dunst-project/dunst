@@ -464,23 +464,26 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
         else
                 height += settings.separator_height;
 
-        cairo_set_source_rgb(c, cl->frame.r, cl->frame.g, cl->frame.b);
-        draw_rounded_rect(c, x, y, width, height, corner_radius, first, last);
-        cairo_fill(c);
+	if (settings.frame_width > 0)
+        {
+            cairo_set_source_rgb(c, cl->frame.r, cl->frame.g, cl->frame.b);
+            draw_rounded_rect(c, x, y, width, height, corner_radius, first, last);
+            cairo_fill(c);
 
-        /* adding frame */
-        x += settings.frame_width;
-        if (first) {
-                y += settings.frame_width;
-                height -= settings.frame_width;
+            /* adding frame */
+            x += settings.frame_width;
+            if (first) {
+                    y += settings.frame_width;
+                    height -= settings.frame_width;
+            }
+
+            width -= 2 * settings.frame_width;
+
+            if (last)
+                    height -= settings.frame_width;
+            else
+                    height -= settings.separator_height;
         }
-
-        width -= 2 * settings.frame_width;
-
-        if (last)
-                height -= settings.frame_width;
-        else
-                height -= settings.separator_height;
 
         cairo_set_source_rgb(c, cl->bg.r, cl->bg.g, cl->bg.b);
         draw_rounded_rect(c, x, y, width, height, corner_radius, first, last);
