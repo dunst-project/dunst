@@ -647,13 +647,19 @@ struct window_x11 *x_win_create(void)
         struct window_x11 *win = g_malloc0(sizeof(struct window_x11));
 
         Window root;
+        int scr_n;
+        XVisualInfo vi;
         XSetWindowAttributes wa;
 
-        root = RootWindow(xctx.dpy, DefaultScreen(xctx.dpy));
+        scr_n = DefaultScreen(xctx.dpy);
+        root = RootWindow(xctx.dpy, scr_n);
+        XMatchVisualInfo(xctx.dpy, scr_n, 32, TrueColor, &vi);
 
         wa.override_redirect = true;
-        wa.background_pixmap = ParentRelative;
+        wa.background_pixmap = None;
         wa.background_pixel = 0;
+        wa.border_pixel = 0;
+        wa.colormap = XCreateColormap(xctx.dpy, root, vi.visual, AllocNone);
         wa.event_mask =
             ExposureMask | KeyPressMask | VisibilityChangeMask |
             ButtonReleaseMask | FocusChangeMask| StructureNotifyMask;
@@ -666,10 +672,10 @@ struct window_x11 *x_win_create(void)
                                  scr->w,
                                  1,
                                  0,
-                                 DefaultDepth(xctx.dpy, DefaultScreen(xctx.dpy)),
+                                 vi.depth,
                                  CopyFromParent,
-                                 DefaultVisual(xctx.dpy, DefaultScreen(xctx.dpy)),
-                                 CWOverrideRedirect | CWBackPixmap | CWBackPixel | CWEventMask,
+                                 vi.visual,
+                                 CWOverrideRedirect | CWBackPixmap | CWBackPixel | CWBorderPixel | CWColormap | CWEventMask,
                                  &wa);
 
         x_set_wm(win->xwin);
@@ -680,7 +686,7 @@ struct window_x11 *x_win_create(void)
                                    (0xffffffff / 100)));
 
         win->root_surface = cairo_xlib_surface_create(xctx.dpy, win->xwin,
-                                                      DefaultVisual(xctx.dpy, 0),
+                                                      vi.visual,
                                                       WIDTH, HEIGHT);
         win->c_ctx = cairo_create(win->root_surface);
 
