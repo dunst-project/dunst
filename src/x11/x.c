@@ -110,13 +110,10 @@ static void x_win_round_corners(struct window_x11 *win, const int rad)
 
         /* To mark all pixels, which should get exposed, we
          * use a circle for every corner and two overlapping rectangles */
-        int fw = settings.frame_width / 2 + settings.frame_width % 2;
-        if (fw < 1)
-                fw = 1;
         unsigned const int centercoords[] = {
-                -fw,             -fw,
-                width - dia - 1, -fw,
-                -fw,             height - dia - 1,
+                0,            0,
+                width - dia - 1, 0,
+                0,               height - dia - 1,
                 width - dia - 1, height - dia - 1,
         };
 
@@ -124,10 +121,10 @@ static void x_win_round_corners(struct window_x11 *win, const int rad)
                 XFillArc(xctx.dpy,
                          mask,
                          shape_gc,
-                         centercoords[i],
-                         centercoords[i+1],
-                         dia+fw,
-                         dia+fw,
+                         centercoords[i]-1,
+                         centercoords[i+1]-1,
+                         dia+2,
+                         dia+2,
                          degrees * 0,
                          degrees * 360);
         }
