@@ -24,7 +24,7 @@ void queues_init(void);
  *
  * @return read only list of notifications
  */
-const GList *queues_get_displayed(void);
+GList *queues_get_displayed(void);
 
 /**
  * Get the highest notification in line

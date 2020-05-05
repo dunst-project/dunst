@@ -45,7 +45,7 @@ void queues_init(void)
 }
 
 /* see queues.h */
-const GList *queues_get_displayed(void)
+GList *queues_get_displayed(void)
 {
         return g_queue_peek_head_link(displayed);
 }
