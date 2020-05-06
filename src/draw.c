@@ -454,6 +454,7 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
                                           int *ret_width)
 {
         int x = 0;
+        int radius_int = corner_radius;
 
         cairo_t *c = cairo_create(srf);
 
@@ -483,10 +484,27 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
                         height -= settings.frame_width;
                 else
                         height -= settings.separator_height;
+
+                /* Attempt to make internal radius more organic.
+                 * Simple r-w is not enough for too small r/w ratio.
+                 * simplifications: r/2 == r - w + w*w / (r * 2) with (w == r)
+                 **/
+                {       const int s = 2 << (sizeof(int) * 8 / 4); // Integer precision scaler
+                        int h, w, r, r1, r2;
+
+                        h = s * height;
+                        r = s * corner_radius;
+                        w = s * settings.frame_width;
+                        r1 = r - w + w * w / (r * 2);    // w < r;
+                        r2 = r * h / (h + (w - r) * 2);  // w >= r
+
+                        radius_int = (r > w) ? r1 : (r / 2 < r2) ? r / 2 : r2;
+                        radius_int /= s;
+                }
         }
 
         cairo_set_source_rgb(c, cl->bg.r, cl->bg.g, cl->bg.b);
-        draw_rounded_rect(c, x, y, width, height, corner_radius, first, last);
+        draw_rounded_rect(c, x, y, width, height, radius_int, first, last);
         cairo_fill(c);
 
         if (   settings.sep_color.type != SEP_FRAME
