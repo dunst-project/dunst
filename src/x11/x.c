@@ -89,63 +89,44 @@ static void x_win_round_corners(struct window_x11 *win, const int rad)
 {
         const int width = win->dim.w;
         const int height = win->dim.h;
-        const int dia = 2 * rad;
-        const int degrees = 64; // the factor to convert degrees to XFillArc's angle param
-
-        Pixmap mask = XCreatePixmap(xctx.dpy, win->xwin, width, height, 1);
-        XGCValues xgcv;
-
-        GC shape_gc = XCreateGC(xctx.dpy, mask, 0, &xgcv);
-
-        XSetForeground(xctx.dpy, shape_gc, 0);
-        XFillRectangle(xctx.dpy,
-                       mask,
-                       shape_gc,
-                       0,
-                       0,
-                       width,
-                       height);
-
-        XSetForeground(xctx.dpy, shape_gc, 1);
-
-        /* To mark all pixels, which should get exposed, we
-         * use a circle for every corner and two overlapping rectangles */
-        unsigned const int centercoords[] = {
-                0,            0,
-                width - dia - 1, 0,
-                0,               height - dia - 1,
-                width - dia - 1, height - dia - 1,
+        unsigned const int coords[] = {
+	        0 + rad,
+                width - rad,
+                height - rad,
         };
 
-        for (int i = 0; i < sizeof(centercoords)/sizeof(unsigned int); i = i+2) {
-                XFillArc(xctx.dpy,
-                         mask,
-                         shape_gc,
-                         centercoords[i]-1,
-                         centercoords[i+1]-1,
-                         dia+2,
-                         dia+2,
-                         degrees * 0,
-                         degrees * 360);
-        }
-        XFillRectangle(xctx.dpy,
-                       mask,
-                       shape_gc,
-                       rad,
-                       0,
-                       width-dia,
-                       height);
-        XFillRectangle(xctx.dpy,
-                       mask,
-                       shape_gc,
-                       0,
-                       rad,
-                       width,
-                       height-dia);
+        Pixmap mask;
+        cairo_surface_t * cxbm;
+        cairo_t * cr;
+        Screen * scr;
+
+        mask = XCreatePixmap(xctx.dpy, win->xwin, width, height, 1);
+        scr = ScreenOfDisplay(xctx.dpy, win->cur_screen);
+        cxbm = cairo_xlib_surface_create_for_bitmap(xctx.dpy, mask, scr, width, height);
+        cr = cairo_create(cxbm);
+
+        cairo_set_antialias(cr, CAIRO_ANTIALIAS_NONE);
+        cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+
+        cairo_set_source_rgba(cr, 0, 0, 0, 0);
+        cairo_paint(cr);
+        cairo_set_source_rgba(cr, 1, 1, 1, 1);
+
+        cairo_new_path(cr);
+        cairo_arc(cr, coords[0], coords[0], rad,  M_PI,   -M_PI_2);
+        cairo_arc(cr, coords[1], coords[0], rad, -M_PI_2,  0);
+        cairo_arc(cr, coords[1], coords[2], rad,  0,       M_PI_2);
+        cairo_arc(cr, coords[0], coords[2], rad,  M_PI_2,  M_PI);
+        cairo_close_path(cr);
+        cairo_fill(cr);
+
+        cairo_show_page(cr);
+        cairo_destroy(cr);
+        cairo_surface_flush(cxbm);
+        cairo_surface_destroy(cxbm);
 
         XShapeCombineMask(xctx.dpy, win->xwin, ShapeBounding, 0, 0, mask, ShapeSet);
 
-        XFreeGC(xctx.dpy, shape_gc);
         XFreePixmap(xctx.dpy, mask);
 
         XShapeSelectInput(xctx.dpy,
