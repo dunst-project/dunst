@@ -136,6 +136,7 @@ static void x_win_round_corners(struct window_x11 *win, const int rad)
 void x_display_surface(cairo_surface_t *srf, struct window_x11 *win, const struct dimensions *dim)
 {
         char astr[sizeof("_NET_WM_CM_S") / sizeof(char) + 8];
+        Atom cm_sel;
 
         x_win_move(win, dim->x, dim->y, dim->w, dim->h);
         cairo_xlib_surface_set_size(win->root_surface, dim->w, dim->h);
@@ -147,8 +148,8 @@ void x_display_surface(cairo_surface_t *srf, struct window_x11 *win, const struc
         cairo_paint(win->c_ctx);
         cairo_show_page(win->c_ctx);
 
-        sprintf (astr, "_NET_WM_CM_S%i", win->cur_screen);
-        Atom cm_sel = XInternAtom (xctx.dpy, astr, true);
+        sprintf(astr, "_NET_WM_CM_S%i", win->cur_screen);
+        cm_sel = XInternAtom(xctx.dpy, astr, true);
         if (settings.corner_radius != 0 && XGetSelectionOwner(xctx.dpy, cm_sel) == None)
                 x_win_round_corners(win, dim->corner_radius);
         else
