@@ -133,11 +133,31 @@ static void x_win_round_corners(struct window_x11 *win, const int rad)
                 win->xwin, ShapeNotifyMask);
 }
 
-void x_display_surface(cairo_surface_t *srf, struct window_x11 *win, const struct dimensions *dim)
+static void x_win_corners_unshape(struct window_x11 *win)
+{
+        XRectangle rect = {
+                .x = 0,
+                .y = 0,
+                .width = win->dim.w,
+                .height = win->dim.h };
+        XShapeCombineRectangles(xctx.dpy, win->xwin, ShapeBounding, 0, 0, &rect, 1, ShapeSet, 1);
+        XShapeSelectInput(xctx.dpy,
+                win->xwin, ShapeNotifyMask);
+}
+
+static bool x_win_composited(struct window_x11 *win)
 {
         char astr[sizeof("_NET_WM_CM_S") / sizeof(char) + 8];
         Atom cm_sel;
 
+        sprintf(astr, "_NET_WM_CM_S%i", win->cur_screen);
+        cm_sel = XInternAtom(xctx.dpy, astr, true);
+
+        return XGetSelectionOwner(xctx.dpy, cm_sel) != None;
+}
+
+void x_display_surface(cairo_surface_t *srf, struct window_x11 *win, const struct dimensions *dim)
+{
         x_win_move(win, dim->x, dim->y, dim->w, dim->h);
         cairo_xlib_surface_set_size(win->root_surface, dim->w, dim->h);
 
@@ -148,21 +168,10 @@ void x_display_surface(cairo_surface_t *srf, struct window_x11 *win, const struc
         cairo_paint(win->c_ctx);
         cairo_show_page(win->c_ctx);
 
-        sprintf(astr, "_NET_WM_CM_S%i", win->cur_screen);
-        cm_sel = XInternAtom(xctx.dpy, astr, true);
-        if (settings.corner_radius != 0 && XGetSelectionOwner(xctx.dpy, cm_sel) == None)
                 x_win_round_corners(win, dim->corner_radius);
+        if (settings.corner_radius != 0 && ! x_win_composited(win))
         else
-        {
-                XRectangle rect = {
-                        .x = 0,
-                        .y = 0,
-                        .width = dim->w,
-                        .height = dim->h };
-                XShapeCombineRectangles(xctx.dpy, win->xwin, ShapeBounding, 0, 0, &rect, 1, ShapeSet, 1);
-                XShapeSelectInput(xctx.dpy,
-                        win->xwin, ShapeNotifyMask);
-        }
+                x_win_corners_unshape(win);
 
         XFlush(xctx.dpy);
 

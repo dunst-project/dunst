@@ -388,6 +388,29 @@ static int layout_get_height(struct colored_layout *cl)
         return MAX(h, h_icon);
 }
 
+/* Attempt to make internal radius more organic.
+ * Simple r-w is not enough for too small r/w ratio.
+ * simplifications: r/2 == r - w + w*w / (r * 2) with (w == r)
+ * r, w - corner radius & frame width,
+ * h  - box height
+ */
+static int frame_internal_radius (int r, int w, int h)
+{
+        // Integer precision scaler, using 1/4 of int size
+        const int s = 2 << (8 * sizeof(int) / 4);
+
+        int r1, r2, ret;
+        h *= s;
+        r *= s;
+        w *= s;
+        r1 = r - w + w * w / (r * 2);    // w  <  r
+        r2 = r * h / (h + (w - r) * 2);  // w  >= r
+
+        ret = (r > w) ? r1 : (r / 2 < r2) ? r / 2 : r2;
+
+        return ret / s;
+}
+
 /**
  * Create a path on the given cairo context to draw the background of a notification.
  * The top corners will get rounded by `corner_radius`, if `first` is set.
@@ -485,22 +508,7 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
                 else
                         height -= settings.separator_height;
 
-                /* Attempt to make internal radius more organic.
-                 * Simple r-w is not enough for too small r/w ratio.
-                 * simplifications: r/2 == r - w + w*w / (r * 2) with (w == r)
-                 **/
-                {       const int s = 2 << (sizeof(int) * 8 / 4); // Integer precision scaler
-                        int h, w, r, r1, r2;
-
-                        h = s * height;
-                        r = s * corner_radius;
-                        w = s * settings.frame_width;
-                        r1 = r - w + w * w / (r * 2);    // w < r;
-                        r2 = r * h / (h + (w - r) * 2);  // w >= r
-
-                        radius_int = (r > w) ? r1 : (r / 2 < r2) ? r / 2 : r2;
-                        radius_int /= s;
-                }
+                radius_int = frame_internal_radius (corner_radius, settings.frame_width, height);
         }
 
         cairo_set_source_rgb(c, cl->bg.r, cl->bg.g, cl->bg.b);
