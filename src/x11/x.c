@@ -651,13 +651,10 @@ struct window_x11 *x_win_create(void)
 
         scr_n = DefaultScreen(xctx.dpy);
         root = RootWindow(xctx.dpy, scr_n);
-        if (XMatchVisualInfo(xctx.dpy, scr_n, 32, TrueColor, &vi))
-        {
+        if (XMatchVisualInfo(xctx.dpy, scr_n, 32, TrueColor, &vi)) {
                 vis  = vi.visual;
                 depth = vi.depth;
-        }
-        else
-        {
+        } else {
                 vis = DefaultVisual(xctx.dpy, scr_n);
                 depth = DefaultDepth(xctx.dpy, scr_n);
         }
