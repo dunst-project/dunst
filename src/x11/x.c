@@ -89,11 +89,6 @@ static void x_win_round_corners(struct window_x11 *win, const int rad)
 {
         const int width = win->dim.w;
         const int height = win->dim.h;
-        unsigned const int coords[] = {
-	        0 + rad,
-                width - rad,
-                height - rad,
-        };
 
         Pixmap mask;
         cairo_surface_t * cxbm;
@@ -112,12 +107,10 @@ static void x_win_round_corners(struct window_x11 *win, const int rad)
         cairo_paint(cr);
         cairo_set_source_rgba(cr, 1, 1, 1, 1);
 
-        cairo_new_path(cr);
-        cairo_arc(cr, coords[0], coords[0], rad,  M_PI,   -M_PI_2);
-        cairo_arc(cr, coords[1], coords[0], rad, -M_PI_2,  0);
-        cairo_arc(cr, coords[1], coords[2], rad,  0,       M_PI_2);
-        cairo_arc(cr, coords[0], coords[2], rad,  M_PI_2,  M_PI);
-        cairo_close_path(cr);
+        draw_rounded_rect(cr, 0, 0,
+                          width, height,
+                          rad,
+                          true, true);
         cairo_fill(cr);
 
         cairo_show_page(cr);

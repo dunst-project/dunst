@@ -416,7 +416,7 @@ static int frame_internal_radius (int r, int w, int h)
  * The top corners will get rounded by `corner_radius`, if `first` is set.
  * Respectably the same for `last` with the bottom corners.
  */
-static void draw_rounded_rect(cairo_t *c, int x, int y, int width, int height, int corner_radius, bool first, bool last)
+void draw_rounded_rect(cairo_t *c, int x, int y, int width, int height, int corner_radius, bool first, bool last)
 {
         const float degrees = M_PI / 180.0;
 
