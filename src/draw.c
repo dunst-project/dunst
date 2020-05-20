@@ -481,6 +481,12 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
 
         cairo_t *c = cairo_create(srf);
 
+        /* stroke area doesn't intersect with main area */
+        cairo_set_fill_rule(c, CAIRO_FILL_RULE_EVEN_ODD);
+
+        /* for correct combination of adjacent areas */
+        cairo_set_operator(c, CAIRO_OPERATOR_ADD);
+
         if (first)
                 height += settings.frame_width;
         if (last)
@@ -489,9 +495,7 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
                 height += settings.separator_height;
 
         if (settings.frame_width > 0) {
-                cairo_set_source_rgb(c, cl->frame.r, cl->frame.g, cl->frame.b);
                 draw_rounded_rect(c, x, y, width, height, corner_radius, first, last);
-                cairo_fill(c);
 
                 /* adding frame */
                 x += settings.frame_width;
@@ -508,11 +512,17 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
                         height -= settings.separator_height;
 
                 radius_int = frame_internal_radius (corner_radius, settings.frame_width, height);
+
+                draw_rounded_rect(c, x, y, width, height, radius_int, first, last);
+                cairo_set_source_rgb(c, cl->frame.r, cl->frame.g, cl->frame.b);
+                cairo_fill(c);
         }
 
-        cairo_set_source_rgb(c, cl->bg.r, cl->bg.g, cl->bg.b);
         draw_rounded_rect(c, x, y, width, height, radius_int, first, last);
+        cairo_set_source_rgb(c, cl->bg.r, cl->bg.g, cl->bg.b);
         cairo_fill(c);
+
+        cairo_set_operator(c, CAIRO_OPERATOR_OVER);
 
         if (   settings.sep_color.type != SEP_FRAME
             && settings.separator_height > 0
