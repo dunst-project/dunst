@@ -488,8 +488,7 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
         else
                 height += settings.separator_height;
 
-        if (settings.frame_width > 0)
-        {
+        if (settings.frame_width > 0) {
                 cairo_set_source_rgb(c, cl->frame.r, cl->frame.g, cl->frame.b);
                 draw_rounded_rect(c, x, y, width, height, corner_radius, first, last);
                 cairo_fill(c);
