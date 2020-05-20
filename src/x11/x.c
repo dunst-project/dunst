@@ -85,7 +85,7 @@ static void x_win_move(struct window_x11 *win, int x, int y, int width, int heig
         }
 }
 
-static void x_win_round_corners(struct window_x11 *win, const int rad)
+static void x_win_corners_shape(struct window_x11 *win, const int rad)
 {
         const int width = win->dim.w;
         const int height = win->dim.h;
@@ -161,8 +161,8 @@ void x_display_surface(cairo_surface_t *srf, struct window_x11 *win, const struc
         cairo_paint(win->c_ctx);
         cairo_show_page(win->c_ctx);
 
-                x_win_round_corners(win, dim->corner_radius);
         if (settings.corner_radius != 0 && ! x_win_composited(win))
+                x_win_corners_shape(win, dim->corner_radius);
         else
                 x_win_corners_unshape(win);
 
