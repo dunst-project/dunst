@@ -34,6 +34,8 @@ struct window_x11 *win;
 
 PangoFontDescription *pango_fdesc;
 
+#define UINT_MAX_N(bits) (1 << (bits-1) | (( 1 << (bits-1) ) - 1))
+
 void draw_setup(void)
 {
         x_setup();
@@ -42,13 +44,16 @@ void draw_setup(void)
         pango_fdesc = pango_font_description_from_string(settings.font);
 }
 
-static struct color hex_to_color(uint32_t hexValue)
+static struct color hex_to_color(uint32_t hexValue, int dpc)
 {
+        const int bpc = 4 * dpc;
+        const unsigned single_max = UINT_MAX_N(bpc);
+
         struct color ret;
-        ret.r = ((hexValue >> 24) & 0xFF) / (double)0xFF;
-        ret.g = ((hexValue >> 16) & 0xFF) / (double)0xFF;
-        ret.b = ((hexValue >> 8)  & 0xFF) / (double)0xFF;
-        ret.a = ((hexValue)       & 0xFF) / (double)0xFF;
+        ret.r = ((hexValue >> 3 * bpc) & single_max) / (double)single_max;
+        ret.g = ((hexValue >> 2 * bpc) & single_max) / (double)single_max;
+        ret.b = ((hexValue >> 1 * bpc) & single_max) / (double)single_max;
+        ret.a = ((hexValue)            & single_max) / (double)single_max;
 
         return ret;
 }
@@ -62,12 +67,15 @@ static struct color string_to_color(const char *str)
         }
 
         switch (strlen(str+1)) {
-                case 6:  return hex_to_color((val << 8) | 0xFF);
-                case 8:  return hex_to_color(val);
+                case 3:  return hex_to_color((val << 4) | 0xF, 1);
+                case 6:  return hex_to_color((val << 8) | 0xFF, 2);
+                case 4:  return hex_to_color(val, 1);
+                case 8:  return hex_to_color(val, 2);
         }
 
+        /* return black on error */
         LOG_W("Invalid color string: '%s'", str);
-        return hex_to_color(0xFF);
+        return hex_to_color(0xF, 1);
 }
 
 static inline double color_apply_delta(double base, double delta)
