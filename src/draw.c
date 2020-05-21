@@ -9,6 +9,7 @@
 #include <pango/pango-layout.h>
 #include <pango/pango-types.h>
 #include <stdlib.h>
+#include <inttypes.h>
 
 #include "dunst.h"
 #include "icon.h"
@@ -41,12 +42,13 @@ void draw_setup(void)
         pango_fdesc = pango_font_description_from_string(settings.font);
 }
 
-static struct color hex_to_color(int hexValue)
+static struct color hex_to_color(uint32_t hexValue)
 {
         struct color ret;
-        ret.r = ((hexValue >> 16) & 0xFF) / 255.0;
-        ret.g = ((hexValue >> 8) & 0xFF) / 255.0;
-        ret.b = ((hexValue) & 0xFF) / 255.0;
+        ret.r = ((hexValue >> 24) & 0xFF) / (double)0xFF;
+        ret.g = ((hexValue >> 16) & 0xFF) / (double)0xFF;
+        ret.b = ((hexValue >> 8)  & 0xFF) / (double)0xFF;
+        ret.a = ((hexValue)       & 0xFF) / (double)0xFF;
 
         return ret;
 }
@@ -54,15 +56,21 @@ static struct color hex_to_color(int hexValue)
 static struct color string_to_color(const char *str)
 {
         char *end;
-        long int val = strtol(str+1, &end, 16);
+        uint32_t val = strtoul(str+1, &end, 16);
         if (*end != '\0' && *(end+1) != '\0') {
                 LOG_W("Invalid color string: '%s'", str);
         }
 
-        return hex_to_color(val);
+        switch (strlen(str+1)) {
+                case 6:  return hex_to_color((val << 8) | 0xFF);
+                case 8:  return hex_to_color(val);
+        }
+
+        LOG_W("Invalid color string: '%s'", str);
+        return hex_to_color(0xFF);
 }
 
-static double color_apply_delta(double base, double delta)
+static inline double color_apply_delta(double base, double delta)
 {
         base += delta;
         if (base > 1)
@@ -514,12 +522,12 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
                 radius_int = frame_internal_radius (corner_radius, settings.frame_width, height);
 
                 draw_rounded_rect(c, x, y, width, height, radius_int, first, last);
-                cairo_set_source_rgb(c, cl->frame.r, cl->frame.g, cl->frame.b);
+                cairo_set_source_rgba(c, cl->frame.r, cl->frame.g, cl->frame.b, cl->frame.a);
                 cairo_fill(c);
         }
 
         draw_rounded_rect(c, x, y, width, height, radius_int, first, last);
-        cairo_set_source_rgb(c, cl->bg.r, cl->bg.g, cl->bg.b);
+        cairo_set_source_rgba(c, cl->bg.r, cl->bg.g, cl->bg.b, cl->bg.a);
         cairo_fill(c);
 
         cairo_set_operator(c, CAIRO_OPERATOR_OVER);
@@ -528,7 +536,7 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
             && settings.separator_height > 0
             && !last) {
                 struct color sep_color = layout_get_sepcolor(cl, cl_next);
-                cairo_set_source_rgb(c, sep_color.r, sep_color.g, sep_color.b);
+                cairo_set_source_rgba(c, sep_color.r, sep_color.g, sep_color.b, sep_color.a);
 
                 cairo_rectangle(c, settings.frame_width, y + height, width, settings.separator_height);
 
@@ -570,7 +578,7 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width)
         }
         cairo_move_to(c, text_x, text_y);
 
-        cairo_set_source_rgb(c, cl->fg.r, cl->fg.g, cl->fg.b);
+        cairo_set_source_rgba(c, cl->fg.r, cl->fg.g, cl->fg.b, cl->fg.a);
         pango_cairo_update_layout(c, cl->l);
         pango_cairo_show_layout(c, cl->l);
 
