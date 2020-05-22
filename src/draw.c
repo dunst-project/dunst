@@ -581,7 +581,7 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
         cairo_set_source_rgba(c, cl->bg.r, cl->bg.g, cl->bg.b, cl->bg.a);
         cairo_fill(c);
 
-        cairo_set_operator(c, CAIRO_OPERATOR_OVER);
+        cairo_set_operator(c, CAIRO_OPERATOR_SOURCE);
 
         if (   settings.sep_color.type != SEP_FRAME
             && settings.separator_height > 0
