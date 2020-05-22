@@ -59,37 +59,61 @@ static struct color hex_to_color(uintmax_t hexValue, int dpc)
         return ret;
 }
 
+static inline void color_clip(struct color * c)
+{
+        if (c->r > 1.0) c->r = 1.0;
+        if (c->g > 1.0) c->g = 1.0;
+        if (c->b > 1.0) c->b = 1.0;
+        if (c->a > 1.0) c->a = 1.0;
+}
+
 static struct color string_to_color(const char *str)
 {
-        uintmax_t val;
-        unsigned clen;
+        if (str[0] == '#') {
+                uintmax_t val;
+                unsigned clen;
+                {
+                        int cn;
+
+                        /* accept 3 or 4 equal components */ {
+                                char *end;
+                                val = strtoumax(str+1, &end, 16);
+                                if (errno == ERANGE || (end[0] != '\0' && end[1] != '\0'))
+                                        goto err;
+
+                                const int len = (end - (str+1));
+                                if      (len % 3 == 0) cn = 3;
+                                else if (len % 4 == 0) cn = 4;
+                                else    goto err;
+                                clen = len / cn;
+                        }
+                        /* component length must be 2^n */ {
+                                unsigned mask = 1;
+                                while(mask < clen) mask <<= 1;
+                                if  (mask != clen) goto err;
+                        }
+                        /* turn 3-component to opaque 4-components */ {
+                                const unsigned csize = clen * 4;
+                                if (cn == 3)
+                                        val = (val << csize) | UINT_MAX_N(csize);
+                        }
+                }
+                return hex_to_color(val, clen);
+        }
+
+        /* rgba(fp, fp, fp, fp) */
         {
-                int cn;
-
-                /* accept 3 or 4 equal components */ {
-                        char *end;
-                        val = strtoumax(str+1, &end, 16);
-                        if (errno == ERANGE || (end[0] != '\0' && end[1] != '\0'))
-                                goto err;
-
-                        const int len = (end - (str+1));
-                        if      (len % 3 == 0) cn = 3;
-                        else if (len % 4 == 0) cn = 4;
-                        else    goto err;
-                        clen = len / cn;
+                struct color col;
+                if (sscanf(str, "rgba ( %lf , %lf , %lf , %lf )", &col.r, &col.g, &col.b, &col.a) == 4) {
+                        color_clip(&col);
+                        return col;
                 }
-                /* component length must be 2^n */ {
-                        unsigned mask = 1;
-                        while(mask < clen) mask <<= 1;
-                        if  (mask != clen) goto err;
-                }
-                /* turn 3-component to opaque 4-components */ {
-                        const unsigned csize = clen * 4;
-                        if (cn == 3)
-                                val = (val << csize) | UINT_MAX_N(csize);
+                if (sscanf(str, "rgb ( %lf , %lf , %lf )", &col.r, &col.g, &col.b) == 3) {
+                        color_clip(&col);
+                        col.a = 1.0;
+                        return col;
                 }
         }
-        return hex_to_color(val, clen);
 
         /* return black on error */
         err:
