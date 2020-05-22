@@ -388,12 +388,35 @@ static int layout_get_height(struct colored_layout *cl)
         return MAX(h, h_icon);
 }
 
+/* Attempt to make internal radius more organic.
+ * Simple r-w is not enough for too small r/w ratio.
+ * simplifications: r/2 == r - w + w*w / (r * 2) with (w == r)
+ * r, w - corner radius & frame width,
+ * h  - box height
+ */
+static int frame_internal_radius (int r, int w, int h)
+{
+        // Integer precision scaler, using 1/4 of int size
+        const int s = 2 << (8 * sizeof(int) / 4);
+
+        int r1, r2, ret;
+        h *= s;
+        r *= s;
+        w *= s;
+        r1 = r - w + w * w / (r * 2);    // w  <  r
+        r2 = r * h / (h + (w - r) * 2);  // w  >= r
+
+        ret = (r > w) ? r1 : (r / 2 < r2) ? r / 2 : r2;
+
+        return ret / s;
+}
+
 /**
  * Create a path on the given cairo context to draw the background of a notification.
  * The top corners will get rounded by `corner_radius`, if `first` is set.
  * Respectably the same for `last` with the bottom corners.
  */
-static void draw_rounded_rect(cairo_t *c, int x, int y, int width, int height, int corner_radius, bool first, bool last)
+void draw_rounded_rect(cairo_t *c, int x, int y, int width, int height, int corner_radius, bool first, bool last)
 {
         const float degrees = M_PI / 180.0;
 
@@ -454,6 +477,7 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
                                           int *ret_width)
 {
         int x = 0;
+        int radius_int = corner_radius;
 
         cairo_t *c = cairo_create(srf);
 
@@ -464,26 +488,31 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
         else
                 height += settings.separator_height;
 
-        cairo_set_source_rgb(c, cl->frame.r, cl->frame.g, cl->frame.b);
-        draw_rounded_rect(c, x, y, width, height, corner_radius, first, last);
-        cairo_fill(c);
+        if (settings.frame_width > 0)
+        {
+                cairo_set_source_rgb(c, cl->frame.r, cl->frame.g, cl->frame.b);
+                draw_rounded_rect(c, x, y, width, height, corner_radius, first, last);
+                cairo_fill(c);
 
-        /* adding frame */
-        x += settings.frame_width;
-        if (first) {
-                y += settings.frame_width;
-                height -= settings.frame_width;
+                /* adding frame */
+                x += settings.frame_width;
+                if (first) {
+                        y += settings.frame_width;
+                        height -= settings.frame_width;
+                }
+
+                width -= 2 * settings.frame_width;
+
+                if (last)
+                        height -= settings.frame_width;
+                else
+                        height -= settings.separator_height;
+
+                radius_int = frame_internal_radius (corner_radius, settings.frame_width, height);
         }
 
-        width -= 2 * settings.frame_width;
-
-        if (last)
-                height -= settings.frame_width;
-        else
-                height -= settings.separator_height;
-
         cairo_set_source_rgb(c, cl->bg.r, cl->bg.g, cl->bg.b);
-        draw_rounded_rect(c, x, y, width, height, corner_radius, first, last);
+        draw_rounded_rect(c, x, y, width, height, radius_int, first, last);
         cairo_fill(c);
 
         if (   settings.sep_color.type != SEP_FRAME

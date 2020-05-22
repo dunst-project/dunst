@@ -8,6 +8,8 @@ void draw_setup(void);
 
 void draw(void);
 
+void draw_rounded_rect(cairo_t *c, int x, int y, int width, int height, int corner_radius, bool first, bool last);
+
 void draw_deinit(void);
 
 #endif

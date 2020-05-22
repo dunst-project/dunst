@@ -85,71 +85,68 @@ static void x_win_move(struct window_x11 *win, int x, int y, int width, int heig
         }
 }
 
-static void x_win_round_corners(struct window_x11 *win, const int rad)
+static void x_win_corners_shape(struct window_x11 *win, const int rad)
 {
         const int width = win->dim.w;
         const int height = win->dim.h;
-        const int dia = 2 * rad;
-        const int degrees = 64; // the factor to convert degrees to XFillArc's angle param
 
-        Pixmap mask = XCreatePixmap(xctx.dpy, win->xwin, width, height, 1);
-        XGCValues xgcv;
+        Pixmap mask;
+        cairo_surface_t * cxbm;
+        cairo_t * cr;
+        Screen * scr;
 
-        GC shape_gc = XCreateGC(xctx.dpy, mask, 0, &xgcv);
+        mask = XCreatePixmap(xctx.dpy, win->xwin, width, height, 1);
+        scr = ScreenOfDisplay(xctx.dpy, win->cur_screen);
+        cxbm = cairo_xlib_surface_create_for_bitmap(xctx.dpy, mask, scr, width, height);
+        cr = cairo_create(cxbm);
 
-        XSetForeground(xctx.dpy, shape_gc, 0);
-        XFillRectangle(xctx.dpy,
-                       mask,
-                       shape_gc,
-                       0,
-                       0,
-                       width,
-                       height);
+        cairo_set_antialias(cr, CAIRO_ANTIALIAS_NONE);
+        cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 
-        XSetForeground(xctx.dpy, shape_gc, 1);
+        cairo_set_source_rgba(cr, 0, 0, 0, 0);
+        cairo_paint(cr);
+        cairo_set_source_rgba(cr, 1, 1, 1, 1);
 
-        /* To mark all pixels, which should get exposed, we
-         * use a circle for every corner and two overlapping rectangles */
-        unsigned const int centercoords[] = {
-                0,               0,
-                width - dia - 1, 0,
-                0,               height - dia - 1,
-                width - dia - 1, height - dia - 1,
-        };
+        draw_rounded_rect(cr, 0, 0,
+                          width, height,
+                          rad,
+                          true, true);
+        cairo_fill(cr);
 
-        for (int i = 0; i < sizeof(centercoords)/sizeof(unsigned int); i = i+2) {
-                XFillArc(xctx.dpy,
-                         mask,
-                         shape_gc,
-                         centercoords[i],
-                         centercoords[i+1],
-                         dia,
-                         dia,
-                         degrees * 0,
-                         degrees * 360);
-        }
-        XFillRectangle(xctx.dpy,
-                       mask,
-                       shape_gc,
-                       rad,
-                       0,
-                       width-dia,
-                       height);
-        XFillRectangle(xctx.dpy,
-                       mask,
-                       shape_gc,
-                       0,
-                       rad,
-                       width,
-                       height-dia);
+        cairo_show_page(cr);
+        cairo_destroy(cr);
+        cairo_surface_flush(cxbm);
+        cairo_surface_destroy(cxbm);
 
         XShapeCombineMask(xctx.dpy, win->xwin, ShapeBounding, 0, 0, mask, ShapeSet);
 
-        XFreeGC(xctx.dpy, shape_gc);
         XFreePixmap(xctx.dpy, mask);
 
         XShapeSelectInput(xctx.dpy,
                 win->xwin, ShapeNotifyMask);
+}
+
+static void x_win_corners_unshape(struct window_x11 *win)
+{
+        XRectangle rect = {
+                .x = 0,
+                .y = 0,
+                .width = win->dim.w,
+                .height = win->dim.h };
+        XShapeCombineRectangles(xctx.dpy, win->xwin, ShapeBounding, 0, 0, &rect, 1, ShapeSet, 1);
+        XShapeSelectInput(xctx.dpy,
+                win->xwin, ShapeNotifyMask);
+}
+
+static bool x_win_composited(struct window_x11 *win)
+{
+        char astr[sizeof("_NET_WM_CM_S") / sizeof(char) + 8];
+        Atom cm_sel;
+
+        sprintf(astr, "_NET_WM_CM_S%i", win->cur_screen);
+        cm_sel = XInternAtom(xctx.dpy, astr, true);
+
+        return XGetSelectionOwner(xctx.dpy, cm_sel) != None;
 }
 
 void x_display_surface(cairo_surface_t *srf, struct window_x11 *win, const struct dimensions *dim)
@@ -157,12 +154,17 @@ void x_display_surface(cairo_surface_t *srf, struct window_x11 *win, const struc
         x_win_move(win, dim->x, dim->y, dim->w, dim->h);
         cairo_xlib_surface_set_size(win->root_surface, dim->w, dim->h);
 
+        XClearWindow(xctx.dpy, win->xwin);
+        XFlush(xctx.dpy);
+
         cairo_set_source_surface(win->c_ctx, srf, 0, 0);
         cairo_paint(win->c_ctx);
         cairo_show_page(win->c_ctx);
 
-        if (settings.corner_radius != 0)
-                x_win_round_corners(win, dim->corner_radius);
+        if (settings.corner_radius != 0 && ! x_win_composited(win))
+                x_win_corners_shape(win, dim->corner_radius);
+        else
+                x_win_corners_unshape(win);
 
         XFlush(xctx.dpy);
 
@@ -641,12 +643,27 @@ struct window_x11 *x_win_create(void)
         struct window_x11 *win = g_malloc0(sizeof(struct window_x11));
 
         Window root;
+        int scr_n;
+        int depth;
+        Visual * vis;
+        XVisualInfo vi;
         XSetWindowAttributes wa;
 
-        root = RootWindow(xctx.dpy, DefaultScreen(xctx.dpy));
+        scr_n = DefaultScreen(xctx.dpy);
+        root = RootWindow(xctx.dpy, scr_n);
+        if (XMatchVisualInfo(xctx.dpy, scr_n, 32, TrueColor, &vi)) {
+                vis  = vi.visual;
+                depth = vi.depth;
+        } else {
+                vis = DefaultVisual(xctx.dpy, scr_n);
+                depth = DefaultDepth(xctx.dpy, scr_n);
+        }
 
         wa.override_redirect = true;
-        wa.background_pixmap = ParentRelative;
+        wa.background_pixmap = None;
+        wa.background_pixel = 0;
+        wa.border_pixel = 0;
+        wa.colormap = XCreateColormap(xctx.dpy, root, vis, AllocNone);
         wa.event_mask =
             ExposureMask | KeyPressMask | VisibilityChangeMask |
             ButtonReleaseMask | FocusChangeMask| StructureNotifyMask;
@@ -659,10 +676,10 @@ struct window_x11 *x_win_create(void)
                                  scr->w,
                                  1,
                                  0,
-                                 DefaultDepth(xctx.dpy, DefaultScreen(xctx.dpy)),
+                                 depth,
                                  CopyFromParent,
-                                 DefaultVisual(xctx.dpy, DefaultScreen(xctx.dpy)),
-                                 CWOverrideRedirect | CWBackPixmap | CWEventMask,
+                                 vis,
+                                 CWOverrideRedirect | CWBackPixmap | CWBackPixel | CWBorderPixel | CWColormap | CWEventMask,
                                  &wa);
 
         x_set_wm(win->xwin);
@@ -673,7 +690,7 @@ struct window_x11 *x_win_create(void)
                                    (0xffffffff / 100)));
 
         win->root_surface = cairo_xlib_surface_create(xctx.dpy, win->xwin,
-                                                      DefaultVisual(xctx.dpy, 0),
+                                                      vis,
                                                       WIDTH, HEIGHT);
         win->c_ctx = cairo_create(win->root_surface);
 
