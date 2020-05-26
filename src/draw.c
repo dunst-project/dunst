@@ -10,7 +10,6 @@
 #include <pango/pango-types.h>
 #include <stdlib.h>
 #include <inttypes.h>
-#include <errno.h>
 
 #include "dunst.h"
 #include "icon.h"
@@ -45,7 +44,7 @@ void draw_setup(void)
         pango_fdesc = pango_font_description_from_string(settings.font);
 }
 
-static struct color hex_to_color(uintmax_t hexValue, int dpc)
+static struct color hex_to_color(uint32_t hexValue, int dpc)
 {
         const int bpc = 4 * dpc;
         const unsigned single_max = UINT_MAX_N(bpc);
@@ -61,38 +60,20 @@ static struct color hex_to_color(uintmax_t hexValue, int dpc)
 
 static struct color string_to_color(const char *str)
 {
-        uintmax_t val;
-        unsigned clen;
-        {
-                int cn;
-
-                /* accept 3 or 4 equal components */ {
-                        char *end;
-                        val = strtoumax(str+1, &end, 16);
-                        if (errno == ERANGE || (end[0] != '\0' && end[1] != '\0'))
-                                goto err;
-
-                        const int len = (end - (str+1));
-                        if      (len % 3 == 0) cn = 3;
-                        else if (len % 4 == 0) cn = 4;
-                        else    goto err;
-                        clen = len / cn;
-                }
-                /* component length must be 2^n */ {
-                        unsigned mask = 1;
-                        while(mask < clen) mask <<= 1;
-                        if  (mask != clen) goto err;
-                }
-                /* turn 3-component to opaque 4-components */ {
-                        const unsigned csize = clen * 4;
-                        if (cn == 3)
-                                val = (val << csize) | UINT_MAX_N(csize);
-                }
+        char *end;
+        uint32_t val = strtoul(str+1, &end, 16);
+        if (*end != '\0' && *(end+1) != '\0') {
+                LOG_W("Invalid color string: '%s'", str);
         }
-        return hex_to_color(val, clen);
+
+        switch (strlen(str+1)) {
+                case 3:  return hex_to_color((val << 4) | 0xF, 1);
+                case 6:  return hex_to_color((val << 8) | 0xFF, 2);
+                case 4:  return hex_to_color(val, 1);
+                case 8:  return hex_to_color(val, 2);
+        }
 
         /* return black on error */
-        err:
         LOG_W("Invalid color string: '%s'", str);
         return hex_to_color(0xF, 1);
 }
