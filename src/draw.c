@@ -35,7 +35,7 @@ struct window_x11 *win;
 
 PangoFontDescription *pango_fdesc;
 
-#define UINT_MAX_N(bits) (1 << (bits-1) | (( 1 << (bits-1) ) - 1))
+#define UINT_MAX_N(bits) ((1 << bits) - 1)
 
 void draw_setup(void)
 {
