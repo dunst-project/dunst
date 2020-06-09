@@ -821,6 +821,8 @@ Colors are interpreted as X11 color values. This includes both verbatim
 color names such as "Yellow", "Blue", "White", etc as well as #RGB and #RRGGBB
 values.
 
+You may also specify a transparency component in #RGBA or #RRGGBBAA format.
+
 B<NOTE>: '#' is interpreted as a comment, to use it the entire value needs to
 be in quotes like so: separator_color="#123456"
 
