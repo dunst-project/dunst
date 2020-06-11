@@ -200,7 +200,7 @@ GdkPixbuf *get_pixbuf_from_icon(const char *iconname)
         if (STR_EMPTY(iconname))
                 return NULL;
 
-        const char *suffixes[] = { ".svg", ".png", ".xpm", NULL };
+        const char *suffixes[] = { ".svg", ".svgz", ".png", ".xpm", NULL };
         GdkPixbuf *pixbuf = NULL;
         gchar *uri_path = NULL;
 
