@@ -224,10 +224,9 @@ static void dbus_cb_dunst_NotificationAction(GDBusConnection *connection,
                 return;
         }
 
-        const GList *list = g_list_nth_data(queues_get_displayed(), notification_nr);
+        struct notification *n = g_list_nth_data(queues_get_displayed(), notification_nr);
 
-        if (list && list->data) {
-                struct notification *n = list->data;
+        if (n) {
                 LOG_D("CMD: Calling action for notification %s", n->summary);
                 notification_do_action(n);
         }
