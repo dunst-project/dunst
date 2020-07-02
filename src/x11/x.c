@@ -154,6 +154,8 @@ void x_display_surface(cairo_surface_t *srf, struct window_x11 *win, const struc
         x_win_move(win, dim->x, dim->y, dim->w, dim->h);
         cairo_xlib_surface_set_size(win->root_surface, dim->w, dim->h);
 
+        XClearWindow(xctx.dpy, win->xwin);
+
         cairo_set_source_surface(win->c_ctx, srf, 0, 0);
         cairo_paint(win->c_ctx);
         cairo_show_page(win->c_ctx);
