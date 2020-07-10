@@ -59,6 +59,7 @@ struct settings {
         int history_length;
         int show_indicators;
         int word_wrap;
+        int ignore_dbusclose;
         enum ellipsize ellipsize;
         int ignore_newline;
         int line_height;
