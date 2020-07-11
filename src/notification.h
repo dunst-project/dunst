@@ -62,7 +62,8 @@ struct notification {
 
         enum markup_mode markup;
         const char *format;
-        const char *script;
+        const char **scripts;
+        int script_count;
         struct notification_colors colors;
 
         char *stack_tag;    /**< stack notifications by tag */
@@ -79,7 +80,7 @@ struct notification {
         int dup_count;          /**< amount of duplicate notifications stacked onto this */
         int displayed_height;
         enum behavior_fullscreen fullscreen; //!< The instruction what to do with it, when desktop enters fullscreen
-        bool script_run;        /**< Has the script been executed already? */
+        bool *script_run;        /**< Has the script been executed already? */
 
         /* derived fields */
         char *msg;            /**< formatted message */
