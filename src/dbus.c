@@ -495,6 +495,7 @@ static void dbus_cb_CloseNotification(
         guint32 id;
         g_variant_get(parameters, "(u)", &id);
         if (settings.ignore_dbusclose) {
+                LOG_D("Ignoring CloseNotification message");
                 // Stay commpliant by lying to the sender,  telling him we closed the notification 
                 if (id > 0) {
                         struct notification *n = queues_get_by_id(id);
