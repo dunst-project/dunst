@@ -146,7 +146,11 @@ static bool x_win_composited(struct window_x11 *win)
         sprintf(astr, "_NET_WM_CM_S%i", win->cur_screen);
         cm_sel = XInternAtom(xctx.dpy, astr, true);
 
-        return XGetSelectionOwner(xctx.dpy, cm_sel) != None;
+        if (cm_sel == None) {
+                return false;
+        } else {
+                return XGetSelectionOwner(xctx.dpy, cm_sel) != None;
+        }
 }
 
 void x_display_surface(cairo_surface_t *srf, struct window_x11 *win, const struct dimensions *dim)
