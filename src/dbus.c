@@ -494,8 +494,16 @@ static void dbus_cb_CloseNotification(
 {
         guint32 id;
         g_variant_get(parameters, "(u)", &id);
-        if (!settings.ignore_dbusclose) 
+        if (settings.ignore_dbusclose) {
+                // Stay commpliant by lying to the sender,  telling him we closed the notification 
+                if (id > 0) {
+                        struct notification *n = queues_get_by_id(id);
+                        if (n) 
+                                signal_notification_closed(n, REASON_SIG);
+                }
+        } else {
                 queues_notification_close_id(id, REASON_SIG);
+        }
         wake_up();
         g_dbus_method_invocation_return_value(invocation, NULL);
         g_dbus_connection_flush(connection, NULL, NULL, NULL);

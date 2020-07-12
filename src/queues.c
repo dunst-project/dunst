@@ -506,6 +506,27 @@ gint64 queues_get_next_datachange(gint64 time)
         return sleep != G_MAXINT64 ? sleep : -1;
 }
 
+
+
+
+/* see queues.h */
+struct notification* queues_get_by_id(int id)
+{
+        assert(id > 0);
+
+        GQueue *recqueues[] = { displayed, waiting, history };
+        for (int i = 0; i < sizeof(recqueues)/sizeof(GQueue*); i++) {
+                for (GList *iter = g_queue_peek_head_link(recqueues[i]); iter;
+                     iter = iter->next) {
+                        struct notification *cur = iter->data;
+                        if (cur->id == id)
+                                return cur;
+                }
+        }
+
+        return NULL;
+}
+
 /**
  * Helper function for queues_teardown() to free a single notification
  *
@@ -527,4 +548,6 @@ void queues_teardown(void)
         g_queue_free_full(waiting, teardown_notification);
         waiting = NULL;
 }
+
+
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

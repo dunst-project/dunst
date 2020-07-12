@@ -146,6 +146,17 @@ void queues_update(struct dunst_status status);
 gint64 queues_get_next_datachange(gint64 time);
 
 /**
+ * Get the notification which has the given id in the displayed and waiting queue or
+ * NULL if not found
+ *
+ * @param the id searched for.
+ *
+ * @return the `id` notification  or NULL
+ */
+struct notification* queues_get_by_id(int id);
+
+
+/**
  * Remove all notifications from all list and free the notifications
  *
  * @pre At least one time queues_init() called
