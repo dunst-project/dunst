@@ -515,6 +515,13 @@ Close all notifications.
 
 =back
 
+
+=item B<ignore_dbusclose> (default: false)
+
+Ignore the dbus closeNotification message. This is useful to enforce the timeout
+set by dunst configuration. Without this parameter, an application may close
+the notification sent before the user defined timeout.
+
 =back
 
 =head2 Shortcut section B<DEPRECATED SEE DUNSTCTL>
