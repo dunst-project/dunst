@@ -525,8 +525,6 @@ static void dbus_cb_GetServerInformation(
 void signal_notification_closed(struct notification *n, enum reason reason)
 {
         if (!n->dbus_valid) {
-                LOG_W("Closing notification '%s' not supported. "
-                      "Notification already closed.", n->summary);
                 return;
         }
 
