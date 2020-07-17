@@ -494,7 +494,17 @@ static void dbus_cb_CloseNotification(
 {
         guint32 id;
         g_variant_get(parameters, "(u)", &id);
-        queues_notification_close_id(id, REASON_SIG);
+        if (settings.ignore_dbusclose) {
+                LOG_D("Ignoring CloseNotification message");
+                // Stay commpliant by lying to the sender,  telling him we closed the notification 
+                if (id > 0) {
+                        struct notification *n = queues_get_by_id(id);
+                        if (n) 
+                                signal_notification_closed(n, REASON_SIG);
+                }
+        } else {
+                queues_notification_close_id(id, REASON_SIG);
+        }
         wake_up();
         g_dbus_method_invocation_return_value(invocation, NULL);
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
@@ -515,8 +525,6 @@ static void dbus_cb_GetServerInformation(
 void signal_notification_closed(struct notification *n, enum reason reason)
 {
         if (!n->dbus_valid) {
-                LOG_W("Closing notification '%s' not supported. "
-                      "Notification already closed.", n->summary);
                 return;
         }
 

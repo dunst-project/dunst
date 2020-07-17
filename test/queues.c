@@ -740,6 +740,29 @@ TEST test_queues_timeout_before_paused(void)
         PASS();
 }
 
+TEST test_queue_find_by_id(void)
+{
+        struct notification *n;
+        int id;
+        queues_init();
+
+        n = test_notification("n", 0);
+        queues_notification_insert(n);
+        n = test_notification("n1", 0);
+        queues_notification_insert(n);
+        id = n->id;
+        n = test_notification("n2", 0);
+        queues_notification_insert(n);
+
+        n = queues_get_by_id(id);
+
+        ASSERT(n->id == id);
+        ASSERT(!strncmp(n->summary, "n1", 2));
+
+        queues_teardown();
+        PASS();
+}
+
 SUITE(suite_queues)
 {
         settings.icon_path = "";
@@ -770,6 +793,7 @@ SUITE(suite_queues)
         RUN_TEST(test_queues_update_seeping);
         RUN_TEST(test_queues_update_xmore);
         RUN_TEST(test_queues_timeout_before_paused);
+        RUN_TEST(test_queue_find_by_id);
 
         settings.icon_path = NULL;
 }

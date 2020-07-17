@@ -38,6 +38,7 @@ struct settings defaults = {
 .history_length = 20,        /* max amount of notifications kept in history */
 .show_indicators = true,
 .word_wrap = false,
+.ignore_dbusclose = false,
 .ellipsize = ELLIPSE_MIDDLE,
 .ignore_newline = false,
 .line_height = 0,            /* if line height < font height, it will be raised to font height */

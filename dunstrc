@@ -224,6 +224,12 @@
     # notification height to avoid clipping text and/or icons.
     corner_radius = 0
 
+    # Ignore the dbus closeNotification message.
+    # Useful to enforce the timeout set by dunst configuration. Without this
+    # parameter, an application may close the notification sent before the 
+    # user defined timeout.
+    ignore_dbusclose = false
+
     ### Legacy
 
     # Use the Xinerama extension instead of RandR for multi-monitor support.

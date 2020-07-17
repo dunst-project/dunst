@@ -176,6 +176,11 @@ void load_settings(char *cmdline_config_path)
                 "word_wrap", "-word_wrap", defaults.word_wrap,
                 "Truncating long lines or do word wrap"
         );
+        settings.ignore_dbusclose = option_get_bool(
+                "global",
+                "ignore_dbusclose", "-ignore_dbusclose", defaults.ignore_dbusclose,
+                "Ignore dbus CloseNotification events"
+        );
 
         {
                 char *c = option_get_string(
