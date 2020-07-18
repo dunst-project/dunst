@@ -412,6 +412,9 @@ static int layout_get_height(struct colored_layout *cl)
  */
 static int frame_internal_radius (int r, int w, int h)
 {
+        if (r == 0 || w == 0 || h == 0)
+                return 0;
+
         // Integer precision scaler, using 1/4 of int size
         const int s = 2 << (8 * sizeof(int) / 4);
 
@@ -526,7 +529,7 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
         else
                 height -= settings.separator_height;
 
-        radius_int = frame_internal_radius (corner_radius, settings.frame_width, height);
+        radius_int = frame_internal_radius(corner_radius, settings.frame_width, height);
 
         draw_rounded_rect(c, x, y, width, height, radius_int, first, last);
         cairo_set_source_rgba(c, cl->frame.r, cl->frame.g, cl->frame.b, cl->frame.a);
