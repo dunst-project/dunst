@@ -44,8 +44,12 @@ void rule_apply(struct rule *r, struct notification *n)
         }
         if (r->format)
                 n->format = r->format;
-        if (r->script)
-                n->script = r->script;
+        if (r->script){
+                n->scripts = g_renew(const char*,n->scripts,n->script_count + 1);
+                n->scripts[n->script_count] = r->script;
+
+                n->script_count++;
+        }
         if (r->set_stack_tag) {
                 g_free(n->stack_tag);
                 n->stack_tag = g_strdup(r->set_stack_tag);

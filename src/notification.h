@@ -62,7 +62,8 @@ struct notification {
 
         enum markup_mode markup;
         const char *format;
-        const char *script;
+        const char **scripts;
+        int script_count;
         struct notification_colors colors;
 
         char *stack_tag;    /**< stack notifications by tag */
