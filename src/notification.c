@@ -102,6 +102,11 @@ void notification_print(const struct notification *n)
 /* see notification.h */
 void notification_run_script(struct notification *n)
 {
+        if (n->script_run && !settings.always_run_script)
+                return;
+
+        n->script_run = true;
+
         const char *appname = n->appname ? n->appname : "";
         const char *summary = n->summary ? n->summary : "";
         const char *body = n->body ? n->body : "";
@@ -111,15 +116,10 @@ void notification_run_script(struct notification *n)
 
         for(int i = 0; i < n->script_count; i++) {
 
-                if(n->script_run[i] && !settings.always_run_script)
-                        continue;
-
                 const char *script = n->scripts[i];
 
                 if (STR_EMPTY(script))
                         continue;
-
-                n->script_run[i] = true;
 
                 int pid1 = fork();
 
@@ -250,7 +250,6 @@ void notification_unref(struct notification *n)
 
         if (n->script_count > 0){
                 g_free(n->scripts);
-                g_free(n->script_run);
         }
 
         g_free(n);
@@ -334,6 +333,7 @@ struct notification *notification_create(void)
         n->transient = false;
         n->progress = -1;
 
+        n->script_run = false;
         n->dbus_valid = false;
 
         n->fullscreen = FS_SHOW;

@@ -48,9 +48,6 @@ void rule_apply(struct rule *r, struct notification *n)
                 n->scripts = g_renew(const char*,n->scripts,n->script_count + 1);
                 n->scripts[n->script_count] = r->script;
 
-                n->script_run = g_renew(bool,n->script_run,n->script_count + 1);
-                n->script_run[n->script_count] = false;
-
                 n->script_count++;
         }
         if (r->set_stack_tag) {
