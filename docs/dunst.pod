@@ -739,7 +739,7 @@ The frame color color of the notification. See COLORS for possible values.
 
 One of show, delay, or pushback.
 
-This attribute speicifies how notifications are handled if a fullscreen window
+This attribute specifies how notifications are handled if a fullscreen window
 is focused. By default it's set to show so notifications are being shown.
 
 Other possible values are delay: Already shown notifications are continued to be
