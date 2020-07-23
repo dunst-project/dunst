@@ -1,9 +1,25 @@
 # Dunst changelog
 
-## Unreleased
+## 1.5.0 - 2020-07-23
 
 ### Added
+- `min_icon_size` option to automatically scale up icons to a desired value (#674)
+- `vertical_alignment` option to control the text/icon alignment within the notification (#684)
+- Ability to configure multiple actions for each mouse event (#705)
+- `dunstctl` command line control client (#651)
+- RGBA support for all color strings (#717)
+- Ability to run multiple scripts for each notification
+- `ignore_dbusclose` setting (#732)
+
+### Changed
+- `dunstify` notification client is now installed by default (#701)
+- Keyboard follow mode falls back to the monitor with the mouse if no window has keyboard focus (#708)
+
 ### Fixed
+- Overflow when setting a >=40 minute timeout (#646)
+- Unset configuration options not falling back to default values (#649)
+- Crash when `$HOME` environment variable is unset (#693)
+- Lack of antialiasing with round corners enabled (#713)
 
 ## 1.4.1 - 2019-07-03
 
