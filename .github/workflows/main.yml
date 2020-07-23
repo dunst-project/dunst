@@ -41,7 +41,7 @@ jobs:
     # With git<2.18 it downloads the code via API and does not clone it via git :facepalm:
     # To succeed the tests, we have to manually replace the VERSION macro
     - name: fix version number for old distros
-      run: 'sed -i "s/1.4.1-non-git/1.4.1-ci-oldgit-$GITHUB_SHA/" Makefile'
+      run: 'sed -i "s/-non-git/-ci-oldgit-$GITHUB_SHA/" Makefile'
       if: "  (matrix.distro == 'ubuntu-bionic' || matrix.distro == 'ubuntu-xenial' || matrix.distro == 'debian-stretch')"
 
     - name: build
