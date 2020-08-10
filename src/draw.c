@@ -412,7 +412,7 @@ static int layout_get_height(struct colored_layout *cl)
  */
 static int frame_internal_radius (int r, int w, int h)
 {
-        if (r == 0 || w == 0 || h == 0)
+        if (r == 0 || h + (w - r) * 2 == 0)
                 return 0;
 
         // Integer precision scaler, using 1/4 of int size
