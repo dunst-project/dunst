@@ -78,7 +78,7 @@ struct rule *rule_new(void)
         r->urgency = URG_NONE;
         r->fullscreen = FS_NULL;
         r->markup = MARKUP_NULL;
-        r->history_ignore = -1;
+        r->history_ignore = false;
         r->match_transient = -1;
         r->set_transient = -1;
         r->skip_display = -1;

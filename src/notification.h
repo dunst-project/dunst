@@ -41,15 +41,18 @@ struct notification {
         char *dbus_client;
         bool dbus_valid;
 
-        char *appname;
-        char *summary;
-        char *body;
-        char *category;
+        char *appname; // nothing in both
+        char *summary;  // some random number
+        char *body; // notification detail
+        char *category; // dbus request type
         char *desktop_entry;     /**< The desktop entry hint sent via every GApplication */
         enum urgency urgency;
 
         GdkPixbuf *icon;         /**< The raw cached icon data used to draw */
+        GdkPixbuf *identity_icon;         /**< The raw cached identity icon data used to draw */
         char *icon_id;           /**< plain icon information, which acts as the pixbuf's id, which is saved in .icon
+                                      May be a hash for a raw icon or a name/path for a regular app icon. */
+        char *identity_icon_id;           /**< plain identity icon information, which acts as the pixbuf's id, which is saved in .icon
                                       May be a hash for a raw icon or a name/path for a regular app icon. */
         char *iconname;          /**< plain icon information (may be a path or just a name)
                                       Use this to compare the icon name with rules.*/
@@ -86,6 +89,7 @@ struct notification {
         char *msg;            /**< formatted message */
         char *text_to_render; /**< formatted message (with age and action indicators) */
         char *urls;           /**< urllist delimited by '\\n' */
+        char *elapsed_time;    /** <elapsed time for notification> */
 };
 
 /**
@@ -146,6 +150,8 @@ bool notification_is_duplicate(const struct notification *a, const struct notifi
  * @param n the notification to replace the icon
  * @param new_icon The path of the new icon. May be an absolute path or an icon name.
  */
+void notification_identity_icon_replace_path(struct notification *n, const char *new_icon);
+
 void notification_icon_replace_path(struct notification *n, const char *new_icon);
 
 /**Replace the current notification's icon with the raw icon given in the GVariant.

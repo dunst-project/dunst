@@ -244,7 +244,10 @@ void notification_unref(struct notification *n)
 
         if (n->icon)
                 g_object_unref(n->icon);
+        if (n->identity_icon)
+                g_object_unref(n->identity_icon);
         g_free(n->icon_id);
+        g_free(n->identity_icon_id);
 
         notification_private_free(n->priv);
 
@@ -268,6 +271,20 @@ void notification_icon_replace_path(struct notification *n, const char *new_icon
         g_clear_pointer(&n->icon_id, g_free);
 
         n->icon = icon_get_for_name(new_icon, &n->icon_id);
+}
+
+void notification_identity_icon_replace_path(struct notification *n, const char *new_icon)
+{
+        ASSERT_OR_RET(n,);
+        ASSERT_OR_RET(new_icon,);
+        ASSERT_OR_RET(n->appname != new_icon,);
+
+        g_free(n->appname);
+        n->appname = g_strdup(new_icon);
+        g_clear_object(&n->identity_icon);
+        g_clear_pointer(&n->identity_icon_id, g_free);
+
+        n->identity_icon = icon_get_for_name(new_icon, &n->identity_icon_id);
 }
 
 void notification_icon_replace_data(struct notification *n, GVariant *new_icon)
@@ -371,8 +388,16 @@ void notification_init(struct notification *n)
                 notification_icon_replace_path(n, icon);
                 g_free(icon);
         }
-        if (!n->icon && !n->iconname)
-                notification_icon_replace_path(n, settings.icons[n->urgency]);
+        /* Identity-icon handling */
+        if(n->appname){
+                char *icon = g_strdup(n->appname);
+                notification_identity_icon_replace_path(n, icon);
+                g_free(icon);
+        }else{
+                char *icon = g_strdup(n->iconname);
+                notification_identity_icon_replace_path(n, icon);
+                g_free(icon);
+        }
 
         /* Color hints */
         struct notification_colors defcolors;
@@ -571,22 +596,15 @@ void notification_update_text_to_render(struct notification *n)
                 minutes = t_delta / G_USEC_PER_SEC / 60 % 60;
                 seconds = t_delta / G_USEC_PER_SEC % 60;
 
-                char *new_buf;
                 if (hours > 0) {
-                        new_buf =
-                            g_strdup_printf("%s (%ldh %ldm %lds old)", buf, hours,
+                        n->elapsed_time = g_strdup_printf("%ldh %ldm %lds ago", hours,
                                             minutes, seconds);
                 } else if (minutes > 0) {
-                        new_buf =
-                            g_strdup_printf("%s (%ldm %lds old)", buf, minutes,
-                                            seconds);
-                } else {
-                        new_buf = g_strdup_printf("%s (%lds old)", buf, seconds);
-                }
-
-                g_free(buf);
-                buf = new_buf;
-        }
+                        n->elapsed_time = g_strdup_printf("%ldm %lds ago",
+                                            minutes, seconds);
+                } else 
+                        n->elapsed_time = g_strdup_printf("%lds ago", seconds);
+                };
 
         n->text_to_render = buf;
 }

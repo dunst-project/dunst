@@ -18,6 +18,7 @@
 #include "notification.h"
 #include "queues.h"
 #include "x11/x.h"
+#include <string.h>
 
 struct colored_layout {
         PangoLayout *l;
@@ -27,6 +28,7 @@ struct colored_layout {
         char *text;
         PangoAttrList *attr;
         cairo_surface_t *icon;
+        cairo_surface_t *identity_icon;
         const struct notification *n;
 };
 
@@ -61,7 +63,7 @@ static struct color hex_to_color(uint32_t hexValue, int dpc)
 static struct color string_to_color(const char *str)
 {
         char *end;
-        uint_fast32_t val = strtoul(str+1, &end, 16);
+        uint_fast32_t val = strtoul(str+1, &end, IDENTITY_ICON_SIZE);
         if (end[0] != '\0' && end[1] != '\0') {
                 LOG_W("Invalid color string: '%s'", str);
         }
@@ -158,6 +160,7 @@ static void free_colored_layout(void *data)
         pango_attr_list_unref(cl->attr);
         g_free(cl->text);
         if (cl->icon) cairo_surface_destroy(cl->icon);
+        if (cl->identity_icon) cairo_surface_destroy(cl->identity_icon);
         g_free(cl);
 }
 
@@ -165,7 +168,6 @@ static bool have_dynamic_width(void)
 {
         return (settings.geometry.width_set && settings.geometry.w == 0);
 }
-
 static struct dimensions calculate_dimensions(GSList *layouts)
 {
         struct dimensions dim = { 0 };
@@ -188,9 +190,9 @@ static struct dimensions calculate_dimensions(GSList *layouts)
 
         dim.h += 2 * settings.frame_width;
         dim.h += (g_slist_length(layouts) - 1) * settings.separator_height;
+        dim.h += (g_slist_length(layouts)) * TITLE_H;
 
         dim.corner_radius = settings.corner_radius;
-
         int text_width = 0, total_width = 0;
         for (GSList *iter = layouts; iter; iter = iter->next) {
                 struct colored_layout *cl = iter->data;
@@ -232,9 +234,18 @@ static struct dimensions calculate_dimensions(GSList *layouts)
                                 h = MAX(cairo_image_surface_get_height(cl->icon), h);
                                 w += cairo_image_surface_get_width(cl->icon) + settings.h_padding;
                         }
+                        int titlebar_w = 0;
+                        if (cl->identity_icon) 
+                                titlebar_w += IDENTITY_ICON_SIZE;
+                        if(cl->n->elapsed_time)
+                                titlebar_w += 7*strlen(cl->n->elapsed_time) ;//  settings.h_padding + appname_width;
+                         titlebar_w += 9*strlen(cl->n->appname) + 2* settings.h_padding;
+                        if (titlebar_w > dim.w)
+                                dim.w = titlebar_w;
                         h = MAX(settings.notification_height, h + settings.padding * 2);
                         dim.h += h;
                         text_width = MAX(w, text_width);
+                        // dim.w += 25;
                 }
 
                 dim.corner_radius = MIN(dim.corner_radius, h/2);
@@ -244,7 +255,6 @@ static struct dimensions calculate_dimensions(GSList *layouts)
                 dim.w = text_width + 2 * settings.h_padding;
                 dim.w += 2 * settings.frame_width;
         }
-
         return dim;
 }
 
@@ -292,9 +302,21 @@ static struct colored_layout *layout_init_shared(cairo_t *c, const struct notifi
                 cl->icon = NULL;
         }
 
+        if ( n->identity_icon) {
+                cl->identity_icon = gdk_pixbuf_to_cairo_surface(n->identity_icon);
+
+        } else {
+                cl->identity_icon = NULL;
+        }
+
         if (cl->icon && cairo_surface_status(cl->icon) != CAIRO_STATUS_SUCCESS) {
                 cairo_surface_destroy(cl->icon);
                 cl->icon = NULL;
+        }
+
+        if (cl->identity_icon && cairo_surface_status(cl->identity_icon) != CAIRO_STATUS_SUCCESS) {
+                cairo_surface_destroy(cl->identity_icon);
+                cl->identity_icon = NULL;
         }
 
         cl->fg = string_to_color(n->colors.fg);
@@ -302,7 +324,6 @@ static struct colored_layout *layout_init_shared(cairo_t *c, const struct notifi
         cl->frame = string_to_color(n->colors.frame);
 
         cl->n = n;
-
         struct dimensions dim = calculate_dimensions(NULL);
         int width = dim.w;
 
@@ -329,7 +350,6 @@ static struct colored_layout *layout_derive_xmore(cairo_t *c, const struct notif
 
 static struct colored_layout *layout_from_notification(cairo_t *c, struct notification *n)
 {
-
         struct colored_layout *cl = layout_init_shared(c, n);
 
         /* markup */
@@ -354,7 +374,7 @@ static struct colored_layout *layout_from_notification(cairo_t *c, struct notifi
 
         pango_layout_get_pixel_size(cl->l, NULL, &(n->displayed_height));
         if (cl->icon) n->displayed_height = MAX(cairo_image_surface_get_height(cl->icon), n->displayed_height);
-        n->displayed_height = MAX(settings.notification_height, n->displayed_height + settings.padding * 2);
+        n->displayed_height = MAX(settings.notification_height, n->displayed_height + settings.padding * 2 + TITLE_H);
 
         n->first_render = false;
         return cl;
@@ -392,7 +412,6 @@ static GSList *create_layouts(cairo_t *c)
         return layouts;
 }
 
-
 static int layout_get_height(struct colored_layout *cl)
 {
         int h;
@@ -401,7 +420,7 @@ static int layout_get_height(struct colored_layout *cl)
         if (cl->icon)
                 h_icon = cairo_image_surface_get_height(cl->icon);
 
-        return MAX(h, h_icon);
+        return MAX(h, h_icon) + TITLE_H ;
 }
 
 /* Attempt to make internal radius more organic.
@@ -497,9 +516,7 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
 {
         int x = 0;
         int radius_int = corner_radius;
-
         cairo_t *c = cairo_create(srf);
-
         /* stroke area doesn't intersect with main area */
         cairo_set_fill_rule(c, CAIRO_FILL_RULE_EVEN_ODD);
 
@@ -546,9 +563,7 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
             && !last) {
                 struct color sep_color = layout_get_sepcolor(cl, cl_next);
                 cairo_set_source_rgba(c, sep_color.r, sep_color.g, sep_color.b, sep_color.a);
-
                 cairo_rectangle(c, settings.frame_width, y + height, width, settings.separator_height);
-
                 cairo_fill(c);
         }
 
@@ -559,7 +574,6 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
 
         return cairo_surface_create_for_rectangle(srf, x, y, width, height);
 }
-
 static void render_content(cairo_t *c, struct colored_layout *cl, int width)
 {
         const int h = layout_get_height(cl);
@@ -567,8 +581,7 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width)
         pango_layout_get_pixel_size(cl->l, NULL, &h_text);
 
         int text_x = settings.h_padding,
-            text_y = settings.padding + h / 2 - h_text / 2;
-
+            text_y = settings.padding;
         // text positioning
         if (cl->icon) {
                 // vertical alignment
@@ -585,21 +598,28 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width)
                         text_x = cairo_image_surface_get_width(cl->icon) + 2 * settings.h_padding;
                 } // else ICON_RIGHT
         }
-        cairo_move_to(c, text_x, text_y);
+        text_y += TITLE_H;
+        // identity icon positioning
+        if(cl->identity_icon){
+                unsigned int identity_image_width = cairo_image_surface_get_width(cl->identity_icon),
+                             identity_image_height = cairo_image_surface_get_height(cl->identity_icon),
+                             image_x = settings.h_padding,
+                             image_y = settings.padding;
 
-        cairo_set_source_rgba(c, cl->fg.r, cl->fg.g, cl->fg.b, cl->fg.a);
-        pango_cairo_update_layout(c, cl->l);
-        pango_cairo_show_layout(c, cl->l);
-
-
+                // drawing identity icon 
+                GdkPixbuf *scaled = gdk_pixbuf_scale_simple(cl->n->identity_icon,IDENTITY_ICON_SIZE,IDENTITY_ICON_SIZE,GDK_INTERP_BILINEAR);
+                cairo_set_source_surface(c, gdk_pixbuf_to_cairo_surface(scaled), image_x, image_y);
+                cairo_rectangle(c, image_x, image_y, identity_image_width, identity_image_height);
+                cairo_fill(c);
+                g_object_unref(scaled);
+        }
         // icon positioning
         if (cl->icon) {
                 unsigned int image_width = cairo_image_surface_get_width(cl->icon),
                              image_height = cairo_image_surface_get_height(cl->icon),
                              image_x = width - settings.h_padding - image_width,
-                             image_y = settings.padding + h/2 - image_height/2;
-
-                // vertical alignment
+                             image_y = settings.padding;                    
+                // vertical alignent
                 if (settings.vertical_alignment == VERTICAL_TOP) {
                         image_y = settings.padding;
                 } else if (settings.vertical_alignment == VERTICAL_BOTTOM) {
@@ -607,7 +627,7 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width)
                         if (image_y < settings.padding || image_y > h)
                                 image_y = settings.padding;
                 } // else VERTICAL_CENTER
-
+                image_y += TITLE_H;
                 // icon position
                 if (settings.icon_position == ICON_LEFT) {
                         image_x = settings.h_padding;
@@ -618,6 +638,31 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width)
                 cairo_fill(c);
         }
 
+
+
+        // drawing text 
+        cairo_move_to(c, text_x, text_y);
+        cairo_set_source_rgba(c, cl->fg.r, cl->fg.g, cl->fg.b, cl->fg.a);
+        pango_cairo_update_layout(c, cl->l);
+        pango_cairo_show_layout(c, cl->l);
+
+        // drawing elapsed time 
+        cairo_set_font_size(c, TITLE_FONT_SIZE);
+        cairo_text_extents_t extents;
+        cairo_select_font_face(c, settings.font, CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
+        cairo_text_extents(c, cl->n->elapsed_time, &extents);
+        double x = width - (extents.width + extents.x_bearing)-settings.h_padding;
+        double y = (extents.height + extents.y_bearing) +  settings.padding;;
+        cairo_move_to (c, x, settings.padding+y);
+        cairo_show_text (c,   cl->n->elapsed_time); 
+
+        // drawing app name 
+        int appname_x = cl->identity_icon ? IDENTITY_ICON_SIZE + settings.h_padding + 2 : settings.h_padding;
+        cairo_select_font_face(c, settings.font, CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_BOLD);
+        cairo_set_font_size(c, TITLE_FONT_SIZE);
+        cairo_set_source_rgba(c, cl->fg.r, cl->fg.g, cl->fg.b, cl->fg.a);
+        cairo_move_to(c, appname_x,settings.padding+TITLE_FONT_SIZE);  
+        cairo_show_text(c, cl->n->appname); 
 }
 
 static struct dimensions layout_render(cairo_surface_t *srf,
