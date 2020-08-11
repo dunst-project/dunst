@@ -63,7 +63,7 @@ static struct color hex_to_color(uint32_t hexValue, int dpc)
 static struct color string_to_color(const char *str)
 {
         char *end;
-        uint_fast32_t val = strtoul(str+1, &end, IDENTITY_ICON_SIZE);
+        uint_fast32_t val = strtoul(str+1, &end, 16);
         if (end[0] != '\0' && end[1] != '\0') {
                 LOG_W("Invalid color string: '%s'", str);
         }

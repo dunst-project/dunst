@@ -41,10 +41,10 @@ struct notification {
         char *dbus_client;
         bool dbus_valid;
 
-        char *appname; // nothing in both
-        char *summary;  // some random number
-        char *body; // notification detail
-        char *category; // dbus request type
+        char *appname;
+        char *summary;
+        char *body;
+        char *category;
         char *desktop_entry;     /**< The desktop entry hint sent via every GApplication */
         enum urgency urgency;
 

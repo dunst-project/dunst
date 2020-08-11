@@ -214,7 +214,7 @@ bool dbus_notification_fire(struct dbus_notification *n, uint *id)
         g_variant_builder_add(&b, "s", n->app_icon);
         g_variant_builder_add(&b, "s", n->summary);
         g_variant_builder_add(&b, "s", n->body);
-        debug_print(1,n->app_name);
+
         // Add the actions
         t = g_variant_type_new("as");
         g_variant_builder_open(&b, t);
