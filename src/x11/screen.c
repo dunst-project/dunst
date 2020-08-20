@@ -304,21 +304,22 @@ struct screen_info *get_active_screen(void)
 {
         int ret = 0;
         bool force_follow_mouse = false;
-        if (settings.monitor > 0 && settings.monitor < screens_len) {
-                ret = settings.monitor;
-                goto sc_cleanup;
-        }
-
-        x_follow_setup_error_handler();
 
         if (settings.f_mode == FOLLOW_NONE) {
-                ret = XDefaultScreen(xctx.dpy);
-                goto sc_cleanup;
+                if (settings.monitor >= 0 && settings.monitor < screens_len) {
+                        ret = settings.monitor;
+                } else {
+                        ret = XDefaultScreen(xctx.dpy);
+                }
 
+                goto sc_cleanup;
         } else {
                 int x, y;
                 assert(settings.f_mode == FOLLOW_MOUSE
                                 || settings.f_mode == FOLLOW_KEYBOARD);
+
+                x_follow_setup_error_handler();
+
                 Window root =
                         RootWindow(xctx.dpy, DefaultScreen(xctx.dpy));
 
