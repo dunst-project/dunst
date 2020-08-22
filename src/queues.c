@@ -16,7 +16,6 @@
 #include "queues.h"
 
 #include <assert.h>
-#include <fcntl.h>
 #include <glib.h>
 #include <stdio.h>
 #include <string.h>
