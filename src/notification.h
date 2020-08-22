@@ -165,8 +165,18 @@ void notification_icon_replace_data(struct notification *n, GVariant *new_icon);
  * settings.always_run_script is not set, do nothing.
  */
 void notification_run_script(struct notification *n);
+
 /**
- * print a human readable representation
+ * Write (in append mode) the json representation
+ * of the given notification to the history file.
+ *
+ * The json file will consist of an array of notification objects,
+ * i.e., the top-level object of the json file is an array.
+ */
+void notification_print_to_history_file(const struct notification *n);
+
+/**
+ * Print a single json object representation
  * of the given notification to stdout.
  */
 void notification_print(const struct notification *n);

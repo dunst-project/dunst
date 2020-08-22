@@ -16,6 +16,7 @@
 #include "queues.h"
 
 #include <assert.h>
+#include <fcntl.h>
 #include <glib.h>
 #include <stdio.h>
 #include <string.h>
@@ -203,6 +204,9 @@ int queues_notification_insert(struct notification *n)
 
         if (settings.print_notifications)
                 notification_print(n);
+
+        if (settings.history_file)
+                notification_print_to_history_file(n);
 
         return n->id;
 }

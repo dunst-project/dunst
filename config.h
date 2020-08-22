@@ -110,6 +110,8 @@ struct settings defaults = {
 
 .mouse_right_click = (enum mouse_action []){MOUSE_CLOSE_ALL, -1},
 
+.history_file = NULL,
+
 };
 
 struct rule default_rules[] = {

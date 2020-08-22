@@ -4,12 +4,15 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <glib.h>
 #include <libgen.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -45,58 +48,128 @@ struct _notification_private {
         gint refcount;
 };
 
+/** 
+ * Print a single json object representation
+ * of the given notification to the specified FILE `fp`.
+ */
+static void _notification_print_internal(const struct notification *n, FILE *fp)
+{
+        if (!fp) {
+                LOG_W("`fp` == NULL");
+                return;
+        }
+
+        fprintf(fp, "{\n");
+        fprintf(fp, "\t\"appname\": \"%s\",\n", n->appname);
+        fprintf(fp, "\t\"summary\": \"%s\",\n", n->summary);
+        fprintf(fp, "\t\"body\": \"%s\",\n", n->body);
+        fprintf(fp, "\t\"icon\": \"%s\",\n", n->iconname);
+        fprintf(fp, "\t\"raw_icon set\": %s,\n", (n->icon_id && !STR_EQ(n->iconname, n->icon_id)) ? "true" : "false");
+        fprintf(fp, "\t\"icon_id\": \"%s\",\n", n->icon_id);
+        fprintf(fp, "\t\"desktop_entry\": \"%s\",\n", n->desktop_entry ? n->desktop_entry : "");
+        fprintf(fp, "\t\"category\": \"%s\",\n", n->category);
+        fprintf(fp, "\t\"timeout\": %ld,\n", n->timeout/1000);
+        fprintf(fp, "\t\"urgency\": \"%s\",\n", notification_urgency_to_string(n->urgency));
+        fprintf(fp, "\t\"transient\": %d,\n", n->transient);
+
+        char* msg = string_replace_all("\n", "<br>", g_strdup(n->msg));
+        fprintf(fp, "\t\"formatted\": \"%s\",\n", msg);
+        g_free(msg);
+
+        fprintf(fp, "\t\"fg\": \"%s\",\n", n->colors.fg);
+        fprintf(fp, "\t\"bg\": \"%s\",\n", n->colors.bg);
+        fprintf(fp, "\t\"frame\": \"%s\",\n", n->colors.frame);
+        fprintf(fp, "\t\"fullscreen\": \"%s\",\n", enum_to_string_fullscreen(n->fullscreen));
+        fprintf(fp, "\t\"progress\": %d,\n", n->progress);
+        fprintf(fp, "\t\"stack_tag\": \"%s\",\n", (n->stack_tag ? n->stack_tag : ""));
+        fprintf(fp, "\t\"id\": %d,\n", n->id);
+
+        if (n->urls) {
+                char *urls = string_replace_all("\n", "\",\n\t\t\"", g_strdup(n->urls));
+                fprintf(fp, "\t\"urls\": [\n");
+                fprintf(fp, "\t\t\"%s\"\n", urls);
+                fprintf(fp, "\t],\n");
+                g_free(urls);
+        }
+
+        if (g_hash_table_size(n->actions) == 0) {
+                fprintf(fp, "\t\"actions\": {},\n");
+        } else {
+                gpointer p_key, p_value;
+                gpointer p_key_prev = NULL, p_value_prev = NULL;
+                GHashTableIter iter;
+                g_hash_table_iter_init(&iter, n->actions);
+                fprintf(fp, "\t\"actions\": {\n");
+                while (g_hash_table_iter_next(&iter, &p_key, &p_value)) {
+                        if (p_key && p_key_prev)
+                                fprintf(fp, "\t\t\"%s\": \"%s\",\n", (char*) p_key_prev,
+                                                                     (char*) p_value_prev);
+                        p_key_prev = p_key;
+                        p_value_prev = p_value;
+                }
+                fprintf(fp, "\t\t\"%s\": \"%s\"\n", (char*) p_key_prev,
+                                                    (char*) p_value_prev);
+                fprintf(fp, "\t},\n");
+        }
+
+        fprintf(fp, "\t\"script_count\": %d,\n", n->script_count);
+        if (n->script_count > 0) {
+                fprintf(fp, "\t\"scripts\": [\n");
+                for (int i = 0; i < n->script_count; i++) {
+                        fprintf(fp, "\t\t\"%s\"", n->scripts[i]);
+                        if (i != n->script_count - 1)
+                                fprintf(fp, ",\n");
+                }
+                fprintf(fp, "\n\t]\n");
+        }
+
+        fprintf(fp, "}");
+        fflush(fp);
+}
+
+/* see notification.h */
+void notification_print_to_history_file(const struct notification *n)
+{
+        FILE* fp = fopen(settings.history_file, "a");
+        bool is_file_empty = false;
+        struct stat st;
+
+        if (!fp) {
+                LOG_W("Unable to open history file: %s", settings.history_file);
+                return;
+        }
+
+        if (fstat(fileno(fp), &st) != 0) {
+                return;
+        }
+        if (st.st_size == 0)
+                is_file_empty = true;
+
+        // If the file is empty, we first write a '[' to the file,
+        // else we truncate the last character which should be a ']' from the file.
+        if (is_file_empty) {
+                fprintf(fp, "[");
+        } else {
+                const int chars_to_del = 1;
+                fseeko(fp, -chars_to_del, SEEK_END);
+                const int position = ftello(fp);
+                ftruncate(fileno(fp), position);
+                fprintf(fp, ", ");
+        }
+
+        // Write the json object representation of the notification `n` to `fp`.
+        _notification_print_internal(n, fp);
+
+        // Make sure the top-level array has a closing square bracket. 
+        fprintf(fp, "]");
+        fflush(fp);
+        fclose(fp);
+}
+
 /* see notification.h */
 void notification_print(const struct notification *n)
 {
-        //TODO: use logging info for this
-        printf("{\n");
-        printf("\tappname: '%s'\n", n->appname);
-        printf("\tsummary: '%s'\n", n->summary);
-        printf("\tbody: '%s'\n", n->body);
-        printf("\ticon: '%s'\n", n->iconname);
-        printf("\traw_icon set: %s\n", (n->icon_id && !STR_EQ(n->iconname, n->icon_id)) ? "true" : "false");
-        printf("\ticon_id: '%s'\n", n->icon_id);
-        printf("\tdesktop_entry: '%s'\n", n->desktop_entry ? n->desktop_entry : "");
-        printf("\tcategory: %s\n", n->category);
-        printf("\ttimeout: %ld\n", n->timeout/1000);
-        printf("\turgency: %s\n", notification_urgency_to_string(n->urgency));
-        printf("\ttransient: %d\n", n->transient);
-        printf("\tformatted: '%s'\n", n->msg);
-        printf("\tfg: %s\n", n->colors.fg);
-        printf("\tbg: %s\n", n->colors.bg);
-        printf("\tframe: %s\n", n->colors.frame);
-        printf("\tfullscreen: %s\n", enum_to_string_fullscreen(n->fullscreen));
-        printf("\tprogress: %d\n", n->progress);
-        printf("\tstack_tag: %s\n", (n->stack_tag ? n->stack_tag : ""));
-        printf("\tid: %d\n", n->id);
-        if (n->urls) {
-                char *urls = string_replace_all("\n", "\t\t\n", g_strdup(n->urls));
-                printf("\turls:\n");
-                printf("\t{\n");
-                printf("\t\t%s\n", urls);
-                printf("\t}\n");
-                g_free(urls);
-        }
-        if (g_hash_table_size(n->actions) == 0) {
-                printf("\tactions: {}\n");
-        } else {
-                gpointer p_key, p_value;
-                GHashTableIter iter;
-                g_hash_table_iter_init(&iter, n->actions);
-                printf("\tactions: {\n");
-                while (g_hash_table_iter_next(&iter, &p_key, &p_value))
-                        printf("\t\t\"%s\": \"%s\"\n", (char*)p_key, (char*)p_value);
-                printf("\t}\n");
-        }
-        printf("\tscript_count: %d\n", n->script_count);
-        if (n->script_count > 0) {
-                printf("\tscripts: ");
-                for (int i = 0; i < n->script_count; i++) {
-                        printf("'%s' ",n->scripts[i]);
-                }
-                printf("\n");
-        }
-        printf("}\n");
+        _notification_print_internal(n, stdout);
 }
 
 /* see notification.h */

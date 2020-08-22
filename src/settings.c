@@ -686,6 +686,12 @@ void load_settings(char *cmdline_config_path)
                 "Shortcut for context menu"
         );
 
+        settings.history_file = option_get_path(
+                "global",
+                "history_file", "-hist/-history_file", defaults.history_file,
+                "Path to the notification history file"
+        );
+
         settings.print_notifications = cmdline_get_bool(
                 "-print", false,
                 "Print notifications to cmdline (DEBUG)"
