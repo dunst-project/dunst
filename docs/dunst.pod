@@ -375,7 +375,7 @@ being displayed separately.
 Two notifications are considered duplicate if the name of the program that sent
 it, summary, body, icon and urgency are all identical.
 
-=item B<hide_duplicates_count> (values: [true/false], default: false)
+=item B<hide_duplicate_count> (values: [true/false], default: false)
 
 Hide the count of stacked duplicate notifications.
 
@@ -758,7 +758,7 @@ Updates the icon of the notification, it should be a path to a valid image.
 
 Sets the stack tag for the notification, notifications with the same (non-empty)
 stack tag will replace each-other so only the newest one is visible. This can be
-useful for example in volume or brightness notifications where only want one of
+useful for example in volume or brightness notifications where you only want one of
 the same type visible.
 
 The stack tag can be set by the client with the 'synchronous',
