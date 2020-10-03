@@ -616,6 +616,22 @@ gboolean dbus_cb_dunst_Properties_Set(GDBusConnection *connection,
         if (STR_EQ(property_name, "paused")) {
                 dunst_status(S_RUNNING, !g_variant_get_boolean(value));
                 wake_up();
+
+                GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE_ARRAY);
+                GVariantBuilder *invalidated_builder = g_variant_builder_new(G_VARIANT_TYPE("as"));
+                g_variant_builder_add(builder,
+                                      "{sv}",
+                                      "paused", g_variant_new_boolean(g_variant_get_boolean(value)));
+                g_dbus_connection_emit_signal(connection,
+                                              NULL,
+                                              object_path,
+                                              "org.freedesktop.DBus.Properties",
+                                              "PropertiesChanged",
+                                              g_variant_new("(sa{sv}as)",
+                                                            interface_name,
+                                                            builder,
+                                                            invalidated_builder),
+                                              NULL);
                 return true;
         }
 
