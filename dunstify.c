@@ -234,7 +234,7 @@ void add_action(NotifyNotification *n, char *str)
     char *label = strchr(str, ',');
 
     if (!label || *(label+1) == '\0') {
-        g_printerr("Malformed action. Excpected \"action,label\", got \"%s\"", str);
+        g_printerr("Malformed action. Expected \"action,label\", got \"%s\"", str);
         return;
     }
 
