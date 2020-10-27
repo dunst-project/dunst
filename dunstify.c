@@ -127,6 +127,11 @@ void parse_commandline(int argc, char *argv[])
         die(0);
     }
 
+    if (*appname == '\0') {
+        g_printerr("Provided appname was empty\n");
+        die(1);
+    }
+
     int n_args = count_args(argv, argc);
     if (n_args < 2 && close_id < 1) {
         g_printerr("I need at least a summary\n");
