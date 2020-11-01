@@ -267,6 +267,33 @@
     # where there are multiple screens with very different dpi values.
     per_monitor_dpi = false
 
+# The internal keyboard shortcut support in dunst is now considered deprecated
+# and should be replaced by dunstctl calls. You can use the configuration of your
+# WM or DE to bind these to shortcuts of your choice.
+# Check the dunstctl manual page for more info.
+[shortcuts]
+
+    # Shortcuts are specified as [modifier+][modifier+]...key
+    # Available modifiers are "ctrl", "mod1" (the alt-key), "mod2",
+    # "mod3" and "mod4" (windows-key).
+    # Xev might be helpful to find names for keys.
+
+    # Close notification. Equivalent dunstctl command:
+    # dunstctl close
+    # close = ctrl+space
+
+    # Close all notifications. Equivalent dunstctl command:
+    # dunstctl close-all
+    # close_all = ctrl+shift+space
+
+    # Redisplay last message(s). Equivalent dunstctl command:
+    # dunstctl history-pop
+    # history = ctrl+grave
+
+    # Context menu. Equivalent dunstctl command:
+    # dunstctl context
+    # context = ctrl+shift+period
+
 [urgency_low]
     # IMPORTANT: colors have to be defined in quotation marks.
     # Otherwise the "#" and following would be interpreted as a comment.
