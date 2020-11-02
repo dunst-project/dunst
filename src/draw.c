@@ -716,4 +716,4 @@ void draw_deinit(void)
         x_win_destroy(win);
         x_free();
 }
-/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
+/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

@@ -13,4 +13,4 @@ void draw_rounded_rect(cairo_t *c, int x, int y, int width, int height, int corn
 void draw_deinit(void);
 
 #endif
-/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
+/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

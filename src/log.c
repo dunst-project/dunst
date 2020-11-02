@@ -98,4 +98,4 @@ void dunst_log_init(bool testing)
         g_log_set_default_handler(dunst_log_handler, (void*)testing);
 }
 
-/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
+/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

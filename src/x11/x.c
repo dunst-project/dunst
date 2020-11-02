@@ -940,4 +940,4 @@ static void x_shortcut_init(struct keyboard_shortcut *ks)
         g_free(str_begin);
 }
 
-/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
+/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

@@ -138,4 +138,4 @@ gint64 time_monotonic_now(void);
 const char *user_get_home(void);
 
 #endif
-/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
+/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

@@ -69,4 +69,4 @@ void x_free(void);
 struct geometry x_parse_geometry(const char *geom_str);
 
 #endif
-/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
+/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */
