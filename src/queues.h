@@ -164,4 +164,4 @@ struct notification* queues_get_by_id(int id);
 void queues_teardown(void);
 
 #endif
-/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
+/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

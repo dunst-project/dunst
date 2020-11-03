@@ -48,4 +48,4 @@ void markup_strip_img(char **str, char **urls);
 char *markup_transform(char *str, enum markup_mode markup_mode);
 
 #endif
-/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
+/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

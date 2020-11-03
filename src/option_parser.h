@@ -86,4 +86,4 @@ int option_get_bool(const char *ini_section,
 const char *next_section(const char *section);
 
 #endif
-/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
+/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

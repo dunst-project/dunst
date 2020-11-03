@@ -58,4 +58,4 @@ GdkPixbuf *icon_get_for_name(const char *name, char **id);
 GdkPixbuf *icon_get_for_data(GVariant *data, char **id);
 
 #endif
-/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
+/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

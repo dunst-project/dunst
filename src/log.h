@@ -45,4 +45,4 @@ void log_set_level_from_string(const char* level);
 void dunst_log_init(bool testing);
 
 #endif
-/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
+/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

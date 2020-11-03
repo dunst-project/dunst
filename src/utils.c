@@ -247,4 +247,4 @@ const char *user_get_home(void)
         return home_directory;
 }
 
-/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
+/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */
