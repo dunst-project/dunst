@@ -416,7 +416,7 @@ void load_settings(char *cmdline_config_path)
         {
                 char *c = option_get_string(
                         "global",
-                        "icon_position", "-icon_position", "off",
+                        "icon_position", "-icon_position", "left",
                         "Align icons left/right/off"
                 );
 
