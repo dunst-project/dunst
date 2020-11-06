@@ -169,7 +169,7 @@ static bool have_dynamic_width(void)
 
 static bool have_progress_bar(const struct notification *n)
 {
-        return (n->progress >= 0 && settings.no_progress_bar == false);
+        return (n->progress >= 0 && settings.progress_bar == true);
 }
 
 static struct dimensions calculate_dimensions(GSList *layouts)
@@ -366,6 +366,7 @@ static struct colored_layout *layout_from_notification(cairo_t *c, struct notifi
 
         pango_layout_get_pixel_size(cl->l, NULL, &(n->displayed_height));
         if (cl->icon) n->displayed_height = MAX(cairo_image_surface_get_height(cl->icon), n->displayed_height);
+
         n->displayed_height = n->displayed_height + settings.padding * 2;
 
         // progress bar
@@ -646,7 +647,7 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width)
 
         // progress bar positioning
         if (have_progress_bar(cl->n)){
-                int progress = cl->n->progress;
+                int progress = MIN(cl->n->progress, 100);
                 unsigned int frame_width = settings.progress_bar_frame_width,
                              progress_width = MIN(width - 2 * settings.h_padding, settings.progress_bar_max_width),
                              progress_height = settings.progress_bar_height - frame_width,

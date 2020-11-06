@@ -121,7 +121,7 @@ struct settings defaults = {
 
 .progress_bar_frame_width = 1,
 
-.no_progress_bar = false,
+.progress_bar = true,
 };
 
 struct rule default_rules[] = {

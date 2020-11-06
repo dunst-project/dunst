@@ -142,6 +142,32 @@ the notification on the left border of the screen while a horizontal offset of
 
 =back
 
+=item B<progress_bar> (values: [true/false], default: true)
+
+When an integer value is passed to dunst as a hint (see B<NOTIFY-SEND>), a
+progress bar will be drawn at the bottom of the notification. This
+behavior can be turned off by setting this setting to false.
+
+=item B<progress_bar_height> (default: 10)
+
+The height of the progress bar in pixel. This includes the frame. Make sure
+this value is bigger than twice the frame width.
+
+=item B<progress_bar_min_width> (default: 150)
+
+The minimum width of the progress bar in pixels. The notification is rescaled
+to fit the bar.
+
+=item B<progress_bar_max_width> (default: 300)
+
+The maximum width of the progress bar in pixels. The notification is resized
+to fit the progress bar.
+
+=item B<progress_bar_frame_width> (default: 1)
+
+The frame width of the progress bar in pixels. This value should be smaller
+than half of the progress bar height.
+
 =item B<indicate_hidden> (values: [true/false], default: true)
 
 If this is set to true, a notification indicating how many notifications are
@@ -561,8 +587,8 @@ Specifies the keyboard shortcut that opens the context menu.
 
 The urgency sections work in a similar way to rules and can be used to specify
 attributes for the different urgency levels of notifications (low, normal,
-critical). Currently only the background, foreground, timeout, frame_color and
-icon attributes can be modified.
+critical). Currently only the background, foreground, hightlight, timeout,
+frame_color and icon attributes can be modified.
 
 The urgency sections are urgency_low, urgency_normal, urgency_critical for low,
 normal and critical urgency respectively.
@@ -592,6 +618,12 @@ See COLORS for the value format.
 =item B<-lb/nb/cb color>
 
 Defines the background color for low, normal and critical notifications respectively.
+
+See COLORS for the value format.
+
+=item B<-lh/nh/ch color>
+
+Defines the highlight color for low, normal and critical notifications respectively.
 
 See COLORS for the value format.
 
@@ -725,7 +757,12 @@ The background color of the notification. See COLORS for possible values.
 
 =item C<foreground>
 
-The background color of the notification. See COLORS for possible values.
+The foreground color of the notification. See COLORS for possible values.
+
+=item C<highlight>
+
+The highlight color of the notification. This color is used for coloring the
+progress bar. See COLORS for possible values.
 
 =item C<format>
 

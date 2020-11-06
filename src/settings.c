@@ -379,10 +379,10 @@ void load_settings(char *cmdline_config_path)
                 "Frame width of the progress bar"
         );
 
-        settings.no_progress_bar = option_get_bool(
+        settings.progress_bar = option_get_bool(
                 "global",
-                "no_progress_bar", "-no_progress_bar", false,
-                "Hide the progress bar"
+                "progress_bar", "-progress_bar", true,
+                "Show the progress bar"
         );
 
         // check sanity of the progress bar options

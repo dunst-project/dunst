@@ -96,7 +96,7 @@ struct settings {
         int progress_bar_min_width;
         int progress_bar_max_width;
         int progress_bar_frame_width;
-        bool no_progress_bar;
+        bool progress_bar;
 };
 
 extern struct settings settings;
