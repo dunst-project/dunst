@@ -355,6 +355,49 @@ void load_settings(char *cmdline_config_path)
                 "Window corner radius"
         );
 
+        settings.progress_bar_height = option_get_int(
+                "global",
+                "progress_bar_height", "-progress_bar_height", defaults.progress_bar_height,
+                "Height of the progress bar"
+        );
+
+        settings.progress_bar_min_width = option_get_int(
+                "global",
+                "progress_bar_min_width", "-progress_bar_min_width", defaults.progress_bar_min_width,
+                "Minimum width of the progress bar"
+        );
+
+        settings.progress_bar_max_width = option_get_int(
+                "global",
+                "progress_bar_max_width", "-progress_bar_max_width", defaults.progress_bar_max_width,
+                "Maximum width of the progress bar"
+        );
+
+        settings.progress_bar_frame_width = option_get_int(
+                "global",
+                "progress_bar_frame_width", "-progress_bar_frame_width", defaults.progress_bar_frame_width,
+                "Frame width of the progress bar"
+        );
+
+        settings.progress_bar = option_get_bool(
+                "global",
+                "progress_bar", "-progress_bar", true,
+                "Show the progress bar"
+        );
+
+        // check sanity of the progress bar options
+        {
+                if (settings.progress_bar_height < (2 * settings.progress_bar_frame_width)){
+                        LOG_E("setting progress_bar_frame_width is bigger than half of progress_bar_height");
+                }
+                if (settings.progress_bar_max_width < (2 * settings.progress_bar_frame_width)){
+                        LOG_E("setting progress_bar_frame_width is bigger than half of progress_bar_max_width");
+                }
+                if (settings.progress_bar_max_width < settings.progress_bar_min_width){
+                        LOG_E("setting progress_bar_max_width is smaller than progress_bar_min_width");
+                }
+        }
+
         {
                 char *c = option_get_string(
                         "global",
@@ -584,6 +627,12 @@ void load_settings(char *cmdline_config_path)
                 "Foreground color for notifications with low urgency"
         );
 
+        settings.colors_low.highlight = option_get_string(
+                "urgency_low",
+                "highlight", "-lh", defaults.colors_low.highlight,
+                "Highlight color for notifications with low urgency"
+        );
+
         settings.colors_low.frame = option_get_string(
                 "urgency_low",
                 "frame_color", "-lfr", settings.frame_color ? settings.frame_color : defaults.colors_low.frame,
@@ -614,6 +663,12 @@ void load_settings(char *cmdline_config_path)
                 "Foreground color for notifications with normal urgency"
         );
 
+        settings.colors_norm.highlight = option_get_string(
+                "urgency_normal",
+                "highlight", "-nh", defaults.colors_norm.highlight,
+                "Highlight color for notifications with normal urgency"
+        );
+
         settings.colors_norm.frame = option_get_string(
                 "urgency_normal",
                 "frame_color", "-nfr", settings.frame_color ? settings.frame_color : defaults.colors_norm.frame,
@@ -642,6 +697,12 @@ void load_settings(char *cmdline_config_path)
                 "urgency_critical",
                 "foreground", "-cf", defaults.colors_crit.fg,
                 "Foreground color for notifications with ciritical urgency"
+        );
+
+        settings.colors_crit.highlight = option_get_string(
+                "urgency_critical",
+                "highlight", "-ch", defaults.colors_crit.highlight,
+                "Highlight color for notifications with ciritical urgency"
         );
 
         settings.colors_crit.frame = option_get_string(
@@ -756,6 +817,7 @@ void load_settings(char *cmdline_config_path)
                 r->msg_urgency = ini_get_urgency(cur_section, "msg_urgency", r->msg_urgency);
                 r->fg = ini_get_string(cur_section, "foreground", r->fg);
                 r->bg = ini_get_string(cur_section, "background", r->bg);
+                r->bg = ini_get_string(cur_section, "highlight", r->highlight);
                 r->fc = ini_get_string(cur_section, "frame_color", r->fc);
                 r->format = ini_get_string(cur_section, "format", r->format);
                 r->new_icon = ini_get_string(cur_section, "new_icon", r->new_icon);

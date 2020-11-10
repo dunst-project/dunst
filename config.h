@@ -6,10 +6,13 @@ struct settings defaults = {
 .markup = MARKUP_NO,
 .colors_norm.bg = "#1793D1",
 .colors_norm.fg = "#DDDDDD",
+.colors_norm.highlight = "#1745d1",
 .colors_crit.bg = "#ffaaaa",
 .colors_crit.fg = "#000000",
+.colors_crit.highlight = "#ff6666",
 .colors_low.bg = "#aaaaff",
 .colors_low.fg = "#000000",
+.colors_low.highlight = "#7f7fff",
 .format = "%s %b",         /* default format */
 
 .timeouts = { S2US(10), S2US(10), S2US(0) }, /* low, normal, critical */
@@ -110,6 +113,15 @@ struct settings defaults = {
 
 .mouse_right_click = (enum mouse_action []){MOUSE_CLOSE_ALL, -1},
 
+.progress_bar_height = 10,
+
+.progress_bar_min_width = 150,
+
+.progress_bar_max_width = 300,
+
+.progress_bar_frame_width = 1,
+
+.progress_bar = true,
 };
 
 struct rule default_rules[] = {

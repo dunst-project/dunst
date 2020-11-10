@@ -33,6 +33,7 @@ struct notification_colors {
         char *frame;
         char *bg;
         char *fg;
+        char *highlight;
 };
 
 struct notification {

@@ -31,6 +31,7 @@ struct rule {
         char *new_icon;
         char *fg;
         char *bg;
+        char *highlight;
         char *fc;
         const char *format;
         const char *script;
