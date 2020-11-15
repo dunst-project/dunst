@@ -1,7 +1,6 @@
 #include "draw.h"
 
 #include <assert.h>
-#include <cairo.h>
 #include <math.h>
 #include <pango/pango-attributes.h>
 #include <pango/pangocairo.h>
@@ -10,6 +9,7 @@
 #include <pango/pango-types.h>
 #include <stdlib.h>
 #include <inttypes.h>
+#include <glib.h>
 
 #include "dunst.h"
 #include "icon.h"
@@ -17,7 +17,15 @@
 #include "markup.h"
 #include "notification.h"
 #include "queues.h"
-#include "x11/x.h"
+#include "output.h"
+#include "settings.h"
+
+struct color {
+        double r;
+        double g;
+        double b;
+        double a;
+};
 
 struct colored_layout {
         PangoLayout *l;
@@ -30,7 +38,8 @@ struct colored_layout {
         const struct notification *n;
 };
 
-struct window_x11 *win;
+const struct output *output;
+window win;
 
 PangoFontDescription *pango_fdesc;
 
@@ -38,9 +47,12 @@ PangoFontDescription *pango_fdesc;
 
 void draw_setup(void)
 {
-        x_setup();
+        const struct output *out = output_create();
+        output = out;
 
-        win = x_win_create();
+        out->init();
+        win = out->win_create();
+
         pango_fdesc = pango_font_description_from_string(settings.font);
 }
 
@@ -170,7 +182,7 @@ static struct dimensions calculate_dimensions(GSList *layouts)
 {
         struct dimensions dim = { 0 };
 
-        struct screen_info *scr = get_active_screen();
+        const struct screen_info *scr = output->get_active_screen();
         if (have_dynamic_width()) {
                 /* dynamic width */
                 dim.w = 0;
@@ -250,10 +262,10 @@ static struct dimensions calculate_dimensions(GSList *layouts)
 
 static PangoLayout *layout_create(cairo_t *c)
 {
-        struct screen_info *screen = get_active_screen();
+        const struct screen_info *screen = output->get_active_screen();
 
         PangoContext *context = pango_cairo_create_context(c);
-        pango_cairo_context_set_resolution(context, screen_dpi_get(screen));
+        pango_cairo_context_set_resolution(context, screen->dpi);
 
         PangoLayout *layout = pango_layout_new(context);
 
@@ -664,7 +676,7 @@ static struct dimensions layout_render(cairo_surface_t *srf,
  */
 static void calc_window_pos(int width, int height, int *ret_x, int *ret_y)
 {
-        struct screen_info *scr = get_active_screen();
+        const struct screen_info *scr = output->get_active_screen();
 
         if (ret_x) {
                 if (settings.geometry.negative_x) {
@@ -687,7 +699,7 @@ void draw(void)
 {
         assert(queues_length_displayed() > 0);
 
-        GSList *layouts = create_layouts(x_win_get_context(win));
+        GSList *layouts = create_layouts(output->win_get_context(win));
 
         struct dimensions dim = calculate_dimensions(layouts);
 
@@ -705,7 +717,7 @@ void draw(void)
         }
 
         calc_window_pos(dim.w, dim.h, &dim.x, &dim.y);
-        x_display_surface(image_surface, win, &dim);
+        output->display_surface(image_surface, win, &dim);
 
         cairo_surface_destroy(image_surface);
         g_slist_free_full(layouts, free_colored_layout);
@@ -713,7 +725,7 @@ void draw(void)
 
 void draw_deinit(void)
 {
-        x_win_destroy(win);
-        x_free();
+        output->win_destroy(win);
+        output->deinit();
 }
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

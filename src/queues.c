@@ -25,6 +25,7 @@
 #include "notification.h"
 #include "settings.h"
 #include "utils.h"
+#include "output.h" // For checking if wayland is active.
 
 /* notification lists */
 static GQueue *waiting   = NULL; /**< all new notifications get into here */
@@ -143,7 +144,8 @@ static bool queues_notification_is_finished(struct notification *n, struct dunst
         bool is_idle = status.fullscreen ? false : status.idle;
 
         /* don't timeout when user is idle */
-        if (is_idle && !n->transient) {
+        /* NOTE: Idle is not working on wayland */
+        if (is_idle && !n->transient && !is_running_wayland()) {
                 n->start = time_monotonic_now();
                 return false;
         }

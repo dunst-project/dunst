@@ -1,8 +1,12 @@
 #ifndef DUNST_DRAW_H
 #define DUNST_DRAW_H
 
-#include "x11/x.h"
-extern struct window_x11 *win; // Temporary
+#include <stdbool.h>
+#include <cairo.h>
+#include "output.h"
+
+extern window win; // Temporary
+extern const struct output *output;
 
 void draw_setup(void);
 
