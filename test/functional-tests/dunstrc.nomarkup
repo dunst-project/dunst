@@ -1,7 +1,7 @@
 [global]
     font = Monospace 8
     allow_markup = no
-    format = "<b>%s</b>\n<i>%b</i>"
+    format = "%s\n%b"
     sort = yes
     indicate_hidden = yes
     alignment = left

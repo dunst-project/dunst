@@ -80,15 +80,17 @@ function markup {
     killall dunst
     ../../dunst -config dunstrc.markup "200x0+10+10" &
     ../../dunstify -a "dunst tester"  "Markup Tests" -u "c"
-    ../../dunstify -a "dunst tester"  "<b>bold</b> <i>italic</i>"
-    ../../dunstify -a "dunst tester"  "<b>broken markup</i>"
+    ../../dunstify -a "dunst tester"  "There should be no markup in the title" -u "c"
+    ../../dunstify -a "dunst tester"  "Title" "<b>bold</b> <i>italic</i>"
+    ../../dunstify -a "dunst tester"  "Title" "<a href="github.com"> Github link </a>"
+    ../../dunstify -a "dunst tester"  "Title" "<b>broken markup</i>"
     keypress
 
     killall dunst
     ../../dunst -config dunstrc.nomarkup "200x0+10+10" &
-    ../../dunstify -a "dunst tester" -u c "NO Markup Tests"
-    ../../dunstify -a "dunst tester" "<b>bold</b><i>italic</i>"
-    ../../dunstify -a "dunst tester" "<b>broken markup</i>"
+    ../../dunstify -a "dunst tester" -u c "No markup Tests"
+    ../../dunstify -a "dunst tester" "<b>Title</b>" "<b>bold</b><i>italic</i>"
+    ../../dunstify -a "dunst tester" "<b>Title</b>" "<b>broken markup</i>"
     keypress
 
 }
@@ -160,13 +162,13 @@ function geometry {
 
     killall dunst
     ../../dunst -config dunstrc.default -geom "-300x1" &
-    ../../dunstify -a "dunst tester" -u c "-300x1"
+    ../../dunstify -a "dunst tester" -u c -- "-300x1"
     basic_notifications
     keypress
 
     killall dunst
     ../../dunst -config dunstrc.default -geom "-300x1-20-20" &
-    ../../dunstify -a "dunst tester" -u c "-300x1-20-20"
+    ../../dunstify -a "dunst tester" -u c -- "-300x1-20-20"
     basic_notifications
     keypress
 
