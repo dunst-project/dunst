@@ -537,10 +537,11 @@ void x_setup(void)
 
         xctx.screensaver_info = XScreenSaverAllocInfo();
 
+        XrmInitialize();
+        XRM_update_db();
+
         init_screens();
         x_shortcut_grab(&settings.history_ks);
-
-        XrmInitialize();
 }
 
 struct geometry x_parse_geometry(const char *geom_str)
