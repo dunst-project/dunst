@@ -173,7 +173,6 @@ static void destroy_output(struct wl_output *output) {
 
 static void pointer_handle_motion(void *data, struct wl_pointer *wl_pointer,
                 uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y) {
-        LOG_I("Pointer handle motion");
         ctx.pointer.x = wl_fixed_to_int(surface_x);
         ctx.pointer.y = wl_fixed_to_int(surface_y);
 }
@@ -651,7 +650,7 @@ void wl_win_show(window win) {
 }
 
 void wl_win_hide(window win) {
-        LOG_I("Hiding window");
+        LOG_I("Wayland: Hiding window");
         ctx.cur_dim.h = 0;
         set_dirty();
         wl_display_roundtrip(ctx.display);

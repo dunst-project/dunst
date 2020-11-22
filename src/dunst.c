@@ -74,12 +74,10 @@ static gboolean run(void *data)
         bool active = queues_length_displayed() > 0;
 
         if (active) {
-                LOG_D("Dunst: Window is active");
                 // Call draw before showing the window to avoid flickering
                 draw();
                 output->win_show(win);
         } else {
-                LOG_D("Dunst: Window is NOT active");
                 output->win_hide(win);
         }
 
@@ -89,7 +87,7 @@ static gboolean run(void *data)
                 sleep = 100000; // Make sure wayland input is handled in time FIXME
                 gint64 timeout_at = now + sleep;
 
-                LOG_D("Dunst: sleeping for %li ms", sleep/1000);
+                LOG_D("Sleeping for %li ms", sleep/1000);
 
                 if (sleep >= 0) {
                         if (next_timeout < now || timeout_at < next_timeout) {

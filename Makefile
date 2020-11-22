@@ -142,7 +142,6 @@ wayland-protocols: src/wayland/protocols/wlr-layer-shell-unstable-v1.xml
 	wayland-scanner private-code ${DATA_DIR_WAYLAND_PROTOCOLS}/unstable/xdg-output/xdg-output-unstable-v1.xml src/wayland/protocols/xdg-output-unstable-v1.h
 	wayland-scanner client-header src/wayland/protocols/wlr-layer-shell-unstable-v1.xml src/wayland/protocols/wlr-layer-shell-unstable-v1-client-header.h
 	wayland-scanner private-code src/wayland/protocols/wlr-layer-shell-unstable-v1.xml src/wayland/protocols/wlr-layer-shell-unstable-v1.h
-	
 
 .PHONY: clean clean-dunst clean-dunstify clean-doc clean-tests clean-coverage clean-coverage-run
 clean: clean-dunst clean-dunstify clean-doc clean-tests clean-coverage clean-coverage-run clean-wayland-protocols

@@ -141,7 +141,6 @@ static bool queues_notification_is_finished(struct notification *n, struct dunst
         if (n->timeout == 0) // sticky
                 return false;
 
-        /* LOG_I("Queues: Still checking if notification is finished"); */
         bool is_idle = status.fullscreen ? false : status.idle;
 
         /* don't timeout when user is idle */
