@@ -33,6 +33,11 @@ $(error "Failed to query $(PKG_CONFIG) for package 'systemd'!")
 endif
 endif
 
+DATA_DIR_WAYLAND_PROTOCOLS ?= $(shell $(PKG_CONFIG) wayland-protocols --variable=pkgdatadir)
+ifeq (,${DATA_DIR_WAYLAND_PROTOCOLS})
+	$(error "Failed to query $(PKG_CONFIG) for package 'wayland-protocols'!")
+endif
+
 LIBS := $(shell $(PKG_CONFIG) --libs   ${pkg_config_packs})
 INCS := $(shell $(PKG_CONFIG) --cflags ${pkg_config_packs})
 
@@ -67,7 +72,7 @@ ${OBJ} ${TEST_OBJ}: Makefile config.mk
 %.o: %.c
 	${CC} -o $@ -c $< ${CFLAGS}
 
-dunst: ${OBJ} main.o
+dunst: ${OBJ} main.o wayland-protocols
 	${CC} -o ${@} ${OBJ} main.o ${CFLAGS} ${LDFLAGS}
 
 dunstify: dunstify.o
@@ -118,7 +123,7 @@ docs/dunstctl.1: docs/dunstctl.pod
 doc-doxygen:
 	${DOXYGEN} docs/internal/Doxyfile
 
-.PHONY: service service-dbus service-systemd
+.PHONY: service service-dbus service-systemd wayland-protocols
 service: service-dbus
 service-dbus:
 	@${SED} "s|##PREFIX##|$(PREFIX)|" org.knopwob.dunst.service.in > org.knopwob.dunst.service
@@ -128,8 +133,19 @@ service-systemd:
 	@${SED} "s|##PREFIX##|$(PREFIX)|" dunst.systemd.service.in > dunst.systemd.service
 endif
 
+wayland-protocols: src/wayland/protocols/wlr-layer-shell-unstable-v1.xml
+	mkdir -p src/wayland/protocols
+	# wayland-scanner client-header ${DATA_DIR_WAYLAND_PROTOCOLS}/stable/xdg-shell/xdg-shell.xml src/wayland/protocols/xdg-shell-client-header.h
+	wayland-scanner private-code ${DATA_DIR_WAYLAND_PROTOCOLS}/stable/xdg-shell/xdg-shell.xml src/wayland/protocols/xdg-shell.h
+	wayland-scanner client-header ${DATA_DIR_WAYLAND_PROTOCOLS}/stable/xdg-shell/xdg-shell.xml src/wayland/protocols/xdg-shell-client-header.h
+	wayland-scanner client-header ${DATA_DIR_WAYLAND_PROTOCOLS}/unstable/xdg-output/xdg-output-unstable-v1.xml src/wayland/protocols/xdg-output-unstable-v1-client-header.h
+	wayland-scanner private-code ${DATA_DIR_WAYLAND_PROTOCOLS}/unstable/xdg-output/xdg-output-unstable-v1.xml src/wayland/protocols/xdg-output-unstable-v1.h
+	wayland-scanner client-header src/wayland/protocols/wlr-layer-shell-unstable-v1.xml src/wayland/protocols/wlr-layer-shell-unstable-v1-client-header.h
+	wayland-scanner private-code src/wayland/protocols/wlr-layer-shell-unstable-v1.xml src/wayland/protocols/wlr-layer-shell-unstable-v1.h
+	
+
 .PHONY: clean clean-dunst clean-dunstify clean-doc clean-tests clean-coverage clean-coverage-run
-clean: clean-dunst clean-dunstify clean-doc clean-tests clean-coverage clean-coverage-run
+clean: clean-dunst clean-dunstify clean-doc clean-tests clean-coverage clean-coverage-run clean-wayland-protocols
 
 clean-dunst:
 	rm -f dunst ${OBJ} main.o main.d ${DEPS}
@@ -157,6 +173,9 @@ clean-coverage: clean-coverage-run
 clean-coverage-run:
 	${FIND} . -type f -name '*.gcov' -delete
 	${FIND} . -type f -name '*.gcda' -delete
+
+clean-wayland-protocols:
+	rm -f src/wayland/protocols/*.h
 
 .PHONY: install install-dunst install-dunstctl install-doc \
         install-service install-service-dbus install-service-systemd \
