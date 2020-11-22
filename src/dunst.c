@@ -9,7 +9,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <X11/Xlib.h>
+#include <wayland-client.h>
 
 #include "dbus.h"
 #include "draw.h"
@@ -86,6 +86,7 @@ static gboolean run(void *data)
         if (active) {
                 gint64 now = time_monotonic_now();
                 gint64 sleep = queues_get_next_datachange(now);
+                sleep = 100000; // Make sure wayland input is handled in time FIXME
                 gint64 timeout_at = now + sleep;
 
                 LOG_D("Dunst: sleeping for %li ms", sleep/1000);

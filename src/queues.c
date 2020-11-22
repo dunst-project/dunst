@@ -324,7 +324,7 @@ void queues_notification_close_id(int id, enum reason reason)
                 default:
                         reason_string="unknown";
         }
-                
+
         LOG_D("Queues: Closing notification for reason: %s", reason_string);
 
         GQueue *allqueues[] = { displayed, waiting };

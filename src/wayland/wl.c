@@ -12,6 +12,7 @@
 #include <sys/mman.h>
 #include <time.h>
 #include <unistd.h>
+#include <linux/input-event-codes.h>
 
 #include "protocols/xdg-output-unstable-v1-client-header.h"
 #include "protocols/xdg-output-unstable-v1.h"
@@ -23,6 +24,7 @@
 
 #include "../log.h"
 #include "../settings.h"
+#include "../queues.h"
 
 struct window_wl {
         struct wl_surface *surface;
@@ -45,6 +47,7 @@ struct wl_ctx {
         struct wl_shm *shm;
         struct zwlr_layer_shell_v1 *layer_shell;
         struct zxdg_output_manager_v1 *xdg_output_manager;
+        struct wl_seat *seat;
 
         struct wl_list outputs;
 
@@ -55,6 +58,11 @@ struct wl_ctx {
         struct wl_callback *frame_callback;
         bool configured;
         bool dirty;
+
+	struct {
+		struct wl_pointer *wl_pointer;
+		int32_t x, y;
+	} pointer;
 
         struct dimensions cur_dim;
 
@@ -112,8 +120,9 @@ static void output_handle_geometry(void *data, struct wl_output *wl_output,
                 int32_t x, int32_t y, int32_t phy_width, int32_t phy_height,
                 int32_t subpixel, const char *make, const char *model,
                 int32_t transform) {
-        //struct wl_output *output = data;
-        //output->subpixel = subpixel;
+        //TODO
+        /* struct wl_output *output = data; */
+        /* output->subpixel = subpixel; */
 }
 
 static void output_handle_scale(void *data, struct wl_output *wl_output,
@@ -161,6 +170,102 @@ static void destroy_output(struct wl_output *output) {
         free(output->name);
         free(output);
 }
+
+static void pointer_handle_motion(void *data, struct wl_pointer *wl_pointer,
+                uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y) {
+        LOG_I("Pointer handle motion");
+        ctx.pointer.x = wl_fixed_to_int(surface_x);
+        ctx.pointer.y = wl_fixed_to_int(surface_y);
+}
+
+static void pointer_handle_button(void *data, struct wl_pointer *wl_pointer,
+                uint32_t serial, uint32_t time, uint32_t button,
+                uint32_t button_state) {
+
+        if (button_state == 0){
+                // make sure it doesn't react twice
+                return;
+        }
+
+        LOG_I("Pointer handle button %i: %i", button, button_state);
+        enum mouse_action *acts;
+
+        switch (button) {
+                case BTN_LEFT:
+                        acts = settings.mouse_left_click;
+                        break;
+                case BTN_MIDDLE:
+                        acts = settings.mouse_middle_click;
+                        break;
+                case BTN_RIGHT:
+                        acts = settings.mouse_right_click;
+                        break;
+                default:
+                        LOG_W("Unsupported mouse button: '%d'", button);
+                        return;
+        }
+
+        // TODO Extract this code into seperate function
+        for (int i = 0; acts[i]; i++) {
+                enum mouse_action act = acts[i];
+                if (act == MOUSE_CLOSE_ALL) {
+                        queues_history_push_all();
+                        return;
+                }
+
+                if (act == MOUSE_DO_ACTION || act == MOUSE_CLOSE_CURRENT) {
+                        int y = settings.separator_height;
+                        struct notification *n = NULL;
+                        int first = true;
+                        for (const GList *iter = queues_get_displayed(); iter;
+                             iter = iter->next) {
+                                n = iter->data;
+                                if (ctx.pointer.y > y && ctx.pointer.y < y + n->displayed_height)
+                                        break;
+
+                                y += n->displayed_height + settings.separator_height;
+                                if (first)
+                                        y += settings.frame_width;
+                        }
+
+                        if (n) {
+                                if (act == MOUSE_CLOSE_CURRENT)
+                                        queues_notification_close(n, REASON_USER);
+                                else
+                                        notification_do_action(n);
+                        }
+                }
+        }
+
+}
+
+static const struct wl_pointer_listener pointer_listener = {
+        .enter = noop,
+        .leave = noop,
+        .motion = pointer_handle_motion,
+        .button = pointer_handle_button,
+        .axis = noop,
+};
+
+static void seat_handle_capabilities(void *data, struct wl_seat *wl_seat,
+                uint32_t capabilities) {
+
+        if (ctx.pointer.wl_pointer != NULL) {
+                wl_pointer_release(ctx.pointer.wl_pointer);
+                ctx.pointer.wl_pointer = NULL;
+        }
+        if (capabilities & WL_SEAT_CAPABILITY_POINTER) {
+                ctx.pointer.wl_pointer = wl_seat_get_pointer(wl_seat);
+                wl_pointer_add_listener(ctx.pointer.wl_pointer,
+                        &pointer_listener, ctx.seat);
+                LOG_I("Adding pointer");
+        }
+}
+
+static const struct wl_seat_listener seat_listener = {
+        .capabilities = seat_handle_capabilities,
+        .name = noop,
+};
 
 // FIXME: Snipped touch handling
 
@@ -241,9 +346,8 @@ static void handle_global(void *data, struct wl_registry *registry,
                 ctx.layer_shell = wl_registry_bind(registry, name,
                         &zwlr_layer_shell_v1_interface, 1);
         } else if (strcmp(interface, wl_seat_interface.name) == 0) {
-                struct wl_seat *seat =
-                        wl_registry_bind(registry, name, &wl_seat_interface, 3);
-                //create_seat(seat);
+                ctx.seat = wl_registry_bind(registry, name, &wl_seat_interface, 3);
+                wl_seat_add_listener(ctx.seat, &seat_listener, ctx.seat);
         } else if (strcmp(interface, wl_output_interface.name) == 0) {
                 struct wl_output *output =
                         wl_registry_bind(registry, name, &wl_output_interface, 3);
@@ -331,10 +435,7 @@ void finish_wayland() {
                 destroy_output(output);
         }
 
-        //struct mako_seat *seat, *seat_tmp;
-        //wl_list_for_each_safe(seat, seat_tmp, &ctx.seats, link) {
-        //        destroy_seat(seat);
-        //}
+        free(ctx.seat);
 
         if (ctx.xdg_output_manager != NULL) {
                 zxdg_output_manager_v1_destroy(ctx.xdg_output_manager);
@@ -345,8 +446,6 @@ void finish_wayland() {
         wl_registry_destroy(ctx.registry);
         wl_display_disconnect(ctx.display);
 }
-
-// FIXME: Snip
 
 static struct wl_output *get_configured_output() {
         struct wl_output *output;
@@ -446,7 +545,7 @@ static void send_frame() {
                 else{
                         anchor |= ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP;
                 }
-                
+
                 // Put the window at the right position
                 zwlr_layer_surface_v1_set_anchor(ctx.layer_surface,
                         anchor);
@@ -552,7 +651,7 @@ void wl_win_show(window win) {
 }
 
 void wl_win_hide(window win) {
-        LOG_W("Hiding window");
+        LOG_I("Hiding window");
         ctx.cur_dim.h = 0;
         set_dirty();
         wl_display_roundtrip(ctx.display);
