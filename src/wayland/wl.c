@@ -25,6 +25,7 @@
 #include "../log.h"
 #include "../settings.h"
 #include "../queues.h"
+#include "libgwater-wayland.h"
 
 struct window_wl {
         struct wl_surface *surface;
@@ -35,6 +36,8 @@ struct window_wl {
         cairo_surface_t *c_surface;
         cairo_t * c_ctx;
         struct dimensions dim;
+
+        GWaterWaylandSource *esrc;
 
         char *data;
         size_t size;
@@ -235,7 +238,7 @@ static void pointer_handle_button(void *data, struct wl_pointer *wl_pointer,
                         }
                 }
         }
-
+        wake_up();
 }
 
 static const struct wl_pointer_listener pointer_listener = {
@@ -527,6 +530,8 @@ static void send_frame() {
         if (ctx.height != height) {
                 struct dimensions dim = ctx.cur_dim;
                 // Set window size
+                LOG_D("Wl: Window dimensions %ix%i", dim.w, dim.h);
+                LOG_D("Wl: Window position %ix%i", dim.x, dim.y);
                 zwlr_layer_surface_v1_set_size(ctx.layer_surface,
                                 dim.w, dim.h);
 
@@ -637,11 +642,14 @@ void wl_deinit(void) {
 window wl_win_create(void) {
         struct window_wl *win = g_malloc0(sizeof(struct window_wl));
 
+        win->esrc = g_water_wayland_source_new_for_display(NULL, ctx.display);
         return win;
 }
 
 void wl_win_destroy(window winptr) {
         struct window_wl *win = (struct window_wl*)winptr;
+
+        g_water_wayland_source_free(win->esrc);
         // FIXME: Dealloc everything
         g_free(win);
 }

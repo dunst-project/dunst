@@ -57,6 +57,7 @@ static gboolean run(void *data);
 
 void wake_up(void)
 {
+        LOG_D("Waking up");
         run(NULL);
 }
 
@@ -78,13 +79,14 @@ static gboolean run(void *data)
                 draw();
                 output->win_show(win);
         } else {
+                LOG_I("Calling win_hide");
                 output->win_hide(win);
         }
 
         if (active) {
                 gint64 now = time_monotonic_now();
                 gint64 sleep = queues_get_next_datachange(now);
-                sleep = 100000; // Make sure wayland input is handled in time FIXME
+                /* sleep = 100000; // Make sure wayland input is handled in time FIXME (fixed)*/
                 gint64 timeout_at = now + sleep;
 
                 LOG_D("Sleeping for %li ms", sleep/1000);
