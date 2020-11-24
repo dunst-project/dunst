@@ -72,7 +72,7 @@ ${OBJ} ${TEST_OBJ}: Makefile config.mk
 %.o: %.c
 	${CC} -o $@ -c $< ${CFLAGS}
 
-dunst: ${OBJ} main.o wayland-protocols
+dunst: wayland-protocols ${OBJ} main.o
 	${CC} -o ${@} ${OBJ} main.o ${CFLAGS} ${LDFLAGS}
 
 dunstify: dunstify.o
@@ -135,7 +135,6 @@ endif
 
 wayland-protocols: src/wayland/protocols/wlr-layer-shell-unstable-v1.xml
 	mkdir -p src/wayland/protocols
-	# wayland-scanner client-header ${DATA_DIR_WAYLAND_PROTOCOLS}/stable/xdg-shell/xdg-shell.xml src/wayland/protocols/xdg-shell-client-header.h
 	wayland-scanner private-code ${DATA_DIR_WAYLAND_PROTOCOLS}/stable/xdg-shell/xdg-shell.xml src/wayland/protocols/xdg-shell.h
 	wayland-scanner client-header ${DATA_DIR_WAYLAND_PROTOCOLS}/stable/xdg-shell/xdg-shell.xml src/wayland/protocols/xdg-shell-client-header.h
 	wayland-scanner client-header ${DATA_DIR_WAYLAND_PROTOCOLS}/unstable/xdg-output/xdg-output-unstable-v1.xml src/wayland/protocols/xdg-output-unstable-v1-client-header.h
