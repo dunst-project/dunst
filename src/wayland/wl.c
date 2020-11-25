@@ -20,7 +20,10 @@
 #include "protocols/xdg-shell.h"
 #include "protocols/wlr-layer-shell-unstable-v1-client-header.h"
 #include "protocols/wlr-layer-shell-unstable-v1.h"
+#include "protocols/idle-client-header.h"
+#include "protocols/idle.h"
 #include "pool-buffer.h"
+
 
 #include "../log.h"
 #include "../settings.h"
@@ -59,8 +62,11 @@ struct wl_ctx {
         struct zwlr_layer_surface_v1 *layer_surface;
         struct wl_output *layer_surface_output;
         struct wl_callback *frame_callback;
+        struct org_kde_kwin_idle *idle_handler;
         bool configured;
         bool dirty;
+        bool is_idle;
+        bool has_seat;
 
 	struct {
 		struct wl_pointer *wl_pointer;
@@ -74,7 +80,7 @@ struct wl_ctx {
         struct pool_buffer *current_buffer;
 };
 
-struct wl_output {
+struct dunst_output {
         uint32_t global_name;
         char *name;
         struct wl_output *wl_output;
@@ -82,6 +88,7 @@ struct wl_output {
         struct wl_list link;
 
         uint32_t scale;
+        uint32_t subpixel; // TODO do something with it
 };
 
 
@@ -95,7 +102,7 @@ static void noop() {
 void set_dirty();
 static void xdg_output_handle_name(void *data, struct zxdg_output_v1 *xdg_output,
                 const char *name) {
-        struct wl_output *output = data;
+        struct dunst_output *output = data;
         output->name = g_strdup(name);
 }
 
@@ -107,7 +114,7 @@ static const struct zxdg_output_v1_listener xdg_output_listener = {
         .description = noop,
 };
 
-static void get_xdg_output(struct wl_output *output) {
+static void get_xdg_output(struct dunst_output *output) {
         if (ctx.xdg_output_manager == NULL ||
                         output->xdg_output != NULL) {
                 return;
@@ -124,13 +131,13 @@ static void output_handle_geometry(void *data, struct wl_output *wl_output,
                 int32_t subpixel, const char *make, const char *model,
                 int32_t transform) {
         //TODO
-        /* struct wl_output *output = data; */
-        /* output->subpixel = subpixel; */
+        struct dunst_output *output = data;
+        output->subpixel = subpixel;
 }
 
 static void output_handle_scale(void *data, struct wl_output *wl_output,
                 int32_t factor) {
-        struct wl_output *output = data;
+        struct dunst_output *output = data;
         output->scale = factor;
 }
 
@@ -142,27 +149,30 @@ static const struct wl_output_listener output_listener = {
 };
 
 static void create_output( struct wl_output *wl_output, uint32_t global_name) {
-        struct wl_output *output = g_malloc0(sizeof(struct wl_output));
+        struct dunst_output *output = g_malloc0(sizeof(struct dunst_output));
         if (output == NULL) {
                 fprintf(stderr, "allocation failed\n");
                 return;
         }
+        static int number = 0;
+        LOG_I("New output %i - id %i", global_name, number);
         output->global_name = global_name;
         output->wl_output = wl_output;
         // TODO: Fix this
-        //output->scale = 1;
-        //wl_list_insert(&state->outputs, &output->link);
+        output->scale = 1;
+        wl_list_insert(&ctx.outputs, &output->link);
 
         wl_output_set_user_data(wl_output, output);
         wl_output_add_listener(wl_output, &output_listener, output);
         get_xdg_output(output);
+        number++;
 }
 
-static void destroy_output(struct wl_output *output) {
-        if (ctx.surface_output == output) {
+static void destroy_output(struct dunst_output *output) {
+        if (ctx.surface_output == output->wl_output) {
                 ctx.surface_output = NULL;
         }
-        if (ctx.layer_surface_output == output) {
+        if (ctx.layer_surface_output == output->wl_output) {
                 ctx.layer_surface_output = NULL;
         }
         wl_list_remove(&output->link);
@@ -336,6 +346,26 @@ static const struct zwlr_layer_surface_v1_listener layer_surface_listener = {
 };
 
 
+static void idle_start (void *data, struct org_kde_kwin_idle_timeout *org_kde_kwin_idle_timeout){
+        ctx.is_idle = true;
+        LOG_I("User went idle");
+}
+static void idle_stop (void *data, struct org_kde_kwin_idle_timeout *org_kde_kwin_idle_timeout) {
+        ctx.is_idle = false;
+        LOG_I("User isn't idle anymore");
+}
+
+static const struct org_kde_kwin_idle_timeout_listener idle_timeout_listener = {
+        .idle = idle_start,
+        .resumed = idle_stop,
+};
+
+static void add_seat_to_idle_handler(struct wl_seat *seat){
+        uint32_t timeout_ms = settings.idle_threshold/1000;
+        struct org_kde_kwin_idle_timeout *idle_timeout = org_kde_kwin_idle_get_idle_timeout(ctx.idle_handler, ctx.seat, timeout_ms);
+        org_kde_kwin_idle_timeout_add_listener(idle_timeout, &idle_timeout_listener, 0);
+}
+
 static void handle_global(void *data, struct wl_registry *registry,
                 uint32_t name, const char *interface, uint32_t version) {
         if (strcmp(interface, wl_compositor_interface.name) == 0) {
@@ -350,6 +380,8 @@ static void handle_global(void *data, struct wl_registry *registry,
         } else if (strcmp(interface, wl_seat_interface.name) == 0) {
                 ctx.seat = wl_registry_bind(registry, name, &wl_seat_interface, 3);
                 wl_seat_add_listener(ctx.seat, &seat_listener, ctx.seat);
+                add_seat_to_idle_handler(ctx.seat);
+                ctx.has_seat = true;
         } else if (strcmp(interface, wl_output_interface.name) == 0) {
                 struct wl_output *output =
                         wl_registry_bind(registry, name, &wl_output_interface, 3);
@@ -359,12 +391,15 @@ static void handle_global(void *data, struct wl_registry *registry,
                 ctx.xdg_output_manager = wl_registry_bind(registry, name,
                         &zxdg_output_manager_v1_interface,
                         ZXDG_OUTPUT_V1_NAME_SINCE_VERSION);
+        } else if (strcmp(interface, org_kde_kwin_idle_interface.name) == 0 &&
+                        version >= ORG_KDE_KWIN_IDLE_TIMEOUT_IDLE_SINCE_VERSION) {
+                ctx.idle_handler = wl_registry_bind(registry, name, &org_kde_kwin_idle_interface, 1);
         }
 }
 
 static void handle_global_remove(void *data, struct wl_registry *registry,
                 uint32_t name) {
-        struct wl_output *output, *tmp;
+        struct dunst_output *output, *tmp;
         wl_list_for_each_safe(output, tmp, &ctx.outputs, link) {
                 if (output->global_name == name) {
                         destroy_output(output);
@@ -407,7 +442,7 @@ bool init_wayland() {
         }
 
         if (ctx.xdg_output_manager != NULL) {
-                struct wl_output *output;
+                struct dunst_output *output;
                 wl_list_for_each(output, &ctx.outputs, link) {
                         get_xdg_output(output);
                 }
@@ -432,7 +467,7 @@ void finish_wayland() {
         finish_buffer(&ctx.buffers[0]);
         finish_buffer(&ctx.buffers[1]);
 
-        struct wl_output *output, *output_tmp;
+        struct dunst_output *output, *output_tmp;
         wl_list_for_each_safe(output, output_tmp, &ctx.outputs, link) {
                 destroy_output(output);
         }
@@ -449,9 +484,9 @@ void finish_wayland() {
         wl_display_disconnect(ctx.display);
 }
 
-static struct wl_output *get_configured_output() {
-        struct wl_output *output;
-        // FIXME
+static struct dunst_output *get_configured_output() {
+        struct dunst_output *output;
+        // FIXME Make sure the returned output corresponds to the monitor number configured in the dunstrc
         wl_list_for_each(output, &ctx.outputs, link) {
                 return output;
         }
@@ -465,12 +500,12 @@ static void schedule_frame_and_commit();
 static void send_frame() {
         int scale = 1;
 
-        struct wl_output *output = get_configured_output();
+        struct dunst_output *output = get_configured_output();
         int height = ctx.cur_dim.h;
 
         // There are two cases where we want to tear down the surface: zero
         // notifications (height = 0) or moving between outputs.
-        if (height == 0 || ctx.layer_surface_output != output) {
+        if (height == 0 || ctx.layer_surface_output != output->wl_output) {
                 if (ctx.layer_surface != NULL) {
                         zwlr_layer_surface_v1_destroy(ctx.layer_surface);
                         ctx.layer_surface = NULL;
@@ -498,10 +533,11 @@ static void send_frame() {
         if (ctx.layer_surface == NULL) {
                 struct wl_output *wl_output = NULL;
                 if (output != NULL) {
+                        LOG_I("Output is not null");
                         wl_output = output->wl_output;
-                }
-                ctx.layer_surface_output = output;
-
+                } else
+                        LOG_I("output is null");
+                ctx.layer_surface_output = output->wl_output;
                 ctx.surface = wl_compositor_create_surface(ctx.compositor);
                 wl_surface_add_listener(ctx.surface, &surface_listener, NULL);
 
@@ -707,7 +743,14 @@ const struct screen_info* wl_get_active_screen(void) {
 }
 
 bool wl_is_idle(void) {
-        return false;
+        LOG_I("Idle status queried: %i", ctx.is_idle);
+        // When the user doesn't have a seat, or their compositor doesn't support the idle
+        // protocol, we'll assume that they are not idle.
+        if (settings.idle_threshold == 0 || ctx.has_seat == false || ctx.idle_handler == NULL) {
+                return false;
+        } else {
+                return ctx.is_idle;
+        }
 }
 bool wl_have_fullscreen_window(void) {
         return false;

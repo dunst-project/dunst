@@ -264,7 +264,7 @@ Set to 0 to disable.
 A client can mark a notification as transient to bypass this setting and timeout
 anyway. Use a rule with 'set_transient = no' to disable this behavior.
 
-Note: this doesn't work on wayland yet.
+Note: this doesn't work on xwayland yet.
 
 =item B<font> (default: "Monospace 8")
 

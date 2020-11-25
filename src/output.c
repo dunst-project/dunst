@@ -5,9 +5,14 @@
 #include "x11/screen.h"
 #include "wayland/wl.h"
 
-const bool is_running_wayland(void){
+const bool is_running_wayland(void) {
         char* wayland_display = getenv("WAYLAND_DISPLAY");
         return !(wayland_display == NULL);
+}
+
+const bool is_running_xwayland(void) {
+        // FIXME
+        return false;
 }
 
 const struct output output_x11 = {
