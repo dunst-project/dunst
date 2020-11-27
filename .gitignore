@@ -17,4 +17,4 @@ vgcore.*
 /org.knopwob.dunst.service
 /test/test
 
-/src/wayland/protocols/*.h
+# /src/wayland/protocols/*.h

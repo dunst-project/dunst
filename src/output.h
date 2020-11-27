@@ -51,5 +51,7 @@ const struct output* output_create(void);
 
 const bool is_running_wayland(void);
 
+const bool is_running_xwayland(void);
+
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

@@ -72,7 +72,7 @@ ${OBJ} ${TEST_OBJ}: Makefile config.mk
 %.o: %.c
 	${CC} -o $@ -c $< ${CFLAGS}
 
-dunst: wayland-protocols ${OBJ} main.o
+dunst: ${OBJ} main.o
 	${CC} -o ${@} ${OBJ} main.o ${CFLAGS} ${LDFLAGS}
 
 dunstify: dunstify.o
@@ -144,8 +144,8 @@ wayland-protocols: src/wayland/protocols/wlr-layer-shell-unstable-v1.xml
 	wayland-scanner client-header src/wayland/protocols/idle.xml src/wayland/protocols/idle-client-header.h
 	wayland-scanner private-code src/wayland/protocols/idle.xml src/wayland/protocols/idle.h
 
-.PHONY: clean clean-dunst clean-dunstify clean-doc clean-tests clean-coverage clean-coverage-run
-clean: clean-dunst clean-dunstify clean-doc clean-tests clean-coverage clean-coverage-run clean-wayland-protocols
+.PHONY: clean clean-dunst clean-dunstify clean-doc clean-tests clean-coverage clean-coverage-run clean-wayland-protocols
+clean: clean-dunst clean-dunstify clean-doc clean-tests clean-coverage clean-coverage-run
 
 clean-dunst:
 	rm -f dunst ${OBJ} main.o main.d ${DEPS}

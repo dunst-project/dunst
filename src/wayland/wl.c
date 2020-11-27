@@ -13,6 +13,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <linux/input-event-codes.h>
+#include <string.h>
 
 #include "protocols/xdg-output-unstable-v1-client-header.h"
 #include "protocols/xdg-output-unstable-v1.h"
@@ -28,6 +29,7 @@
 #include "../log.h"
 #include "../settings.h"
 #include "../queues.h"
+#include "../input.h"
 #include "libgwater-wayland.h"
 
 struct window_wl {
@@ -184,6 +186,7 @@ static void destroy_output(struct dunst_output *output) {
         free(output);
 }
 
+// FIXME: Snipped touch handling
 static void pointer_handle_motion(void *data, struct wl_pointer *wl_pointer,
                 uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y) {
         ctx.pointer.x = wl_fixed_to_int(surface_x);
@@ -193,62 +196,7 @@ static void pointer_handle_motion(void *data, struct wl_pointer *wl_pointer,
 static void pointer_handle_button(void *data, struct wl_pointer *wl_pointer,
                 uint32_t serial, uint32_t time, uint32_t button,
                 uint32_t button_state) {
-
-        if (button_state == 0){
-                // make sure it doesn't react twice
-                return;
-        }
-
-        LOG_I("Pointer handle button %i: %i", button, button_state);
-        enum mouse_action *acts;
-
-        switch (button) {
-                case BTN_LEFT:
-                        acts = settings.mouse_left_click;
-                        break;
-                case BTN_MIDDLE:
-                        acts = settings.mouse_middle_click;
-                        break;
-                case BTN_RIGHT:
-                        acts = settings.mouse_right_click;
-                        break;
-                default:
-                        LOG_W("Unsupported mouse button: '%d'", button);
-                        return;
-        }
-
-        // TODO Extract this code into seperate function
-        for (int i = 0; acts[i]; i++) {
-                enum mouse_action act = acts[i];
-                if (act == MOUSE_CLOSE_ALL) {
-                        queues_history_push_all();
-                        return;
-                }
-
-                if (act == MOUSE_DO_ACTION || act == MOUSE_CLOSE_CURRENT) {
-                        int y = settings.separator_height;
-                        struct notification *n = NULL;
-                        int first = true;
-                        for (const GList *iter = queues_get_displayed(); iter;
-                             iter = iter->next) {
-                                n = iter->data;
-                                if (ctx.pointer.y > y && ctx.pointer.y < y + n->displayed_height)
-                                        break;
-
-                                y += n->displayed_height + settings.separator_height;
-                                if (first)
-                                        y += settings.frame_width;
-                        }
-
-                        if (n) {
-                                if (act == MOUSE_CLOSE_CURRENT)
-                                        queues_notification_close(n, REASON_USER);
-                                else
-                                        notification_do_action(n);
-                        }
-                }
-        }
-        wake_up();
+        input_handle_click(button, button_state, ctx.pointer.x, ctx.pointer.y);
 }
 
 static const struct wl_pointer_listener pointer_listener = {
@@ -258,6 +206,8 @@ static const struct wl_pointer_listener pointer_listener = {
         .button = pointer_handle_button,
         .axis = noop,
 };
+
+// FIXME snipped touch listener
 
 static void seat_handle_capabilities(void *data, struct wl_seat *wl_seat,
                 uint32_t capabilities) {
@@ -279,7 +229,6 @@ static const struct wl_seat_listener seat_listener = {
         .name = noop,
 };
 
-// FIXME: Snipped touch handling
 
 static void surface_handle_enter(void *data, struct wl_surface *surface,
                 struct wl_output *wl_output) {
@@ -306,10 +255,13 @@ static void send_frame();
 static void layer_surface_handle_configure(void *data,
                 struct zwlr_layer_surface_v1 *surface,
                 uint32_t serial, uint32_t width, uint32_t height) {
+        LOG_W("Surface handle configure %ix%i", width, height);
         ctx.configured = true;
         ctx.width = width;
         ctx.height = height;
 
+        // not needed as it is set somewhere else
+        /* zwlr_layer_surface_v1_set_size(surface, width, height);  */
         zwlr_layer_surface_v1_ack_configure(surface, serial);
         send_frame();
 }
@@ -346,7 +298,7 @@ static const struct zwlr_layer_surface_v1_listener layer_surface_listener = {
 };
 
 
-static void idle_start (void *data, struct org_kde_kwin_idle_timeout *org_kde_kwin_idle_timeout){
+static void idle_start (void *data, struct org_kde_kwin_idle_timeout *org_kde_kwin_idle_timeout) {
         ctx.is_idle = true;
         LOG_I("User went idle");
 }
@@ -360,7 +312,7 @@ static const struct org_kde_kwin_idle_timeout_listener idle_timeout_listener = {
         .resumed = idle_stop,
 };
 
-static void add_seat_to_idle_handler(struct wl_seat *seat){
+static void add_seat_to_idle_handler(struct wl_seat *seat) {
         uint32_t timeout_ms = settings.idle_threshold/1000;
         struct org_kde_kwin_idle_timeout *idle_timeout = org_kde_kwin_idle_get_idle_timeout(ctx.idle_handler, ctx.seat, timeout_ms);
         org_kde_kwin_idle_timeout_add_listener(idle_timeout, &idle_timeout_listener, 0);
@@ -472,7 +424,12 @@ void finish_wayland() {
                 destroy_output(output);
         }
 
-        free(ctx.seat);
+        if (ctx.seat) {
+                wl_pointer_release(ctx.pointer.wl_pointer);
+                wl_seat_release(ctx.seat);
+                ctx.seat = NULL;
+                /* free(ctx.seat); */
+        }
 
         if (ctx.xdg_output_manager != NULL) {
                 zxdg_output_manager_v1_destroy(ctx.xdg_output_manager);
@@ -486,6 +443,9 @@ void finish_wayland() {
 
 static struct dunst_output *get_configured_output() {
         struct dunst_output *output;
+        /* if (strcmp(output_name, "") == 0) { */
+                /* return NULL; */
+        /* } */
         // FIXME Make sure the returned output corresponds to the monitor number configured in the dunstrc
         wl_list_for_each(output, &ctx.outputs, link) {
                 return output;
@@ -502,6 +462,7 @@ static void send_frame() {
 
         struct dunst_output *output = get_configured_output();
         int height = ctx.cur_dim.h;
+        int width = ctx.cur_dim.w;
 
         // There are two cases where we want to tear down the surface: zero
         // notifications (height = 0) or moving between outputs.
@@ -523,7 +484,6 @@ static void send_frame() {
         // surface right now.
         if (height == 0) {
                 ctx.dirty = false;
-                wl_display_roundtrip(ctx.display);
                 return;
         }
 
@@ -563,7 +523,7 @@ static void send_frame() {
         // surface is brand new, it doesn't even have a size yet. If it already
         // exists, we might need to resize if the list of notifications has changed
         // since the last time we drew.
-        if (ctx.height != height) {
+        if (ctx.height != height || ctx.width != width) {
                 struct dimensions dim = ctx.cur_dim;
                 // Set window size
                 LOG_D("Wl: Window dimensions %ix%i", dim.w, dim.h);
@@ -571,18 +531,17 @@ static void send_frame() {
                 zwlr_layer_surface_v1_set_size(ctx.layer_surface,
                                 dim.w, dim.h);
 
+                // TODO Do this only once
                 uint32_t anchor = 0;
-                if (settings.geometry.negative_x){
+                if (settings.geometry.negative_x) {
                         anchor |= ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT;
-                }
-                else{
+                } else {
                         anchor |= ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT;
                 }
 
-                if (settings.geometry.negative_y){
+                if (settings.geometry.negative_y) {
                         anchor |= ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM;
-                }
-                else{
+                } else {
                         anchor |= ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP;
                 }
 
@@ -701,7 +660,7 @@ void wl_win_hide(window win) {
 }
 
 void wl_display_surface(cairo_surface_t *srf, window winptr, const struct dimensions* dim) {
-        struct window_wl *win = (struct window_wl*)winptr;
+        /* struct window_wl *win = (struct window_wl*)winptr; */
         ctx.current_buffer = get_next_buffer(ctx.shm, ctx.buffers, dim->w, dim->h);
 
         cairo_t *c = ctx.current_buffer->cairo;
