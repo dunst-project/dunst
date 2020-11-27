@@ -17,9 +17,11 @@ jobs:
           - alpine
           - archlinux
           - debian-stretch
+          - debian-buster
           - fedora
           - ubuntu-xenial
           - ubuntu-bionic
+          - ubuntu-focal
 
     env:
       CC: ${{ matrix.CC }}

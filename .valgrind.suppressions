@@ -48,6 +48,20 @@
    ...
 }
 
+# Some new in ArchLinux
+{
+   rsvg_rust_handle_close
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   ...
+   fun:rsvg_rust_handle_close
+   obj:*/loaders/libpixbufloader-svg.so
+   ...
+   fun:gdk_pixbuf_new_from_file
+   ...
+}
+
 # rsvg_error_writehandler got fixed in
 # - GNOME/librsvg@7b4cc9b
 # (2018-11-12, first tags: v2.45.0, v2.44.9)
