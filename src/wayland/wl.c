@@ -60,9 +60,9 @@ struct wl_ctx {
         struct wl_list outputs;
 
         struct wl_surface *surface;
-        struct wl_output *surface_output;
+        struct dunst_output *surface_output;
         struct zwlr_layer_surface_v1 *layer_surface;
-        struct wl_output *layer_surface_output;
+        struct dunst_output *layer_surface_output;
         struct wl_callback *frame_callback;
         struct org_kde_kwin_idle *idle_handler;
         bool configured;
@@ -171,10 +171,10 @@ static void create_output( struct wl_output *wl_output, uint32_t global_name) {
 }
 
 static void destroy_output(struct dunst_output *output) {
-        if (ctx.surface_output == output->wl_output) {
+        if (ctx.surface_output == output) {
                 ctx.surface_output = NULL;
         }
-        if (ctx.layer_surface_output == output->wl_output) {
+        if (ctx.layer_surface_output == output) {
                 ctx.layer_surface_output = NULL;
         }
         wl_list_remove(&output->link);
@@ -446,15 +446,27 @@ void finish_wayland() {
 
 static struct dunst_output *get_configured_output() {
         struct dunst_output *output;
-        /* if (strcmp(output_name, "") == 0) { */
-                /* return NULL; */
-        /* } */
-        // FIXME Make sure the returned output corresponds to the monitor number configured in the dunstrc
-        wl_list_for_each(output, &ctx.outputs, link) {
-                return output;
-        }
+        /* LOG_D("Follow mode %i", settings.f_mode); */
+        switch (settings.f_mode){
+                case FOLLOW_NONE:
+                        LOG_I("Follow none, using monitor setting: %i", settings.monitor);
+                        int n = 0;
+                        int target_monitor = settings.monitor;
 
-        return NULL;
+                        wl_list_for_each(output, &ctx.outputs, link) {
+                                if (n == target_monitor)
+                                        return output;
+                                n++;
+                        }
+                        LOG_W("Monitor %i doesn't exist, using focused monitor", settings.monitor);
+                        return NULL;
+                case FOLLOW_MOUSE:
+                        // fallthrough
+                case FOLLOW_KEYBOARD:
+                        // fallthrough
+                default:
+                        return NULL;
+        }
 }
 
 static void schedule_frame_and_commit();
@@ -469,7 +481,7 @@ static void send_frame() {
 
         // There are two cases where we want to tear down the surface: zero
         // notifications (height = 0) or moving between outputs.
-        if (height == 0 || ctx.layer_surface_output != output->wl_output) {
+        if (height == 0 || ctx.layer_surface_output != output) {
                 if (ctx.layer_surface != NULL) {
                         zwlr_layer_surface_v1_destroy(ctx.layer_surface);
                         ctx.layer_surface = NULL;
@@ -500,7 +512,7 @@ static void send_frame() {
                         wl_output = output->wl_output;
                 } else
                         LOG_I("output is null");
-                ctx.layer_surface_output = output->wl_output;
+                ctx.layer_surface_output = output;
                 ctx.surface = wl_compositor_create_surface(ctx.compositor);
                 wl_surface_add_listener(ctx.surface, &surface_listener, NULL);
 
