@@ -122,6 +122,8 @@ struct settings defaults = {
 .progress_bar_frame_width = 1,
 
 .progress_bar = true,
+
+.layer = ZWLR_LAYER_SHELL_V1_LAYER_TOP,
 };
 
 struct rule default_rules[] = {

@@ -486,6 +486,22 @@ void load_settings(char *cmdline_config_path)
 
         }
 
+        {
+                char *c = option_get_string(
+                        "global",
+                        "layer", "-layer", "top",
+                        "Select the layer where notifications should be placed"
+                );
+
+                if (!string_parse_layer(c, &settings.layer)) {
+                        if (c)
+                                LOG_W("Unknown layer: '%s'", c);
+                        settings.layer = defaults.layer;
+                }
+                g_free(c);
+
+        }
+
         settings.min_icon_size = option_get_int(
                 "global",
                 "min_icon_size", "-min_icon_size", defaults.min_icon_size,

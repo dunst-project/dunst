@@ -264,7 +264,24 @@ Set to 0 to disable.
 A client can mark a notification as transient to bypass this setting and timeout
 anyway. Use a rule with 'set_transient = no' to disable this behavior.
 
-Note: this doesn't work on xwayland yet.
+Note: this doesn't work on xwayland.
+
+=item B<layer> (Wayland only)
+
+One of bottom, top or overlay.
+
+Place dunst notifications on the selected layer. Using overlay
+will cause notifications to be displayed above fullscreen windows, though
+this may also occur at top depending on your compositor.
+
+The bottom layer is below all windows and above the background.
+
+Default: top
+
+=item B<use_xwayland> (values: [true/false], default: false) (Wayland only)
+
+Force the use of X11 output, even on a wayland compositor. This setting
+has no effect when not using a Wayland compositor.
 
 =item B<font> (default: "Monospace 8")
 
@@ -497,7 +514,7 @@ Do not display log messages, which have lower precedence than specified
 verbosity. This won't affect printing notifications on the terminal. Use
 the '-print' option for this.
 
-=item B<force_xinerama> (values: [true/false], default: false)
+=item B<force_xinerama> (values: [true/false], default: false) (X11 only)
 
 Use the Xinerama extension instead of RandR for multi-monitor support. This
 setting is provided for compatibility with older nVidia drivers that do not
@@ -774,7 +791,7 @@ Equivalent to the C<format> setting.
 
 The frame color color of the notification. See COLORS for possible values.
 
-=item C<fullscreen>
+=item C<fullscreen> (X11 only)
 
 One of show, delay, or pushback.
 
@@ -788,6 +805,10 @@ held back and displayed when the focus to the fullscreen window is lost.
 Or pushback which is equivalent to delay with the difference that already
 existing notifications are paused and hidden until the focus to the fullscreen
 window is lost.
+
+See B<layer> to change fullscreen behavior in Wayland
+
+Default: show
 
 =item C<new_icon>
 

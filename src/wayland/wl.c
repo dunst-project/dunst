@@ -153,7 +153,7 @@ static const struct wl_output_listener output_listener = {
 static void create_output( struct wl_output *wl_output, uint32_t global_name) {
         struct dunst_output *output = g_malloc0(sizeof(struct dunst_output));
         if (output == NULL) {
-                fprintf(stderr, "allocation failed\n");
+                LOG_E("allocation failed");
                 return;
         }
         static int number = 0;
@@ -255,7 +255,7 @@ static void send_frame();
 static void layer_surface_handle_configure(void *data,
                 struct zwlr_layer_surface_v1 *surface,
                 uint32_t serial, uint32_t width, uint32_t height) {
-        LOG_W("Surface handle configure %ix%i", width, height);
+        LOG_D("Surface handle configure %ix%i", width, height);
         ctx.configured = true;
         ctx.width = width;
         ctx.height = height;
@@ -268,7 +268,7 @@ static void layer_surface_handle_configure(void *data,
 
 static void layer_surface_handle_closed(void *data,
                 struct zwlr_layer_surface_v1 *surface) {
-        LOG_W("Destroying layer");
+        LOG_I("Destroying layer");
         zwlr_layer_surface_v1_destroy(ctx.layer_surface);
         ctx.layer_surface = NULL;
 
@@ -313,6 +313,9 @@ static const struct org_kde_kwin_idle_timeout_listener idle_timeout_listener = {
 };
 
 static void add_seat_to_idle_handler(struct wl_seat *seat) {
+        if (!ctx.idle_handler){
+                return;
+        }
         uint32_t timeout_ms = settings.idle_threshold/1000;
         struct org_kde_kwin_idle_timeout *idle_timeout = org_kde_kwin_idle_get_idle_timeout(ctx.idle_handler, ctx.seat, timeout_ms);
         org_kde_kwin_idle_timeout_add_listener(idle_timeout, &idle_timeout_listener, 0);
@@ -372,7 +375,7 @@ bool init_wayland() {
         ctx.display = wl_display_connect(NULL);
 
         if (ctx.display == NULL) {
-                fprintf(stderr, "failed to create display\n");
+                LOG_E("failed to create display");
                 return false;
         }
 
@@ -381,15 +384,15 @@ bool init_wayland() {
         wl_display_roundtrip(ctx.display);
 
         if (ctx.compositor == NULL) {
-                fprintf(stderr, "compositor doesn't support wl_compositor\n");
+                LOG_E("compositor doesn't support wl_compositor");
                 return false;
         }
         if (ctx.shm == NULL) {
-                fprintf(stderr, "compositor doesn't support wl_shm\n");
+                LOG_E("compositor doesn't support wl_shm");
                 return false;
         }
         if (ctx.layer_shell == NULL) {
-                fprintf(stderr, "compositor doesn't support zwlr_layer_shell_v1\n");
+                LOG_E("compositor doesn't support zwlr_layer_shell_v1");
                 return false;
         }
 
@@ -402,8 +405,8 @@ bool init_wayland() {
         }
         //if (ctx.xdg_output_manager == NULL &&
         //                strcmp(ctx.config.output, "") != 0) {
-        //        fprintf(stderr, "warning: configured an output but compositor doesn't "
-        //                "support xdg-output-unstable-v1 version 2\n");
+        //        LOG_E("warning: configured an output but compositor doesn't "
+        //                "support xdg-output-unstable-v1 version 2");
         //}
 
         return true;
@@ -501,9 +504,10 @@ static void send_frame() {
                 ctx.surface = wl_compositor_create_surface(ctx.compositor);
                 wl_surface_add_listener(ctx.surface, &surface_listener, NULL);
 
+                if (settings.frame_color)
                 ctx.layer_surface = zwlr_layer_shell_v1_get_layer_surface(
                         ctx.layer_shell, ctx.surface, wl_output,
-                        ZWLR_LAYER_SHELL_V1_LAYER_TOP, "notifications");
+                        settings.layer, "notifications");
                 zwlr_layer_surface_v1_add_listener(ctx.layer_surface,
                         &layer_surface_listener, NULL);
 

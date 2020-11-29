@@ -45,7 +45,7 @@ void input_handle_click(unsigned int button, bool button_down, int mouse_x, int 
                              iter = iter->next) {
                                 n = iter->data;
                                 if (mouse_y > y && mouse_y < y + n->displayed_height) {
-                                        LOG_W("Mouse X: %i", mouse_x);
+                                        /* LOG_W("Mouse X: %i", mouse_x); */
                                         /* LOG_W("X < width: ", mouse_x < ); */
                                         /* n = NULL; */
                                         break;

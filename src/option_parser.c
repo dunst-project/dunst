@@ -189,6 +189,18 @@ bool string_parse_urgency(const char *s, enum urgency *ret)
         return false;
 }
 
+bool string_parse_layer(const char *s, enum zwlr_layer_shell_v1_layer *ret)
+{
+        ASSERT_OR_RET(STR_FULL(s), false);
+        ASSERT_OR_RET(ret, false);
+
+        STRING_PARSE_RET("bottom",      ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM);
+        STRING_PARSE_RET("top",   ZWLR_LAYER_SHELL_V1_LAYER_TOP);
+        STRING_PARSE_RET("overlay", ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY);
+
+        return false;
+}
+
 struct section *new_section(const char *name)
 {
         for (int i = 0; i < section_count; i++) {

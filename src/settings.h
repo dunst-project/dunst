@@ -4,6 +4,8 @@
 
 #include <stdbool.h>
 
+#include "wayland/protocols/wlr-layer-shell-unstable-v1-client-header.h"
+
 #include "markup.h"
 #include "notification.h"
 #include "x11/x.h"
@@ -97,6 +99,7 @@ struct settings {
         int progress_bar_max_width;
         int progress_bar_frame_width;
         bool progress_bar;
+        enum zwlr_layer_shell_v1_layer layer;
 };
 
 extern struct settings settings;
