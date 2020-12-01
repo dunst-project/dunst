@@ -449,10 +449,17 @@ static void x_handle_click(XEvent ev)
                         }
 
                         if (n) {
-                                if (act == MOUSE_CLOSE_CURRENT)
-                                        queues_notification_close(n, REASON_USER);
-                                else
+                                if (act == MOUSE_CLOSE_CURRENT) {
+                                        // We cannot call
+                                        // queues_close_notification here as
+                                        // the do_action runs in a separate
+                                        // thread, so force expire the
+                                        // notification instead
+                                        n->timeout = 1;
+                                        n->start -= 1;
+                                } else {
                                         notification_do_action(n);
+                                }
                         }
                 }
         }
