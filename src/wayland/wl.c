@@ -33,19 +33,10 @@
 #include "libgwater-wayland.h"
 
 struct window_wl {
-        struct wl_surface *surface;
-        struct zwlr_layer_surface_v1 *layer_surface;
-
-        struct wl_buffer *buffer;
-
         cairo_surface_t *c_surface;
         cairo_t * c_ctx;
-        struct dimensions dim;
 
         GWaterWaylandSource *esrc;
-
-        char *data;
-        size_t size;
 };
 
 struct wl_ctx {
@@ -65,6 +56,7 @@ struct wl_ctx {
         struct dunst_output *layer_surface_output;
         struct wl_callback *frame_callback;
         struct org_kde_kwin_idle *idle_handler;
+        struct org_kde_kwin_idle_timeout *idle_timeout;
         bool configured;
         bool dirty;
         bool is_idle;
@@ -317,8 +309,8 @@ static void add_seat_to_idle_handler(struct wl_seat *seat) {
                 return;
         }
         uint32_t timeout_ms = settings.idle_threshold/1000;
-        struct org_kde_kwin_idle_timeout *idle_timeout = org_kde_kwin_idle_get_idle_timeout(ctx.idle_handler, ctx.seat, timeout_ms);
-        org_kde_kwin_idle_timeout_add_listener(idle_timeout, &idle_timeout_listener, 0);
+        ctx.idle_timeout = org_kde_kwin_idle_get_idle_timeout(ctx.idle_handler, seat, timeout_ms);
+        org_kde_kwin_idle_timeout_add_listener(ctx.idle_timeout, &idle_timeout_listener, 0);
 }
 
 static void handle_global(void *data, struct wl_registry *registry,
@@ -431,7 +423,6 @@ void finish_wayland() {
                 wl_pointer_release(ctx.pointer.wl_pointer);
                 wl_seat_release(ctx.seat);
                 ctx.seat = NULL;
-                /* free(ctx.seat); */
         }
 
         if (ctx.xdg_output_manager != NULL) {
@@ -442,6 +433,9 @@ void finish_wayland() {
         wl_shm_destroy(ctx.shm);
         wl_registry_destroy(ctx.registry);
         wl_display_disconnect(ctx.display);
+
+        org_kde_kwin_idle_destroy(ctx.idle_handler);
+        org_kde_kwin_idle_timeout_release(ctx.idle_timeout);
 }
 
 static struct dunst_output *get_configured_output() {
