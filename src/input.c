@@ -44,12 +44,8 @@ void input_handle_click(unsigned int button, bool button_down, int mouse_x, int 
                         for (const GList *iter = queues_get_displayed(); iter;
                              iter = iter->next) {
                                 n = iter->data;
-                                if (mouse_y > y && mouse_y < y + n->displayed_height) {
-                                        /* LOG_W("Mouse X: %i", mouse_x); */
-                                        /* LOG_W("X < width: ", mouse_x < ); */
-                                        /* n = NULL; */
+                                if (mouse_y > y && mouse_y < y + n->displayed_height)
                                         break;
-                                }
 
                                 y += n->displayed_height + settings.separator_height;
                                 if (first)
@@ -57,13 +53,15 @@ void input_handle_click(unsigned int button, bool button_down, int mouse_x, int 
                         }
 
                         if (n) {
-                                if (act == MOUSE_CLOSE_CURRENT)
-                                        queues_notification_close(n, REASON_USER);
-                                else
+                                if (act == MOUSE_CLOSE_CURRENT) {
+                                        n->marked_for_closure = REASON_USER;
+                                } else {
                                         notification_do_action(n);
+                                }
                         }
                 }
         }
+
         wake_up();
 }
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */
