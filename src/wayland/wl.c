@@ -387,6 +387,22 @@ bool init_wayland() {
                 LOG_E("compositor doesn't support zwlr_layer_shell_v1");
                 return false;
         }
+        if (ctx.seat == NULL) {
+                LOG_W("no seat was found, so dunst cannot see input");
+        }
+        else {
+                // pointer may not be detected yet
+                /* if (ctx.pointer.wl_pointer == NULL) { */
+                        /* LOG_W("no pointer was found, so dunst cannot see input"); */
+                /* } */
+                if (ctx.idle_handler == NULL) {
+                        LOG_I("compositor doesn't support org_kde_kwin_idle_interface");
+                }
+                else if (ctx.idle_timeout == NULL) {
+                        // something went wrong in setting the timeout
+                        LOG_W("couldn't set idle timeout");
+                }
+        }
 
         if (ctx.xdg_output_manager != NULL) {
                 struct dunst_output *output;
