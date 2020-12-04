@@ -60,7 +60,7 @@ struct wl_ctx {
         bool configured;
         bool dirty;
         bool is_idle;
-        bool has_seat;
+        bool has_idle_monitor;
 
 	struct {
 		struct wl_pointer *wl_pointer;
@@ -311,6 +311,7 @@ static void add_seat_to_idle_handler(struct wl_seat *seat) {
         uint32_t timeout_ms = settings.idle_threshold/1000;
         ctx.idle_timeout = org_kde_kwin_idle_get_idle_timeout(ctx.idle_handler, seat, timeout_ms);
         org_kde_kwin_idle_timeout_add_listener(ctx.idle_timeout, &idle_timeout_listener, 0);
+        ctx.has_idle_monitor = true;
 }
 
 static void handle_global(void *data, struct wl_registry *registry,
@@ -328,7 +329,6 @@ static void handle_global(void *data, struct wl_registry *registry,
                 ctx.seat = wl_registry_bind(registry, name, &wl_seat_interface, 3);
                 wl_seat_add_listener(ctx.seat, &seat_listener, ctx.seat);
                 add_seat_to_idle_handler(ctx.seat);
-                ctx.has_seat = true;
         } else if (strcmp(interface, wl_output_interface.name) == 0) {
                 struct wl_output *output =
                         wl_registry_bind(registry, name, &wl_output_interface, 3);
@@ -731,7 +731,7 @@ bool wl_is_idle(void) {
         LOG_I("Idle status queried: %i", ctx.is_idle);
         // When the user doesn't have a seat, or their compositor doesn't support the idle
         // protocol, we'll assume that they are not idle.
-        if (settings.idle_threshold == 0 || ctx.has_seat == false || ctx.idle_handler == NULL) {
+        if (settings.idle_threshold == 0 || ctx.has_idle_monitor == false) {
                 return false;
         } else {
                 return ctx.is_idle;
