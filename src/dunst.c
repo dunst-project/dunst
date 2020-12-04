@@ -86,7 +86,6 @@ static gboolean run(void *data)
         if (active) {
                 gint64 now = time_monotonic_now();
                 gint64 sleep = queues_get_next_datachange(now);
-                /* sleep = 100000; // Make sure wayland input is handled in time FIXME (fixed)*/
                 gint64 timeout_at = now + sleep;
 
                 LOG_D("Sleeping for %li ms", sleep/1000);

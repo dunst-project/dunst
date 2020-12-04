@@ -247,6 +247,16 @@
     # user defined timeout.
     ignore_dbusclose = false
 
+    ### Wayland ###
+    # These settings are Wayland-specific. They have no effect when using X11
+
+    # Uncomment this if you want to let notications appear over fullscreen
+    # notifications (default top)
+    # layer = overlay
+
+    # Set this to true to use X11 output on Wayland.
+    force_xwayland = false
+
     ### Legacy
 
     # Use the Xinerama extension instead of RandR for multi-monitor support.
