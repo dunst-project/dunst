@@ -1,39 +1,8 @@
 =head1 NAME
 
-dunst - A customizable and lightweight notification-daemon
-
-=head1 SYNOPSIS
-
-dunst [-conf file] [-font font] [-geometry geom] [-format fmt] [-follow mode] [-monitor n] [-history_length n] ...
+dunst - configuration file
 
 =head1 DESCRIPTION
-
-Dunst is a highly configurable and lightweight notification daemon.
-
-=head1 COMMAND LINE OPTIONS
-
-=over 4
-
-=item B<-h/--help>
-
-List all command line flags
-
-=item B<-conf/-config file>
-
-Use alternative config file.
-
-=item B<-v/--version>
-
-Print version information.
-
-=item B<-print>
-
-Print notifications to stdout. This might be useful for logging, setting up
-rules or using the output in other scripts.
-
-=back
-
-=head1 CONFIGURATION
 
 An example configuration file is included (usually /etc/dunst/dunstrc). Note:
 this was previously /usr/share/dunst/dunstrc.
@@ -50,24 +19,6 @@ more details.
 
 For backwards compatibility reasons the section name 'frame' is considered bound
 and can't be used as a rule.
-
-=head2 Command line
-
-Each configuration option in the global section can be overridden from the
-command line by adding a single dash in front of it's name.
-For example the font option can be overridden by running
-
-    $ dunst -font "LiberationSans Mono 4"
-
-Configuration options that take boolean values can only currently be set to
-"true" through the command line via the same method. e.g.
-
-    $ dunst -shrink
-
-This is a known limitation of the way command line parameters are parsed and
-will be changed in the future.
-
-Available settings per section:
 
 =head2 Global section
 
@@ -1009,11 +960,27 @@ missed notifications after returning to the computer.
 
 =head1 FILES
 
+These are the places where dunst will look for a configuration file. They are
+listed here in order and if dunst finds one of them, it will stop looking for
+more.
+
 $XDG_CONFIG_HOME/dunst/dunstrc
+
+$HOME/.config/dunst/dunstrc
 
 -or-
 
-$HOME/.config/dunst/dunstrc
+$XDG_CONFIG_HOME/dunst/dunstrc
+
+/etc/xdg/dunst/dunstrc
+
+=over 4
+
+=item /etc/dunst/dunstrc
+
+This is where the default config file is located
+
+=back
 
 =head1 AUTHORS
 

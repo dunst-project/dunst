@@ -9,6 +9,7 @@ core
 vgcore.*
 
 /docs/*.1
+/docs/*.5
 /docs/internal/coverage
 /docs/internal/html
 /dunst
