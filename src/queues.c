@@ -391,8 +391,18 @@ void queues_update(struct dunst_status status)
                 struct notification *n = iter->data;
                 nextiter = iter->next;
 
+                if (notification_is_locked(n)) {
+                        iter = nextiter;
+                        continue;
+                }
+
                 if (queues_notification_is_finished(n, status)){
                         queues_notification_close(n, REASON_TIME);
+                        iter = nextiter;
+                        continue;
+                } else if (n->marked_for_closure) {
+                        queues_notification_close(n, n->marked_for_closure);
+                        n->marked_for_closure = 0;
                         iter = nextiter;
                         continue;
                 }

@@ -198,6 +198,30 @@ bool notification_is_duplicate(const struct notification *a, const struct notifi
             && a->urgency == b->urgency;
 }
 
+bool notification_is_locked(struct notification *n) {
+        assert(n);
+
+        return g_atomic_int_get(&n->locked) != 0;
+}
+
+struct notification* notification_lock(struct notification *n) {
+        assert(n);
+
+        g_atomic_int_set(&n->locked, 1);
+        notification_ref(n);
+
+        return n;
+}
+
+struct notification* notification_unlock(struct notification *n) {
+        assert(n);
+
+        g_atomic_int_set(&n->locked, 0);
+        notification_unref(n);
+
+        return n;
+}
+
 static void notification_private_free(NotificationPrivate *p)
 {
         g_free(p);

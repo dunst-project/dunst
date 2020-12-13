@@ -58,6 +58,7 @@ struct notification {
         gint64 start;      /**< begin of current display */
         gint64 timestamp;  /**< arrival time */
         gint64 timeout;    /**< time to display */
+        int locked;     /**< If non-zero the notification is locked **/
 
         GHashTable *actions;
 
@@ -82,6 +83,7 @@ struct notification {
         int displayed_height;
         enum behavior_fullscreen fullscreen; //!< The instruction what to do with it, when desktop enters fullscreen
         bool script_run;        /**< Has the script been executed already? */
+        guint8 marked_for_closure;
 
         /* derived fields */
         char *msg;            /**< formatted message */
@@ -138,6 +140,12 @@ int notification_cmp(const struct notification *a, const struct notification *b)
 int notification_cmp_data(const void *va, const void *vb, void *data);
 
 bool notification_is_duplicate(const struct notification *a, const struct notification *b);
+
+bool notification_is_locked(struct notification *n);
+
+struct notification *notification_lock(struct notification *n);
+
+struct notification *notification_unlock(struct notification *n);
 
 /**Replace the current notification's icon with the icon specified by path.
  *

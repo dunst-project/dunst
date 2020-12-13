@@ -23,11 +23,11 @@
 static bool is_initialized = false;
 static regex_t url_regex;
 
-struct notification_lock {
-        struct notification *n;
-        gint64 timeout;
-};
 static gpointer context_menu_thread(gpointer data);
+
+struct {
+        GList *locked_notifications;
+} menu_ctx;
 
 /**
  * Initializes regexes needed for matching.
@@ -290,9 +290,37 @@ char *invoke_dmenu(const char *dmenu_input)
         return ret;
 }
 
+/**
+ * Lock and get all notifications with an action or URL.
+ **/
+static GList *get_actionable_notifications(void)
+{
+        GList *locked_notifications = NULL;
+
+        for (const GList *iter = queues_get_displayed(); iter;
+             iter = iter->next) {
+                struct notification *n = iter->data;
+
+                if (n->urls || g_hash_table_size(n->actions)) {
+                        notification_lock(n);
+                        locked_notifications = g_list_prepend(locked_notifications, n);
+                }
+        }
+
+        return locked_notifications;
+}
+
 /* see menu.h */
 void context_menu(void)
 {
+        if (menu_ctx.locked_notifications) {
+                LOG_W("Context menu already running, refusing to rerun");
+                return;
+        }
+
+        GList *notifications = get_actionable_notifications();
+        menu_ctx.locked_notifications = notifications;
+
         GError *err = NULL;
         g_thread_unref(g_thread_try_new("dmenu",
                                         context_menu_thread,
@@ -305,31 +333,40 @@ void context_menu(void)
         }
 }
 
+static gboolean context_menu_result_dispatch(gpointer user_data)
+{
+        char *dmenu_output = (char*)user_data;
+
+        dispatch_menu_result(dmenu_output);
+
+        for (GList *iter = menu_ctx.locked_notifications; iter; iter = iter->next) {
+                struct notification *n = iter->data;
+                notification_unlock(n);
+                if (n->marked_for_closure) {
+                        // Don't close notification if context was aborted
+                        if (dmenu_output != NULL)
+                                queues_notification_close(n, n->marked_for_closure);
+                        n->marked_for_closure = 0;
+                }
+        }
+
+        menu_ctx.locked_notifications = NULL;
+
+        g_list_free(menu_ctx.locked_notifications);
+        g_free(dmenu_output);
+
+        wake_up();
+
+        return G_SOURCE_REMOVE;
+}
+
 static gpointer context_menu_thread(gpointer data)
 {
         char *dmenu_input = NULL;
         char *dmenu_output;
 
-        GList *locked_notifications = NULL;
-
-        for (const GList *iter = queues_get_displayed(); iter;
-             iter = iter->next) {
+        for (GList *iter = menu_ctx.locked_notifications; iter; iter = iter->next) {
                 struct notification *n = iter->data;
-
-
-                // Reference and lock the notification if we need it
-                if (n->urls || g_hash_table_size(n->actions)) {
-                        notification_ref(n);
-
-                        struct notification_lock *nl =
-                                g_malloc(sizeof(struct notification_lock));
-
-                        nl->n = n;
-                        nl->timeout = n->timeout;
-                        n->timeout = 0;
-
-                        locked_notifications = g_list_prepend(locked_notifications, nl);
-                }
 
                 char *dmenu_str = notification_dmenu_string(n);
                 dmenu_input = string_append(dmenu_input, dmenu_str, "\n");
@@ -340,25 +377,9 @@ static gpointer context_menu_thread(gpointer data)
         }
 
         dmenu_output = invoke_dmenu(dmenu_input);
-        dispatch_menu_result(dmenu_output);
+        g_timeout_add(50, context_menu_result_dispatch, dmenu_output);
 
         g_free(dmenu_input);
-        g_free(dmenu_output);
-
-        // unref all notifications
-        for (GList *iter = locked_notifications;
-                    iter;
-                    iter = iter->next) {
-
-                struct notification_lock *nl = iter->data;
-                struct notification *n = nl->n;
-
-                n->timeout = nl->timeout;
-
-                g_free(nl);
-                notification_unref(n);
-        }
-        g_list_free(locked_notifications);
 
         return NULL;
 }
