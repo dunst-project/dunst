@@ -278,9 +278,12 @@ Place dunst notifications on the selected layer. Using overlay
 will cause notifications to be displayed above fullscreen windows, though
 this may also occur at top depending on your compositor.
 
+In Wayland, Notifications won't be delayed when in fullscreen (like when
+setting B<fullscreen> to pushback in X11). This is a Wayland limitation.
+
 The bottom layer is below all windows and above the background.
 
-Default: top
+Default: overlay
 
 =item B<force_xwayland> (values: [true/false], default: false) (Wayland only)
 

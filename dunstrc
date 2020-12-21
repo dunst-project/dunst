@@ -250,9 +250,9 @@
     ### Wayland ###
     # These settings are Wayland-specific. They have no effect when using X11
 
-    # Uncomment this if you want to let notications appear over fullscreen
-    # notifications (default top)
-    # layer = overlay
+    # Uncomment this if you want to let notications appear under fullscreen
+    # applications (default: overlay)
+    # layer = top
 
     # Set this to true to use X11 output on Wayland.
     force_xwayland = false

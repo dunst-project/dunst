@@ -495,7 +495,7 @@ void load_settings(char *cmdline_config_path)
         {
                 char *c = option_get_string(
                         "global",
-                        "layer", "-layer", "top",
+                        "layer", "-layer", "overlay",
                         "Select the layer where notifications should be placed"
                 );
 

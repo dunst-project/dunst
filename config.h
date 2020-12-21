@@ -126,7 +126,7 @@ struct settings defaults = {
 
 .progress_bar = true,
 
-.layer = ZWLR_LAYER_SHELL_V1_LAYER_TOP,
+.layer = ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY,
 };
 
 struct rule default_rules[] = {
