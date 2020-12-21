@@ -14,17 +14,18 @@ show_help() {
 	cat <<-EOH
 	Usage: dunstctl <command> [parameters]"
 	Commands:
-	  action                         Perform the default action, or open the
-	                                 context menu of the notification at the
-	                                 given position
-	  close                          Close the last notification
-	  close-all                      Close the all notifications
-	  context                        Open context menu
-	  history-pop                    Pop one notification from history
-	  is-paused                      Check if dunst is running or paused
-	  set-paused [true|false|toggle] Set the pause status
-	  debug                          Print debugging information
-	  help                           Show this help
+	  action                             Perform the default action, or open the
+	                                     context menu of the notification at the
+	                                     given position
+	  close                              Close the last notification
+	  close-all                          Close the all notifications
+	  context                            Open context menu
+	  history-pop                        Pop one notification from history
+	  is-paused                          Check if dunst is running or paused
+	  set-paused [true|false|toggle]     Set the pause status
+	  status [displayed|history|waiting] Show the number of notifications
+	  debug                              Print debugging information
+	  help                               Show this help
 	EOH
 }
 dbus_send_checked() {
@@ -81,6 +82,17 @@ case "${1:-}" in
 			fi
 		else
 			property_set paused variant:boolean:"$2"
+		fi
+		;;
+	"status")
+		[ $# -eq 1 ] || [ "${2}" = "displayed" ] || [ "${2}" = "history" ] || [ "${2}" = "waiting" ] \
+			|| die "Please give either 'displayed', 'history', 'waiting' or none as status parameter."
+		if [ $# -eq 1 ]; then
+			property_get waiting   | ( read -r _ _ waiting;   printf "              Waiting: %s\n" "${waiting}" )
+			property_get displayed | ( read -r _ _ displayed; printf "  Currently displayed: %s\n" "${displayed}" )
+			property_get history   | ( read -r _ _ history;   printf "              History: %s\n" "${history}")
+		else
+			property_get ${2} | ( read -r _ _ notifications; printf "%s\n" "${notifications}"; )
 		fi
 		;;
 	"help"|"--help"|"-h")
