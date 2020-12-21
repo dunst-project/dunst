@@ -5,15 +5,9 @@
 #include "x11/screen.h"
 #include "wayland/wl.h"
 
-bool running_xwayland;
-
 const bool is_running_wayland(void) {
         char* wayland_display = getenv("WAYLAND_DISPLAY");
         return !(wayland_display == NULL);
-}
-
-const bool is_running_xwayland(void) {
-        return running_xwayland;
 }
 
 const struct output output_x11 = {
@@ -58,7 +52,6 @@ const struct output output_wl = {
 
 const struct output* output_create(bool force_xwayland)
 {
-        running_xwayland = force_xwayland;
         if (!force_xwayland && is_running_wayland()) {
                 LOG_I("Using Wayland output");
                 return &output_wl;

@@ -215,6 +215,12 @@ void load_settings(char *cmdline_config_path)
                 "Don't timeout notifications if user is longer idle than threshold"
         );
 
+        if (settings.force_xwayland) {
+                /* There is no way to detect if the user is idle
+                 * on xwayland, so turn this feature off */
+                settings.idle_threshold = 0;
+        }
+
         settings.monitor = option_get_int(
                 "global",
                 "monitor", "-mon/-monitor", defaults.monitor,

@@ -143,10 +143,6 @@ static bool queues_notification_is_finished(struct notification *n, struct dunst
 
         bool is_idle = status.fullscreen ? false : status.idle;
 
-        /* There is no way to detect if the user is idle
-         * on xwayland, so assume they aren't */
-        if (is_running_xwayland()) is_idle = false;
-
         /* don't timeout when user is idle */
         if (is_idle && !n->transient) {
                 n->start = time_monotonic_now();
