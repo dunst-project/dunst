@@ -62,10 +62,10 @@ struct wl_ctx {
         bool is_idle;
         bool has_idle_monitor;
 
-	struct {
-		struct wl_pointer *wl_pointer;
-		int32_t x, y;
-	} pointer;
+        struct {
+                struct wl_pointer *wl_pointer;
+                int32_t x, y;
+        } pointer;
 
         struct dimensions cur_dim;
 
@@ -389,8 +389,7 @@ bool init_wayland() {
         }
         if (ctx.seat == NULL) {
                 LOG_W("no seat was found, so dunst cannot see input");
-        }
-        else {
+        } else {
                 // pointer may not be detected yet
                 /* if (ctx.pointer.wl_pointer == NULL) { */
                         /* LOG_W("no pointer was found, so dunst cannot see input"); */
