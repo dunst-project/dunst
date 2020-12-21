@@ -46,6 +46,11 @@ Set the paused status of dunst. If false, dunst is running normally, if true,
 dunst is paused. See the is-paused command and the dunst man page for more
 information.
 
+=item B<status> [displayed/history/waiting]
+
+Returns the number of displayed, shown and waiting notifications. If no argument
+is provided, everything will be printed.
+
 =item B<debug>
 
 Tries to contact dunst and checks for common faults between dunstctl and dunst.
