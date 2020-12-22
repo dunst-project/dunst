@@ -224,7 +224,9 @@ void load_settings(char *cmdline_config_path)
         }
 #endif
 
-        if (settings.force_xwayland) {
+        if (settings.force_xwayland && is_running_wayland()) {
+                if (settings.idle_threshold > 0)
+                        LOG_W("Using xwayland. Disabling idle.");
                 /* There is no way to detect if the user is idle
                  * on xwayland, so turn this feature off */
                 settings.idle_threshold = 0;

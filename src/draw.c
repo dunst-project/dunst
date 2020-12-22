@@ -752,8 +752,6 @@ static void calc_window_pos(int width, int height, int *ret_x, int *ret_y)
                         *ret_y = scr->y + settings.geometry.y;
                 }
         }
-        LOG_D("Screen size: %ix%i", scr->w, scr->h);
-        LOG_D("Return value: %ix%i", *ret_x, *ret_y);
 }
 
 void draw(void)

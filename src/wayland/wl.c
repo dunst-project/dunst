@@ -15,8 +15,6 @@
 #include <linux/input-event-codes.h>
 #include <string.h>
 
-#include "protocols/xdg-output-unstable-v1-client-header.h"
-#include "protocols/xdg-output-unstable-v1.h"
 #include "protocols/xdg-shell-client-header.h"
 #include "protocols/xdg-shell.h"
 #include "protocols/wlr-layer-shell-unstable-v1-client-header.h"
@@ -45,7 +43,6 @@ struct wl_ctx {
         struct wl_compositor *compositor;
         struct wl_shm *shm;
         struct zwlr_layer_shell_v1 *layer_shell;
-        struct zxdg_output_manager_v1 *xdg_output_manager;
         struct wl_seat *seat;
 
         struct wl_list outputs;
@@ -78,7 +75,6 @@ struct dunst_output {
         uint32_t global_name;
         char *name;
         struct wl_output *wl_output;
-        struct zxdg_output_v1 *xdg_output;
         struct wl_list link;
 
         uint32_t scale;
@@ -92,33 +88,7 @@ static void noop() {
         // This space intentionally left blank
 }
 
-
 void set_dirty();
-static void xdg_output_handle_name(void *data, struct zxdg_output_v1 *xdg_output,
-                const char *name) {
-        struct dunst_output *output = data;
-        output->name = g_strdup(name);
-}
-
-static const struct zxdg_output_v1_listener xdg_output_listener = {
-        .logical_position = noop,
-        .logical_size = noop,
-        .done = noop,
-        .name = xdg_output_handle_name,
-        .description = noop,
-};
-
-static void get_xdg_output(struct dunst_output *output) {
-        if (ctx.xdg_output_manager == NULL ||
-                        output->xdg_output != NULL) {
-                return;
-        }
-
-        output->xdg_output = zxdg_output_manager_v1_get_xdg_output(
-                ctx.xdg_output_manager, output->wl_output);
-        zxdg_output_v1_add_listener(output->xdg_output, &xdg_output_listener,
-                output);
-}
 
 static void output_handle_geometry(void *data, struct wl_output *wl_output,
                 int32_t x, int32_t y, int32_t phy_width, int32_t phy_height,
@@ -149,7 +119,7 @@ static void create_output( struct wl_output *wl_output, uint32_t global_name) {
                 return;
         }
         static int number = 0;
-        LOG_I("New output %i - id %i", global_name, number);
+        LOG_I("New output found - id %i", number);
         output->global_name = global_name;
         output->wl_output = wl_output;
         // TODO: Fix this
@@ -158,7 +128,6 @@ static void create_output( struct wl_output *wl_output, uint32_t global_name) {
 
         wl_output_set_user_data(wl_output, output);
         wl_output_add_listener(wl_output, &output_listener, output);
-        get_xdg_output(output);
         number++;
 }
 
@@ -170,9 +139,6 @@ static void destroy_output(struct dunst_output *output) {
                 ctx.layer_surface_output = NULL;
         }
         wl_list_remove(&output->link);
-        if (output->xdg_output != NULL) {
-                zxdg_output_v1_destroy(output->xdg_output);
-        }
         wl_output_destroy(output->wl_output);
         free(output->name);
         free(output);
@@ -247,7 +213,6 @@ static void send_frame();
 static void layer_surface_handle_configure(void *data,
                 struct zwlr_layer_surface_v1 *surface,
                 uint32_t serial, uint32_t width, uint32_t height) {
-        LOG_D("Surface handle configure %ix%i", width, height);
         ctx.configured = true;
         ctx.width = width;
         ctx.height = height;
@@ -333,11 +298,6 @@ static void handle_global(void *data, struct wl_registry *registry,
                 struct wl_output *output =
                         wl_registry_bind(registry, name, &wl_output_interface, 3);
                 create_output(output, name);
-        } else if (strcmp(interface, zxdg_output_manager_v1_interface.name) == 0 &&
-                        version >= ZXDG_OUTPUT_V1_NAME_SINCE_VERSION) {
-                ctx.xdg_output_manager = wl_registry_bind(registry, name,
-                        &zxdg_output_manager_v1_interface,
-                        ZXDG_OUTPUT_V1_NAME_SINCE_VERSION);
         } else if (strcmp(interface, org_kde_kwin_idle_interface.name) == 0 &&
                         version >= ORG_KDE_KWIN_IDLE_TIMEOUT_IDLE_SINCE_VERSION) {
                 ctx.idle_handler = wl_registry_bind(registry, name, &org_kde_kwin_idle_interface, 1);
@@ -390,10 +350,6 @@ bool init_wayland() {
         if (ctx.seat == NULL) {
                 LOG_W("no seat was found, so dunst cannot see input");
         } else {
-                // pointer may not be detected yet
-                /* if (ctx.pointer.wl_pointer == NULL) { */
-                        /* LOG_W("no pointer was found, so dunst cannot see input"); */
-                /* } */
                 if (ctx.idle_handler == NULL) {
                         LOG_I("compositor doesn't support org_kde_kwin_idle_interface");
                 }
@@ -402,19 +358,6 @@ bool init_wayland() {
                         LOG_W("couldn't set idle timeout");
                 }
         }
-
-        if (ctx.xdg_output_manager != NULL) {
-                struct dunst_output *output;
-                wl_list_for_each(output, &ctx.outputs, link) {
-                        get_xdg_output(output);
-                }
-                wl_display_roundtrip(ctx.display);
-        }
-        //if (ctx.xdg_output_manager == NULL &&
-        //                strcmp(ctx.config.output, "") != 0) {
-        //        LOG_E("warning: configured an output but compositor doesn't "
-        //                "support xdg-output-unstable-v1 version 2");
-        //}
 
         return true;
 }
@@ -440,9 +383,6 @@ void finish_wayland() {
                 ctx.seat = NULL;
         }
 
-        if (ctx.xdg_output_manager != NULL) {
-                zxdg_output_manager_v1_destroy(ctx.xdg_output_manager);
-        }
         zwlr_layer_shell_v1_destroy(ctx.layer_shell);
         wl_compositor_destroy(ctx.compositor);
         wl_shm_destroy(ctx.shm);
@@ -455,10 +395,9 @@ void finish_wayland() {
 
 static struct dunst_output *get_configured_output() {
         struct dunst_output *output;
-        /* LOG_D("Follow mode %i", settings.f_mode); */
+
         switch (settings.f_mode){
-                case FOLLOW_NONE:
-                        LOG_I("Follow none, using monitor setting: %i", settings.monitor);
+                case FOLLOW_NONE: ; // this semicolon is neccesary
                         int n = 0;
                         int target_monitor = settings.monitor;
 
@@ -516,11 +455,6 @@ static void send_frame() {
         // different output), we need to create it.
         if (ctx.layer_surface == NULL) {
                 struct wl_output *wl_output = NULL;
-                if (output != NULL) {
-                        LOG_I("Output is not null");
-                        wl_output = output->wl_output;
-                } else
-                        LOG_I("output is null");
                 ctx.layer_surface_output = output;
                 ctx.surface = wl_compositor_create_surface(ctx.compositor);
                 wl_surface_add_listener(ctx.surface, &surface_listener, NULL);
@@ -551,8 +485,8 @@ static void send_frame() {
         if (ctx.height != height || ctx.width != width) {
                 struct dimensions dim = ctx.cur_dim;
                 // Set window size
-                LOG_D("Wl: Window dimensions %ix%i", dim.w, dim.h);
-                LOG_D("Wl: Window position %ix%i", dim.x, dim.y);
+                LOG_D("Window dimensions %ix%i", dim.w, dim.h);
+                LOG_D("Window position %ix%i", dim.x, dim.y);
                 zwlr_layer_surface_v1_set_size(ctx.layer_surface,
                                 dim.w, dim.h);
 
@@ -600,10 +534,6 @@ static void send_frame() {
         assert(ctx.configured);
 
         // Yay we can finally draw something!
-        //struct wl_region *input_region = get_input_region();
-        //wl_surface_set_input_region(ctx.surface, input_region);
-        //wl_region_destroy(input_region);
-
         wl_surface_set_buffer_scale(ctx.surface, scale);
         wl_surface_damage_buffer(ctx.surface, 0, 0, INT32_MAX, INT32_MAX);
         wl_surface_attach(ctx.surface, ctx.current_buffer->buffer, 0, 0);
