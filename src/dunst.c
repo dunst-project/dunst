@@ -9,7 +9,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <wayland-client.h>
 
 #include "dbus.h"
 #include "draw.h"

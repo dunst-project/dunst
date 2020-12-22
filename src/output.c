@@ -3,7 +3,10 @@
 #include "log.h"
 #include "x11/x.h"
 #include "x11/screen.h"
+
+#ifdef ENABLE_WAYLAND
 #include "wayland/wl.h"
+#endif
 
 const bool is_running_wayland(void) {
         char* wayland_display = getenv("WAYLAND_DISPLAY");
@@ -30,6 +33,7 @@ const struct output output_x11 = {
         have_fullscreen_window
 };
 
+#ifdef ENABLE_WAYLAND
 const struct output output_wl = {
         wl_init,
         wl_deinit,
@@ -49,9 +53,11 @@ const struct output output_wl = {
         wl_is_idle,
         wl_have_fullscreen_window
 };
+#endif
 
 const struct output* output_create(bool force_xwayland)
 {
+#ifdef ENABLE_WAYLAND
         if (!force_xwayland && is_running_wayland()) {
                 LOG_I("Using Wayland output");
                 return &output_wl;
@@ -59,5 +65,8 @@ const struct output* output_create(bool force_xwayland)
                 LOG_I("Using X11 output");
                 return &output_x11;
         }
+#else
+        return &output_x11;
+#endif
 }
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

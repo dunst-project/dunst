@@ -13,6 +13,7 @@
 #include "rules.h"
 #include "utils.h"
 #include "x11/x.h"
+#include "output.h"
 
 #include "../config.h"
 
@@ -214,6 +215,14 @@ void load_settings(char *cmdline_config_path)
                 "idle_threshold", "-idle_threshold", defaults.idle_threshold,
                 "Don't timeout notifications if user is longer idle than threshold"
         );
+
+#ifndef ENABLE_WAYLAND
+        if (is_running_wayland()){
+                /* We are using xwayland now. Setting force_xwayland to make sure
+                 * the idle workaround below is activated */
+                settings.force_xwayland = true;
+        }
+#endif
 
         if (settings.force_xwayland) {
                 /* There is no way to detect if the user is idle

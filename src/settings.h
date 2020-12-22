@@ -4,7 +4,9 @@
 
 #include <stdbool.h>
 
+#ifdef ENABLE_WAYLAND
 #include "wayland/protocols/wlr-layer-shell-unstable-v1-client-header.h"
+#endif
 
 #include "markup.h"
 #include "notification.h"
@@ -17,6 +19,16 @@ enum vertical_alignment { VERTICAL_TOP, VERTICAL_CENTER, VERTICAL_BOTTOM };
 enum separator_color { SEP_FOREGROUND, SEP_AUTO, SEP_FRAME, SEP_CUSTOM };
 enum follow_mode { FOLLOW_NONE, FOLLOW_MOUSE, FOLLOW_KEYBOARD };
 enum mouse_action { MOUSE_NONE, MOUSE_DO_ACTION, MOUSE_CLOSE_CURRENT, MOUSE_CLOSE_ALL };
+#ifndef ZWLR_LAYER_SHELL_V1_LAYER_ENUM
+#define ZWLR_LAYER_SHELL_V1_LAYER_ENUM
+// Needed for compiling without wayland dependency
+enum zwlr_layer_shell_v1_layer {
+	ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND = 0,
+	ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM = 1,
+	ZWLR_LAYER_SHELL_V1_LAYER_TOP = 2,
+	ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY = 3,
+};
+#endif /* ZWLR_LAYER_SHELL_V1_LAYER_ENUM */
 
 struct separator_color_data {
         enum separator_color type;

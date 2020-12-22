@@ -33,9 +33,11 @@ $(error "Failed to query $(PKG_CONFIG) for package 'systemd'!")
 endif
 endif
 
+ifneq (0,${WAYLAND})
 DATA_DIR_WAYLAND_PROTOCOLS ?= $(shell $(PKG_CONFIG) wayland-protocols --variable=pkgdatadir)
 ifeq (,${DATA_DIR_WAYLAND_PROTOCOLS})
-	$(error "Failed to query $(PKG_CONFIG) for package 'wayland-protocols'!")
+	$(warning "Failed to query $(PKG_CONFIG) for package 'wayland-protocols'!")
+endif
 endif
 
 LIBS := $(shell $(PKG_CONFIG) --libs   ${pkg_config_packs})
@@ -50,7 +52,14 @@ endif
 CFLAGS  := ${DEFAULT_CPPFLAGS} ${CPPFLAGS} ${DEFAULT_CFLAGS} ${CFLAGS} ${INCS} -MMD -MP
 LDFLAGS := ${DEFAULT_LDFLAGS} ${LDFLAGS} ${LIBS}
 
+
+ifeq (0,${WAYLAND})
+# without wayland support
+SRC := $(sort $(shell ${FIND} src/ -not \( -path src/wayland -prune \) -name '*.c'))
+else
+# with Wayland support
 SRC := $(sort $(shell ${FIND} src/ -name '*.c'))
+endif
 OBJ := ${SRC:.c=.o}
 TEST_SRC := $(sort $(shell ${FIND} test/ -name '*.c'))
 TEST_OBJ := $(TEST_SRC:.c=.o)
@@ -133,6 +142,7 @@ service-systemd:
 	@${SED} "s|##PREFIX##|$(PREFIX)|" dunst.systemd.service.in > dunst.systemd.service
 endif
 
+ifneq (0,${WAYLAND})
 wayland-protocols: src/wayland/protocols/wlr-layer-shell-unstable-v1.xml
 	mkdir -p src/wayland/protocols
 	wayland-scanner private-code ${DATA_DIR_WAYLAND_PROTOCOLS}/stable/xdg-shell/xdg-shell.xml src/wayland/protocols/xdg-shell.h
@@ -143,6 +153,7 @@ wayland-protocols: src/wayland/protocols/wlr-layer-shell-unstable-v1.xml
 	wayland-scanner private-code src/wayland/protocols/wlr-layer-shell-unstable-v1.xml src/wayland/protocols/wlr-layer-shell-unstable-v1.h
 	wayland-scanner client-header src/wayland/protocols/idle.xml src/wayland/protocols/idle-client-header.h
 	wayland-scanner private-code src/wayland/protocols/idle.xml src/wayland/protocols/idle.h
+endif
 
 .PHONY: clean clean-dunst clean-dunstify clean-doc clean-tests clean-coverage clean-coverage-run clean-wayland-protocols
 clean: clean-dunst clean-dunstify clean-doc clean-tests clean-coverage clean-coverage-run
