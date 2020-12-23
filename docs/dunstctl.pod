@@ -29,6 +29,11 @@ Close all notifications currently being displayed
 Open the context menu, presenting all available actions and urls for the
 currently open notifications.
 
+=item B<count> [displayed/history/waiting]
+
+Returns the number of displayed, shown and waiting notifications. If no argument
+is provided, everything will be printed.
+
 =item B<history-pop>
 
 Redisplay the notification that was most recently closed. This can be called
@@ -45,11 +50,6 @@ will be kept but not shown until it is unpaused.
 Set the paused status of dunst. If false, dunst is running normally, if true,
 dunst is paused. See the is-paused command and the dunst man page for more
 information.
-
-=item B<status> [displayed/history/waiting]
-
-Returns the number of displayed, shown and waiting notifications. If no argument
-is provided, everything will be printed.
 
 =item B<debug>
 
