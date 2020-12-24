@@ -35,7 +35,8 @@ rules or using the output in other scripts.
 
 =head1 CONFIGURATION
 
-An example configuration file is included (usually /usr/share/dunst/dunstrc).
+An example configuration file is included (usually /etc/dunst/dunstrc). Note:
+this was previously /usr/share/dunst/dunstrc.
 To change the configuration, copy this file to ~/.config/dunst/dunstrc and edit
 it accordingly.
 

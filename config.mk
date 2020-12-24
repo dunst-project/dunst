@@ -1,6 +1,7 @@
 # paths
 PREFIX ?= /usr/local
 BINDIR ?= ${PREFIX}/bin
+SYSCONFDIR ?= /etc
 DATADIR ?= ${PREFIX}/share
 # around for backwards compatibility
 MANPREFIX ?= ${DATADIR}/man
