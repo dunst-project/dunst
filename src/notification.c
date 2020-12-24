@@ -98,6 +98,7 @@ void notification_print(const struct notification *n)
                 printf("\n");
         }
         printf("}\n");
+        fflush(stdout);
 }
 
 /* see notification.h */
