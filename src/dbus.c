@@ -85,9 +85,9 @@ static const char *introspection_xml =
     "            <annotation name=\"org.freedesktop.DBus.Property.EmitsChangedSignal\" value=\"true\"/>"
     "        </property>"
 
-    "        <property name=\"displayed\" type=\"u\" access=\"read\" />"
-    "        <property name=\"history\" type=\"u\" access=\"read\" />"
-    "        <property name=\"waiting\" type=\"u\" access=\"read\" />"
+    "        <property name=\"displayedLength\" type=\"u\" access=\"read\" />"
+    "        <property name=\"historyLength\" type=\"u\" access=\"read\" />"
+    "        <property name=\"waitingLength\" type=\"u\" access=\"read\" />"
 
     "    </interface>"
     "</node>";
@@ -601,13 +601,13 @@ GVariant *dbus_cb_dunst_Properties_Get(GDBusConnection *connection,
 
         if (STR_EQ(property_name, "paused")) {
                 return g_variant_new_boolean(!status.running);
-        } else if (STR_EQ(property_name, "displayed")) {
+        } else if (STR_EQ(property_name, "displayedLength")) {
                 unsigned int displayed = queues_length_displayed();
                 return g_variant_new_uint32(displayed);
-        } else if (STR_EQ(property_name, "history")) {
+        } else if (STR_EQ(property_name, "historyLength")) {
                 unsigned int history =  queues_length_history();
                 return g_variant_new_uint32(history);
-        } else if (STR_EQ(property_name, "waiting")) {
+        } else if (STR_EQ(property_name, "waitingLength")) {
                 unsigned int waiting =  queues_length_waiting();
                 return g_variant_new_uint32(waiting);
         } else {

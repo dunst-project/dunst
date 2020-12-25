@@ -66,11 +66,11 @@ case "${1:-}" in
 		[ $# -eq 1 ] || [ "${2}" = "displayed" ] || [ "${2}" = "history" ] || [ "${2}" = "waiting" ] \
 			|| die "Please give either 'displayed', 'history', 'waiting' or none as count parameter."
 		if [ $# -eq 1 ]; then
-			property_get waiting   | ( read -r _ _ waiting;   printf "              Waiting: %s\n" "${waiting}" )
-			property_get displayed | ( read -r _ _ displayed; printf "  Currently displayed: %s\n" "${displayed}" )
-			property_get history   | ( read -r _ _ history;   printf "              History: %s\n" "${history}")
+			property_get waitingLength   | ( read -r _ _ waiting;   printf "              Waiting: %s\n" "${waiting}" )
+			property_get displayedLength | ( read -r _ _ displayed; printf "  Currently displayed: %s\n" "${displayed}" )
+			property_get historyLength   | ( read -r _ _ history;   printf "              History: %s\n" "${history}")
 		else
-			property_get ${2} | ( read -r _ _ notifications; printf "%s\n" "${notifications}"; )
+			property_get ${2}Length | ( read -r _ _ notifications; printf "%s\n" "${notifications}"; )
 		fi
 		;;
 	"history-pop")
