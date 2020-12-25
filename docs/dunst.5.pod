@@ -10,9 +10,11 @@ To change the configuration, copy this file to ~/.config/dunst/dunstrc and edit
 it accordingly.
 
 The configuration is divided into sections in an ini-like format. The 'global'
-section contains most general settings while the 'shortcuts' sections contains
-all keyboard configuration and the 'experimental' section all the features that
-have not yet been tested thoroughly.
+section contains most general settings while the setions 'urgency_low',
+'urgency_normal' and 'urgency_critical' are for low, normal and critical urgency
+notifications respectively. The 'shortcuts' section (deprecated) contains all
+keyboard configuration and the 'experimental' section all the features that have
+not yet been tested thoroughly.
 
 Any section that is not one of the above is assumed to be a rule, see RULES for
 more details.
@@ -640,16 +642,15 @@ See TIME FORMAT for valid times.
 
 Dunst now contains a command line control command that can be used to interact
 with it. It supports all functions previously done only via keyboard shortcuts
-but also has a lot of extra functionality. So see more see the dunstctl man
-page.
+but also has a lot of extra functionality. So see more see dunstctl(1).
 
 =head1 HISTORY
 
 Dunst saves a number of notifications (specified by B<history_length>) in memory.
-These notifications can be recalled (i.e. redisplayed) by pressing the
-B<history_key> (see the shortcuts section), whether these notifications will
-time out like if they have been just send depends on the value of the
-B<sticky_history> setting.
+These notifications can be recalled (i.e. redisplayed) by calling 
+B<dunstctl history> (see dunstctl(1)). Whether these notifications will time out
+like if they have been just send depends on the value of the B<sticky_history>
+setting.
 
 Past notifications are redisplayed in a first-in-last-out order, meaning that
 pressing the history key once will bring up the most recent notification that
