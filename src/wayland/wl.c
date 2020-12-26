@@ -22,6 +22,7 @@
 #include "pool-buffer.h"
 
 #include "../log.h"
+#include "../settings.h"
 
 struct window_wl {
         struct wl_surface *surface;
@@ -426,10 +427,35 @@ static void send_frame() {
         // exists, we might need to resize if the list of notifications has changed
         // since the last time we drew.
         if (ctx.height != height) {
+                struct dimensions dim = ctx.cur_dim;
+                // Set window size
                 zwlr_layer_surface_v1_set_size(ctx.layer_surface,
-                                ctx.cur_dim.w, ctx.cur_dim.h);
+                                dim.w, dim.h);
+
+                uint32_t anchor = 0;
+                if (settings.geometry.negative_x){
+                        anchor |= ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT;
+                }
+                else{
+                        anchor |= ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT;
+                }
+
+                if (settings.geometry.negative_y){
+                        anchor |= ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM;
+                }
+                else{
+                        anchor |= ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP;
+                }
+                
+                // Put the window at the right position
                 zwlr_layer_surface_v1_set_anchor(ctx.layer_surface,
-                        ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP | ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT);
+                        anchor);
+                zwlr_layer_surface_v1_set_margin(ctx.layer_surface,
+                                abs(settings.geometry.y), // top
+                                abs(settings.geometry.x), // right
+                                abs(settings.geometry.y), // bottom
+                                abs(settings.geometry.x));// left
+
                 wl_surface_commit(ctx.surface);
 
                 // Now we're going to bail without drawing anything. This gives the
@@ -562,9 +588,10 @@ cairo_t* wl_win_get_context(window winptr) {
 }
 
 const struct screen_info* wl_get_active_screen(void) {
+        // TODO Screen size detection
         static struct screen_info scr = {
-                .w = 1080,
-                .h = 1920,
+                .w = 1920,
+                .h = 1080,
                 .x = 0,
                 .y = 0,
                 .id = 0,

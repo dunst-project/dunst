@@ -52,6 +52,12 @@ const struct output output_wl = {
 
 const struct output* output_create(void)
 {
+        if (is_running_wayland()){
+                LOG_I("System is running wayland");
+        }
+        else{
+                LOG_I("System is running X11");
+        }
         return &output_wl;
 }
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */
