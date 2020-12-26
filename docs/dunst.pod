@@ -82,6 +82,10 @@ starts at 0. See the B<follow> setting.
 Defines where the notifications should be placed in a multi-monitor setup. All
 values except I<none> override the B<monitor> setting.
 
+On Wayland there is no difference between mouse and keyboard focus. When either
+of the is used, the compositor will choose an output. This will generally be
+the output last interacted with.
+
 =over 4
 
 =item B<none>
@@ -278,7 +282,7 @@ The bottom layer is below all windows and above the background.
 
 Default: top
 
-=item B<use_xwayland> (values: [true/false], default: false) (Wayland only)
+=item B<force_xwayland> (values: [true/false], default: false) (Wayland only)
 
 Force the use of X11 output, even on a wayland compositor. This setting
 has no effect when not using a Wayland compositor.
@@ -569,7 +573,7 @@ the notification sent before the user defined timeout.
 
 =back
 
-=head2 Shortcut section B<DEPRECATED SEE DUNSTCTL>
+=head2 Shortcut section B<DEPRECATED SEE DUNSTCTL> (X11 only)
 
 Keyboard shortcuts are defined in the following format: "Modifier+key" where the
 modifier is one of ctrl,mod1,mod2,mod3,mod4 and key is any keyboard key.
@@ -678,6 +682,29 @@ B<sticky_history> setting.
 Past notifications are redisplayed in a first-in-last-out order, meaning that
 pressing the history key once will bring up the most recent notification that
 had been closed/timed out.
+
+=head1 WAYLAND
+
+Dunst has Wayland support since version 1.6.0. Because the Wayland protocol
+is more focused on security, some things that are possible in X11 are not
+possible in Wayland. Those differences are reflected in the configuration.
+The main things that change are that dunst on Wayland cannot use global
+hotkeys (they are deprecated anyways, use dunstctl) and it cannot detect
+if an application is fullscreen. If you want to see notifications when in
+fullscreen, set B<layer = overlay> in the global options.
+
+Note that the same limitations exist when using xwayland.
+If something doesn't quite work in Wayland, please file a bug report. In the
+mean time, you can try if the X11 output does work on wayland. Use
+B<force_xwayland = true> for that.
+
+If you have your dunst notifications on the same side of your display as your
+status bar, you might notice that your notifications appear a bit higher or
+lower than on X11. This is because the notification cannot be placed on top of
+your status bar. The notifications are placed relative to your status bar,
+making them appear higher or lower by the height of your status bar. We cannot
+do anything about that behavior, so you will need to change your B<geometry>
+variable accordingly.
 
 =head1 RULES
 

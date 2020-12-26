@@ -118,6 +118,12 @@ void load_settings(char *cmdline_config_path)
                 "Force the use of the Xinerama extension"
         );
 
+        settings.force_xwayland = option_get_bool(
+                "global",
+                "force_xwayland", "-force_xwayland", false,
+                "Force the use of the xwayland output"
+        );
+
         settings.font = option_get_string(
                 "global",
                 "font", "-font/-fn", defaults.font,

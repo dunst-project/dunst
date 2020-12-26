@@ -48,6 +48,9 @@ struct settings defaults = {
 .notification_height = 0,    /* if notification height < font height and padding, it will be raised */
 .corner_radius = 0,
 
+.force_xinerama = false,
+.force_xwayland = false,
+
 .separator_height = 2,       /* height of the separator line between two notifications */
 .padding = 0,
 .h_padding = 0,              /* horizontal padding */

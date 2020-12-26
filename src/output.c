@@ -55,9 +55,9 @@ const struct output output_wl = {
         wl_have_fullscreen_window
 };
 
-const struct output* output_create(void)
+const struct output* output_create(bool force_xwayland)
 {
-        if (is_running_wayland()) {
+        if (!force_xwayland && is_running_wayland()) {
                 LOG_I("Using Wayland output");
                 return &output_wl;
         } else {

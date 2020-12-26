@@ -48,7 +48,7 @@ PangoFontDescription *pango_fdesc;
 
 void draw_setup(void)
 {
-        const struct output *out = output_create();
+        const struct output *out = output_create(settings.force_xwayland);
         output = out;
 
         out->init();

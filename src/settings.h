@@ -90,6 +90,7 @@ struct settings {
         struct keyboard_shortcut history_ks;
         struct keyboard_shortcut context_ks;
         bool force_xinerama;
+        bool force_xwayland;
         int corner_radius;
         enum mouse_action *mouse_left_click;
         enum mouse_action *mouse_middle_click;
