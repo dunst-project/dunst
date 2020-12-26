@@ -27,7 +27,7 @@ VALGRIND ?= valgrind
 # flags
 DEFAULT_CPPFLAGS = -D_DEFAULT_SOURCE -DVERSION=\"${VERSION}\"
 DEFAULT_CFLAGS   = -g --std=gnu99 -pedantic -Wall -Wno-overlength-strings -Os ${STATIC}
-DEFAULT_LDFLAGS  = -lm
+DEFAULT_LDFLAGS  = -lm -lrt
 
 CPPFLAGS_DEBUG := -DDEBUG_BUILD
 CFLAGS_DEBUG   := -O0
@@ -41,7 +41,10 @@ pkg_config_packs := gio-2.0 \
                     xinerama \
                     xext \
                     "xrandr >= 1.5" \
-                    xscrnsaver
+                    xscrnsaver \
+					wayland-client\
+					systemd
+
 
 # dunstify also needs libnotify
 pkg_config_packs += libnotify
