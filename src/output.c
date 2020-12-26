@@ -1,5 +1,6 @@
 #include "output.h"
 
+#include "log.h"
 #include "x11/x.h"
 #include "x11/screen.h"
 #include "wayland/wl.h"

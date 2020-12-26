@@ -42,8 +42,7 @@ pkg_config_packs := gio-2.0 \
                     xext \
                     "xrandr >= 1.5" \
                     xscrnsaver \
-					wayland-client\
-					systemd
+                    wayland-client\
 
 
 # dunstify also needs libnotify
