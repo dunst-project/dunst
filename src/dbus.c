@@ -85,6 +85,10 @@ static const char *introspection_xml =
     "            <annotation name=\"org.freedesktop.DBus.Property.EmitsChangedSignal\" value=\"true\"/>"
     "        </property>"
 
+    "        <property name=\"displayedLength\" type=\"u\" access=\"read\" />"
+    "        <property name=\"historyLength\" type=\"u\" access=\"read\" />"
+    "        <property name=\"waitingLength\" type=\"u\" access=\"read\" />"
+
     "    </interface>"
     "</node>";
 
@@ -597,6 +601,15 @@ GVariant *dbus_cb_dunst_Properties_Get(GDBusConnection *connection,
 
         if (STR_EQ(property_name, "paused")) {
                 return g_variant_new_boolean(!status.running);
+        } else if (STR_EQ(property_name, "displayedLength")) {
+                unsigned int displayed = queues_length_displayed();
+                return g_variant_new_uint32(displayed);
+        } else if (STR_EQ(property_name, "historyLength")) {
+                unsigned int history =  queues_length_history();
+                return g_variant_new_uint32(history);
+        } else if (STR_EQ(property_name, "waitingLength")) {
+                unsigned int waiting =  queues_length_waiting();
+                return g_variant_new_uint32(waiting);
         } else {
                 LOG_W("Unknown property!\n");
                 *error = g_error_new(G_DBUS_ERROR, G_DBUS_ERROR_UNKNOWN_PROPERTY, "Unknown property");
