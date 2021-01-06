@@ -516,7 +516,8 @@ automatically lowered to half of the notification height if it exceeds it.
 
 =item B<mouse_left/middle/right_click> (values: [none/do_action/close_current/close_all])
 
-Defines action of mouse click.
+Defines action of mouse click. A touch input in Wayland acts as a mouse left
+click.
 
 =over 4
 

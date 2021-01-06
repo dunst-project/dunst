@@ -30,6 +30,8 @@
 #include "../input.h"
 #include "libgwater-wayland.h"
 
+#define MAX_TOUCHPOINTS 10
+
 struct window_wl {
         cairo_surface_t *c_surface;
         cairo_t * c_ctx;
@@ -63,6 +65,13 @@ struct wl_ctx {
                 struct wl_pointer *wl_pointer;
                 int32_t x, y;
         } pointer;
+
+	struct {
+		struct wl_touch *wl_touch;
+		struct {
+			int32_t x, y;
+		} pts[MAX_TOUCHPOINTS];
+	} touch;
 
         struct dimensions cur_dim;
 
@@ -144,7 +153,36 @@ static void destroy_output(struct dunst_output *output) {
         free(output);
 }
 
-// FIXME: Snipped touch handling
+static void touch_handle_motion(void *data, struct wl_touch *wl_touch,
+                uint32_t time, int32_t id,
+                wl_fixed_t surface_x, wl_fixed_t surface_y) {
+        if (id >= MAX_TOUCHPOINTS) {
+                return;
+        }
+        ctx.touch.pts[id].x = wl_fixed_to_int(surface_x);
+        ctx.touch.pts[id].y = wl_fixed_to_int(surface_y);
+}
+
+static void touch_handle_down(void *data, struct wl_touch *wl_touch,
+                uint32_t serial, uint32_t time, struct wl_surface *sfc, int32_t id,
+                wl_fixed_t surface_x, wl_fixed_t surface_y) {
+        if (id >= MAX_TOUCHPOINTS) {
+                return;
+        }
+        ctx.touch.pts[id].x = wl_fixed_to_int(surface_x);
+        ctx.touch.pts[id].y = wl_fixed_to_int(surface_y);
+}
+
+static void touch_handle_up(void *data, struct wl_touch *wl_touch,
+                uint32_t serial, uint32_t time, int32_t id) {
+        if (id >= MAX_TOUCHPOINTS) {
+                return;
+        }
+        input_handle_click(BTN_TOUCH, false,
+                        ctx.touch.pts[id].x, ctx.touch.pts[id].y);
+
+}
+
 static void pointer_handle_motion(void *data, struct wl_pointer *wl_pointer,
                 uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y) {
         ctx.pointer.x = wl_fixed_to_int(surface_x);
@@ -165,7 +203,15 @@ static const struct wl_pointer_listener pointer_listener = {
         .axis = noop,
 };
 
-// FIXME snipped touch listener
+static const struct wl_touch_listener touch_listener = {
+        .down = touch_handle_down,
+        .up = touch_handle_up,
+        .motion = touch_handle_motion,
+        .frame = noop,
+        .cancel = noop,
+        .shape = noop,
+        .orientation = noop,
+};
 
 static void seat_handle_capabilities(void *data, struct wl_seat *wl_seat,
                 uint32_t capabilities) {
@@ -179,6 +225,15 @@ static void seat_handle_capabilities(void *data, struct wl_seat *wl_seat,
                 wl_pointer_add_listener(ctx.pointer.wl_pointer,
                         &pointer_listener, ctx.seat);
                 LOG_I("Adding pointer");
+        }
+        if (ctx.touch.wl_touch != NULL) {
+                wl_touch_release(ctx.touch.wl_touch);
+                ctx.touch.wl_touch = NULL;
+        }
+        if (capabilities & WL_SEAT_CAPABILITY_TOUCH) {
+                ctx.touch.wl_touch = wl_seat_get_touch(wl_seat);
+                wl_touch_add_listener(ctx.touch.wl_touch,
+                        &touch_listener, ctx.seat);
         }
 }
 
