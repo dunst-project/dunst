@@ -4,6 +4,7 @@
 
 #include <glib.h>
 #include <string.h>
+#include <stdbool.h>
 
 //! Test if a string is NULL or empty
 #define STR_EMPTY(s) (!s || (*s == '\0'))
@@ -136,6 +137,17 @@ gint64 time_monotonic_now(void);
  * @returns: A string of the current home directory
  */
 const char *user_get_home(void);
+
+/**
+ * Try to set an environment variable safely. If an environment variable with
+ * name `key` exists, it will be overwritten.
+ * If `value` is null, `key` will be set to an empty string.
+ *
+ * @param key (nullable) The environment variable to change
+ * @param value (nullable) The value to change it to.
+ * @returns: A bool that is true when it succeeds
+ */
+bool safe_setenv(const char* key, const char* value);
 
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

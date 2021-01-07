@@ -133,6 +133,26 @@ void notification_run_script(struct notification *n)
                         if (pid2) {
                                 exit(0);
                         } else {
+                                // Set environment variables
+                                gchar *n_id_str = g_strdup_printf("%i", n->id);
+                                gchar *n_progress_str = g_strdup_printf("%i", n->progress);
+                                gchar *n_timeout_str = g_strdup_printf("%li", n->timeout/1000);
+                                gchar *n_timestamp_str = g_strdup_printf("%li", n->timestamp / 1000);
+                                char* icon_path = get_path_from_icon_name(icon);
+                                safe_setenv("DUNST_APP_NAME",  appname);
+                                safe_setenv("DUNST_SUMMARY",   summary);
+                                safe_setenv("DUNST_BODY",      body);
+                                safe_setenv("DUNST_ICON_PATH", icon_path);
+                                safe_setenv("DUNST_URGENCY",   urgency);
+                                safe_setenv("DUNST_ID",        n_id_str);
+                                safe_setenv("DUNST_PROGRESS",  n_progress_str);
+                                safe_setenv("DUNST_CATEGORY",  n->category);
+                                safe_setenv("DUNST_STACK_TAG", n->stack_tag);
+                                safe_setenv("DUNST_URLS",      n->urls);
+                                safe_setenv("DUNST_TIMEOUT",   n_timeout_str);
+                                safe_setenv("DUNST_TIMESTAMP", n_timestamp_str);
+                                safe_setenv("DUNST_STACK_TAG", n->stack_tag);
+
                                 int ret = execlp(script,
                                                 script,
                                                 appname,
@@ -142,7 +162,7 @@ void notification_run_script(struct notification *n)
                                                 urgency,
                                                 (char *)NULL);
                                 if (ret != 0) {
-                                        LOG_W("Unable to run script: %s", strerror(errno));
+                                        LOG_W("Unable to run script %s: %s", n->scripts[i], strerror(errno));
                                         exit(EXIT_FAILURE);
                                 }
                         }
