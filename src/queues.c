@@ -310,21 +310,6 @@ void queues_notification_close_id(int id, enum reason reason)
 {
         struct notification *target = NULL;
 
-        char* reason_string;
-        switch (reason)
-        {
-                case REASON_TIME:
-                        reason_string="time";
-                        break;
-                case REASON_USER:
-                        reason_string="user";
-                        break;
-                default:
-                        reason_string="unknown";
-        }
-
-        LOG_D("Queues: Closing notification for reason: %s", reason_string);
-
         GQueue *allqueues[] = { displayed, waiting };
         for (int i = 0; i < sizeof(allqueues)/sizeof(GQueue*); i++) {
                 for (GList *iter = g_queue_peek_head_link(allqueues[i]); iter;
