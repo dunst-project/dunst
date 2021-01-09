@@ -78,7 +78,6 @@ static gboolean run(void *data)
                 draw();
                 output->win_show(win);
         } else {
-                LOG_I("Calling win_hide");
                 output->win_hide(win);
         }
 
