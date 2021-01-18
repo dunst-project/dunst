@@ -33,6 +33,14 @@ $(error "Failed to query $(PKG_CONFIG) for package 'systemd'!")
 endif
 endif
 
+ifneq (0,${WAYLAND})
+DATA_DIR_WAYLAND_PROTOCOLS ?= $(shell $(PKG_CONFIG) wayland-protocols --variable=pkgdatadir)
+DATA_DIR_WAYLAND_PROTOCOLS := ${DATA_DIR_WAYLAND_PROTOCOLS}
+ifeq (,${DATA_DIR_WAYLAND_PROTOCOLS})
+	$(warning "Failed to query $(PKG_CONFIG) for package 'wayland-protocols'!")
+endif
+endif
+
 LIBS := $(shell $(PKG_CONFIG) --libs   ${pkg_config_packs})
 INCS := $(shell $(PKG_CONFIG) --cflags ${pkg_config_packs})
 
@@ -45,7 +53,14 @@ endif
 CFLAGS  := ${DEFAULT_CPPFLAGS} ${CPPFLAGS} ${DEFAULT_CFLAGS} ${CFLAGS} ${INCS} -MMD -MP
 LDFLAGS := ${DEFAULT_LDFLAGS} ${LDFLAGS} ${LIBS}
 
+
+ifeq (0,${WAYLAND})
+# without wayland support
+SRC := $(sort $(shell ${FIND} src/ -not \( -path src/wayland -prune \) -name '*.c'))
+else
+# with Wayland support
 SRC := $(sort $(shell ${FIND} src/ -name '*.c'))
+endif
 OBJ := ${SRC:.c=.o}
 TEST_SRC := $(sort $(shell ${FIND} test/ -name '*.c'))
 TEST_OBJ := $(TEST_SRC:.c=.o)
@@ -118,7 +133,7 @@ docs/dunstctl.1: docs/dunstctl.pod
 doc-doxygen:
 	${DOXYGEN} docs/internal/Doxyfile
 
-.PHONY: service service-dbus service-systemd
+.PHONY: service service-dbus service-systemd wayland-protocols
 service: service-dbus
 service-dbus:
 	@${SED} "s|##PREFIX##|$(PREFIX)|" org.knopwob.dunst.service.in > org.knopwob.dunst.service
@@ -128,7 +143,20 @@ service-systemd:
 	@${SED} "s|##PREFIX##|$(PREFIX)|" dunst.systemd.service.in > dunst.systemd.service
 endif
 
-.PHONY: clean clean-dunst clean-dunstify clean-doc clean-tests clean-coverage clean-coverage-run
+ifneq (0,${WAYLAND})
+wayland-protocols: src/wayland/protocols/wlr-layer-shell-unstable-v1.xml
+	mkdir -p src/wayland/protocols
+	wayland-scanner private-code ${DATA_DIR_WAYLAND_PROTOCOLS}/stable/xdg-shell/xdg-shell.xml src/wayland/protocols/xdg-shell.h
+	wayland-scanner client-header ${DATA_DIR_WAYLAND_PROTOCOLS}/stable/xdg-shell/xdg-shell.xml src/wayland/protocols/xdg-shell-client-header.h
+	wayland-scanner client-header ${DATA_DIR_WAYLAND_PROTOCOLS}/unstable/xdg-output/xdg-output-unstable-v1.xml src/wayland/protocols/xdg-output-unstable-v1-client-header.h
+	wayland-scanner private-code ${DATA_DIR_WAYLAND_PROTOCOLS}/unstable/xdg-output/xdg-output-unstable-v1.xml src/wayland/protocols/xdg-output-unstable-v1.h
+	wayland-scanner client-header src/wayland/protocols/wlr-layer-shell-unstable-v1.xml src/wayland/protocols/wlr-layer-shell-unstable-v1-client-header.h
+	wayland-scanner private-code src/wayland/protocols/wlr-layer-shell-unstable-v1.xml src/wayland/protocols/wlr-layer-shell-unstable-v1.h
+	wayland-scanner client-header src/wayland/protocols/idle.xml src/wayland/protocols/idle-client-header.h
+	wayland-scanner private-code src/wayland/protocols/idle.xml src/wayland/protocols/idle.h
+endif
+
+.PHONY: clean clean-dunst clean-dunstify clean-doc clean-tests clean-coverage clean-coverage-run clean-wayland-protocols
 clean: clean-dunst clean-dunstify clean-doc clean-tests clean-coverage clean-coverage-run
 
 clean-dunst:
@@ -157,6 +185,9 @@ clean-coverage: clean-coverage-run
 clean-coverage-run:
 	${FIND} . -type f -name '*.gcov' -delete
 	${FIND} . -type f -name '*.gcda' -delete
+
+clean-wayland-protocols:
+	rm -f src/wayland/protocols/*.h
 
 .PHONY: install install-dunst install-dunstctl install-doc \
         install-service install-service-dbus install-service-systemd \

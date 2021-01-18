@@ -47,7 +47,7 @@ struct output {
         bool (*have_fullscreen_window)(void);
 };
 
-const struct output* output_create(void);
+const struct output* output_create(bool force_xwayland);
 
 const bool is_running_wayland(void);
 

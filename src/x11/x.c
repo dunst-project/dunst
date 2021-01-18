@@ -19,6 +19,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xresource.h>
 #include <X11/Xutil.h>
+#include <linux/input-event-codes.h>
 
 #include "../dbus.h"
 #include "../draw.h"
@@ -30,6 +31,7 @@
 #include "../queues.h"
 #include "../settings.h"
 #include "../utils.h"
+#include "../input.h"
 
 #include "screen.h"
 
@@ -403,62 +405,47 @@ bool x_is_idle(void)
         return xctx.screensaver_info->idle > settings.idle_threshold / 1000;
 }
 
+/*
+ * Convert x button code to linux event code
+ * Returns 0 if button is not recognized.
+ */
+static unsigned int x_mouse_button_to_linux_event_code(unsigned int x_button)
+{
+        switch (x_button) {
+                case Button1:
+                        return BTN_LEFT;
+                case Button2:
+                        return BTN_MIDDLE;
+                case Button3:
+                        return BTN_RIGHT;
+                default:
+                        LOG_W("Unsupported mouse button: '%d'", x_button);
+                        return 0;
+        }
+}
+
 /* TODO move to x_mainloop_* */
 /*
  * Handle incoming mouse click events
  */
 static void x_handle_click(XEvent ev)
 {
-        enum mouse_action *acts;
+        unsigned int linux_code = x_mouse_button_to_linux_event_code(ev.xbutton.button);
 
-        switch (ev.xbutton.button) {
-                case Button1:
-                        acts = settings.mouse_left_click;
-                        break;
-                case Button2:
-                        acts = settings.mouse_middle_click;
-                        break;
-                case Button3:
-                        acts = settings.mouse_right_click;
-                        break;
-                default:
-                        LOG_W("Unsupported mouse button: '%d'", ev.xbutton.button);
-                        return;
+        if (linux_code == 0) {
+                return;
         }
 
-        for (int i = 0; acts[i]; i++) {
-                enum mouse_action act = acts[i];
-                if (act == MOUSE_CLOSE_ALL) {
-                        queues_history_push_all();
-                        return;
-                }
-
-                if (act == MOUSE_DO_ACTION || act == MOUSE_CLOSE_CURRENT) {
-                        int y = settings.separator_height;
-                        struct notification *n = NULL;
-                        int first = true;
-                        for (const GList *iter = queues_get_displayed(); iter;
-                             iter = iter->next) {
-                                n = iter->data;
-                                if (ev.xbutton.y > y && ev.xbutton.y < y + n->displayed_height)
-                                        break;
-
-                                y += n->displayed_height + settings.separator_height;
-                                if (first)
-                                        y += settings.frame_width;
-                        }
-
-                        if (n) {
-                                if (act == MOUSE_CLOSE_CURRENT) {
-                                        n->marked_for_closure = REASON_USER;
-                                } else {
-                                        notification_do_action(n);
-                                }
-                        }
-                }
+        bool button_state;
+        if(ev.type == ButtonRelease) {
+                button_state = false; // button is up
+        } else {
+                // this shouldn't happen, because this function
+                // is only called when it'a a ButtonRelease event
+                button_state = true; // button is down
         }
 
-        wake_up();
+        input_handle_click(linux_code, button_state, ev.xbutton.x, ev.xbutton.y);
 }
 
 void x_free(void)
@@ -777,6 +764,7 @@ void x_win_show(window winptr)
  */
 void x_win_hide(window winptr)
 {
+        LOG_I("X11: Hiding window");
         struct window_x11 *win = (struct window_x11*)winptr;
         ASSERT_OR_RET(win->visible,);
 

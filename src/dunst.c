@@ -9,7 +9,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <X11/Xlib.h>
 
 #include "dbus.h"
 #include "draw.h"
@@ -57,6 +56,7 @@ static gboolean run(void *data);
 
 void wake_up(void)
 {
+        LOG_D("Waking up");
         run(NULL);
 }
 
@@ -85,6 +85,8 @@ static gboolean run(void *data)
                 gint64 now = time_monotonic_now();
                 gint64 sleep = queues_get_next_datachange(now);
                 gint64 timeout_at = now + sleep;
+
+                LOG_D("Sleeping for %li ms", sleep/1000);
 
                 if (sleep >= 0) {
                         if (next_timeout < now || timeout_at < next_timeout) {

@@ -3,9 +3,12 @@
 #include "log.h"
 #include "x11/x.h"
 #include "x11/screen.h"
-/* #include "wayland/wl.h" */ // Not yet
 
-const bool is_running_wayland(void){
+#ifdef ENABLE_WAYLAND
+#include "wayland/wl.h"
+#endif
+
+const bool is_running_wayland(void) {
         char* wayland_display = getenv("WAYLAND_DISPLAY");
         return !(wayland_display == NULL);
 }
@@ -30,33 +33,40 @@ const struct output output_x11 = {
         have_fullscreen_window
 };
 
-/* const struct output output_wl = { */
-        /* wl_init, */
-        /* wl_deinit, */
+#ifdef ENABLE_WAYLAND
+const struct output output_wl = {
+        wl_init,
+        wl_deinit,
 
-        /* wl_win_create, */
-        /* wl_win_destroy, */
+        wl_win_create,
+        wl_win_destroy,
 
-        /* wl_win_show, */
-        /* wl_win_hide, */
+        wl_win_show,
+        wl_win_hide,
 
-        /* wl_display_surface, */
-        /* wl_win_visible, */
-        /* wl_win_get_context, */
+        wl_display_surface,
+        wl_win_visible,
+        wl_win_get_context,
 
-        /* wl_get_active_screen, */
+        wl_get_active_screen,
 
-        /* wl_is_idle, */
-        /* wl_have_fullscreen_window */
-/* }; */
+        wl_is_idle,
+        wl_have_fullscreen_window
+};
+#endif
 
-const struct output* output_create(void)
+const struct output* output_create(bool force_xwayland)
 {
-        if (is_running_wayland()) {
-                LOG_I("System is running wayland");
-        } else{
-                LOG_I("System is running X11");
+#ifdef ENABLE_WAYLAND
+        if (!force_xwayland && is_running_wayland()) {
+                LOG_I("Using Wayland output");
+                return &output_wl;
+        } else {
+                LOG_I("Using X11 output");
+                return &output_x11;
         }
+#else
         return &output_x11;
+#endif
 }
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

@@ -20,6 +20,7 @@ bool string_parse_mouse_action(const char *s, enum mouse_action *ret);
 bool string_parse_mouse_action_list(char **s, enum mouse_action **ret);
 bool string_parse_sepcolor(const char *s, struct separator_color_data *ret);
 bool string_parse_urgency(const char *s, enum urgency *ret);
+bool string_parse_layer(const char *s, enum zwlr_layer_shell_v1_layer *ret);
 
 int load_ini_file(FILE *);
 char *ini_get_path(const char *section, const char *key, const char *def);

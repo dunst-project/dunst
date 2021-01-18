@@ -26,6 +26,8 @@ Dunst has a number of build dependencies that must be present before attempting 
 - pango/cairo
 - libgtk-3-dev
 - libnotify (for dunstify only)
+- wayland-client (can build without, see [make parameters](#make-parameters))
+- wayland-protocols (optional, for recompiling protocols)
 
 ### Building
 
@@ -38,11 +40,13 @@ sudo make install
 
 ### Make parameters
 
+- `DESTDIR=<PATH>`: Set the destination directory of the installation. (Default: `/`)
 - `PREFIX=<PATH>`: Set the prefix of the installation. (Default: `/usr/local`)
 - `BINDIR=<PATH>`: Set the `dunst` executable's path (Default: `${PREFIX}/bin`)
 - `DATADIR=<PATH>`: Set the path for shared files. (Default: `${PREFIX}/share`)
 - `MANDIR=<PATH>`: Set the prefix of the manpage. (Default: `${DATADIR}/man`)
 - `SYSTEMD=(0|1)`: Enable/Disable the systemd unit. (Default: detected via `pkg-config`)
+- `WAYLAND=(0|1)`: Enable/Disable wayland support. (Default: 1)
 - `SERVICEDIR_SYSTEMD=<PATH>`: The path to put the systemd user service file. Unused, if `SYSTEMD=0`. (Default: detected via `pkg-config`)
 - `SERVICEDIR_DBUS=<PATH>`: The path to put the dbus service file. (Default: detected via `pkg-config`)
 

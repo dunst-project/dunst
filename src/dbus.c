@@ -560,6 +560,27 @@ void signal_notification_closed(struct notification *n, enum reason reason)
         if (err) {
                 LOG_W("Unable to close notification: %s", err->message);
                 g_error_free(err);
+        } else {
+                char* reason_string;
+                switch (reason) {
+                        case REASON_TIME:
+                                reason_string="time";
+                                break;
+                        case REASON_USER:
+                                reason_string="user";
+                                break;
+                        case REASON_SIG:
+                                reason_string="signal";
+                                break;
+                        case REASON_UNDEF:
+                                reason_string="undfined";
+                                break;
+                        default:
+                                reason_string="unknown";
+                }
+
+                LOG_D("Queues: Closing notification for reason: %s", reason_string);
+
         }
 
 }

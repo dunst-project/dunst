@@ -13,6 +13,7 @@
 #include "rules.h"
 #include "utils.h"
 #include "x11/x.h"
+#include "output.h"
 
 #include "../config.h"
 
@@ -118,6 +119,12 @@ void load_settings(char *cmdline_config_path)
                 "Force the use of the Xinerama extension"
         );
 
+        settings.force_xwayland = option_get_bool(
+                "global",
+                "force_xwayland", "-force_xwayland", false,
+                "Force the use of the xwayland output"
+        );
+
         settings.font = option_get_string(
                 "global",
                 "font", "-font/-fn", defaults.font,
@@ -208,6 +215,22 @@ void load_settings(char *cmdline_config_path)
                 "idle_threshold", "-idle_threshold", defaults.idle_threshold,
                 "Don't timeout notifications if user is longer idle than threshold"
         );
+
+#ifndef ENABLE_WAYLAND
+        if (is_running_wayland()){
+                /* We are using xwayland now. Setting force_xwayland to make sure
+                 * the idle workaround below is activated */
+                settings.force_xwayland = true;
+        }
+#endif
+
+        if (settings.force_xwayland && is_running_wayland()) {
+                if (settings.idle_threshold > 0)
+                        LOG_W("Using xwayland. Disabling idle.");
+                /* There is no way to detect if the user is idle
+                 * on xwayland, so turn this feature off */
+                settings.idle_threshold = 0;
+        }
 
         settings.monitor = option_get_int(
                 "global",
@@ -481,6 +504,22 @@ void load_settings(char *cmdline_config_path)
                         if (c)
                                 LOG_W("Unknown vertical alignment: '%s'", c);
                         settings.vertical_alignment = defaults.vertical_alignment;
+                }
+                g_free(c);
+
+        }
+
+        {
+                char *c = option_get_string(
+                        "global",
+                        "layer", "-layer", "overlay",
+                        "Select the layer where notifications should be placed"
+                );
+
+                if (!string_parse_layer(c, &settings.layer)) {
+                        if (c)
+                                LOG_W("Unknown layer: '%s'", c);
+                        settings.layer = defaults.layer;
                 }
                 g_free(c);
 
