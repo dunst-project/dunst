@@ -129,6 +129,7 @@ void notification_run_script(struct notification *n)
                         int status;
                         waitpid(pid1, &status, 0);
                 } else {
+                        // second fork to prevent zombie processes
                         int pid2 = fork();
                         if (pid2) {
                                 exit(0);
@@ -153,7 +154,7 @@ void notification_run_script(struct notification *n)
                                 safe_setenv("DUNST_TIMESTAMP", n_timestamp_str);
                                 safe_setenv("DUNST_STACK_TAG", n->stack_tag);
 
-                                int ret = execlp(script,
+                                execlp(script,
                                                 script,
                                                 appname,
                                                 summary,
@@ -161,10 +162,9 @@ void notification_run_script(struct notification *n)
                                                 icon,
                                                 urgency,
                                                 (char *)NULL);
-                                if (ret != 0) {
-                                        LOG_W("Unable to run script %s: %s", n->scripts[i], strerror(errno));
-                                        exit(EXIT_FAILURE);
-                                }
+
+                                LOG_W("Unable to run script %s: %s", n->scripts[i], strerror(errno));
+                                exit(EXIT_FAILURE);
                         }
                 }
         }
