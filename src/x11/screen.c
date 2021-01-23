@@ -309,10 +309,7 @@ const struct screen_info *get_active_screen(void)
         if (settings.f_mode == FOLLOW_NONE) {
                 if (settings.monitor >= 0 && settings.monitor < screens_len) {
                         ret = settings.monitor;
-                } else {
-                        ret = XDefaultScreen(xctx.dpy);
                 }
-
                 goto sc_cleanup;
         } else {
                 int x, y;
@@ -327,19 +324,25 @@ const struct screen_info *get_active_screen(void)
                 if (settings.f_mode == FOLLOW_KEYBOARD) {
                         Window focused = get_focused_window();
 
-                        if (focused == 0) {
+                        if (!focused) {
                                 /*
-                                 * This can happen in the case that the user
-                                 * just has the root window open, eg. in empty
-                                 * tags in dwm or similar window managers. In
-                                 * that case, fall back to FOLLOW_MOUSE, since
-                                 * it probably still has the right screen.
+                                 * If no window is focused, or the focus is set
+                                 * to dynamically change to the root window of
+                                 * the screen the pointer is on, force following
+                                 * the mouse.
                                  */
                                 force_follow_mouse = true;
                         } else {
                                 Window child_return;
-                                XTranslateCoordinates(xctx.dpy, focused, root,
-                                                0, 0, &x, &y, &child_return);
+                                /*
+                                 * The window with input focus might be on a
+                                 * different X screen. Use the mouse location
+                                 * in that case.
+                                 */
+                                force_follow_mouse = !XTranslateCoordinates(
+                                                        xctx.dpy, focused,root,
+                                                        0, 0, &x, &y,
+                                                        &child_return);
                         }
                 }
 
@@ -370,7 +373,7 @@ const struct screen_info *get_active_screen(void)
                         goto sc_cleanup;
 
                 /* something seems to be wrong. Fall back to default */
-                ret = XDefaultScreen(xctx.dpy);
+                ret = 0;
                 goto sc_cleanup;
         }
 sc_cleanup:
@@ -386,32 +389,13 @@ sc_cleanup:
  */
 static Window get_focused_window(void)
 {
-        Window focused = 0;
-        Atom type;
-        int format;
-        unsigned long nitems, bytes_after;
-        unsigned char *prop_return = NULL;
-        Window root = RootWindow(xctx.dpy, DefaultScreen(xctx.dpy));
-        Atom netactivewindow =
-            XInternAtom(xctx.dpy, "_NET_ACTIVE_WINDOW", false);
+        Window focused;
+        int ignored;
 
-        XGetWindowProperty(xctx.dpy,
-                           root,
-                           netactivewindow,
-                           0L,
-                           sizeof(Window),
-                           false,
-                           XA_WINDOW,
-                           &type,
-                           &format,
-                           &nitems,
-                           &bytes_after,
-                           &prop_return);
-        if (prop_return) {
-                focused = *(Window *)prop_return;
-                XFree(prop_return);
-        }
+        XGetInputFocus(xctx.dpy, &focused, &ignored);
 
+        if (focused == None || focused == PointerRoot)
+                focused = 0;
         return focused;
 }
 
