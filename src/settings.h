@@ -81,6 +81,7 @@ struct settings {
         int separator_height;
         int padding;
         int h_padding;
+        int text_icon_padding;
         struct separator_color_data sep_color;
         int frame_width;
         char *frame_color;

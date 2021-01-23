@@ -366,6 +366,12 @@ void load_settings(char *cmdline_config_path)
                 "horizontal padding"
         );
 
+        settings.text_icon_padding = option_get_int(
+                "global",
+                "text_icon_padding", "-text_icon_padding", defaults.text_icon_padding,
+                "Padding between text and icon"
+        );
+
         settings.transparency = option_get_int(
                 "global",
                 "transparency", "-transparency", defaults.transparency,

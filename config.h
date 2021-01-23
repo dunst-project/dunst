@@ -54,6 +54,7 @@ struct settings defaults = {
 .separator_height = 2,       /* height of the separator line between two notifications */
 .padding = 0,
 .h_padding = 0,              /* horizontal padding */
+.text_icon_padding = 0,     /* padding between icon and text*/
 .sep_color = {SEP_AUTO},     /* SEP_AUTO, SEP_FOREGROUND, SEP_FRAME, SEP_CUSTOM */
 
 .frame_width = 0,
