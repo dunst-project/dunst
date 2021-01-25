@@ -90,7 +90,9 @@ dunstify: dunstify.o
 
 .PHONY: test test-valgrind test-coverage
 test: test/test clean-coverage-run
-	./test/test -v
+	# Make sure an error code is returned when the test fails
+	/usr/bin/env bash -c 'set -euo pipefail;\
+	./test/test -v | ./test/greenest.awk '
 
 test-valgrind: test/test
 	${VALGRIND} \
