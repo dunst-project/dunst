@@ -12,6 +12,67 @@
 
 extern const char *base;
 
+TEST test_get_path_from_icon_null(void){
+    char *result = get_path_from_icon_name(NULL);
+    ASSERT_EQ(result, NULL);
+    PASS();
+}
+
+TEST test_get_path_from_icon_sorting(void)
+{
+        const char *iconpath = ICONPREFIX;
+
+        const char* icon_names[] = { "onlypng", "onlysvg", "icon1" };
+        const char* icon_paths[] = { "valid/onlypng.png", "valid/onlysvg.svg", "invalid/icon1.svg" };
+        ASSERT_EQm("Test is incorrect", G_N_ELEMENTS(icon_names), G_N_ELEMENTS(icon_paths));
+
+        for (int i = 0; i < G_N_ELEMENTS(icon_names); i++){
+                gchar *path = g_build_filename(base, iconpath, icon_paths[i], NULL);
+                char *result = get_path_from_icon_name(icon_names[i]);
+                ASSERT(result);
+                ASSERT_EQ(strcmp(result, path), 0);
+                g_free(path);
+                g_free(result);
+        }
+
+        PASS();
+}
+
+TEST test_get_path_from_icon_name(void)
+{
+        const char *iconpath = ICONPREFIX;
+
+        const char* icon_name = "onlypng";
+        const char* expected_suffix = ".png";
+        char* full_name = g_strconcat(icon_name, expected_suffix, NULL);
+
+        gchar *path = g_build_filename(base, iconpath, "valid", full_name, NULL);
+        char *result = get_path_from_icon_name(icon_name);
+
+        ASSERT(result);
+        ASSERT_EQ(strcmp(result, path), 0);
+
+        g_free(full_name);
+        g_free(path);
+        g_free(result);
+        PASS();
+}
+
+TEST test_get_path_from_icon_name_full(void)
+{
+        const char *iconpath = ICONPREFIX;
+
+        gchar *path = g_build_filename(base, iconpath, "valid", "icon1.svg", NULL);
+
+        char *result = get_path_from_icon_name(path);
+        ASSERT(result);
+        ASSERT_EQ(strcmp(result, path), 0);
+
+        g_free(path);
+        g_free(result);
+        PASS();
+}
+
 TEST test_get_pixbuf_from_file_tilde(void)
 {
         const char *home = g_get_home_dir();
@@ -62,8 +123,8 @@ TEST test_get_pixbuf_from_icon_invalid(void)
 TEST test_get_pixbuf_from_icon_both(void)
 {
         GdkPixbuf *pixbuf = get_pixbuf_from_icon("icon1");
-        ASSERT(pixbuf);
-        ASSERTm("SVG pixbuf hasn't precedence", IS_ICON_SVG(pixbuf));
+        // the first icon  found is invalid, so the pixbuf is empty
+        ASSERT(!pixbuf);
         g_clear_pointer(&pixbuf, g_object_unref);
 
         PASS();
@@ -170,12 +231,23 @@ TEST test_get_pixbuf_from_icon_both_is_scaled(void)
 
 SUITE(suite_icon)
 {
+        // set only valid icons in the path
+        settings.icon_path = g_strconcat(
+                     base, ICONPREFIX "/valid"
+                ":", base, ICONPREFIX "/both",
+                NULL);
+        RUN_TEST(test_get_path_from_icon_name);
+
+        g_clear_pointer(&settings.icon_path, g_free);
         settings.icon_path = g_strconcat(
                      base, ICONPREFIX "/invalid"
                 ":", base, ICONPREFIX "/valid"
                 ":", base, ICONPREFIX "/both",
                 NULL);
 
+        RUN_TEST(test_get_path_from_icon_null);
+        RUN_TEST(test_get_path_from_icon_sorting);
+        RUN_TEST(test_get_path_from_icon_name_full);
         RUN_TEST(test_get_pixbuf_from_file_tilde);
         RUN_TEST(test_get_pixbuf_from_file_absolute);
         RUN_TEST(test_get_pixbuf_from_icon_invalid);
