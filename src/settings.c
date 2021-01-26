@@ -54,6 +54,10 @@ static FILE *xdg_config(const char *filename)
                 g_free(path);
         }
 
+        if (!f) {
+                f = fopen("/etc/dunst/dunstrc", "r");
+        }
+
         return f;
 }
 

@@ -206,7 +206,7 @@ install-dunstctl: dunstctl
 	install -Dm755 dunstctl ${DESTDIR}${BINDIR}/dunstctl
 
 install-doc:
-	install -Dm644 dunstrc ${DESTDIR}${DATADIR}/dunst/dunstrc
+	install -Dm644 dunstrc ${DESTDIR}${SYSCONFDIR}/dunst/dunstrc
 
 install-service: install-service-dbus
 install-service-dbus: service-dbus
@@ -225,7 +225,7 @@ uninstall: uninstall-service uninstall-dunstctl
 	rm -f ${DESTDIR}${BINDIR}/dunstify
 	rm -f ${DESTDIR}${MANPREFIX}/man1/dunst.1
 	rm -f ${DESTDIR}${MANPREFIX}/man1/dunstctl.1
-	rm -rf ${DESTDIR}${DATADIR}/dunst
+	rm -rf ${DESTDIR}${SYSCONFDIR}/dunst
 
 uninstall-dunstctl:
 	rm -f ${DESTDIR}${BINDIR}/dunstctl
