@@ -179,6 +179,15 @@ static bool have_dynamic_width(void)
         return (settings.geometry.width_set && settings.geometry.w == 0);
 }
 
+static int get_text_icon_padding()
+{
+        if (settings.text_icon_padding) {
+                return settings.text_icon_padding;
+        } else {
+                return settings.h_padding;
+        }
+}
+
 static bool have_progress_bar(const struct notification *n)
 {
         return (n->progress >= 0 && settings.progress_bar == true);
@@ -241,7 +250,9 @@ static struct dimensions calculate_dimensions(GSList *layouts)
                         w = dim.w;
                         w -= 2 * settings.h_padding;
                         w -= 2 * settings.frame_width;
-                        if (cl->icon) w -= cairo_image_surface_get_width(cl->icon) + settings.h_padding;
+                        if (cl->icon) {
+                                w -= cairo_image_surface_get_width(cl->icon) + get_text_icon_padding();
+                        }
                         layout_setup_pango(cl->l, w);
 
                         /* re-read information */
@@ -335,7 +346,9 @@ static struct colored_layout *layout_init_shared(cairo_t *c, const struct notifi
         } else {
                 width -= 2 * settings.h_padding;
                 width -= 2 * settings.frame_width;
-                if (cl->icon) width -= cairo_image_surface_get_width(cl->icon) + settings.h_padding;
+                if (cl->icon) {
+                        width -= cairo_image_surface_get_width(cl->icon) + get_text_icon_padding();
+                }
                 layout_setup_pango(cl->l, width);
         }
 
@@ -621,7 +634,7 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width)
 
                 // icon position
                 if (settings.icon_position == ICON_LEFT) {
-                        text_x = cairo_image_surface_get_width(cl->icon) + 2 * settings.h_padding;
+                        text_x = cairo_image_surface_get_width(cl->icon) + settings.h_padding + get_text_icon_padding();
                 } // else ICON_RIGHT
         }
         cairo_move_to(c, text_x, text_y);

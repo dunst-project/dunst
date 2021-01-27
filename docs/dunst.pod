@@ -219,6 +219,23 @@ in the vertical axis
 The distance in pixels from the content to the border of the window
 in the horizontal axis
 
+=item B<text_icon_padding> (default: 0)
+
+The distance in pixels from the text to the icon (or vice versa)
+in the horizontal axis.
+
+Setting this to a non-zero value overwrites any padding that horizontal_padding was adding between the notification text and icon.
+
+So for example setting
+
+    text_icon_padding=10
+    horizontal_padding=10
+
+is equivalent to
+
+    text_icon_padding=0
+    horizontal_padding=10
+
 =item B<frame_width> (default: 0)
 
 Defines width in pixels of frame around the notification window. Set to 0 to
