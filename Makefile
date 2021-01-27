@@ -123,12 +123,14 @@ test/test: ${OBJ} ${TEST_OBJ}
 	${CC} -o ${@} ${TEST_OBJ} $(filter-out ${TEST_OBJ:test/%=src/%},${OBJ}) ${CFLAGS} ${LDFLAGS}
 
 .PHONY: doc doc-doxygen
-doc: docs/dunst.1 docs/dunstctl.1
+doc: docs/dunst.1 docs/dunst.5 docs/dunstctl.1
 
 # Can't dedup this as we need to explicitly provide the name and title text to
 # pod2man :(
-docs/dunst.1: docs/dunst.pod
+docs/dunst.1: docs/dunst.1.pod
 	${POD2MAN} --name=dunst -c "Dunst Reference" --section=1 --release=${VERSION} $< > $@
+docs/dunst.5: docs/dunst.5.pod
+	${POD2MAN} --name=dunst -c "Dunst Reference" --section=5 --release=${VERSION} $< > $@
 docs/dunstctl.1: docs/dunstctl.pod
 	${POD2MAN} --name=dunstctl -c "dunstctl reference" --section=1 --release=${VERSION} $< > $@
 
@@ -200,6 +202,7 @@ install: install-dunst install-dunstctl install-doc install-service install-duns
 install-dunst: dunst doc
 	install -Dm755 dunst ${DESTDIR}${BINDIR}/dunst
 	install -Dm644 docs/dunst.1 ${DESTDIR}${MANPREFIX}/man1/dunst.1
+	install -Dm644 docs/dunst.5 ${DESTDIR}${MANPREFIX}/man5/dunst.5
 	install -Dm644 docs/dunstctl.1 ${DESTDIR}${MANPREFIX}/man1/dunstctl.1
 
 install-dunstctl: dunstctl
@@ -224,6 +227,7 @@ uninstall: uninstall-service uninstall-dunstctl
 	rm -f ${DESTDIR}${BINDIR}/dunst
 	rm -f ${DESTDIR}${BINDIR}/dunstify
 	rm -f ${DESTDIR}${MANPREFIX}/man1/dunst.1
+	rm -f ${DESTDIR}${MANPREFIX}/man5/dunst.5
 	rm -f ${DESTDIR}${MANPREFIX}/man1/dunstctl.1
 	rm -rf ${DESTDIR}${SYSCONFDIR}/dunst
 

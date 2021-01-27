@@ -19,6 +19,7 @@ testprefix/bin/dunstctl
 testprefix/bin/dunstify
 testprefix/share/man/man1/dunst.1
 testprefix/share/man/man1/dunstctl.1
+testprefix/share/man/man5/dunst.5
 EOF
 # make sure to manually sort the above values
 

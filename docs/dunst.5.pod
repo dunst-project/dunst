@@ -1,39 +1,8 @@
 =head1 NAME
 
-dunst - A customizable and lightweight notification-daemon
-
-=head1 SYNOPSIS
-
-dunst [-conf file] [-font font] [-geometry geom] [-format fmt] [-follow mode] [-monitor n] [-history_length n] ...
+dunst - configuration file
 
 =head1 DESCRIPTION
-
-Dunst is a highly configurable and lightweight notification daemon.
-
-=head1 COMMAND LINE OPTIONS
-
-=over 4
-
-=item B<-h/--help>
-
-List all command line flags
-
-=item B<-conf/-config file>
-
-Use alternative config file.
-
-=item B<-v/--version>
-
-Print version information.
-
-=item B<-print>
-
-Print notifications to stdout. This might be useful for logging, setting up
-rules or using the output in other scripts.
-
-=back
-
-=head1 CONFIGURATION
 
 An example configuration file is included (usually /etc/dunst/dunstrc). Note:
 this was previously /usr/share/dunst/dunstrc.
@@ -41,33 +10,17 @@ To change the configuration, copy this file to ~/.config/dunst/dunstrc and edit
 it accordingly.
 
 The configuration is divided into sections in an ini-like format. The 'global'
-section contains most general settings while the 'shortcuts' sections contains
-all keyboard configuration and the 'experimental' section all the features that
-have not yet been tested thoroughly.
+section contains most general settings while the setions 'urgency_low',
+'urgency_normal' and 'urgency_critical' are for low, normal and critical urgency
+notifications respectively. The 'shortcuts' section (deprecated) contains all
+keyboard configuration and the 'experimental' section all the features that have
+not yet been tested thoroughly.
 
 Any section that is not one of the above is assumed to be a rule, see RULES for
 more details.
 
 For backwards compatibility reasons the section name 'frame' is considered bound
 and can't be used as a rule.
-
-=head2 Command line
-
-Each configuration option in the global section can be overridden from the
-command line by adding a single dash in front of it's name.
-For example the font option can be overridden by running
-
-    $ dunst -font "LiberationSans Mono 4"
-
-Configuration options that take boolean values can only currently be set to
-"true" through the command line via the same method. e.g.
-
-    $ dunst -shrink
-
-This is a known limitation of the way command line parameters are parsed and
-will be changed in the future.
-
-Available settings per section:
 
 =head2 Global section
 
@@ -689,16 +642,15 @@ See TIME FORMAT for valid times.
 
 Dunst now contains a command line control command that can be used to interact
 with it. It supports all functions previously done only via keyboard shortcuts
-but also has a lot of extra functionality. So see more see the dunstctl man
-page.
+but also has a lot of extra functionality. So see more see dunstctl(1).
 
 =head1 HISTORY
 
 Dunst saves a number of notifications (specified by B<history_length>) in memory.
-These notifications can be recalled (i.e. redisplayed) by pressing the
-B<history_key> (see the shortcuts section), whether these notifications will
-time out like if they have been just send depends on the value of the
-B<sticky_history> setting.
+These notifications can be recalled (i.e. redisplayed) by calling 
+B<dunstctl history> (see dunstctl(1)). Whether these notifications will time out
+like if they have been just send depends on the value of the B<sticky_history>
+setting.
 
 Past notifications are redisplayed in a first-in-last-out order, meaning that
 pressing the history key once will bring up the most recent notification that
@@ -1009,11 +961,27 @@ missed notifications after returning to the computer.
 
 =head1 FILES
 
+These are the places where dunst will look for a configuration file. They are
+listed here in order and if dunst finds one of them, it will stop looking for
+more.
+
 $XDG_CONFIG_HOME/dunst/dunstrc
+
+$HOME/.config/dunst/dunstrc
 
 -or-
 
-$HOME/.config/dunst/dunstrc
+$XDG_CONFIG_HOME/dunst/dunstrc
+
+/etc/xdg/dunst/dunstrc
+
+=over 4
+
+=item /etc/dunst/dunstrc
+
+This is where the default config file is located
+
+=back
 
 =head1 AUTHORS
 

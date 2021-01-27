@@ -1,0 +1,163 @@
+=head1 NAME
+
+dunst - A customizable and lightweight notification-daemon
+
+=head1 SYNOPSIS
+
+dunst [-conf file] [-font font] [-geometry geom] [-format fmt] [-follow mode] [-monitor n] [-history_length n] ...
+
+=head1 DESCRIPTION
+
+Dunst is a highly configurable and lightweight notification daemon.
+
+=head1 COMMAND LINE OPTIONS
+
+=over 4
+
+=item B<-h/--help>
+
+List all command line flags
+
+=item B<-conf/-config file>
+
+Use alternative config file.
+
+=item B<-v/--version>
+
+Print version information.
+
+=item B<-print>
+
+Print notifications to stdout. This might be useful for logging, setting up
+rules or using the output in other scripts.
+
+=item B<->F<SETTING> B<[value]>
+
+Where F<SETTING> can be any setting that's available in the global section of
+the configuration file. See dunst(5) for possible settings.
+
+Each configuration option in the global section can be overridden from the
+command line by adding a single dash in front of it's name.
+For example the font option can be overridden by running
+
+    $ dunst -font "LiberationSans Mono 4"
+
+Configuration options that take boolean values can only currently be set to
+"true" through the command line via the same method. e.g.
+
+    $ dunst -shrink
+
+This is a known limitation of the way command line parameters are parsed and
+will be changed in the future.
+
+=back
+
+=head1 CONFIGURATION
+
+An example configuration file is included (usually /etc/dunst/dunstrc). Note:
+this was previously /usr/share/dunst/dunstrc.
+Before using dunst, copy this file to ~/.config/dunst/dunstrc and edit
+it accordingly. See dunst(5) for all possible settings.
+
+=head2 NOTIFY-SEND
+
+dunst is able to get different colors for a message via notify-send.
+In order to do that you have to add a hint via the -h option.
+The progress value can be set with a hint, too.
+
+=over 4
+
+=item notify-send -h string:fgcolor:#ff4444
+
+=item notify-send -h string:bgcolor:#4444ff -h string:fgcolor:#ff4444 -h string:frcolor:#44ff44
+
+=item notify-send -h int:value:42 "Working ..."
+
+=back
+
+=head1 ACTIONS
+
+Dunst allows notifiers (i.e.: programs that send the notifications) to specify
+actions. Dunst has support for both displaying indicators for these, and
+interacting with these actions.
+
+If "show_indicators" is true and a notification has an action, an "(A)" will be
+prepended to the notification format. Likewise, an "(U)" is prepended to
+notifications with URLs. It is possible to interact with notifications that
+have actions regardless of this setting, though it may not be obvious which
+notifications HAVE actions.
+
+The "context" keybinding is used to interact with these actions, by showing a
+menu of possible actions. This feature requires "dmenu" or a dmenu drop-in
+replacement present. It is preferred to set this keybinding with your window
+manager or desktop envirorment and let it execute C<dunsctl context>. Another
+option is to set this keybinding in your dunstrc, but this is soon to be deprecated
+(and doesn't work on Wayland).
+
+Alternatively, you can invoke an action with a middle click on the notification.
+If there is exactly one associated action, or one is marked as default, that one
+is invoked. If there are multiple, the context menu is shown. The same applies
+to URLs when there are no actions. You can change the mouse button to right click
+by setting C<mouse_right_click = close_all> in your dunstrc.
+
+=head1 MISCELLANEOUS
+
+Dunst can be paused via the `dunstctl set-paused true` command. To unpause dunst use
+`dunstctl set-paused false`.
+Alternatively you can send SIGUSR1 and SIGUSR2 to pause and unpause
+respectively. For Example:
+
+=over 4
+
+=item killall -SIGUSR1 dunst # pause
+
+=item killall -SIGUSR2 dunst # resume
+
+=back
+
+When paused dunst will not display any notifications but keep all notifications
+in a queue.  This can for example be wrapped around a screen locker (i3lock,
+slock) to prevent flickering of notifications through the lock and to read all
+missed notifications after returning to the computer.
+
+=head1 FILES
+
+These are the places where dunst will look for a configuration file. They are
+listed here in order and if dunst finds one of them, it will stop looking for
+more.
+
+$XDG_CONFIG_HOME/dunst/dunstrc
+
+$HOME/.config/dunst/dunstrc
+
+-or-
+
+$XDG_CONFIG_HOME/dunst/dunstrc
+
+/etc/xdg/dunst/dunstrc
+
+=over 4
+
+=item /etc/dunst/dunstrc
+
+This is where the default config file is located
+
+=back
+
+=head1 AUTHORS
+
+Written by Sascha Kruse <knopwob@googlemail.com>
+
+=head1 REPORTING BUGS
+
+Bugs and suggestions should be reported on GitHub at https://github.com/dunst-project/dunst/issues
+
+=head1 COPYRIGHT
+
+Copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information)
+
+If you feel that copyrights are violated, please send me an email.
+
+=head1 SEE ALSO
+
+dunst(5), dunstctl(1), dwm(1), dmenu(1), twmn(1), notify-send(1)
