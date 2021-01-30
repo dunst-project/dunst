@@ -247,4 +247,16 @@ const char *user_get_home(void)
         return home_directory;
 }
 
+bool safe_setenv(const char* key, const char* value){
+        if (!key)
+                return false;
+
+        if (!value)
+                setenv(key, "", 1);
+        else
+                setenv(key, value, 1);
+
+        return true;
+}
+
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

@@ -195,14 +195,14 @@ GdkPixbuf *get_pixbuf_from_file(const char *filename)
         return pixbuf;
 }
 
-GdkPixbuf *get_pixbuf_from_icon(const char *iconname)
+char *get_path_from_icon_name(const char *iconname)
 {
         if (STR_EMPTY(iconname))
                 return NULL;
 
         const char *suffixes[] = { ".svg", ".svgz", ".png", ".xpm", NULL };
-        GdkPixbuf *pixbuf = NULL;
         gchar *uri_path = NULL;
+        char *new_name = NULL;
 
         if (g_str_has_prefix(iconname, "file://")) {
                 uri_path = g_filename_from_uri(iconname, NULL, NULL);
@@ -212,7 +212,7 @@ GdkPixbuf *get_pixbuf_from_icon(const char *iconname)
 
         /* absolute path? */
         if (iconname[0] == '/' || iconname[0] == '~') {
-                pixbuf = get_pixbuf_from_file(iconname);
+                new_name = g_strdup(iconname);
         } else {
         /* search in icon_path */
                 char *start = settings.icon_path,
@@ -224,26 +224,47 @@ GdkPixbuf *get_pixbuf_from_icon(const char *iconname)
                         current_folder = g_strndup(start, end - start);
 
                         for (const char **suf = suffixes; *suf; suf++) {
-                                maybe_icon_path = g_strconcat(current_folder, "/", iconname, *suf, NULL);
-                                if (is_readable_file(maybe_icon_path))
-                                        pixbuf = get_pixbuf_from_file(maybe_icon_path);
+                                gchar *name_with_extension = g_strconcat(iconname, *suf, NULL);
+                                maybe_icon_path = g_build_filename(current_folder, name_with_extension, NULL);
+                                if (is_readable_file(maybe_icon_path)) {
+                                        new_name = g_strdup(maybe_icon_path);
+                                }
+                                g_free(name_with_extension);
                                 g_free(maybe_icon_path);
 
-                                if (pixbuf)
+                                if (new_name)
                                         break;
                         }
 
                         g_free(current_folder);
-                        if (pixbuf)
+                        if (new_name)
                                 break;
 
                         start = end + 1;
                 } while (STR_FULL(end));
-                if (!pixbuf)
+                if (!new_name)
                         LOG_W("No icon found in path: '%s'", iconname);
         }
 
         g_free(uri_path);
+        return new_name;
+}
+
+GdkPixbuf *get_pixbuf_from_icon(const char *iconname)
+{
+        char *path = get_path_from_icon_name(iconname);
+        if (!path) {
+                return NULL;
+        }
+
+        GdkPixbuf *pixbuf = NULL;
+
+        pixbuf = get_pixbuf_from_file(path);
+        g_free(path);
+
+        if (!pixbuf)
+                LOG_W("No icon found in path: '%s'", iconname);
+
         return pixbuf;
 }
 

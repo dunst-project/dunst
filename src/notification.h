@@ -55,9 +55,9 @@ struct notification {
         char *iconname;          /**< plain icon information (may be a path or just a name)
                                       Use this to compare the icon name with rules.*/
 
-        gint64 start;      /**< begin of current display */
-        gint64 timestamp;  /**< arrival time */
-        gint64 timeout;    /**< time to display */
+        gint64 start;      /**< begin of current display (in milliseconds) */
+        gint64 timestamp;  /**< arrival time (in milliseconds) */
+        gint64 timeout;    /**< time to display (in milliseconds) */
         int locked;     /**< If non-zero the notification is locked **/
 
         GHashTable *actions;
