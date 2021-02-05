@@ -315,11 +315,11 @@ static const struct zwlr_layer_surface_v1_listener layer_surface_listener = {
 
 static void idle_start (void *data, struct org_kde_kwin_idle_timeout *org_kde_kwin_idle_timeout) {
         ctx.is_idle = true;
-        LOG_I("User went idle");
+        LOG_D("User went idle");
 }
 static void idle_stop (void *data, struct org_kde_kwin_idle_timeout *org_kde_kwin_idle_timeout) {
         ctx.is_idle = false;
-        LOG_I("User isn't idle anymore");
+        LOG_D("User isn't idle anymore");
 }
 
 static const struct org_kde_kwin_idle_timeout_listener idle_timeout_listener = {
@@ -331,10 +331,12 @@ static void add_seat_to_idle_handler(struct wl_seat *seat) {
         if (!ctx.idle_handler){
                 return;
         }
-        uint32_t timeout_ms = settings.idle_threshold/1000;
-        ctx.idle_timeout = org_kde_kwin_idle_get_idle_timeout(ctx.idle_handler, seat, timeout_ms);
-        org_kde_kwin_idle_timeout_add_listener(ctx.idle_timeout, &idle_timeout_listener, 0);
-        ctx.has_idle_monitor = true;
+        if (settings.idle_threshold > 0) {
+                uint32_t timeout_ms = settings.idle_threshold/1000;
+                ctx.idle_timeout = org_kde_kwin_idle_get_idle_timeout(ctx.idle_handler, seat, timeout_ms);
+                org_kde_kwin_idle_timeout_add_listener(ctx.idle_timeout, &idle_timeout_listener, 0);
+                ctx.has_idle_monitor = true;
+        }
 }
 
 // Warning, can return NULL
