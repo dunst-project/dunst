@@ -640,6 +640,9 @@ static void send_frame() {
         // different output), we need to create it.
         if (ctx.layer_surface == NULL) {
                 struct wl_output *wl_output = NULL;
+                if (output != NULL) {
+                        wl_output = output->wl_output;
+                }
                 ctx.layer_surface_output = output;
                 ctx.surface = wl_compositor_create_surface(ctx.compositor);
                 wl_surface_add_listener(ctx.surface, &surface_listener, NULL);
