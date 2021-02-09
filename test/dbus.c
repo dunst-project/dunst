@@ -408,11 +408,11 @@ TEST test_hint_transient(void)
                 ASSERT(dbus_notification_fire(n_dbus, &id));
                 ASSERT(id != 0);
 
-                ASSERT_EQ(queues_length_waiting(), len+1);
+                snprintf(msg, sizeof(msg), "In round %ld", i);
+                ASSERT_EQm(msg, queues_length_waiting(), len+1);
 
                 n = queues_debug_find_notification_by_id(id);
 
-                snprintf(msg, sizeof(msg), "In round %ld", i);
                 ASSERT_EQm(msg, values[i], n->transient);
         }
 
@@ -453,11 +453,11 @@ TEST test_hint_progress(void)
                 ASSERT(dbus_notification_fire(n_dbus, &id));
                 ASSERT(id != 0);
 
-                ASSERT_EQ(queues_length_waiting(), len+1);
+                snprintf(msg, sizeof(msg), "In round %ld", i);
+                ASSERT_EQm(msg, queues_length_waiting(), len+1);
 
                 n = queues_debug_find_notification_by_id(id);
 
-                snprintf(msg, sizeof(msg), "In round %ld", i);
                 ASSERT_EQm(msg, values[i], n->progress);
         }
 
