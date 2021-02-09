@@ -57,6 +57,68 @@ int string_parse_enum(void *data, const char *s, void * ret) {
         return false;
 }
 
+int string_parse_mouse_action_list2(char **s, void *ret_void)
+{
+        enum mouse_action **ret = (enum mouse_action **) ret_void;
+        ASSERT_OR_RET(s, false);
+        ASSERT_OR_RET(ret, false);
+
+        int len = 0;
+        while (s[len])
+                len++;
+
+        g_free(*ret);
+        *ret = g_malloc_n((len + 1), sizeof(enum mouse_action));
+        for (int i = 0; i < len; i++) {
+                if (!string_parse_enum(&mouse_action_enum_data, s[i], *ret + i)) {
+                        LOG_W("Unknown mouse action value: '%s'", s[i]);
+                        g_free(*ret);
+                        return false;
+                }
+        }
+        (*ret)[len] = -1; // sentinel end value
+        return true;
+}
+
+int string_parse_list(void *data, const char *s, void *ret) {
+        enum list_type type = *(int*) data;
+        char **arr = string_to_array(s);
+        int success = false;
+        switch (type) {
+                case MOUSE_LIST:
+                        success = string_parse_mouse_action_list2(arr, ret);
+                        break;
+                default:
+                        LOG_W("Don't know this list type: %i", type);
+                        break;
+        }
+        free_string_array(arr);
+        return success;
+}
+
+int string_parse_sepcolor2(void *data, const char *s, void *ret)
+{
+        LOG_D("parsing sep_color");
+        struct separator_color_data *sep_color = (struct separator_color_data*) ret;
+
+        enum separator_color type;
+        bool is_enum = string_parse_enum(data, s, &type);
+        if (is_enum) {
+                sep_color->type = type;
+                return true;
+        } else {
+                if (STR_FULL(s)) {
+                        sep_color->type = SEP_CUSTOM;
+                        g_free(sep_color->sep_color);
+                        sep_color->sep_color = g_strdup(s); // TODO check if this is a color?
+                        return true;
+                } else {
+                        LOG_W("Sep color is empty, make sure to quote the value if it's a color.");
+                        return false;
+                }
+        }
+}
+
 bool string_parse_alignment(const char *s, enum alignment *ret)
 {
         ASSERT_OR_RET(STR_FULL(s), false);
@@ -450,6 +512,15 @@ bool set_setting(struct setting setting, char* value) {
 
                         if (!success) LOG_W("Unknown %s value: '%s'", setting.name, value);
                         return success;
+                case TYPE_SEP_COLOR:
+                        if (setting.parser == NULL) {
+                                LOG_W("Setting %s doesn't have parser", setting.name);
+                                return false;
+                        }
+                        bool success2 = setting.parser(setting.parser_data, value, setting.value);
+
+                        if (!success2) LOG_W("Unknown %s value: '%s'", setting.name, value);
+                        return success2;
                 case TYPE_PATH: ;
                         g_free(*(char**) setting.value);
                         *(char**) setting.value = string_to_path(g_strdup(value));
@@ -468,6 +539,11 @@ bool set_setting(struct setting setting, char* value) {
                 case TYPE_GEOMETRY:
                         *(struct geometry*) setting.value = x_parse_geometry(value);
                         return true;
+                case TYPE_LIST: ;
+                        int type = *(enum list_type*)setting.parser_data;
+                        LOG_D("list type %i", *(int*)setting.parser_data);
+                        LOG_D("list type int %i", type);
+                        return string_parse_list(&type, value, setting.value);
                 default:
                         LOG_W("Setting type of '%s' is not known (type %i)", setting.name, setting.type);
                         return false;

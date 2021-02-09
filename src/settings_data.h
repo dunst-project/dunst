@@ -85,6 +85,21 @@ struct setting {
       void* parser_data; // This is passed to the parser function
 };
 
+enum list_type {
+        MOUSE_LIST,
+};
+
+static enum list_type mouse_list = MOUSE_LIST;
+
+#define ENUM_END {NULL, 0}
+static struct string_to_enum_def mouse_action_enum_data[] = {
+        {"none",           MOUSE_NONE },
+        {"do_action",      MOUSE_DO_ACTION },
+        {"close_current",  MOUSE_CLOSE_CURRENT },
+        {"close_all",      MOUSE_CLOSE_ALL },
+        ENUM_END,
+};
+
 static struct setting allowed_settings[] = {
         {
                 .name = "frame_color",
