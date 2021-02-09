@@ -9,6 +9,9 @@
 #include "dunst.h"
 #include "settings.h"
 
+int string_parse_enum(void* data, const char *s, void * ret);
+int string_parse_sepcolor2(void *data, const char *s, void *ret);
+
 bool string_parse_alignment(const char *s, enum alignment *ret);
 bool string_parse_ellipsize(const char *s, enum ellipsize *ret);
 bool string_parse_follow_mode(const char *s, enum follow_mode *ret);
@@ -23,6 +26,8 @@ bool string_parse_urgency(const char *s, enum urgency *ret);
 bool string_parse_layer(const char *s, enum zwlr_layer_shell_v1_layer *ret);
 
 int load_ini_file(FILE *);
+void set_defaults();
+void save_settings();
 char *ini_get_path(const char *section, const char *key, const char *def);
 char *ini_get_string(const char *section, const char *key, const char *def);
 gint64 ini_get_time(const char *section, const char *key, gint64 def);

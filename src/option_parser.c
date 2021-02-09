@@ -8,10 +8,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "x11/x.h"
 #include "dunst.h"
 #include "log.h"
 #include "utils.h"
 #include "settings.h"
+#include "rules.h"
+#include "settings_data.h"
 
 struct entry {
         char *key;
@@ -41,6 +44,18 @@ static void cmdline_usage_append(const char *key, const char *type, const char *
 static int cmdline_find_option(const char *key);
 
 #define STRING_PARSE_RET(string, value) if (STR_EQ(s, string)) { *ret = value; return true; }
+
+int string_parse_enum(void *data, const char *s, void * ret) {
+        struct string_to_enum_def *string_to_enum = (struct string_to_enum_def*)data;
+        for (int i = 0; string_to_enum[i].string != NULL; i++) {
+                if (strcmp(s, string_to_enum[i].string) == 0){
+                        *(int*) ret = string_to_enum[i].enum_value;
+                        LOG_D("Setting enum to %i (%s)", *(int*) ret, string_to_enum[i].string);
+                        return true;
+                }
+        }
+        return false;
+}
 
 bool string_parse_alignment(const char *s, enum alignment *ret)
 {
@@ -344,9 +359,8 @@ const char *next_section(const char *section)
         return NULL;
 }
 
-int ini_get_bool(const char *section, const char *key, int def)
-{
-        const char *value = get_value(section, key);
+int str_to_bool(const char *value){
+        int def = -1;
         if (value) {
                 switch (value[0]) {
                 case 'y':
@@ -366,6 +380,124 @@ int ini_get_bool(const char *section, const char *key, int def)
                 }
         } else {
                 return def;
+        }
+}
+
+int ini_get_bool(const char *section, const char *key, int def)
+{
+        const char *value = get_value(section, key);
+        int val_int = str_to_bool(value);
+
+        if (val_int < 0) val_int = def;
+        return val_int;
+}
+
+int get_setting_id(const char *key, const char *section) {
+        int error_code = 0;
+        int partial_match_id = -1;
+        for (int i = 0; i < G_N_ELEMENTS(allowed_settings); i++) {
+                if (strcmp(allowed_settings[i].name, key) == 0) {
+                        /* LOG_I("%s name exists with id %i", allowed_settings[i].name, i); */
+                        if (strcmp(section, allowed_settings[i].section) == 0) {
+                                return i;
+                        } else {
+                                // name matches, but in wrong section. Continueing to see
+                                // if we find the same setting name with another section
+                                error_code = -2;
+                                partial_match_id = i;
+                                continue;
+                        }
+                }
+        }
+
+        if (error_code == -2) {
+                LOG_W("Setting %s is in the wrong section (%s, should be %s)", // TODO fix this warning
+                                key, section,
+                                allowed_settings[partial_match_id].section);
+                // found, but in wrong section
+                return -2;
+        }
+
+        // not found
+        return -1;
+}
+
+bool set_setting(struct setting setting, char* value) {
+        // TODO make sure value isn't empty
+        LOG_D("Trying to set %s to %s", setting.name, value);
+        GError *error = NULL;
+        /* if (!strlen(value)) { */
+                /* LOG_W("but value is empty!"); */
+                /* return false; */
+        /* } */
+        switch (setting.type) {
+                case TYPE_INT:
+                        *(int*) setting.value = atoi(value);
+                        return true;
+                case TYPE_BOOLEAN:
+                        *(bool*) setting.value = str_to_bool(value);
+                        return true;
+                case TYPE_STRING:
+                        g_free(*(char**) setting.value);
+                        *(char**) setting.value = g_strdup(value);
+                        return true;
+                case TYPE_ENUM:
+                        if (setting.parser == NULL) {
+                                LOG_W("Enum setting %s doesn't have parser", setting.name);
+                                return false;
+                        }
+                        bool success = setting.parser(setting.parser_data, value, setting.value);
+
+                        if (!success) LOG_W("Unknown %s value: '%s'", setting.name, value);
+                        return success;
+                case TYPE_PATH: ;
+                        g_free(*(char**) setting.value);
+                        *(char**) setting.value = string_to_path(g_strdup(value));
+                        g_strfreev(*(char***)setting.parser_data);
+                        if (!g_shell_parse_argv(*(char**) setting.value, NULL, (char***)setting.parser_data, &error)) {
+                                LOG_W("Unable to parse %s command: '%s'. "
+                                                "It's functionality will be disabled.",
+                                                setting.name, error->message);
+                                g_error_free(error);
+                                return false;
+                        }
+                        return true;
+                case TYPE_TIME: ;
+                        *(gint64*) setting.value = string_to_time(value);
+                        return true;
+                case TYPE_GEOMETRY:
+                        *(struct geometry*) setting.value = x_parse_geometry(value);
+                        return true;
+                default:
+                        LOG_W("Setting type of '%s' is not known (type %i)", setting.name, setting.type);
+                        return false;
+        }
+}
+
+void set_defaults(){
+        for (int i = 0; i < G_N_ELEMENTS(allowed_settings); i++) {
+                if(!set_setting(allowed_settings[i], allowed_settings[i].default_value)) {
+                        LOG_E("Could not set default of setting %s", allowed_settings[i].name);
+                }
+        }
+}
+
+void save_settings() {
+        for (int i = 0; i < section_count; i++) {
+                const struct section curr_section = sections[i];
+                for (int j = 0; j < curr_section.entry_count; j++) {
+                        const struct entry curr_entry = curr_section.entries[j];
+                        int setting_id = get_setting_id(curr_entry.key, curr_section.name);
+                        if (setting_id < 0){
+                                if (setting_id == -1) {
+                                        LOG_W("Setting %s in section %s doesn't exist", curr_entry.key, curr_section.name);
+                                }
+                                continue;
+                        }
+
+                        struct setting curr_setting = allowed_settings[setting_id];
+                        set_setting(curr_setting, curr_entry.value);
+                }
         }
 }
 

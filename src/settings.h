@@ -29,6 +29,10 @@ enum zwlr_layer_shell_v1_layer {
 	ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY = 3,
 };
 #endif /* ZWLR_LAYER_SHELL_V1_LAYER_ENUM */
+enum setting_type { TYPE_MIN = 0, TYPE_INT, TYPE_ENUM, TYPE_STRING, TYPE_BOOLEAN, TYPE_PATH,
+        TYPE_TIME, TYPE_GEOMETRY, TYPE_LIST, TYPE_SEP_COLOR,
+        TYPE_DEPRECATED, TYPE_MAX = TYPE_DEPRECATED + 1 }; // to be implemented
+// TODO implement TYPE_MIN and TYPE_MAX properly
 
 struct separator_color_data {
         enum separator_color type;
