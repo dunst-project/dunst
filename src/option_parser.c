@@ -92,7 +92,7 @@ int string_parse_list(void *data, const char *s, void *ret) {
                         LOG_W("Don't know this list type: %i", type);
                         break;
         }
-        free_string_array(arr);
+        g_strfreev(arr);
         return success;
 }
 

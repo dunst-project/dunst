@@ -95,25 +95,25 @@ TEST test_ini_get_list(void)
 
         char **ptr;
         CHECK_CALL(ARRAY_EQ(cmp1, (ptr = ini_get_list(list_section, "simple", ""))));
-        free_string_array(ptr);
+        g_strfreev(ptr);
 
         CHECK_CALL(ARRAY_EQ(cmp2, (ptr = ini_get_list(list_section, "spaces", ""))));
-        free_string_array(ptr);
+        g_strfreev(ptr);
 
         CHECK_CALL(ARRAY_EQ(cmp3, (ptr = ini_get_list(list_section, "multiword", ""))));
-        free_string_array(ptr);
+        g_strfreev(ptr);
         CHECK_CALL(ARRAY_EQ(cmp4, (ptr = ini_get_list(list_section, "quoted", ""))));
-        free_string_array(ptr);
+        g_strfreev(ptr);
 
         CHECK_CALL(ARRAY_EQ(cmp5, (ptr = ini_get_list(list_section, "quoted_with_quotes", ""))));
-        free_string_array(ptr);
+        g_strfreev(ptr);
         CHECK_CALL(ARRAY_EQ(cmp5, (ptr = ini_get_list(list_section, "unquoted_with_quotes", ""))));
-        free_string_array(ptr);
+        g_strfreev(ptr);
 
         CHECK_CALL(ARRAY_EQ(cmp6, (ptr = ini_get_list(list_section, "quoted_comment", ""))));
-        free_string_array(ptr);
+        g_strfreev(ptr);
         CHECK_CALL(ARRAY_EQ(cmp6, (ptr = ini_get_list(list_section, "unquoted_comment", ""))));
-        free_string_array(ptr);
+        g_strfreev(ptr);
 
         PASS();
 }
@@ -209,11 +209,11 @@ TEST test_cmdline_get_list(void)
         char *cmp3[] = {"A", "default", "list", NULL};
 
         CHECK_CALL(ARRAY_EQ(cmp1, (ptr = cmdline_get_list("-list", "", ""))));
-        free_string_array(ptr);
+        g_strfreev(ptr);
         CHECK_CALL(ARRAY_EQ(cmp2, (ptr = cmdline_get_list("-list2", "", ""))));
-        free_string_array(ptr);
+        g_strfreev(ptr);
         CHECK_CALL(ARRAY_EQ(cmp3, (ptr = cmdline_get_list("-nonexistent", "A, default, list", ""))));
-        free_string_array(ptr);
+        g_strfreev(ptr);
         PASS();
 }
 
@@ -298,15 +298,15 @@ TEST test_option_get_list(void)
         char *cmp4[] = {"A", "default", "list", NULL};
 
         CHECK_CALL(ARRAY_EQ(cmp1, (ptr = option_get_list(list_section, "simple", "-nonexistent", "", ""))));
-        free_string_array(ptr);
+        g_strfreev(ptr);
         CHECK_CALL(ARRAY_EQ(cmp2, (ptr = option_get_list(list_section, "quoted", "-list2", "", ""))));
-        free_string_array(ptr);
+        g_strfreev(ptr);
         CHECK_CALL(ARRAY_EQ(cmp3, (ptr = option_get_list(list_section, "simple", "-list", "", ""))));
-        free_string_array(ptr);
+        g_strfreev(ptr);
         CHECK_CALL(ARRAY_EQ(cmp3, (ptr = option_get_list(list_section, "simple", "-list/-l", "", ""))));
-        free_string_array(ptr);
+        g_strfreev(ptr);
         CHECK_CALL(ARRAY_EQ(cmp4, (ptr = option_get_list(list_section, "nonexistent", "-nonexistent", "A, default, list", ""))));
-        free_string_array(ptr);
+        g_strfreev(ptr);
         PASS();
 }
 

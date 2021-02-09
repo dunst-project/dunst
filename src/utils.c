@@ -14,17 +14,6 @@
 #include "log.h"
 
 /* see utils.h */
-void free_string_array(char **arr)
-{
-        if (arr){
-                for (int i = 0; arr[i]; i++){
-                        g_free(arr[i]);
-                }
-        }
-        g_free(arr);
-}
-
-/* see utils.h */
 char *string_replace_char(char needle, char replacement, char *haystack)
 {
         ASSERT_OR_RET(haystack, NULL);

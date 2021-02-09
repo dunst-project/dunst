@@ -24,15 +24,6 @@
 #define S2US(s) (((gint64)(s)) * 1000 * 1000)
 
 /**
- * Frees an array of strings whose last element is a NULL pointer.
- *
- * Assumes the last element is a NULL pointer, otherwise will result in a buffer overflow.
-
- * @param arr The array of strings to free
- */
-void free_string_array(char **arr);
-
-/**
  * Replaces all occurrences of the char \p needle with the char \p replacement in \p haystack.
  *
  * Does not allocate a new string.
