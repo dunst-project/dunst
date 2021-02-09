@@ -64,7 +64,6 @@ static FILE *xdg_config(const char *filename)
 void load_settings(char *cmdline_config_path)
 {
 
-#ifndef STATIC_CONFIG
         FILE *config_file = NULL;
 
         if (cmdline_config_path) {
@@ -94,10 +93,6 @@ void load_settings(char *cmdline_config_path)
         }
 
         load_ini_file(config_file);
-#else
-        LOG_M("dunstrc parsing disabled. "
-              "Using STATIC_CONFIG is deprecated behavior.");
-#endif
 
         {
                 char *loglevel = option_get_string(
@@ -892,11 +887,9 @@ void load_settings(char *cmdline_config_path)
                 r->set_stack_tag = ini_get_string(cur_section, "set_stack_tag", r->set_stack_tag);
         }
 
-#ifndef STATIC_CONFIG
         if (config_file) {
                 fclose(config_file);
                 free_ini();
         }
-#endif
 }
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */
