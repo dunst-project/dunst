@@ -10,20 +10,11 @@
 #include "settings.h"
 
 int string_parse_enum(void* data, const char *s, void * ret);
-int string_parse_sepcolor2(void *data, const char *s, void *ret);
+int string_parse_sepcolor(void *data, const char *s, void *ret);
 
-bool string_parse_alignment(const char *s, enum alignment *ret);
-bool string_parse_ellipsize(const char *s, enum ellipsize *ret);
-bool string_parse_follow_mode(const char *s, enum follow_mode *ret);
 bool string_parse_fullscreen(const char *s, enum behavior_fullscreen *ret);
-bool string_parse_icon_position(const char *s, enum icon_position *ret);
-bool string_parse_vertical_alignment(const char *s, enum vertical_alignment *ret);
 bool string_parse_markup_mode(const char *s, enum markup_mode *ret);
-bool string_parse_mouse_action(const char *s, enum mouse_action *ret);
-bool string_parse_mouse_action_list(char **s, enum mouse_action **ret);
-bool string_parse_sepcolor(const char *s, struct separator_color_data *ret);
 bool string_parse_urgency(const char *s, enum urgency *ret);
-bool string_parse_layer(const char *s, enum zwlr_layer_shell_v1_layer *ret);
 
 int load_ini_file(FILE *);
 void set_defaults();

@@ -57,7 +57,7 @@ int string_parse_enum(void *data, const char *s, void * ret) {
         return false;
 }
 
-int string_parse_mouse_action_list2(char **s, void *ret_void)
+int string_parse_mouse_action_list(char **s, void *ret_void)
 {
         enum mouse_action **ret = (enum mouse_action **) ret_void;
         ASSERT_OR_RET(s, false);
@@ -86,7 +86,7 @@ int string_parse_list(void *data, const char *s, void *ret) {
         int success = false;
         switch (type) {
                 case MOUSE_LIST:
-                        success = string_parse_mouse_action_list2(arr, ret);
+                        success = string_parse_mouse_action_list(arr, ret);
                         break;
                 default:
                         LOG_W("Don't know this list type: %i", type);
@@ -96,7 +96,7 @@ int string_parse_list(void *data, const char *s, void *ret) {
         return success;
 }
 
-int string_parse_sepcolor2(void *data, const char *s, void *ret)
+int string_parse_sepcolor(void *data, const char *s, void *ret)
 {
         LOG_D("parsing sep_color");
         struct separator_color_data *sep_color = (struct separator_color_data*) ret;
@@ -119,43 +119,6 @@ int string_parse_sepcolor2(void *data, const char *s, void *ret)
         }
 }
 
-bool string_parse_alignment(const char *s, enum alignment *ret)
-{
-        ASSERT_OR_RET(STR_FULL(s), false);
-        ASSERT_OR_RET(ret, false);
-
-        STRING_PARSE_RET("left",   ALIGN_LEFT);
-        STRING_PARSE_RET("center", ALIGN_CENTER);
-        STRING_PARSE_RET("right",  ALIGN_RIGHT);
-
-        return false;
-}
-
-bool string_parse_ellipsize(const char *s, enum ellipsize *ret)
-{
-        ASSERT_OR_RET(STR_FULL(s), false);
-        ASSERT_OR_RET(ret, false);
-
-        STRING_PARSE_RET("start",  ELLIPSE_START);
-        STRING_PARSE_RET("middle", ELLIPSE_MIDDLE);
-        STRING_PARSE_RET("end",    ELLIPSE_END);
-
-        return false;
-}
-
-bool string_parse_follow_mode(const char *s, enum follow_mode *ret)
-{
-        ASSERT_OR_RET(STR_FULL(s), false);
-        ASSERT_OR_RET(ret, false);
-
-        STRING_PARSE_RET("mouse",    FOLLOW_MOUSE);
-        STRING_PARSE_RET("keyboard", FOLLOW_KEYBOARD);
-        STRING_PARSE_RET("none",     FOLLOW_NONE);
-
-        return false;
-}
-
-
 bool string_parse_fullscreen(const char *s, enum behavior_fullscreen *ret)
 {
         ASSERT_OR_RET(STR_FULL(s), false);
@@ -164,30 +127,6 @@ bool string_parse_fullscreen(const char *s, enum behavior_fullscreen *ret)
         STRING_PARSE_RET("show",     FS_SHOW);
         STRING_PARSE_RET("delay",    FS_DELAY);
         STRING_PARSE_RET("pushback", FS_PUSHBACK);
-
-        return false;
-}
-
-bool string_parse_icon_position(const char *s, enum icon_position *ret)
-{
-        ASSERT_OR_RET(STR_FULL(s), false);
-        ASSERT_OR_RET(ret, false);
-
-        STRING_PARSE_RET("left",  ICON_LEFT);
-        STRING_PARSE_RET("right", ICON_RIGHT);
-        STRING_PARSE_RET("off",   ICON_OFF);
-
-        return false;
-}
-
-bool string_parse_vertical_alignment(const char *s, enum vertical_alignment *ret)
-{
-        ASSERT_OR_RET(STR_FULL(s), false);
-        ASSERT_OR_RET(ret, false);
-
-        STRING_PARSE_RET("top",     VERTICAL_TOP);
-        STRING_PARSE_RET("center",  VERTICAL_CENTER);
-        STRING_PARSE_RET("bottom",  VERTICAL_BOTTOM);
 
         return false;
 }
@@ -205,58 +144,6 @@ bool string_parse_markup_mode(const char *s, enum markup_mode *ret)
         return false;
 }
 
-bool string_parse_mouse_action(const char *s, enum mouse_action *ret)
-{
-        ASSERT_OR_RET(STR_FULL(s), false);
-        ASSERT_OR_RET(ret, false);
-
-        STRING_PARSE_RET("none",           MOUSE_NONE);
-        STRING_PARSE_RET("do_action",      MOUSE_DO_ACTION);
-        STRING_PARSE_RET("close_current",  MOUSE_CLOSE_CURRENT);
-        STRING_PARSE_RET("close_all",      MOUSE_CLOSE_ALL);
-        STRING_PARSE_RET("context",        MOUSE_CONTEXT);
-        STRING_PARSE_RET("context_all",    MOUSE_CONTEXT_ALL);
-        STRING_PARSE_RET("open_url",       MOUSE_OPEN_URL);
-
-        return false;
-}
-
-bool string_parse_mouse_action_list(char **s, enum mouse_action **ret)
-{
-        ASSERT_OR_RET(s, false);
-        ASSERT_OR_RET(ret, false);
-
-        int len = 0;
-        while (s[len])
-                len++;
-
-        *ret = g_malloc_n((len + 1), sizeof(enum mouse_action));
-        for (int i = 0; i < len; i++) {
-                if (!string_parse_mouse_action(s[i], *ret + i)) {
-                        LOG_W("Unknown mouse action value: '%s'", s[i]);
-                        g_free(*ret);
-                        return false;
-                }
-        }
-        (*ret)[len] = -1; // sentinel end value
-        return true;
-}
-
-bool string_parse_sepcolor(const char *s, struct separator_color_data *ret)
-{
-        ASSERT_OR_RET(STR_FULL(s), false);
-        ASSERT_OR_RET(ret, false);
-
-        STRING_PARSE_RET("auto",       (struct separator_color_data){.type = SEP_AUTO});
-        STRING_PARSE_RET("foreground", (struct separator_color_data){.type = SEP_FOREGROUND});
-        STRING_PARSE_RET("frame",      (struct separator_color_data){.type = SEP_FRAME});
-
-        ret->type = SEP_CUSTOM;
-        ret->sep_color = g_strdup(s);
-
-        return true;
-}
-
 bool string_parse_urgency(const char *s, enum urgency *ret)
 {
         ASSERT_OR_RET(STR_FULL(s), false);
@@ -265,18 +152,6 @@ bool string_parse_urgency(const char *s, enum urgency *ret)
         STRING_PARSE_RET("low",      URG_LOW);
         STRING_PARSE_RET("normal",   URG_NORM);
         STRING_PARSE_RET("critical", URG_CRIT);
-
-        return false;
-}
-
-bool string_parse_layer(const char *s, enum zwlr_layer_shell_v1_layer *ret)
-{
-        ASSERT_OR_RET(STR_FULL(s), false);
-        ASSERT_OR_RET(ret, false);
-
-        STRING_PARSE_RET("bottom",  ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM);
-        STRING_PARSE_RET("top",     ZWLR_LAYER_SHELL_V1_LAYER_TOP);
-        STRING_PARSE_RET("overlay", ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY);
 
         return false;
 }

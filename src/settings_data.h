@@ -897,7 +897,7 @@ static struct setting allowed_settings[] = {
                 .type = TYPE_SEP_COLOR,
                 .default_value = "auto",
                 .value = &settings.sep_color,
-                .parser = string_parse_sepcolor2,
+                .parser = string_parse_sepcolor,
                 .parser_data = sep_color_enum_data,
         },
         {
