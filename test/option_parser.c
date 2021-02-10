@@ -267,124 +267,6 @@ TEST test_cmdline_create_usage(void)
         PASS();
 }
 
-TEST test_option_get_string(void)
-{
-        char *string_section = "string";
-        char *ptr;
-
-        ASSERT_STR_EQ("A simple string", (ptr =option_get_string(string_section, "simple", "-nonexistent", "", "")));
-        free(ptr);
-        ASSERT_STR_EQ("Single_word_string", (ptr = option_get_string(string_section, "simple", "-str/-s", "", "")));
-        free(ptr);
-        ASSERT_STR_EQ("A simple string from the cmdline", (ptr = option_get_string(string_section, "simple", "-string", "", "")));
-        free(ptr);
-        ASSERT_STR_EQ("A simple string from the cmdline", (ptr = option_get_string(string_section, "simple", "-string/-s", "", "")));
-        free(ptr);
-        ASSERT_STR_EQ("Single_word_string", (ptr = option_get_string(string_section, "simple", "-s", "", "")));
-        free(ptr);
-        ASSERT_STR_EQ("Default", (ptr = option_get_string(string_section, "nonexistent", "-nonexistent", "Default", "")));
-        free(ptr);
-        PASS();
-}
-
-TEST test_option_get_list(void)
-{
-        char *list_section = "list";
-        char **ptr;
-
-        char *cmp1[] = {"A", "simple", "list", NULL};
-        char *cmp2[] = {"A", "list", "with", "spaces", NULL};
-        char *cmp3[] = {"A", "simple", "list", "from", "the", "cmdline", NULL};
-        char *cmp4[] = {"A", "default", "list", NULL};
-
-        CHECK_CALL(ARRAY_EQ(cmp1, (ptr = option_get_list(list_section, "simple", "-nonexistent", "", ""))));
-        g_strfreev(ptr);
-        CHECK_CALL(ARRAY_EQ(cmp2, (ptr = option_get_list(list_section, "quoted", "-list2", "", ""))));
-        g_strfreev(ptr);
-        CHECK_CALL(ARRAY_EQ(cmp3, (ptr = option_get_list(list_section, "simple", "-list", "", ""))));
-        g_strfreev(ptr);
-        CHECK_CALL(ARRAY_EQ(cmp3, (ptr = option_get_list(list_section, "simple", "-list/-l", "", ""))));
-        g_strfreev(ptr);
-        CHECK_CALL(ARRAY_EQ(cmp4, (ptr = option_get_list(list_section, "nonexistent", "-nonexistent", "A, default, list", ""))));
-        g_strfreev(ptr);
-        PASS();
-}
-
-TEST test_option_get_path(void)
-{
-        char *section = "path";
-        char *ptr, *exp;
-        char *home = getenv("HOME");
-
-        // invalid ini, invalid cmdline
-        ASSERT_EQ(NULL, (ptr = option_get_path(section, "nonexistent", "-nonexistent", NULL, "desc")));
-        ASSERT_STR_EQ("default", (ptr = option_get_path(section, "nonexistent", "-nonexistent", "default", "desc")));
-        free(ptr);
-
-        //   valid ini, invalid cmdline
-        ASSERT_STR_EQ((exp = g_strconcat(home, "/.path/to/tilde", NULL)),
-                      (ptr = option_get_path(section, "expand_tilde", "-nonexistent", NULL, "desc")));
-        g_free(exp);
-        g_free(ptr);
-
-        //   valid ini,   valid cmdline
-        ASSERT_STR_EQ((exp = g_strconcat(home, "/path/from/cmdline", NULL)),
-                      (ptr = option_get_path(section, "expand_tilde", "-path", NULL, "desc")));
-        g_free(exp);
-        g_free(ptr);
-
-        // invalid ini,   valid cmdline
-        ASSERT_STR_EQ((exp = g_strconcat(home, "/path/from/cmdline", NULL)),
-                      (ptr = option_get_path(section, "nonexistent", "-path", NULL, "desc")));
-        g_free(exp);
-        g_free(ptr);
-
-        PASS();
-}
-
-TEST test_option_get_int(void)
-{
-        char *int_section = "int";
-        ASSERT_EQ(3,  option_get_int(int_section, "negative", "-int", 0, ""));
-        ASSERT_EQ(2,  option_get_int(int_section, "simple", "-int2/-i", 0, ""));
-        ASSERT_EQ(-7, option_get_int(int_section, "decimal", "-negative", 0, ""));
-        ASSERT_EQ(4,  option_get_int(int_section, "simple", "-zeroes", 0, ""));
-        ASSERT_EQ(2,  option_get_int(int_section, "simple", "-intdecim", 0, ""));
-
-        ASSERT_EQ(5, option_get_int(int_section, "simple", "-nonexistent", 0, ""));
-        ASSERT_EQ(-10, option_get_int(int_section, "negative", "-nonexistent", 0, ""));
-        ASSERT_EQ(2, option_get_int(int_section, "decimal", "-nonexistent", 0, ""));
-        ASSERT_EQ(7, option_get_int(int_section, "leading_zeroes", "-nonexistent", 0, ""));
-        ASSERT_EQ(1024, option_get_int(int_section, "multi_char", "-nonexistent", 0, ""));
-
-        ASSERT_EQ(3, option_get_int(int_section, "nonexistent", "-nonexistent", 3, ""));
-        PASS();
-}
-
-TEST test_option_get_double(void)
-{
-        if (2.3 != atof("2.3")) {
-                SKIPm("Skipping test_option_get_double, as it seems we're running under musl+valgrind!");
-        }
-
-        char *double_section = "double";
-        ASSERT_EQ(2, option_get_double(double_section, "simple", "-simple_double", 0, ""));
-        ASSERT_EQ(5.2, option_get_double(double_section, "simple", "-double", 0, ""));
-        ASSERT_EQ(0.005, option_get_double(double_section, "zeroes", "-nonexistent", 0, ""));
-        ASSERT_EQ(10.5, option_get_double(double_section, "nonexistent", "-nonexistent", 10.5, ""));
-        PASS();
-}
-
-TEST test_option_get_bool(void)
-{
-        char *bool_section = "bool";
-        ASSERT(option_get_bool(bool_section, "boolfalse", "-bool/-b", false, ""));
-        ASSERT(option_get_bool(bool_section, "boolbin1", "-nonexistent", false, ""));
-        ASSERT_FALSE(option_get_bool(bool_section, "boolbin0", "-nonexistent", false, ""));
-        ASSERT_FALSE(option_get_bool(bool_section, "nonexistent", "-nonexistent", false, ""));
-        PASS();
-}
-
 SUITE(suite_option_parser)
 {
         char *config_path = g_strconcat(base, "/data/test-ini", NULL);
@@ -419,13 +301,6 @@ SUITE(suite_option_parser)
         RUN_TEST(test_cmdline_get_double);
         RUN_TEST(test_cmdline_get_bool);
         RUN_TEST(test_cmdline_create_usage);
-
-        RUN_TEST(test_option_get_string);
-        RUN_TEST(test_option_get_list);
-        RUN_TEST(test_option_get_path);
-        RUN_TEST(test_option_get_int);
-        RUN_TEST(test_option_get_double);
-        RUN_TEST(test_option_get_bool);
 
         g_free(config_path);
         free_ini();
