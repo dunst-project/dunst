@@ -866,7 +866,7 @@ void load_settings(char *cmdline_config_path)
                 r->msg_urgency = ini_get_urgency(cur_section, "msg_urgency", r->msg_urgency);
                 r->fg = ini_get_string(cur_section, "foreground", r->fg);
                 r->bg = ini_get_string(cur_section, "background", r->bg);
-                r->bg = ini_get_string(cur_section, "highlight", r->highlight);
+                r->highlight = ini_get_string(cur_section, "highlight", r->highlight);
                 r->fc = ini_get_string(cur_section, "frame_color", r->fc);
                 r->format = ini_get_string(cur_section, "format", r->format);
                 r->new_icon = ini_get_string(cur_section, "new_icon", r->new_icon);
