@@ -79,6 +79,9 @@ static const char *introspection_xml =
     "        <method name=\"NotificationCloseLast\" />"
     "        <method name=\"NotificationCloseAll\"  />"
     "        <method name=\"NotificationShow\"      />"
+    "        <method name=\"NotificationShowID\">"
+    "            <arg name=\"ID\"     type=\"i\"/>"
+    "        </method>"
     "        <method name=\"Ping\"                  />"
 
     "        <property name=\"paused\" type=\"b\" access=\"readwrite\">"
@@ -162,6 +165,7 @@ DBUS_METHOD(dunst_NotificationAction);
 DBUS_METHOD(dunst_NotificationCloseAll);
 DBUS_METHOD(dunst_NotificationCloseLast);
 DBUS_METHOD(dunst_NotificationShow);
+DBUS_METHOD(dunst_NotificationShowID);
 DBUS_METHOD(dunst_Ping);
 static struct dbus_method methods_dunst[] = {
         {"ContextMenuCall",        dbus_cb_dunst_ContextMenuCall},
@@ -169,6 +173,7 @@ static struct dbus_method methods_dunst[] = {
         {"NotificationCloseAll",   dbus_cb_dunst_NotificationCloseAll},
         {"NotificationCloseLast",  dbus_cb_dunst_NotificationCloseLast},
         {"NotificationShow",       dbus_cb_dunst_NotificationShow},
+        {"NotificationShowID",     dbus_cb_dunst_NotificationShowID},
         {"Ping",                   dbus_cb_dunst_Ping},
 };
 
@@ -276,6 +281,39 @@ static void dbus_cb_dunst_NotificationShow(GDBusConnection *connection,
 {
         LOG_D("CMD: Showing last notification from history");
         queues_history_pop();
+        wake_up();
+
+        g_dbus_method_invocation_return_value(invocation, NULL);
+        g_dbus_connection_flush(connection, NULL, NULL, NULL);
+}
+
+static void dbus_cb_dunst_NotificationShowID(GDBusConnection *connection,
+                                           const gchar *sender,
+                                           GVariant *parameters,
+                                           GDBusMethodInvocation *invocation)
+{
+        int notification_id = 0;
+        g_variant_get(parameters, "(i)", &notification_id);
+
+        if (notification_id <= 0) {
+                g_dbus_method_invocation_return_error(invocation,
+                        G_DBUS_ERROR,
+                        G_DBUS_ERROR_INVALID_ARGS,
+                        "Couldn't show notification %i. ID has to be greater than 0",
+                        notification_id);
+                return;
+        }
+
+        LOG_D("CMD: Showing notification %d from history", notification_id);
+        bool success = queues_history_pop_id(notification_id);
+        if (!success) {
+                g_dbus_method_invocation_return_error(invocation,
+                        G_DBUS_ERROR,
+                        G_DBUS_ERROR_INVALID_ARGS,
+                        "Couldn't show notification %i. ID doesn't exist, or is already shown",
+                        notification_id);
+                return;
+        }
         wake_up();
 
         g_dbus_method_invocation_return_value(invocation, NULL);

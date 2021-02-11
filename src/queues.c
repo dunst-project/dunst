@@ -351,6 +351,25 @@ void queues_history_pop(void)
 }
 
 /* see queues.h */
+bool queues_history_pop_id(int id)
+{
+        if (g_queue_is_empty(history))
+                return false;
+
+        struct notification *n = queues_get_by_id(id);
+        if (!n)
+                return false;
+
+        if (!g_queue_remove(history, n))
+                return false;
+
+        n->redisplayed = true;
+        n->timeout = settings.sticky_history ? 0 : n->timeout;
+        g_queue_insert_sorted(waiting, n, notification_cmp_data, NULL);
+        return true;
+}
+
+/* see queues.h */
 void queues_history_push(struct notification *n)
 {
         if (!n->history_ignore) {

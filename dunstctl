@@ -21,7 +21,8 @@ show_help() {
 	  close-all                         Close the all notifications
 	  context                           Open context menu
 	  count [displayed|history|waiting] Show the number of notifications
-	  history-pop                       Pop one notification from history
+	  history-pop [ID]                  Pop latest notification from history. If ID is
+	                                    provided, pop the notification with that ID instead.
 	  is-paused                         Check if dunst is running or paused
 	  set-paused [true|false|toggle]    Set the pause status
 	  debug                             Print debugging information
@@ -74,7 +75,13 @@ case "${1:-}" in
 		fi
 		;;
 	"history-pop")
-		method_call "${DBUS_IFAC_DUNST}.NotificationShow" >/dev/null
+		[ $# -le 2 ] || die "Too many arguments. Expected 0 or 1."
+
+		if [ $# -eq 1 ]; then
+			method_call "${DBUS_IFAC_DUNST}.NotificationShow" >/dev/null
+		else
+			method_call "${DBUS_IFAC_DUNST}.NotificationShowID" "int32:${2}" >/dev/null
+		fi
 		;;
 	"is-paused")
 		property_get paused | ( read -r _ _ paused; printf "%s\n" "${paused}"; )

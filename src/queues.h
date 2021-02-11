@@ -101,10 +101,19 @@ void queues_notification_close_id(int id, enum reason reason);
 void queues_notification_close(struct notification *n, enum reason reason);
 
 /**
- * Pushes the latest notification of history to the displayed queue
+ * Pushes the latest notification from history to the displayed queue
  * and removes it from history
  */
 void queues_history_pop(void);
+
+/**
+ * Pushes selected notification from history to the displayed queue
+ * and removes it from history.
+ *
+ * @param id id of the notification to pop
+ * @returns false if the notifiction doesn't exist. True otherwise.
+ */
+bool queues_history_pop_id(int id);
 
 /**
  * Push a single notification to history
@@ -146,8 +155,8 @@ void queues_update(struct dunst_status status);
 gint64 queues_get_next_datachange(gint64 time);
 
 /**
- * Get the notification which has the given id in the displayed and waiting queue or
- * NULL if not found
+ * Get the notification which has the given id in the displayed, waiting and
+ * history queue or NULL if not found
  *
  * @param the id searched for.
  *

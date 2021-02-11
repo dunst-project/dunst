@@ -296,6 +296,64 @@ TEST test_queue_history_pushall(void)
         PASS();
 }
 
+TEST test_queue_history_pop_valid_id(void)
+{
+        struct notification *n1;
+        struct notification *n2;
+        queues_init();
+
+        n1 = test_notification("n1", 0);
+        n2 = test_notification("n2", 0);
+
+        queues_notification_insert(n1);
+        int id1 = n1->id;
+        queues_notification_insert(n2);
+        // int id2 = n2->id;
+
+        QUEUE_LEN_ALL(2, 0, 0);
+        queues_notification_close(n1, REASON_UNDEF);
+        QUEUE_LEN_ALL(1, 0, 1);
+        queues_notification_close(n2, REASON_UNDEF);
+        QUEUE_LEN_ALL(0, 0, 2);
+        
+        queues_history_pop_id(id1);
+        QUEUE_LEN_ALL(1, 0, 1);
+        ASSERTm("Notification didn't get redisplayed", n1->redisplayed);
+        ASSERTm("Notification got redisplayed while it shouldn't", !n2->redisplayed);
+
+        queues_teardown();
+        PASS();
+}
+
+TEST test_queue_history_pop_invalid_id(void)
+{
+        struct notification *n1;
+        struct notification *n2;
+        queues_init();
+
+        n1 = test_notification("n1", 0);
+        n2 = test_notification("n2", 0);
+
+        queues_notification_insert(n1);
+        int id1 = n1->id;
+        queues_notification_insert(n2);
+        int id2 = n2->id;
+
+        QUEUE_LEN_ALL(2, 0, 0);
+        queues_notification_close(n1, REASON_UNDEF);
+        QUEUE_LEN_ALL(1, 0, 1);
+        queues_notification_close(n2, REASON_UNDEF);
+        QUEUE_LEN_ALL(0, 0, 2);
+        
+        ASSERT(!queues_history_pop_id(id1+id2+3)); // this id shouldn't exist
+        QUEUE_LEN_ALL(0, 0, 2);
+        ASSERTm("Notification 1 got redisplayed while it shouldn't", !n1->redisplayed);
+        ASSERTm("Notification 2 got redisplayed while it shouldn't", !n2->redisplayed);
+
+        queues_teardown();
+        PASS();
+}
+
 TEST test_queue_init(void)
 {
         queues_init();
@@ -794,6 +852,8 @@ SUITE(suite_queues)
         RUN_TEST(test_queues_update_xmore);
         RUN_TEST(test_queues_timeout_before_paused);
         RUN_TEST(test_queue_find_by_id);
+        RUN_TEST(test_queue_history_pop_valid_id);
+        RUN_TEST(test_queue_history_pop_invalid_id);
 
         settings.icon_path = NULL;
 }
