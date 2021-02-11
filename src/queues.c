@@ -190,7 +190,7 @@ int queues_notification_insert(struct notification *n)
                 }
                 inserted = true;
         } else {
-                n->id = ++next_notification_id;
+                n->id = next_notification_id++;
         }
 
         if (!inserted && STR_FULL(n->stack_tag) && queues_stack_by_tag(n))
