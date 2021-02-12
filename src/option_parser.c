@@ -433,21 +433,35 @@ void set_defaults(){
         }
 }
 
+bool is_special_section(const struct section s) {
+        for (size_t i = 0; i < G_N_ELEMENTS(special_sections); i++) {
+                if (STR_EQ(special_sections[i], s.name)) {
+                        return true;
+                }
+        }
+        return false;
+}
+
 void save_settings() {
         for (int i = 0; i < section_count; i++) {
                 const struct section curr_section = sections[i];
-                for (int j = 0; j < curr_section.entry_count; j++) {
-                        const struct entry curr_entry = curr_section.entries[j];
-                        int setting_id = get_setting_id(curr_entry.key, curr_section.name);
-                        if (setting_id < 0){
-                                if (setting_id == -1) {
-                                        LOG_W("Setting %s in section %s doesn't exist", curr_entry.key, curr_section.name);
+                if (is_special_section(curr_section)) {
+                        // special section, so don't interpret as rule
+                        for (int j = 0; j < curr_section.entry_count; j++) {
+                                const struct entry curr_entry = curr_section.entries[j];
+                                int setting_id = get_setting_id(curr_entry.key, curr_section.name);
+                                if (setting_id < 0){
+                                        if (setting_id == -1) {
+                                                LOG_W("Setting %s in section %s doesn't exist", curr_entry.key, curr_section.name);
+                                        }
+                                        continue;
                                 }
-                                continue;
-                        }
 
-                        struct setting curr_setting = allowed_settings[setting_id];
-                        set_setting(curr_setting, curr_entry.value);
+                                struct setting curr_setting = allowed_settings[setting_id];
+                                set_setting(curr_setting, curr_entry.value);
+                        }
+                } else {
+                        // interpret this section as a rule
                 }
         }
 }

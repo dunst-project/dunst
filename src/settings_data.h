@@ -85,6 +85,17 @@ struct setting {
       void* parser_data; // This is passed to the parser function
 };
 
+// These sections are not interpreted as rules
+static char* special_sections[] = {
+        "global",
+        "frame",
+        "experimental",
+        "shortcuts",
+        "urgency_low",
+        "urgency_normal",
+        "urgency_critical",
+};
+
 #ifndef ZWLR_LAYER_SHELL_V1_LAYER_ENUM
 #define ZWLR_LAYER_SHELL_V1_LAYER_ENUM
 // Needed for compiling without wayland dependency
