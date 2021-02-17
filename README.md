@@ -45,8 +45,8 @@ sudo make install
 - `BINDIR=<PATH>`: Set the `dunst` executable's path (Default: `${PREFIX}/bin`)
 - `DATADIR=<PATH>`: Set the path for shared files. (Default: `${PREFIX}/share`)
 - `MANDIR=<PATH>`: Set the prefix of the manpage. (Default: `${DATADIR}/man`)
-- `SYSTEMD=(0|1)`: Enable/Disable the systemd unit. (Default: detected via `pkg-config`)
-- `WAYLAND=(0|1)`: Enable/Disable wayland support. (Default: 1)
+- `SYSTEMD=(0|1)`: Disable/Enable the systemd unit. (Default: detected via `pkg-config`)
+- `WAYLAND=(0|1)`: Disable/Enable wayland support. (Default: 1 (enabled))
 - `SERVICEDIR_SYSTEMD=<PATH>`: The path to put the systemd user service file. Unused, if `SYSTEMD=0`. (Default: detected via `pkg-config`)
 - `SERVICEDIR_DBUS=<PATH>`: The path to put the dbus service file. (Default: detected via `pkg-config`)
 

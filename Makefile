@@ -37,7 +37,7 @@ ifneq (0,${WAYLAND})
 DATA_DIR_WAYLAND_PROTOCOLS ?= $(shell $(PKG_CONFIG) wayland-protocols --variable=pkgdatadir)
 DATA_DIR_WAYLAND_PROTOCOLS := ${DATA_DIR_WAYLAND_PROTOCOLS}
 ifeq (,${DATA_DIR_WAYLAND_PROTOCOLS})
-	$(warning "Failed to query $(PKG_CONFIG) for package 'wayland-protocols'!")
+$(warning "Failed to query $(PKG_CONFIG) for package 'wayland-protocols'!")
 endif
 endif
 
