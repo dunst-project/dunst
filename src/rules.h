@@ -53,5 +53,12 @@ void rule_apply(struct rule *r, struct notification *n);
 void rule_apply_all(struct notification *n);
 bool rule_matches_notification(struct rule *r, struct notification *n);
 
+/**
+ * Get rule with this name from rules
+ *
+ * @returns the rule that matches. Null if no rule matches
+ */
+struct rule *get_rule(const char* name);
+
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

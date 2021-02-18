@@ -6,6 +6,7 @@
 #include <glib.h>
 
 #include "dunst.h"
+#include "utils.h"
 
 GSList *rules = NULL;
 
@@ -114,4 +115,17 @@ bool rule_matches_notification(struct rule *r, struct notification *n)
                 && rule_field_matches_string(n->category,       r->category)
                 && rule_field_matches_string(n->stack_tag,      r->stack_tag);
 }
+
+/**
+ * Check if a rule exists with that name
+ */
+struct rule *get_rule(const char* name) {
+        for (GSList *iter = rules; iter; iter = iter->next) {
+                struct rule *r = iter->data;
+                if (r->name && STR_EQ(r->name, name))
+                        return r;
+        }
+        return NULL;
+}
+
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */
