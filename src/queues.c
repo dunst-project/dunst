@@ -168,19 +168,6 @@ int queues_notification_insert(struct notification *n)
                 LOG_M("Skipping notification: '%s' '%s'", n->body, n->summary);
                 return 0;
         }
-        /* Do not insert the message if it's a command */
-        if (STR_EQ("DUNST_COMMAND_PAUSE", n->summary)) {
-                dunst_status(S_RUNNING, false);
-                return 0;
-        }
-        if (STR_EQ("DUNST_COMMAND_RESUME", n->summary)) {
-                dunst_status(S_RUNNING, true);
-                return 0;
-        }
-        if (STR_EQ("DUNST_COMMAND_TOGGLE", n->summary)) {
-                dunst_status(S_RUNNING, !dunst_status_get().running);
-                return 0;
-        }
 
         bool inserted = false;
         if (n->id != 0) {
