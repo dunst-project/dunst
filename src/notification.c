@@ -452,6 +452,12 @@ void notification_init(struct notification *n)
         /* Process rules */
         rule_apply_all(n);
 
+        if (g_str_has_prefix(n->summary, "DUNST_COMMAND_")) {
+                char *msg = "DUNST_COMMAND_* has been removed, please switch to dunstctl. See #830 for more details. https://github.com/dunst-project/dunst/pull/830";
+                LOG_W(msg);
+                n->body = string_append(n->body, msg, "\n");
+        }
+
         /* UPDATE derived fields */
         notification_extract_urls(n);
         notification_format_message(n);
