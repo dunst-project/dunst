@@ -1,4 +1,29 @@
 ===================================================================================
+Release Notes For v1.6.0
+===================================================================================
+
+For users:
+
+At long last, dunst has native wayland support. On startup dunst will now
+autodetect the display environment it's run on and use the appropriate backend
+(X11 or wayland).
+Additionally, support for progress bars has been added when the 'value' hint is
+used. Try it out with `notify-send -h int:value:70 'Progress bars!'`
+
+Last but most importantly, support for the
+`DUNST_COMMAND_{PAUSE,RESUME,TOGGLE}` has been removed as they could
+potentially be used to DoS dunst. `dunstctl` has been available as a direct
+replacement for the use-case they served since last release. See
+https://github.com/dunst-project/dunst/pull/830 for details
+
+For maintainers:
+
+Dunst now depends on the wayland libraries and (optionally) on the
+wayland-protocols package. A global configuration file is now installed by
+default in `/etc/dunst/dunstrc`
+
+
+===================================================================================
 Release Notes For v1.5.0
 ===================================================================================
 

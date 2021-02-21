@@ -1,10 +1,33 @@
 # Dunst changelog
 
-## Unreleased
+## 1.6.0 - 2021-02-21:
 
 ### Added
+- Wayland support. Dunst now runs natively on wayland. This fixes several bugs
+  with dunst on wayland and allows idle detection. (#781)
+- A progress bar, useful for showing volume or brightness in notifications (#775)
+- A script in contrib for using the progress bar (#791)
+- `dunstctl count` for showing the number of notifications (#793)
+- Expose environment variables info about the notification to scripts (#802)
+- `text_icon_padding` for adding padding between the notification icon and text
+  (#810)
+
 ### Changed
+- Dunst now installs a system-wide config in `/etc/dunst/dunstrc` (#798)
+- Move part of the man page to dunst(5) (#799)
+
 ### Fixed
+- `history_ignore` flag broken when using multiple rules (#747)
+- Divide by zero in radius calculation (#750)
+- Monitor setting overriding `follow_mode` (#755)
+- Incorrect monitor usage when using multiple X11 screens (#762)
+- Emit signal when `paused` property changes (#766)
+- `dunstify` can pass empty appname to libnotify (#768)
+- Incorrect handling of 'do_action, close' mouse action (#778)
+
+# Removed
+
+- `DUNST_COMMAND_{PAUSE,RESUME,TOGGLE}` (#830)
 
 ## 1.5.0 - 2020-07-23
 
