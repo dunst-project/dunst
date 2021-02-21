@@ -1,10 +1,9 @@
 # Dunst changelog
 
-## Unreleased
+## 1.6.1 - 2021-02-21:
 
-### Added
-### Changed
 ### Fixed
+- Incorrect version in Makefile
 
 ## 1.6.0 - 2021-02-21:
 
