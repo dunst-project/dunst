@@ -736,6 +736,7 @@ void x_win_show(window winptr)
         if (win->visible)
                 return;
 
+
         x_shortcut_grab(&settings.close_ks);
         x_shortcut_grab(&settings.close_all_ks);
         x_shortcut_grab(&settings.context_ks);
@@ -757,6 +758,8 @@ void x_win_show(window winptr)
 
         XMapRaised(xctx.dpy, win->xwin);
         win->visible = true;
+
+        x_display_surface(win->root_surface, win, &win->dim);
 }
 
 /*
