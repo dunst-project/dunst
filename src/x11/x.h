@@ -47,7 +47,7 @@ cairo_t* x_win_get_context(window);
 
 /* X misc */
 bool x_is_idle(void);
-void x_setup(void);
+bool x_setup(void);
 void x_free(void);
 
 struct geometry x_parse_geometry(const char *geom_str);

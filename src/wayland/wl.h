@@ -7,7 +7,7 @@
 
 #include "../output.h"
 
-void wl_init(void);
+bool wl_init(void);
 void wl_deinit(void);
 
 window wl_win_create(void);

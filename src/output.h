@@ -27,7 +27,7 @@ struct screen_info {
 };
 
 struct output {
-        void (*init)(void);
+        bool (*init)(void);
         void (*deinit)(void);
 
         window (*win_create)(void);
@@ -47,9 +47,14 @@ struct output {
         bool (*have_fullscreen_window)(void);
 };
 
+/**
+ * return an initialized output, selecting the correct output type from either
+ * wayland or X11 according to the settings and environment.
+ * When the wayland output fails to initilize, it falls back to X11 output.
+ */
 const struct output* output_create(bool force_xwayland);
 
-const bool is_running_wayland(void);
+bool is_running_wayland(void);
 
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

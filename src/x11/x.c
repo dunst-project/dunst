@@ -501,14 +501,16 @@ static void XRM_update_db(void)
 /*
  * Setup X11 stuff
  */
-void x_setup(void)
+bool x_setup(void)
 {
 
         /* initialize xctx.dc, font, keyboard, colors */
         if (!setlocale(LC_CTYPE, "") || !XSupportsLocale())
                 LOG_W("No locale support");
+
         if (!(xctx.dpy = XOpenDisplay(NULL))) {
-                DIE("Cannot open X11 display.");
+                LOG_W("Cannot open X11 display.");
+                return false;
         }
 
         x_shortcut_init(&settings.close_ks);
@@ -532,6 +534,7 @@ void x_setup(void)
 
         init_screens();
         x_shortcut_grab(&settings.history_ks);
+        return true;
 }
 
 struct geometry x_parse_geometry(const char *geom_str)

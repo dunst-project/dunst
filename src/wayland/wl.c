@@ -320,14 +320,14 @@ static const struct wl_registry_listener registry_listener = {
         .global_remove = handle_global_remove,
 };
 
-bool init_wayland() {
+bool wl_init() {
         wl_list_init(&ctx.outputs);
-        //wl_list_init(&ctx.seats);
+        //wl_list_init(&ctx.seats); // TODO multi-seat support
 
         ctx.display = wl_display_connect(NULL);
 
         if (ctx.display == NULL) {
-                LOG_E("failed to create display");
+                LOG_W("failed to create display");
                 return false;
         }
 
@@ -336,15 +336,15 @@ bool init_wayland() {
         wl_display_roundtrip(ctx.display);
 
         if (ctx.compositor == NULL) {
-                LOG_E("compositor doesn't support wl_compositor");
+                LOG_W("compositor doesn't support wl_compositor");
                 return false;
         }
         if (ctx.shm == NULL) {
-                LOG_E("compositor doesn't support wl_shm");
+                LOG_W("compositor doesn't support wl_shm");
                 return false;
         }
         if (ctx.layer_shell == NULL) {
-                LOG_E("compositor doesn't support zwlr_layer_shell_v1");
+                LOG_W("compositor doesn't support zwlr_layer_shell_v1");
                 return false;
         }
         if (ctx.seat == NULL) {
@@ -362,7 +362,10 @@ bool init_wayland() {
         return true;
 }
 
-void finish_wayland() {
+void wl_deinit() {
+        // We need to check if any of these are NULL, since the initialization
+        // could have been aborted half way through, or the compositor doesn't
+        // support some of these features.
         if (ctx.layer_surface != NULL) {
                 zwlr_layer_surface_v1_destroy(ctx.layer_surface);
         }
@@ -372,25 +375,40 @@ void finish_wayland() {
         finish_buffer(&ctx.buffers[0]);
         finish_buffer(&ctx.buffers[1]);
 
+        // The output list is initialized at the start of init, so no need to
+        // check for NULL
         struct dunst_output *output, *output_tmp;
         wl_list_for_each_safe(output, output_tmp, &ctx.outputs, link) {
                 destroy_output(output);
         }
 
         if (ctx.seat) {
-                wl_pointer_release(ctx.pointer.wl_pointer);
+                if (ctx.pointer.wl_pointer)
+                        wl_pointer_release(ctx.pointer.wl_pointer);
                 wl_seat_release(ctx.seat);
                 ctx.seat = NULL;
         }
 
-        zwlr_layer_shell_v1_destroy(ctx.layer_shell);
-        wl_compositor_destroy(ctx.compositor);
-        wl_shm_destroy(ctx.shm);
-        wl_registry_destroy(ctx.registry);
-        wl_display_disconnect(ctx.display);
+        if (ctx.idle_handler)
+                org_kde_kwin_idle_destroy(ctx.idle_handler);
 
-        org_kde_kwin_idle_destroy(ctx.idle_handler);
-        org_kde_kwin_idle_timeout_release(ctx.idle_timeout);
+        if (ctx.idle_timeout)
+                org_kde_kwin_idle_timeout_release(ctx.idle_timeout);
+
+        if (ctx.layer_shell)
+                zwlr_layer_shell_v1_destroy(ctx.layer_shell);
+
+        if (ctx.compositor)
+                wl_compositor_destroy(ctx.compositor);
+
+        if (ctx.shm)
+                wl_shm_destroy(ctx.shm);
+
+        if (ctx.registry)
+                wl_registry_destroy(ctx.registry);
+
+        if (ctx.display)
+                wl_display_disconnect(ctx.display);
 }
 
 static struct dunst_output *get_configured_output() {
@@ -580,13 +598,6 @@ void set_dirty() {
         }
         ctx.dirty = true;
         schedule_frame_and_commit();
-}
-
-void wl_init(void) {
-        init_wayland();
-}
-
-void wl_deinit(void) {
 }
 
 window wl_win_create(void) {

@@ -51,7 +51,6 @@ void draw_setup(void)
         const struct output *out = output_create(settings.force_xwayland);
         output = out;
 
-        out->init();
         win = out->win_create();
 
         pango_fdesc = pango_font_description_from_string(settings.font);
