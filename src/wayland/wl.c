@@ -616,6 +616,8 @@ void wl_win_destroy(window winptr) {
 }
 
 void wl_win_show(window win) {
+        // This is here for compatibilty with the X11 output. The window is
+        // already shown in wl_display_surface.
 }
 
 void wl_win_hide(window win) {
@@ -640,10 +642,6 @@ void wl_display_surface(cairo_surface_t *srf, window winptr, const struct dimens
 
         set_dirty();
         wl_display_roundtrip(ctx.display);
-}
-
-bool wl_win_visible(window win) {
-        return true;
 }
 
 cairo_t* wl_win_get_context(window winptr) {

@@ -38,7 +38,6 @@ struct output {
 
         void (*display_surface)(cairo_surface_t *srf, window win, const struct dimensions*);
 
-        bool (*win_visible)(window);
         cairo_t* (*win_get_context)(window);
 
         const struct screen_info* (*get_active_screen)(void);

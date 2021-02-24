@@ -42,7 +42,6 @@ void x_win_hide(window);
 
 void x_display_surface(cairo_surface_t *srf, window, const struct dimensions *dim);
 
-bool x_win_visible(window);
 cairo_t* x_win_get_context(window);
 
 /* X misc */

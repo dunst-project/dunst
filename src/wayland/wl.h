@@ -17,7 +17,6 @@ void wl_win_show(window);
 void wl_win_hide(window);
 
 void wl_display_surface(cairo_surface_t *srf, window win, const struct dimensions*);
-bool wl_win_visible(window);
 cairo_t* wl_win_get_context(window);
 
 const struct screen_info* wl_get_active_screen(void);

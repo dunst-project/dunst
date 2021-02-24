@@ -24,7 +24,6 @@ const struct output output_x11 = {
         x_win_hide,
 
         x_display_surface,
-        x_win_visible,
         x_win_get_context,
 
         get_active_screen,
@@ -45,7 +44,6 @@ const struct output output_wl = {
         wl_win_hide,
 
         wl_display_surface,
-        wl_win_visible,
         wl_win_get_context,
 
         wl_get_active_screen,

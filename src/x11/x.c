@@ -179,11 +179,6 @@ void x_display_surface(cairo_surface_t *srf, window winptr, const struct dimensi
 
 }
 
-bool x_win_visible(window winptr)
-{
-        return ((struct window_x11*)winptr)->visible;
-}
-
 cairo_t* x_win_get_context(window winptr)
 {
         return ((struct window_x11*)win)->c_ctx;
