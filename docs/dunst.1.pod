@@ -10,6 +10,15 @@ dunst [-conf file] [-font font] [-geometry geom] [-format fmt] [-follow mode] [-
 
 Dunst is a highly configurable and lightweight notification daemon.
 
+=head2 Autostarting dunst
+
+On most installations dunst should be able to automatically be started by D-Bus
+when a notification is sent. This is not recommended when multiple notification
+deamons are installed, because D-Bus will not know which one to start.
+Other ways of autostarting dunst include starting dunst with your desktop
+environment or window manager's autostart functionality or via the provided
+systemd service.
+
 =head1 COMMAND LINE OPTIONS
 
 =over 4
@@ -160,4 +169,4 @@ If you feel that copyrights are violated, please send me an email.
 
 =head1 SEE ALSO
 
-dunst(5), dunstctl(1), dwm(1), dmenu(1), twmn(1), notify-send(1)
+dunst(5), dunstctl(1), dmenu(1), notify-send(1)
