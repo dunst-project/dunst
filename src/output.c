@@ -8,7 +8,7 @@
 #include "wayland/wl.h"
 #endif
 
-const bool is_running_wayland(void) {
+bool is_running_wayland(void) {
         char* wayland_display = getenv("WAYLAND_DISPLAY");
         return !(wayland_display == NULL);
 }
@@ -24,7 +24,6 @@ const struct output output_x11 = {
         x_win_hide,
 
         x_display_surface,
-        x_win_visible,
         x_win_get_context,
 
         get_active_screen,
@@ -45,7 +44,6 @@ const struct output output_wl = {
         wl_win_hide,
 
         wl_display_surface,
-        wl_win_visible,
         wl_win_get_context,
 
         wl_get_active_screen,
@@ -55,18 +53,40 @@ const struct output output_wl = {
 };
 #endif
 
+const struct output* get_x11_output() {
+        const struct output* output = &output_x11;
+        if (output->init()) {
+                return output;
+        } else {
+                LOG_E("Couldn't initialize X11 output. Aborting...");
+        }
+}
+
+#ifdef ENABLE_WAYLAND
+const struct output* get_wl_output() {
+        const struct output* output = &output_wl;
+        if (output->init()) {
+                return output;
+        } else {
+                LOG_W("Couldn't initialize wayland output. Falling back to X11 output.");
+                output->deinit();
+                return get_x11_output();
+        }
+}
+#endif
+
 const struct output* output_create(bool force_xwayland)
 {
 #ifdef ENABLE_WAYLAND
         if (!force_xwayland && is_running_wayland()) {
                 LOG_I("Using Wayland output");
-                return &output_wl;
+                return get_wl_output();
         } else {
                 LOG_I("Using X11 output");
-                return &output_x11;
+                return get_x11_output();
         }
 #else
-        return &output_x11;
+        return get_x11_output();
 #endif
 }
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

@@ -179,11 +179,6 @@ void x_display_surface(cairo_surface_t *srf, window winptr, const struct dimensi
 
 }
 
-bool x_win_visible(window winptr)
-{
-        return ((struct window_x11*)winptr)->visible;
-}
-
 cairo_t* x_win_get_context(window winptr)
 {
         return ((struct window_x11*)win)->c_ctx;
@@ -501,14 +496,16 @@ static void XRM_update_db(void)
 /*
  * Setup X11 stuff
  */
-void x_setup(void)
+bool x_setup(void)
 {
 
         /* initialize xctx.dc, font, keyboard, colors */
         if (!setlocale(LC_CTYPE, "") || !XSupportsLocale())
                 LOG_W("No locale support");
+
         if (!(xctx.dpy = XOpenDisplay(NULL))) {
-                DIE("Cannot open X11 display.");
+                LOG_W("Cannot open X11 display.");
+                return false;
         }
 
         x_shortcut_init(&settings.close_ks);
@@ -532,6 +529,7 @@ void x_setup(void)
 
         init_screens();
         x_shortcut_grab(&settings.history_ks);
+        return true;
 }
 
 struct geometry x_parse_geometry(const char *geom_str)
