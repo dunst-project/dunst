@@ -5,7 +5,7 @@
 // TODO move all enum definitions here and remove include
 #include "settings.h"
 #include "option_parser.h"
-
+#include "rules.h"
 
 struct string_to_enum_def {
         const char* string;
@@ -83,6 +83,28 @@ struct setting {
        * A pointer to the data required for the parser to parse this setting.
        */
       void* parser_data; // This is passed to the parser function
+};
+
+static struct rule default_rule = {
+        .name = "empty",
+        .appname         = NULL,
+        .summary         = NULL,
+        .body            = NULL,
+        .icon            = NULL,
+        .category        = NULL,
+        .msg_urgency     = URG_NONE,
+        .timeout         = -1,
+        .urgency         = URG_NONE,
+        .markup          = MARKUP_NULL,
+        .history_ignore  = -1,
+        .match_transient = -1,
+        .set_transient   = -1,
+        .skip_display    = -1,
+        .new_icon        = NULL,
+        .fg              = NULL,
+        .bg              = NULL,
+        .format          = NULL,
+        .script          = NULL,
 };
 
 // These sections are not interpreted as rules

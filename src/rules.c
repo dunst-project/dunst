@@ -7,6 +7,7 @@
 
 #include "dunst.h"
 #include "utils.h"
+#include "settings_data.h"
 
 GSList *rules = NULL;
 
@@ -81,17 +82,7 @@ void rule_apply_all(struct notification *n)
 struct rule *rule_new(void)
 {
         struct rule *r = g_malloc0(sizeof(struct rule));
-
-        r->msg_urgency = URG_NONE;
-        r->timeout = -1;
-        r->urgency = URG_NONE;
-        r->fullscreen = FS_NULL;
-        r->markup = MARKUP_NULL;
-        r->history_ignore = -1;
-        r->match_transient = -1;
-        r->set_transient = -1;
-        r->skip_display = -1;
-
+        *r = default_rule;
         return r;
 }
 
