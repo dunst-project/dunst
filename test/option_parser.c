@@ -15,60 +15,6 @@ TEST test_next_section(void)
         PASS();
 }
 
-TEST test_ini_get_bool(void)
-{
-        char *bool_section = "bool";
-        ASSERT(ini_get_bool(bool_section, "booltrue", false));
-        ASSERT(ini_get_bool(bool_section, "booltrue_capital", false));
-
-        ASSERT_FALSE(ini_get_bool(bool_section, "boolfalse", true));
-        ASSERT_FALSE(ini_get_bool(bool_section, "boolfalse_capital", true));
-
-        ASSERT(ini_get_bool(bool_section, "boolyes", false));
-        ASSERT(ini_get_bool(bool_section, "boolyes_capital", false));
-
-        ASSERT_FALSE(ini_get_bool(bool_section, "boolno", true));
-        ASSERT_FALSE(ini_get_bool(bool_section, "boolno_capital", true));
-
-        ASSERT(ini_get_bool(bool_section, "boolbin1", false));
-        ASSERT_FALSE(ini_get_bool(bool_section, "boolbin0", true));
-
-        ASSERT(ini_get_bool(bool_section, "boolinvalid", true));
-        ASSERT_FALSE(ini_get_bool(bool_section, "boolinvalid", false));
-
-        ASSERT(ini_get_bool(bool_section, "nonexistent", true));
-        ASSERT_FALSE(ini_get_bool(bool_section, "nonexistent", false));
-        PASS();
-}
-
-TEST test_ini_get_string(void)
-{
-        char *string_section = "string";
-        char *ptr;
-        ASSERT_STR_EQ("A simple string", (ptr = ini_get_string(string_section, "simple", "")));
-        free(ptr);
-
-        ASSERT_STR_EQ("A quoted string", (ptr = ini_get_string(string_section, "quoted", "")));
-        free(ptr);
-        ASSERT_STR_EQ("A string \"with quotes\"", (ptr = ini_get_string(string_section, "quoted_with_quotes", "")));
-        free(ptr);
-        ASSERT_STR_EQ("A\" string with quotes\"", (ptr = ini_get_string(string_section, "unquoted_with_quotes", "")));
-        free(ptr);
-
-        ASSERT_STR_EQ("String with a", (ptr = ini_get_string(string_section, "quoted_comment", "")));
-        free(ptr);
-        ASSERT_STR_EQ("String with a", (ptr = ini_get_string(string_section, "unquoted_comment", "")));
-        free(ptr);
-        ASSERT_STR_EQ("#ffffff", (ptr = ini_get_string(string_section, "color_comment", "")));
-        free(ptr);
-
-
-        ASSERT_STR_EQ("default value", (ptr = ini_get_string(string_section, "nonexistent", "default value")));
-        free(ptr);
-
-        PASS();
-}
-
 enum greatest_test_res ARRAY_EQ(char **a, char **b){
         ASSERT(a);
         ASSERT(b);
@@ -79,94 +25,6 @@ enum greatest_test_res ARRAY_EQ(char **a, char **b){
         }
         ASSERT_FALSE(a[i]);
         ASSERT_FALSE(b[i]);
-        PASS();
-}
-
-TEST test_ini_get_list(void)
-{
-        char *list_section = "list";
-
-        char *cmp1[] = {"A", "simple", "list", NULL};
-        char *cmp2[] = {"A", "list", "with", "spaces", NULL};
-        char *cmp3[] = {"A list", "with", "multiword entries", NULL};
-        char *cmp4[] = {"A", "quoted", "list", NULL};
-        char *cmp5[] = {"A", "list", "\"with quotes\"", NULL};
-        char *cmp6[] = {"List", "with", "a", NULL};
-
-        char **ptr;
-        CHECK_CALL(ARRAY_EQ(cmp1, (ptr = ini_get_list(list_section, "simple", ""))));
-        g_strfreev(ptr);
-
-        CHECK_CALL(ARRAY_EQ(cmp2, (ptr = ini_get_list(list_section, "spaces", ""))));
-        g_strfreev(ptr);
-
-        CHECK_CALL(ARRAY_EQ(cmp3, (ptr = ini_get_list(list_section, "multiword", ""))));
-        g_strfreev(ptr);
-        CHECK_CALL(ARRAY_EQ(cmp4, (ptr = ini_get_list(list_section, "quoted", ""))));
-        g_strfreev(ptr);
-
-        CHECK_CALL(ARRAY_EQ(cmp5, (ptr = ini_get_list(list_section, "quoted_with_quotes", ""))));
-        g_strfreev(ptr);
-        CHECK_CALL(ARRAY_EQ(cmp5, (ptr = ini_get_list(list_section, "unquoted_with_quotes", ""))));
-        g_strfreev(ptr);
-
-        CHECK_CALL(ARRAY_EQ(cmp6, (ptr = ini_get_list(list_section, "quoted_comment", ""))));
-        g_strfreev(ptr);
-        CHECK_CALL(ARRAY_EQ(cmp6, (ptr = ini_get_list(list_section, "unquoted_comment", ""))));
-        g_strfreev(ptr);
-
-        PASS();
-}
-
-TEST test_ini_get_path(void)
-{
-        char *section = "path";
-        char *ptr, *exp;
-        char *home = getenv("HOME");
-
-        // return default, if nonexistent key
-        ASSERT_EQ(NULL, (ptr = ini_get_path(section, "nonexistent", NULL)));
-        ASSERT_STR_EQ("default", (ptr = ini_get_path(section, "nonexistent", "default")));
-        g_free(ptr);
-
-        // return path with replaced home
-        ASSERT_STR_EQ((exp = g_strconcat(home, "/.path/to/tilde", NULL)),
-                      (ptr = ini_get_path(section, "expand_tilde", NULL)));
-        g_free(ptr);
-        g_free(exp);
-
-        PASS();
-}
-
-
-TEST test_ini_get_int(void)
-{
-        char *int_section = "int";
-
-        ASSERT_EQ(5, ini_get_int(int_section, "simple", 0));
-        ASSERT_EQ(-10, ini_get_int(int_section, "negative", 0));
-        ASSERT_EQ(2, ini_get_int(int_section, "decimal", 0));
-        ASSERT_EQ(7, ini_get_int(int_section, "leading_zeroes", 0));
-        ASSERT_EQ(1024, ini_get_int(int_section, "multi_char", 0));
-
-        ASSERT_EQ(10, ini_get_int(int_section, "nonexistent", 10));
-        PASS();
-}
-
-TEST test_ini_get_double(void)
-{
-        if (2.3 != atof("2.3")) {
-                SKIPm("Skipping test_ini_get_double, as it seems we're running under musl+valgrind!");
-        }
-
-        char *double_section = "double";
-        ASSERT_EQ(1, ini_get_double(double_section, "simple", 0));
-        ASSERT_EQ(1.5, ini_get_double(double_section, "decimal", 0));
-        ASSERT_EQ(-1.2, ini_get_double(double_section, "negative", 0));
-        ASSERT_EQ(0.005, ini_get_double(double_section, "zeroes", 0));
-        ASSERT_EQ(3.141592653589793, ini_get_double(double_section, "long", 0));
-
-        ASSERT_EQ(10.5, ini_get_double(double_section, "nonexistent", 10.5));
         PASS();
 }
 
@@ -277,12 +135,6 @@ SUITE(suite_option_parser)
         }
         load_ini_file(config_file);
         RUN_TEST(test_next_section);
-        RUN_TEST(test_ini_get_bool);
-        RUN_TEST(test_ini_get_string);
-        RUN_TEST(test_ini_get_list);
-        RUN_TEST(test_ini_get_path);
-        RUN_TEST(test_ini_get_int);
-        RUN_TEST(test_ini_get_double);
         char cmdline[] = "dunst -bool -b "
                 "-string \"A simple string from the cmdline\" -s Single_word_string "
                 "-list A,simple,list,from,the,cmdline -list2 \"A, list, with, spaces\" "

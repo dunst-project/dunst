@@ -222,59 +222,6 @@ const char *get_value(const char *section, const char *key)
         return NULL;
 }
 
-char *ini_get_path(const char *section, const char *key, const char *def)
-{
-        return string_to_path(ini_get_string(section, key, def));
-}
-
-char *ini_get_string(const char *section, const char *key, const char *def)
-{
-        const char *value = get_value(section, key);
-        if (value)
-                return g_strdup(value);
-
-        return def ? g_strdup(def) : NULL;
-}
-
-gint64 ini_get_time(const char *section, const char *key, gint64 def)
-{
-        const char *timestring = get_value(section, key);
-        gint64 val = def;
-
-        if (timestring) {
-                val = string_to_time(timestring);
-        }
-
-        return val;
-}
-
-char **ini_get_list(const char *section, const char *key, const char *def)
-{
-        const char *value = get_value(section, key);
-        if (value)
-                return string_to_array(value);
-        else
-                return string_to_array(def);
-}
-
-int ini_get_int(const char *section, const char *key, int def)
-{
-        const char *value = get_value(section, key);
-        if (value)
-                return atoi(value);
-        else
-                return def;
-}
-
-double ini_get_double(const char *section, const char *key, double def)
-{
-        const char *value = get_value(section, key);
-        if (value)
-                return atof(value);
-        else
-                return def;
-}
-
 bool ini_is_set(const char *ini_section, const char *ini_key)
 {
         return get_value(ini_section, ini_key) != NULL;
@@ -318,15 +265,6 @@ int str_to_bool(const char *value){
         } else {
                 return def;
         }
-}
-
-int ini_get_bool(const char *section, const char *key, int def)
-{
-        const char *value = get_value(section, key);
-        int val_int = str_to_bool(value);
-
-        if (val_int < 0) val_int = def;
-        return val_int;
 }
 
 bool is_special_section(const char* s) {

@@ -19,13 +19,6 @@ bool string_parse_urgency(const char *s, enum urgency *ret);
 int load_ini_file(FILE *);
 void set_defaults();
 void save_settings();
-char *ini_get_path(const char *section, const char *key, const char *def);
-char *ini_get_string(const char *section, const char *key, const char *def);
-gint64 ini_get_time(const char *section, const char *key, gint64 def);
-char **ini_get_list(const char *section, const char *key, const char *def);
-int ini_get_int(const char *section, const char *key, int def);
-double ini_get_double(const char *section, const char *key, double def);
-int ini_get_bool(const char *section, const char *key, int def);
 bool ini_is_set(const char *ini_section, const char *ini_key);
 void free_ini(void);
 

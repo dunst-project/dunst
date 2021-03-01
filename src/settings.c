@@ -17,21 +17,6 @@
 
 struct settings settings;
 
-static enum urgency ini_get_urgency(const char *section, const char *key, const enum urgency def)
-{
-        enum urgency ret;
-        char *c = ini_get_string(section, key, NULL);
-
-        if (!string_parse_urgency(c, &ret)) {
-                if (c)
-                        LOG_W("Unknown urgency: '%s'", c);
-                ret = def;
-        }
-
-        g_free(c);
-        return ret;
-}
-
 static FILE *xdg_config(const char *filename)
 {
         const gchar * const * systemdirs = g_get_system_config_dirs();
