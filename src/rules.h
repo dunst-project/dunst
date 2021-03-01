@@ -9,7 +9,9 @@
 #include "settings.h"
 
 struct rule {
+        // This has to be the first member, see struct setting.rule_offset.
         char *name;
+
         /* filters */
         char *appname;
         char *summary;

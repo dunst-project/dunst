@@ -72,8 +72,10 @@ TEST test_default_value_valid(void)
 TEST test_value_non_null(void)
 {
         for (size_t i = 0; i < G_N_ELEMENTS(allowed_settings); i++) {
-                gchar *error1 = g_strdup_printf("Value of setting %s is null", allowed_settings[i].name);
-                ASSERTm(error1, allowed_settings[i].value);
+                gchar *error1 = g_strdup_printf("Error in settting %s. A setting must have a 'value' or a 'rule_offset', or both.",
+                                allowed_settings[i].name);
+                ASSERTm(error1, allowed_settings[i].value ||
+                                allowed_settings[i].rule_offset);
                 g_free(error1);
         }
         PASS();
@@ -105,14 +107,22 @@ TEST test_valid_parser_and_data_per_type(void)
                                 g_free(error3);
                                 g_free(error4);
                                 break;
-                        case TYPE_LIST:
-                        case TYPE_PATH: ; // only parser data is needed
+                        case TYPE_LIST: ; // only parser data is needed
                                 gchar *error5 = g_strdup_printf("Parser of setting %s should be NULL. It's needed not for this type", curr.name);
                                 gchar *error6 = g_strdup_printf("Parser data of setting %s should not be NULL. It's needed for this type", curr.name);
                                 ASSERTm(error5, !curr.parser);
                                 ASSERTm(error6, curr.parser_data);
                                 g_free(error5);
                                 g_free(error6);
+                                break;
+                        case TYPE_PATH: ; // only parser data is neede, but when it's a rule none is needed.
+                                gchar *error7 = g_strdup_printf("Parser of setting %s should be NULL. It's needed not for this type", curr.name);
+                                gchar *error8 = g_strdup_printf("Parser data of setting %s should not be NULL. It's needed for this type", curr.name);
+                                bool is_rule = !curr.value; // if it doesn't have a 'value' it's a rule
+                                ASSERTm(error7, !curr.parser);
+                                ASSERTm(error8, is_rule || curr.parser_data);
+                                g_free(error7);
+                                g_free(error8);
                                 break;
                         default: ;
                                 gchar *error20 = g_strdup_printf("You should make a test for type %i", curr.type);

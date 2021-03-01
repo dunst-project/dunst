@@ -1,6 +1,7 @@
 /* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
 #ifndef DUNST_SETTING_DATA_H
 #define DUNST_SETTING_DATA_H
+#include <stddef.h>
 
 // TODO move all enum definitions here and remove include
 #include "settings.h"
@@ -46,6 +47,7 @@ struct setting {
        * A string with the default value of the setting. This should be the
        * same as what it would be in the config file, as this is parsed by the
        * same parser.
+       * default_value is unused when the setting is only a rule (value == NULL).
        *
        * Example:
        *        .default_value = "10s", // 10 seconds of time
@@ -53,9 +55,11 @@ struct setting {
       char *default_value;
 
       /**
+       * (nullable)
        * A pointer to the corresponding setting in the setting struct. Make
        * sure to always take the address, even if it's already a pointer in the
        * settings struct.
+       * If value is NULL, the setting is interpreted as a rule.
        *
        * Example:
        *        .value = &settings.font,
@@ -83,10 +87,19 @@ struct setting {
        * A pointer to the data required for the parser to parse this setting.
        */
       void* parser_data; // This is passed to the parser function
+
+      /**
+       * The offset of this setting in the rule struct, if it exists. Zero is
+       * being interpreted as if no rule exists for this setting.
+       *
+       * Example:
+       *        .rule_offset = offsetof(struct rule, *member*);
+       */
+      size_t rule_offset;
 };
 
 static struct rule default_rule = {
-        .name = "empty",
+        .name            = "empty",
         .appname         = NULL,
         .summary         = NULL,
         .body            = NULL,
@@ -230,6 +243,242 @@ static struct string_to_enum_def layer_enum_data[] = {
 
 
 static struct setting allowed_settings[] = {
+        // match rules below
+        {
+                .name = "appname",
+                .section = "*",
+                .description = "The name of the application as reported by the client. Be aware that the name can often differ depending on the locale used.",
+                .type = TYPE_STRING,
+                .default_value = "*", // default_value is not used for rules
+                .value = NULL,
+                .parser = NULL,
+                .parser_data = NULL,
+                .rule_offset = offsetof(struct rule, appname),
+        },
+        {
+                .name = "body",
+                .section = "*",
+                .description = "The body of the notification",
+                .type = TYPE_STRING,
+                .default_value = "*",
+                .value = NULL,
+                .parser = NULL,
+                .parser_data = NULL,
+                .rule_offset = offsetof(struct rule, body),
+        },
+        {
+                .name = "category",
+                .section = "*",
+                .description = "The category of the notification as defined by the notification spec. See https://developer.gnome.org/notification-spec/#categories",
+                .type = TYPE_STRING,
+                .default_value = "*",
+                .value = NULL,
+                .parser = NULL,
+                .parser_data = NULL,
+                .rule_offset = offsetof(struct rule, category),
+        },
+        {
+                .name = "desktop_entry",
+                .section = "*",
+                .description = "GLib based applications export their desktop-entry name. In comparison to the appname, the desktop-entry won't get localized.",
+                .type = TYPE_STRING,
+                .default_value = "*",
+                .value = NULL,
+                .parser = NULL,
+                .parser_data = NULL,
+                .rule_offset = offsetof(struct rule, desktop_entry),
+        },
+        {
+                .name = "icon",
+                .section = "*",
+                .description = "The icon of the notification in the form of a file path. Can be empty if no icon is available or a raw icon is used instead.",
+                .type = TYPE_STRING,
+                .default_value = "*",
+                .value = NULL,
+                .parser = NULL,
+                .parser_data = NULL,
+                .rule_offset = offsetof(struct rule, icon),
+        },
+        {
+                .name = "match_transient",
+                .section = "*",
+                .description = "Match if the notification has been declared as transient by the client or by some other rule.",
+                .type = TYPE_BOOLEAN,
+                .default_value = "*",
+                .value = NULL,
+                .parser = NULL,
+                .parser_data = NULL,
+                .rule_offset = offsetof(struct rule, match_transient),
+        },
+        {
+                .name = "msg_urgency",
+                .section = "*",
+                .description = "Matches the urgency of the notification as set by the client or by some other rule.",
+                .type = TYPE_ENUM,
+                .default_value = "*",
+                .value = NULL,
+                .parser = string_parse_enum,
+                .parser_data = urgency_enum_data,
+                .rule_offset = offsetof(struct rule, msg_urgency),
+        },
+        {
+                .name = "stack_tag",
+                .section = "*",
+                .description = "Matches the stack tag of the notification as set by the client or by some other rule.",
+                .type = TYPE_STRING,
+                .default_value = "*",
+                .value = NULL,
+                .parser = NULL,
+                .parser_data = NULL,
+                .rule_offset = offsetof(struct rule, stack_tag),
+        },
+        {
+                .name = "summary",
+                .section = "*",
+                .description = "summary text of the notification",
+                .type = TYPE_STRING,
+                .default_value = "*",
+                .value = NULL,
+                .parser = NULL,
+                .parser_data = NULL,
+                .rule_offset = offsetof(struct rule, summary),
+        },
+
+        // modifying rules below
+        {
+                .name = "script",
+                .section = "*",
+                .description = "script",
+                .type = TYPE_PATH,
+                .default_value = "*",
+                .value = NULL,
+                .parser = NULL,
+                .parser_data = NULL,
+                .rule_offset = offsetof(struct rule, script),
+        },
+        {
+                .name = "background",
+                .section = "*",
+                .description = "The background color of the notification.",
+                .type = TYPE_STRING,
+                .default_value = "*",
+                .value = NULL,
+                .parser = NULL,
+                .parser_data = NULL,
+                .rule_offset = offsetof(struct rule, bg),
+        },
+        {
+                .name = "foreground",
+                .section = "*",
+                .description = "The foreground color of the notification.",
+                .type = TYPE_STRING,
+                .default_value = "*",
+                .value = NULL,
+                .parser = NULL,
+                .parser_data = NULL,
+                .rule_offset = offsetof(struct rule, fg),
+        },
+        {
+                .name = "highlight",
+                .section = "*",
+                .description = "The highlight color of the notification.",
+                .type = TYPE_STRING,
+                .default_value = "*",
+                .value = NULL,
+                .parser = NULL,
+                .parser_data = NULL,
+                .rule_offset = offsetof(struct rule, highlight),
+        },
+        {
+                .name = "format",
+                .section = "global",
+                .description = "The format template for the notifications",
+                .type = TYPE_STRING,
+                .default_value = "%s %b",
+                .value = &settings.format,
+                .parser = NULL,
+                .parser_data = NULL,
+                .rule_offset = offsetof(struct rule, format),
+        },
+        {
+                .name = "fullscreen",
+                .section = "*",
+                .description = "This attribute specifies how notifications are handled if a fullscreen window is focused. One of show, delay, or pushback.",
+                .type = TYPE_ENUM,
+                .default_value = "show",
+                .value = NULL, // TODO make this a global setting as well
+                .parser = string_parse_enum,
+                .parser_data = fullscreen_enum_data,
+                .rule_offset = offsetof(struct rule, fullscreen),
+        },
+        {
+                .name = "new_icon",
+                .section = "*",
+                .description = "Updates the icon of the notification, it should be a path to a valid image.",
+                .type = TYPE_PATH,
+                .default_value = "*",
+                .value = NULL,
+                .parser = NULL,
+                .parser_data = NULL,
+                .rule_offset = offsetof(struct rule, new_icon),
+        },
+        {
+                .name = "set_stack_tag",
+                .section = "*",
+                .description = "Sets the stack tag for the notification, notifications with the same (non-empty) stack tag will replace each-other so only the newest one is visible.",
+                .type = TYPE_STRING,
+                .default_value = "*",
+                .value = NULL,
+                .parser = NULL,
+                .parser_data = NULL,
+                .rule_offset = offsetof(struct rule, stack_tag),
+        },
+        {
+                .name = "set_transient",
+                .section = "*",
+                .description = "Sets whether the notification is considered transient.  Transient notifications will bypass the idle_threshold setting.",
+                .type = TYPE_BOOLEAN,
+                .default_value = "*",
+                .value = NULL,
+                .parser = NULL,
+                .parser_data = NULL,
+                .rule_offset = offsetof(struct rule, set_transient),
+        },
+        { // TODO this could be merged with the other timeout settings
+                .name = "timeout",
+                .section = "*",
+                .description = "Don't timeout notifications if user is longer idle than threshold",
+                .type = TYPE_TIME,
+                .default_value = "*",
+                .value = NULL,
+                .parser = NULL,
+                .parser_data = NULL,
+                .rule_offset = offsetof(struct rule, timeout),
+        },
+        {
+                .name = "urgency",
+                .section = "*",
+                .description = "This sets the notification urgency.",
+                .type = TYPE_ENUM,
+                .default_value = "*",
+                .value = NULL,
+                .parser = string_parse_enum,
+                .parser_data = urgency_enum_data,
+                .rule_offset = offsetof(struct rule, urgency),
+        },
+        {
+                .name = "skip_display",
+                .section = "*",
+                .description = "Setting this to true will prevent the notification from being displayed initially but will be saved in history for later viewing.",
+                .type = TYPE_BOOLEAN,
+                .default_value = "*",
+                .value = NULL,
+                .parser = NULL,
+                .parser_data = NULL,
+                .rule_offset = offsetof(struct rule, skip_display),
+        },
+
+        // other settings below
         {
                 .name = "frame_color",
                 .section = "global",
@@ -277,16 +526,6 @@ static struct setting allowed_settings[] = {
                 .type = TYPE_STRING,
                 .default_value = "-*-terminus-medium-r-*-*-16-*-*-*-*-*-*-*",
                 .value = &settings.font,
-                .parser = NULL,
-                .parser_data = NULL,
-        },
-        {
-                .name = "format",
-                .section = "global",
-                .description = "The format template for the notifications",
-                .type = TYPE_STRING,
-                .default_value = "%s %b",
-                .value = &settings.format,
                 .parser = NULL,
                 .parser_data = NULL,
         },

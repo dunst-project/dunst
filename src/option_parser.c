@@ -329,13 +329,23 @@ int ini_get_bool(const char *section, const char *key, int def)
         return val_int;
 }
 
+bool is_special_section(const char* s) {
+        for (size_t i = 0; i < G_N_ELEMENTS(special_sections); i++) {
+                if (STR_EQ(special_sections[i], s)) {
+                        return true;
+                }
+        }
+        return false;
+}
+
 int get_setting_id(const char *key, const char *section) {
         int error_code = 0;
         int partial_match_id = -1;
+        bool is_rule = !is_special_section(section);
         for (int i = 0; i < G_N_ELEMENTS(allowed_settings); i++) {
                 if (strcmp(allowed_settings[i].name, key) == 0) {
                         /* LOG_I("%s name exists with id %i", allowed_settings[i].name, i); */
-                        if (strcmp(section, allowed_settings[i].section) == 0) {
+                        if (is_rule || strcmp(section, allowed_settings[i].section) == 0) {
                                 return i;
                         } else {
                                 // name matches, but in wrong section. Continueing to see
@@ -359,31 +369,33 @@ int get_setting_id(const char *key, const char *section) {
         return -1;
 }
 
-bool set_setting(struct setting setting, char* value) {
-        // TODO make sure value isn't empty
-        LOG_D("Trying to set %s to %s", setting.name, value);
+bool set_from_string(void *target, struct setting setting, char *value) {
         GError *error = NULL;
-        /* if (!strlen(value)) { */
-                /* LOG_W("but value is empty!"); */
-                /* return false; */
-        /* } */
+
+        if (!strlen(value)) {
+                LOG_W("Cannot set empty value for setting %s", setting.name);
+                return false;
+        }
+
+        // Do not use setting.value, since we might want to set a rule. Use
+        // target instead
         switch (setting.type) {
                 case TYPE_INT:
-                        *(int*) setting.value = atoi(value);
+                        *(int*) target = atoi(value);
                         return true;
                 case TYPE_BOOLEAN:
-                        *(bool*) setting.value = str_to_bool(value);
+                        *(bool*) target = str_to_bool(value);
                         return true;
                 case TYPE_STRING:
-                        g_free(*(char**) setting.value);
-                        *(char**) setting.value = g_strdup(value);
+                        g_free(*(char**) target);
+                        *(char**) target = g_strdup(value);
                         return true;
                 case TYPE_ENUM:
                         if (setting.parser == NULL) {
                                 LOG_W("Enum setting %s doesn't have parser", setting.name);
                                 return false;
                         }
-                        bool success = setting.parser(setting.parser_data, value, setting.value);
+                        bool success = setting.parser(setting.parser_data, value, target);
 
                         if (!success) LOG_W("Unknown %s value: '%s'", setting.name, value);
                         return success;
@@ -392,15 +404,21 @@ bool set_setting(struct setting setting, char* value) {
                                 LOG_W("Setting %s doesn't have parser", setting.name);
                                 return false;
                         }
-                        bool success2 = setting.parser(setting.parser_data, value, setting.value);
+                        bool success2 = setting.parser(setting.parser_data, value, target);
 
                         if (!success2) LOG_W("Unknown %s value: '%s'", setting.name, value);
                         return success2;
                 case TYPE_PATH: ;
-                        g_free(*(char**) setting.value);
-                        *(char**) setting.value = string_to_path(g_strdup(value));
+                        g_free(*(char**) target);
+                        *(char**) target = string_to_path(g_strdup(value));
+
+                        // TODO make scripts take arguments in the config and
+                        // deprecate the arguments that are now passed to the
+                        // scripts
+                        if (!setting.parser_data)
+                                return true;
                         g_strfreev(*(char***)setting.parser_data);
-                        if (!g_shell_parse_argv(*(char**) setting.value, NULL, (char***)setting.parser_data, &error)) {
+                        if (!g_shell_parse_argv(*(char**) target, NULL, (char***)setting.parser_data, &error)) {
                                 LOG_W("Unable to parse %s command: '%s'. "
                                                 "It's functionality will be disabled.",
                                                 setting.name, error->message);
@@ -409,43 +427,69 @@ bool set_setting(struct setting setting, char* value) {
                         }
                         return true;
                 case TYPE_TIME: ;
-                        *(gint64*) setting.value = string_to_time(value);
+                        *(gint64*) target = string_to_time(value);
                         return true;
                 case TYPE_GEOMETRY:
-                        *(struct geometry*) setting.value = x_parse_geometry(value);
+                        *(struct geometry*) target = x_parse_geometry(value);
                         return true;
                 case TYPE_LIST: ;
                         int type = *(enum list_type*)setting.parser_data;
                         LOG_D("list type %i", *(int*)setting.parser_data);
                         LOG_D("list type int %i", type);
-                        return string_parse_list(&type, value, setting.value);
+                        return string_parse_list(&type, value, target);
                 default:
                         LOG_W("Setting type of '%s' is not known (type %i)", setting.name, setting.type);
                         return false;
         }
 }
 
-void set_defaults(){
+bool set_setting(struct setting setting, char* value) {
+        LOG_D("Trying to set %s to %s", setting.name, value);
+        if (setting.value == NULL) {
+                // setting.value is NULL, so it must be only a rule
+                // TODO check this more thoroughly
+                return true;
+        }
+
+        return set_from_string(setting.value, setting, value);
+}
+
+int set_rule_value(struct rule* r, struct setting setting, char* value) {
+        // Apply rule member offset. Converting to char* because it's
+        // guaranteed to be 1 byte
+        void *target = (char*)r + setting.rule_offset;
+
+        return set_from_string(target, setting, value);
+}
+
+bool set_rule(struct setting setting, char* value, char* section) {
+        struct rule *r = get_rule(section);
+        if (!r) {
+                r = rule_new();
+                rules = g_slist_insert(rules, r, -1);
+                r->name = g_strdup(section);
+                LOG_D("Creating new rule '%s'", section);
+        }
+
+        return set_rule_value(r, setting, value);
+}
+
+void set_defaults() {
         for (int i = 0; i < G_N_ELEMENTS(allowed_settings); i++) {
+                bool is_rule = !allowed_settings[i].value;
+                if (is_rule) // don't set default if it's only a rule
+                        continue;
+
                 if(!set_setting(allowed_settings[i], allowed_settings[i].default_value)) {
                         LOG_E("Could not set default of setting %s", allowed_settings[i].name);
                 }
         }
 }
 
-bool is_special_section(const struct section s) {
-        for (size_t i = 0; i < G_N_ELEMENTS(special_sections); i++) {
-                if (STR_EQ(special_sections[i], s.name)) {
-                        return true;
-                }
-        }
-        return false;
-}
-
 void save_settings() {
         for (int i = 0; i < section_count; i++) {
                 const struct section curr_section = sections[i];
-                if (is_special_section(curr_section)) {
+                if (is_special_section(curr_section.name)) {
                         // special section, so don't interpret as rule
                         for (int j = 0; j < curr_section.entry_count; j++) {
                                 const struct entry curr_entry = curr_section.entries[j];
@@ -462,6 +506,23 @@ void save_settings() {
                         }
                 } else {
                         // interpret this section as a rule
+                        for (int j = 0; j < curr_section.entry_count; j++) {
+                                const struct entry curr_entry = curr_section.entries[j];
+                                int setting_id = get_setting_id(curr_entry.key, curr_section.name);
+                                if (setting_id < 0){
+                                        if (setting_id == -1) {
+                                                LOG_W("%s is not a valid rule", curr_entry.key);
+                                        }
+                                        continue;
+                                }
+
+                                struct setting curr_setting = allowed_settings[setting_id];
+                                LOG_D("Adding rule '%s = %s' to section %s",
+                                                curr_entry.key,
+                                                curr_entry.value,
+                                                curr_section.name);
+                                set_rule(curr_setting, curr_entry.value, curr_section.name);
+                        }
                 }
         }
 }
