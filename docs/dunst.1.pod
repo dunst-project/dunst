@@ -35,29 +35,16 @@ Use alternative config file.
 
 Print version information.
 
+=item B<-verbosity> (values: 'crit', 'warn', 'mesg', 'info', 'debug' default 'mesg')
+
+Do not display log messages, which have lower precedence than specified
+verbosity. This won't affect printing notifications on the terminal. Use
+the '-print' option for this.
+
 =item B<-print>
 
 Print notifications to stdout. This might be useful for logging, setting up
 rules or using the output in other scripts.
-
-=item B<->F<SETTING> B<[value]>
-
-Where F<SETTING> can be any setting that's available in the global section of
-the configuration file. See dunst(5) for possible settings.
-
-Each configuration option in the global section can be overridden from the
-command line by adding a single dash in front of it's name.
-For example the font option can be overridden by running
-
-    $ dunst -font "LiberationSans Mono 4"
-
-Configuration options that take boolean values can only currently be set to
-"true" through the command line via the same method. e.g.
-
-    $ dunst -shrink
-
-This is a known limitation of the way command line parameters are parsed and
-will be changed in the future.
 
 =back
 

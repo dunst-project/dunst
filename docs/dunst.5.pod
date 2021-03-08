@@ -4,23 +4,29 @@ dunst - configuration file
 
 =head1 DESCRIPTION
 
-An example configuration file is included (usually /etc/dunst/dunstrc). Note:
+An example configuration file is included, usually in /etc/dunst/dunstrc. Note:
 this was previously /usr/share/dunst/dunstrc.
 To change the configuration, copy this file to ~/.config/dunst/dunstrc and edit
 it accordingly.
 
-The configuration is divided into sections in an ini-like format. The 'global'
-section contains most general settings while the setions 'urgency_low',
-'urgency_normal' and 'urgency_critical' are for low, normal and critical urgency
-notifications respectively. The 'shortcuts' section (deprecated) contains all
-keyboard configuration and the 'experimental' section all the features that have
-not yet been tested thoroughly.
+The configuration is divided into sections in an ini-like format. Every section
+start with the section's name in square brackets. After that is a list of
+key-value pairs that specify the settings. Whitespace is purely cosmetic and
+doesn't matter for the result.
 
-Any section that is not one of the above is assumed to be a rule, see RULES for
-more details.
+The 'global' section contains the general settings applying to all of dunst. The
+rest of the settings can be specified via rules and can be located in any
+section. These rules can change a notification based on it's properties. There
+are filtering rules and modifying rules. The filtering rules specify on what
+notifications the rule is applied and the modifying rules specify what is
+changed about the matching notifications. Some special sections have implied
+filters that cannot be changed. The "global" section, for example has no
+filters, thus applies to all notifications.
 
-For backwards compatibility reasons the section name 'frame' is considered bound
-and can't be used as a rule.
+See RULES for more details.
+
+The 'experimental' section contains all the features that have not yet been
+tested thoroughly and may be changed at any time.
 
 =head2 Global section
 
@@ -483,12 +489,6 @@ WM_CLASS). There should be no need to modify this setting for regular use.
 Display a notification on startup. This is usually used for debugging and there
 shouldn't be any need to use this option.
 
-=item B<verbosity> (values: 'crit', 'warn', 'mesg', 'info', 'debug' default 'mesg')
-
-Do not display log messages, which have lower precedence than specified
-verbosity. This won't affect printing notifications on the terminal. Use
-the '-print' option for this.
-
 =item B<force_xinerama> (values: [true/false], default: false) (X11 only)
 
 Use the Xinerama extension instead of RandR for multi-monitor support. This
@@ -550,45 +550,11 @@ Open context menu for all notifications.
 
 =back
 
-
 =item B<ignore_dbusclose> (default: false)
 
 Ignore the dbus closeNotification message. This is useful to enforce the timeout
 set by dunst configuration. Without this parameter, an application may close
 the notification sent before the user defined timeout.
-
-=back
-
-=head2 Shortcut section B<DEPRECATED SEE DUNSTCTL> (X11 only)
-
-Keyboard shortcuts are defined in the following format: "Modifier+key" where the
-modifier is one of ctrl,mod1,mod2,mod3,mod4 and key is any keyboard key.
-
-=over 4
-
-=item B<close>
-
-B<command line flag>: -key <key>
-
-Specifies the keyboard shortcut for closing a notification.
-
-=item B<close_all>
-
-B<command line flag>: -all_key <key>
-
-Specifies the keyboard shortcut for closing all currently displayed notifications.
-
-=item B<history>
-
-B<command line flag>: -history_key <key>
-
-Specifies the keyboard shortcut for recalling a single notification from history.
-
-=item B<context>
-
-B<command line flag>: -context_key <key>
-
-Specifies the keyboard shortcut that opens the context menu.
 
 =back
 
@@ -654,7 +620,8 @@ See TIME FORMAT for valid times.
 
 Dunst now contains a command line control command that can be used to interact
 with it. It supports all functions previously done only via keyboard shortcuts
-but also has a lot of extra functionality. So see more see dunstctl(1).
+but also has a lot of extra functionality. For more information, see
+dunstctl(1).
 
 =head1 HISTORY
 
@@ -662,7 +629,8 @@ Dunst saves a number of notifications (specified by B<history_length>) in memory
 These notifications can be recalled (i.e. redisplayed) by calling
 B<dunstctl history> (see dunstctl(1)). Whether these notifications will time out
 like if they have been just send depends on the value of the B<sticky_history>
-setting.
+setting. Actions are invalidated once the notification is closed, so you cannot
+execute that action when you bring back a notification from history.
 
 Past notifications are redisplayed in a first-in-last-out order, meaning that
 pressing the history key once will bring up the most recent notification that
@@ -699,14 +667,29 @@ variable accordingly.
 
 =head1 RULES
 
-Rules allow the conditional modification of notifications. They are defined by
-creating a section in the configuration file that has any name that is not
-already used internally (i.e. any name other than 'global', 'experimental',
-'frame', 'shortcuts', 'urgency_low', 'urgency_normal' and 'urgency_critical').
+Rules allow the conditional modification of notifications. They can be located
+in a section with any name, even the special sections. The special sections do
+not allow filters to be added, since they have implied filters by default.
 
-There are 2 parts in configuring a rule: Defining the filters that control when
+=over 4
+
+=item 'global'
+
+No filters, matches all notifications.
+
+=item 'urgency_low', 'urgency_normal' and 'urgency_critical'
+
+Matches low, normal or critical urgency respectively.
+
+=back
+
+There are 2 parts in configuring a rule: Defining the filters that controls when
 a rule should apply and then the actions that should be taken when the rule is
-matched.
+matched. It's also possible to not specify any filters, in which case the rule
+will match all notifications.
+
+Rules are applied in order of appearance. Beware: if a notification is changed by a
+rule, it may affect if it's being matched by a later rule.
 
 =over 4
 
