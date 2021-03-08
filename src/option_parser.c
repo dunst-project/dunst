@@ -267,22 +267,18 @@ int str_to_bool(const char *value){
         }
 }
 
-bool is_special_section(const char* s) {
-        for (size_t i = 0; i < G_N_ELEMENTS(special_sections); i++) {
-                if (STR_EQ(special_sections[i], s)) {
-                        return true;
-                }
-        }
-        return false;
-}
-
 int get_setting_id(const char *key, const char *section) {
         int error_code = 0;
         int partial_match_id = -1;
-        bool is_rule = !is_special_section(section);
+        bool match_section = section && is_special_section(section);
+        if (!match_section) {
+                LOG_D("not matching section %s", section);
+        }
         for (int i = 0; i < G_N_ELEMENTS(allowed_settings); i++) {
                 if (strcmp(allowed_settings[i].name, key) == 0) {
-                        /* LOG_I("%s name exists with id %i", allowed_settings[i].name, i); */
+                        bool is_rule = allowed_settings[i].rule_offset > 0;
+
+                        // a rule matches every section
                         if (is_rule || strcmp(section, allowed_settings[i].section) == 0) {
                                 return i;
                         } else {
@@ -403,9 +399,7 @@ int set_rule_value(struct rule* r, struct setting setting, char* value) {
 bool set_rule(struct setting setting, char* value, char* section) {
         struct rule *r = get_rule(section);
         if (!r) {
-                r = rule_new();
-                rules = g_slist_insert(rules, r, -1);
-                r->name = g_strdup(section);
+                r = rule_new(section);
                 LOG_D("Creating new rule '%s'", section);
         }
 
@@ -414,8 +408,7 @@ bool set_rule(struct setting setting, char* value, char* section) {
 
 void set_defaults() {
         for (int i = 0; i < G_N_ELEMENTS(allowed_settings); i++) {
-                bool is_rule = !allowed_settings[i].value;
-                if (is_rule) // don't set default if it's only a rule
+                if (!allowed_settings[i].value) // don't set default if it's only a rule
                         continue;
 
                 if(!set_setting(allowed_settings[i], allowed_settings[i].default_value)) {
@@ -427,34 +420,44 @@ void set_defaults() {
 void save_settings() {
         for (int i = 0; i < section_count; i++) {
                 const struct section curr_section = sections[i];
-                if (is_special_section(curr_section.name)) {
-                        // special section, so don't interpret as rule
-                        for (int j = 0; j < curr_section.entry_count; j++) {
-                                const struct entry curr_entry = curr_section.entries[j];
-                                int setting_id = get_setting_id(curr_entry.key, curr_section.name);
-                                if (setting_id < 0){
-                                        if (setting_id == -1) {
-                                                LOG_W("Setting %s in section %s doesn't exist", curr_entry.key, curr_section.name);
-                                        }
-                                        continue;
-                                }
 
-                                struct setting curr_setting = allowed_settings[setting_id];
-                                set_setting(curr_setting, curr_entry.value);
+                if (is_deprecated_section(curr_section.name)) {
+                        LOG_W("Section %s is deprecated. Ignoring", curr_section.name);
+                        continue;
+                }
+
+                for (int j = 0; j < curr_section.entry_count; j++) {
+                        const struct entry curr_entry = curr_section.entries[j];
+                        int setting_id = get_setting_id(curr_entry.key, curr_section.name);
+                        struct setting curr_setting = allowed_settings[setting_id];
+                        if (setting_id < 0){
+                                if (setting_id == -1) {
+                                        LOG_W("Setting %s in section %s doesn't exist", curr_entry.key, curr_section.name);
+                                }
+                                continue;
                         }
-                } else {
-                        // interpret this section as a rule
-                        for (int j = 0; j < curr_section.entry_count; j++) {
-                                const struct entry curr_entry = curr_section.entries[j];
-                                int setting_id = get_setting_id(curr_entry.key, curr_section.name);
-                                if (setting_id < 0){
-                                        if (setting_id == -1) {
-                                                LOG_W("%s is not a valid rule", curr_entry.key);
-                                        }
-                                        continue;
-                                }
 
-                                struct setting curr_setting = allowed_settings[setting_id];
+                        bool is_rule = curr_setting.rule_offset > 0;
+                        if (is_special_section(curr_section.name)) {
+                                if (is_rule) {
+                                        // set as a rule, but only if it's not a filter
+                                        if (rule_offset_is_action(curr_setting.rule_offset)) {
+                                                LOG_D("Adding rule '%s = %s' to special section %s",
+                                                                curr_entry.key,
+                                                                curr_entry.value,
+                                                                curr_section.name);
+                                                set_rule(curr_setting, curr_entry.value, curr_section.name);
+                                        } else {
+                                                LOG_W("Cannot use filtering rules in special section. Ignoring %s in section %s.",
+                                                                curr_entry.key,
+                                                                curr_section.name);
+                                        }
+                                } else {
+                                        // set as a regular setting
+                                        set_setting(curr_setting, curr_entry.value);
+                                }
+                        } else {
+                                // interpret this section as a rule
                                 LOG_D("Adding rule '%s = %s' to section %s",
                                                 curr_entry.key,
                                                 curr_entry.value,

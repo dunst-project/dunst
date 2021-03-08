@@ -140,5 +140,22 @@ const char *user_get_home(void);
  */
 bool safe_setenv(const char* key, const char* value);
 
+/**
+ * Some sections are handled differently in dunst. This function tells wether a
+ * sections is such a special section.
+ *
+ * @param s The name of the section
+ * @returns A bool wether this section is one of the special sections
+ */
+bool is_special_section(const char* s);
+
+/**
+ * This function tells if a section is deprecated.
+ *
+ * @param s The name of the section
+ * @returns A bool wether this section is deprecated
+ */
+bool is_deprecated_section(const char* s);
+
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

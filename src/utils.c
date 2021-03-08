@@ -12,6 +12,7 @@
 #include <unistd.h>
 
 #include "log.h"
+#include "settings_data.h"
 
 /* see utils.h */
 char *string_replace_char(char needle, char replacement, char *haystack)
@@ -236,6 +237,7 @@ const char *user_get_home(void)
         return home_directory;
 }
 
+/* see utils.h */
 bool safe_setenv(const char* key, const char* value){
         if (!key)
                 return false;
@@ -246,6 +248,26 @@ bool safe_setenv(const char* key, const char* value){
                 setenv(key, value, 1);
 
         return true;
+}
+
+/* see utils.h */
+bool is_special_section(const char* s) {
+        for (size_t i = 0; i < G_N_ELEMENTS(special_sections); i++) {
+                if (STR_EQ(special_sections[i], s)) {
+                        return true;
+                }
+        }
+        return false;
+}
+
+/* see utils.h */
+bool is_deprecated_section(const char* s) {
+        for (size_t i = 0; i < G_N_ELEMENTS(deprecated_sections); i++) {
+                if (STR_EQ(deprecated_sections[i], s)) {
+                        return true;
+                }
+        }
+        return false;
 }
 
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */
