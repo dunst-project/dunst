@@ -1010,4 +1010,4 @@ If you feel that copyrights are violated, please send me an email.
 
 =head1 SEE ALSO
 
-dunstctl(1), dwm(1), dmenu(1), twmn(1), notify-send(1)
+dunst(1), dunstctl(1), dmenu(1), notify-send(1)
