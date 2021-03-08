@@ -25,6 +25,10 @@ void input_handle_click(unsigned int button, bool button_down, int mouse_x, int 
                 case BTN_RIGHT:
                         acts = settings.mouse_right_click;
                         break;
+                case BTN_TOUCH:
+                        // TODO Add separate action for touch
+                        acts = settings.mouse_left_click;
+                        break;
                 default:
                         LOG_W("Unsupported mouse button: '%d'", button);
                         return;

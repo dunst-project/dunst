@@ -148,7 +148,8 @@ service-systemd:
 endif
 
 ifneq (0,${WAYLAND})
-wayland-protocols: src/wayland/protocols/wlr-layer-shell-unstable-v1.xml
+wayland-protocols: src/wayland/protocols/wlr-layer-shell-unstable-v1.xml src/wayland/protocols/wlr-foreign-toplevel-management-unstable-v1.xml
+	# TODO: write this shorter
 	mkdir -p src/wayland/protocols
 	wayland-scanner private-code ${DATA_DIR_WAYLAND_PROTOCOLS}/stable/xdg-shell/xdg-shell.xml src/wayland/protocols/xdg-shell.h
 	wayland-scanner client-header ${DATA_DIR_WAYLAND_PROTOCOLS}/stable/xdg-shell/xdg-shell.xml src/wayland/protocols/xdg-shell-client-header.h
@@ -158,6 +159,8 @@ wayland-protocols: src/wayland/protocols/wlr-layer-shell-unstable-v1.xml
 	wayland-scanner private-code src/wayland/protocols/wlr-layer-shell-unstable-v1.xml src/wayland/protocols/wlr-layer-shell-unstable-v1.h
 	wayland-scanner client-header src/wayland/protocols/idle.xml src/wayland/protocols/idle-client-header.h
 	wayland-scanner private-code src/wayland/protocols/idle.xml src/wayland/protocols/idle.h
+	wayland-scanner client-header src/wayland/protocols/wlr-foreign-toplevel-management-unstable-v1.xml src/wayland/protocols/wlr-foreign-toplevel-management-unstable-v1-client-header.h
+	wayland-scanner private-code src/wayland/protocols/wlr-foreign-toplevel-management-unstable-v1.xml src/wayland/protocols/wlr-foreign-toplevel-management-unstable-v1.h
 endif
 
 .PHONY: clean clean-dunst clean-dunstify clean-doc clean-tests clean-coverage clean-coverage-run clean-wayland-protocols

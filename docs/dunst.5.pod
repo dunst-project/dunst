@@ -249,9 +249,6 @@ Place dunst notifications on the selected layer. Using overlay
 will cause notifications to be displayed above fullscreen windows, though
 this may also occur at top depending on your compositor.
 
-In Wayland, Notifications won't be delayed when in fullscreen (like when
-setting B<fullscreen> to pushback in X11). This is a Wayland limitation.
-
 The bottom layer is below all windows and above the background.
 
 Default: overlay
@@ -516,7 +513,8 @@ automatically lowered to half of the notification height if it exceeds it.
 
 =item B<mouse_left/middle/right_click> (values: [none/do_action/close_current/close_all])
 
-Defines action of mouse click.
+Defines action of mouse click. A touch input in Wayland acts as a mouse left
+click.
 
 =over 4
 
@@ -647,7 +645,7 @@ but also has a lot of extra functionality. So see more see dunstctl(1).
 =head1 HISTORY
 
 Dunst saves a number of notifications (specified by B<history_length>) in memory.
-These notifications can be recalled (i.e. redisplayed) by calling 
+These notifications can be recalled (i.e. redisplayed) by calling
 B<dunstctl history> (see dunstctl(1)). Whether these notifications will time out
 like if they have been just send depends on the value of the B<sticky_history>
 setting.
@@ -662,9 +660,15 @@ Dunst has Wayland support since version 1.6.0. Because the Wayland protocol
 is more focused on security, some things that are possible in X11 are not
 possible in Wayland. Those differences are reflected in the configuration.
 The main things that change are that dunst on Wayland cannot use global
-hotkeys (they are deprecated anyways, use dunstctl) and it cannot detect
-if an application is fullscreen. If you want to see notifications when in
-fullscreen, set B<layer = overlay> in the global options.
+hotkeys (they are deprecated anyways, use dunstctl).
+
+Some dunst features on wayland might need your compositor to support a certain
+protocol. Dunst will warn you if an optional feature isn't supported and will
+disable the corresponding functionality.
+
+Fullscreen detection works on wayland with some limitations (see B<fullscreen>).
+If you want notifications to appear over fullscreen windows, set
+B<layer = overlay> in the global options.
 
 Note that the same limitations exist when using xwayland.
 If something doesn't quite work in Wayland, please file a bug report. In the
@@ -791,7 +795,7 @@ Equivalent to the C<format> setting.
 
 The frame color color of the notification. See COLORS for possible values.
 
-=item C<fullscreen> (X11 only)
+=item C<fullscreen>
 
 One of show, delay, or pushback.
 
@@ -806,7 +810,13 @@ Or pushback which is equivalent to delay with the difference that already
 existing notifications are paused and hidden until the focus to the fullscreen
 window is lost.
 
-See B<layer> to change fullscreen behavior in Wayland
+On wayland, if B<follow> is set to mouse or keyboard, the output where the
+notification is located cannot be determined. So dunst will delay or pushback if
+any of the outputs is fullscreen. Since the fullscreen protocol is fairly new,
+you will need a recent version of a compositor that supports it. At the time of
+writing, you will need the git version of sway.
+See also B<layer> to change if notifications appear above fullscreen windows in
+Wayland.
 
 Default: show
 
