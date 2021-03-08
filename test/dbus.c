@@ -458,6 +458,7 @@ TEST test_hint_progress(void)
 
                 n = queues_debug_find_notification_by_id(id);
 
+                snprintf(msg, sizeof(msg), "In round %ld progress should be %i, but is %i", i, n->progress, values[i]);
                 ASSERT_EQm(msg, values[i], n->progress);
         }
 
