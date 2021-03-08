@@ -177,6 +177,9 @@ int dunst_main(int argc, char *argv[])
                 usage(EXIT_SUCCESS);
         }
 
+        settings.startup_notification = cmdline_get_bool("--startup_notification",
+                        0, "Display a notification on startup.");
+
         int dbus_owner_id = dbus_init();
 
         mainloop = g_main_loop_new(NULL, FALSE);

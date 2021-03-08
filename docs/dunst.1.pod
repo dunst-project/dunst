@@ -46,6 +46,10 @@ the '-print' option for this.
 Print notifications to stdout. This might be useful for logging, setting up
 rules or using the output in other scripts.
 
+=item B<--startup_notification> (values: [true/false], default: false)
+
+Display a notification on startup.
+
 =back
 
 =head1 CONFIGURATION

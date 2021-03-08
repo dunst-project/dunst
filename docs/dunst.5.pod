@@ -484,11 +484,6 @@ property). There should be no need to modify this setting for regular use.
 Defines the class of notification windows spawned by dunst. (First part of
 WM_CLASS). There should be no need to modify this setting for regular use.
 
-=item B<startup_notification> (values: [true/false], default: false)
-
-Display a notification on startup. This is usually used for debugging and there
-shouldn't be any need to use this option.
-
 =item B<force_xinerama> (values: [true/false], default: false) (X11 only)
 
 Use the Xinerama extension instead of RandR for multi-monitor support. This

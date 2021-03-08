@@ -835,16 +835,6 @@ static struct setting allowed_settings[] = {
                 .parser_data = NULL,
         },
         {
-                .name = "startup_notification",
-                .section = "global",
-                .description = "print notification on startup",
-                .type = TYPE_BOOLEAN,
-                .default_value = "false",
-                .value = &settings.startup_notification,
-                .parser = NULL,
-                .parser_data = NULL,
-        },
-        {
                 .name = "dmenu",
                 .section = "global",
                 .description = "path to dmenu",
