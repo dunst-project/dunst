@@ -35,17 +35,17 @@ static inline struct notification *test_notification(const char *name, gint64 ti
 {
         struct notification *n = notification_create();
 
-        if (timeout != -1)
-                n->timeout = S2US(timeout);
-
         n->dbus_client = g_strconcat(":", name, NULL);
         n->appname =     g_strconcat("app of ", name, NULL);
         n->summary =     g_strconcat(name, NULL);
         n->body =        g_strconcat("See, ", name, ", I've got a body for you!", NULL);
 
+        notification_init(n);
+
         n->format = "%s\n%b";
 
-        notification_init(n);
+        if (timeout != -1)
+                n->timeout = S2US(timeout);
 
         return n;
 }
