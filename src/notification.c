@@ -192,7 +192,7 @@ const char *notification_urgency_to_string(const enum urgency urgency)
 /* see notification.h */
 int notification_cmp(const struct notification *a, const struct notification *b)
 {
-        if (a->urgency != b->urgency) {
+        if (settings.sort && a->urgency != b->urgency) {
                 return b->urgency - a->urgency;
         } else {
                 return a->id - b->id;
@@ -204,8 +204,6 @@ int notification_cmp_data(const void *va, const void *vb, void *data)
 {
         struct notification *a = (struct notification *) va;
         struct notification *b = (struct notification *) vb;
-
-        ASSERT_OR_RET(settings.sort, 1);
 
         return notification_cmp(a, b);
 }
