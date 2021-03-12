@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #include "x11/x.h"
 #include "dunst.h"
@@ -73,6 +74,7 @@ int string_parse_mouse_action_list(char **s, void *ret_void)
                 if (!string_parse_enum(&mouse_action_enum_data, s[i], *ret + i)) {
                         LOG_W("Unknown mouse action value: '%s'", s[i]);
                         g_free(*ret);
+                        *ret = NULL;
                         return false;
                 }
         }
@@ -105,17 +107,28 @@ int string_parse_sepcolor(void *data, const char *s, void *ret)
         bool is_enum = string_parse_enum(data, s, &type);
         if (is_enum) {
                 sep_color->type = type;
+                g_free(sep_color->sep_color);
+                sep_color->sep_color = NULL;
                 return true;
         } else {
-                if (STR_FULL(s)) {
-                        sep_color->type = SEP_CUSTOM;
-                        g_free(sep_color->sep_color);
-                        sep_color->sep_color = g_strdup(s); // TODO check if this is a color?
-                        return true;
-                } else {
+                if (STR_EMPTY(s)) {
                         LOG_W("Sep color is empty, make sure to quote the value if it's a color.");
                         return false;
                 }
+                if (s[0] != '#') {
+                        LOG_W("Sep color should start with a '#'");
+                        return false;
+                }
+                if (strlen(s) < 4) {
+                        LOG_W("Make sure the sep color is formatted correctly");
+                        return false;
+                }
+                // TODO add more checks for if the color is valid
+
+                sep_color->type = SEP_CUSTOM;
+                g_free(sep_color->sep_color);
+                sep_color->sep_color = g_strdup(s);
+                return true;
         }
 }
 
@@ -243,30 +256,6 @@ const char *next_section(const char *section)
         return NULL;
 }
 
-int str_to_bool(const char *value){
-        int def = -1;
-        if (value) {
-                switch (value[0]) {
-                case 'y':
-                case 'Y':
-                case 't':
-                case 'T':
-                case '1':
-                        return true;
-                case 'n':
-                case 'N':
-                case 'f':
-                case 'F':
-                case '0':
-                        return false;
-                default:
-                        return def;
-                }
-        } else {
-                return def;
-        }
-}
-
 int get_setting_id(const char *key, const char *section) {
         int error_code = 0;
         int partial_match_id = -1;
@@ -303,7 +292,7 @@ int get_setting_id(const char *key, const char *section) {
         return -1;
 }
 
-bool set_from_string(void *target, struct setting setting, char *value) {
+bool set_from_string(void *target, struct setting setting, const char *value) {
         GError *error = NULL;
 
         if (!strlen(value)) {
@@ -315,11 +304,28 @@ bool set_from_string(void *target, struct setting setting, char *value) {
         // target instead
         switch (setting.type) {
                 case TYPE_INT:
+                        // TODO use strtol or strtoimax instead to get better
+                        // error handling
                         *(int*) target = atoi(value);
                         return true;
-                case TYPE_BOOLEAN:
-                        *(bool*) target = str_to_bool(value);
-                        return true;
+                case TYPE_BOOLEAN: ;
+                        // this is needed, since string_parse_enum assumses a
+                        // variable of size int is passed
+                        int temp_target = -1;
+                        bool success1 = string_parse_enum(boolean_enum_data, value, &temp_target);
+
+                        if (!success1) LOG_W("Unknown %s value: '%s'. It should be a valid boolean",
+                                        setting.name, value);
+
+                        if (temp_target < 0 || temp_target > 1)
+                        {
+                                // should not happen if boolean_enum_data is correct
+                                LOG_W("TYPE_BOOLEAN out of range");
+                                return false;
+                        }
+
+                        *(bool*) target = (bool) temp_target;
+                        return success1;
                 case TYPE_STRING:
                         g_free(*(char**) target);
                         *(char**) target = g_strdup(value);
@@ -361,7 +367,11 @@ bool set_from_string(void *target, struct setting setting, char *value) {
                         }
                         return true;
                 case TYPE_TIME: ;
-                        *(gint64*) target = string_to_time(value);
+                        gint64 temp_target2 = string_to_time(value);
+                        if (errno != 0) {
+                                return false;
+                        }
+                        *(gint64*) target = temp_target2;
                         return true;
                 case TYPE_GEOMETRY:
                         *(struct geometry*) target = x_parse_geometry(value);

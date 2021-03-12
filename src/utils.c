@@ -171,24 +171,34 @@ gint64 string_to_time(const char *string)
 
         errno = 0;
         char *endptr;
-        gint64 val = strtoll(string, &endptr, 10);
+        gint64 val = strtol(string, &endptr, 10);
 
         if (errno != 0) {
                 LOG_W("Time: '%s': %s.", string, strerror(errno));
                 return 0;
         } else if (string == endptr) {
+                errno = EINVAL;
                 LOG_W("Time: '%s': No digits found.", string);
                 return 0;
-        } else if (errno != 0 && val == 0) {
-                LOG_W("Time: '%s': Unknown error.", string);
-                return 0;
-        } else if (errno == 0 && !*endptr) {
+        } else if (val < -1) {
+                // most times should not be negative, but show_age_threshhold
+                // can be -1
+                LOG_W("Time: '%s': Time should be positive (-1 is allowed too sometimes)",
+                                string);
+                errno = EINVAL;
+        }
+        else if (errno == 0 && !*endptr) {
                 return S2US(val);
         }
-
         // endptr may point to a separating space
         while (isspace(*endptr))
                 endptr++;
+
+        if (val < 0) {
+                LOG_W("Time: '%s' signal value -1 should not have a suffix", string);
+                errno = EINVAL;
+                return 0;
+        }
 
         if (STRN_EQ(endptr, "ms", 2))
                 return val * 1000;
@@ -201,7 +211,10 @@ gint64 string_to_time(const char *string)
         else if (STRN_EQ(endptr, "d", 1))
                 return S2US(val) * 60 * 60 * 24;
         else
+        {
+                errno = EINVAL;
                 return 0;
+        }
 }
 
 /* see utils.h */

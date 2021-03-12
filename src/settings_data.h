@@ -165,6 +165,28 @@ static struct string_to_enum_def verbosity_enum_data[] = {
         ENUM_END,
 };
 
+static struct string_to_enum_def boolean_enum_data[] = {
+        {"True", true },
+        {"true", true },
+        {"On", true },
+        {"on", true },
+        {"Yes", true },
+        {"yes", true },
+        {"1", true },
+        {"False", false },
+        {"false", false },
+        {"Off", false },
+        {"off", false },
+        {"No", false },
+        {"no", false },
+        {"0", false },
+        {"n", false },
+        {"y", false },
+        {"N", false },
+        {"Y", true },
+        ENUM_END,
+};
+
 static struct string_to_enum_def horizontal_alignment_enum_data[] = {
         {"left",   ALIGN_LEFT },
         {"center", ALIGN_CENTER },

@@ -125,6 +125,456 @@ TEST test_cmdline_create_usage(void)
         PASS();
 }
 
+TEST test_string_to_int(void)
+{
+        int val = -123;
+        const char* inputs[] = {
+                "0",
+                "1",
+                "-1",
+                "12345678",
+                "-12345678"
+        };
+        const int results[] = {
+                0,
+                1,
+                -1,
+                12345678,
+                -12345678
+        };
+        struct setting s;
+        s.type = TYPE_INT;
+
+        char buf[50];
+        for (int i = 0; i < G_N_ELEMENTS(inputs); i++) {
+                sprintf(buf, "Failed in round %i", i);
+                ASSERTm(buf, set_from_string(&val, s, inputs[i]));
+                ASSERT_EQm(buf, val, results[i]);
+        }
+        PASS();
+}
+
+TEST test_string_to_boolean(void)
+{
+        bool val;
+
+        struct setting s;
+        s.type = TYPE_BOOLEAN;
+        s.value = &val;
+
+        const char* inputs[] = {
+                "0",
+                "1",
+                "true",
+                "True",
+                "false",
+                "off"
+        };
+        const int results[] = {
+                0,
+                1,
+                1,
+                1,
+                0,
+                0
+        };
+
+        char buf[50];
+        for (int i = 0; i < G_N_ELEMENTS(inputs); i++) {
+                sprintf(buf, "Failed in round %i", i);
+                ASSERTm(buf, set_from_string(&val, s, inputs[i]));
+                sprintf(buf, "Failed in round %i. %i should be %i", i, val, results[i]);
+                ASSERT_EQm(buf, val, results[i]);
+        }
+        PASS();
+}
+
+TEST test_string_to_boolean_invalid(void)
+{
+        bool val = false;
+
+        struct setting s = {0};
+        s.type = TYPE_BOOLEAN;
+        s.value = &val;
+        s.name = "test_boolean";
+
+        const char* invalid_inputs[] = {
+                "-1",
+                "123",
+                "something",
+                "else",
+        };
+
+        char buf[50];
+
+        for (int i = 0; i < G_N_ELEMENTS(invalid_inputs); i++) {
+                sprintf(buf, "Failed in round %i", i);
+                bool success = set_from_string(&val, s, invalid_inputs[i]);
+                ASSERT_FALSEm(buf, success);
+        }
+        PASS();
+}
+
+TEST test_string_to_enum(void)
+{
+        int val = -123;
+
+        struct setting s;
+        s.type = TYPE_ENUM;
+        s.value = &val;
+        s.parser = string_parse_enum;
+        s.parser_data = ellipsize_enum_data;
+
+        char buf[50];
+
+        // do not go until last element, since it's ENUM_END (all 0)
+        for (int i = 0; i < G_N_ELEMENTS(ellipsize_enum_data)-1; i++) {
+                sprintf(buf, "Failed in round %i", i);
+                ASSERTm(buf, set_from_string(&val, s, ellipsize_enum_data[i].string));
+                ASSERT_EQm(buf, val, ellipsize_enum_data[i].enum_value);
+        }
+        PASS();
+}
+
+TEST test_string_to_enum_invalid(void)
+{
+        int val = -123;
+
+        struct setting s;
+        s.name = "test_enum";
+        s.type = TYPE_ENUM;
+        s.value = &val;
+        s.parser = string_parse_enum;
+        s.parser_data = ellipsize_enum_data;
+
+        const char* invalid_inputs[] = {
+                "0",
+                "1",
+                "-1",
+                "something",
+                "else"
+        };
+
+        char buf[50];
+
+        for (int i = 0; i < G_N_ELEMENTS(invalid_inputs); i++) {
+                sprintf(buf, "Failed in round %i", i);
+                ASSERT_FALSEm(buf, set_from_string(&val, s, invalid_inputs[i]));
+        }
+        PASS();
+}
+
+int get_list_len(const enum mouse_action *in) {
+        int len = 0;
+        while (in[len] != -1)
+                len++;
+        return len;
+}
+
+TEST test_string_to_list(void)
+{
+        enum mouse_action *val = NULL;
+
+        struct setting s;
+        s.type = TYPE_LIST;
+        s.value = &val;
+        s.parser_data = &mouse_list;
+
+        const char* inputs[] = {
+                "close_current",
+                "none",
+                "none, close_current",
+                "close_all,close_current",
+                "close_all,close_current,close_all",
+        };
+        const enum mouse_action results[][4] = {
+                {MOUSE_CLOSE_CURRENT, -1},
+                {MOUSE_NONE, -1},
+                {MOUSE_NONE, MOUSE_CLOSE_CURRENT, -1},
+                {MOUSE_CLOSE_ALL, MOUSE_CLOSE_CURRENT, -1},
+                {MOUSE_CLOSE_ALL, MOUSE_CLOSE_CURRENT, MOUSE_CLOSE_ALL, -1},
+        };
+
+        char buf[50];
+        for (int i = 0; i < G_N_ELEMENTS(inputs); i++) {
+                sprintf(buf, "Failed in round %i", i);
+                ASSERTm(buf, set_from_string(s.value, s, inputs[i]));
+                ASSERT_EQm(buf, get_list_len(val), get_list_len(results[i]));
+                for (int j = 0; val[j] != -1; j++){
+                        sprintf(buf, "Failed in round %i, element %i. Is %i, should be %i", i, j, val[j], results[i][j]);
+                        ASSERT_EQm(buf, val[j], results[i][j]);
+                }
+        }
+        free(val);
+        PASS();
+}
+
+TEST test_string_to_list_invalid(void)
+{
+        enum mouse_action *val = NULL;
+
+        struct setting s;
+        s.name = "test_list";
+        s.type = TYPE_LIST;
+        s.value = &val;
+        s.parser_data = &mouse_list;
+
+        const char* invalid_inputs[] = {
+                "0",
+                "1",
+                "-1",
+                "something",
+                "else"
+                "close_all,close_current,close_all,invalid",
+                "close_all,invalid,close_current,close_all",
+        };
+
+        char buf[50];
+
+        for (int i = 0; i < G_N_ELEMENTS(invalid_inputs); i++) {
+                sprintf(buf, "Failed in round %i", i);
+                ASSERT_FALSEm(buf, set_from_string(&val, s, invalid_inputs[i]));
+        }
+        g_free(val);
+        PASS();
+}
+
+TEST test_string_to_time(void)
+{
+        gint64 val;
+        struct setting s;
+        s.type = TYPE_TIME;
+        s.value = &val;
+        s.name = "test_time";
+
+        const char* inputs[] = {
+                "-1",
+                "0",
+                "1",
+                "3s",
+                "100ms",
+                "2m",
+        };
+        const int results[] = {
+                S2US(-1),
+                S2US(0),
+                S2US(1),
+                S2US(3),
+                100 * 1000,
+                S2US(120),
+        };
+
+        char buf[50];
+        for (int i = 0; i < G_N_ELEMENTS(inputs); i++) {
+                sprintf(buf, "Failed in round %i", i);
+                ASSERTm(buf, set_from_string(&val, s, inputs[i]));
+                sprintf(buf, "Failed in round %i. %li should be %i", i, val, results[i]);
+                ASSERT_EQm(buf, val, results[i]);
+        }
+        PASS();
+}
+
+TEST test_string_to_time_invalid(void)
+{
+        gint64 val;
+        struct setting s;
+        s.type = TYPE_TIME;
+        s.value = &val;
+
+        const char* invalid_inputs[] = {
+                // -1 is allowed, but only without suffix
+                "-1s",
+                "-1ms",
+                "-2",
+                "-4s",
+                "-2ms",
+                "3basdf",
+                "100asdf",
+                "anything",
+                "s",
+        };
+
+        char buf[50];
+        for (int i = 0; i < G_N_ELEMENTS(invalid_inputs); i++) {
+                sprintf(buf, "Failed in round %i", i);
+                ASSERT_FALSEm(buf, set_from_string(&val, s, invalid_inputs[i]));
+        }
+        PASS();
+}
+
+TEST test_string_to_path(void)
+{
+        char *val = NULL;
+        char **val2 = NULL;
+        struct setting s;
+        s.type = TYPE_PATH;
+        s.value = &val;
+        s.name = "test_path";
+        s.parser_data = &val2;
+
+        const char* inputs[] = {
+                "/bin/something",
+                "something",
+                "/path/path/path/",
+                "/path/p argument",
+                "p with multiple arguments",
+                "~/p/p",
+        };
+
+        char *expanded_home = g_strconcat(user_get_home(), "/", "p/p", NULL);
+        const char* results[] = {
+                "/bin/something",
+                "something",
+                "/path/path/path/",
+                "/path/p argument",
+                "p with multiple arguments",
+                expanded_home,
+        };
+
+        const char* results2[][5] = {
+                {"/bin/something", NULL},
+                {"something", NULL},
+                {"/path/path/path/", NULL},
+                {"/path/p", "argument", NULL},
+                {"p", "with", "multiple", "arguments", NULL},
+                {expanded_home},
+        };
+
+        char buf[256];
+        for (int i = 0; i < G_N_ELEMENTS(inputs); i++) {
+                sprintf(buf, "Failed in round %i", i);
+                ASSERTm(buf, set_from_string(&val, s, inputs[i]));
+                sprintf(buf, "Failed in round %i. %s should be %s", i, val, results[i]);
+                ASSERTm(buf, STR_EQ(val, results[i]));
+                for (int j = 0; results2[i][j] != NULL; j++) {
+                        ASSERT_STR_EQ(results2[i][j], val2[j]);
+                }
+        }
+
+        g_free(val);
+        g_free(expanded_home);
+        g_strfreev(val2);
+        PASS();
+}
+
+TEST test_string_to_path_invalid(void)
+{
+        char *val = NULL;
+        char **val2 = NULL;
+        struct setting s;
+        s.type = TYPE_PATH;
+        s.value = &val;
+        s.name = "test_path";
+        s.parser_data = &val2;
+
+        const char* inputs[] = {
+                "/bin/something",
+                "something",
+                "/path/path/path/",
+                "/path/p argument",
+                "p with multiple arguments",
+                "~/p/p",
+        };
+
+        char *expanded_home = g_strconcat(user_get_home(), "/", "p/p", NULL);
+        const char* results[] = {
+                "/bin/something",
+                "something",
+                "/path/path/path/",
+                "/path/p argument",
+                "p with multiple arguments",
+                expanded_home,
+        };
+
+        char buf[256];
+        for (int i = 0; i < G_N_ELEMENTS(inputs); i++) {
+                sprintf(buf, "Failed in round %i", i);
+                ASSERTm(buf, set_from_string(&val, s, inputs[i]));
+                sprintf(buf, "Failed in round %i. %s should be %s", i, val, results[i]);
+                ASSERTm(buf, STR_EQ(val, results[i]));
+        }
+
+        g_free(val);
+        g_free(expanded_home);
+        g_strfreev(val2);
+        PASS();
+}
+
+TEST test_string_to_sepcolor(void)
+{
+        struct separator_color_data val = {0};
+        struct setting s;
+        s.type = TYPE_SEP_COLOR;
+        s.value = &val;
+        s.name = "test_sepcolor";
+        s.parser = string_parse_sepcolor;
+        s.parser_data = sep_color_enum_data;
+
+        const char* inputs[] = {
+                "auto",
+                "foreground",
+                "frame",
+                "#123456",
+                "#ab123c",
+                "#AB123C",
+        };
+
+        const struct separator_color_data results[] = {
+                {SEP_AUTO, NULL},
+                {SEP_FOREGROUND, NULL},
+                {SEP_FRAME, NULL},
+                {SEP_CUSTOM, "#123456"},
+                {SEP_CUSTOM, "#ab123c"},
+                {SEP_CUSTOM, "#AB123C"},
+        };
+
+        char buf[50];
+        for (int i = 0; i < G_N_ELEMENTS(inputs); i++) {
+                sprintf(buf, "Failed in round %i. Expected %i, got %i", i, results[i].type, val.type);
+                ASSERTm(buf, set_from_string(&val, s, inputs[i]));
+                ASSERT_EQm(buf, results[i].type, val.type);
+                sprintf(buf, "Failed in round %i. Expected %s, got %s", i, results[i].sep_color, val.sep_color);
+                ASSERTm(buf, STR_EQ(results[i].sep_color, val.sep_color));
+        }
+
+        g_free(val.sep_color);
+        PASS();
+}
+
+TEST test_string_to_sepcolor_invalid(void)
+{
+        struct separator_color_data val = {0};
+        struct setting s;
+        s.type = TYPE_SEP_COLOR;
+        s.value = &val;
+        s.name = "test_sepcolor";
+        s.parser = string_parse_sepcolor;
+        s.parser_data = sep_color_enum_data;
+
+        const char* inputs[] = {
+                "",
+                "f00reground",
+                "fraame",
+                "123456",
+                "#ab",
+
+                // TODO detect these mistakes as well
+                /* "#12456", */
+                /* "#gg123c", */
+                /* "#AB123C123212", */
+        };
+
+        char buf[50];
+        for (int i = 0; i < G_N_ELEMENTS(inputs); i++) {
+                sprintf(buf, "Failed in round %i.", i);
+                ASSERT_FALSEm(buf, set_from_string(&val, s, inputs[i]));
+        }
+
+        g_free(val.sep_color);
+        PASS();
+}
+
+
 SUITE(suite_option_parser)
 {
         char *config_path = g_strconcat(base, "/data/test-ini", NULL);
@@ -153,6 +603,29 @@ SUITE(suite_option_parser)
         RUN_TEST(test_cmdline_get_double);
         RUN_TEST(test_cmdline_get_bool);
         RUN_TEST(test_cmdline_create_usage);
+
+
+        // These test try out the parsing of set_from_string for different
+        // config types.
+        // Non-stripped strings should not be passed to set_from_string. These
+        // are normally stripped out by the ini parser.
+        RUN_TEST(test_string_to_int);
+        // TODO test for invalid ints. Cannot do currently since atoi doesn't
+        // give errors, but sets 0 instead.
+        RUN_TEST(test_string_to_enum);
+        RUN_TEST(test_string_to_enum_invalid);
+        RUN_TEST(test_string_to_boolean);
+        RUN_TEST(test_string_to_boolean_invalid);
+        RUN_TEST(test_string_to_list);
+        RUN_TEST(test_string_to_list_invalid);
+        RUN_TEST(test_string_to_time);
+        RUN_TEST(test_string_to_time_invalid);
+        RUN_TEST(test_string_to_path);
+        RUN_TEST(test_string_to_path_invalid);
+        RUN_TEST(test_string_to_sepcolor);
+        RUN_TEST(test_string_to_sepcolor_invalid);
+        // geometry is left out, since we probably want to replace it soon
+        // anyways
 
         g_free(config_path);
         free_ini();
