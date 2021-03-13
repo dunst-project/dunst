@@ -266,7 +266,7 @@ TEST test_string_to_enum_invalid(void)
 
 int get_list_len(const enum mouse_action *in) {
         int len = 0;
-        while (in[len] != -1)
+        while (in[len] != MOUSE_ACTION_END)
                 len++;
         return len;
 }
@@ -288,11 +288,11 @@ TEST test_string_to_list(void)
                 "close_all,close_current,close_all",
         };
         const enum mouse_action results[][4] = {
-                {MOUSE_CLOSE_CURRENT, -1},
-                {MOUSE_NONE, -1},
-                {MOUSE_NONE, MOUSE_CLOSE_CURRENT, -1},
-                {MOUSE_CLOSE_ALL, MOUSE_CLOSE_CURRENT, -1},
-                {MOUSE_CLOSE_ALL, MOUSE_CLOSE_CURRENT, MOUSE_CLOSE_ALL, -1},
+                {MOUSE_CLOSE_CURRENT, MOUSE_ACTION_END},
+                {MOUSE_NONE, MOUSE_ACTION_END},
+                {MOUSE_NONE, MOUSE_CLOSE_CURRENT, MOUSE_ACTION_END},
+                {MOUSE_CLOSE_ALL, MOUSE_CLOSE_CURRENT, MOUSE_ACTION_END},
+                {MOUSE_CLOSE_ALL, MOUSE_CLOSE_CURRENT, MOUSE_CLOSE_ALL, MOUSE_ACTION_END},
         };
 
         char buf[50];
@@ -300,7 +300,7 @@ TEST test_string_to_list(void)
                 sprintf(buf, "Failed in round %i", i);
                 ASSERTm(buf, set_from_string(s.value, s, inputs[i]));
                 ASSERT_EQm(buf, get_list_len(val), get_list_len(results[i]));
-                for (int j = 0; val[j] != -1; j++){
+                for (int j = 0; val[j] != MOUSE_ACTION_END; j++){
                         sprintf(buf, "Failed in round %i, element %i. Is %i, should be %i", i, j, val[j], results[i][j]);
                         ASSERT_EQm(buf, val[j], results[i][j]);
                 }

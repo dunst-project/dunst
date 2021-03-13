@@ -78,7 +78,7 @@ int string_parse_mouse_action_list(char **s, void *ret_void)
                         return false;
                 }
         }
-        (*ret)[len] = -1; // sentinel end value
+        (*ret)[len] = MOUSE_ACTION_END; // sentinel end value
         return true;
 }
 
