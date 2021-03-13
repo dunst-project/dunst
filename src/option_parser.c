@@ -133,43 +133,6 @@ int string_parse_sepcolor(const void *data, const char *s, void *ret)
         }
 }
 
-bool string_parse_fullscreen(const char *s, enum behavior_fullscreen *ret)
-{
-        ASSERT_OR_RET(STR_FULL(s), false);
-        ASSERT_OR_RET(ret, false);
-
-        STRING_PARSE_RET("show",     FS_SHOW);
-        STRING_PARSE_RET("delay",    FS_DELAY);
-        STRING_PARSE_RET("pushback", FS_PUSHBACK);
-
-        return false;
-}
-
-bool string_parse_markup_mode(const char *s, enum markup_mode *ret)
-{
-        ASSERT_OR_RET(STR_FULL(s), false);
-        ASSERT_OR_RET(ret, false);
-
-        STRING_PARSE_RET("strip", MARKUP_STRIP);
-        STRING_PARSE_RET("no",    MARKUP_NO);
-        STRING_PARSE_RET("full",  MARKUP_FULL);
-        STRING_PARSE_RET("yes",   MARKUP_FULL);
-
-        return false;
-}
-
-bool string_parse_urgency(const char *s, enum urgency *ret)
-{
-        ASSERT_OR_RET(STR_FULL(s), false);
-        ASSERT_OR_RET(ret, false);
-
-        STRING_PARSE_RET("low",      URG_LOW);
-        STRING_PARSE_RET("normal",   URG_NORM);
-        STRING_PARSE_RET("critical", URG_CRIT);
-
-        return false;
-}
-
 struct section *new_section(const char *name)
 {
         for (int i = 0; i < section_count; i++) {

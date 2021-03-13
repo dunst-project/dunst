@@ -12,10 +12,6 @@
 int string_parse_enum(const void* data, const char *s, void * ret);
 int string_parse_sepcolor(const void *data, const char *s, void *ret);
 
-bool string_parse_fullscreen(const char *s, enum behavior_fullscreen *ret);
-bool string_parse_markup_mode(const char *s, enum markup_mode *ret);
-bool string_parse_urgency(const char *s, enum urgency *ret);
-
 int load_ini_file(FILE *);
 void set_defaults();
 void save_settings();
