@@ -61,6 +61,7 @@ int string_parse_enum(const void *data, const char *s, void * ret) {
 int string_parse_mouse_action_list(char **s, void *ret_void)
 {
         enum mouse_action **ret = (enum mouse_action **) ret_void;
+        enum mouse_action *tmp;
         ASSERT_OR_RET(s, false);
         ASSERT_OR_RET(ret, false);
 
@@ -68,17 +69,17 @@ int string_parse_mouse_action_list(char **s, void *ret_void)
         while (s[len])
                 len++;
 
-        g_free(*ret);
-        *ret = g_malloc_n((len + 1), sizeof(enum mouse_action));
+        tmp = g_malloc_n((len + 1), sizeof(enum mouse_action));
         for (int i = 0; i < len; i++) {
-                if (!string_parse_enum(&mouse_action_enum_data, s[i], *ret + i)) {
+                if (!string_parse_enum(&mouse_action_enum_data, s[i], tmp + i)) {
                         LOG_W("Unknown mouse action value: '%s'", s[i]);
-                        g_free(*ret);
-                        *ret = NULL;
+                        g_free(tmp);
                         return false;
                 }
         }
-        (*ret)[len] = MOUSE_ACTION_END; // sentinel end value
+        tmp[len] = MOUSE_ACTION_END; // sentinel end value
+        g_free(*ret);
+        *ret = tmp;
         return true;
 }
 
@@ -304,10 +305,7 @@ bool set_from_string(void *target, struct setting setting, const char *value) {
         // target instead
         switch (setting.type) {
                 case TYPE_INT:
-                        // TODO use strtol or strtoimax instead to get better
-                        // error handling
-                        *(int*) target = atoi(value);
-                        return true;
+                        return safe_string_to_int(target, value);
                 case TYPE_BOOLEAN: ;
                         // this is needed, since string_parse_enum assumses a
                         // variable of size int is passed

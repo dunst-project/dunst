@@ -105,6 +105,24 @@ char **string_to_array(const char *string);
 char *string_to_path(char *string);
 
 /**
+ * Convert string to int in a safe way. When there is an error the int is not
+ * changed and false is returned.
+ *
+ * @param[out] in The int to save the result in. This is not changed when the
+ * parsing does not succeed
+ *
+ * @param[in] str The string to parse
+ * @return a bool if the conversion succeeded
+ */
+
+bool safe_string_to_int(int *in, const char *str);
+
+/**
+ * Same as safe_string_to_int, but then for a long
+ */
+bool safe_string_to_long_long(long long *in, const char *str);
+
+/**
  * Convert time units (ms, s, m) to the internal `gint64` microseconds format
  *
  * If no unit is given, 's' (seconds) is assumed by default.

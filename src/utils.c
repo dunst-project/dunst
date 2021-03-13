@@ -165,6 +165,43 @@ char *string_to_path(char *string)
 }
 
 /* see utils.h */
+bool safe_string_to_long_long(long long *in, const char *str) {
+        errno = 0;
+        char *endptr;
+        long long val = g_ascii_strtoll(str, &endptr, 10);
+
+        if (errno != 0) {
+                LOG_W("'%s': %s.", str, strerror(errno));
+                return false;
+        } else if (str == endptr) {
+                LOG_W("'%s': No digits found.", str);
+                return false;
+        } else if (*endptr != '\0') {
+                LOG_W("'%s': String contains non-digits.", str);
+                return false;
+        }
+        *in = val;
+        return true;
+}
+
+/* see utils.h */
+bool safe_string_to_int(int *in, const char *str) {
+        long long l;
+        if (!safe_string_to_long_long(&l, str))
+                return false;
+
+        // Check if it's in int range
+        if (l < INT_MIN || l > INT_MAX) {
+                errno = ERANGE;
+                LOG_W("'%s': %s.", str, strerror(errno));
+                return false;
+        }
+
+        *in = (int) l;
+        return true;
+}
+
+/* see utils.h */
 gint64 string_to_time(const char *string)
 {
         assert(string);

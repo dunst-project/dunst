@@ -154,6 +154,31 @@ TEST test_string_to_int(void)
         PASS();
 }
 
+TEST test_string_to_int_invalid(void)
+{
+        int val = -123;
+        const char* inputs[] = {
+                "a0",
+                "something",
+                "x1234asdf",
+                "-dsf1234asdf",
+                "0x123",
+                "1234a567",
+        };
+
+        struct setting s;
+        s.type = TYPE_INT;
+        s.name = "test_int";
+
+        char buf[50];
+        for (int i = 0; i < G_N_ELEMENTS(inputs); i++) {
+                sprintf(buf, "Failed in round %i", i);
+                ASSERT_FALSEm(buf, set_from_string(&val, s, inputs[i]));
+        }
+        ASSERT_EQm("Value should not be changed for invalid ints", val, -123);
+        PASS();
+}
+
 TEST test_string_to_boolean(void)
 {
         bool val;
@@ -191,7 +216,7 @@ TEST test_string_to_boolean(void)
 
 TEST test_string_to_boolean_invalid(void)
 {
-        bool val = false;
+        bool val = true;
 
         struct setting s = {0};
         s.type = TYPE_BOOLEAN;
@@ -212,6 +237,7 @@ TEST test_string_to_boolean_invalid(void)
                 bool success = set_from_string(&val, s, invalid_inputs[i]);
                 ASSERT_FALSEm(buf, success);
         }
+        ASSERT_EQm("Boolean should not change from invalid values", val, true);
         PASS();
 }
 
@@ -261,6 +287,7 @@ TEST test_string_to_enum_invalid(void)
                 sprintf(buf, "Failed in round %i", i);
                 ASSERT_FALSEm(buf, set_from_string(&val, s, invalid_inputs[i]));
         }
+        ASSERT_EQm("Enum should not change from invalid values", val, -123);
         PASS();
 }
 
@@ -311,7 +338,15 @@ TEST test_string_to_list(void)
 
 TEST test_string_to_list_invalid(void)
 {
-        enum mouse_action *val = NULL;
+        enum mouse_action val_initial[] = {123, MOUSE_ACTION_END};
+        enum mouse_action *val;
+
+        // set the list to some initial value
+        int len = get_list_len(val_initial);
+        val = g_malloc_n(len+1, sizeof(enum mouse_action));
+        for (int i = 0; i < len + 1; i++) {
+                val[i] = val_initial[i];
+        }
 
         struct setting s;
         s.name = "test_list";
@@ -329,12 +364,15 @@ TEST test_string_to_list_invalid(void)
                 "close_all,invalid,close_current,close_all",
         };
 
-        char buf[50];
+        char buf[256];
 
         for (int i = 0; i < G_N_ELEMENTS(invalid_inputs); i++) {
                 sprintf(buf, "Failed in round %i", i);
                 ASSERT_FALSEm(buf, set_from_string(&val, s, invalid_inputs[i]));
         }
+        sprintf(buf,"List should not change from invalid values. Expected length %i, got %i", len, get_list_len(val));
+        ASSERT_EQm(buf, get_list_len(val), len);
+        ASSERT_EQm("List should not change from invalid values", val[0], 123);
         g_free(val);
         PASS();
 }
@@ -376,7 +414,7 @@ TEST test_string_to_time(void)
 
 TEST test_string_to_time_invalid(void)
 {
-        gint64 val;
+        gint64 val = 1234;
         struct setting s;
         s.type = TYPE_TIME;
         s.value = &val;
@@ -399,6 +437,7 @@ TEST test_string_to_time_invalid(void)
                 sprintf(buf, "Failed in round %i", i);
                 ASSERT_FALSEm(buf, set_from_string(&val, s, invalid_inputs[i]));
         }
+        ASSERT_EQm("Time should not change from invalid values", val, 1234);
         PASS();
 }
 
@@ -457,49 +496,6 @@ TEST test_string_to_path(void)
         PASS();
 }
 
-TEST test_string_to_path_invalid(void)
-{
-        char *val = NULL;
-        char **val2 = NULL;
-        struct setting s;
-        s.type = TYPE_PATH;
-        s.value = &val;
-        s.name = "test_path";
-        s.parser_data = &val2;
-
-        const char* inputs[] = {
-                "/bin/something",
-                "something",
-                "/path/path/path/",
-                "/path/p argument",
-                "p with multiple arguments",
-                "~/p/p",
-        };
-
-        char *expanded_home = g_strconcat(user_get_home(), "/", "p/p", NULL);
-        const char* results[] = {
-                "/bin/something",
-                "something",
-                "/path/path/path/",
-                "/path/p argument",
-                "p with multiple arguments",
-                expanded_home,
-        };
-
-        char buf[256];
-        for (int i = 0; i < G_N_ELEMENTS(inputs); i++) {
-                sprintf(buf, "Failed in round %i", i);
-                ASSERTm(buf, set_from_string(&val, s, inputs[i]));
-                sprintf(buf, "Failed in round %i. %s should be %s", i, val, results[i]);
-                ASSERTm(buf, STR_EQ(val, results[i]));
-        }
-
-        g_free(val);
-        g_free(expanded_home);
-        g_strfreev(val2);
-        PASS();
-}
-
 TEST test_string_to_sepcolor(void)
 {
         struct separator_color_data val = {0};
@@ -543,7 +539,7 @@ TEST test_string_to_sepcolor(void)
 
 TEST test_string_to_sepcolor_invalid(void)
 {
-        struct separator_color_data val = {0};
+        struct separator_color_data val = {123, "test123"};
         struct setting s;
         s.type = TYPE_SEP_COLOR;
         s.value = &val;
@@ -570,7 +566,8 @@ TEST test_string_to_sepcolor_invalid(void)
                 ASSERT_FALSEm(buf, set_from_string(&val, s, inputs[i]));
         }
 
-        g_free(val.sep_color);
+        ASSERT_EQm("Sep color shouldn't changed from invalid inputs", 123, val.type);
+        ASSERT_STR_EQm("Sep color shouldn't changed from invalid inputs", "test123", val.sep_color);
         PASS();
 }
 
@@ -610,8 +607,7 @@ SUITE(suite_option_parser)
         // Non-stripped strings should not be passed to set_from_string. These
         // are normally stripped out by the ini parser.
         RUN_TEST(test_string_to_int);
-        // TODO test for invalid ints. Cannot do currently since atoi doesn't
-        // give errors, but sets 0 instead.
+        RUN_TEST(test_string_to_int_invalid);
         RUN_TEST(test_string_to_enum);
         RUN_TEST(test_string_to_enum_invalid);
         RUN_TEST(test_string_to_boolean);
@@ -621,7 +617,7 @@ SUITE(suite_option_parser)
         RUN_TEST(test_string_to_time);
         RUN_TEST(test_string_to_time_invalid);
         RUN_TEST(test_string_to_path);
-        RUN_TEST(test_string_to_path_invalid);
+        // Paths are now almost always considered valid
         RUN_TEST(test_string_to_sepcolor);
         RUN_TEST(test_string_to_sepcolor_invalid);
         // geometry is left out, since we probably want to replace it soon
