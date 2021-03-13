@@ -46,7 +46,7 @@ static int cmdline_find_option(const char *key);
 
 #define STRING_PARSE_RET(string, value) if (STR_EQ(s, string)) { *ret = value; return true; }
 
-int string_parse_enum(void *data, const char *s, void * ret) {
+int string_parse_enum(const void *data, const char *s, void * ret) {
         struct string_to_enum_def *string_to_enum = (struct string_to_enum_def*)data;
         for (int i = 0; string_to_enum[i].string != NULL; i++) {
                 if (strcmp(s, string_to_enum[i].string) == 0){
@@ -98,7 +98,7 @@ int string_parse_list(void *data, const char *s, void *ret) {
         return success;
 }
 
-int string_parse_sepcolor(void *data, const char *s, void *ret)
+int string_parse_sepcolor(const void *data, const char *s, void *ret)
 {
         LOG_D("parsing sep_color");
         struct separator_color_data *sep_color = (struct separator_color_data*) ret;

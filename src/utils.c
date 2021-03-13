@@ -263,6 +263,22 @@ bool safe_setenv(const char* key, const char* value){
         return true;
 }
 
+// These sections are not interpreted as rules
+static const char* special_sections[] = {
+        "global",
+        "frame",
+        "experimental",
+        "shortcuts",
+        "urgency_low",
+        "urgency_normal",
+        "urgency_critical",
+};
+
+static const char* deprecated_sections[] = {
+        "frame",
+        "shortcuts",
+};
+
 /* see utils.h */
 bool is_special_section(const char* s) {
         for (size_t i = 0; i < G_N_ELEMENTS(special_sections); i++) {

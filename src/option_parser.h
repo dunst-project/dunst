@@ -9,8 +9,8 @@
 #include "dunst.h"
 #include "settings.h"
 
-int string_parse_enum(void* data, const char *s, void * ret);
-int string_parse_sepcolor(void *data, const char *s, void *ret);
+int string_parse_enum(const void* data, const char *s, void * ret);
+int string_parse_sepcolor(const void *data, const char *s, void *ret);
 
 bool string_parse_fullscreen(const char *s, enum behavior_fullscreen *ret);
 bool string_parse_markup_mode(const char *s, enum markup_mode *ret);

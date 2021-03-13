@@ -78,13 +78,13 @@ struct setting {
        * @param ret A pointer to the return value. This casted by the parser to
        * the right type.
        */
-      int (*parser)(void* data, const char *cfg_value, void* ret);
+      int (*parser)(const void* data, const char *cfg_value, void* ret);
 
       /**
        * (nullable)
        * A pointer to the data required for the parser to parse this setting.
        */
-      void* parser_data; // This is passed to the parser function
+      const void* parser_data; // This is passed to the parser function
 
       /**
        * The offset of this setting in the rule struct, if it exists. Zero is
@@ -96,7 +96,7 @@ struct setting {
       size_t rule_offset;
 };
 
-static struct rule empty_rule = {
+static const struct rule empty_rule = {
         .name            = "empty",
         .appname         = NULL,
         .summary         = NULL,
@@ -118,26 +118,10 @@ static struct rule empty_rule = {
         .script          = NULL,
 };
 
-// These sections are not interpreted as rules
-static char* special_sections[] = {
-        "global",
-        "frame",
-        "experimental",
-        "shortcuts",
-        "urgency_low",
-        "urgency_normal",
-        "urgency_critical",
-};
-
-static char* deprecated_sections[] = {
-        "frame",
-        "shortcuts",
-};
-
 #ifndef ZWLR_LAYER_SHELL_V1_LAYER_ENUM
 #define ZWLR_LAYER_SHELL_V1_LAYER_ENUM
 // Needed for compiling without wayland dependency
-enum zwlr_layer_shell_v1_layer {
+const enum zwlr_layer_shell_v1_layer {
         ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND = 0,
         ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM = 1,
         ZWLR_LAYER_SHELL_V1_LAYER_TOP = 2,
@@ -152,7 +136,7 @@ enum list_type {
 static enum list_type mouse_list = MOUSE_LIST;
 
 #define ENUM_END {NULL, 0}
-static struct string_to_enum_def verbosity_enum_data[] = {
+static const struct string_to_enum_def verbosity_enum_data[] = {
         {"critical", G_LOG_LEVEL_CRITICAL },
         {"crit", G_LOG_LEVEL_CRITICAL },
         {"warning", G_LOG_LEVEL_WARNING },
@@ -165,7 +149,7 @@ static struct string_to_enum_def verbosity_enum_data[] = {
         ENUM_END,
 };
 
-static struct string_to_enum_def boolean_enum_data[] = {
+static const struct string_to_enum_def boolean_enum_data[] = {
         {"True", true },
         {"true", true },
         {"On", true },
@@ -187,14 +171,14 @@ static struct string_to_enum_def boolean_enum_data[] = {
         ENUM_END,
 };
 
-static struct string_to_enum_def horizontal_alignment_enum_data[] = {
+static const struct string_to_enum_def horizontal_alignment_enum_data[] = {
         {"left",   ALIGN_LEFT },
         {"center", ALIGN_CENTER },
         {"right",  ALIGN_RIGHT },
         ENUM_END,
 };
 
-static struct string_to_enum_def ellipsize_enum_data[] = {
+static const struct string_to_enum_def ellipsize_enum_data[] = {
         {"start",  ELLIPSE_START },
         {"middle", ELLIPSE_MIDDLE },
         {"end",    ELLIPSE_END },
@@ -208,28 +192,28 @@ static struct string_to_enum_def follow_mode_enum_data[] = {
         ENUM_END,
 };
 
-static struct string_to_enum_def fullscreen_enum_data[] = {
+static const struct string_to_enum_def fullscreen_enum_data[] = {
         {"show",     FS_SHOW },
         {"delay",    FS_DELAY },
         {"pushback", FS_PUSHBACK },
         ENUM_END,
 };
 
-static struct string_to_enum_def icon_position_enum_data[] = {
+static const struct string_to_enum_def icon_position_enum_data[] = {
         {"left",  ICON_LEFT },
         {"right", ICON_RIGHT },
         {"off",   ICON_OFF },
         ENUM_END,
 };
 
-static struct string_to_enum_def vertical_alignment_enum_data[] = {
+static const struct string_to_enum_def vertical_alignment_enum_data[] = {
         {"top",     VERTICAL_TOP },
         {"center",  VERTICAL_CENTER },
         {"bottom",  VERTICAL_BOTTOM },
         ENUM_END,
 };
 
-static struct string_to_enum_def markup_mode_enum_data[] = {
+static const struct string_to_enum_def markup_mode_enum_data[] = {
         {"strip", MARKUP_STRIP },
         {"no",    MARKUP_NO },
         {"full",  MARKUP_FULL },
@@ -237,7 +221,7 @@ static struct string_to_enum_def markup_mode_enum_data[] = {
         ENUM_END,
 };
 
-static struct string_to_enum_def mouse_action_enum_data[] = {
+static const struct string_to_enum_def mouse_action_enum_data[] = {
         {"none",           MOUSE_NONE },
         {"do_action",      MOUSE_DO_ACTION },
         {"close_current",  MOUSE_CLOSE_CURRENT },
@@ -245,21 +229,21 @@ static struct string_to_enum_def mouse_action_enum_data[] = {
         ENUM_END,
 };
 
-static struct string_to_enum_def sep_color_enum_data[] = {
+static const struct string_to_enum_def sep_color_enum_data[] = {
         {"auto",        SEP_AUTO },
         {"foreground",  SEP_FOREGROUND },
         {"frame",       SEP_FRAME },
         ENUM_END,
 };
 
-static struct string_to_enum_def urgency_enum_data[] = {
+static const struct string_to_enum_def urgency_enum_data[] = {
         {"low",      URG_LOW },
         {"normal",   URG_NORM },
         {"critical", URG_CRIT },
         ENUM_END,
 };
 
-static struct string_to_enum_def layer_enum_data[] = {
+static const struct string_to_enum_def layer_enum_data[] = {
         {"bottom",  ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM },
         {"top",     ZWLR_LAYER_SHELL_V1_LAYER_TOP },
         {"overlay", ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY },
@@ -267,7 +251,7 @@ static struct string_to_enum_def layer_enum_data[] = {
 };
 
 
-static struct setting allowed_settings[] = {
+static const struct setting allowed_settings[] = {
         // match rules below
         {
                 .name = "appname",
