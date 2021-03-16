@@ -856,6 +856,10 @@ SUITE(suite_dbus)
         loop = g_main_loop_new(NULL, false);
 
         dbus_bus = g_test_dbus_new(G_TEST_DBUS_NONE);
+
+        // workaround bug in glib where stdout output is duplicated
+        // See https://gitlab.gnome.org/GNOME/glib/-/issues/2322
+        fflush(stdout);
         g_test_dbus_up(dbus_bus);
 
         thread_tests = g_thread_new("testexecutor", run_threaded_tests, loop);
