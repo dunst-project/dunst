@@ -569,7 +569,7 @@ bool wl_init() {
                 if (ctx.idle_handler == NULL) {
                         LOG_I("compositor doesn't support org_kde_kwin_idle_interface");
                 }
-                else if (ctx.idle_timeout == NULL) {
+                else if (ctx.idle_timeout == NULL && settings.idle_threshold > 0) {
                         // something went wrong in setting the timeout
                         LOG_W("couldn't set idle timeout");
                 }
