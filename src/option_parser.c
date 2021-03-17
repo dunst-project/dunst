@@ -245,7 +245,7 @@ int get_setting_id(const char *key, const char *section) {
         }
 
         if (error_code == -2) {
-                LOG_W("Setting %s is in the wrong section (%s, should be %s)", // TODO fix this warning
+                LOG_W("Setting %s is in the wrong section (%s, should be %s)",
                                 key, section,
                                 allowed_settings[partial_match_id].section);
                 // found, but in wrong section
@@ -352,7 +352,6 @@ bool set_setting(struct setting setting, char* value) {
         LOG_D("Trying to set %s to %s", setting.name, value);
         if (setting.value == NULL) {
                 // setting.value is NULL, so it must be only a rule
-                // TODO check this more thoroughly
                 return true;
         }
 

@@ -150,10 +150,13 @@ This is used mainly in order to have the shrinking benefit of dynamic width (see
 geometry) while also having an upper bound on how long a notification can get
 before wrapping.
 
-=item B<transparency> (default: 0)
+=item B<transparency> (default: 0) (X11 only)
 
 A 0-100 range on how transparent the notification window should be, with 0
 being fully opaque and 100 invisible.
+
+To make windows transparent on wayland, set the transparency part of a color,
+see COLORS.
 
 This setting will only work if a compositor is running.
 
