@@ -80,13 +80,13 @@ void check_and_correct_settings(struct settings *s) {
         // check sanity of the progress bar options
         {
                 if (s->progress_bar_height < (2 * s->progress_bar_frame_width)){
-                        LOG_E("setting progress_bar_frame_width is bigger than half of progress_bar_height");
+                        DIE("setting progress_bar_frame_width is bigger than half of progress_bar_height");
                 }
                 if (s->progress_bar_max_width < (2 * s->progress_bar_frame_width)){
-                        LOG_E("setting progress_bar_frame_width is bigger than half of progress_bar_max_width");
+                        DIE("setting progress_bar_frame_width is bigger than half of progress_bar_max_width");
                 }
                 if (s->progress_bar_max_width < s->progress_bar_min_width){
-                        LOG_E("setting progress_bar_max_width is smaller than progress_bar_min_width");
+                        DIE("setting progress_bar_max_width is smaller than progress_bar_min_width");
                 }
         }
 
