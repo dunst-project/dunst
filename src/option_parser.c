@@ -378,6 +378,10 @@ bool set_rule(struct setting setting, char* value, char* section) {
 
 void set_defaults() {
         for (int i = 0; i < G_N_ELEMENTS(allowed_settings); i++) {
+                // FIXME Rule settings can only have a default if they have an
+                // working entry in the settings struct as well. Make an
+                // alternative way of setting defaults for rules.
+
                 if (!allowed_settings[i].value) // don't set default if it's only a rule
                         continue;
 
