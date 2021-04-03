@@ -118,6 +118,7 @@ static const struct rule empty_rule = {
         .script          = NULL,
 };
 
+
 #ifndef ZWLR_LAYER_SHELL_V1_LAYER_ENUM
 #define ZWLR_LAYER_SHELL_V1_LAYER_ENUM
 // Needed for compiling without wayland dependency
@@ -130,10 +131,9 @@ const enum zwlr_layer_shell_v1_layer {
 #endif /* ZWLR_LAYER_SHELL_V1_LAYER_ENUM */
 
 enum list_type {
-        MOUSE_LIST,
+        INVALID_LIST = 0,
+        MOUSE_LIST = 1,
 };
-
-static enum list_type mouse_list = MOUSE_LIST;
 
 #define ENUM_END {NULL, 0}
 static const struct string_to_enum_def verbosity_enum_data[] = {
@@ -989,7 +989,7 @@ static const struct setting allowed_settings[] = {
                 .default_value = "close_current",
                 .value = &settings.mouse_left_click,
                 .parser = NULL,
-                .parser_data = &mouse_list,
+                .parser_data = GINT_TO_POINTER(MOUSE_LIST),
         },
         {
                 .name = "mouse_middle_click",
@@ -999,7 +999,7 @@ static const struct setting allowed_settings[] = {
                 .default_value = "do_action, close_current",
                 .value = &settings.mouse_middle_click,
                 .parser = NULL,
-                .parser_data = &mouse_list,
+                .parser_data = GINT_TO_POINTER(MOUSE_LIST),
         },
         {
                 .name = "mouse_right_click",
@@ -1009,7 +1009,7 @@ static const struct setting allowed_settings[] = {
                 .default_value = "close_all",
                 .value = &settings.mouse_right_click,
                 .parser = NULL,
-                .parser_data = &mouse_list,
+                .parser_data = GINT_TO_POINTER(MOUSE_LIST),
         },
         {
                 .name = "icon_path",

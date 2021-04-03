@@ -305,7 +305,7 @@ TEST test_string_to_list(void)
         struct setting s;
         s.type = TYPE_LIST;
         s.value = &val;
-        s.parser_data = &mouse_list;
+        s.parser_data = GINT_TO_POINTER(MOUSE_LIST);
 
         const char* inputs[] = {
                 "close_current",
@@ -352,7 +352,7 @@ TEST test_string_to_list_invalid(void)
         s.name = "test_list";
         s.type = TYPE_LIST;
         s.value = &val;
-        s.parser_data = &mouse_list;
+        s.parser_data = GINT_TO_POINTER(MOUSE_LIST);
 
         const char* invalid_inputs[] = {
                 "0",
@@ -571,6 +571,25 @@ TEST test_string_to_sepcolor_invalid(void)
         PASS();
 }
 
+#define TEST_ENUM(t) { \
+ASSERT_EQ(sizeof(t), sizeof(int)); \
+}
+
+// The settings code relies on the enums being the same size as an int. If
+// they're bigger it's not a big problem, but if they're smaller, other parts
+// of the memory may be overwritten.
+TEST test_enum_size(void)
+{
+        TEST_ENUM(enum markup_mode);
+        TEST_ENUM(enum alignment);
+        TEST_ENUM(enum ellipsize);
+        TEST_ENUM(enum icon_position);
+        TEST_ENUM(enum vertical_alignment);
+        TEST_ENUM(enum follow_mode);
+        TEST_ENUM(enum mouse_action );
+        TEST_ENUM(enum zwlr_layer_shell_v1_layer);
+        PASS();
+}
 
 SUITE(suite_option_parser)
 {
@@ -620,6 +639,7 @@ SUITE(suite_option_parser)
         // Paths are now almost always considered valid
         RUN_TEST(test_string_to_sepcolor);
         RUN_TEST(test_string_to_sepcolor_invalid);
+        RUN_TEST(test_enum_size);
         // geometry is left out, since we probably want to replace it soon
         // anyways
 

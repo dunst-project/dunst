@@ -137,7 +137,7 @@ void string_strip_delimited(char *str, char a, char b)
 }
 
 /* see utils.h */
-char **string_to_array(const char *string)
+char **string_to_array(const char *string, const char *delimiter)
 {
         char **arr = NULL;
         if (string) {

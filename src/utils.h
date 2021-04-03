@@ -84,15 +84,17 @@ char *string_strip_quotes(const char *value);
 void string_strip_delimited(char *str, char a, char b);
 
 /**
- * Parse a comma-delimited string into a dynamic array of tokens
+ * Parse a string into a dynamic array of tokens, using the delimiter string.
  *
- * The string is split on commas and strips spaces from tokens. The last element
- * of the array is NULL in order to avoid passing around a length variable.
+ * The string is split on the separator character and strips spaces from
+ * tokens. The last element of the array is NULL in order to avoid passing
+ * around a length variable.
  *
  * @param string The string to convert to an array
+ * @param delmiter The character that separates list entries
  * @returns The array of tokens.
  */
-char **string_to_array(const char *string);
+char **string_to_array(const char *string, const char *delimiter);
 
 /**
  * Replace tilde and path-specific values with its equivalents

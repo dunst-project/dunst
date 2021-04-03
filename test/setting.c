@@ -61,7 +61,6 @@ TEST test_dunstrc_nomarkup(void) {
         PASS();
 }
 
-
 #define CHECK_EQUAL_OFFSET(t, offset, EQ_FUNC) { \
         typeof(t) a = *(typeof(t)*) ((char*) &s_default + offset); \
         typeof(t) b = *(typeof(t)*) ((char*) &s_dunstrc + offset); \

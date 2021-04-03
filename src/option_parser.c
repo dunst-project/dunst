@@ -58,10 +58,10 @@ int string_parse_enum(const void *data, const char *s, void * ret) {
         return false;
 }
 
-int string_parse_mouse_action_list(char **s, void *ret_void)
+int string_parse_enum_list(const void *data, char **s, void *ret_void)
 {
-        enum mouse_action **ret = (enum mouse_action **) ret_void;
-        enum mouse_action *tmp;
+        int **ret = (int **) ret_void;
+        int *tmp;
         ASSERT_OR_RET(s, false);
         ASSERT_OR_RET(ret, false);
 
@@ -69,9 +69,9 @@ int string_parse_mouse_action_list(char **s, void *ret_void)
         while (s[len])
                 len++;
 
-        tmp = g_malloc_n((len + 1), sizeof(enum mouse_action));
+        tmp = g_malloc_n((len + 1), sizeof(int));
         for (int i = 0; i < len; i++) {
-                if (!string_parse_enum(&mouse_action_enum_data, s[i], tmp + i)) {
+                if (!string_parse_enum(data, s[i], tmp + i)) {
                         LOG_W("Unknown mouse action value: '%s'", s[i]);
                         g_free(tmp);
                         return false;
@@ -83,13 +83,15 @@ int string_parse_mouse_action_list(char **s, void *ret_void)
         return true;
 }
 
-int string_parse_list(void *data, const char *s, void *ret) {
-        enum list_type type = *(int*) data;
-        char **arr = string_to_array(s);
+int string_parse_list(const void *data, const char *s, void *ret) {
+        const enum list_type type = GPOINTER_TO_INT(data);
+        char **arr = NULL;
         int success = false;
         switch (type) {
                 case MOUSE_LIST:
-                        success = string_parse_mouse_action_list(arr, ret);
+                        arr = string_to_array(s, ",");
+                        success = string_parse_enum_list(&mouse_action_enum_data,
+                                        arr, ret);
                         break;
                 default:
                         LOG_W("Don't know this list type: %i", type);
@@ -338,10 +340,8 @@ bool set_from_string(void *target, struct setting setting, const char *value) {
                         *(struct geometry*) target = x_parse_geometry(value);
                         return true;
                 case TYPE_LIST: ;
-                        int type = *(enum list_type*)setting.parser_data;
-                        LOG_D("list type %i", *(int*)setting.parser_data);
-                        LOG_D("list type int %i", type);
-                        return string_parse_list(&type, value, target);
+                        LOG_D("list type %i", GPOINTER_TO_INT(setting.parser_data));
+                        return string_parse_list(setting.parser_data, value, target);
                 default:
                         LOG_W("Setting type of '%s' is not known (type %i)", setting.name, setting.type);
                         return false;
@@ -599,9 +599,9 @@ char **cmdline_get_list(const char *key, const char *def, const char *descriptio
         const char *str = cmdline_get_value(key);
 
         if (str)
-                return string_to_array(str);
+                return string_to_array(str, ",");
         else
-                return string_to_array(def);
+                return string_to_array(def, ",");
 }
 
 gint64 cmdline_get_time(const char *key, gint64 def, const char *description)
