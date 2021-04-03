@@ -177,5 +177,20 @@ bool is_special_section(const char* s);
  */
 bool is_deprecated_section(const char* s);
 
+
+/**
+ * Strips a string of it's brackets if the first and last character are a
+ * bracket. Returns NULL on error.
+ *
+ * @param s String to strip
+ * @returns Newly allocated string without the brackets, or NULL.
+ */
+char *string_strip_brackets(const char* s);
+
+
+/**
+ * Returns the length of a string array, -1 if the input is NULL.
+ */
+int string_array_length(char **s);
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

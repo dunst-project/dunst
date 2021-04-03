@@ -133,6 +133,7 @@ const enum zwlr_layer_shell_v1_layer {
 enum list_type {
         INVALID_LIST = 0,
         MOUSE_LIST = 1,
+        ORIGIN_LIST = 2,
 };
 
 #define ENUM_END {NULL, 0}
@@ -250,6 +251,14 @@ static const struct string_to_enum_def layer_enum_data[] = {
         ENUM_END,
 };
 
+static const struct string_to_enum_def origin_enum_data[] = {
+
+        { "top", ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP },
+        { "bottom", ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM },
+        { "left", ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT },
+        { "right", ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT },
+        ENUM_END,
+};
 
 static const struct setting allowed_settings[] = {
         // match rules below
@@ -1215,6 +1224,37 @@ static const struct setting allowed_settings[] = {
                 .parser = NULL,
                 .parser_data = NULL,
         },
+        {
+                .name = "origin",
+                .section = "global",
+                .description = "Specifies the where the notification is positioned before offsetting.",
+                .type = TYPE_LIST,
+                .default_value = "top, right",
+                .value = &settings.origin,
+                .parser = NULL,
+                .parser_data = GINT_TO_POINTER(ORIGIN_LIST),
+        },
+        {
+                .name = "width",
+                .section = "global",
+                .description = "The width of the notification.",
+                .type = TYPE_LENGTH,
+                .default_value = "300",
+                .value = &settings.width,
+                .parser = NULL,
+                .parser_data = NULL,
+        },
+        {
+                .name = "height",
+                .section = "global",
+                .description = "The height of the notification.",
+                .type = TYPE_LENGTH,
+                .default_value = "(0, 500)",
+                .value = &settings.height,
+                .parser = NULL,
+                .parser_data = NULL,
+        },
+
 };
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

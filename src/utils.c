@@ -141,12 +141,25 @@ char **string_to_array(const char *string, const char *delimiter)
 {
         char **arr = NULL;
         if (string) {
-                arr = g_strsplit(string, ",", 0);
+                arr = g_strsplit(string, delimiter, 0);
                 for (int i = 0; arr[i]; i++){
                         g_strstrip(arr[i]);
                 }
         }
         return arr;
+}
+
+/* see utils.h */
+int string_array_length(char **s)
+{
+        if (!s)
+                return -1;
+
+        int len = 0;
+        while (s[len])
+                len++;
+
+        return len;
 }
 
 /* see utils.h */
@@ -334,6 +347,19 @@ bool is_deprecated_section(const char* s) {
                 }
         }
         return false;
+}
+
+/* see utils.h */
+char *string_strip_brackets(const char* s) {
+        if (!s)
+                return NULL;
+
+        size_t len = strlen(s);
+        if (s[0] == '(' && s[len-1] == ')')
+                return g_strndup(s + 1, len-2);
+        else
+                return NULL;
+
 }
 
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

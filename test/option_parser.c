@@ -160,10 +160,12 @@ TEST test_string_to_int_invalid(void)
         const char* inputs[] = {
                 "a0",
                 "something",
-                "x1234asdf",
-                "-dsf1234asdf",
-                "0x123",
-                "1234a567",
+                "x674asdf",
+                "-dsf4544asdf",
+                "0x145",
+                "64a567",
+                "(5678)",
+                "5678)",
         };
 
         struct setting s;
@@ -644,6 +646,8 @@ SUITE(suite_option_parser)
         RUN_TEST(test_string_to_sepcolor);
         RUN_TEST(test_string_to_sepcolor_invalid);
         RUN_TEST(test_enum_size);
+        RUN_TEST(test_string_to_length);
+        RUN_TEST(test_string_to_length_invalid);
         // geometry is left out, since we probably want to replace it soon
         // anyways
 

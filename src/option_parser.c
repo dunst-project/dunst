@@ -58,6 +58,7 @@ int string_parse_enum(const void *data, const char *s, void * ret) {
         return false;
 }
 
+// Only changes the return when succesful
 int string_parse_enum_list(const void *data, char **s, void *ret_void)
 {
         int **ret = (int **) ret_void;
@@ -65,9 +66,7 @@ int string_parse_enum_list(const void *data, char **s, void *ret_void)
         ASSERT_OR_RET(s, false);
         ASSERT_OR_RET(ret, false);
 
-        int len = 0;
-        while (s[len])
-                len++;
+        int len = string_array_length(s);
 
         tmp = g_malloc_n((len + 1), sizeof(int));
         for (int i = 0; i < len; i++) {
@@ -83,6 +82,27 @@ int string_parse_enum_list(const void *data, char **s, void *ret_void)
         return true;
 }
 
+bool string_parse_int_list(char **s, int **ret) {
+        int len = string_array_length(s);
+        ASSERT_OR_RET(s, false);
+
+        int *tmp = g_malloc_n((len + 1), sizeof(int));
+        for (int i = 0; i < len; i++) {
+                bool success = safe_string_to_int(&tmp[i], s[i]);
+                if (!success) {
+                        LOG_W("Invalid int value: '%s'", s[i]);
+                        free(tmp);
+                        return false;
+                }
+
+        }
+
+        g_free(*ret);
+        *ret = tmp;
+        return true;
+}
+
+// Only changes the return when succesful
 int string_parse_list(const void *data, const char *s, void *ret) {
         const enum list_type type = GPOINTER_TO_INT(data);
         char **arr = NULL;
@@ -91,6 +111,11 @@ int string_parse_list(const void *data, const char *s, void *ret) {
                 case MOUSE_LIST:
                         arr = string_to_array(s, ",");
                         success = string_parse_enum_list(&mouse_action_enum_data,
+                                        arr, ret);
+                        break;
+                case ORIGIN_LIST:
+                        arr = string_to_array(s, ",");
+                        success = string_parse_enum_list(&origin_enum_data,
                                         arr, ret);
                         break;
                 default:
@@ -270,6 +295,59 @@ int get_setting_id(const char *key, const char *section) {
         return -1;
 }
 
+int string_parse_length(void *ret_in, const char *s) {
+        struct length *ret = (struct length*) ret_in;
+        int val;
+        char *s_stripped = string_strip_brackets(s);
+        if (!s_stripped)
+        {
+                // single int without brackets
+                bool success = safe_string_to_int(&val, s);
+                if (success) {
+                        // single int
+                        ret->min = val;
+                        ret->max = val;
+                }
+                return success;
+        }
+
+
+        char **s_arr = string_to_array(s_stripped, ",");
+        int len = string_array_length(s_arr);
+        if (len > 2) {
+                g_strfreev(s_arr);
+                g_free(s_stripped);
+                LOG_W("Too many values in array. A length should be only one or two values");
+                return false;
+        }
+
+        if (len == 0) {
+                LOG_E("This array shouldn't be empty");
+        }
+
+        int *int_arr = NULL;
+        bool success = string_parse_int_list(s_arr, &int_arr);
+        if (!success) {
+                g_strfreev(s_arr);
+                g_free(s_stripped);
+                return false;
+        }
+
+        if (len == 1) {
+                ret->min = int_arr[0];
+                ret->max = int_arr[0];
+        }
+        if (len == 2) {
+                ret->min = MIN(int_arr[0], int_arr[1]);
+                ret->max = MAX(int_arr[0], int_arr[1]);
+        }
+
+        g_free(int_arr);
+        g_strfreev(s_arr);
+        g_free(s_stripped);
+        return true;
+}
+
 bool set_from_string(void *target, struct setting setting, const char *value) {
         GError *error = NULL;
 
@@ -328,6 +406,8 @@ bool set_from_string(void *target, struct setting setting, const char *value) {
                 case TYPE_LIST: ;
                         LOG_D("list type %i", GPOINTER_TO_INT(setting.parser_data));
                         return string_parse_list(setting.parser_data, value, target);
+                case TYPE_LENGTH:
+                        return string_parse_length(target, value);
                 default:
                         LOG_W("Setting type of '%s' is not known (type %i)", setting.name, setting.type);
                         return false;

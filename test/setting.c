@@ -106,9 +106,10 @@ TEST test_dunstrc_defaults(void) {
                         case TYPE_PATH:
                         case TYPE_GEOMETRY:
                         case TYPE_LIST:
+                        case TYPE_LENGTH:
                                       break; // TODO implement these checks as well
                         default:
-                                      printf("Type unknown %s:%d", __FILE__, __LINE__);
+                                      printf("Type unknown %s:%d\n", __FILE__, __LINE__);
                 }
                 /* printf("%zu\n", offset); */
         }
