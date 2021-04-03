@@ -60,6 +60,11 @@ struct length {
         int max;
 };
 
+struct position {
+        int x;
+        int y;
+};
+
 struct settings {
         bool print_notifications;
         bool per_monitor_dpi;
@@ -132,6 +137,7 @@ struct settings {
         enum zwlr_layer_surface_v1_anchor *origin;
         struct length width;
         struct length height;
+        struct position offset;
 };
 
 extern struct settings settings;
