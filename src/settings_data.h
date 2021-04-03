@@ -134,6 +134,7 @@ enum list_type {
         INVALID_LIST = 0,
         MOUSE_LIST = 1,
         ORIGIN_LIST = 2,
+        OFFSET_LIST = 3,
 };
 
 #define ENUM_END {NULL, 0}
@@ -1254,6 +1255,17 @@ static const struct setting allowed_settings[] = {
                 .parser = NULL,
                 .parser_data = NULL,
         },
+        {
+                .name = "offset",
+                .section = "global",
+                .description = "The offset of the notification from the origin.",
+                .type = TYPE_LIST,
+                .default_value = "10x50",
+                .value = &settings.offset,
+                .parser = NULL,
+                .parser_data = GINT_TO_POINTER(OFFSET_LIST),
+        },
+
 
 };
 #endif

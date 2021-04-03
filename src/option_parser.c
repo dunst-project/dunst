@@ -119,6 +119,31 @@ int string_parse_list(const void *data, const char *s, void *ret) {
                         success = string_parse_enum_list(&origin_enum_data,
                                         arr, ret);
                         break;
+                case OFFSET_LIST:
+                        arr = string_to_array(s, "x");
+                        int len = string_array_length(arr);
+                        if (len != 2) {
+                                success = false;
+                                LOG_W("Offset has two values, separated by an 'x'");
+                                break;
+                        }
+                        int *int_arr = NULL;
+                        success = string_parse_int_list(arr, &int_arr);
+                        if (!success)
+                                break;
+
+                        // We can safely assume the length is 2, since the
+                        // string array also had lenght 2
+                        if (int_arr[0] < 0 || int_arr[1] < 0) {
+                                g_free(int_arr);
+                                break;
+                        }
+
+                        struct position* offset = (struct position*) ret;
+                        offset->x = int_arr[0];
+                        offset->y = int_arr[1];
+                        g_free(int_arr);
+                        break;
                 default:
                         LOG_W("Don't know this list type: %i", type);
                         break;
