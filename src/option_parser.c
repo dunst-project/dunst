@@ -97,6 +97,7 @@ bool string_parse_int_list(char **s, int **ret) {
 
         }
 
+        tmp[len] = LIST_END;
         g_free(*ret);
         *ret = tmp;
         return true;
