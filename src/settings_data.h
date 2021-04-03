@@ -1265,7 +1265,16 @@ static const struct setting allowed_settings[] = {
                 .parser = NULL,
                 .parser_data = GINT_TO_POINTER(OFFSET_LIST),
         },
-
+        {
+                .name = "notification_limit",
+                .section = "global",
+                .description = "Maximum number of notifications allowed",
+                .type = TYPE_INT,
+                .default_value = "0",
+                .value = &settings.notification_limit,
+                .parser = NULL,
+                .parser_data = NULL,
+        },
 
 };
 #endif
