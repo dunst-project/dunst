@@ -138,6 +138,7 @@ struct settings {
         struct length width;
         struct length height;
         struct position offset;
+        int notification_limit;
 };
 
 extern struct settings settings;
