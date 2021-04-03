@@ -74,19 +74,21 @@ static void dunst_log_handler(
                 gpointer        testing)
 {
         if (testing)
-                return;
+                log_level = G_LOG_LEVEL_ERROR;
+
+        GLogLevelFlags message_level_masked = message_level & G_LOG_LEVEL_MASK;
 
 /* if you want to have a debug build, you want to log anything,
  * unconditionally, without specifying debug log level again */
 #ifndef DEBUG_BUILD
-        if (log_level < message_level)
+        if (log_level < message_level_masked)
                 return;
 #endif
         const char *log_level_str =
-                log_level_to_string(message_level & G_LOG_LEVEL_MASK);
+                log_level_to_string(message_level_masked);
 
         /* Use stderr for warnings and higher */
-        if (message_level <= G_LOG_LEVEL_WARNING)
+        if (message_level_masked <= G_LOG_LEVEL_WARNING)
                 g_printerr("%s: %s\n", log_level_str, message);
         else
                 g_print("%s: %s\n", log_level_str, message);
