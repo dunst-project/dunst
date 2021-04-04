@@ -266,7 +266,7 @@ TEST test_queue_history_pushall(void)
 {
         settings.history_length = 5;
         settings.indicate_hidden = false;
-        settings.geometry.h = 0;
+        settings.notification_limit = 0;
 
         queues_init();
 
@@ -486,7 +486,7 @@ TEST test_queue_stacktag(void)
 
 TEST test_queue_timeout(void)
 {
-        settings.geometry.h = 5;
+        settings.notification_limit = 5;
         struct notification *n1, *n2, *n3;
 
         queues_init();
@@ -527,7 +527,7 @@ TEST test_queue_timeout(void)
 
 TEST test_queues_update_fullscreen(void)
 {
-        settings.geometry.h = 5;
+        settings.notification_limit = 5;
         struct notification *n_show, *n_dela, *n_push;
 
         queues_init();
@@ -564,7 +564,7 @@ TEST test_queues_update_fullscreen(void)
 
 TEST test_queues_update_paused(void)
 {
-        settings.geometry.h = 5;
+        settings.notification_limit = 5;
         struct notification *n1, *n2, *n3;
         queues_init();
 
@@ -593,7 +593,7 @@ TEST test_queues_update_paused(void)
 
 TEST test_queues_update_seeping(void)
 {
-        settings.geometry.h = 5;
+        settings.notification_limit = 5;
         settings.sort = true;
         settings.indicate_hidden = false;
         struct notification *nl1, *nl2, *nl3, *nl4, *nl5;
@@ -656,7 +656,7 @@ TEST test_queues_update_seeping(void)
 TEST test_queues_update_xmore(void)
 {
         settings.indicate_hidden = true;
-        settings.geometry.h = 4;
+        settings.notification_limit = 4;
         struct notification *n1, *n2, *n3, *n4, *n5;
         queues_init();
 
@@ -689,7 +689,7 @@ TEST test_queues_update_seep_showlowurg(void)
 {
         // Test 3 notifications during fullscreen and only the one
         // with the lowest priority is eligible to get shown
-        settings.geometry.h = 4;
+        settings.notification_limit = 4;
         struct notification *n1, *n2, *n3;
         queues_init();
 
@@ -781,6 +781,7 @@ TEST test_queue_no_sort_and_pause(void)
         // sorted based on time
         settings.sort = false;
         settings.geometry.h = 0;
+        settings.notification_limit = 0;
         struct notification *n;
         queues_init();
 

@@ -433,7 +433,7 @@ static GSList *create_layouts(cairo_t *c)
 
                 notification_update_text_to_render(n);
 
-                if (!iter->next && xmore_is_needed && settings.geometry.h == 1) {
+                if (!iter->next && xmore_is_needed && settings.notification_limit == 1) {
                         char *new_ttr = g_strdup_printf("%s (%d more)", n->text_to_render, qlen);
                         g_free(n->text_to_render);
                         n->text_to_render = new_ttr;
@@ -442,7 +442,7 @@ static GSList *create_layouts(cairo_t *c)
                                 layout_from_notification(c, n));
         }
 
-        if (xmore_is_needed && settings.geometry.h != 1) {
+        if (xmore_is_needed && settings.notification_limit != 1) {
                 /* append xmore message as new message */
                 layouts = g_slist_append(layouts,
                         layout_derive_xmore(c, queues_get_head_waiting(), qlen));
