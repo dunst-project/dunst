@@ -165,17 +165,7 @@ void x_display_surface(cairo_surface_t *srf, window winptr, const struct dimensi
         double scale = x_get_scale();
         int x, y;
 
-        if (settings.geometry.negative_x) {
-                x = (scr->x + (scr->w - round(dim->w * scale))) + round(settings.geometry.x * scale);
-        } else {
-                x = scr->x + round(settings.geometry.x * scale);
-        }
-
-        if (settings.geometry.negative_y) {
-                y = scr->y + (scr->h + round(settings.geometry.y * scale)) - round(dim->h * scale);
-        } else {
-                y = scr->y + round(settings.geometry.y * scale);
-        }
+        calc_window_pos(round(dim->w * scale), round(dim->h * scale), &x, &y);
 
         x_win_move(win, x, y, round(dim->w * scale), round(dim->h * scale));
         cairo_xlib_surface_set_size(win->root_surface, round(dim->w * scale), round(dim->h * scale));

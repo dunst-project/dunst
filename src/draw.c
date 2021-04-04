@@ -782,6 +782,58 @@ static struct dimensions layout_render(cairo_surface_t *srf,
         return dim;
 }
 
+/**
+ * Calculates the position the window should be placed at given its width and
+ * height and stores them in \p ret_x and \p ret_y.
+ */
+void calc_window_pos(int width, int height, int *ret_x, int *ret_y)
+{
+        if(!ret_x || !ret_y)
+                return;
+
+        const struct screen_info *scr = output->get_active_screen();
+
+        // horizontal
+        switch (settings.origin) {
+                case ORIGIN_TOP_LEFT:
+                case ORIGIN_LEFT_CENTER:
+                case ORIGIN_BOTTOM_LEFT:
+                        *ret_x = scr->x + settings.offset.x;
+                        break;
+                case ORIGIN_TOP_RIGHT:
+                case ORIGIN_RIGHT_CENTER:
+                case ORIGIN_BOTTOM_RIGHT:
+                        *ret_x = scr->x + (scr->w - width) - settings.offset.x;
+                        break;
+                case ORIGIN_TOP_CENTER:
+                case ORIGIN_CENTER:
+                case ORIGIN_BOTTOM_CENTER:
+                default:
+                        *ret_x = scr->x + (scr->w - width) / 2;
+                        break;
+        }
+
+        // vertical
+        switch (settings.origin) {
+                case ORIGIN_TOP_LEFT:
+                case ORIGIN_TOP_CENTER:
+                case ORIGIN_TOP_RIGHT:
+                        *ret_y = scr->y + settings.offset.y;
+                        break;
+                case ORIGIN_BOTTOM_LEFT:
+                case ORIGIN_BOTTOM_CENTER:
+                case ORIGIN_BOTTOM_RIGHT:
+                        *ret_y = scr->y + (scr->h - height) - settings.offset.y;
+                        break;
+                case ORIGIN_LEFT_CENTER:
+                case ORIGIN_CENTER:
+                case ORIGIN_RIGHT_CENTER:
+                default:
+                        *ret_y = scr->y + (scr->h - height) / 2;
+                        break;
+        }
+}
+
 void draw(void)
 {
         assert(queues_length_displayed() > 0);

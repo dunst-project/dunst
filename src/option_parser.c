@@ -59,6 +59,8 @@ int string_parse_enum(const void *data, const char *s, void * ret) {
 }
 
 // Only changes the return when succesful
+//
+// @returns True for success, false otherwise.
 int string_parse_enum_list(const void *data, char **s, void *ret_void)
 {
         int **ret = (int **) ret_void;
@@ -79,6 +81,31 @@ int string_parse_enum_list(const void *data, char **s, void *ret_void)
         tmp[len] = MOUSE_ACTION_END; // sentinel end value
         g_free(*ret);
         *ret = tmp;
+        return true;
+}
+
+// Parse a string list of enum values and return a single integer with the
+// values bit-flipped into it. This is only useful when the enum values all
+// occupy different bits (for exampel 1<<0, 1<<1 and 1<<2) and the order
+// doesn't matter.
+// Only changes the return when succesful
+//
+// @returns True for success, false otherwise.
+int string_parse_enum_list_to_single(const void *data, char **s, int *ret)
+{
+        int tmp = 0, tmp_ret = 0;
+        ASSERT_OR_RET(s, false);
+        ASSERT_OR_RET(ret, false);
+
+        int len = string_array_length(s);
+        for (int i = 0; i < len; i++) {
+                if (!string_parse_enum(data, s[i], &tmp)) {
+                        LOG_W("Unknown mouse action value: '%s'", s[i]);
+                        return false;
+                }
+                tmp_ret |= tmp;
+        }
+        *ret = tmp_ret;
         return true;
 }
 
@@ -114,11 +141,6 @@ int string_parse_list(const void *data, const char *s, void *ret) {
                         success = string_parse_enum_list(&mouse_action_enum_data,
                                         arr, ret);
                         break;
-                case ORIGIN_LIST:
-                        arr = string_to_array(s, ",");
-                        success = string_parse_enum_list(&origin_enum_data,
-                                        arr, ret);
-                        break;
                 case OFFSET_LIST:
                         arr = string_to_array(s, "x");
                         int len = string_array_length(arr);
@@ -135,8 +157,9 @@ int string_parse_list(const void *data, const char *s, void *ret) {
                         // We can safely assume the length is 2, since the
                         // string array also had lenght 2
                         if (int_arr[0] < 0 || int_arr[1] < 0) {
-                                g_free(int_arr);
-                                break;
+                                LOG_W("Offset has to be positive. Correcting...");
+                                int_arr[0] = abs(int_arr[0]);
+                                int_arr[1] = abs(int_arr[1]);
                         }
 
                         struct position* offset = (struct position*) ret;

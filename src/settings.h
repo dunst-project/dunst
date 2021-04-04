@@ -34,6 +34,40 @@ enum zwlr_layer_shell_v1_layer {
 };
 #endif /* ZWLR_LAYER_SHELL_V1_LAYER_ENUM */
 
+enum origin_values {
+        ORIGIN_TOP_LEFT = ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP | ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT,
+        ORIGIN_TOP_CENTER = ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP,
+        ORIGIN_TOP_RIGHT = ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP | ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT,
+        ORIGIN_BOTTOM_LEFT = ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM | ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT,
+        ORIGIN_BOTTOM_CENTER = ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM,
+        ORIGIN_BOTTOM_RIGHT = ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM | ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT,
+        ORIGIN_LEFT_CENTER = ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT,
+        ORIGIN_RIGHT_CENTER = ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT,
+        ORIGIN_CENTER = 0,
+};
+
+#ifndef ZWLR_LAYER_SURFACE_V1_ANCHOR_ENUM
+#define ZWLR_LAYER_SURFACE_V1_ANCHOR_ENUM
+enum zwlr_layer_surface_v1_anchor {
+	/**
+	 * the top edge of the anchor rectangle
+	 */
+	ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP = 1,
+	/**
+	 * the bottom edge of the anchor rectangle
+	 */
+	ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM = 2,
+	/**
+	 * the left edge of the anchor rectangle
+	 */
+	ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT = 4,
+	/**
+	 * the right edge of the anchor rectangle
+	 */
+	ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT = 8,
+};
+#endif /* ZWLR_LAYER_SURFACE_V1_ANCHOR_ENUM */
+
 // TODO make a TYPE_CMD, instead of using TYPE_PATH for settings like dmenu and browser
 enum setting_type { TYPE_MIN = 0, TYPE_INT, TYPE_DOUBLE, TYPE_STRING, TYPE_PATH, TYPE_TIME,
         TYPE_GEOMETRY, TYPE_LIST, TYPE_CUSTOM, TYPE_LENGTH,
@@ -134,7 +168,7 @@ struct settings {
         int progress_bar_frame_width;
         bool progress_bar;
         enum zwlr_layer_shell_v1_layer layer;
-        enum zwlr_layer_surface_v1_anchor *origin;
+        enum origin_values origin;
         struct length width;
         struct length height;
         struct position offset;

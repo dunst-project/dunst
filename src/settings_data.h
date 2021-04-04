@@ -4,6 +4,7 @@
 #include <stddef.h>
 
 #include "option_parser.h"
+#include "settings.h"
 #include "rules.h"
 
 struct string_to_enum_def {
@@ -253,11 +254,15 @@ static const struct string_to_enum_def layer_enum_data[] = {
 };
 
 static const struct string_to_enum_def origin_enum_data[] = {
-
-        { "top", ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP },
-        { "bottom", ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM },
-        { "left", ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT },
-        { "right", ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT },
+        { "top-left", ORIGIN_TOP_LEFT },
+        { "top-center", ORIGIN_TOP_CENTER },
+        { "top-right", ORIGIN_TOP_RIGHT },
+        { "bottom-left", ORIGIN_BOTTOM_LEFT },
+        { "bottom-center", ORIGIN_BOTTOM_CENTER },
+        { "bottom-right", ORIGIN_BOTTOM_RIGHT },
+        { "left-center", ORIGIN_LEFT_CENTER },
+        { "right-center", ORIGIN_RIGHT_CENTER },
+        { "center", ORIGIN_CENTER },
         ENUM_END,
 };
 
@@ -1239,11 +1244,11 @@ static const struct setting allowed_settings[] = {
                 .name = "origin",
                 .section = "global",
                 .description = "Specifies the where the notification is positioned before offsetting.",
-                .type = TYPE_LIST,
-                .default_value = "top, right",
+                .type = TYPE_CUSTOM,
+                .default_value = "top-right",
                 .value = &settings.origin,
-                .parser = NULL,
-                .parser_data = GINT_TO_POINTER(ORIGIN_LIST),
+                .parser = string_parse_enum,
+                .parser_data = origin_enum_data,
         },
         {
                 .name = "width",
