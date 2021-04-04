@@ -177,6 +177,11 @@ int dunst_main(int argc, char *argv[])
                 usage(EXIT_SUCCESS);
         }
 
+        if (cmdline_get_bool("-print", false, "Print notifications to stdout")
+            || cmdline_get_bool("--print", false, "Print notifications to stdout")) {
+                settings.print_notifications = true;
+        }
+
         settings.startup_notification = cmdline_get_bool("--startup_notification",
                         0, "Display a notification on startup.");
 

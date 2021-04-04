@@ -68,6 +68,7 @@ void notification_print(const struct notification *n)
         printf("\thighlight: %s\n", n->colors.highlight);
         printf("\tframe: %s\n", n->colors.frame);
         printf("\tfullscreen: %s\n", enum_to_string_fullscreen(n->fullscreen));
+        printf("\tformat: %s\n", n->format);
         printf("\tprogress: %d\n", n->progress);
         printf("\tstack_tag: %s\n", (n->stack_tag ? n->stack_tag : ""));
         printf("\tid: %d\n", n->id);
