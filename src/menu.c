@@ -313,12 +313,18 @@ static GList *get_actionable_notifications(void)
 /* see menu.h */
 void context_menu(void)
 {
+        GList *notifications = get_actionable_notifications();
+        context_menu_for(notifications);
+}
+
+/* see menu.h */
+void context_menu_for(GList *notifications)
+{
         if (menu_ctx.locked_notifications) {
                 LOG_W("Context menu already running, refusing to rerun");
                 return;
         }
 
-        GList *notifications = get_actionable_notifications();
         menu_ctx.locked_notifications = notifications;
 
         GError *err = NULL;

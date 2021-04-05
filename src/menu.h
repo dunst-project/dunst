@@ -2,6 +2,8 @@
 #ifndef DUNST_MENU_H
 #define DUNST_MENU_H
 
+#include <glib.h>
+
 /**
  * Extract all urls from the given string.
  *
@@ -16,9 +18,15 @@ void invoke_action(const char *action);
 void regex_teardown(void);
 
 /**
- * Open the context menu that lets the user select urls/actions/etc.
+ * Open the context menu that lets the user select urls/actions/etc for all displayed notifications.
  */
 void context_menu(void);
+
+/**
+ * Open the context menu that lets the user select urls/actions/etc for the specified notifications.
+ * @param notifications (nullable) List of notifications for which the context menu should be opened
+ */
+void context_menu_for(GList *notifications);
 
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */
