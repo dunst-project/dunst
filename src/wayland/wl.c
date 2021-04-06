@@ -284,10 +284,12 @@ static void layer_surface_handle_configure(void *data,
 static void layer_surface_handle_closed(void *data,
                 struct zwlr_layer_surface_v1 *surface) {
         LOG_I("Destroying layer");
-        zwlr_layer_surface_v1_destroy(ctx.layer_surface);
+        if (ctx.layer_surface)
+                zwlr_layer_surface_v1_destroy(ctx.layer_surface);
         ctx.layer_surface = NULL;
 
-        wl_surface_destroy(ctx.surface);
+        if (ctx.surface)
+                wl_surface_destroy(ctx.surface);
         ctx.surface = NULL;
 
         if (ctx.frame_callback) {
