@@ -38,7 +38,7 @@ void input_handle_click(unsigned int button, bool button_down, int mouse_x, int 
                 enum mouse_action act = acts[i];
                 if (act == MOUSE_CLOSE_ALL) {
                         queues_history_push_all();
-                        return;
+                        break;
                 }
 
                 if (act == MOUSE_DO_ACTION || act == MOUSE_CLOSE_CURRENT) {
