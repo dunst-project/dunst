@@ -178,6 +178,7 @@ clean-dunstify:
 
 clean-doc:
 	rm -f docs/dunst.1
+	rm -f docs/dunst.5
 	rm -f docs/dunstctl.1
 	rm -fr docs/internal/html
 	rm -fr docs/internal/coverage
