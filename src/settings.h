@@ -3,6 +3,7 @@
 #define DUNST_SETTINGS_H
 
 #include <stdbool.h>
+#include <pango/pango-layout.h>
 
 #ifdef ENABLE_WAYLAND
 #include "wayland/protocols/wlr-layer-shell-unstable-v1-client-header.h"
@@ -127,7 +128,7 @@ struct settings {
         int show_indicators;
         int word_wrap;
         int ignore_dbusclose;
-        enum ellipsize ellipsize;
+        PangoEllipsizeMode ellipsize;
         int ignore_newline;
         int line_height;
         int notification_height;

@@ -109,12 +109,17 @@ int string_parse_enum_list_to_single(const void *data, char **s, int *ret)
         return true;
 }
 
-bool string_parse_int_list(char **s, int **ret) {
+// When allow empty is true, empty strings are interpreted as -1
+bool string_parse_int_list(char **s, int **ret, bool allow_empty) {
         int len = string_array_length(s);
         ASSERT_OR_RET(s, false);
 
         int *tmp = g_malloc_n((len + 1), sizeof(int));
         for (int i = 0; i < len; i++) {
+                if (allow_empty && STR_EMPTY(s[i])) {
+                        tmp[i] = -1;
+                        continue;
+                }
                 bool success = safe_string_to_int(&tmp[i], s[i]);
                 if (!success) {
                         LOG_W("Invalid int value: '%s'", s[i]);
@@ -150,12 +155,12 @@ int string_parse_list(const void *data, const char *s, void *ret) {
                                 break;
                         }
                         int *int_arr = NULL;
-                        success = string_parse_int_list(arr, &int_arr);
+                        success = string_parse_int_list(arr, &int_arr, false);
                         if (!success)
                                 break;
 
                         // We can safely assume the length is 2, since the
-                        // string array also had lenght 2
+                        // string array also had length 2
                         if (int_arr[0] < 0 || int_arr[1] < 0) {
                                 LOG_W("Offset has to be positive. Correcting...");
                                 int_arr[0] = abs(int_arr[0]);
@@ -344,25 +349,37 @@ int get_setting_id(const char *key, const char *section) {
         return -1;
 }
 
+// TODO simplify this function
 int string_parse_length(void *ret_in, const char *s) {
         struct length *ret = (struct length*) ret_in;
-        int val;
+        int val = 0;
         char *s_stripped = string_strip_brackets(s);
         if (!s_stripped)
         {
                 // single int without brackets
                 bool success = safe_string_to_int(&val, s);
-                if (success) {
+                if (success && val > 0) {
                         // single int
                         ret->min = val;
                         ret->max = val;
+                        return true;
                 }
-                return success;
+                if (val <= 0) {
+                        LOG_W("A length should be a positive value");
+                }
+                return false;
         }
 
 
         char **s_arr = string_to_array(s_stripped, ",");
         int len = string_array_length(s_arr);
+
+        if (len <= 1) {
+                LOG_W("Please specify a minimum and maximum value or a single value without brackets");
+                g_strfreev(s_arr);
+                g_free(s_stripped);
+                return false;
+        }
         if (len > 2) {
                 g_strfreev(s_arr);
                 g_free(s_stripped);
@@ -370,31 +387,36 @@ int string_parse_length(void *ret_in, const char *s) {
                 return false;
         }
 
-        if (len == 0) {
-                LOG_E("This array shouldn't be empty");
-        }
-
         int *int_arr = NULL;
-        bool success = string_parse_int_list(s_arr, &int_arr);
+        bool success = string_parse_int_list(s_arr, &int_arr, true);
         if (!success) {
                 g_strfreev(s_arr);
                 g_free(s_stripped);
                 return false;
         }
 
-        if (len == 1) {
+        if (int_arr[0] == -1)
+                int_arr[0] = 0;
+
+        if (int_arr[1] == -1)
+                int_arr[1] = INT_MAX;
+
+        if (int_arr[0] < 0 || int_arr[1] < 0) {
+                LOG_W("A lengths should be positive");
+                success = false;
+        } else if (int_arr[0] > int_arr[1]) {
+                LOG_W("The minimum value should be less than the maximum value. (%i > %i)",
+                                int_arr[0], int_arr[1]);
+                success = false;
+        } else {
                 ret->min = int_arr[0];
-                ret->max = int_arr[0];
-        }
-        if (len == 2) {
-                ret->min = MIN(int_arr[0], int_arr[1]);
-                ret->max = MAX(int_arr[0], int_arr[1]);
+                ret->max = int_arr[1];
         }
 
         g_free(int_arr);
         g_strfreev(s_arr);
         g_free(s_stripped);
-        return true;
+        return success;
 }
 
 bool set_from_string(void *target, struct setting setting, const char *value) {

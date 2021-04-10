@@ -2,6 +2,7 @@
 #ifndef DUNST_SETTING_DATA_H
 #define DUNST_SETTING_DATA_H
 #include <stddef.h>
+#include <pango/pango-layout.h>
 
 #include "option_parser.h"
 #include "settings.h"
@@ -182,9 +183,9 @@ static const struct string_to_enum_def horizontal_alignment_enum_data[] = {
 };
 
 static const struct string_to_enum_def ellipsize_enum_data[] = {
-        {"start",  ELLIPSE_START },
-        {"middle", ELLIPSE_MIDDLE },
-        {"end",    ELLIPSE_END },
+        {"start",  PANGO_ELLIPSIZE_START },
+        {"middle", PANGO_ELLIPSIZE_MIDDLE },
+        {"end",    PANGO_ELLIPSIZE_END },
         ENUM_END,
 };
 
