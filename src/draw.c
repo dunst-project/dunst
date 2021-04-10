@@ -316,24 +316,7 @@ static struct colored_layout *layout_init_shared(cairo_t *c, const struct notifi
         cl->l = layout_create(c);
         int scale = output->get_scale();
 
-        if (!settings.word_wrap) {
-                PangoEllipsizeMode ellipsize;
-                switch (settings.ellipsize) {
-                case ELLIPSE_START:
-                        ellipsize = PANGO_ELLIPSIZE_START;
-                        break;
-                case ELLIPSE_MIDDLE:
-                        ellipsize = PANGO_ELLIPSIZE_MIDDLE;
-                        break;
-                case ELLIPSE_END:
-                        ellipsize = PANGO_ELLIPSIZE_END;
-                        break;
-                default:
-                        LOG_E("Invalid %s enum value in %s:%d", "ellipsize", __FILE__, __LINE__);
-                        break;
-                }
-                pango_layout_set_ellipsize(cl->l, ellipsize);
-        }
+        pango_layout_set_ellipsize(cl->l, settings.ellipsize);
 
         if (settings.icon_position != ICON_OFF && n->icon) {
                 cl->icon = gdk_pixbuf_to_cairo_surface(n->icon);
