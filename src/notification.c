@@ -288,6 +288,7 @@ void notification_unref(struct notification *n)
         g_free(n->desktop_entry);
 
         g_hash_table_unref(n->actions);
+        g_free(n->default_action_name);
 
         if (n->icon)
                 g_object_unref(n->icon);
@@ -386,6 +387,7 @@ struct notification *notification_create(void)
         n->fullscreen = FS_SHOW;
 
         n->actions = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+        n->default_action_name = g_strdup("default");
 
         n->script_count = 0;
         return n;

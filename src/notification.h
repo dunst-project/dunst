@@ -61,6 +61,7 @@ struct notification {
         int locked;     /**< If non-zero the notification is locked **/
 
         GHashTable *actions;
+        char *default_action_name; /**< The name of the action to be invoked on do_action */
 
         enum markup_mode markup;
         const char *format;
