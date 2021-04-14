@@ -23,6 +23,7 @@ struct rule {
         /* actions */
         gint64 timeout;
         enum urgency urgency;
+        char *action_name;
         enum markup_mode markup;
         int history_ignore;
         int match_transient;
