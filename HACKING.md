@@ -15,6 +15,10 @@
 - Add the comments to the prototype. Doxygen will merge the protoype and implementation documentation anyways.
   Except for **static** methods, add the documentation header to the implementation and *not to the prototype*.
 - Member documentation should happen with `/**<` and should span to the right side of the member
+- Test files that have the same name as a file in src/\* can include the
+  associated .c file. This is because they are being compiled INSTEAD of the src
+  file.
+
 
 ## Log messages
 
