@@ -139,6 +139,7 @@ bool string_parse_mouse_action(const char *s, enum mouse_action *ret)
         STRING_PARSE_RET("close_all",      MOUSE_CLOSE_ALL);
         STRING_PARSE_RET("context",        MOUSE_CONTEXT);
         STRING_PARSE_RET("context_all",    MOUSE_CONTEXT_ALL);
+        STRING_PARSE_RET("open_url",       MOUSE_OPEN_URL);
 
         return false;
 }
