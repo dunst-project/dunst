@@ -47,7 +47,7 @@ void input_handle_click(unsigned int button, bool button_down, int mouse_x, int 
                         continue;
                 }
 
-                if (act == MOUSE_DO_ACTION || act == MOUSE_CLOSE_CURRENT || act == MOUSE_CONTEXT) {
+                if (act == MOUSE_DO_ACTION || act == MOUSE_CLOSE_CURRENT || act == MOUSE_CONTEXT || act == MOUSE_OPEN_URL) {
                         int y = settings.separator_height;
                         struct notification *n = NULL;
                         int first = true;
@@ -67,12 +67,10 @@ void input_handle_click(unsigned int button, bool button_down, int mouse_x, int 
                                         n->marked_for_closure = REASON_USER;
                                 } else if (act == MOUSE_DO_ACTION) {
                                         notification_do_action(n);
+                                } else if (act == MOUSE_OPEN_URL) {
+                                        notification_open_url(n);
                                 } else {
-                                        GList *notifications = NULL;
-                                        notifications = g_list_append(notifications, n);
-                                        notification_lock(n);
-
-                                        context_menu_for(notifications);
+                                        notification_open_context_menu(n);
                                 }
                         }
                 }

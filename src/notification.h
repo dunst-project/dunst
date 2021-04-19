@@ -196,11 +196,24 @@ void notification_replace_single_field(char **haystack,
 void notification_update_text_to_render(struct notification *n);
 
 /**
- * If the notification has exactly one action, or one is marked as default,
- * invoke it. If there are multiple and no default, open the context menu. If
- * there are no actions, proceed similarly with urls.
+ * If the notification has an action named n->default_action_name or there is only one
+ * action and n->default_action_name is set to "default", invoke it. If there is no
+ * such action, open the context menu if threre are other actions. Otherwise, do nothing.
  */
-void notification_do_action(const struct notification *n);
+void notification_do_action(struct notification *n);
+
+/**
+ * If the notification has exactly one url, invoke it. If there are multiple,
+ * open the context menu. If there are no urls, do nothing.
+ */
+void notification_open_url(struct notification *n);
+
+/**
+ * Open the context menu for the notification.
+ * 
+ * Convenience function that creates the GList and passes it to context_menu_for().
+ */
+void notification_open_context_menu(struct notification *n);
 
 /**
  * Remove all client action data from the notification.
