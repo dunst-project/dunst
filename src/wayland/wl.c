@@ -135,7 +135,6 @@ static void create_output( struct wl_output *wl_output, uint32_t global_name) {
         LOG_I("New output found - id %i", number);
         output->global_name = global_name;
         output->wl_output = wl_output;
-        // TODO: Fix this
         output->scale = 1;
         output->fullscreen = false;
         wl_list_insert(&ctx.outputs, &output->link);
@@ -884,5 +883,13 @@ bool wl_have_fullscreen_window(void) {
 
         LOG_D("Fullscreen queried: %i", have_fullscreen);
         return have_fullscreen;
+}
+
+int wl_get_scale(void) {
+        struct dunst_output *output = get_configured_output();
+        if (output)
+                return output->scale;
+        else
+                return 1;
 }
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

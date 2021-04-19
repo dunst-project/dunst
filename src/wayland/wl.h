@@ -23,5 +23,7 @@ const struct screen_info* wl_get_active_screen(void);
 
 bool wl_is_idle(void);
 bool wl_have_fullscreen_window(void);
+
+int wl_get_scale(void);
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */
