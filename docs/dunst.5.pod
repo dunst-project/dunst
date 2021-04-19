@@ -524,7 +524,13 @@ Don't do anything.
 
 =item B<do_action> (default for mouse_middle_click)
 
-If the notification has exactly one action, or one is marked as default, invoke it. If there are multiple and no default, open the context menu.
+Invoke the action determined by the action_name rule. If there is no such
+action, open the context menu.
+
+=item B<open_url>
+
+If the notification has exactly one url, open it. If there are multiple
+ones, open the context menu.
 
 =item B<close_current> (default for mouse_left_click)
 
@@ -867,6 +873,13 @@ later. Use C<msg_urgency> to match it.
 
 Setting this to true will prevent the notification from being displayed
 initially but will be saved in history for later viewing.
+
+=item C<action_name>
+
+Sets the name of the action to be invoked on do_action. If not specified, the
+action set as default action or the only available action will be invoked.
+
+Default: "default"
 
 =back
 
