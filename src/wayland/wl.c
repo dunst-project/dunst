@@ -107,7 +107,7 @@ static void output_handle_geometry(void *data, struct wl_output *wl_output,
                 int32_t x, int32_t y, int32_t phy_width, int32_t phy_height,
                 int32_t subpixel, const char *make, const char *model,
                 int32_t transform) {
-        //TODO
+        //TODO do something with the subpixel data
         struct dunst_output *output = data;
         output->subpixel = subpixel;
 }
@@ -226,7 +226,6 @@ static void seat_handle_capabilities(void *data, struct wl_seat *wl_seat,
                 ctx.pointer.wl_pointer = wl_seat_get_pointer(wl_seat);
                 wl_pointer_add_listener(ctx.pointer.wl_pointer,
                         &pointer_listener, ctx.seat);
-                LOG_I("Adding pointer");
         }
         if (ctx.touch.wl_touch != NULL) {
                 wl_touch_release(ctx.touch.wl_touch);
