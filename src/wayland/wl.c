@@ -665,7 +665,6 @@ static void send_frame() {
                 ctx.surface = wl_compositor_create_surface(ctx.compositor);
                 wl_surface_add_listener(ctx.surface, &surface_listener, NULL);
 
-                if (settings.frame_color)
                 ctx.layer_surface = zwlr_layer_shell_v1_get_layer_surface(
                         ctx.layer_shell, ctx.surface, wl_output,
                         settings.layer, "notifications");
