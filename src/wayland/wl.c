@@ -116,6 +116,8 @@ static void output_handle_scale(void *data, struct wl_output *wl_output,
                 int32_t factor) {
         struct dunst_output *output = data;
         output->scale = factor;
+
+        wake_up();
 }
 
 static const struct wl_output_listener output_listener = {
@@ -622,7 +624,7 @@ static void schedule_frame_and_commit();
 
 // Draw and commit a new frame.
 static void send_frame() {
-        int scale = 1;
+        int scale = wl_get_scale();
 
         struct dunst_output *output = get_configured_output();
         int height = ctx.cur_dim.h;
@@ -689,8 +691,6 @@ static void send_frame() {
         if (ctx.height != height || ctx.width != width) {
                 struct dimensions dim = ctx.cur_dim;
                 // Set window size
-                LOG_D("Window dimensions %ix%i", dim.w, dim.h);
-                LOG_D("Window position %ix%i", dim.x, dim.y);
                 zwlr_layer_surface_v1_set_size(ctx.layer_surface,
                                 dim.w, dim.h);
 
@@ -815,12 +815,15 @@ void wl_win_hide(window win) {
 
 void wl_display_surface(cairo_surface_t *srf, window winptr, const struct dimensions* dim) {
         /* struct window_wl *win = (struct window_wl*)winptr; */
-        ctx.current_buffer = get_next_buffer(ctx.shm, ctx.buffers, dim->w, dim->h);
+        int scale = wl_get_scale();
+        LOG_D("Buffer size (scaled) %ix%i", dim->w * scale, dim->h * scale);
+        ctx.current_buffer = get_next_buffer(ctx.shm, ctx.buffers,
+                        dim->w * scale, dim->h * scale);
 
         cairo_t *c = ctx.current_buffer->cairo;
         cairo_save(c);
         cairo_set_source_surface(c, srf, 0, 0);
-        cairo_rectangle(c, 0, 0, dim->w, dim->h);
+        cairo_rectangle(c, 0, 0, dim->w * scale, dim->h * scale);
         cairo_fill(c);
         cairo_restore(c);
 
@@ -848,6 +851,7 @@ const struct screen_info* wl_get_active_screen(void) {
                 .id = 0,
                 .mmh = 500
         };
+        scr.dpi = wl_get_scale() * 96;
         return &scr;
 }
 

@@ -24,6 +24,7 @@
 GMainLoop *mainloop = NULL;
 
 static struct dunst_status status;
+static bool setup_done = false;
 
 /* see dunst.h */
 void dunst_status(const enum dunst_status_field field,
@@ -56,6 +57,14 @@ static gboolean run(void *data);
 
 void wake_up(void)
 {
+        // If wake_up is being called before the output has been setup we should
+        // return.
+        if (!setup_done)
+        {
+                LOG_D("Ignoring wake up");
+                return;
+        }
+
         LOG_D("Waking up");
         run(NULL);
 }
@@ -197,6 +206,7 @@ int dunst_main(int argc, char *argv[])
                 // we do not call wakeup now, wake_up does not work here yet
         }
 
+        setup_done = true;
         run(NULL);
         g_main_loop_run(mainloop);
         g_clear_pointer(&mainloop, g_main_loop_unref);

@@ -23,6 +23,7 @@
 #include "rules.h"
 #include "settings.h"
 #include "utils.h"
+#include "draw.h"
 
 static void notification_extract_urls(struct notification *n);
 static void notification_format_message(struct notification *n);
@@ -314,7 +315,7 @@ void notification_icon_replace_path(struct notification *n, const char *new_icon
         g_clear_object(&n->icon);
         g_clear_pointer(&n->icon_id, g_free);
 
-        n->icon = icon_get_for_name(new_icon, &n->icon_id);
+        n->icon = icon_get_for_name(new_icon, &n->icon_id, draw_get_scale());
 }
 
 void notification_icon_replace_data(struct notification *n, GVariant *new_icon)
@@ -325,7 +326,7 @@ void notification_icon_replace_data(struct notification *n, GVariant *new_icon)
         g_clear_object(&n->icon);
         g_clear_pointer(&n->icon_id, g_free);
 
-        n->icon = icon_get_for_data(new_icon, &n->icon_id);
+        n->icon = icon_get_for_data(new_icon, &n->icon_id, draw_get_scale());
 }
 
 /* see notification.h */

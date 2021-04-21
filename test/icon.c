@@ -12,6 +12,8 @@
 
 extern const char *base;
 
+int scale = 1;
+
 TEST test_get_path_from_icon_null(void){
     char *result = get_path_from_icon_name(NULL);
     ASSERT_EQ(result, NULL);
@@ -86,7 +88,7 @@ TEST test_get_pixbuf_from_file_tilde(void)
         gchar *path = g_build_filename(base, iconpath, "valid", "icon1.svg", NULL);
         path = string_replace_at(path, 0, strlen(home), "~");
 
-        GdkPixbuf *pixbuf = get_pixbuf_from_file(path);
+        GdkPixbuf *pixbuf = get_pixbuf_from_file(path, scale);
         g_clear_pointer(&path, g_free);
 
         ASSERT(pixbuf);
@@ -101,7 +103,7 @@ TEST test_get_pixbuf_from_file_absolute(void)
 
         gchar *path = g_build_filename(base, iconpath, "valid", "icon1.svg", NULL);
 
-        GdkPixbuf *pixbuf = get_pixbuf_from_file(path);
+        GdkPixbuf *pixbuf = get_pixbuf_from_file(path, scale);
         g_clear_pointer(&path, g_free);
 
         ASSERT(pixbuf);
@@ -113,7 +115,7 @@ TEST test_get_pixbuf_from_file_absolute(void)
 
 TEST test_get_pixbuf_from_icon_invalid(void)
 {
-        GdkPixbuf *pixbuf = get_pixbuf_from_icon("invalid");
+        GdkPixbuf *pixbuf = get_pixbuf_from_icon("invalid", scale);
         ASSERT(pixbuf == NULL);
         g_clear_pointer(&pixbuf, g_object_unref);
 
@@ -122,7 +124,7 @@ TEST test_get_pixbuf_from_icon_invalid(void)
 
 TEST test_get_pixbuf_from_icon_both(void)
 {
-        GdkPixbuf *pixbuf = get_pixbuf_from_icon("icon1");
+        GdkPixbuf *pixbuf = get_pixbuf_from_icon("icon1", scale);
         // the first icon  found is invalid, so the pixbuf is empty
         ASSERT(!pixbuf);
         g_clear_pointer(&pixbuf, g_object_unref);
@@ -132,7 +134,7 @@ TEST test_get_pixbuf_from_icon_both(void)
 
 TEST test_get_pixbuf_from_icon_onlysvg(void)
 {
-        GdkPixbuf *pixbuf = get_pixbuf_from_icon("onlysvg");
+        GdkPixbuf *pixbuf = get_pixbuf_from_icon("onlysvg", scale);
         ASSERT(pixbuf);
         ASSERTm("SVG pixbuf isn't loaded", IS_ICON_SVG(pixbuf));
         g_clear_pointer(&pixbuf, g_object_unref);
@@ -142,7 +144,7 @@ TEST test_get_pixbuf_from_icon_onlysvg(void)
 
 TEST test_get_pixbuf_from_icon_onlypng(void)
 {
-        GdkPixbuf *pixbuf = get_pixbuf_from_icon("onlypng");
+        GdkPixbuf *pixbuf = get_pixbuf_from_icon("onlypng", scale);
         ASSERT(pixbuf);
         ASSERTm("PNG pixbuf isn't loaded", IS_ICON_PNG(pixbuf));
         g_clear_pointer(&pixbuf, g_object_unref);
@@ -153,7 +155,7 @@ TEST test_get_pixbuf_from_icon_onlypng(void)
 TEST test_get_pixbuf_from_icon_filename(void)
 {
         char *icon = g_strconcat(base, "/data/icons/valid.png", NULL);
-        GdkPixbuf *pixbuf = get_pixbuf_from_icon(icon);
+        GdkPixbuf *pixbuf = get_pixbuf_from_icon(icon, scale);
         ASSERT(pixbuf);
         ASSERTm("PNG pixbuf isn't loaded", IS_ICON_PNG(pixbuf));
         g_clear_pointer(&pixbuf, g_object_unref);
@@ -165,7 +167,7 @@ TEST test_get_pixbuf_from_icon_filename(void)
 TEST test_get_pixbuf_from_icon_fileuri(void)
 {
         char *icon = g_strconcat("file://", base, "/data/icons/valid.svg", NULL);
-        GdkPixbuf *pixbuf = get_pixbuf_from_icon(icon);
+        GdkPixbuf *pixbuf = get_pixbuf_from_icon(icon, scale);
         ASSERT(pixbuf);
         ASSERTm("SVG pixbuf isn't loaded", IS_ICON_SVG(pixbuf));
         g_clear_pointer(&pixbuf, g_object_unref);
@@ -220,7 +222,7 @@ TEST test_icon_size_clamp_too_small_then_too_big(void)
 
 TEST test_get_pixbuf_from_icon_both_is_scaled(void)
 {
-        GdkPixbuf *pixbuf = get_pixbuf_from_icon("onlypng");
+        GdkPixbuf *pixbuf = get_pixbuf_from_icon("onlypng", scale);
         ASSERT(pixbuf);
         ASSERT_EQ(gdk_pixbuf_get_width(pixbuf), 16);
         ASSERT_EQ(gdk_pixbuf_get_height(pixbuf), 16);
