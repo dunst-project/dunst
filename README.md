@@ -9,7 +9,7 @@
 ## Table of Contents
 
 * [Features](#features)
-* [Compiling](#compiling)
+* [Building](#building)
 * [Documentation](#documentation)
 * [Copyright](#copyright)
 
