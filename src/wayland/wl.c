@@ -898,10 +898,19 @@ bool wl_have_fullscreen_window(void) {
 }
 
 int wl_get_scale(void) {
+        int scale = 0;
         struct dunst_output *output = get_configured_output();
-        if (output)
-                return output->scale;
-        else
-                return 1;
+        if (output) {
+                scale = output->scale;
+        } else {
+                // return the largest scale
+                struct dunst_output *output;
+                wl_list_for_each(output, &ctx.outputs, link) {
+                        scale = MAX(output->scale, scale);
+                }
+        }
+        if (scale <= 0)
+                scale = 1;
+        return scale;
 }
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */
