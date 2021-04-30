@@ -341,20 +341,29 @@ static void add_seat_to_idle_handler(struct wl_seat *seat) {
 
 // Warning, can return NULL
 static struct dunst_output *get_configured_output() {
+        int n = 0;
+        int target_monitor = settings.monitor;
+
+        struct dunst_output *first_output = NULL, *configured_output = NULL,
+                            *tmp_output = NULL;
+        wl_list_for_each(tmp_output, &ctx.outputs, link) {
+                if (n == 0)
+                        first_output = tmp_output;
+                if (n == target_monitor)
+                        configured_output = tmp_output;
+                n++;
+        }
+
+        // There's only 1 output, so return that
+        if (n == 1)
+                return first_output;
 
         switch (settings.f_mode){
                 case FOLLOW_NONE: ; // this semicolon is neccesary
-                        int n = 0;
-                        int target_monitor = settings.monitor;
-
-                        struct dunst_output *output;
-                        wl_list_for_each(output, &ctx.outputs, link) {
-                                if (n == target_monitor)
-                                        return output;
-                                n++;
+                        if (!configured_output) {
+                                LOG_W("Monitor %i doesn't exist, using focused monitor", settings.monitor);
                         }
-                        LOG_W("Monitor %i doesn't exist, using focused monitor", settings.monitor);
-                        return NULL;
+                        return configured_output;
                 case FOLLOW_MOUSE:
                         // fallthrough
                 case FOLLOW_KEYBOARD:
