@@ -111,6 +111,7 @@ sudo make install
 - `WAYLAND=(0|1)`: Disable/Enable wayland support. (Default: 1 (enabled))
 - `SERVICEDIR_SYSTEMD=<PATH>`: The path to put the systemd user service file. Unused, if `SYSTEMD=0`. (Default: detected via `pkg-config`)
 - `SERVICEDIR_DBUS=<PATH>`: The path to put the dbus service file. (Default: detected via `pkg-config`)
+- `EXTRA_CFLAGS=<FLAGS>`: Additional flags for the compiler.
 
 **Make sure to run all make calls with the same parameter set. So when building with `make PREFIX=/usr`, you have to install it with `make PREFIX=/usr install`, too.**
 

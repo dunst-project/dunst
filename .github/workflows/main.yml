@@ -25,6 +25,7 @@ jobs:
 
     env:
       CC: ${{ matrix.CC }}
+      EXTRA_CFLAGS: "-Werror"
     steps:
     - uses: actions/checkout@v2
       with:
