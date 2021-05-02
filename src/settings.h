@@ -131,7 +131,6 @@ struct settings {
         PangoEllipsizeMode ellipsize;
         int ignore_newline;
         int line_height;
-        int notification_height;
         int separator_height;
         int padding;
         int h_padding;
@@ -171,7 +170,7 @@ struct settings {
         enum zwlr_layer_shell_v1_layer layer;
         enum origin_values origin;
         struct length width;
-        struct length height;
+        int height;
         struct position offset;
         int notification_limit;
 };

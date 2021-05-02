@@ -107,6 +107,13 @@ void check_and_correct_settings(struct settings *s) {
                         s->max_icon_size = icon_size_limit;
                 }
         }
+
+        int text_icon_padding = settings.text_icon_padding != 0 ? settings.text_icon_padding : settings.h_padding;
+        int max_text_width = settings.width.max - settings.max_icon_size - text_icon_padding - 2 * settings.h_padding;
+        if (max_text_width < 10) {
+                DIE("max_icon_size and horizontal padding are too large for the given width");
+        }
+
 }
 
 void load_settings(char *cmdline_config_path)

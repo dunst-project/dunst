@@ -32,7 +32,7 @@ GList *queues_get_displayed(void);
  * @returns the first notification in waiting
  * @retval NULL: waiting is empty
  */
-const struct notification *queues_get_head_waiting(void);
+struct notification *queues_get_head_waiting(void);
 
 /**
  * Returns the current amount of notifications,

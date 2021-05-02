@@ -37,7 +37,7 @@ struct colored_layout {
         char *text;
         PangoAttrList *attr;
         cairo_surface_t *icon;
-        const struct notification *n;
+        struct notification *n;
 };
 
 const struct output *output;
@@ -142,11 +142,12 @@ static struct color layout_get_sepcolor(struct colored_layout *cl,
         }
 }
 
-static void layout_setup_pango(PangoLayout *layout, int width)
+static void layout_setup_pango(PangoLayout *layout, int width, int height)
 {
         double scale = output->get_scale();
         pango_layout_set_wrap(layout, PANGO_WRAP_WORD_CHAR);
         pango_layout_set_width(layout, round(width * scale * PANGO_SCALE));
+        pango_layout_set_height(layout, round(height * scale * PANGO_SCALE));
         pango_layout_set_font_description(layout, pango_fdesc);
         pango_layout_set_spacing(layout, round(settings.line_height * scale * PANGO_SCALE));
 
@@ -177,11 +178,6 @@ static void free_colored_layout(void *data)
         g_free(cl);
 }
 
-static bool have_dynamic_width(void)
-{
-        return (settings.geometry.width_set && settings.geometry.w == 0);
-}
-
 static int get_text_icon_padding()
 {
         if (settings.text_icon_padding) {
@@ -206,93 +202,51 @@ static void get_text_size(PangoLayout *l, int *w, int *h, double scale) {
                 *h = round(*h / scale);
 }
 
+// calculates the minimum dimensions of the notification excluding the frame
+static struct dimensions calculate_notification_dimensions(struct colored_layout *cl, int scale)
+{
+        struct dimensions dim = { 0 };
+
+        int icon_width = cl->icon? get_icon_width(cl->icon, scale) + get_text_icon_padding() : 0;
+        int icon_height = cl->icon? get_icon_height(cl->icon, scale) : 0;
+        int max_text_width = settings.width.max - icon_width - 2 * settings.h_padding;
+        int progress_bar_height = have_progress_bar(cl->n) ? settings.progress_bar_height + settings.padding : 0;
+        int max_text_height = MAX(0, settings.height - progress_bar_height - 2 * settings.padding);
+
+        layout_setup_pango(cl->l, max_text_width, max_text_height);
+
+        get_text_size(cl->l, &dim.text_width, &dim.text_height, scale);
+        dim.h = MAX(icon_height, dim.text_height);
+        dim.h += progress_bar_height;
+        dim.w = dim.text_width + icon_width + 2 * settings.h_padding;
+
+        dim.h = MIN(settings.height, dim.h + settings.padding * 2);
+        dim.w = MAX(settings.width.min, dim.w);
+
+        cl->n->displayed_height = dim.h;
+        return dim;
+}
+
 static struct dimensions calculate_dimensions(GSList *layouts)
 {
         struct dimensions dim = { 0 };
         double scale = output->get_scale();
-
-        const struct screen_info *scr = output->get_active_screen();
-        if (have_dynamic_width()) {
-                /* dynamic width */
-                dim.w = 0;
-        } else if (settings.geometry.width_set) {
-                /* fixed width */
-                if (settings.geometry.negative_width) {
-                        dim.w = scr->w - settings.geometry.w;
-                } else {
-                        dim.w = settings.geometry.w;
-                }
-        } else {
-                /* across the screen */
-                dim.w = scr->w;
-        }
 
         dim.h += 2 * settings.frame_width;
         dim.h += (g_slist_length(layouts) - 1) * settings.separator_height;
 
         dim.corner_radius = settings.corner_radius;
 
-        int text_width = 0, total_width = 0;
         for (GSList *iter = layouts; iter; iter = iter->next) {
                 struct colored_layout *cl = iter->data;
-                int w=0, h=0;
-                get_text_size(cl->l, &w, &h, scale);
-                if (cl->icon) {
-                        h = MAX(get_icon_height(cl->icon, scale), h);
-                        w += get_icon_width(cl->icon, scale) + settings.h_padding;
-                }
-                h = MAX(settings.notification_height, h + settings.padding * 2);
-                dim.h += h;
-                text_width = MAX(w, text_width);
-
-                if (have_dynamic_width() || settings.shrink) {
-                        /* dynamic width */
-                        total_width = MAX(text_width + 2 * settings.h_padding, total_width);
-
-                        /* subtract height from the unwrapped text */
-                        dim.h -= h;
-
-                        if (total_width > scr->w) {
-                                /* set width to screen width */
-                                dim.w = scr->w - settings.geometry.x * 2;
-                        } else if (have_dynamic_width() || (total_width < settings.geometry.w && settings.shrink)) {
-                                /* set width to text width */
-                                dim.w = total_width + 2 * settings.frame_width;
-                        }
-
-                        /* re-setup the layout */
-                        w = dim.w;
-                        w -= 2 * settings.h_padding;
-                        w -= 2 * settings.frame_width;
-                        if (cl->icon) {
-                                w -= get_icon_width(cl->icon, scale) + get_text_icon_padding();
-                        }
-                        layout_setup_pango(cl->l, w);
-
-                        /* re-read information */
-                        get_text_size(cl->l, &w, &h, scale);
-                        if (cl->icon) {
-                                h = MAX(get_icon_height(cl->icon, scale), h);
-                                w += get_icon_width(cl->icon, scale) + settings.h_padding;
-                        }
-                        h = MAX(settings.notification_height, h + settings.padding * 2);
-                        dim.h += h;
-                        text_width = MAX(w, text_width);
-                }
-
-                if (have_progress_bar(cl->n)){
-                        dim.h += settings.progress_bar_height + settings.padding;
-                        dim.w = MAX(dim.w, settings.progress_bar_min_width);
-                }
-
-                dim.corner_radius = MIN(dim.corner_radius, h/2);
+                struct dimensions n_dim = calculate_notification_dimensions(cl, scale);
+                dim.h += n_dim.h;
+                LOG_D("Notification dimensions %ix%i", n_dim.w, n_dim.h);
+                dim.w = MAX(dim.w, n_dim.w + settings.frame_width);
         }
 
-        if (dim.w <= 0) {
-                dim.w = text_width + 2 * settings.h_padding;
-                dim.w += 2 * settings.frame_width;
-        }
-
+        dim.w += 2 * settings.frame_width;
+        dim.corner_radius = MIN(dim.corner_radius, dim.h/2);
         return dim;
 }
 
@@ -310,11 +264,10 @@ static PangoLayout *layout_create(cairo_t *c)
         return layout;
 }
 
-static struct colored_layout *layout_init_shared(cairo_t *c, const struct notification *n)
+static struct colored_layout *layout_init_shared(cairo_t *c, struct notification *n)
 {
         struct colored_layout *cl = g_malloc(sizeof(struct colored_layout));
         cl->l = layout_create(c);
-        double scale = output->get_scale();
 
         pango_layout_set_ellipsize(cl->l, settings.ellipsize);
 
@@ -335,25 +288,10 @@ static struct colored_layout *layout_init_shared(cairo_t *c, const struct notifi
         cl->frame = string_to_color(n->colors.frame);
 
         cl->n = n;
-
-        struct dimensions dim = calculate_dimensions(NULL);
-        int width = dim.w;
-
-        if (have_dynamic_width()) {
-                layout_setup_pango(cl->l, -1);
-        } else {
-                width -= 2 * settings.h_padding;
-                width -= 2 * settings.frame_width;
-                if (cl->icon) {
-                        width -= get_icon_width(cl->icon, scale) + get_text_icon_padding();
-                }
-                layout_setup_pango(cl->l, width);
-        }
-
         return cl;
 }
 
-static struct colored_layout *layout_derive_xmore(cairo_t *c, const struct notification *n, int qlen)
+static struct colored_layout *layout_derive_xmore(cairo_t *c, struct notification *n, int qlen)
 {
         struct colored_layout *cl = layout_init_shared(c, n);
         cl->text = g_strdup_printf("(%d more)", qlen);
@@ -366,7 +304,6 @@ static struct colored_layout *layout_from_notification(cairo_t *c, struct notifi
 {
 
         struct colored_layout *cl = layout_init_shared(c, n);
-        double scale = output->get_scale();
 
         /* markup */
         GError *err = NULL;
@@ -386,17 +323,6 @@ static struct colored_layout *layout_from_notification(cairo_t *c, struct notifi
                 }
                 g_error_free(err);
         }
-
-
-        get_text_size(cl->l, NULL, &(n->displayed_height), scale);
-        if (cl->icon) n->displayed_height = MAX(get_icon_height(cl->icon, scale), n->displayed_height);
-
-        n->displayed_height = n->displayed_height + settings.padding * 2;
-
-        // progress bar
-        if (have_progress_bar(n)) n->displayed_height += settings.progress_bar_height + settings.padding;
-
-        n->displayed_height = MAX(settings.notification_height, n->displayed_height);
 
         n->first_render = false;
         return cl;
@@ -626,6 +552,7 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
 static void render_content(cairo_t *c, struct colored_layout *cl, int width, double scale)
 {
         const int h = layout_get_height(cl, scale);
+        LOG_D("Layout height %i", h);
         int h_without_progress_bar = h;
         if (have_progress_bar(cl->n)){
                  h_without_progress_bar -= settings.progress_bar_height + settings.padding;
@@ -740,7 +667,7 @@ static struct dimensions layout_render(cairo_surface_t *srf,
         get_text_size(cl->l, NULL, &h_text, scale);
 
         int bg_width = 0;
-        int bg_height = MAX(settings.notification_height, (2 * settings.padding) + cl_h);
+        int bg_height = MIN(settings.height, (2 * settings.padding) + cl_h);
 
         cairo_surface_t *content = render_background(srf, cl, cl_next, dim.y, dim.w, bg_height, dim.corner_radius, first, last, &bg_width, scale);
         cairo_t *c = cairo_create(content);
@@ -755,10 +682,10 @@ static struct dimensions layout_render(cairo_surface_t *srf,
                 dim.y += settings.separator_height;
 
 
-        if (settings.notification_height <= (2 * settings.padding) + cl_h)
+        if ((2 * settings.padding + cl_h) < settings.height)
                 dim.y += cl_h + 2 * settings.padding;
         else
-                dim.y += settings.notification_height;
+                dim.y += settings.height;
 
         cairo_destroy(c);
         cairo_surface_destroy(content);
@@ -824,6 +751,7 @@ void draw(void)
         GSList *layouts = create_layouts(output->win_get_context(win));
 
         struct dimensions dim = calculate_dimensions(layouts);
+        LOG_D("Window dimensions %ix%i", dim.w, dim.h);
         double scale = output->get_scale();
 
         cairo_surface_t *image_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
