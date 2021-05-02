@@ -52,7 +52,7 @@ GList *queues_get_displayed(void)
 }
 
 /* see queues.h */
-const struct notification *queues_get_head_waiting(void)
+struct notification *queues_get_head_waiting(void)
 {
         if (waiting->length == 0)
                 return NULL;

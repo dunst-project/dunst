@@ -677,16 +677,6 @@ static const struct setting allowed_settings[] = {
                 .parser_data = NULL,
         },
         {
-                .name = "notification_height",
-                .section = "global",
-                .description = "Define height of the window",
-                .type = TYPE_INT,
-                .default_value = "0",
-                .value = &settings.notification_height,
-                .parser = NULL,
-                .parser_data = NULL,
-        },
-        {
                 .name = "show_age_threshold",
                 .section = "global",
                 .description = "When should the age of the notification be displayed?",
@@ -1244,7 +1234,7 @@ static const struct setting allowed_settings[] = {
         {
                 .name = "width",
                 .section = "global",
-                .description = "The width of the notification.",
+                .description = "The width of the notification, excluding the frame.",
                 .type = TYPE_LENGTH,
                 .default_value = "300",
                 .value = &settings.width,
@@ -1254,9 +1244,9 @@ static const struct setting allowed_settings[] = {
         {
                 .name = "height",
                 .section = "global",
-                .description = "The height of the notification.",
-                .type = TYPE_LENGTH,
-                .default_value = "(0, 500)",
+                .description = "The maximum height of a single notification, excluding the frame.",
+                .type = TYPE_INT,
+                .default_value = "300",
                 .value = &settings.height,
                 .parser = NULL,
                 .parser_data = NULL,
