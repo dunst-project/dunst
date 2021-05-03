@@ -292,7 +292,7 @@ Allow a small subset of html markup in notifications
     <u>underline</u>
 
 For a complete reference see
-<https://developer.gnome.org/pango/stable/pango-Markup.html>
+<https://developer.gnome.org/pygtk/stable/pango-markup-language.html>
 
 =item B<strip>
 
