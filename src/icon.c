@@ -5,16 +5,13 @@
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <stdbool.h>
 #include <string.h>
+#include <glob.h>
+#include <errno.h>
 
 #include "log.h"
 #include "notification.h"
 #include "settings.h"
 #include "utils.h"
-
-static bool is_readable_file(const char *filename)
-{
-        return (access(filename, R_OK) != -1);
-}
 
 /**
  * Reassemble the data parts of a GdkPixbuf into a cairo_surface_t's data field.
@@ -208,65 +205,156 @@ GdkPixbuf *get_pixbuf_from_file(const char *filename, double scale)
         return pixbuf;
 }
 
-char *get_path_from_icon_name(const char *iconname)
+// Attempt to find a full path for icon_name, which may be:
+// - An absolute path, which will simply be returned (as a newly allocated string)
+// - A file:// URI, which will be converted to an absolute path
+// - A Freedesktop icon name, which will be resolved within the configured
+//   `icon-path` using something that looks vaguely like the algorithm defined
+//   in the icon theme spec (https://standards.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html)
+//
+// Returns the resolved path, or NULL if it was unable to find an icon. The
+// return value must be freed by the caller.
+char *get_path_from_icon_name(const char *icon_name)
 {
-        if (STR_EMPTY(iconname))
+        if (STR_EMPTY(icon_name))
                 return NULL;
 
-        const char *suffixes[] = { ".svg", ".svgz", ".png", ".xpm", NULL };
-        gchar *uri_path = NULL;
-        char *new_name = NULL;
-
-        if (g_str_has_prefix(iconname, "file://")) {
-                uri_path = g_filename_from_uri(iconname, NULL, NULL);
-                if (uri_path)
-                        iconname = uri_path;
+        if (g_str_has_prefix(icon_name, "file://")) {
+                return g_filename_from_uri(icon_name, NULL, NULL);
         }
 
-        /* absolute path? */
-        if (iconname[0] == '/' || iconname[0] == '~') {
-                new_name = g_strdup(iconname);
-        } else {
-        /* search in icon_path */
-                char *start = settings.icon_path,
-                     *end, *current_folder, *maybe_icon_path;
-                do {
-                        end = strchr(start, ':');
-                        if (!end) end = strchr(settings.icon_path, '\0'); /* end = end of string */
+        if (icon_name[0] == '/' || icon_name[0] == '~') {
+                return g_strdup(icon_name);
+        }
 
-                        current_folder = g_strndup(start, end - start);
+        int32_t max_scale = 1;
+        // TODO Determine the largest scale factor of any attached output.
+        /* struct mako_output *output = NULL; */
+        /* wl_list_for_each(output, &notif->state->outputs, link) { */
+        /* if (output->scale > max_scale) { */
+        /* max_scale = output->scale; */
+        /* } */
+        /* } */
 
-                        for (const char **suf = suffixes; *suf; suf++) {
-                                gchar *name_with_extension = g_strconcat(iconname, *suf, NULL);
-                                maybe_icon_path = g_build_filename(current_folder, name_with_extension, NULL);
-                                if (is_readable_file(maybe_icon_path)) {
-                                        new_name = g_strdup(maybe_icon_path);
-                                }
-                                g_free(name_with_extension);
-                                g_free(maybe_icon_path);
+        static const char fallback[] = "%s:/usr/share/icons/hicolor";
+        char *search = g_strdup_printf(fallback, settings.icon_path);
 
-                                if (new_name)
-                                        break;
+        char *saveptr = NULL;
+        char *theme_path = strtok_r(search, ":", &saveptr);
+
+        // Match all icon files underneath of the theme_path followed by any icon
+        // size and category subdirectories. This pattern assumes that all the
+        // files in the icon path are valid icon types.
+        static const char pattern_fmt[] = "%s/*/*/%s.*";
+
+        char *icon_path = NULL;
+        int32_t last_icon_size = 0;
+        while (theme_path) {
+                if (strlen(theme_path) == 0) {
+                        continue;
+                }
+
+                glob_t icon_glob = {0};
+                char *pattern = g_strdup_printf(pattern_fmt, theme_path, icon_name);
+
+                // Disable sorting because we're going to do our own anyway.
+                int found = glob(pattern, GLOB_NOSORT, NULL, &icon_glob);
+                size_t found_count = 0;
+                if (found == 0) {
+                        // The value of gl_pathc isn't guaranteed to be usable if glob
+                        // returns non-zero.
+                        found_count = icon_glob.gl_pathc;
+                }
+
+                for (size_t i = 0; i < found_count; ++i) {
+                        char *relative_path = icon_glob.gl_pathv[i];
+
+                        // Find the end of the current search path and walk to the next
+                        // path component. Hopefully this will be the icon resolution
+                        // subdirectory.
+                        relative_path += strlen(theme_path);
+                        while (relative_path[0] == '/') {
+                                ++relative_path;
                         }
 
-                        g_free(current_folder);
-                        if (new_name)
-                                break;
+                        errno = 0;
+                        int32_t icon_size = strtol(relative_path, NULL, 10);
+                        if (errno || icon_size == 0) {
+                                // Try second level subdirectory if failed.
+                                errno = 0;
+                                while (relative_path[0] != '/') {
+                                        ++relative_path;
+                                }
+                                ++relative_path;
+                                icon_size = strtol(relative_path, NULL, 10);
+                                if (errno || icon_size == 0) {
+                                        continue;
+                                }
+                        }
 
-                        start = end + 1;
-                } while (STR_FULL(end));
-                if (!new_name)
-                        LOG_W("No icon found in path: '%s'", iconname);
+                        int32_t icon_scale = 1;
+                        char *scale_str = strchr(relative_path, '@');
+                        if (scale_str != NULL) {
+                                icon_scale = strtol(scale_str + 1, NULL, 10);
+                        }
+
+                        if (icon_size == settings.max_icon_size &&
+                                        icon_scale == max_scale) {
+                                // If we find an exact match, we're done.
+                                free(icon_path);
+                                icon_path = strdup(icon_glob.gl_pathv[i]);
+                                break;
+                        } else if (icon_size < settings.max_icon_size * max_scale &&
+                                        icon_size > last_icon_size) {
+                                // Otherwise, if this icon is small enough to fit but bigger
+                                // than the last best match, choose it on a provisional basis.
+                                // We multiply by max_scale to increase the odds of finding an
+                                // icon which looks sharp on the highest-scale output.
+                                free(icon_path);
+                                icon_path = strdup(icon_glob.gl_pathv[i]);
+                                last_icon_size = icon_size;
+                        }
+                }
+
+                free(pattern);
+                globfree(&icon_glob);
+
+                if (icon_path) {
+                        // The spec says that if we find any match whatsoever in a theme,
+                        // we should stop there to avoid mixing icons from different
+                        // themes even if one is a better size.
+                        break;
+                }
+                theme_path = strtok_r(NULL, ":", &saveptr);
         }
 
-        g_free(uri_path);
-        return new_name;
+        if (icon_path == NULL) {
+                // Finally, fall back to looking in /usr/share/pixmaps. These are
+                // unsized icons, which may lead to downscaling, but some apps are
+                // still using it.
+                static const char pixmaps_fmt[] = "/usr/share/pixmaps/%s.*";
+
+                char *pattern = g_strdup_printf(pixmaps_fmt, icon_name);
+
+                glob_t icon_glob = {0};
+                int found = glob(pattern, GLOB_NOSORT, NULL, &icon_glob);
+
+                if (found == 0 && icon_glob.gl_pathc > 0) {
+                        icon_path = strdup(icon_glob.gl_pathv[0]);
+                }
+                free(pattern);
+                globfree(&icon_glob);
+        }
+
+        free(search);
+        return icon_path;
 }
 
 GdkPixbuf *get_pixbuf_from_icon(const char *iconname, double scale)
 {
         char *path = get_path_from_icon_name(iconname);
         if (!path) {
+                LOG_W("Could not find icon %s in path.\nThe way icon path works recently changed. Take a look at the dunst(5) man page for more info.", iconname);
                 return NULL;
         }
 
@@ -276,7 +364,7 @@ GdkPixbuf *get_pixbuf_from_icon(const char *iconname, double scale)
         g_free(path);
 
         if (!pixbuf)
-                LOG_W("No icon found in path: '%s'", iconname);
+                LOG_W("Unable to convert icon to pixbuf: '%s'", path);
 
         return pixbuf;
 }

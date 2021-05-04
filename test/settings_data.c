@@ -62,7 +62,8 @@ TEST test_default_value_valid(void)
                 gchar *error1 = g_strdup_printf("Default_value of setting %s is null", allowed_settings[i].name);
                 gchar *error2 = g_strdup_printf("Default_value of setting %s is empty", allowed_settings[i].name);
                 ASSERTm(error1, allowed_settings[i].default_value);
-                ASSERTm(error2, strlen(allowed_settings[i].default_value));
+                if (allowed_settings[i].type != TYPE_STRING)
+                        ASSERTm(error2, strlen(allowed_settings[i].default_value));
                 g_free(error1);
                 g_free(error2);
         }

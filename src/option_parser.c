@@ -422,7 +422,7 @@ int string_parse_length(void *ret_in, const char *s) {
 bool set_from_string(void *target, struct setting setting, const char *value) {
         GError *error = NULL;
 
-        if (!strlen(value)) {
+        if (!strlen(value) && setting.type != TYPE_STRING) {
                 LOG_W("Cannot set empty value for setting %s", setting.name);
                 return false;
         }

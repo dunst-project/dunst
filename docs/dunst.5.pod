@@ -447,13 +447,23 @@ gets the last say.
 
 If B<icon_position> is set to off, this setting is ignored.
 
-=item B<icon_path> (default: "/usr/share/icons/gnome/16x16/status/:/usr/share/icons/gnome/16x16/devices/")
+=item B<icon_path> (default: "")
 
-Can be set to a colon-separated list of paths to search for icons to use with
-notifications.
+Paths to search for icons when a notification specifies a name instead
+of a full path. Colon-delimited. This approximates the search algorithm
+used by the XDG Icon Theme Specification, but does not support any of
+the theme metadata. Therefore, if you want to search parent themes,
+you'll need to add them to the path manually.
 
-Dunst doesn't currently do any type of icon lookup outside of these
-directories.
+Please note that the path should now be the root of the icon theme, not a
+subdirectory of it. This has changed in version 1.7 and you should change
+your icon path accordingly.
+The directory will be searched recursively for the most appropriate match based
+on icon size and scale. Because of this recursive search adding too many
+large icon themes to the path may result in bad performance. Try to stick to one
+or two icon themes in the path.
+
+/usr/share/icons/hicolor and /usr/share/pixmaps are always searched.
 
 =item B<sticky_history> (values: [true/false], default: true)
 
