@@ -686,6 +686,7 @@ TEST test_server_caps(enum markup_mode markup)
         ASSERT(g_strv_contains(capsarray, "actions"));
         ASSERT(g_strv_contains(capsarray, "body"));
         ASSERT(g_strv_contains(capsarray, "body-hyperlinks"));
+        ASSERT(g_strv_contains(capsarray, "icon-static"));
         ASSERT(g_strv_contains(capsarray, "x-dunst-stack-tag"));
 
         if (settings.markup != MARKUP_NO)
