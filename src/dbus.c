@@ -307,6 +307,7 @@ static void dbus_cb_GetCapabilities(
         g_variant_builder_add(builder, "s", "actions");
         g_variant_builder_add(builder, "s", "body");
         g_variant_builder_add(builder, "s", "body-hyperlinks");
+        g_variant_builder_add(builder, "s", "icon-static");
 
         for (int i = 0; i < sizeof(stack_tag_hints)/sizeof(*stack_tag_hints); ++i)
                 g_variant_builder_add(builder, "s", stack_tag_hints[i]);
