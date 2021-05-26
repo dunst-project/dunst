@@ -347,7 +347,13 @@ GdkPixbuf *icon_get_for_data(GVariant *data, char **id)
                 return NULL;
         }
 
+        // g_memdup is deprecated in glib 2.67.4 and higher.
+        // g_memdup2 is a safer alternative
+#if GLIB_CHECK_VERSION(2,67,3)
+        data_pb = (guchar *) g_memdup2(g_variant_get_data(data_variant), len_actual);
+#else
         data_pb = (guchar *) g_memdup(g_variant_get_data(data_variant), len_actual);
+#endif
 
         pixbuf = gdk_pixbuf_new_from_data(data_pb,
                                           GDK_COLORSPACE_RGB,

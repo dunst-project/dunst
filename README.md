@@ -78,13 +78,12 @@ distro's repositories, don't worry, it's not hard to build it yourself.
 
 ### Dependencies
 
-- dbus
+- dbus (runtime)
 - libxinerama
 - libxrandr
 - libxss
 - glib
 - pango/cairo
-- libgtk-3-dev
 - libnotify (optional, for dunstify)
 - wayland-client (can build without, see [make parameters](#make-parameters))
 - wayland-protocols (optional, for recompiling protocols)

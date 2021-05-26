@@ -763,6 +763,68 @@ TEST test_queue_find_by_id(void)
         PASS();
 }
 
+
+void print_queues() {
+        printf("\nQueues:\n");
+        for (GList *iter = g_queue_peek_head_link(QUEUE_WAIT); iter;
+                        iter = iter->next) {
+                struct notification *notif = iter->data;
+                printf("waiting %s\n", notif->summary);
+        }
+}
+
+// Test if notifications are correctly sorted, even if dunst is paused in
+// between. See #838 for the issue.
+TEST test_queue_no_sort_and_pause(void)
+{
+        // Setting sort to false, this means that notifications will only be
+        // sorted based on time
+        settings.sort = false;
+        settings.geometry.h = 0;
+        struct notification *n;
+        queues_init();
+
+        n = test_notification("n0", 0);
+        queues_notification_insert(n);
+        queues_update(STATUS_NORMAL);
+
+        n = test_notification("n1", 0);
+        queues_notification_insert(n);
+        queues_update(STATUS_NORMAL);
+
+        n = test_notification("n2", 0);
+        queues_notification_insert(n);
+        queues_update(STATUS_PAUSE);
+
+        n = test_notification("n3", 0);
+        queues_notification_insert(n);
+        queues_update(STATUS_PAUSE);
+        /* queues_update(STATUS_NORMAL); */
+
+        n = test_notification("n4", 0);
+        queues_notification_insert(n);
+        queues_update(STATUS_NORMAL);
+
+        QUEUE_LEN_ALL(0, 5, 0);
+
+        const char* order[] = {
+                "n0",
+                "n1",
+                "n2",
+                "n3",
+                "n4",
+        };
+
+        for (int i = 0; i < g_queue_get_length(QUEUE_DISP); i++) {
+                struct notification *notif = g_queue_peek_nth(QUEUE_DISP, i);
+                ASSERTm("Notifications are not in the right order",
+                                STR_EQ(notif->summary, order[i]));
+        }
+
+        queues_teardown();
+        PASS();
+}
+
 SUITE(suite_queues)
 {
         settings.icon_path = "";
@@ -794,6 +856,7 @@ SUITE(suite_queues)
         RUN_TEST(test_queues_update_xmore);
         RUN_TEST(test_queues_timeout_before_paused);
         RUN_TEST(test_queue_find_by_id);
+        RUN_TEST(test_queue_no_sort_and_pause);
 
         settings.icon_path = NULL;
 }
