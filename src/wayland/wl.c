@@ -107,7 +107,7 @@ static void output_handle_geometry(void *data, struct wl_output *wl_output,
                 int32_t x, int32_t y, int32_t phy_width, int32_t phy_height,
                 int32_t subpixel, const char *make, const char *model,
                 int32_t transform) {
-        //TODO
+        //TODO do something with the subpixel data
         struct dunst_output *output = data;
         output->subpixel = subpixel;
 }
@@ -116,6 +116,8 @@ static void output_handle_scale(void *data, struct wl_output *wl_output,
                 int32_t factor) {
         struct dunst_output *output = data;
         output->scale = factor;
+
+        wake_up();
 }
 
 static const struct wl_output_listener output_listener = {
@@ -135,7 +137,6 @@ static void create_output( struct wl_output *wl_output, uint32_t global_name) {
         LOG_I("New output found - id %i", number);
         output->global_name = global_name;
         output->wl_output = wl_output;
-        // TODO: Fix this
         output->scale = 1;
         output->fullscreen = false;
         wl_list_insert(&ctx.outputs, &output->link);
@@ -227,7 +228,6 @@ static void seat_handle_capabilities(void *data, struct wl_seat *wl_seat,
                 ctx.pointer.wl_pointer = wl_seat_get_pointer(wl_seat);
                 wl_pointer_add_listener(ctx.pointer.wl_pointer,
                         &pointer_listener, ctx.seat);
-                LOG_I("Adding pointer");
         }
         if (ctx.touch.wl_touch != NULL) {
                 wl_touch_release(ctx.touch.wl_touch);
@@ -343,20 +343,29 @@ static void add_seat_to_idle_handler(struct wl_seat *seat) {
 
 // Warning, can return NULL
 static struct dunst_output *get_configured_output() {
+        int n = 0;
+        int target_monitor = settings.monitor;
+
+        struct dunst_output *first_output = NULL, *configured_output = NULL,
+                            *tmp_output = NULL;
+        wl_list_for_each(tmp_output, &ctx.outputs, link) {
+                if (n == 0)
+                        first_output = tmp_output;
+                if (n == target_monitor)
+                        configured_output = tmp_output;
+                n++;
+        }
+
+        // There's only 1 output, so return that
+        if (n == 1)
+                return first_output;
 
         switch (settings.f_mode){
                 case FOLLOW_NONE: ; // this semicolon is neccesary
-                        int n = 0;
-                        int target_monitor = settings.monitor;
-
-                        struct dunst_output *output;
-                        wl_list_for_each(output, &ctx.outputs, link) {
-                                if (n == target_monitor)
-                                        return output;
-                                n++;
+                        if (!configured_output) {
+                                LOG_W("Monitor %i doesn't exist, using focused monitor", settings.monitor);
                         }
-                        LOG_W("Monitor %i doesn't exist, using focused monitor", settings.monitor);
-                        return NULL;
+                        return configured_output;
                 case FOLLOW_MOUSE:
                         // fallthrough
                 case FOLLOW_KEYBOARD:
@@ -626,7 +635,7 @@ static void schedule_frame_and_commit();
 
 // Draw and commit a new frame.
 static void send_frame() {
-        int scale = 1;
+        int scale = wl_get_scale();
 
         struct dunst_output *output = get_configured_output();
         int height = ctx.cur_dim.h;
@@ -692,8 +701,6 @@ static void send_frame() {
         if (ctx.height != height || ctx.width != width) {
                 struct dimensions dim = ctx.cur_dim;
                 // Set window size
-                LOG_D("Window dimensions %ix%i", dim.w, dim.h);
-                LOG_D("Window position %ix%i", dim.x, dim.y);
                 zwlr_layer_surface_v1_set_size(ctx.layer_surface,
                                 dim.w, dim.h);
 
@@ -818,12 +825,15 @@ void wl_win_hide(window win) {
 
 void wl_display_surface(cairo_surface_t *srf, window winptr, const struct dimensions* dim) {
         /* struct window_wl *win = (struct window_wl*)winptr; */
-        ctx.current_buffer = get_next_buffer(ctx.shm, ctx.buffers, dim->w, dim->h);
+        int scale = wl_get_scale();
+        LOG_D("Buffer size (scaled) %ix%i", dim->w * scale, dim->h * scale);
+        ctx.current_buffer = get_next_buffer(ctx.shm, ctx.buffers,
+                        dim->w * scale, dim->h * scale);
 
         cairo_t *c = ctx.current_buffer->cairo;
         cairo_save(c);
         cairo_set_source_surface(c, srf, 0, 0);
-        cairo_rectangle(c, 0, 0, dim->w, dim->h);
+        cairo_rectangle(c, 0, 0, dim->w * scale, dim->h * scale);
         cairo_fill(c);
         cairo_restore(c);
 
@@ -851,6 +861,7 @@ const struct screen_info* wl_get_active_screen(void) {
                 .id = 0,
                 .mmh = 500
         };
+        scr.dpi = wl_get_scale() * 96;
         return &scr;
 }
 
@@ -885,5 +896,22 @@ bool wl_have_fullscreen_window(void) {
 
         LOG_D("Fullscreen queried: %i", have_fullscreen);
         return have_fullscreen;
+}
+
+int wl_get_scale(void) {
+        int scale = 0;
+        struct dunst_output *output = get_configured_output();
+        if (output) {
+                scale = output->scale;
+        } else {
+                // return the largest scale
+                struct dunst_output *output;
+                wl_list_for_each(output, &ctx.outputs, link) {
+                        scale = MAX(output->scale, scale);
+                }
+        }
+        if (scale <= 0)
+                scale = 1;
+        return scale;
 }
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

@@ -29,7 +29,9 @@ const struct output output_x11 = {
         get_active_screen,
 
         x_is_idle,
-        have_fullscreen_window
+        have_fullscreen_window,
+
+        x_get_scale,
 };
 
 #ifdef ENABLE_WAYLAND
@@ -49,7 +51,9 @@ const struct output output_wl = {
         wl_get_active_screen,
 
         wl_is_idle,
-        wl_have_fullscreen_window
+        wl_have_fullscreen_window,
+
+        wl_get_scale,
 };
 #endif
 

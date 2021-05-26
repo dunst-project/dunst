@@ -11,11 +11,26 @@ cairo_surface_t *gdk_pixbuf_to_cairo_surface(GdkPixbuf *pixbuf);
 /** Retrieve an icon by its full filepath, scaled according to settings.
  *
  * @param filename A string representing a readable file path
+ * @param scale An integer representing the output dpi scaling.
  *
  * @return an instance of `GdkPixbuf`
  * @retval NULL: file does not exist, not readable, etc..
  */
-GdkPixbuf *get_pixbuf_from_file(const char *filename);
+GdkPixbuf *get_pixbuf_from_file(const char *filename, int scale);
+
+
+/**
+ * Get the unscaled icon width.
+ *
+ * If scale is 2 for example, the icon will render in twice the size, but
+ * get_icon_width still returns the same size as when scale is 1.
+ */
+int get_icon_width(cairo_surface_t *icon, int scale);
+
+/**
+ * Get the unscaled icon height, see get_icon_width.
+ */
+int get_icon_height(cairo_surface_t *icon, int scale);
 
 /** Retrieve a path from an icon name.
  *
@@ -33,11 +48,12 @@ char *get_path_from_icon_name(const char *iconname);
  * @param iconname A string describing a `file://` URL, an arbitary filename
  *                 or an icon name, which then gets searched for in the
  *                 settings.icon_path
+ * @param scale An integer representing the output dpi scaling.
  *
  * @return an instance of `GdkPixbuf`
  * @retval NULL: file does not exist, not readable, etc..
  */
-GdkPixbuf *get_pixbuf_from_icon(const char *iconname);
+GdkPixbuf *get_pixbuf_from_icon(const char *iconname, int scale);
 
 /** Read an icon from disk and convert it to a GdkPixbuf, scaled according to settings
  *
@@ -49,10 +65,11 @@ GdkPixbuf *get_pixbuf_from_icon(const char *iconname);
  *             get searched in the folders of the icon_path setting.
  * @param id   (necessary) A unique identifier of the returned pixbuf. Only filled,
  *             if the return value is non-NULL.
+ * @param scale An integer representing the output dpi scaling.
  * @return an instance of `GdkPixbuf`, representing the name's image
  * @retval NULL: Invalid path given
  */
-GdkPixbuf *icon_get_for_name(const char *name, char **id);
+GdkPixbuf *icon_get_for_name(const char *name, char **id, int dpi_scale);
 
 /** Convert a GVariant like described in GdkPixbuf, scaled according to settings
  *
@@ -63,10 +80,11 @@ GdkPixbuf *icon_get_for_name(const char *name, char **id);
  *             like described in the notification spec.
  * @param id   (necessary) A unique identifier of the returned pixbuf.
  *             Only filled, if the return value is non-NULL.
+ * @param scale An integer representing the output dpi scaling.
  * @return an instance of `GdkPixbuf` derived from the GVariant
  * @retval NULL: GVariant parameter nulled, invalid or in wrong format
  */
-GdkPixbuf *icon_get_for_data(GVariant *data, char **id);
+GdkPixbuf *icon_get_for_data(GVariant *data, char **id, int scale);
 
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

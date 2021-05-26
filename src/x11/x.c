@@ -113,7 +113,7 @@ static void x_win_corners_shape(struct window_x11 *win, const int rad)
 
         draw_rounded_rect(cr, 0, 0,
                           width, height,
-                          rad,
+                          rad, 1,
                           true, true);
         cairo_fill(cr);
 
@@ -940,6 +940,10 @@ static void x_shortcut_init(struct keyboard_shortcut *ks)
         }
 
         g_free(str_begin);
+}
+
+int x_get_scale(void) {
+        return 1;
 }
 
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

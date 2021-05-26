@@ -44,6 +44,8 @@ struct output {
 
         bool (*is_idle)(void);
         bool (*have_fullscreen_window)(void);
+
+        int (*get_scale)(void);
 };
 
 /**
