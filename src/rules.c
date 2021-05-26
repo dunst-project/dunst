@@ -26,6 +26,10 @@ void rule_apply(struct rule *r, struct notification *n)
                 n->transient = r->set_transient;
         if (r->skip_display != -1)
                 n->skip_display = r->skip_display;
+        if (r->action_name) {
+                g_free(n->default_action_name);
+                n->default_action_name = g_strdup(r->action_name);
+        }
         if (r->markup != MARKUP_NULL)
                 n->markup = r->markup;
         if (r->new_icon)

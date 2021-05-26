@@ -862,6 +862,7 @@ void load_settings(char *cmdline_config_path)
                         g_free(c);
                 }
 
+                r->action_name = ini_get_string(cur_section, "action_name", NULL);
                 r->urgency = ini_get_urgency(cur_section, "urgency", r->urgency);
                 r->msg_urgency = ini_get_urgency(cur_section, "msg_urgency", r->msg_urgency);
                 r->fg = ini_get_string(cur_section, "foreground", r->fg);

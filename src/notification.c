@@ -288,6 +288,7 @@ void notification_unref(struct notification *n)
         g_free(n->desktop_entry);
 
         g_hash_table_unref(n->actions);
+        g_free(n->default_action_name);
 
         if (n->icon)
                 g_object_unref(n->icon);
@@ -386,6 +387,7 @@ struct notification *notification_create(void)
         n->fullscreen = FS_SHOW;
 
         n->actions = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+        n->default_action_name = g_strdup("default");
 
         n->script_count = 0;
         return n;
@@ -647,27 +649,43 @@ void notification_update_text_to_render(struct notification *n)
 }
 
 /* see notification.h */
-void notification_do_action(const struct notification *n)
+void notification_do_action(struct notification *n)
 {
+        assert(n->default_action_name);
+        
         if (g_hash_table_size(n->actions)) {
-                if (g_hash_table_contains(n->actions, "default")) {
-                        signal_action_invoked(n, "default");
+                if (g_hash_table_contains(n->actions, n->default_action_name)) {
+                        signal_action_invoked(n, n->default_action_name);
                         return;
                 }
-                if (g_hash_table_size(n->actions) == 1) {
+                if (strcmp(n->default_action_name, "default") == 0 && g_hash_table_size(n->actions) == 1) {
                         GList *keys = g_hash_table_get_keys(n->actions);
                         signal_action_invoked(n, keys->data);
                         g_list_free(keys);
                         return;
                 }
-                context_menu();
+                notification_open_context_menu(n);
 
-        } else if (n->urls) {
-                if (strstr(n->urls, "\n"))
-                        context_menu();
-                else
-                        open_browser(n->urls);
         }
+}
+
+/* see notification.h */
+void notification_open_url(struct notification *n)
+{
+        if (strstr(n->urls, "\n"))
+                notification_open_context_menu(n);
+        else
+                open_browser(n->urls);
+}
+
+/* see notification.h */
+void notification_open_context_menu(struct notification *n)
+{
+        GList *notifications = NULL;
+        notifications = g_list_append(notifications, n);
+        notification_lock(n);
+
+        context_menu_for(notifications);
 }
 
 void notification_invalidate_actions(struct notification *n) {

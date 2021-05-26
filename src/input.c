@@ -1,5 +1,6 @@
 #include "input.h"
 #include "log.h"
+#include "menu.h"
 #include "settings.h"
 #include "queues.h"
 #include <stddef.h>
@@ -41,7 +42,12 @@ void input_handle_click(unsigned int button, bool button_down, int mouse_x, int 
                         return;
                 }
 
-                if (act == MOUSE_DO_ACTION || act == MOUSE_CLOSE_CURRENT) {
+                if (act == MOUSE_CONTEXT_ALL) {
+                        context_menu();
+                        continue;
+                }
+
+                if (act == MOUSE_DO_ACTION || act == MOUSE_CLOSE_CURRENT || act == MOUSE_CONTEXT || act == MOUSE_OPEN_URL) {
                         int y = settings.separator_height;
                         struct notification *n = NULL;
                         int first = true;
@@ -59,8 +65,12 @@ void input_handle_click(unsigned int button, bool button_down, int mouse_x, int 
                         if (n) {
                                 if (act == MOUSE_CLOSE_CURRENT) {
                                         n->marked_for_closure = REASON_USER;
-                                } else {
+                                } else if (act == MOUSE_DO_ACTION) {
                                         notification_do_action(n);
+                                } else if (act == MOUSE_OPEN_URL) {
+                                        notification_open_url(n);
+                                } else {
+                                        notification_open_context_menu(n);
                                 }
                         }
                 }
