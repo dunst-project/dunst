@@ -941,6 +941,46 @@ dunst is able to get different colors for a message via notify-send.
 In order to do that you have to add a hint via the -h option.
 The progress value can be set with a hint, too.
 
+B<All hints>
+
+See RULES for more detailed explanations for some options.
+
+=over 4
+
+=item B<fgcolor>:
+Foreground cololor
+
+=item B<bgcolor>:
+Background color
+
+=item B<frcolor>:
+Frame color
+
+=item B<hlcolor>:
+Highlight color
+
+=item B<value>:
+Progress value.
+
+=item B<image-path>:
+Icon name. This may be a path or just the icon name.
+
+=item B<image-data>:
+A stream of raw image data.
+
+=item B<category>:
+The category.
+
+=item B<desktop_entry>:
+The desktop entry.
+
+=item B<transient>:
+The transient value.
+
+=back
+
+B<Examples>
+
 =over 4
 
 =item notify-send -h string:fgcolor:#ff4444
