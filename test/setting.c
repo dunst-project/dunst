@@ -98,7 +98,6 @@ TEST test_dunstrc_defaults(void) {
                         case TYPE_BOOLEAN:;
                                       CHECK_EQUAL_OFFSET(bool, offset, ASSERT_EQm);
                         case TYPE_STRING: ;
-                        case TYPE_SEP_COLOR:
                         case TYPE_PATH:
                         case TYPE_GEOMETRY:
                         case TYPE_LIST:

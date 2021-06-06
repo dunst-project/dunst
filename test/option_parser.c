@@ -500,7 +500,7 @@ TEST test_string_to_sepcolor(void)
 {
         struct separator_color_data val = {0};
         struct setting s;
-        s.type = TYPE_SEP_COLOR;
+        s.type = TYPE_CUSTOM;
         s.value = &val;
         s.name = "test_sepcolor";
         s.parser = string_parse_sepcolor;
@@ -541,7 +541,7 @@ TEST test_string_to_sepcolor_invalid(void)
 {
         struct separator_color_data val = {123, "test123"};
         struct setting s;
-        s.type = TYPE_SEP_COLOR;
+        s.type = TYPE_CUSTOM;
         s.value = &val;
         s.name = "test_sepcolor";
         s.parser = string_parse_sepcolor;

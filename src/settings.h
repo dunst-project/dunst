@@ -36,7 +36,7 @@ enum zwlr_layer_shell_v1_layer {
 
 // TODO make a TYPE_CMD, instead of using TYPE_PATH for settings like dmenu and browser
 enum setting_type { TYPE_MIN = 0, TYPE_INT, TYPE_STRING, TYPE_BOOLEAN, TYPE_PATH,
-        TYPE_TIME, TYPE_GEOMETRY, TYPE_LIST, TYPE_SEP_COLOR, TYPE_CUSTOM,
+        TYPE_TIME, TYPE_GEOMETRY, TYPE_LIST, TYPE_CUSTOM,
         TYPE_DEPRECATED, TYPE_MAX = TYPE_DEPRECATED + 1 }; // to be implemented
 
 struct separator_color_data {

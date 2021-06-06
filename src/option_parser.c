@@ -303,15 +303,6 @@ bool set_from_string(void *target, struct setting setting, const char *value) {
 
                         if (!success) LOG_W("Invalid %s value: '%s'", setting.name, value);
                         return success;
-                case TYPE_SEP_COLOR:
-                        if (setting.parser == NULL) {
-                                LOG_W("Setting %s doesn't have parser", setting.name);
-                                return false;
-                        }
-                        success = setting.parser(setting.parser_data, value, target);
-
-                        if (!success) LOG_W("Unknown %s value: '%s'", setting.name, value);
-                        return success;
                 case TYPE_PATH: ;
                         g_free(*(char**) target);
                         *(char**) target = string_to_path(g_strdup(value));
