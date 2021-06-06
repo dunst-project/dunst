@@ -86,7 +86,6 @@ TEST test_valid_parser_and_data_per_type(void)
         for (size_t i = 0; i < G_N_ELEMENTS(allowed_settings); i++) {
                 struct setting curr = allowed_settings[i];
                 switch (curr.type) {
-                        case TYPE_BOOLEAN:
                         case TYPE_STRING:
                         case TYPE_TIME:
                         case TYPE_GEOMETRY:

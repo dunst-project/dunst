@@ -11,6 +11,7 @@
 
 int string_parse_enum(const void* data, const char *s, void * ret);
 int string_parse_sepcolor(const void *data, const char *s, void *ret);
+int string_parse_bool(const void *data, const char *s, void *ret);
 
 int load_ini_file(FILE *);
 void set_defaults();

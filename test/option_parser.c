@@ -184,7 +184,9 @@ TEST test_string_to_boolean(void)
         bool val;
 
         struct setting s;
-        s.type = TYPE_BOOLEAN;
+        s.type = TYPE_CUSTOM;
+        s.parser = string_parse_bool;
+        s.parser_data = boolean_enum_data;
         s.value = &val;
 
         const char* inputs[] = {
@@ -219,7 +221,9 @@ TEST test_string_to_boolean_invalid(void)
         bool val = true;
 
         struct setting s = {0};
-        s.type = TYPE_BOOLEAN;
+        s.type = TYPE_CUSTOM;
+        s.parser = string_parse_bool;
+        s.parser_data = boolean_enum_data;
         s.value = &val;
         s.name = "test_boolean";
 

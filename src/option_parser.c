@@ -135,6 +135,18 @@ int string_parse_sepcolor(const void *data, const char *s, void *ret)
         }
 }
 
+
+int string_parse_bool(const void *data, const char *s, void *ret)
+{
+        // this is needed, since string_parse_enum assumses a
+        // variable of size int is passed
+        int tmp_int = -1;
+        bool success = string_parse_enum(data, s, &tmp_int);
+
+        *(bool*) ret = (bool) tmp_int;
+        return success;
+}
+
 struct section *new_section(const char *name)
 {
         for (int i = 0; i < section_count; i++) {
@@ -272,24 +284,6 @@ bool set_from_string(void *target, struct setting setting, const char *value) {
         switch (setting.type) {
                 case TYPE_INT:
                         return safe_string_to_int(target, value);
-                case TYPE_BOOLEAN: ;
-                        // this is needed, since string_parse_enum assumses a
-                        // variable of size int is passed
-                        int tmp_int = -1;
-                        success = string_parse_enum(boolean_enum_data, value, &tmp_int);
-
-                        if (!success) LOG_W("Unknown %s value: '%s'. It should be a valid boolean",
-                                        setting.name, value);
-
-                        if (tmp_int < 0 || tmp_int > 1)
-                        {
-                                // should not happen if boolean_enum_data is correct
-                                LOG_W("TYPE_BOOLEAN out of range");
-                                return false;
-                        }
-
-                        *(bool*) target = (bool) tmp_int;
-                        return success;
                 case TYPE_STRING:
                         g_free(*(char**) target);
                         *(char**) target = g_strdup(value);

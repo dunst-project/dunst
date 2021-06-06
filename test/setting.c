@@ -93,11 +93,14 @@ TEST test_dunstrc_defaults(void) {
                                 , allowed_settings[i].name);
                 switch (type) {
                         case TYPE_CUSTOM:
+                                if (allowed_settings[i].parser == string_parse_bool) {
+                                        CHECK_EQUAL_OFFSET(bool, offset, ASSERT_EQm);
+                                } else {
+                                        CHECK_EQUAL_OFFSET(int, offset, ASSERT_EQm);
+                                }
                         case TYPE_TIME:
                         case TYPE_INT:;
                                       CHECK_EQUAL_OFFSET(int, offset, ASSERT_EQm);
-                        case TYPE_BOOLEAN:;
-                                      CHECK_EQUAL_OFFSET(bool, offset, ASSERT_EQm);
                         case TYPE_STRING: ;
                         case TYPE_PATH:
                         case TYPE_GEOMETRY:
