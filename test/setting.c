@@ -91,7 +91,7 @@ TEST test_dunstrc_defaults(void) {
                 snprintf(message, 500, "The default of setting %s does not match. Different defaults are set in code and dunstrc"
                                 , allowed_settings[i].name);
                 switch (type) {
-                        case TYPE_ENUM:
+                        case TYPE_CUSTOM:
                         case TYPE_TIME:
                         case TYPE_INT:;
                                       CHECK_EQUAL_OFFSET(int, offset, ASSERT_EQm);

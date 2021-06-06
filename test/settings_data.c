@@ -99,7 +99,7 @@ TEST test_valid_parser_and_data_per_type(void)
                                 g_free(error2);
                                 break;
                         case TYPE_SEP_COLOR:
-                        case TYPE_ENUM: ; // both parser data and parser are needed
+                        case TYPE_CUSTOM: ; // both parser data and parser are needed
                                 gchar *error3 = g_strdup_printf("Parser of setting %s should not be NULL. It's needed for this type", curr.name);
                                 gchar *error4 = g_strdup_printf("Parser data of setting %s should not be NULL. It's needed for this type", curr.name);
                                 ASSERTm(error3, curr.parser);

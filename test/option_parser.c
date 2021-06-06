@@ -246,7 +246,7 @@ TEST test_string_to_enum(void)
         int val = -123;
 
         struct setting s;
-        s.type = TYPE_ENUM;
+        s.type = TYPE_CUSTOM;
         s.value = &val;
         s.parser = string_parse_enum;
         s.parser_data = ellipsize_enum_data;
@@ -268,7 +268,7 @@ TEST test_string_to_enum_invalid(void)
 
         struct setting s;
         s.name = "test_enum";
-        s.type = TYPE_ENUM;
+        s.type = TYPE_CUSTOM;
         s.value = &val;
         s.parser = string_parse_enum;
         s.parser_data = ellipsize_enum_data;

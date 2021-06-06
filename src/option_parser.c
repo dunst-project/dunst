@@ -294,14 +294,14 @@ bool set_from_string(void *target, struct setting setting, const char *value) {
                         g_free(*(char**) target);
                         *(char**) target = g_strdup(value);
                         return true;
-                case TYPE_ENUM:
+                case TYPE_CUSTOM:
                         if (setting.parser == NULL) {
-                                LOG_W("Enum setting %s doesn't have parser", setting.name);
+                                LOG_W("Setting %s doesn't have parser", setting.name);
                                 return false;
                         }
                         success = setting.parser(setting.parser_data, value, target);
 
-                        if (!success) LOG_W("Unknown %s value: '%s'", setting.name, value);
+                        if (!success) LOG_W("Invalid %s value: '%s'", setting.name, value);
                         return success;
                 case TYPE_SEP_COLOR:
                         if (setting.parser == NULL) {
