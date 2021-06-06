@@ -266,6 +266,7 @@ bool set_from_string(void *target, struct setting setting, const char *value) {
                 return false;
         }
 
+        bool success = false;
         // Do not use setting.value, since we might want to set a rule. Use
         // target instead
         switch (setting.type) {
@@ -274,21 +275,21 @@ bool set_from_string(void *target, struct setting setting, const char *value) {
                 case TYPE_BOOLEAN: ;
                         // this is needed, since string_parse_enum assumses a
                         // variable of size int is passed
-                        int temp_target = -1;
-                        bool success1 = string_parse_enum(boolean_enum_data, value, &temp_target);
+                        int tmp_int = -1;
+                        success = string_parse_enum(boolean_enum_data, value, &tmp_int);
 
-                        if (!success1) LOG_W("Unknown %s value: '%s'. It should be a valid boolean",
+                        if (!success) LOG_W("Unknown %s value: '%s'. It should be a valid boolean",
                                         setting.name, value);
 
-                        if (temp_target < 0 || temp_target > 1)
+                        if (tmp_int < 0 || tmp_int > 1)
                         {
                                 // should not happen if boolean_enum_data is correct
                                 LOG_W("TYPE_BOOLEAN out of range");
                                 return false;
                         }
 
-                        *(bool*) target = (bool) temp_target;
-                        return success1;
+                        *(bool*) target = (bool) tmp_int;
+                        return success;
                 case TYPE_STRING:
                         g_free(*(char**) target);
                         *(char**) target = g_strdup(value);
@@ -298,7 +299,7 @@ bool set_from_string(void *target, struct setting setting, const char *value) {
                                 LOG_W("Enum setting %s doesn't have parser", setting.name);
                                 return false;
                         }
-                        bool success = setting.parser(setting.parser_data, value, target);
+                        success = setting.parser(setting.parser_data, value, target);
 
                         if (!success) LOG_W("Unknown %s value: '%s'", setting.name, value);
                         return success;
@@ -307,10 +308,10 @@ bool set_from_string(void *target, struct setting setting, const char *value) {
                                 LOG_W("Setting %s doesn't have parser", setting.name);
                                 return false;
                         }
-                        bool success2 = setting.parser(setting.parser_data, value, target);
+                        success = setting.parser(setting.parser_data, value, target);
 
-                        if (!success2) LOG_W("Unknown %s value: '%s'", setting.name, value);
-                        return success2;
+                        if (!success) LOG_W("Unknown %s value: '%s'", setting.name, value);
+                        return success;
                 case TYPE_PATH: ;
                         g_free(*(char**) target);
                         *(char**) target = string_to_path(g_strdup(value));
@@ -330,11 +331,11 @@ bool set_from_string(void *target, struct setting setting, const char *value) {
                         }
                         return true;
                 case TYPE_TIME: ;
-                        gint64 temp_target2 = string_to_time(value);
+                        gint64 tmp_time = string_to_time(value);
                         if (errno != 0) {
                                 return false;
                         }
-                        *(gint64*) target = temp_target2;
+                        *(gint64*) target = tmp_time;
                         return true;
                 case TYPE_GEOMETRY:
                         *(struct geometry*) target = x_parse_geometry(value);
