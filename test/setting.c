@@ -61,13 +61,6 @@ TEST test_dunstrc_nomarkup(void) {
         PASS();
 }
 
-// Check if the values at offset are the same using EQ_FUNC
-#define CHECK_EQUAL_OFFSET(t, offset, EQ_FUNC) { \
-        typeof(t) a = *(typeof(t)*) ((char*) &s_default + offset); \
-        typeof(t) b = *(typeof(t)*) ((char*) &s_dunstrc + offset); \
-        EQ_FUNC(message, a, b); \
-} 
-
 // Test if the defaults in code and in dunstrc match
 TEST test_dunstrc_defaults(void) {
         struct settings s_default;
@@ -94,18 +87,26 @@ TEST test_dunstrc_defaults(void) {
                 switch (type) {
                         case TYPE_CUSTOM:
                                 if (allowed_settings[i].parser == string_parse_bool) {
-                                        CHECK_EQUAL_OFFSET(bool, offset, ASSERT_EQm);
-                                } else {
-                                        CHECK_EQUAL_OFFSET(int, offset, ASSERT_EQm);
-                                }
+                                        {
+                                                bool a = *(bool*) ((char*) &s_default + offset);
+                                                bool b = *(bool*) ((char*) &s_dunstrc + offset);
+                                                ASSERT_EQm(message, a, b);
+                                        }
+                                        break;
+                                } // else fall through
                         case TYPE_TIME:
                         case TYPE_INT:;
-                                      CHECK_EQUAL_OFFSET(int, offset, ASSERT_EQm);
+                                        {
+                                                int a = *(int*) ((char*) &s_default + offset);
+                                                int b = *(int*) ((char*) &s_dunstrc + offset);
+                                                ASSERT_EQm(message, a, b);
+                                        }
+                                      break;
                         case TYPE_STRING: ;
                         case TYPE_PATH:
                         case TYPE_GEOMETRY:
                         case TYPE_LIST:
-                                      continue; // TODO implement these checks as well
+                                      break; // TODO implement these checks as well
                         default:
                                       printf("Type unknown %s:%d", __FILE__, __LINE__);
                 }
