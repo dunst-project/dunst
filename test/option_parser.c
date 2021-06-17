@@ -376,7 +376,7 @@ TEST test_string_to_list_invalid(void)
         }
         sprintf(buf,"List should not change from invalid values. Expected length %i, got %i", len, get_list_len(val));
         ASSERT_EQm(buf, get_list_len(val), len);
-        ASSERT_EQm("List should not change from invalid values", val[0], 123);
+        ASSERT_EQm("List should not change from invalid values", (int) val[0], 123);
         g_free(val);
         PASS();
 }
@@ -570,7 +570,7 @@ TEST test_string_to_sepcolor_invalid(void)
                 ASSERT_FALSEm(buf, set_from_string(&val, s, inputs[i]));
         }
 
-        ASSERT_EQm("Sep color shouldn't changed from invalid inputs", 123, val.type);
+        ASSERT_EQm("Sep color shouldn't changed from invalid inputs", 123, (int) val.type);
         ASSERT_STR_EQm("Sep color shouldn't changed from invalid inputs", "test123", val.sep_color);
         PASS();
 }
