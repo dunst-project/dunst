@@ -288,6 +288,18 @@ void load_settings(char *cmdline_config_path)
 
         }
 
+        settings.geometry.h_center = option_get_bool(
+                "global",
+                "h_center", "-h_center", defaults.geometry.h_center,
+                "Horizontally center notification window"
+        );
+
+        settings.geometry.v_center = option_get_bool(
+                "global",
+                "v_center", "-v_center", defaults.geometry.v_center,
+                "Vertically center notification window"
+        );
+
         settings.shrink = option_get_bool(
                 "global",
                 "shrink", "-shrink", defaults.shrink,

@@ -26,7 +26,9 @@ struct settings defaults = {
               .negative_x = 0,
               .negative_y = 0,
               .negative_width = 0,
-              .width_set = 0
+              .width_set = 0,
+              .h_center = 0,
+              .v_center = 0
             },
 .title = "Dunst",            /* the title of dunst notification windows */
 .class = "Dunst",            /* the class of dunst notification windows */

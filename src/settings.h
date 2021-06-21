@@ -44,6 +44,8 @@ struct geometry {
         bool negative_y;
         bool negative_width;
         bool width_set;
+        bool h_center;
+        bool v_center;
 };
 
 struct settings {

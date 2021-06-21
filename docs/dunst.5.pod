@@ -100,6 +100,16 @@ the notification on the left border of the screen while a horizontal offset of
 
 =back
 
+=item B<h_center> (values: [true/false], default: false)
+
+Causes the notification window to be centered horizontally within the screen.
+Geometry B<x/y> offsets will still apply.
+
+=item B<v_center> (values: [true/false], default: false)
+
+Causes the notification window to be centered vertically within the screen.
+Geometry B<x/y> offsets will still apply.
+
 =item B<progress_bar> (values: [true/false], default: true)
 
 When an integer value is passed to dunst as a hint (see B<NOTIFY-SEND>), a

@@ -31,6 +31,12 @@
     # screen width minus the width defined in within the geometry option.
     geometry = "300x5-30+20"
 
+    # Center window horizontally, geometry offsets apply
+    h_center = true
+
+    # Center window vertically, geometry offsets apply
+    v_center = true
+
     # Turn on the progess bar
     progress_bar = true
 

@@ -780,7 +780,9 @@ static void calc_window_pos(int width, int height, int *ret_x, int *ret_y)
         const struct screen_info *scr = output->get_active_screen();
 
         if (ret_x) {
-                if (settings.geometry.negative_x) {
+                if (settings.geometry.h_center) {
+                        *ret_x = ((scr->x + scr->w - width) / 2) + settings.geometry.x;
+                } else if (settings.geometry.negative_x) {
                         *ret_x = (scr->x + (scr->w - width)) + settings.geometry.x;
                 } else {
                         *ret_x = scr->x + settings.geometry.x;
@@ -788,7 +790,9 @@ static void calc_window_pos(int width, int height, int *ret_x, int *ret_y)
         }
 
         if (ret_y) {
-                if (settings.geometry.negative_y) {
+                if (settings.geometry.v_center) {
+                        *ret_y = ((scr->y + scr->h - height) / 2) + settings.geometry.y;
+                } else if (settings.geometry.negative_y) {
                         *ret_y = scr->y + (scr->h + settings.geometry.y) - height;
                 } else {
                         *ret_y = scr->y + settings.geometry.y;
