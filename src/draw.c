@@ -774,31 +774,6 @@ static struct dimensions layout_render(cairo_surface_t *srf,
         return dim;
 }
 
-/**
- * Calculates the position the window should be placed at given its width and
- * height and stores them in \p ret_x and \p ret_y.
- */
-static void calc_window_pos(int width, int height, int *ret_x, int *ret_y)
-{
-        const struct screen_info *scr = output->get_active_screen();
-
-        if (ret_x) {
-                if (settings.geometry.negative_x) {
-                        *ret_x = (scr->x + (scr->w - width)) + settings.geometry.x;
-                } else {
-                        *ret_x = scr->x + settings.geometry.x;
-                }
-        }
-
-        if (ret_y) {
-                if (settings.geometry.negative_y) {
-                        *ret_y = scr->y + (scr->h + settings.geometry.y) - height;
-                } else {
-                        *ret_y = scr->y + settings.geometry.y;
-                }
-        }
-}
-
 void draw(void)
 {
         assert(queues_length_displayed() > 0);
@@ -821,7 +796,6 @@ void draw(void)
                 first = false;
         }
 
-        calc_window_pos(dim.w, dim.h, &dim.x, &dim.y);
         output->display_surface(image_surface, win, &dim);
 
         cairo_surface_destroy(image_surface);
