@@ -943,7 +943,11 @@ static void x_shortcut_init(struct keyboard_shortcut *ks)
 }
 
 int x_get_scale(void) {
-        return 1;
+        const struct screen_info *scr_info = get_active_screen();
+        int scale = round(scr_info->dpi/96.);
+        LOG_D("X11 dpi: %i", scr_info->dpi);
+        LOG_D("X11 scale: %i", scale);
+        return scale;
 }
 
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */
