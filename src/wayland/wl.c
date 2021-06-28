@@ -314,6 +314,9 @@ static const struct zwlr_layer_surface_v1_listener layer_surface_listener = {
         .closed = layer_surface_handle_closed,
 };
 
+static bool has_idle() {
+        return settings.idle_threshold > 0 && ctx.has_idle_monitor == true;
+}
 
 static void idle_start (void *data, struct org_kde_kwin_idle_timeout *org_kde_kwin_idle_timeout) {
         ctx.is_idle = true;
@@ -569,7 +572,7 @@ bool wl_init() {
                 if (ctx.idle_handler == NULL) {
                         LOG_I("compositor doesn't support org_kde_kwin_idle_interface");
                 }
-                else if (ctx.idle_timeout == NULL) {
+                else if (settings.idle_threshold > 0 && ctx.idle_timeout == NULL) {
                         // something went wrong in setting the timeout
                         LOG_W("couldn't set idle timeout");
                 }
@@ -869,7 +872,7 @@ bool wl_is_idle(void) {
         LOG_I("Idle status queried: %i", ctx.is_idle);
         // When the user doesn't have a seat, or their compositor doesn't support the idle
         // protocol, we'll assume that they are not idle.
-        if (settings.idle_threshold == 0 || ctx.has_idle_monitor == false) {
+        if (!has_idle()) {
                 return false;
         } else {
                 return ctx.is_idle;
