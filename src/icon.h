@@ -65,7 +65,7 @@ GdkPixbuf *get_pixbuf_from_icon(const char *iconname, int scale);
  *             get searched in the folders of the icon_path setting.
  * @param id   (necessary) A unique identifier of the returned pixbuf. Only filled,
  *             if the return value is non-NULL.
- * @param scale An integer representing the output dpi scaling.
+ * @param dpi_scale An integer representing the output dpi scaling.
  * @return an instance of `GdkPixbuf`, representing the name's image
  * @retval NULL: Invalid path given
  */

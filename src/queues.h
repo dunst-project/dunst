@@ -149,7 +149,7 @@ gint64 queues_get_next_datachange(gint64 time);
  * Get the notification which has the given id in the displayed and waiting queue or
  * NULL if not found
  *
- * @param the id searched for.
+ * @param id the id searched for.
  *
  * @return the `id` notification  or NULL
  */
