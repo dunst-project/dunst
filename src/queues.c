@@ -247,7 +247,8 @@ static bool queues_stack_by_tag(struct notification *new)
                 for (GList *iter = g_queue_peek_head_link(allqueues[i]); iter;
                             iter = iter->next) {
                         struct notification *old = iter->data;
-                        if (STR_FULL(old->stack_tag) && STR_EQ(old->stack_tag, new->stack_tag)) {
+                        if (STR_FULL(old->stack_tag) && STR_EQ(old->stack_tag, new->stack_tag)
+                                        && STR_EQ(old->appname, new->appname)) {
                                 iter->data = new;
                                 new->dup_count = old->dup_count;
 
