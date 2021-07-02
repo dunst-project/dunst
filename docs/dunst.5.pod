@@ -476,7 +476,7 @@ HISTORY.
 The command that will be run when opening the context menu. Should be either
 a dmenu command or a dmenu-compatible menu.
 
-=item B<browser> (default: "/usr/bin/firefox")
+=item B<browser> (default: "/usr/bin/xdg-open")
 
 The command that will be run when opening a URL. The URL to be opened will be
 appended to the end of the value of this setting.

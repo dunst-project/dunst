@@ -87,6 +87,7 @@ distro's repositories, don't worry, it's not hard to build it yourself.
 - libnotify (optional, for dunstify)
 - wayland-client (can build without, see [make parameters](#make-parameters))
 - wayland-protocols (optional, for recompiling protocols)
+- xdg-utils (optional, xdg-open is the default 'browser' for opening URLs)
 
 The names will be different depending on your [distribution](https://github.com/dunst-project/dunst/wiki/Dependencies).
 
