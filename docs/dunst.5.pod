@@ -64,20 +64,26 @@ keyboard focus.
 
 =back
 
-=item B<geometry> (format: [{width}][x{height}][+/-{x}[+/-{y}]], default: "0x0+0-0")
+=item B<geometry> DEPRECATED
 
-The geometry of the window the notifications will be displayed in.
-
-=over 4
+This setting is deprecated. It's split up into B<width>, B<height>, B<origin>,
+B<notification_limit> and B<offset>.
 
 =item B<width>
 
-The width of the notification window in pixels. A negative value sets the width
-to the screen width B<minus the absolute value of the width>. If the width is
-omitted then the window expands to cover the whole screen. If it's 0 the window
-expands to the width of the longest message being displayed.
+The width of the notification window in pixels. This can be a single number to
+specify a constant width or two numbers for the minimum and maximum width. The
+notification will expand from the minimum width as neccesary.
+
+Examples:
+        width = 300      # constant width of 300
+        width = (0, 300) # width between 0 and 300
 
 =item B<height>
+
+The maximum height of a single notification.
+
+=item B<notification_limit>
 
 The number of notifications that can appear at one time. When this
 limit is reached any additional notifications will be queued and displayed when
@@ -86,25 +92,30 @@ B<indicate_hidden> is true, then the specified limit is reduced by 1 and the
 last notification is a message informing how many hidden notifications are
 waiting to be displayed. See the B<indicate_hidden> entry for more information.
 
-The physical(pixel) height of the notifications vary depending on the number of
-lines that need to be displayed.
+=item B<origin>
 
-See B<notification_height> for changing the physical height.
+The origin of the notification window on the screen. It can then be moved with
+offset.
+Origin can be one of:
+        top-left
+        top-center
+        top-right
+        bottom-left
+        bottom-center
+        bottom-right
+        left-center
+        center
+        right-center
 
-=item B<x/y>
+=item B<offset> format: (horizontal, vertical)
 
 Respectively the horizontal and vertical offset in pixels from the corner
-of the screen that the notification should be drawn at. For the horizontal(x)
-offset, a positive value is measured from the left of the screen while a
-negative one from the right. For the vertical(y) offset, a positive value is
-measured from the top while a negative from the bottom.
+of the screen specified by B<origin>. Both values should always be positive or
+zero.
 
-It's important to note that the positive and negative sign B<DOES> affect the
-position even if the offset is 0. For example, a horizontal offset of +0 puts
-the notification on the left border of the screen while a horizontal offset of
--0 at the right border. The same goes for the vertical offset.
-
-=back
+Examples:
+        origin = top-right
+        offset = (10, 300) # a margin of 10 pixels from the right and 300 pixels from the top
 
 =item B<progress_bar> (values: [true/false], default: true)
 
