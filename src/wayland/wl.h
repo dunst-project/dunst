@@ -27,6 +27,6 @@ bool wl_have_fullscreen_window(void);
 // Return the dpi scaling of the current output. Everything that's rendered
 // should be multiplied by this value, but don't use it to multiply other
 // values. All sizes should be in unscaled units.
-int wl_get_scale(void);
+double wl_get_scale(void);
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

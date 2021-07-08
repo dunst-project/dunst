@@ -898,7 +898,7 @@ bool wl_have_fullscreen_window(void) {
         return have_fullscreen;
 }
 
-int wl_get_scale(void) {
+double wl_get_scale(void) {
         int scale = 0;
         struct dunst_output *output = get_configured_output();
         if (output) {
