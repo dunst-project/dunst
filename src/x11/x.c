@@ -165,7 +165,7 @@ void x_display_surface(cairo_surface_t *srf, window winptr, const struct dimensi
         double scale = x_get_scale();
         int x, y;
 
-        calc_window_pos(round(dim->w * scale), round(dim->h * scale), &x, &y);
+        calc_window_pos(scr, round(dim->w * scale), round(dim->h * scale), &x, &y);
 
         x_win_move(win, x, y, round(dim->w * scale), round(dim->h * scale));
         cairo_xlib_surface_set_size(win->root_surface, round(dim->w * scale), round(dim->h * scale));
