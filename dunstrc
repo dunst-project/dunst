@@ -33,6 +33,9 @@
     # screen width minus the width defined in within the geometry option.
     geometry = "300x5-30+20"
 
+    # Scale factor. It is auto-detected if value is 0.
+    scale = 0
+
     # Turn on the progess bar. It appears when a progress hint is passed with
     # for example dunstify -h int:value:12
     progress_bar = true

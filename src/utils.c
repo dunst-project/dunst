@@ -202,6 +202,25 @@ bool safe_string_to_int(int *in, const char *str) {
 }
 
 /* see utils.h */
+bool safe_string_to_double(double *in, const char *str) {
+        errno = 0;
+        char *endptr;
+        double val = g_ascii_strtod(str, &endptr);
+        if (errno != 0) {
+                LOG_W("'%s': %s.", str, strerror(errno));
+                return false;
+        } else if (str == endptr) {
+                LOG_W("'%s': No digits found.", str);
+                return false;
+        } else if (*endptr != '\0') {
+                LOG_W("'%s': String contains non-digits.", str);
+                return false;
+        }
+        *in = val;
+        return true;
+}
+
+/* see utils.h */
 gint64 string_to_time(const char *string)
 {
         assert(string);

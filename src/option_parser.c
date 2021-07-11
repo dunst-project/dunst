@@ -284,6 +284,8 @@ bool set_from_string(void *target, struct setting setting, const char *value) {
         switch (setting.type) {
                 case TYPE_INT:
                         return safe_string_to_int(target, value);
+                case TYPE_DOUBLE:
+                        return safe_string_to_double(target, value);
                 case TYPE_STRING:
                         g_free(*(char**) target);
                         *(char**) target = g_strdup(value);

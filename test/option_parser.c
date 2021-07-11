@@ -179,6 +179,65 @@ TEST test_string_to_int_invalid(void)
         PASS();
 }
 
+TEST test_string_to_double(void)
+{
+        if (2.3 != atof("2.3")) {
+                SKIPm("Skipping test_string_to_double, as it seems we're running under musl+valgrind!");
+        }
+
+        double val = -100.0;
+        const char* inputs[] = {
+                "0",
+                "1",
+                "-1",
+                "45.8",
+                "-45.8"
+        };
+        const double results[] = {
+                0,
+                1,
+                -1,
+                45.8,
+                -45.8
+        };
+        struct setting s;
+        s.type = TYPE_DOUBLE;
+
+        char buf[50];
+        for (int i = 0; i < G_N_ELEMENTS(inputs); i++) {
+                sprintf(buf, "Failed in round %i", i);
+                ASSERTm(buf, set_from_string(&val, s, inputs[i]));
+                ASSERT_EQm(buf, val, results[i]);
+        }
+        PASS();
+}
+
+TEST test_string_to_double_invalid(void)
+{
+        double val = -100.0;
+        const char* inputs[] = {
+                "a0",
+                "something",
+                "x1234asdf",
+                "-dsf1234asdf",
+                "1234a567",
+                "12.34a567",
+                "56.7.1",
+        };
+
+        struct setting s;
+        s.type = TYPE_DOUBLE;
+        s.name = "test_double";
+
+        char buf[50];
+        for (int i = 0; i < G_N_ELEMENTS(inputs); i++) {
+                sprintf(buf, "Failed in round %i", i);
+                ASSERT_FALSEm(buf, set_from_string(&val, s, inputs[i]));
+        }
+        ASSERT_EQm("Value should not be changed for invalid doubles", val, -100.0);
+        PASS();
+}
+
 TEST test_string_to_boolean(void)
 {
         bool val;
@@ -631,6 +690,8 @@ SUITE(suite_option_parser)
         // are normally stripped out by the ini parser.
         RUN_TEST(test_string_to_int);
         RUN_TEST(test_string_to_int_invalid);
+        RUN_TEST(test_string_to_double);
+        RUN_TEST(test_string_to_double_invalid);
         RUN_TEST(test_string_to_enum);
         RUN_TEST(test_string_to_enum_invalid);
         RUN_TEST(test_string_to_boolean);

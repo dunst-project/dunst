@@ -959,6 +959,9 @@ static void x_shortcut_init(struct keyboard_shortcut *ks)
 }
 
 double x_get_scale(void) {
+        if (settings.scale > 0)
+                return settings.scale;
+
         const struct screen_info *scr_info = get_active_screen();
         double scale = MAX(1, scr_info->dpi/96.);
         LOG_D("X11 dpi: %i", scr_info->dpi);

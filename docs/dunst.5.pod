@@ -106,6 +106,15 @@ the notification on the left border of the screen while a horizontal offset of
 
 =back
 
+=item B<scale> (default: 0, X11 only)
+
+Specifies a scale factor for dimensions to adapt notifications to
+HiDPI screens. This scales the notification geometry and it's
+contents. It is not recommended to use a fractional scaling factor, as
+this may result in things being one pixel off. Try to use a whole
+number scaling factor and adjust the font size and other sizes as
+needed. If 0 is specified, the scale factor is auto-detected.
+
 =item B<progress_bar> (values: [true/false], default: true)
 
 When an integer value is passed to dunst as a hint (see B<NOTIFY-SEND>), a

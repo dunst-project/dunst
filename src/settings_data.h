@@ -932,6 +932,16 @@ static const struct setting allowed_settings[] = {
                 .parser_data = NULL,
         },
         {
+                .name = "scale",
+                .section = "global",
+                .description = "Scale factor, set to 0 to auto-detect, X11 only",
+                .type = TYPE_DOUBLE,
+                .default_value = "0",
+                .value = &settings.scale,
+                .parser = NULL,
+                .parser_data = NULL,
+        },
+        {
                 .name = "alignment",
                 .section = "global",
                 .description = "Text alignment left/center/right",
