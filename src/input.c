@@ -35,7 +35,8 @@ void input_handle_click(unsigned int button, bool button_down, int mouse_x, int 
                         return;
         }
 
-        for (int i = 0; acts[i]; i++) {
+        // if other list types are added, make sure they have the same end value
+        for (int i = 0; acts[i] != MOUSE_ACTION_END; i++) {
                 enum mouse_action act = acts[i];
                 if (act == MOUSE_CLOSE_ALL) {
                         queues_history_push_all();

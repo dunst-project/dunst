@@ -37,6 +37,8 @@ For logging, there are printf-like macros `LOG_(E|C|W|M|I|D)`.
 - `LOG_C` (CRITICAL):
     - The program cannot continue to work. It is used in the wrong manner or some outer conditions are not met.
     - e.g.: `-config` parameter value is unreadable file
+- `DIE` (CRITICAL):
+    - A shorthand for `LOG_C` and terminating the program after. This does not dump the core (unlike `LOG_E`).
 - `LOG_W` (WARNING):
     - Something is not in shape, but it's recoverable.
     - e.g.: A value is not parsable in the config file, which will default.

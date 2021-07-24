@@ -1,3 +1,5 @@
+# See dunst(5) for all configuration options
+
 [global]
     ### Display ###
 
@@ -31,7 +33,8 @@
     # screen width minus the width defined in within the geometry option.
     geometry = "300x5-30+20"
 
-    # Turn on the progess bar
+    # Turn on the progess bar. It appears when a progress hint is passed with
+    # for example dunstify -h int:value:12
     progress_bar = true
 
     # Set the progress bar height. This includes the frame, so make sure
@@ -57,7 +60,7 @@
 
     # The transparency of the window.  Range: [0; 100].
     # This option will only work if a compositing window manager is
-    # present (e.g. xcompmgr, compiz, etc.).
+    # present (e.g. xcompmgr, compiz, etc.). (X11 only)
     transparency = 0
 
     # The height of the entire notification.  If the height is smaller
@@ -102,7 +105,7 @@
     # Set to 0 to disable.
     # A client can set the 'transient' hint to bypass this. See the rules
     # section for how to disable this if necessary
-    idle_threshold = 120
+    # idle_threshold = 120
 
     ### Text ###
 
@@ -301,32 +304,6 @@
     # where there are multiple screens with very different dpi values.
     per_monitor_dpi = false
 
-# The internal keyboard shortcut support in dunst is now considered deprecated
-# and should be replaced by dunstctl calls. You can use the configuration of your
-# WM or DE to bind these to shortcuts of your choice.
-# Check the dunstctl manual page for more info.
-[shortcuts]
-
-    # Shortcuts are specified as [modifier+][modifier+]...key
-    # Available modifiers are "ctrl", "mod1" (the alt-key), "mod2",
-    # "mod3" and "mod4" (windows-key).
-    # Xev might be helpful to find names for keys.
-
-    # Close notification. Equivalent dunstctl command:
-    # dunstctl close
-    # close = ctrl+space
-
-    # Close all notifications. Equivalent dunstctl command:
-    # dunstctl close-all
-    # close_all = ctrl+shift+space
-
-    # Redisplay last message(s). Equivalent dunstctl command:
-    # dunstctl history-pop
-    # history = ctrl+grave
-
-    # Context menu. Equivalent dunstctl command:
-    # dunstctl context
-    # context = ctrl+shift+period
 
 [urgency_low]
     # IMPORTANT: colors have to be defined in quotation marks.

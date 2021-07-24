@@ -1,6 +1,6 @@
 [global]
     font = Monospace 8
-    allow_markup = yes
+    markup = full
     format = "%s\n%b"
     sort = yes
     indicate_hidden = yes

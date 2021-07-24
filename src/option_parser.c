@@ -7,11 +7,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
+#include "x11/x.h"
 #include "dunst.h"
 #include "log.h"
 #include "utils.h"
 #include "settings.h"
+#include "rules.h"
+#include "settings_data.h"
 
 struct entry {
         char *key;
@@ -42,110 +46,22 @@ static int cmdline_find_option(const char *key);
 
 #define STRING_PARSE_RET(string, value) if (STR_EQ(s, string)) { *ret = value; return true; }
 
-bool string_parse_alignment(const char *s, enum alignment *ret)
-{
-        ASSERT_OR_RET(STR_FULL(s), false);
-        ASSERT_OR_RET(ret, false);
-
-        STRING_PARSE_RET("left",   ALIGN_LEFT);
-        STRING_PARSE_RET("center", ALIGN_CENTER);
-        STRING_PARSE_RET("right",  ALIGN_RIGHT);
-
+int string_parse_enum(const void *data, const char *s, void * ret) {
+        struct string_to_enum_def *string_to_enum = (struct string_to_enum_def*)data;
+        for (int i = 0; string_to_enum[i].string != NULL; i++) {
+                if (strcmp(s, string_to_enum[i].string) == 0){
+                        *(int*) ret = string_to_enum[i].enum_value;
+                        LOG_D("Setting enum to %i (%s)", *(int*) ret, string_to_enum[i].string);
+                        return true;
+                }
+        }
         return false;
 }
 
-bool string_parse_ellipsize(const char *s, enum ellipsize *ret)
+int string_parse_enum_list(const void *data, char **s, void *ret_void)
 {
-        ASSERT_OR_RET(STR_FULL(s), false);
-        ASSERT_OR_RET(ret, false);
-
-        STRING_PARSE_RET("start",  ELLIPSE_START);
-        STRING_PARSE_RET("middle", ELLIPSE_MIDDLE);
-        STRING_PARSE_RET("end",    ELLIPSE_END);
-
-        return false;
-}
-
-bool string_parse_follow_mode(const char *s, enum follow_mode *ret)
-{
-        ASSERT_OR_RET(STR_FULL(s), false);
-        ASSERT_OR_RET(ret, false);
-
-        STRING_PARSE_RET("mouse",    FOLLOW_MOUSE);
-        STRING_PARSE_RET("keyboard", FOLLOW_KEYBOARD);
-        STRING_PARSE_RET("none",     FOLLOW_NONE);
-
-        return false;
-}
-
-
-bool string_parse_fullscreen(const char *s, enum behavior_fullscreen *ret)
-{
-        ASSERT_OR_RET(STR_FULL(s), false);
-        ASSERT_OR_RET(ret, false);
-
-        STRING_PARSE_RET("show",     FS_SHOW);
-        STRING_PARSE_RET("delay",    FS_DELAY);
-        STRING_PARSE_RET("pushback", FS_PUSHBACK);
-
-        return false;
-}
-
-bool string_parse_icon_position(const char *s, enum icon_position *ret)
-{
-        ASSERT_OR_RET(STR_FULL(s), false);
-        ASSERT_OR_RET(ret, false);
-
-        STRING_PARSE_RET("left",  ICON_LEFT);
-        STRING_PARSE_RET("right", ICON_RIGHT);
-        STRING_PARSE_RET("off",   ICON_OFF);
-
-        return false;
-}
-
-bool string_parse_vertical_alignment(const char *s, enum vertical_alignment *ret)
-{
-        ASSERT_OR_RET(STR_FULL(s), false);
-        ASSERT_OR_RET(ret, false);
-
-        STRING_PARSE_RET("top",     VERTICAL_TOP);
-        STRING_PARSE_RET("center",  VERTICAL_CENTER);
-        STRING_PARSE_RET("bottom",  VERTICAL_BOTTOM);
-
-        return false;
-}
-
-bool string_parse_markup_mode(const char *s, enum markup_mode *ret)
-{
-        ASSERT_OR_RET(STR_FULL(s), false);
-        ASSERT_OR_RET(ret, false);
-
-        STRING_PARSE_RET("strip", MARKUP_STRIP);
-        STRING_PARSE_RET("no",    MARKUP_NO);
-        STRING_PARSE_RET("full",  MARKUP_FULL);
-        STRING_PARSE_RET("yes",   MARKUP_FULL);
-
-        return false;
-}
-
-bool string_parse_mouse_action(const char *s, enum mouse_action *ret)
-{
-        ASSERT_OR_RET(STR_FULL(s), false);
-        ASSERT_OR_RET(ret, false);
-
-        STRING_PARSE_RET("none",           MOUSE_NONE);
-        STRING_PARSE_RET("do_action",      MOUSE_DO_ACTION);
-        STRING_PARSE_RET("close_current",  MOUSE_CLOSE_CURRENT);
-        STRING_PARSE_RET("close_all",      MOUSE_CLOSE_ALL);
-        STRING_PARSE_RET("context",        MOUSE_CONTEXT);
-        STRING_PARSE_RET("context_all",    MOUSE_CONTEXT_ALL);
-        STRING_PARSE_RET("open_url",       MOUSE_OPEN_URL);
-
-        return false;
-}
-
-bool string_parse_mouse_action_list(char **s, enum mouse_action **ret)
-{
+        int **ret = (int **) ret_void;
+        int *tmp;
         ASSERT_OR_RET(s, false);
         ASSERT_OR_RET(ret, false);
 
@@ -153,55 +69,82 @@ bool string_parse_mouse_action_list(char **s, enum mouse_action **ret)
         while (s[len])
                 len++;
 
-        *ret = g_malloc_n((len + 1), sizeof(enum mouse_action));
+        tmp = g_malloc_n((len + 1), sizeof(int));
         for (int i = 0; i < len; i++) {
-                if (!string_parse_mouse_action(s[i], *ret + i)) {
+                if (!string_parse_enum(data, s[i], tmp + i)) {
                         LOG_W("Unknown mouse action value: '%s'", s[i]);
-                        g_free(*ret);
+                        g_free(tmp);
                         return false;
                 }
         }
-        (*ret)[len] = -1; // sentinel end value
+        tmp[len] = MOUSE_ACTION_END; // sentinel end value
+        g_free(*ret);
+        *ret = tmp;
         return true;
 }
 
-bool string_parse_sepcolor(const char *s, struct separator_color_data *ret)
-{
-        ASSERT_OR_RET(STR_FULL(s), false);
-        ASSERT_OR_RET(ret, false);
-
-        STRING_PARSE_RET("auto",       (struct separator_color_data){.type = SEP_AUTO});
-        STRING_PARSE_RET("foreground", (struct separator_color_data){.type = SEP_FOREGROUND});
-        STRING_PARSE_RET("frame",      (struct separator_color_data){.type = SEP_FRAME});
-
-        ret->type = SEP_CUSTOM;
-        ret->sep_color = g_strdup(s);
-
-        return true;
+int string_parse_list(const void *data, const char *s, void *ret) {
+        const enum list_type type = GPOINTER_TO_INT(data);
+        char **arr = NULL;
+        int success = false;
+        switch (type) {
+                case MOUSE_LIST:
+                        arr = string_to_array(s, ",");
+                        success = string_parse_enum_list(&mouse_action_enum_data,
+                                        arr, ret);
+                        break;
+                default:
+                        LOG_W("Don't know this list type: %i", type);
+                        break;
+        }
+        g_strfreev(arr);
+        return success;
 }
 
-bool string_parse_urgency(const char *s, enum urgency *ret)
+int string_parse_sepcolor(const void *data, const char *s, void *ret)
 {
-        ASSERT_OR_RET(STR_FULL(s), false);
-        ASSERT_OR_RET(ret, false);
+        LOG_D("parsing sep_color");
+        struct separator_color_data *sep_color = (struct separator_color_data*) ret;
 
-        STRING_PARSE_RET("low",      URG_LOW);
-        STRING_PARSE_RET("normal",   URG_NORM);
-        STRING_PARSE_RET("critical", URG_CRIT);
+        enum separator_color type;
+        bool is_enum = string_parse_enum(data, s, &type);
+        if (is_enum) {
+                sep_color->type = type;
+                g_free(sep_color->sep_color);
+                sep_color->sep_color = NULL;
+                return true;
+        } else {
+                if (STR_EMPTY(s)) {
+                        LOG_W("Sep color is empty, make sure to quote the value if it's a color.");
+                        return false;
+                }
+                if (s[0] != '#') {
+                        LOG_W("Sep color should start with a '#'");
+                        return false;
+                }
+                if (strlen(s) < 4) {
+                        LOG_W("Make sure the sep color is formatted correctly");
+                        return false;
+                }
+                // TODO add more checks for if the color is valid
 
-        return false;
+                sep_color->type = SEP_CUSTOM;
+                g_free(sep_color->sep_color);
+                sep_color->sep_color = g_strdup(s);
+                return true;
+        }
 }
 
-bool string_parse_layer(const char *s, enum zwlr_layer_shell_v1_layer *ret)
+
+int string_parse_bool(const void *data, const char *s, void *ret)
 {
-        ASSERT_OR_RET(STR_FULL(s), false);
-        ASSERT_OR_RET(ret, false);
+        // this is needed, since string_parse_enum assumses a
+        // variable of size int is passed
+        int tmp_int = -1;
+        bool success = string_parse_enum(data, s, &tmp_int);
 
-        STRING_PARSE_RET("bottom",  ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM);
-        STRING_PARSE_RET("top",     ZWLR_LAYER_SHELL_V1_LAYER_TOP);
-        STRING_PARSE_RET("overlay", ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY);
-
-        return false;
+        *(bool*) ret = (bool) tmp_int;
+        return success;
 }
 
 struct section *new_section(const char *name)
@@ -270,59 +213,6 @@ const char *get_value(const char *section, const char *key)
         return NULL;
 }
 
-char *ini_get_path(const char *section, const char *key, const char *def)
-{
-        return string_to_path(ini_get_string(section, key, def));
-}
-
-char *ini_get_string(const char *section, const char *key, const char *def)
-{
-        const char *value = get_value(section, key);
-        if (value)
-                return g_strdup(value);
-
-        return def ? g_strdup(def) : NULL;
-}
-
-gint64 ini_get_time(const char *section, const char *key, gint64 def)
-{
-        const char *timestring = get_value(section, key);
-        gint64 val = def;
-
-        if (timestring) {
-                val = string_to_time(timestring);
-        }
-
-        return val;
-}
-
-char **ini_get_list(const char *section, const char *key, const char *def)
-{
-        const char *value = get_value(section, key);
-        if (value)
-                return string_to_array(value);
-        else
-                return string_to_array(def);
-}
-
-int ini_get_int(const char *section, const char *key, int def)
-{
-        const char *value = get_value(section, key);
-        if (value)
-                return atoi(value);
-        else
-                return def;
-}
-
-double ini_get_double(const char *section, const char *key, double def)
-{
-        const char *value = get_value(section, key);
-        if (value)
-                return atof(value);
-        else
-                return def;
-}
-
 bool ini_is_set(const char *ini_section, const char *ini_key)
 {
         return get_value(ini_section, ini_key) != NULL;
@@ -344,28 +234,197 @@ const char *next_section(const char *section)
         return NULL;
 }
 
-int ini_get_bool(const char *section, const char *key, int def)
-{
-        const char *value = get_value(section, key);
-        if (value) {
-                switch (value[0]) {
-                case 'y':
-                case 'Y':
-                case 't':
-                case 'T':
-                case '1':
-                        return true;
-                case 'n':
-                case 'N':
-                case 'f':
-                case 'F':
-                case '0':
-                        return false;
-                default:
-                        return def;
+int get_setting_id(const char *key, const char *section) {
+        int error_code = 0;
+        int partial_match_id = -1;
+        bool match_section = section && is_special_section(section);
+        if (!match_section) {
+                LOG_D("not matching section %s", section);
+        }
+        for (int i = 0; i < G_N_ELEMENTS(allowed_settings); i++) {
+                if (strcmp(allowed_settings[i].name, key) == 0) {
+                        bool is_rule = allowed_settings[i].rule_offset > 0;
+
+                        // a rule matches every section
+                        if (is_rule || strcmp(section, allowed_settings[i].section) == 0) {
+                                return i;
+                        } else {
+                                // name matches, but in wrong section. Continueing to see
+                                // if we find the same setting name with another section
+                                error_code = -2;
+                                partial_match_id = i;
+                                continue;
+                        }
                 }
-        } else {
-                return def;
+        }
+
+        if (error_code == -2) {
+                LOG_W("Setting %s is in the wrong section (%s, should be %s)",
+                                key, section,
+                                allowed_settings[partial_match_id].section);
+                // found, but in wrong section
+                return -2;
+        }
+
+        // not found
+        return -1;
+}
+
+bool set_from_string(void *target, struct setting setting, const char *value) {
+        GError *error = NULL;
+
+        if (!strlen(value)) {
+                LOG_W("Cannot set empty value for setting %s", setting.name);
+                return false;
+        }
+
+        bool success = false;
+        // Do not use setting.value, since we might want to set a rule. Use
+        // target instead
+        switch (setting.type) {
+                case TYPE_INT:
+                        return safe_string_to_int(target, value);
+                case TYPE_STRING:
+                        g_free(*(char**) target);
+                        *(char**) target = g_strdup(value);
+                        return true;
+                case TYPE_CUSTOM:
+                        if (setting.parser == NULL) {
+                                LOG_W("Setting %s doesn't have parser", setting.name);
+                                return false;
+                        }
+                        success = setting.parser(setting.parser_data, value, target);
+
+                        if (!success) LOG_W("Invalid %s value: '%s'", setting.name, value);
+                        return success;
+                case TYPE_PATH: ;
+                        g_free(*(char**) target);
+                        *(char**) target = string_to_path(g_strdup(value));
+
+                        // TODO make scripts take arguments in the config and
+                        // deprecate the arguments that are now passed to the
+                        // scripts
+                        if (!setting.parser_data)
+                                return true;
+                        g_strfreev(*(char***)setting.parser_data);
+                        if (!g_shell_parse_argv(*(char**) target, NULL, (char***)setting.parser_data, &error)) {
+                                LOG_W("Unable to parse %s command: '%s'. "
+                                                "It's functionality will be disabled.",
+                                                setting.name, error->message);
+                                g_error_free(error);
+                                return false;
+                        }
+                        return true;
+                case TYPE_TIME: ;
+                        gint64 tmp_time = string_to_time(value);
+                        if (errno != 0) {
+                                return false;
+                        }
+                        *(gint64*) target = tmp_time;
+                        return true;
+                case TYPE_GEOMETRY:
+                        *(struct geometry*) target = x_parse_geometry(value);
+                        return true;
+                case TYPE_LIST: ;
+                        LOG_D("list type %i", GPOINTER_TO_INT(setting.parser_data));
+                        return string_parse_list(setting.parser_data, value, target);
+                default:
+                        LOG_W("Setting type of '%s' is not known (type %i)", setting.name, setting.type);
+                        return false;
+        }
+}
+
+bool set_setting(struct setting setting, char* value) {
+        LOG_D("Trying to set %s to %s", setting.name, value);
+        if (setting.value == NULL) {
+                // setting.value is NULL, so it must be only a rule
+                return true;
+        }
+
+        return set_from_string(setting.value, setting, value);
+}
+
+int set_rule_value(struct rule* r, struct setting setting, char* value) {
+        // Apply rule member offset. Converting to char* because it's
+        // guaranteed to be 1 byte
+        void *target = (char*)r + setting.rule_offset;
+
+        return set_from_string(target, setting, value);
+}
+
+bool set_rule(struct setting setting, char* value, char* section) {
+        struct rule *r = get_rule(section);
+        if (!r) {
+                r = rule_new(section);
+                LOG_D("Creating new rule '%s'", section);
+        }
+
+        return set_rule_value(r, setting, value);
+}
+
+void set_defaults() {
+        for (int i = 0; i < G_N_ELEMENTS(allowed_settings); i++) {
+                // FIXME Rule settings can only have a default if they have an
+                // working entry in the settings struct as well. Make an
+                // alternative way of setting defaults for rules.
+
+                if (!allowed_settings[i].value) // don't set default if it's only a rule
+                        continue;
+
+                if(!set_setting(allowed_settings[i], allowed_settings[i].default_value)) {
+                        LOG_E("Could not set default of setting %s", allowed_settings[i].name);
+                }
+        }
+}
+
+void save_settings() {
+        for (int i = 0; i < section_count; i++) {
+                const struct section curr_section = sections[i];
+
+                if (is_deprecated_section(curr_section.name)) {
+                        LOG_W("Section %s is deprecated. Ignoring", curr_section.name);
+                        continue;
+                }
+
+                for (int j = 0; j < curr_section.entry_count; j++) {
+                        const struct entry curr_entry = curr_section.entries[j];
+                        int setting_id = get_setting_id(curr_entry.key, curr_section.name);
+                        struct setting curr_setting = allowed_settings[setting_id];
+                        if (setting_id < 0){
+                                if (setting_id == -1) {
+                                        LOG_W("Setting %s in section %s doesn't exist", curr_entry.key, curr_section.name);
+                                }
+                                continue;
+                        }
+
+                        bool is_rule = curr_setting.rule_offset > 0;
+                        if (is_special_section(curr_section.name)) {
+                                if (is_rule) {
+                                        // set as a rule, but only if it's not a filter
+                                        if (rule_offset_is_action(curr_setting.rule_offset)) {
+                                                LOG_D("Adding rule '%s = %s' to special section %s",
+                                                                curr_entry.key,
+                                                                curr_entry.value,
+                                                                curr_section.name);
+                                                set_rule(curr_setting, curr_entry.value, curr_section.name);
+                                        } else {
+                                                LOG_W("Cannot use filtering rules in special section. Ignoring %s in section %s.",
+                                                                curr_entry.key,
+                                                                curr_section.name);
+                                        }
+                                } else {
+                                        // set as a regular setting
+                                        set_setting(curr_setting, curr_entry.value);
+                                }
+                        } else {
+                                // interpret this section as a rule
+                                LOG_D("Adding rule '%s = %s' to section %s",
+                                                curr_entry.key,
+                                                curr_entry.value,
+                                                curr_section.name);
+                                set_rule(curr_setting, curr_entry.value, curr_section.name);
+                        }
+                }
         }
 }
 
@@ -526,9 +585,9 @@ char **cmdline_get_list(const char *key, const char *def, const char *descriptio
         const char *str = cmdline_get_value(key);
 
         if (str)
-                return string_to_array(str);
+                return string_to_array(str, ",");
         else
-                return string_to_array(def);
+                return string_to_array(def, ",");
 }
 
 gint64 cmdline_get_time(const char *key, gint64 def, const char *description)
@@ -580,125 +639,6 @@ int cmdline_get_bool(const char *key, int def, const char *description)
 bool cmdline_is_set(const char *key)
 {
         return cmdline_get_value(key) != NULL;
-}
-
-char *option_get_path(const char *ini_section,
-                      const char *ini_key,
-                      const char *cmdline_key,
-                      const char *def,
-                      const char *description)
-{
-        char *val = NULL;
-
-        if (cmdline_key) {
-                val = cmdline_get_path(cmdline_key, NULL, description);
-        }
-
-        if (val) {
-                return val;
-        } else {
-                return ini_get_path(ini_section, ini_key, def);
-        }
-}
-
-char *option_get_string(const char *ini_section,
-                        const char *ini_key,
-                        const char *cmdline_key,
-                        const char *def,
-                        const char *description)
-{
-        char *val = NULL;
-
-        if (cmdline_key) {
-                val = cmdline_get_string(cmdline_key, NULL, description);
-        }
-
-        if (val) {
-                return val;
-        } else {
-                return ini_get_string(ini_section, ini_key, def);
-        }
-}
-
-gint64 option_get_time(const char *ini_section,
-                       const char *ini_key,
-                       const char *cmdline_key,
-                       gint64 def,
-                       const char *description)
-{
-        gint64 ini_val = ini_get_time(ini_section, ini_key, def);
-        return cmdline_get_time(cmdline_key, ini_val, description);
-}
-
-
-char **option_get_list(const char *ini_section,
-                       const char *ini_key,
-                       const char *cmdline_key,
-                       const char *def,
-                       const char *description)
-{
-        char **val = NULL;
-        if (cmdline_key)
-                val = cmdline_get_list(cmdline_key, NULL, description);
-
-        if (val)
-                return val;
-        else
-                return ini_get_list(ini_section, ini_key, def);
-}
-
-int option_get_int(const char *ini_section,
-                   const char *ini_key,
-                   const char *cmdline_key,
-                   int def,
-                   const char *description)
-{
-        /* *str is only used to check wether the cmdline option is actually set. */
-        const char *str = cmdline_get_value(cmdline_key);
-
-        /* we call cmdline_get_int even when the option isn't set in order to
-         * add the usage info */
-        int val = cmdline_get_int(cmdline_key, def, description);
-
-        if (!str)
-                return ini_get_int(ini_section, ini_key, def);
-        else
-                return val;
-}
-
-double option_get_double(const char *ini_section,
-                         const char *ini_key,
-                         const char *cmdline_key,
-                         double def,
-                         const char *description)
-{
-        const char *str = cmdline_get_value(cmdline_key);
-        double val = cmdline_get_double(cmdline_key, def, description);
-
-        if (!str)
-                return ini_get_double(ini_section, ini_key, def);
-        else
-                return val;
-}
-
-int option_get_bool(const char *ini_section,
-                    const char *ini_key,
-                    const char *cmdline_key,
-                    int def,
-                    const char *description)
-{
-        int val = false;
-
-        if (cmdline_key)
-                val = cmdline_get_bool(cmdline_key, false, description);
-
-        if (cmdline_key && val) {
-                /* this can only be true if the value has been set,
-                 * so we can return */
-                return true;
-        }
-
-        return ini_get_bool(ini_section, ini_key, def);
 }
 
 void cmdline_usage_append(const char *key, const char *type, const char *description)

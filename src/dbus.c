@@ -366,28 +366,10 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
         }
 
         GVariant *dict_value;
+
+        // First process the items that can be filtered on
         if ((dict_value = g_variant_lookup_value(hints, "urgency", G_VARIANT_TYPE_BYTE))) {
                 n->urgency = g_variant_get_byte(dict_value);
-                g_variant_unref(dict_value);
-        }
-
-        if ((dict_value = g_variant_lookup_value(hints, "fgcolor", G_VARIANT_TYPE_STRING))) {
-                n->colors.fg = g_variant_dup_string(dict_value, NULL);
-                g_variant_unref(dict_value);
-        }
-
-        if ((dict_value = g_variant_lookup_value(hints, "bgcolor", G_VARIANT_TYPE_STRING))) {
-                n->colors.bg = g_variant_dup_string(dict_value, NULL);
-                g_variant_unref(dict_value);
-        }
-
-        if ((dict_value = g_variant_lookup_value(hints, "frcolor", G_VARIANT_TYPE_STRING))) {
-                n->colors.frame = g_variant_dup_string(dict_value, NULL);
-                g_variant_unref(dict_value);
-        }
-
-        if ((dict_value = g_variant_lookup_value(hints, "hlcolor", G_VARIANT_TYPE_STRING))) {
-                n->colors.highlight = g_variant_dup_string(dict_value, NULL);
                 g_variant_unref(dict_value);
         }
 
@@ -401,20 +383,26 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
                 g_variant_unref(dict_value);
         }
 
-        if ((dict_value = g_variant_lookup_value(hints, "image-path", G_VARIANT_TYPE_STRING))) {
-                g_free(n->iconname);
-                n->iconname = g_variant_dup_string(dict_value, NULL);
+        if ((dict_value = g_variant_lookup_value(hints, "value", G_VARIANT_TYPE_INT32))) {
+                n->progress = g_variant_get_int32(dict_value);
+                g_variant_unref(dict_value);
+        } else if ((dict_value = g_variant_lookup_value(hints, "value", G_VARIANT_TYPE_UINT32))) {
+                n->progress = g_variant_get_uint32(dict_value);
                 g_variant_unref(dict_value);
         }
+        if (n->progress < 0)
+                n->progress = -1;
 
-        dict_value = g_variant_lookup_value(hints, "image-data", G_VARIANT_TYPE("(iiibiiay)"));
-        if (!dict_value)
-                dict_value = g_variant_lookup_value(hints, "image_data", G_VARIANT_TYPE("(iiibiiay)"));
-        if (!dict_value)
-                dict_value = g_variant_lookup_value(hints, "icon_data", G_VARIANT_TYPE("(iiibiiay)"));
-        if (dict_value) {
-                notification_icon_replace_data(n, dict_value);
-                g_variant_unref(dict_value);
+        /* Check for hints that define the stack_tag
+         *
+         * Only accept to first one we find.
+         */
+        for (int i = 0; i < sizeof(stack_tag_hints)/sizeof(*stack_tag_hints); ++i) {
+                if ((dict_value = g_variant_lookup_value(hints, stack_tag_hints[i], G_VARIANT_TYPE_STRING))) {
+                        n->stack_tag = g_variant_dup_string(dict_value, NULL);
+                        g_variant_unref(dict_value);
+                        break;
+                }
         }
 
         /* Check for transient hints
@@ -434,24 +422,49 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
                 g_variant_unref(dict_value);
         }
 
-        if ((dict_value = g_variant_lookup_value(hints, "value", G_VARIANT_TYPE_INT32))) {
-                n->progress = g_variant_get_int32(dict_value);
-                g_variant_unref(dict_value);
-        } else if ((dict_value = g_variant_lookup_value(hints, "value", G_VARIANT_TYPE_UINT32))) {
-                n->progress = g_variant_get_uint32(dict_value);
+        // All attributes that have to be set before initializations are set,
+        // so we can initialize the notification. This applies all rules that
+        // are defined and applies the formatting to the message.
+        notification_init(n);
+
+        // Modify these values after the notification is initialized and all rules are applied.
+        if ((dict_value = g_variant_lookup_value(hints, "fgcolor", G_VARIANT_TYPE_STRING))) {
+                g_free(n->colors.fg);
+                n->colors.fg = g_variant_dup_string(dict_value, NULL);
                 g_variant_unref(dict_value);
         }
 
-        /* Check for hints that define the stack_tag
-         *
-         * Only accept to first one we find.
-         */
-        for (int i = 0; i < sizeof(stack_tag_hints)/sizeof(*stack_tag_hints); ++i) {
-                if ((dict_value = g_variant_lookup_value(hints, stack_tag_hints[i], G_VARIANT_TYPE_STRING))) {
-                        n->stack_tag = g_variant_dup_string(dict_value, NULL);
-                        g_variant_unref(dict_value);
-                        break;
-                }
+        if ((dict_value = g_variant_lookup_value(hints, "bgcolor", G_VARIANT_TYPE_STRING))) {
+                g_free(n->colors.bg);
+                n->colors.bg = g_variant_dup_string(dict_value, NULL);
+                g_variant_unref(dict_value);
+        }
+
+        if ((dict_value = g_variant_lookup_value(hints, "frcolor", G_VARIANT_TYPE_STRING))) {
+                g_free(n->colors.frame);
+                n->colors.frame = g_variant_dup_string(dict_value, NULL);
+                g_variant_unref(dict_value);
+        }
+
+        if ((dict_value = g_variant_lookup_value(hints, "hlcolor", G_VARIANT_TYPE_STRING))) {
+                n->colors.highlight = g_variant_dup_string(dict_value, NULL);
+                g_variant_unref(dict_value);
+        }
+
+        if ((dict_value = g_variant_lookup_value(hints, "image-path", G_VARIANT_TYPE_STRING))) {
+                g_free(n->iconname);
+                n->iconname = g_variant_dup_string(dict_value, NULL);
+                g_variant_unref(dict_value);
+        }
+
+        dict_value = g_variant_lookup_value(hints, "image-data", G_VARIANT_TYPE("(iiibiiay)"));
+        if (!dict_value)
+                dict_value = g_variant_lookup_value(hints, "image_data", G_VARIANT_TYPE("(iiibiiay)"));
+        if (!dict_value)
+                dict_value = g_variant_lookup_value(hints, "icon_data", G_VARIANT_TYPE("(iiibiiay)"));
+        if (dict_value) {
+                notification_icon_replace_data(n, dict_value);
+                g_variant_unref(dict_value);
         }
 
         if (timeout >= 0)
@@ -461,7 +474,6 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
         g_variant_type_free(required_type);
         g_free(actions); // the strv is only a shallow copy
 
-        notification_init(n);
         return n;
 }
 

@@ -4,8 +4,12 @@
 
 #include <fnmatch.h>
 #include <glib.h>
+#include <stddef.h>
 
 #include "dunst.h"
+#include "utils.h"
+#include "settings_data.h"
+#include "log.h"
 
 GSList *rules = NULL;
 
@@ -77,20 +81,42 @@ void rule_apply_all(struct notification *n)
         }
 }
 
-struct rule *rule_new(void)
+bool rule_apply_special_filters(struct rule *r, const char *name) {
+        if (is_deprecated_section(name)) // shouldn't happen, but just in case
+                return false;
+
+        if (strcmp(name, "global") == 0) {
+                // no filters for global section
+                return true;
+        }
+        if (strcmp(name, "urgency_low") == 0) {
+                r->msg_urgency = URG_LOW;
+                return true;
+        }
+        if (strcmp(name, "urgency_normal") == 0) {
+                r->msg_urgency = URG_NORM;
+                return true;
+        }
+        if (strcmp(name, "urgency_critical") == 0) {
+                r->msg_urgency = URG_CRIT;
+                return true;
+        }
+
+        return false;
+}
+
+struct rule *rule_new(const char *name)
 {
         struct rule *r = g_malloc0(sizeof(struct rule));
-
-        r->msg_urgency = URG_NONE;
-        r->timeout = -1;
-        r->urgency = URG_NONE;
-        r->fullscreen = FS_NULL;
-        r->markup = MARKUP_NULL;
-        r->history_ignore = -1;
-        r->match_transient = -1;
-        r->set_transient = -1;
-        r->skip_display = -1;
-
+        *r = empty_rule;
+        rules = g_slist_insert(rules, r, -1);
+        r->name = g_strdup(name);
+        if (is_special_section(name)) {
+                bool success = rule_apply_special_filters(r, name);
+                if (!success) {
+                        LOG_M("Could not apply special filters for section %s", name);
+                }
+        }
         return r;
 }
 
@@ -114,4 +140,34 @@ bool rule_matches_notification(struct rule *r, struct notification *n)
                 && rule_field_matches_string(n->category,       r->category)
                 && rule_field_matches_string(n->stack_tag,      r->stack_tag);
 }
+
+/**
+ * Check if a rule exists with that name
+ */
+struct rule *get_rule(const char* name) {
+        for (GSList *iter = rules; iter; iter = iter->next) {
+                struct rule *r = iter->data;
+                if (r->name && STR_EQ(r->name, name))
+                        return r;
+        }
+        return NULL;
+}
+
+/**
+ * see rules.h
+ */
+bool rule_offset_is_action(const size_t offset) {
+        const size_t first_action = offsetof(struct rule, timeout);
+        const size_t last_action = offsetof(struct rule, set_stack_tag);
+        return (offset >= first_action) && (offset <= last_action);
+}
+
+/**
+ * see rules.h
+ */
+bool rule_offset_is_filter(const size_t offset) {
+        const size_t first_filter = offsetof(struct rule, appname);
+        return (offset >= first_filter) && !rule_offset_is_action(offset);
+}
+
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

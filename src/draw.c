@@ -19,6 +19,7 @@
 #include "queues.h"
 #include "output.h"
 #include "settings.h"
+#include "utils.h"
 
 struct color {
         double r;
@@ -72,17 +73,19 @@ static struct color hex_to_color(uint32_t hexValue, int dpc)
 
 static struct color string_to_color(const char *str)
 {
-        char *end;
-        uint_fast32_t val = strtoul(str+1, &end, 16);
-        if (end[0] != '\0' && end[1] != '\0') {
-                LOG_W("Invalid color string: '%s'", str);
-        }
+        if (STR_FULL(str)) {
+                char *end;
+                uint_fast32_t val = strtoul(str+1, &end, 16);
+                if (end[0] != '\0' && end[1] != '\0') {
+                        LOG_W("Invalid color string: '%s'", str);
+                }
 
-        switch (end - (str+1)) {
-                case 3:  return hex_to_color((val << 4) | 0xF, 1);
-                case 6:  return hex_to_color((val << 8) | 0xFF, 2);
-                case 4:  return hex_to_color(val, 1);
-                case 8:  return hex_to_color(val, 2);
+                switch (end - (str+1)) {
+                        case 3:  return hex_to_color((val << 4) | 0xF, 1);
+                        case 6:  return hex_to_color((val << 8) | 0xFF, 2);
+                        case 4:  return hex_to_color(val, 1);
+                        case 8:  return hex_to_color(val, 2);
+                }
         }
 
         /* return black on error */

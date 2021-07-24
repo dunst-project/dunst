@@ -24,15 +24,6 @@
 #define S2US(s) (((gint64)(s)) * 1000 * 1000)
 
 /**
- * Frees an array of strings whose last element is a NULL pointer.
- *
- * Assumes the last element is a NULL pointer, otherwise will result in a buffer overflow.
-
- * @param arr The array of strings to free
- */
-void free_string_array(char **arr);
-
-/**
  * Replaces all occurrences of the char \p needle with the char \p replacement in \p haystack.
  *
  * Does not allocate a new string.
@@ -93,15 +84,17 @@ char *string_strip_quotes(const char *value);
 void string_strip_delimited(char *str, char a, char b);
 
 /**
- * Parse a comma-delimited string into a dynamic array of tokens
+ * Parse a string into a dynamic array of tokens, using the delimiter string.
  *
- * The string is split on commas and strips spaces from tokens. The last element
- * of the array is NULL in order to avoid passing around a length variable.
+ * The string is split on the separator character and strips spaces from
+ * tokens. The last element of the array is NULL in order to avoid passing
+ * around a length variable.
  *
  * @param string The string to convert to an array
+ * @param delmiter The character that separates list entries
  * @returns The array of tokens.
  */
-char **string_to_array(const char *string);
+char **string_to_array(const char *string, const char *delimiter);
 
 /**
  * Replace tilde and path-specific values with its equivalents
@@ -112,6 +105,24 @@ char **string_to_array(const char *string);
  * @returns The tilde-replaced string.
  */
 char *string_to_path(char *string);
+
+/**
+ * Convert string to int in a safe way. When there is an error the int is not
+ * changed and false is returned.
+ *
+ * @param[out] in The int to save the result in. This is not changed when the
+ * parsing does not succeed
+ *
+ * @param[in] str The string to parse
+ * @return a bool if the conversion succeeded
+ */
+
+bool safe_string_to_int(int *in, const char *str);
+
+/**
+ * Same as safe_string_to_int, but then for a long
+ */
+bool safe_string_to_long_long(long long *in, const char *str);
 
 /**
  * Convert time units (ms, s, m) to the internal `gint64` microseconds format
@@ -148,6 +159,23 @@ const char *user_get_home(void);
  * @returns: A bool that is true when it succeeds
  */
 bool safe_setenv(const char* key, const char* value);
+
+/**
+ * Some sections are handled differently in dunst. This function tells wether a
+ * sections is such a special section.
+ *
+ * @param s The name of the section
+ * @returns A bool wether this section is one of the special sections
+ */
+bool is_special_section(const char* s);
+
+/**
+ * This function tells if a section is deprecated.
+ *
+ * @param s The name of the section
+ * @returns A bool wether this section is deprecated
+ */
+bool is_deprecated_section(const char* s);
 
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

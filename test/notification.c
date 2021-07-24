@@ -232,8 +232,6 @@ TEST test_notification_maxlength(void)
 SUITE(suite_notification)
 {
         cmdline_load(0, NULL);
-        char *config_path = g_strconcat(base, "/data/dunstrc.default", NULL);
-        load_settings(config_path);
 
         RUN_TEST(test_notification_is_duplicate);
         RUN_TEST(test_notification_replace_single_field);
@@ -277,7 +275,6 @@ SUITE(suite_notification)
         RUN_TEST(test_notification_maxlength);
 
         g_clear_pointer(&settings.icon_path, g_free);
-        g_free(config_path);
 }
 
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

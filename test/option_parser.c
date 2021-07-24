@@ -15,60 +15,6 @@ TEST test_next_section(void)
         PASS();
 }
 
-TEST test_ini_get_bool(void)
-{
-        char *bool_section = "bool";
-        ASSERT(ini_get_bool(bool_section, "booltrue", false));
-        ASSERT(ini_get_bool(bool_section, "booltrue_capital", false));
-
-        ASSERT_FALSE(ini_get_bool(bool_section, "boolfalse", true));
-        ASSERT_FALSE(ini_get_bool(bool_section, "boolfalse_capital", true));
-
-        ASSERT(ini_get_bool(bool_section, "boolyes", false));
-        ASSERT(ini_get_bool(bool_section, "boolyes_capital", false));
-
-        ASSERT_FALSE(ini_get_bool(bool_section, "boolno", true));
-        ASSERT_FALSE(ini_get_bool(bool_section, "boolno_capital", true));
-
-        ASSERT(ini_get_bool(bool_section, "boolbin1", false));
-        ASSERT_FALSE(ini_get_bool(bool_section, "boolbin0", true));
-
-        ASSERT(ini_get_bool(bool_section, "boolinvalid", true));
-        ASSERT_FALSE(ini_get_bool(bool_section, "boolinvalid", false));
-
-        ASSERT(ini_get_bool(bool_section, "nonexistent", true));
-        ASSERT_FALSE(ini_get_bool(bool_section, "nonexistent", false));
-        PASS();
-}
-
-TEST test_ini_get_string(void)
-{
-        char *string_section = "string";
-        char *ptr;
-        ASSERT_STR_EQ("A simple string", (ptr = ini_get_string(string_section, "simple", "")));
-        free(ptr);
-
-        ASSERT_STR_EQ("A quoted string", (ptr = ini_get_string(string_section, "quoted", "")));
-        free(ptr);
-        ASSERT_STR_EQ("A string \"with quotes\"", (ptr = ini_get_string(string_section, "quoted_with_quotes", "")));
-        free(ptr);
-        ASSERT_STR_EQ("A\" string with quotes\"", (ptr = ini_get_string(string_section, "unquoted_with_quotes", "")));
-        free(ptr);
-
-        ASSERT_STR_EQ("String with a", (ptr = ini_get_string(string_section, "quoted_comment", "")));
-        free(ptr);
-        ASSERT_STR_EQ("String with a", (ptr = ini_get_string(string_section, "unquoted_comment", "")));
-        free(ptr);
-        ASSERT_STR_EQ("#ffffff", (ptr = ini_get_string(string_section, "color_comment", "")));
-        free(ptr);
-
-
-        ASSERT_STR_EQ("default value", (ptr = ini_get_string(string_section, "nonexistent", "default value")));
-        free(ptr);
-
-        PASS();
-}
-
 enum greatest_test_res ARRAY_EQ(char **a, char **b){
         ASSERT(a);
         ASSERT(b);
@@ -79,94 +25,6 @@ enum greatest_test_res ARRAY_EQ(char **a, char **b){
         }
         ASSERT_FALSE(a[i]);
         ASSERT_FALSE(b[i]);
-        PASS();
-}
-
-TEST test_ini_get_list(void)
-{
-        char *list_section = "list";
-
-        char *cmp1[] = {"A", "simple", "list", NULL};
-        char *cmp2[] = {"A", "list", "with", "spaces", NULL};
-        char *cmp3[] = {"A list", "with", "multiword entries", NULL};
-        char *cmp4[] = {"A", "quoted", "list", NULL};
-        char *cmp5[] = {"A", "list", "\"with quotes\"", NULL};
-        char *cmp6[] = {"List", "with", "a", NULL};
-
-        char **ptr;
-        CHECK_CALL(ARRAY_EQ(cmp1, (ptr = ini_get_list(list_section, "simple", ""))));
-        free_string_array(ptr);
-
-        CHECK_CALL(ARRAY_EQ(cmp2, (ptr = ini_get_list(list_section, "spaces", ""))));
-        free_string_array(ptr);
-
-        CHECK_CALL(ARRAY_EQ(cmp3, (ptr = ini_get_list(list_section, "multiword", ""))));
-        free_string_array(ptr);
-        CHECK_CALL(ARRAY_EQ(cmp4, (ptr = ini_get_list(list_section, "quoted", ""))));
-        free_string_array(ptr);
-
-        CHECK_CALL(ARRAY_EQ(cmp5, (ptr = ini_get_list(list_section, "quoted_with_quotes", ""))));
-        free_string_array(ptr);
-        CHECK_CALL(ARRAY_EQ(cmp5, (ptr = ini_get_list(list_section, "unquoted_with_quotes", ""))));
-        free_string_array(ptr);
-
-        CHECK_CALL(ARRAY_EQ(cmp6, (ptr = ini_get_list(list_section, "quoted_comment", ""))));
-        free_string_array(ptr);
-        CHECK_CALL(ARRAY_EQ(cmp6, (ptr = ini_get_list(list_section, "unquoted_comment", ""))));
-        free_string_array(ptr);
-
-        PASS();
-}
-
-TEST test_ini_get_path(void)
-{
-        char *section = "path";
-        char *ptr, *exp;
-        char *home = getenv("HOME");
-
-        // return default, if nonexistent key
-        ASSERT_EQ(NULL, (ptr = ini_get_path(section, "nonexistent", NULL)));
-        ASSERT_STR_EQ("default", (ptr = ini_get_path(section, "nonexistent", "default")));
-        g_free(ptr);
-
-        // return path with replaced home
-        ASSERT_STR_EQ((exp = g_strconcat(home, "/.path/to/tilde", NULL)),
-                      (ptr = ini_get_path(section, "expand_tilde", NULL)));
-        g_free(ptr);
-        g_free(exp);
-
-        PASS();
-}
-
-
-TEST test_ini_get_int(void)
-{
-        char *int_section = "int";
-
-        ASSERT_EQ(5, ini_get_int(int_section, "simple", 0));
-        ASSERT_EQ(-10, ini_get_int(int_section, "negative", 0));
-        ASSERT_EQ(2, ini_get_int(int_section, "decimal", 0));
-        ASSERT_EQ(7, ini_get_int(int_section, "leading_zeroes", 0));
-        ASSERT_EQ(1024, ini_get_int(int_section, "multi_char", 0));
-
-        ASSERT_EQ(10, ini_get_int(int_section, "nonexistent", 10));
-        PASS();
-}
-
-TEST test_ini_get_double(void)
-{
-        if (2.3 != atof("2.3")) {
-                SKIPm("Skipping test_ini_get_double, as it seems we're running under musl+valgrind!");
-        }
-
-        char *double_section = "double";
-        ASSERT_EQ(1, ini_get_double(double_section, "simple", 0));
-        ASSERT_EQ(1.5, ini_get_double(double_section, "decimal", 0));
-        ASSERT_EQ(-1.2, ini_get_double(double_section, "negative", 0));
-        ASSERT_EQ(0.005, ini_get_double(double_section, "zeroes", 0));
-        ASSERT_EQ(3.141592653589793, ini_get_double(double_section, "long", 0));
-
-        ASSERT_EQ(10.5, ini_get_double(double_section, "nonexistent", 10.5));
         PASS();
 }
 
@@ -209,11 +67,11 @@ TEST test_cmdline_get_list(void)
         char *cmp3[] = {"A", "default", "list", NULL};
 
         CHECK_CALL(ARRAY_EQ(cmp1, (ptr = cmdline_get_list("-list", "", ""))));
-        free_string_array(ptr);
+        g_strfreev(ptr);
         CHECK_CALL(ARRAY_EQ(cmp2, (ptr = cmdline_get_list("-list2", "", ""))));
-        free_string_array(ptr);
+        g_strfreev(ptr);
         CHECK_CALL(ARRAY_EQ(cmp3, (ptr = cmdline_get_list("-nonexistent", "A, default, list", ""))));
-        free_string_array(ptr);
+        g_strfreev(ptr);
         PASS();
 }
 
@@ -267,121 +125,473 @@ TEST test_cmdline_create_usage(void)
         PASS();
 }
 
-TEST test_option_get_string(void)
+TEST test_string_to_int(void)
 {
-        char *string_section = "string";
-        char *ptr;
+        int val = -123;
+        const char* inputs[] = {
+                "0",
+                "1",
+                "-1",
+                "12345678",
+                "-12345678"
+        };
+        const int results[] = {
+                0,
+                1,
+                -1,
+                12345678,
+                -12345678
+        };
+        struct setting s;
+        s.type = TYPE_INT;
 
-        ASSERT_STR_EQ("A simple string", (ptr =option_get_string(string_section, "simple", "-nonexistent", "", "")));
-        free(ptr);
-        ASSERT_STR_EQ("Single_word_string", (ptr = option_get_string(string_section, "simple", "-str/-s", "", "")));
-        free(ptr);
-        ASSERT_STR_EQ("A simple string from the cmdline", (ptr = option_get_string(string_section, "simple", "-string", "", "")));
-        free(ptr);
-        ASSERT_STR_EQ("A simple string from the cmdline", (ptr = option_get_string(string_section, "simple", "-string/-s", "", "")));
-        free(ptr);
-        ASSERT_STR_EQ("Single_word_string", (ptr = option_get_string(string_section, "simple", "-s", "", "")));
-        free(ptr);
-        ASSERT_STR_EQ("Default", (ptr = option_get_string(string_section, "nonexistent", "-nonexistent", "Default", "")));
-        free(ptr);
+        char buf[50];
+        for (int i = 0; i < G_N_ELEMENTS(inputs); i++) {
+                sprintf(buf, "Failed in round %i", i);
+                ASSERTm(buf, set_from_string(&val, s, inputs[i]));
+                ASSERT_EQm(buf, val, results[i]);
+        }
         PASS();
 }
 
-TEST test_option_get_list(void)
+TEST test_string_to_int_invalid(void)
 {
-        char *list_section = "list";
-        char **ptr;
+        int val = -123;
+        const char* inputs[] = {
+                "a0",
+                "something",
+                "x1234asdf",
+                "-dsf1234asdf",
+                "0x123",
+                "1234a567",
+        };
 
-        char *cmp1[] = {"A", "simple", "list", NULL};
-        char *cmp2[] = {"A", "list", "with", "spaces", NULL};
-        char *cmp3[] = {"A", "simple", "list", "from", "the", "cmdline", NULL};
-        char *cmp4[] = {"A", "default", "list", NULL};
+        struct setting s;
+        s.type = TYPE_INT;
+        s.name = "test_int";
 
-        CHECK_CALL(ARRAY_EQ(cmp1, (ptr = option_get_list(list_section, "simple", "-nonexistent", "", ""))));
-        free_string_array(ptr);
-        CHECK_CALL(ARRAY_EQ(cmp2, (ptr = option_get_list(list_section, "quoted", "-list2", "", ""))));
-        free_string_array(ptr);
-        CHECK_CALL(ARRAY_EQ(cmp3, (ptr = option_get_list(list_section, "simple", "-list", "", ""))));
-        free_string_array(ptr);
-        CHECK_CALL(ARRAY_EQ(cmp3, (ptr = option_get_list(list_section, "simple", "-list/-l", "", ""))));
-        free_string_array(ptr);
-        CHECK_CALL(ARRAY_EQ(cmp4, (ptr = option_get_list(list_section, "nonexistent", "-nonexistent", "A, default, list", ""))));
-        free_string_array(ptr);
+        char buf[50];
+        for (int i = 0; i < G_N_ELEMENTS(inputs); i++) {
+                sprintf(buf, "Failed in round %i", i);
+                ASSERT_FALSEm(buf, set_from_string(&val, s, inputs[i]));
+        }
+        ASSERT_EQm("Value should not be changed for invalid ints", val, -123);
         PASS();
 }
 
-TEST test_option_get_path(void)
+TEST test_string_to_boolean(void)
 {
-        char *section = "path";
-        char *ptr, *exp;
-        char *home = getenv("HOME");
+        bool val;
 
-        // invalid ini, invalid cmdline
-        ASSERT_EQ(NULL, (ptr = option_get_path(section, "nonexistent", "-nonexistent", NULL, "desc")));
-        ASSERT_STR_EQ("default", (ptr = option_get_path(section, "nonexistent", "-nonexistent", "default", "desc")));
-        free(ptr);
+        struct setting s;
+        s.type = TYPE_CUSTOM;
+        s.parser = string_parse_bool;
+        s.parser_data = boolean_enum_data;
+        s.value = &val;
 
-        //   valid ini, invalid cmdline
-        ASSERT_STR_EQ((exp = g_strconcat(home, "/.path/to/tilde", NULL)),
-                      (ptr = option_get_path(section, "expand_tilde", "-nonexistent", NULL, "desc")));
-        g_free(exp);
-        g_free(ptr);
+        const char* inputs[] = {
+                "0",
+                "1",
+                "true",
+                "True",
+                "false",
+                "off"
+        };
+        const int results[] = {
+                0,
+                1,
+                1,
+                1,
+                0,
+                0
+        };
 
-        //   valid ini,   valid cmdline
-        ASSERT_STR_EQ((exp = g_strconcat(home, "/path/from/cmdline", NULL)),
-                      (ptr = option_get_path(section, "expand_tilde", "-path", NULL, "desc")));
-        g_free(exp);
-        g_free(ptr);
-
-        // invalid ini,   valid cmdline
-        ASSERT_STR_EQ((exp = g_strconcat(home, "/path/from/cmdline", NULL)),
-                      (ptr = option_get_path(section, "nonexistent", "-path", NULL, "desc")));
-        g_free(exp);
-        g_free(ptr);
-
+        char buf[50];
+        for (int i = 0; i < G_N_ELEMENTS(inputs); i++) {
+                sprintf(buf, "Failed in round %i", i);
+                ASSERTm(buf, set_from_string(&val, s, inputs[i]));
+                sprintf(buf, "Failed in round %i. %i should be %i", i, val, results[i]);
+                ASSERT_EQm(buf, val, results[i]);
+        }
         PASS();
 }
 
-TEST test_option_get_int(void)
+TEST test_string_to_boolean_invalid(void)
 {
-        char *int_section = "int";
-        ASSERT_EQ(3,  option_get_int(int_section, "negative", "-int", 0, ""));
-        ASSERT_EQ(2,  option_get_int(int_section, "simple", "-int2/-i", 0, ""));
-        ASSERT_EQ(-7, option_get_int(int_section, "decimal", "-negative", 0, ""));
-        ASSERT_EQ(4,  option_get_int(int_section, "simple", "-zeroes", 0, ""));
-        ASSERT_EQ(2,  option_get_int(int_section, "simple", "-intdecim", 0, ""));
+        bool val = true;
 
-        ASSERT_EQ(5, option_get_int(int_section, "simple", "-nonexistent", 0, ""));
-        ASSERT_EQ(-10, option_get_int(int_section, "negative", "-nonexistent", 0, ""));
-        ASSERT_EQ(2, option_get_int(int_section, "decimal", "-nonexistent", 0, ""));
-        ASSERT_EQ(7, option_get_int(int_section, "leading_zeroes", "-nonexistent", 0, ""));
-        ASSERT_EQ(1024, option_get_int(int_section, "multi_char", "-nonexistent", 0, ""));
+        struct setting s = {0};
+        s.type = TYPE_CUSTOM;
+        s.parser = string_parse_bool;
+        s.parser_data = boolean_enum_data;
+        s.value = &val;
+        s.name = "test_boolean";
 
-        ASSERT_EQ(3, option_get_int(int_section, "nonexistent", "-nonexistent", 3, ""));
+        const char* invalid_inputs[] = {
+                "-1",
+                "123",
+                "something",
+                "else",
+        };
+
+        char buf[50];
+
+        for (int i = 0; i < G_N_ELEMENTS(invalid_inputs); i++) {
+                sprintf(buf, "Failed in round %i", i);
+                bool success = set_from_string(&val, s, invalid_inputs[i]);
+                ASSERT_FALSEm(buf, success);
+        }
+        ASSERT_EQm("Boolean should not change from invalid values", val, true);
         PASS();
 }
 
-TEST test_option_get_double(void)
+TEST test_string_to_enum(void)
 {
-        if (2.3 != atof("2.3")) {
-                SKIPm("Skipping test_option_get_double, as it seems we're running under musl+valgrind!");
+        int val = -123;
+
+        struct setting s;
+        s.type = TYPE_CUSTOM;
+        s.value = &val;
+        s.parser = string_parse_enum;
+        s.parser_data = ellipsize_enum_data;
+
+        char buf[50];
+
+        // do not go until last element, since it's ENUM_END (all 0)
+        for (int i = 0; i < G_N_ELEMENTS(ellipsize_enum_data)-1; i++) {
+                sprintf(buf, "Failed in round %i", i);
+                ASSERTm(buf, set_from_string(&val, s, ellipsize_enum_data[i].string));
+                ASSERT_EQm(buf, val, ellipsize_enum_data[i].enum_value);
+        }
+        PASS();
+}
+
+TEST test_string_to_enum_invalid(void)
+{
+        int val = -123;
+
+        struct setting s;
+        s.name = "test_enum";
+        s.type = TYPE_CUSTOM;
+        s.value = &val;
+        s.parser = string_parse_enum;
+        s.parser_data = ellipsize_enum_data;
+
+        const char* invalid_inputs[] = {
+                "0",
+                "1",
+                "-1",
+                "something",
+                "else"
+        };
+
+        char buf[50];
+
+        for (int i = 0; i < G_N_ELEMENTS(invalid_inputs); i++) {
+                sprintf(buf, "Failed in round %i", i);
+                ASSERT_FALSEm(buf, set_from_string(&val, s, invalid_inputs[i]));
+        }
+        ASSERT_EQm("Enum should not change from invalid values", val, -123);
+        PASS();
+}
+
+int get_list_len(const enum mouse_action *in) {
+        int len = 0;
+        while (in[len] != MOUSE_ACTION_END)
+                len++;
+        return len;
+}
+
+TEST test_string_to_list(void)
+{
+        enum mouse_action *val = NULL;
+
+        struct setting s;
+        s.type = TYPE_LIST;
+        s.value = &val;
+        s.parser_data = GINT_TO_POINTER(MOUSE_LIST);
+
+        const char* inputs[] = {
+                "close_current",
+                "none",
+                "none, close_current",
+                "close_all,close_current",
+                "close_all,close_current,close_all",
+        };
+        const enum mouse_action results[][4] = {
+                {MOUSE_CLOSE_CURRENT, MOUSE_ACTION_END},
+                {MOUSE_NONE, MOUSE_ACTION_END},
+                {MOUSE_NONE, MOUSE_CLOSE_CURRENT, MOUSE_ACTION_END},
+                {MOUSE_CLOSE_ALL, MOUSE_CLOSE_CURRENT, MOUSE_ACTION_END},
+                {MOUSE_CLOSE_ALL, MOUSE_CLOSE_CURRENT, MOUSE_CLOSE_ALL, MOUSE_ACTION_END},
+        };
+
+        char buf[50];
+        for (int i = 0; i < G_N_ELEMENTS(inputs); i++) {
+                sprintf(buf, "Failed in round %i", i);
+                ASSERTm(buf, set_from_string(s.value, s, inputs[i]));
+                ASSERT_EQm(buf, get_list_len(val), get_list_len(results[i]));
+                for (int j = 0; val[j] != MOUSE_ACTION_END; j++){
+                        sprintf(buf, "Failed in round %i, element %i. Is %i, should be %i", i, j, val[j], results[i][j]);
+                        ASSERT_EQm(buf, val[j], results[i][j]);
+                }
+        }
+        free(val);
+        PASS();
+}
+
+TEST test_string_to_list_invalid(void)
+{
+        enum mouse_action val_initial[] = {123, MOUSE_ACTION_END};
+        enum mouse_action *val;
+
+        // set the list to some initial value
+        int len = get_list_len(val_initial);
+        val = g_malloc_n(len+1, sizeof(enum mouse_action));
+        for (int i = 0; i < len + 1; i++) {
+                val[i] = val_initial[i];
         }
 
-        char *double_section = "double";
-        ASSERT_EQ(2, option_get_double(double_section, "simple", "-simple_double", 0, ""));
-        ASSERT_EQ(5.2, option_get_double(double_section, "simple", "-double", 0, ""));
-        ASSERT_EQ(0.005, option_get_double(double_section, "zeroes", "-nonexistent", 0, ""));
-        ASSERT_EQ(10.5, option_get_double(double_section, "nonexistent", "-nonexistent", 10.5, ""));
+        struct setting s;
+        s.name = "test_list";
+        s.type = TYPE_LIST;
+        s.value = &val;
+        s.parser_data = GINT_TO_POINTER(MOUSE_LIST);
+
+        const char* invalid_inputs[] = {
+                "0",
+                "1",
+                "-1",
+                "something",
+                "else"
+                "close_all,close_current,close_all,invalid",
+                "close_all,invalid,close_current,close_all",
+        };
+
+        char buf[256];
+
+        for (int i = 0; i < G_N_ELEMENTS(invalid_inputs); i++) {
+                sprintf(buf, "Failed in round %i", i);
+                ASSERT_FALSEm(buf, set_from_string(&val, s, invalid_inputs[i]));
+        }
+        sprintf(buf,"List should not change from invalid values. Expected length %i, got %i", len, get_list_len(val));
+        ASSERT_EQm(buf, get_list_len(val), len);
+        ASSERT_EQm("List should not change from invalid values", (int) val[0], 123);
+        g_free(val);
         PASS();
 }
 
-TEST test_option_get_bool(void)
+TEST test_string_to_time(void)
 {
-        char *bool_section = "bool";
-        ASSERT(option_get_bool(bool_section, "boolfalse", "-bool/-b", false, ""));
-        ASSERT(option_get_bool(bool_section, "boolbin1", "-nonexistent", false, ""));
-        ASSERT_FALSE(option_get_bool(bool_section, "boolbin0", "-nonexistent", false, ""));
-        ASSERT_FALSE(option_get_bool(bool_section, "nonexistent", "-nonexistent", false, ""));
+        gint64 val;
+        struct setting s;
+        s.type = TYPE_TIME;
+        s.value = &val;
+        s.name = "test_time";
+
+        const char* inputs[] = {
+                "-1",
+                "0",
+                "1",
+                "3s",
+                "100ms",
+                "2m",
+        };
+        const int results[] = {
+                S2US(-1),
+                S2US(0),
+                S2US(1),
+                S2US(3),
+                100 * 1000,
+                S2US(120),
+        };
+
+        char buf[50];
+        for (int i = 0; i < G_N_ELEMENTS(inputs); i++) {
+                sprintf(buf, "Failed in round %i", i);
+                ASSERTm(buf, set_from_string(&val, s, inputs[i]));
+                sprintf(buf, "Failed in round %i. %li should be %i", i, val, results[i]);
+                ASSERT_EQm(buf, val, results[i]);
+        }
+        PASS();
+}
+
+TEST test_string_to_time_invalid(void)
+{
+        gint64 val = 1234;
+        struct setting s;
+        s.type = TYPE_TIME;
+        s.value = &val;
+
+        const char* invalid_inputs[] = {
+                // -1 is allowed, but only without suffix
+                "-1s",
+                "-1ms",
+                "-2",
+                "-4s",
+                "-2ms",
+                "3basdf",
+                "100asdf",
+                "anything",
+                "s",
+        };
+
+        char buf[50];
+        for (int i = 0; i < G_N_ELEMENTS(invalid_inputs); i++) {
+                sprintf(buf, "Failed in round %i", i);
+                ASSERT_FALSEm(buf, set_from_string(&val, s, invalid_inputs[i]));
+        }
+        ASSERT_EQm("Time should not change from invalid values", val, 1234);
+        PASS();
+}
+
+TEST test_string_to_path(void)
+{
+        char *val = NULL;
+        char **val2 = NULL;
+        struct setting s;
+        s.type = TYPE_PATH;
+        s.value = &val;
+        s.name = "test_path";
+        s.parser_data = &val2;
+
+        const char* inputs[] = {
+                "/bin/something",
+                "something",
+                "/path/path/path/",
+                "/path/p argument",
+                "p with multiple arguments",
+                "~/p/p",
+        };
+
+        char *expanded_home = g_strconcat(user_get_home(), "/", "p/p", NULL);
+        const char* results[] = {
+                "/bin/something",
+                "something",
+                "/path/path/path/",
+                "/path/p argument",
+                "p with multiple arguments",
+                expanded_home,
+        };
+
+        const char* results2[][5] = {
+                {"/bin/something", NULL},
+                {"something", NULL},
+                {"/path/path/path/", NULL},
+                {"/path/p", "argument", NULL},
+                {"p", "with", "multiple", "arguments", NULL},
+                {expanded_home},
+        };
+
+        char buf[256];
+        for (int i = 0; i < G_N_ELEMENTS(inputs); i++) {
+                sprintf(buf, "Failed in round %i", i);
+                ASSERTm(buf, set_from_string(&val, s, inputs[i]));
+                sprintf(buf, "Failed in round %i. %s should be %s", i, val, results[i]);
+                ASSERTm(buf, STR_EQ(val, results[i]));
+                for (int j = 0; results2[i][j] != NULL; j++) {
+                        ASSERT_STR_EQ(results2[i][j], val2[j]);
+                }
+        }
+
+        g_free(val);
+        g_free(expanded_home);
+        g_strfreev(val2);
+        PASS();
+}
+
+TEST test_string_to_sepcolor(void)
+{
+        struct separator_color_data val = {0};
+        struct setting s;
+        s.type = TYPE_CUSTOM;
+        s.value = &val;
+        s.name = "test_sepcolor";
+        s.parser = string_parse_sepcolor;
+        s.parser_data = sep_color_enum_data;
+
+        const char* inputs[] = {
+                "auto",
+                "foreground",
+                "frame",
+                "#123456",
+                "#ab123c",
+                "#AB123C",
+        };
+
+        const struct separator_color_data results[] = {
+                {SEP_AUTO, NULL},
+                {SEP_FOREGROUND, NULL},
+                {SEP_FRAME, NULL},
+                {SEP_CUSTOM, "#123456"},
+                {SEP_CUSTOM, "#ab123c"},
+                {SEP_CUSTOM, "#AB123C"},
+        };
+
+        char buf[50];
+        for (int i = 0; i < G_N_ELEMENTS(inputs); i++) {
+                sprintf(buf, "Failed in round %i. Expected %i, got %i", i, results[i].type, val.type);
+                ASSERTm(buf, set_from_string(&val, s, inputs[i]));
+                ASSERT_EQm(buf, results[i].type, val.type);
+                sprintf(buf, "Failed in round %i. Expected %s, got %s", i, results[i].sep_color, val.sep_color);
+                ASSERTm(buf, STR_EQ(results[i].sep_color, val.sep_color));
+        }
+
+        g_free(val.sep_color);
+        PASS();
+}
+
+TEST test_string_to_sepcolor_invalid(void)
+{
+        struct separator_color_data val = {123, "test123"};
+        struct setting s;
+        s.type = TYPE_CUSTOM;
+        s.value = &val;
+        s.name = "test_sepcolor";
+        s.parser = string_parse_sepcolor;
+        s.parser_data = sep_color_enum_data;
+
+        const char* inputs[] = {
+                "",
+                "f00reground",
+                "fraame",
+                "123456",
+                "#ab",
+
+                // TODO detect these mistakes as well
+                /* "#12456", */
+                /* "#gg123c", */
+                /* "#AB123C123212", */
+        };
+
+        char buf[50];
+        for (int i = 0; i < G_N_ELEMENTS(inputs); i++) {
+                sprintf(buf, "Failed in round %i.", i);
+                ASSERT_FALSEm(buf, set_from_string(&val, s, inputs[i]));
+        }
+
+        ASSERT_EQm("Sep color shouldn't changed from invalid inputs", 123, (int) val.type);
+        ASSERT_STR_EQm("Sep color shouldn't changed from invalid inputs", "test123", val.sep_color);
+        PASS();
+}
+
+#define TEST_ENUM(t) { \
+ASSERT_EQ(sizeof(t), sizeof(int)); \
+}
+
+// The settings code relies on the enums being the same size as an int. If
+// they're bigger it's not a big problem, but if they're smaller, other parts
+// of the memory may be overwritten.
+TEST test_enum_size(void)
+{
+        TEST_ENUM(enum markup_mode);
+        TEST_ENUM(enum alignment);
+        TEST_ENUM(enum ellipsize);
+        TEST_ENUM(enum icon_position);
+        TEST_ENUM(enum vertical_alignment);
+        TEST_ENUM(enum follow_mode);
+        TEST_ENUM(enum mouse_action );
+        TEST_ENUM(enum zwlr_layer_shell_v1_layer);
         PASS();
 }
 
@@ -395,12 +605,6 @@ SUITE(suite_option_parser)
         }
         load_ini_file(config_file);
         RUN_TEST(test_next_section);
-        RUN_TEST(test_ini_get_bool);
-        RUN_TEST(test_ini_get_string);
-        RUN_TEST(test_ini_get_list);
-        RUN_TEST(test_ini_get_path);
-        RUN_TEST(test_ini_get_int);
-        RUN_TEST(test_ini_get_double);
         char cmdline[] = "dunst -bool -b "
                 "-string \"A simple string from the cmdline\" -s Single_word_string "
                 "-list A,simple,list,from,the,cmdline -list2 \"A, list, with, spaces\" "
@@ -420,12 +624,28 @@ SUITE(suite_option_parser)
         RUN_TEST(test_cmdline_get_bool);
         RUN_TEST(test_cmdline_create_usage);
 
-        RUN_TEST(test_option_get_string);
-        RUN_TEST(test_option_get_list);
-        RUN_TEST(test_option_get_path);
-        RUN_TEST(test_option_get_int);
-        RUN_TEST(test_option_get_double);
-        RUN_TEST(test_option_get_bool);
+
+        // These test try out the parsing of set_from_string for different
+        // config types.
+        // Non-stripped strings should not be passed to set_from_string. These
+        // are normally stripped out by the ini parser.
+        RUN_TEST(test_string_to_int);
+        RUN_TEST(test_string_to_int_invalid);
+        RUN_TEST(test_string_to_enum);
+        RUN_TEST(test_string_to_enum_invalid);
+        RUN_TEST(test_string_to_boolean);
+        RUN_TEST(test_string_to_boolean_invalid);
+        RUN_TEST(test_string_to_list);
+        RUN_TEST(test_string_to_list_invalid);
+        RUN_TEST(test_string_to_time);
+        RUN_TEST(test_string_to_time_invalid);
+        RUN_TEST(test_string_to_path);
+        // Paths are now almost always considered valid
+        RUN_TEST(test_string_to_sepcolor);
+        RUN_TEST(test_string_to_sepcolor_invalid);
+        RUN_TEST(test_enum_size);
+        // geometry is left out, since we probably want to replace it soon
+        // anyways
 
         g_free(config_path);
         free_ini();

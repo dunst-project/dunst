@@ -6,9 +6,11 @@
 #include <stdlib.h>
 
 #include "../src/log.h"
+#include "../src/settings.h"
 
 const char *base;
 
+SUITE_EXTERN(suite_settings_data);
 SUITE_EXTERN(suite_utils);
 SUITE_EXTERN(suite_option_parser);
 SUITE_EXTERN(suite_notification);
@@ -20,6 +22,7 @@ SUITE_EXTERN(suite_dunst);
 SUITE_EXTERN(suite_log);
 SUITE_EXTERN(suite_menu);
 SUITE_EXTERN(suite_dbus);
+SUITE_EXTERN(suite_setting);
 
 GREATEST_MAIN_DEFS();
 
@@ -37,6 +40,11 @@ int main(int argc, char *argv[]) {
         bool printlog = log && atoi(log) ? true : false;
         dunst_log_init(!printlog);
 
+
+        // initialize settings
+        char *config_path = g_strconcat(base, "/data/dunstrc.default", NULL);
+        load_settings(config_path);
+
         GREATEST_MAIN_BEGIN();
         RUN_SUITE(suite_utils);
         RUN_SUITE(suite_option_parser);
@@ -48,10 +56,15 @@ int main(int argc, char *argv[]) {
         RUN_SUITE(suite_dunst);
         RUN_SUITE(suite_log);
         RUN_SUITE(suite_menu);
+        RUN_SUITE(suite_settings_data);
         RUN_SUITE(suite_dbus);
-        GREATEST_MAIN_END();
+        RUN_SUITE(suite_setting);
 
         base = NULL;
+        g_free(config_path);
         free(prog);
+
+        // this returns the error code
+        GREATEST_MAIN_END();
 }
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

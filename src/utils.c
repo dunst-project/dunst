@@ -12,17 +12,7 @@
 #include <unistd.h>
 
 #include "log.h"
-
-/* see utils.h */
-void free_string_array(char **arr)
-{
-        if (arr){
-                for (int i = 0; arr[i]; i++){
-                        g_free(arr[i]);
-                }
-        }
-        g_free(arr);
-}
+#include "settings_data.h"
 
 /* see utils.h */
 char *string_replace_char(char needle, char replacement, char *haystack)
@@ -147,7 +137,7 @@ void string_strip_delimited(char *str, char a, char b)
 }
 
 /* see utils.h */
-char **string_to_array(const char *string)
+char **string_to_array(const char *string, const char *delimiter)
 {
         char **arr = NULL;
         if (string) {
@@ -175,30 +165,77 @@ char *string_to_path(char *string)
 }
 
 /* see utils.h */
+bool safe_string_to_long_long(long long *in, const char *str) {
+        errno = 0;
+        char *endptr;
+        long long val = g_ascii_strtoll(str, &endptr, 10);
+
+        if (errno != 0) {
+                LOG_W("'%s': %s.", str, strerror(errno));
+                return false;
+        } else if (str == endptr) {
+                LOG_W("'%s': No digits found.", str);
+                return false;
+        } else if (*endptr != '\0') {
+                LOG_W("'%s': String contains non-digits.", str);
+                return false;
+        }
+        *in = val;
+        return true;
+}
+
+/* see utils.h */
+bool safe_string_to_int(int *in, const char *str) {
+        long long l;
+        if (!safe_string_to_long_long(&l, str))
+                return false;
+
+        // Check if it's in int range
+        if (l < INT_MIN || l > INT_MAX) {
+                errno = ERANGE;
+                LOG_W("'%s': %s.", str, strerror(errno));
+                return false;
+        }
+
+        *in = (int) l;
+        return true;
+}
+
+/* see utils.h */
 gint64 string_to_time(const char *string)
 {
         assert(string);
 
         errno = 0;
         char *endptr;
-        gint64 val = strtoll(string, &endptr, 10);
+        gint64 val = strtol(string, &endptr, 10);
 
         if (errno != 0) {
                 LOG_W("Time: '%s': %s.", string, strerror(errno));
                 return 0;
         } else if (string == endptr) {
+                errno = EINVAL;
                 LOG_W("Time: '%s': No digits found.", string);
                 return 0;
-        } else if (errno != 0 && val == 0) {
-                LOG_W("Time: '%s': Unknown error.", string);
-                return 0;
-        } else if (errno == 0 && !*endptr) {
+        } else if (val < -1) {
+                // most times should not be negative, but show_age_threshhold
+                // can be -1
+                LOG_W("Time: '%s': Time should be positive (-1 is allowed too sometimes)",
+                                string);
+                errno = EINVAL;
+        }
+        else if (errno == 0 && !*endptr) {
                 return S2US(val);
         }
-
         // endptr may point to a separating space
         while (isspace(*endptr))
                 endptr++;
+
+        if (val < 0) {
+                LOG_W("Time: '%s' signal value -1 should not have a suffix", string);
+                errno = EINVAL;
+                return 0;
+        }
 
         if (STRN_EQ(endptr, "ms", 2))
                 return val * 1000;
@@ -211,7 +248,10 @@ gint64 string_to_time(const char *string)
         else if (STRN_EQ(endptr, "d", 1))
                 return S2US(val) * 60 * 60 * 24;
         else
+        {
+                errno = EINVAL;
                 return 0;
+        }
 }
 
 /* see utils.h */
@@ -247,6 +287,7 @@ const char *user_get_home(void)
         return home_directory;
 }
 
+/* see utils.h */
 bool safe_setenv(const char* key, const char* value){
         if (!key)
                 return false;
@@ -257,6 +298,42 @@ bool safe_setenv(const char* key, const char* value){
                 setenv(key, value, 1);
 
         return true;
+}
+
+// These sections are not interpreted as rules
+static const char* special_sections[] = {
+        "global",
+        "frame",
+        "experimental",
+        "shortcuts",
+        "urgency_low",
+        "urgency_normal",
+        "urgency_critical",
+};
+
+static const char* deprecated_sections[] = {
+        "frame",
+        "shortcuts",
+};
+
+/* see utils.h */
+bool is_special_section(const char* s) {
+        for (size_t i = 0; i < G_N_ELEMENTS(special_sections); i++) {
+                if (STR_EQ(special_sections[i], s)) {
+                        return true;
+                }
+        }
+        return false;
+}
+
+/* see utils.h */
+bool is_deprecated_section(const char* s) {
+        for (size_t i = 0; i < G_N_ELEMENTS(deprecated_sections); i++) {
+                if (STR_EQ(deprecated_sections[i], s)) {
+                        return true;
+                }
+        }
+        return false;
 }
 
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

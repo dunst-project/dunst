@@ -9,9 +9,16 @@
 #include "settings.h"
 
 struct rule {
+        // Since there's heavy use of offsets from this class, both in rules.c
+        // and in settings_data.h the layout of the class should not be
+        // changed, unless it's well considered and tested. See the comments
+        // below for what should not be changed.
+
+        // This has to be the first member, see struct setting.rule_offset.
         char *name;
+
         /* filters */
-        char *appname;
+        char *appname; // this has to be the first filter, see rules.c
         char *summary;
         char *body;
         char *icon;
@@ -21,7 +28,7 @@ struct rule {
         int msg_urgency;
 
         /* actions */
-        gint64 timeout;
+        gint64 timeout; // this has to be the first action
         enum urgency urgency;
         char *action_name;
         enum markup_mode markup;
@@ -37,21 +44,47 @@ struct rule {
         const char *format;
         const char *script;
         enum behavior_fullscreen fullscreen;
-        char *set_stack_tag;
+        char *set_stack_tag; // this has to be the last action
 };
 
 extern GSList *rules;
 
 /**
- * Allocate a new rule. The rule is fully initialised.
+ * Allocate a new rule with given name. The rule is fully initialised. If the
+ * name is one of a special section (see settings_data.h), the rule is
+ * initialized with some filters, and you should not add any filters after
+ * that.
+ *
+ * @param name Name of the rule.
  *
  * @returns A new initialised rule.
  */
-struct rule *rule_new(void);
+struct rule *rule_new(const char *name);
 
 void rule_apply(struct rule *r, struct notification *n);
 void rule_apply_all(struct notification *n);
 bool rule_matches_notification(struct rule *r, struct notification *n);
+
+/**
+ * Get rule with this name from rules
+ *
+ * @returns the rule that matches. Null if no rule matches
+ */
+struct rule *get_rule(const char* name);
+
+/**
+ * Check if a rule is an action
+ *
+ * @returns a boolean if the rule is an action
+ */
+bool rule_offset_is_action(const size_t offset);
+
+/**
+ * Check if a rule is an filter
+ *
+ * @returns a boolean if the rule is an filter
+ */
+bool rule_offset_is_filter(const size_t offset);
 
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */
