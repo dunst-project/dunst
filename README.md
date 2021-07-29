@@ -145,3 +145,4 @@ Copyright 2013 Sascha Kruse and contributors (see [`LICENSE`](./LICENSE) for lic
 [wiki]: https://github.com/dunst-project/dunst/wiki
 [website]: https://dunst-project.org
 [FAQ]: https://dunst-project.org/faq
+run-ci
