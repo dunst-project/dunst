@@ -864,6 +864,11 @@ later. Use C<msg_urgency> to match it.
 Setting this to true will prevent the notification from being displayed
 initially but will be saved in history for later viewing.
 
+=item C<history_ignore>
+
+Setting this to true will display the notification initially, but stop it
+from being recalled via the history.
+
 =item C<action_name>
 
 Sets the name of the action to be invoked on do_action. If not specified, the
