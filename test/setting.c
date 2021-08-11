@@ -102,7 +102,8 @@ TEST test_dunstrc_defaults(void) {
                                                 ASSERT_EQm(message, a, b);
                                         }
                                       break;
-                        case TYPE_STRING: ;
+                        case TYPE_DOUBLE:
+                        case TYPE_STRING:
                         case TYPE_PATH:
                         case TYPE_GEOMETRY:
                         case TYPE_LIST:

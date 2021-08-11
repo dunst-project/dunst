@@ -16,7 +16,7 @@ cairo_surface_t *gdk_pixbuf_to_cairo_surface(GdkPixbuf *pixbuf);
  * @return an instance of `GdkPixbuf`
  * @retval NULL: file does not exist, not readable, etc..
  */
-GdkPixbuf *get_pixbuf_from_file(const char *filename, int scale);
+GdkPixbuf *get_pixbuf_from_file(const char *filename, double scale);
 
 
 /**
@@ -25,12 +25,12 @@ GdkPixbuf *get_pixbuf_from_file(const char *filename, int scale);
  * If scale is 2 for example, the icon will render in twice the size, but
  * get_icon_width still returns the same size as when scale is 1.
  */
-int get_icon_width(cairo_surface_t *icon, int scale);
+int get_icon_width(cairo_surface_t *icon, double scale);
 
 /**
  * Get the unscaled icon height, see get_icon_width.
  */
-int get_icon_height(cairo_surface_t *icon, int scale);
+int get_icon_height(cairo_surface_t *icon, double scale);
 
 /** Retrieve a path from an icon name.
  *
@@ -53,7 +53,7 @@ char *get_path_from_icon_name(const char *iconname);
  * @return an instance of `GdkPixbuf`
  * @retval NULL: file does not exist, not readable, etc..
  */
-GdkPixbuf *get_pixbuf_from_icon(const char *iconname, int scale);
+GdkPixbuf *get_pixbuf_from_icon(const char *iconname, double scale);
 
 /** Read an icon from disk and convert it to a GdkPixbuf, scaled according to settings
  *
@@ -69,7 +69,7 @@ GdkPixbuf *get_pixbuf_from_icon(const char *iconname, int scale);
  * @return an instance of `GdkPixbuf`, representing the name's image
  * @retval NULL: Invalid path given
  */
-GdkPixbuf *icon_get_for_name(const char *name, char **id, int dpi_scale);
+GdkPixbuf *icon_get_for_name(const char *name, char **id, double dpi_scale);
 
 /** Convert a GVariant like described in GdkPixbuf, scaled according to settings
  *
@@ -84,7 +84,7 @@ GdkPixbuf *icon_get_for_name(const char *name, char **id, int dpi_scale);
  * @return an instance of `GdkPixbuf` derived from the GVariant
  * @retval NULL: GVariant parameter nulled, invalid or in wrong format
  */
-GdkPixbuf *icon_get_for_data(GVariant *data, char **id, int scale);
+GdkPixbuf *icon_get_for_data(GVariant *data, char **id, double scale);
 
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

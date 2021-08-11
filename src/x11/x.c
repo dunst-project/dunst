@@ -161,8 +161,24 @@ static bool x_win_composited(struct window_x11 *win)
 void x_display_surface(cairo_surface_t *srf, window winptr, const struct dimensions *dim)
 {
         struct window_x11 *win = (struct window_x11*)winptr;
-        x_win_move(win, dim->x, dim->y, dim->w, dim->h);
-        cairo_xlib_surface_set_size(win->root_surface, dim->w, dim->h);
+        const struct screen_info *scr = get_active_screen();
+        double scale = x_get_scale();
+        int x, y;
+
+        if (settings.geometry.negative_x) {
+                x = (scr->x + (scr->w - round(dim->w * scale))) + round(settings.geometry.x * scale);
+        } else {
+                x = scr->x + round(settings.geometry.x * scale);
+        }
+
+        if (settings.geometry.negative_y) {
+                y = scr->y + (scr->h + round(settings.geometry.y * scale)) - round(dim->h * scale);
+        } else {
+                y = scr->y + round(settings.geometry.y * scale);
+        }
+
+        x_win_move(win, x, y, round(dim->w * scale), round(dim->h * scale));
+        cairo_xlib_surface_set_size(win->root_surface, round(dim->w * scale), round(dim->h * scale));
 
         XClearWindow(xctx.dpy, win->xwin);
 
@@ -171,7 +187,7 @@ void x_display_surface(cairo_surface_t *srf, window winptr, const struct dimensi
         cairo_show_page(win->c_ctx);
 
         if (settings.corner_radius != 0 && ! x_win_composited(win))
-                x_win_corners_shape(win, dim->corner_radius);
+                x_win_corners_shape(win, round(dim->corner_radius * scale));
         else
                 x_win_corners_unshape(win);
 
@@ -942,8 +958,15 @@ static void x_shortcut_init(struct keyboard_shortcut *ks)
         g_free(str_begin);
 }
 
-int x_get_scale(void) {
-        return 1;
+double x_get_scale(void) {
+        if (settings.scale > 0)
+                return settings.scale;
+
+        const struct screen_info *scr_info = get_active_screen();
+        double scale = MAX(1, scr_info->dpi/96.);
+        LOG_D("X11 dpi: %i", scr_info->dpi);
+        LOG_D("X11 scale: %f", scale);
+        return scale;
 }
 
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

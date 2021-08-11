@@ -116,13 +116,17 @@ char *string_to_path(char *string);
  * @param[in] str The string to parse
  * @return a bool if the conversion succeeded
  */
-
 bool safe_string_to_int(int *in, const char *str);
 
 /**
  * Same as safe_string_to_int, but then for a long
  */
 bool safe_string_to_long_long(long long *in, const char *str);
+
+/**
+ * Same as safe_string_to_int, but then for a double
+ */
+bool safe_string_to_double(double *in, const char *str);
 
 /**
  * Convert time units (ms, s, m) to the internal `gint64` microseconds format

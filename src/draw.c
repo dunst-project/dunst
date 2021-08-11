@@ -144,11 +144,11 @@ static struct color layout_get_sepcolor(struct colored_layout *cl,
 
 static void layout_setup_pango(PangoLayout *layout, int width)
 {
-        int scale = output->get_scale();
+        double scale = output->get_scale();
         pango_layout_set_wrap(layout, PANGO_WRAP_WORD_CHAR);
-        pango_layout_set_width(layout, width * scale * PANGO_SCALE);
+        pango_layout_set_width(layout, round(width * scale * PANGO_SCALE));
         pango_layout_set_font_description(layout, pango_fdesc);
-        pango_layout_set_spacing(layout, settings.line_height * scale * PANGO_SCALE);
+        pango_layout_set_spacing(layout, round(settings.line_height * scale * PANGO_SCALE));
 
         PangoAlignment align;
         switch (settings.align) {
@@ -196,20 +196,20 @@ static bool have_progress_bar(const struct notification *n)
         return (n->progress >= 0 && settings.progress_bar == true);
 }
 
-static void get_text_size(PangoLayout *l, int *w, int *h, int scale) {
+static void get_text_size(PangoLayout *l, int *w, int *h, double scale) {
         pango_layout_get_pixel_size(l, w, h);
         // scale the size down, because it may be rendered at higher DPI
 
         if (w)
-                *w /= scale;
+                *w = round(*w / scale);
         if (h)
-                *h /= scale;
+                *h = round(*h / scale);
 }
 
 static struct dimensions calculate_dimensions(GSList *layouts)
 {
         struct dimensions dim = { 0 };
-        int scale = output->get_scale();
+        double scale = output->get_scale();
 
         const struct screen_info *scr = output->get_active_screen();
         if (have_dynamic_width()) {
@@ -235,7 +235,7 @@ static struct dimensions calculate_dimensions(GSList *layouts)
         int text_width = 0, total_width = 0;
         for (GSList *iter = layouts; iter; iter = iter->next) {
                 struct colored_layout *cl = iter->data;
-                int w=0,h=0;
+                int w=0, h=0;
                 get_text_size(cl->l, &w, &h, scale);
                 if (cl->icon) {
                         h = MAX(get_icon_height(cl->icon, scale), h);
@@ -314,7 +314,7 @@ static struct colored_layout *layout_init_shared(cairo_t *c, const struct notifi
 {
         struct colored_layout *cl = g_malloc(sizeof(struct colored_layout));
         cl->l = layout_create(c);
-        int scale = output->get_scale();
+        double scale = output->get_scale();
 
         if (!settings.word_wrap) {
                 PangoEllipsizeMode ellipsize;
@@ -383,7 +383,7 @@ static struct colored_layout *layout_from_notification(cairo_t *c, struct notifi
 {
 
         struct colored_layout *cl = layout_init_shared(c, n);
-        int scale = output->get_scale();
+        double scale = output->get_scale();
 
         /* markup */
         GError *err = NULL;
@@ -452,7 +452,7 @@ static GSList *create_layouts(cairo_t *c)
 }
 
 
-static int layout_get_height(struct colored_layout *cl, int scale)
+static int layout_get_height(struct colored_layout *cl, double scale)
 {
         int h;
         int h_icon = 0;
@@ -499,15 +499,15 @@ static int frame_internal_radius (int r, int w, int h)
  * The top corners will get rounded by `corner_radius`, if `first` is set.
  * Respectably the same for `last` with the bottom corners.
  */
-void draw_rounded_rect(cairo_t *c, int x, int y, int width, int height, int corner_radius, int scale, bool first, bool last)
+void draw_rounded_rect(cairo_t *c, int x, int y, int width, int height, int corner_radius, double scale, bool first, bool last)
 {
-        width *= scale;
-        height *= scale;
-        x *= scale;
-        y *= scale;
-        corner_radius *= scale;
+        width = round(width * scale);
+        height = round(height * scale);
+        x = round(x * scale);
+        y = round(y * scale);
+        corner_radius = round(corner_radius * scale);
 
-        const float degrees = M_PI / 180.0;
+        const double degrees = M_PI / 180.0;
 
         cairo_new_sub_path(c);
 
@@ -557,8 +557,8 @@ void draw_rounded_rect(cairo_t *c, int x, int y, int width, int height, int corn
 /**
  * A small wrapper around cairo_rectange for drawing a scaled rectangle.
  */
-void draw_rect(cairo_t *c, int x, int y, int width, int height, int scale) {
-        cairo_rectangle(c, x * scale, y * scale, width * scale, height * scale);
+static void draw_rect(cairo_t *c, double x, double y, double width, double height, double scale) {
+        cairo_rectangle(c, round(x * scale), round(y * scale), round(width * scale), round(height * scale));
 }
 
 static cairo_surface_t *render_background(cairo_surface_t *srf,
@@ -571,7 +571,7 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
                                           bool first,
                                           bool last,
                                           int *ret_width,
-                                          int scale)
+                                          double scale)
 {
         int x = 0;
         int radius_int = corner_radius;
@@ -635,10 +635,12 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
         if (ret_width)
                 *ret_width = width;
 
-        return cairo_surface_create_for_rectangle(srf, x * scale, y * scale, width * scale, height * scale);
+        return cairo_surface_create_for_rectangle(srf,
+                                                  round(x * scale), round(y * scale),
+                                                  round(width * scale), round(height * scale));
 }
 
-static void render_content(cairo_t *c, struct colored_layout *cl, int width, int scale)
+static void render_content(cairo_t *c, struct colored_layout *cl, int width, double scale)
 {
         const int h = layout_get_height(cl, scale);
         int h_without_progress_bar = h;
@@ -667,7 +669,7 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, int
                         text_x = get_icon_width(cl->icon, scale) + settings.h_padding + get_text_icon_padding();
                 } // else ICON_RIGHT
         }
-        cairo_move_to(c, text_x * scale, text_y * scale);
+        cairo_move_to(c, round(text_x * scale), round(text_y * scale));
 
         cairo_set_source_rgba(c, cl->fg.r, cl->fg.g, cl->fg.b, cl->fg.a);
         pango_cairo_update_layout(c, cl->l);
@@ -695,7 +697,7 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, int
                         image_x = settings.h_padding;
                 } // else ICON_RIGHT
 
-                cairo_set_source_surface(c, cl->icon, image_x * scale, image_y * scale);
+                cairo_set_source_surface(c, cl->icon, round(image_x * scale), round(image_y * scale));
                 draw_rect(c, image_x, image_y, image_width, image_height, scale);
                 cairo_fill(c);
         }
@@ -728,8 +730,14 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, int
                 cairo_fill(c);
                 // border
                 cairo_set_source_rgba(c, cl->frame.r, cl->frame.g, cl->frame.b, cl->frame.a);
-                // TODO draw_rect instead of cairo_rectangle resulted in blurry lines. Why?
-                cairo_rectangle(c, (frame_x + half_frame_width) * scale, (frame_y + half_frame_width) * scale, (progress_width - frame_width) * scale, progress_height * scale);
+                // TODO draw_rect instead of cairo_rectangle resulted
+                // in blurry lines due to rounding (half_frame_width
+                // can be non-integer)
+                cairo_rectangle(c,
+                                (frame_x + half_frame_width) * scale,
+                                (frame_y + half_frame_width) * scale,
+                                (progress_width - frame_width) * scale,
+                                progress_height * scale);
                 cairo_set_line_width(c, frame_width * scale);
                 cairo_stroke(c);
         }
@@ -742,7 +750,7 @@ static struct dimensions layout_render(cairo_surface_t *srf,
                                        bool first,
                                        bool last)
 {
-        int scale = output->get_scale();
+        double scale = output->get_scale();
         const int cl_h = layout_get_height(cl, scale);
 
         int h_text = 0;
@@ -774,31 +782,6 @@ static struct dimensions layout_render(cairo_surface_t *srf,
         return dim;
 }
 
-/**
- * Calculates the position the window should be placed at given its width and
- * height and stores them in \p ret_x and \p ret_y.
- */
-static void calc_window_pos(int width, int height, int *ret_x, int *ret_y)
-{
-        const struct screen_info *scr = output->get_active_screen();
-
-        if (ret_x) {
-                if (settings.geometry.negative_x) {
-                        *ret_x = (scr->x + (scr->w - width)) + settings.geometry.x;
-                } else {
-                        *ret_x = scr->x + settings.geometry.x;
-                }
-        }
-
-        if (ret_y) {
-                if (settings.geometry.negative_y) {
-                        *ret_y = scr->y + (scr->h + settings.geometry.y) - height;
-                } else {
-                        *ret_y = scr->y + settings.geometry.y;
-                }
-        }
-}
-
 void draw(void)
 {
         assert(queues_length_displayed() > 0);
@@ -806,9 +789,11 @@ void draw(void)
         GSList *layouts = create_layouts(output->win_get_context(win));
 
         struct dimensions dim = calculate_dimensions(layouts);
-        int scale = output->get_scale();
+        double scale = output->get_scale();
 
-        cairo_surface_t *image_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, dim.w * scale, dim.h * scale);
+        cairo_surface_t *image_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
+                                                                    round(dim.w * scale),
+                                                                    round(dim.h * scale));
 
         bool first = true;
         for (GSList *iter = layouts; iter; iter = iter->next) {
@@ -821,7 +806,6 @@ void draw(void)
                 first = false;
         }
 
-        calc_window_pos(dim.w, dim.h, &dim.x, &dim.y);
         output->display_surface(image_surface, win, &dim);
 
         cairo_surface_destroy(image_surface);
@@ -834,7 +818,7 @@ void draw_deinit(void)
         output->deinit();
 }
 
-int draw_get_scale(void)
+double draw_get_scale(void)
 {
         if (output) {
                 return output->get_scale();
