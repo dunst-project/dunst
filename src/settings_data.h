@@ -487,15 +487,15 @@ static const struct setting allowed_settings[] = {
                 .rule_offset = offsetof(struct rule, skip_display),
         },
         {
-                .name = "frame",
+                .name = "history_ignore",
                 .section = "*",
-                .description = "Setting this to true will prevent the notification from being displayed initially but will be saved in history for later viewing.",
+                .description = "Setting this to true will display the notification initially, but stop it from being recalled via the history.",
                 .type = TYPE_CUSTOM,
                 .default_value = "*",
                 .value = NULL,
                 .parser = string_parse_bool,
                 .parser_data = boolean_enum_data,
-                .rule_offset = offsetof(struct rule, skip_display),
+                .rule_offset = offsetof(struct rule, history_ignore),
         },
         {
                 .name = "frame_color",
