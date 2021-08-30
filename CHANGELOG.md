@@ -3,6 +3,8 @@
 ## Unreleased
 
 ### Added
+- Added `ignore_close` rule option to prevent the requesting application from
+  dismissing their notifications.
 ### Changed
 ### Fixed
 

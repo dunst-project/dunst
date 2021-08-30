@@ -318,6 +318,11 @@ void queues_notification_close_id(int id, enum reason reason)
                      iter = iter->next) {
                         struct notification *n = iter->data;
                         if (n->id == id) {
+                                if (reason == REASON_SIG && n->ignore_close) {
+                                        LOG_I("Ignoring close request for: '%s' '%s'",
+                                              n->body, n->summary);
+                                        return;
+                                }
                                 g_queue_remove(allqueues[i], n);
                                 target = n;
                                 break;

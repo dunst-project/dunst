@@ -341,6 +341,7 @@
 #    urgency
 #    icon_position
 #    skip_display
+#    ignore_close
 #    history_ignore
 #    action_name
 #    word_wrap
@@ -410,6 +411,11 @@
 #    # This notification will not be displayed, but will be included in the history
 #    summary = "foobar"
 #    skip_display = yes
+
+#[ignore-close]
+#    # This notification can't be dismissed by the application that requested it
+#    summary = "foobar"
+#    ignore_close = yes
 
 #[signed_on]
 #    appname = Pidgin

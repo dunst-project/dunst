@@ -883,6 +883,11 @@ later. Use C<msg_urgency> to match it.
 Setting this to true will prevent the notification from being displayed
 initially but will be saved in history for later viewing.
 
+=item C<ignore_close>
+
+Setting this to true will prevent the notification from being dismissed
+by application that requested the notification.
+
 =item C<history_ignore>
 
 Setting this to true will display the notification initially, but stop it

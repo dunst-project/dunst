@@ -89,6 +89,7 @@ struct notification {
         int progress;       /**< percentage (-1: undefined) */
         int history_ignore; /**< push to history or free directly */
         int skip_display;   /**< insert notification into history, skipping initial waiting and display */
+        int ignore_close;   /**< prevent the application from dismissing the notification */
 
         /* internal */
         bool redisplayed;       /**< has been displayed before? */
