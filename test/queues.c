@@ -461,8 +461,8 @@ TEST test_queue_stacktag(void)
         queues_init();
 
         n1 = test_notification("n1", 1);
-        n2 = test_notification("n2", 1);
-        n3 = test_notification("n3", 1);
+        n2 = test_notification("n1", 1);
+        n3 = test_notification("n1", 1);
         n1->stack_tag = g_strdup(stacktag);
         n2->stack_tag = g_strdup(stacktag);
         n3->stack_tag = g_strdup(stacktag);
@@ -478,6 +478,67 @@ TEST test_queue_stacktag(void)
         queues_update(STATUS_NORMAL);
         queues_notification_insert(n3);
         QUEUE_LEN_ALL(0, 1, 0);
+        NOT_LAST(n2);
+
+        queues_teardown();
+        PASS();
+}
+
+TEST test_queue_different_stacktag(void)
+{
+        const char *stacktag = "asdf";
+        const char *stacktag2 = "something else";
+        struct notification *n1, *n2, *n3;
+        settings.stack_duplicates = false;
+
+        queues_init();
+
+        n1 = test_notification("n1", 1);
+        n2 = test_notification("n1", 1);
+        n3 = test_notification("n1", 1);
+        n1->stack_tag = g_strdup(stacktag);
+        n2->stack_tag = g_strdup(stacktag);
+        n3->stack_tag = g_strdup(stacktag2);
+
+        queues_notification_insert(n1);
+        QUEUE_LEN_ALL(1, 0, 0);
+
+        notification_ref(n1);
+        queues_notification_insert(n2);
+        NOT_LAST(n1);
+
+        queues_notification_insert(n3);
+        queues_update(STATUS_NORMAL);
+        printf("queue %i\n",g_queue_get_length(QUEUE(HIST)));
+        QUEUE_LEN_ALL(0, 2, 0);
+
+        queues_teardown();
+        PASS();
+}
+
+TEST test_queue_stacktag_different_appid(void)
+{
+        const char *stacktag = "THIS IS A SUPER WIERD STACK TAG";
+        struct notification *n1, *n2, *n3;
+
+        queues_init();
+
+        n1 = test_notification("n1", 1);
+        n2 = test_notification("n2", 1);
+        n3 = test_notification("n2", 1);
+        n1->stack_tag = g_strdup(stacktag);
+        n2->stack_tag = g_strdup(stacktag);
+        n3->stack_tag = g_strdup(stacktag);
+
+        queues_notification_insert(n1);
+        QUEUE_LEN_ALL(1, 0, 0);
+
+        queues_notification_insert(n2);
+
+        notification_ref(n2);
+        queues_update(STATUS_NORMAL);
+        queues_notification_insert(n3);
+        QUEUE_LEN_ALL(0, 2, 0);
         NOT_LAST(n2);
 
         queues_teardown();
@@ -828,6 +889,8 @@ TEST test_queue_no_sort_and_pause(void)
 SUITE(suite_queues)
 {
         settings.icon_path = "";
+        bool store = settings.stack_duplicates;
+        settings.stack_duplicates = false;
 
         RUN_TEST(test_datachange_beginning_empty);
         RUN_TEST(test_datachange_endless);
@@ -847,6 +910,8 @@ SUITE(suite_queues)
         RUN_TEST(test_queue_notification_skip_display_redisplayed);
         RUN_TEST(test_queue_stacking);
         RUN_TEST(test_queue_stacktag);
+        RUN_TEST(test_queue_different_stacktag);
+        RUN_TEST(test_queue_stacktag_different_appid);
         RUN_TEST(test_queue_teardown);
         RUN_TEST(test_queue_timeout);
         RUN_TEST(test_queues_update_fullscreen);
@@ -859,6 +924,7 @@ SUITE(suite_queues)
         RUN_TEST(test_queue_no_sort_and_pause);
 
         settings.icon_path = NULL;
+        settings.stack_duplicates = store;
 }
 
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
