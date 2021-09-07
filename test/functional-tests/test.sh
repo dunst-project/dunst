@@ -5,6 +5,17 @@ function keypress {
     read key
 }
 
+function tmp_dunstrc {
+        cp "$1" dunstrc.tmp
+        echo -e "\n$2" >> dunstrc.tmp
+}
+
+function start_dunst {
+        killall dunst
+        ../../dunst -config $1 &
+        sleep 0.1
+}
+
 function basic_notifications {
     ../../dunstify -a "dunst tester"         "normal"    "<i>italic body</i>"
     ../../dunstify -a "dunst tester"  -u c   "critical"   "<b>bold body</b>"
@@ -34,29 +45,9 @@ function run_script {
     killall dunst
     PATH=".:$PATH" ../../dunst -config dunstrc.run_script &
     ../../dunstify -a "dunst tester" -u c \
-        "Run Script" "After Keypress, 2 other notification should pop up. THis needs notify-send installed"
+        "Run Script" "After Keypress, 2 other notification should pop up."
     keypress
     ../../dunstify -a "dunst tester" -u c "trigger" "this should trigger a notification"
-    keypress
-}
-
-function ignore_newline {
-    echo "###################################"
-    echo "ignore newline"
-    echo "###################################"
-    killall dunst
-    ../../dunst -config dunstrc.ignore_newline_no_wrap &
-    ../../dunstify -a "dunst tester" -u c "Ignore Newline No Wrap" "There should be no newline anywhere"
-    ../../dunstify -a "dunst tester" -u c "Th\nis\n\n\n is\n fu\nll of \n" "\nnew\nlines"
-    basic_notifications
-    keypress
-
-    killall dunst
-    ../../dunst -config dunstrc.ignore_newline &
-    ../../dunstify -a "dunst tester" -u c "Ignore Newline" \
-        "The only newlines you should encounter here are wordwraps. That's why I'm so long."
-    ../../dunstify -a "dunst tester" -u c "Th\nis\n\n\n is\n fu\nll of \n" "\nnew\nlines"
-    basic_notifications
     keypress
 }
 
@@ -73,110 +64,106 @@ function replace {
 
 }
 
+function limit {
+    echo "###################################"
+    echo "limit"
+    echo "###################################"
+    tmp_dunstrc dunstrc.default "notification_limit=4"
+    start_dunst dunstrc.tmp
+    ../../dunstify -a "dunst tester" -u c "notification limit = 4"
+    basic_notifications
+    rm dunstrc.tmp
+    keypress
+
+    tmp_dunstrc dunstrc.default "notification_limit=0"
+    start_dunst dunstrc.tmp
+    ../../dunstify -a "dunst tester" -u c "notification limit = 0 (unlimited notifications)"
+    basic_notifications
+    rm dunstrc.tmp
+    keypress
+}
+
 function markup {
     echo "###################################"
     echo "markup"
     echo "###################################"
     killall dunst
-    ../../dunst -config dunstrc.markup "200x0+10+10" &
+    ../../dunst -config dunstrc.default &
     ../../dunstify -a "dunst tester"  "Markup Tests" -u "c"
-    ../../dunstify -a "dunst tester"  "There should be no markup in the title" -u "c"
     ../../dunstify -a "dunst tester"  "Title" "<b>bold</b> <i>italic</i>"
-    ../../dunstify -a "dunst tester"  "Title" "<a href="github.com"> Github link </a>"
+    ../../dunstify -a "dunst tester"  "Title" '<a href="github.com"> Github link </a>'
     ../../dunstify -a "dunst tester"  "Title" "<b>broken markup</i>"
     keypress
 
     killall dunst
-    ../../dunst -config dunstrc.nomarkup "200x0+10+10" &
-    ../../dunstify -a "dunst tester" -u c "No markup Tests"
-    ../../dunstify -a "dunst tester" "<b>Title</b>" "<b>bold</b><i>italic</i>"
-    ../../dunstify -a "dunst tester" "<b>Title</b>" "<b>broken markup</i>"
+    ../../dunst -config dunstrc.nomarkup &
+    ../../dunstify -a "dunst tester" -u c "No markup Tests" "Titles shoud still be in bold and body in italics"
+    ../../dunstify -a "dunst tester" "Title" "<b>bold</b><i>italic</i>"
+    ../../dunstify -a "dunst tester" "Title" "<b>broken markup</i>"
     keypress
 
 }
 
-function corners {
-    echo "###################################"
-    echo "corners"
-    echo "###################################"
-    killall dunst
-    ../../dunst -config dunstrc.default -geom "200x0+10+10" &
-    ../../dunstify -a "dunst tester" -u c "upper left"
+function test_origin {
+    tmp_dunstrc dunstrc.default "origin = $1\n offset = 10x10"
+    start_dunst dunstrc.tmp
+    ../../dunstify -a "dunst tester" -u c "$1"
     basic_notifications
+    rm dunstrc.tmp
     keypress
-
-    killall dunst
-    ../../dunst -config dunstrc.default -geom "200x0-10+10" &
-    ../../dunstify -a "dunst tester" -u c "upper right"
-    basic_notifications
-    keypress
-
-    killall dunst
-    ../../dunst -config dunstrc.default -geom "200x0-10-10" &
-    ../../dunstify -a "dunst tester" -u c "lower right"
-    basic_notifications
-    keypress
-
-    killall dunst
-    ../../dunst -config dunstrc.default -geom "200x0+10-10" &
-    ../../dunstify -a "dunst tester" -u c "lower left"
-    basic_notifications
-    keypress
-
 }
 
-function geometry {
+function origin {
     echo "###################################"
-    echo "geometry"
+    echo "origin"
     echo "###################################"
-    killall dunst
-    ../../dunst -config dunstrc.default -geom "0x0" &
-    ../../dunstify -a "dunst tester" -u c "0x0"
-    basic_notifications
-    keypress
+    test_origin "top-left"
+    test_origin "top-center"
+    test_origin "top-right"
+    test_origin "left-center"
+    test_origin "center"
+    test_origin "right-center"
+    test_origin "bottom-left"
+    test_origin "bottom-center"
+    test_origin "bottom-right"
+}
 
-
-    killall dunst
-    ../../dunst -config dunstrc.default -geom "200x0" &
-    ../../dunstify -a "dunst tester" -u c "200x0"
+function test_width {
+    tmp_dunstrc dunstrc.default "width = $1"
+    start_dunst dunstrc.tmp
+    ../../dunstify -a "dunst tester" -u c "width = $1"
     basic_notifications
+    rm dunstrc.tmp
     keypress
+}
 
-    killall dunst
-    ../../dunst -config dunstrc.default -geom "200x2" &
-    ../../dunstify -a "dunst tester" -u c "200x2"
-    basic_notifications
-    keypress
+function width {
+    echo "###################################"
+    echo "width"
+    echo "###################################"
+    test_width "100"
+    test_width "200"
+    test_width "400"
+    test_width "(0,400)"
+}
 
-    killall dunst
-    ../../dunst -config dunstrc.default -geom "200x1" &
-    ../../dunstify -a "dunst tester" -u c "200x1"
+function test_height {
+    tmp_dunstrc dunstrc.default "height = $1"
+    start_dunst dunstrc.tmp
+    ../../dunstify -a "dunst tester" -u c "height = $1"
+    ../../dunstify -a "dunst tester" -u c "Temporibus accusantium libero sequi at nostrum dolor sequi sed. Cum minus reprehenderit voluptatibus laboriosam et et ut. Laudantium blanditiis omnis ipsa rerum quas velit ut. Quae voluptate soluta enim consequatur libero eum similique ad. Veritatis neque consequatur et aperiam quisquam id nostrum. Consequatur voluptas aut ut omnis atque cum perferendis. Possimus laudantium tempore iste qui nemo voluptate quod. Labore totam debitis consectetur amet. Maxime quibusdam ipsum voluptates quod ex nam sunt. Officiis repellat quod maxime cumque tenetur. Veritatis labore aperiam repellendus. Provident dignissimos ducimus voluptates."
     basic_notifications
+    rm dunstrc.tmp
     keypress
+}
 
-    killall dunst
-    ../../dunst -config dunstrc.default -geom "0x1" &
-    ../../dunstify -a "dunst tester" -u c "0x1"
-    basic_notifications
-    keypress
-
-    killall dunst
-    ../../dunst -config dunstrc.default -geom "-300x1" &
-    ../../dunstify -a "dunst tester" -u c -- "-300x1"
-    basic_notifications
-    keypress
-
-    killall dunst
-    ../../dunst -config dunstrc.default -geom "-300x1-20-20" &
-    ../../dunstify -a "dunst tester" -u c -- "-300x1-20-20"
-    basic_notifications
-    keypress
-
-    killall dunst
-    ../../dunst -config dunstrc.default -geom "x1" &
-    ../../dunstify -a "dunst tester" -u c "x1" "across the screen"
-    basic_notifications
-    keypress
+function height {
+    echo "###################################"
+    echo "height"
+    echo "###################################"
+    test_height "50"
+    test_height "100"
+    test_height "200"
 }
 
 function progress_bar {
@@ -207,14 +194,16 @@ if [ -n "$1" ]; then
         shift
     done
 else
-    progress_bar
-    geometry
-    corners
+    width
+    height
+    origin
+    limit
     show_age
     run_script
     ignore_newline
     replace
     markup
+    progress_bar
 fi
 
 killall dunst

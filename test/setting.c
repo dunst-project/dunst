@@ -19,7 +19,7 @@ TEST test_dunstrc_markup(void) {
         ASSERT_STR_EQ(settings.font, "Monospace 8");
 
 
-        const char *e_format = "%s\\n%b"; // escape the \n since it would otherwise result in the newline character
+        const char *e_format = "<b>%s</b>\\n%b"; // escape the \n since it would otherwise result in the newline character
         const struct rule * r = get_rule("global");
         const char *got_format = r->format;
         ASSERT_STR_EQ(e_format, got_format);
@@ -37,7 +37,7 @@ TEST test_dunstrc_nomarkup(void) {
         ASSERT_STR_EQ(settings.font, "Monospace 8");
 
 
-        const char *e_format = "%s\\n%b"; // escape the \n since it would otherwise result in the newline character
+        const char *e_format = "<b>%s</b>\\n<i>%b</i>"; // escape the \n since it would otherwise result in the newline character
         const struct rule * r = get_rule("global");
         const char *got_format = r->format;
         ASSERT_STR_EQ(e_format, got_format);
