@@ -41,7 +41,7 @@ int get_icon_height(cairo_surface_t *icon, double scale);
  * @return a newly allocated string with the icon path
  * @retval NULL: file does not exist, not readable, etc..
  */
-char *get_path_from_icon_name(const char *iconname);
+char *get_path_from_icon_name(const char *iconname, int scale);
 
 /** Retrieve an icon by its name sent via the notification bus, scaled according to settings
  *

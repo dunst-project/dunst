@@ -205,6 +205,38 @@ GdkPixbuf *get_pixbuf_from_file(const char *filename, double scale)
         return pixbuf;
 }
 
+// Compare two icon sizes to see which one is better for the given max size and scale.
+// An icon with size sz and scale sc is sz*sc pixels wide. The higher
+// icon_size, the more detail an icon has.
+//
+// The criteria for selection are:
+//      1. The icon fits max_icon_size * scale
+//      2. The icon is as large as possible
+//      3. If width is equal, prefer icons with the right amount of detail
+//
+//      @returns true if the icon size is better than the last
+//
+//      sz, sc, lsz, lsc, max_sz, max_sc
+bool icon_size_cmp(int sz, int sc, int lsz, int lsc, int max_sz, int max_sc) {
+        if (sz * sc > max_sz * max_sc)
+                return false;
+
+        if (sz * sc > lsz * lsc)
+                return true;
+
+        if (sz * sc == lsz * lsc){
+                if(sz <= max_sz &&
+                                sz > lsz)
+                        return true;
+
+                if (lsz > max_sz &&
+                                sz < lsz)
+                        return true;
+        }
+
+        return false;
+}
+
 // Attempt to find a full path for icon_name, which may be:
 // - An absolute path, which will simply be returned (as a newly allocated string)
 // - A file:// URI, which will be converted to an absolute path
@@ -214,7 +246,7 @@ GdkPixbuf *get_pixbuf_from_file(const char *filename, double scale)
 //
 // Returns the resolved path, or NULL if it was unable to find an icon. The
 // return value must be freed by the caller.
-char *get_path_from_icon_name(const char *icon_name)
+char *get_path_from_icon_name(const char *icon_name, int scale)
 {
         if (STR_EMPTY(icon_name))
                 return NULL;
@@ -226,15 +258,6 @@ char *get_path_from_icon_name(const char *icon_name)
         if (icon_name[0] == '/' || icon_name[0] == '~') {
                 return g_strdup(icon_name);
         }
-
-        int32_t max_scale = 1;
-        // TODO Determine the largest scale factor of any attached output.
-        /* struct mako_output *output = NULL; */
-        /* wl_list_for_each(output, &notif->state->outputs, link) { */
-        /* if (output->scale > max_scale) { */
-        /* max_scale = output->scale; */
-        /* } */
-        /* } */
 
         static const char fallback[] = "%s:/usr/share/icons/hicolor";
         char *search = g_strdup_printf(fallback, settings.icon_path);
@@ -249,6 +272,7 @@ char *get_path_from_icon_name(const char *icon_name)
 
         char *icon_path = NULL;
         int32_t last_icon_size = 0;
+        int32_t last_icon_scale = 0;
         while (theme_path) {
                 if (strlen(theme_path) == 0) {
                         continue;
@@ -296,23 +320,26 @@ char *get_path_from_icon_name(const char *icon_name)
                         char *scale_str = strchr(relative_path, '@');
                         if (scale_str != NULL) {
                                 icon_scale = strtol(scale_str + 1, NULL, 10);
+                                printf("Icon scale %i\n", icon_scale);
                         }
 
                         if (icon_size == settings.max_icon_size &&
-                                        icon_scale == max_scale) {
+                                        icon_scale == scale) {
                                 // If we find an exact match, we're done.
                                 free(icon_path);
                                 icon_path = strdup(icon_glob.gl_pathv[i]);
                                 break;
-                        } else if (icon_size < settings.max_icon_size * max_scale &&
-                                        icon_size > last_icon_size) {
-                                // Otherwise, if this icon is small enough to fit but bigger
+                        } else if (icon_size_cmp(icon_size, icon_scale,
+                                                last_icon_size,
+                                                last_icon_scale,
+                                                settings.max_icon_size,
+                                                scale)){
+                                // Otherwise, if this icon is small enough to fit but better
                                 // than the last best match, choose it on a provisional basis.
-                                // We multiply by max_scale to increase the odds of finding an
-                                // icon which looks sharp on the highest-scale output.
                                 free(icon_path);
                                 icon_path = strdup(icon_glob.gl_pathv[i]);
                                 last_icon_size = icon_size;
+                                last_icon_scale = icon_scale;
                         }
                 }
 
@@ -347,12 +374,13 @@ char *get_path_from_icon_name(const char *icon_name)
         }
 
         free(search);
+        LOG_D("Icon path: %s", icon_path);
         return icon_path;
 }
 
 GdkPixbuf *get_pixbuf_from_icon(const char *iconname, double scale)
 {
-        char *path = get_path_from_icon_name(iconname);
+        char *path = get_path_from_icon_name(iconname, scale);
         if (!path) {
                 LOG_W("Could not find icon %s in path.\nThe way icon path works recently changed. Take a look at the dunst(5) man page for more info.", iconname);
                 return NULL;

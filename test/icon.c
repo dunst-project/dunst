@@ -14,13 +14,98 @@ extern const char *base;
 
 int scale = 1;
 
-TEST test_get_path_from_icon_null(void){
-    char *result = get_path_from_icon_name(NULL);
-    ASSERT_EQ(result, NULL);
-    PASS();
+TEST test_icon_size_cmp(void)
+{
+        // too big
+        ASSERT_FALSE(icon_size_cmp(64, 1, 32, 1, 32, 1));
+        ASSERT_FALSE(icon_size_cmp(32, 2, 32, 1, 32, 1));
+        ASSERT_FALSE(icon_size_cmp(32, 3, 32, 1, 32, 2));
+        ASSERT_FALSE(icon_size_cmp(32, 3, 0, 0, 32, 2));
+
+        // bigger
+        ASSERT(icon_size_cmp(64, 1, 32, 1, 64, 1));
+        ASSERT(icon_size_cmp(33, 1, 32, 1, 64, 1));
+        ASSERT(icon_size_cmp(32, 1, 0, 0, 64, 1));
+        ASSERT(icon_size_cmp(64, 1, 32, 1, 32, 2));
+
+        // not bigger
+        ASSERT_FALSE(icon_size_cmp(32, 1, 32, 1, 64, 1));
+        ASSERT_FALSE(icon_size_cmp(16, 2, 32, 1, 64, 1));
+        ASSERT_FALSE(icon_size_cmp(16, 1, 32, 1, 64, 1));
+
+        // higher scale
+        ASSERT(icon_size_cmp(32, 2, 32, 1, 64, 1));
+        ASSERT(icon_size_cmp(32, 2, 32, 1, 32, 2));
+
+        // more detail
+        ASSERT(icon_size_cmp(64, 1, 32, 2, 64, 1));
+
+        // lower detail
+        ASSERT(icon_size_cmp(32, 2, 64, 1, 32, 2));
+
+        // too much detail
+        ASSERT_FALSE(icon_size_cmp(64, 1, 32, 2, 32, 2));
+
+        // less detail
+        ASSERT_FALSE(icon_size_cmp(32, 2, 64, 1, 64, 1));
+
+        PASS();
+}
+
+TEST test_get_path_from_icon_null(void)
+{
+        char *result = get_path_from_icon_name(NULL, 1);
+        ASSERT_EQ(result, NULL);
+        PASS();
 }
 
 TEST test_get_path_from_icon_name(void)
+{
+        const char *iconpath = ICONPREFIX;
+        settings.max_icon_size = 32;
+
+        const char* icon_name = "edit";
+        const char* expected_suffix = ".png";
+        char* full_name = g_strconcat(icon_name, expected_suffix, NULL);
+
+        gchar *path = g_build_filename(base, iconpath, "32x32",
+                        "actions", full_name, NULL);
+        char *result = get_path_from_icon_name(icon_name, 1);
+
+        ASSERT(result);
+        ASSERT_EQ(strcmp(result, path), 0);
+
+        g_free(full_name);
+        g_free(path);
+        g_free(result);
+        PASS();
+}
+
+
+TEST test_get_path_from_icon_name_scaled(void)
+{
+        const char *iconpath = ICONPREFIX;
+        settings.max_icon_size = 16;
+
+        const char* icon_name = "edit";
+        const char* expected_suffix = ".png";
+        char* full_name = g_strconcat(icon_name, expected_suffix, NULL);
+
+        gchar *path = g_build_filename(base, iconpath, "16x16@2x",
+                        "actions", full_name, NULL);
+        char *result = get_path_from_icon_name(icon_name, 2);
+
+        ASSERT(result);
+        printf("%s\n", result);
+        ASSERT_EQ(strcmp(result, path), 0);
+
+        g_free(full_name);
+        g_free(path);
+        g_free(result);
+        PASS();
+}
+
+TEST test_get_path_from_icon_name_choose_bigger(void)
 {
         const char *iconpath = ICONPREFIX;
         settings.max_icon_size = 128;
@@ -29,11 +114,12 @@ TEST test_get_path_from_icon_name(void)
         const char* expected_suffix = ".png";
         char* full_name = g_strconcat(icon_name, expected_suffix, NULL);
 
-        gchar *path = g_build_filename(base, iconpath, "32x32",
+        gchar *path = g_build_filename(base, iconpath, "32x32@2x",
                         "actions", full_name, NULL);
-        char *result = get_path_from_icon_name(icon_name);
+        char *result = get_path_from_icon_name(icon_name, 1);
 
         ASSERT(result);
+        printf("%s\n", result);
         ASSERT_EQ(strcmp(result, path), 0);
 
         g_free(full_name);
@@ -48,7 +134,7 @@ TEST test_get_path_from_icon_name_full(void)
 
         gchar *path = g_build_filename(base, iconpath, "valid", "icon1.svg", NULL);
 
-        char *result = get_path_from_icon_name(path);
+        char *result = get_path_from_icon_name(path, 1);
         ASSERT(result);
         ASSERT_EQ(strcmp(result, path), 0);
 
@@ -194,7 +280,10 @@ SUITE(suite_icon)
 {
         // set only valid icons in the path
         settings.icon_path = g_build_filename(base, ICONPREFIX, NULL);
+        RUN_TEST(test_icon_size_cmp);
         RUN_TEST(test_get_path_from_icon_name);
+        RUN_TEST(test_get_path_from_icon_name_scaled);
+        RUN_TEST(test_get_path_from_icon_name_choose_bigger);
         RUN_TEST(test_get_path_from_icon_null);
         RUN_TEST(test_get_path_from_icon_name_full);
         RUN_TEST(test_get_pixbuf_from_file_tilde);
