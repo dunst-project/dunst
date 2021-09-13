@@ -780,7 +780,6 @@ TEST test_queue_no_sort_and_pause(void)
         // Setting sort to false, this means that notifications will only be
         // sorted based on time
         settings.sort = false;
-        settings.geometry.h = 0;
         settings.notification_limit = 0;
         struct notification *n;
         queues_init();

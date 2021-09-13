@@ -928,16 +928,6 @@ static const struct setting allowed_settings[] = {
                 .parser_data = follow_mode_enum_data,
         },
         {
-                .name = "geometry",
-                .section = "global",
-                .description = "Geometry for the window",
-                .type = TYPE_GEOMETRY,
-                .default_value = "300x5-30+20",
-                .value = &settings.geometry,
-                .parser = NULL, // TODO replace this setting with some other format and get rid of x11 compile time dependency
-                .parser_data = NULL,
-        },
-        {
                 .name = "scale",
                 .section = "global",
                 .description = "Scale factor, set to 0 to auto-detect, X11 only",

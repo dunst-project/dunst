@@ -814,8 +814,6 @@ SUITE(suite_option_parser)
         RUN_TEST(test_enum_size);
         RUN_TEST(test_string_to_length);
         RUN_TEST(test_string_to_length_invalid);
-        // geometry is left out, since we probably want to replace it soon
-        // anyways
 
         g_free(config_path);
         free_ini();

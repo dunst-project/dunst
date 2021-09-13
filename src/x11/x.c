@@ -538,28 +538,6 @@ bool x_setup(void)
         return true;
 }
 
-struct geometry x_parse_geometry(const char *geom_str)
-{
-        assert(geom_str);
-        struct geometry geometry = { 0 };
-
-        if (geom_str[0] == '-') {
-                geometry.negative_width = true;
-                geom_str++;
-        } else {
-                geometry.negative_width = false;
-        }
-
-        int mask = XParseGeometry(geom_str,
-                                  &geometry.x, &geometry.y,
-                                  &geometry.w, &geometry.h);
-        geometry.width_set = mask & WidthValue;
-        geometry.negative_x = mask & XNegative;
-        geometry.negative_y = mask & YNegative;
-
-        return geometry;
-}
-
 static void x_set_wm(Window win)
 {
 

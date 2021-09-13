@@ -473,9 +473,6 @@ bool set_from_string(void *target, struct setting setting, const char *value) {
                         }
                         *(gint64*) target = tmp_time;
                         return true;
-                case TYPE_GEOMETRY:
-                        *(struct geometry*) target = x_parse_geometry(value);
-                        return true;
                 case TYPE_LIST: ;
                         LOG_D("list type %i", GPOINTER_TO_INT(setting.parser_data));
                         return string_parse_list(setting.parser_data, value, target);

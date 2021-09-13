@@ -156,20 +156,12 @@ than half of the progress bar height.
 =item B<indicate_hidden> (values: [true/false], default: true)
 
 If this is set to true, a notification indicating how many notifications are
-not being displayed due to the notification limit (see B<geometry>) will be
-shown B<in place of the last notification slot>.
+not being displayed due to the notification limit (see B<notification_limit>)
+will be shown B<in place of the last notification slot>.
 
 Meaning that if this is enabled the number of visible notifications will be 1
 less than what is specified in geometry, the last slot will be taken by the
 hidden count.
-
-=item B<shrink> (values: [true/false], default: false)
-
-Shrink window if it's smaller than the width. Will be ignored if width is 0.
-
-This is used mainly in order to have the shrinking benefit of dynamic width (see
-geometry) while also having an upper bound on how long a notification can get
-before wrapping.
 
 =item B<transparency> (default: 0) (X11 only)
 
@@ -681,8 +673,7 @@ status bar, you might notice that your notifications appear a bit higher or
 lower than on X11. This is because the notification cannot be placed on top of
 your status bar. The notifications are placed relative to your status bar,
 making them appear higher or lower by the height of your status bar. We cannot
-do anything about that behavior, so you will need to change your B<geometry>
-variable accordingly.
+do anything about that behavior.
 
 =head1 RULES
 

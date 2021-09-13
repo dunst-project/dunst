@@ -88,7 +88,6 @@ TEST test_valid_parser_and_data_per_type(void)
                 switch (curr.type) {
                         case TYPE_STRING:
                         case TYPE_TIME:
-                        case TYPE_GEOMETRY:
                         case TYPE_DOUBLE:
                         case TYPE_LENGTH:
                         case TYPE_INT: ; // no parser and no parser data needed
