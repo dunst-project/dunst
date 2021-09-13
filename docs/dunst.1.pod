@@ -4,7 +4,7 @@ dunst - A customizable and lightweight notification-daemon
 
 =head1 SYNOPSIS
 
-dunst [-conf file] [-font font] [-format fmt] [-follow mode] [-monitor n] [-history_length n] ...
+dunst [-conf file] [-verbosity v] [-print] [--startup-notification]
 
 =head1 DESCRIPTION
 
