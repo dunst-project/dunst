@@ -19,7 +19,6 @@ struct settings settings;
 
 static FILE *xdg_config(const char *filename)
 {
-        const gchar * const * systemdirs = g_get_system_config_dirs();
         const gchar * userdir = g_get_user_config_dir();
 
         FILE *f;
@@ -29,16 +28,8 @@ static FILE *xdg_config(const char *filename)
         f = fopen(path, "r");
         g_free(path);
 
-        for (const gchar * const *d = systemdirs;
-             !f && *d;
-             d++) {
-                path = g_strconcat(*d, filename, NULL);
-                f = fopen(path, "r");
-                g_free(path);
-        }
-
         if (!f) {
-                f = fopen("/etc/dunst/dunstrc", "r");
+                f = fopen(SYSCONFFILE, "r");
         }
 
         return f;

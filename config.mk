@@ -1,7 +1,8 @@
 # paths
 PREFIX ?= /usr/local
 BINDIR ?= ${PREFIX}/bin
-SYSCONFDIR ?= /etc
+SYSCONFDIR ?= ${PREFIX}/etc/xdg
+SYSCONFFILE ?= ${SYSCONFDIR}/dunst/dunstrc
 DATADIR ?= ${PREFIX}/share
 # around for backwards compatibility
 MANPREFIX ?= ${DATADIR}/man
@@ -33,9 +34,11 @@ ifneq (0, ${WAYLAND})
 ENABLE_WAYLAND= -DENABLE_WAYLAND
 endif
 
+DEF_SYSCONFFILE=-DSYSCONFFILE=\"${SYSCONFFILE}\"
+
 # flags
 DEFAULT_CPPFLAGS = -D_DEFAULT_SOURCE -DVERSION=\"${VERSION}\"
-DEFAULT_CFLAGS   = -g --std=gnu99 -pedantic -Wall -Wno-overlength-strings -Os ${ENABLE_WAYLAND} ${EXTRA_CFLAGS}
+DEFAULT_CFLAGS   = -g --std=gnu99 -pedantic -Wall -Wno-overlength-strings -Os ${DEF_SYSCONFFILE} ${ENABLE_WAYLAND} ${EXTRA_CFLAGS}
 DEFAULT_LDFLAGS  = -lm -lrt
 
 CPPFLAGS_DEBUG := -DDEBUG_BUILD
