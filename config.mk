@@ -6,6 +6,8 @@ DATADIR ?= ${PREFIX}/share
 # around for backwards compatibility
 MANPREFIX ?= ${DATADIR}/man
 MANDIR ?= ${MANPREFIX}
+SERVICEDIR_DBUS ?= ${DATADIR}/dbus-1/services
+SERVICEDIR_SYSTEMD ?= ${PREFIX}/lib/systemd/user
 EXTRA_CFLAGS ?=
 
 DOXYGEN ?= doxygen
@@ -15,7 +17,7 @@ GIT ?= git
 PKG_CONFIG ?= pkg-config
 POD2MAN ?= pod2man
 SED ?= sed
-SYSTEMCTL ?= systemctl
+SYSTEMDAEMON ?= systemd
 VALGRIND ?= valgrind
 
 # Disable systemd service file installation,

@@ -8,30 +8,7 @@ ifneq ($(wildcard ./.git/),)
 VERSION := $(shell ${GIT} describe --tags)
 endif
 
-ifeq (,${SYSTEMD})
-# Check for systemctl to avoid discrepancies on systems, where
-# systemd is installed, but systemd.pc is in another package
-systemctl := $(shell command -v ${SYSTEMCTL} >/dev/null && echo systemctl)
-ifeq (systemctl,${systemctl})
-SYSTEMD := 1
-else
-SYSTEMD := 0
-endif
-endif
-
-SERVICEDIR_DBUS ?= $(shell $(PKG_CONFIG) dbus-1 --variable=session_bus_services_dir)
-SERVICEDIR_DBUS := ${SERVICEDIR_DBUS}
-ifeq (,${SERVICEDIR_DBUS})
-$(error "Failed to query $(PKG_CONFIG) for package 'dbus-1'!")
-endif
-
-ifneq (0,${SYSTEMD})
-SERVICEDIR_SYSTEMD ?= $(shell $(PKG_CONFIG) systemd --variable=systemduserunitdir)
-SERVICEDIR_SYSTEMD := ${SERVICEDIR_SYSTEMD}
-ifeq (,${SERVICEDIR_SYSTEMD})
-$(error "Failed to query $(PKG_CONFIG) for package 'systemd'!")
-endif
-endif
+SYSTEMD ?= $(shell $(PKG_CONFIG) --silence-errors ${SYSTEMDAEMON} || echo 0)
 
 ifneq (0,${WAYLAND})
 DATA_DIR_WAYLAND_PROTOCOLS ?= $(shell $(PKG_CONFIG) wayland-protocols --variable=pkgdatadir)
