@@ -58,4 +58,5 @@ pkg_config_packs += libnotify
 
 ifneq (0,${WAYLAND})
 pkg_config_packs += wayland-client
+pkg_config_packs += wayland-cursor
 endif

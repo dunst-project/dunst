@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include <wayland-client.h>
 #include <wayland-client-protocol.h>
+#include <wayland-cursor.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/mman.h>
@@ -69,18 +70,21 @@ struct wl_ctx {
                 int32_t x, y;
         } pointer;
 
-	struct {
-		struct wl_touch *wl_touch;
-		struct {
-			int32_t x, y;
-		} pts[MAX_TOUCHPOINTS];
-	} touch;
+        struct {
+                struct wl_touch *wl_touch;
+                struct {
+                        int32_t x, y;
+                } pts[MAX_TOUCHPOINTS];
+        } touch;
 
         struct dimensions cur_dim;
 
         int32_t width, height;
         struct pool_buffer buffers[2];
         struct pool_buffer *current_buffer;
+        struct wl_cursor_theme *cursor_theme;
+        const struct wl_cursor_image *cursor_image;
+        struct wl_surface *cursor_surface;
 };
 
 struct dunst_output {
@@ -189,6 +193,13 @@ static void touch_handle_up(void *data, struct wl_touch *wl_touch,
 
 }
 
+static void pointer_handle_enter(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface, wl_fixed_t x, wl_fixed_t y) {
+        // Change the mouse cursor to "left_ptr"
+        if (ctx.cursor_theme != NULL) {
+                wl_pointer_set_cursor(wl_pointer, serial, ctx.cursor_surface, ctx.cursor_image->hotspot_x, ctx.cursor_image->hotspot_y);
+        }
+}
+
 static void pointer_handle_motion(void *data, struct wl_pointer *wl_pointer,
                 uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y) {
         ctx.pointer.x = wl_fixed_to_int(surface_x);
@@ -202,7 +213,7 @@ static void pointer_handle_button(void *data, struct wl_pointer *wl_pointer,
 }
 
 static const struct wl_pointer_listener pointer_listener = {
-        .enter = noop,
+        .enter = pointer_handle_enter,
         .leave = noop,
         .motion = pointer_handle_motion,
         .button = pointer_handle_button,
@@ -579,6 +590,40 @@ bool wl_init() {
                 LOG_W("compositor doesn't support zwlr_foreign_toplevel_v1. Fullscreen detection won't work");
         }
 
+        // Set up the cursor. It needs a wl_surface with the cursor loaded into it.
+        // If one of these fail, dunst will work fine without the cursor being able to change.
+        const char *cursor_size_env = getenv("XCURSOR_SIZE");
+        int cursor_size = 24;
+        if (cursor_size_env != NULL) {
+                errno = 0;
+                char *end;
+                int temp_size = (int)strtol(cursor_size_env, &end, 10);
+                if (errno == 0 && cursor_size_env[0] != 0 && end[0] == 0 && temp_size > 0) {
+                        cursor_size = temp_size;
+                } else {
+                        fprintf(stderr, "Error: XCURSOR_SIZE is invalid\n");
+                }
+        }
+        const char *xcursor_theme = getenv("XCURSOR_THEME");
+        ctx.cursor_theme = wl_cursor_theme_load(xcursor_theme, cursor_size, ctx.shm);
+        if (ctx.cursor_theme == NULL) {
+                fprintf(stderr, "couldn't find a cursor theme\n");
+                return true;
+        }
+        struct wl_cursor *cursor = wl_cursor_theme_get_cursor(ctx.cursor_theme, "left_ptr");
+        if (cursor == NULL) {
+                fprintf(stderr, "couldn't find cursor icon \"left_ptr\"\n");
+                wl_cursor_theme_destroy(ctx.cursor_theme);
+                // Set to NULL so it doesn't get free'd again
+                ctx.cursor_theme = NULL;
+                return true;
+        }
+        ctx.cursor_image = cursor->images[0];
+        struct wl_buffer *cursor_buffer = wl_cursor_image_get_buffer(cursor->images[0]);
+        ctx.cursor_surface = wl_compositor_create_surface(ctx.compositor);
+        wl_surface_attach(ctx.cursor_surface, cursor_buffer, 0, 0);
+        wl_surface_commit(ctx.cursor_surface);
+
         return true;
 }
 
@@ -629,6 +674,11 @@ void wl_deinit() {
 
         if (ctx.display)
                 wl_display_disconnect(ctx.display);
+
+        if (ctx.cursor_theme != NULL) {
+                wl_cursor_theme_destroy(ctx.cursor_theme);
+                wl_surface_destroy(ctx.cursor_surface);
+        }
 }
 
 static void schedule_frame_and_commit();
