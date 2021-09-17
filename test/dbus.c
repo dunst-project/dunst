@@ -849,8 +849,6 @@ gpointer run_threaded_tests(gpointer data)
 
 SUITE(suite_dbus)
 {
-        settings.icon_path = "";
-
         GTestDBus *dbus_bus;
         g_test_dbus_unset();
         queues_init();
@@ -872,8 +870,6 @@ SUITE(suite_dbus)
         g_object_unref(dbus_bus);
         g_thread_unref(thread_tests);
         g_main_loop_unref(loop);
-
-        settings.icon_path = NULL;
 }
 
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

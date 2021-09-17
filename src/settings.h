@@ -136,7 +136,7 @@ struct settings {
         enum vertical_alignment vertical_alignment;
         int min_icon_size;
         int max_icon_size;
-        char *icon_path;
+        char *icon_theme;
         enum follow_mode f_mode;
         bool always_run_script;
         struct keyboard_shortcut close_ks;

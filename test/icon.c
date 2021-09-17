@@ -1,7 +1,8 @@
 #include "../src/icon.c"
 #include "greatest.h"
 
-#define ICONPREFIX "/data/icons/theme"
+#define DATAPREFIX "/data"
+#define ICONPATH "/data/icons/theme"
 
 /* As there are no hints to test if the loaded GdkPixbuf is
  * read from a PNG or an SVG file, the sample icons in the
@@ -61,7 +62,7 @@ TEST test_get_path_from_icon_null(void)
 
 TEST test_get_path_from_icon_name(void)
 {
-        const char *iconpath = ICONPREFIX;
+        const char *iconpath = ICONPATH;
         settings.max_icon_size = 32;
 
         const char* icon_name = "edit";
@@ -73,7 +74,7 @@ TEST test_get_path_from_icon_name(void)
         char *result = get_path_from_icon_name(icon_name, 1);
 
         ASSERT(result);
-        ASSERT_EQ(strcmp(result, path), 0);
+        ASSERT_STR_EQ(path, result);
 
         g_free(full_name);
         g_free(path);
@@ -84,7 +85,7 @@ TEST test_get_path_from_icon_name(void)
 
 TEST test_get_path_from_icon_name_scaled(void)
 {
-        const char *iconpath = ICONPREFIX;
+        const char *iconpath = ICONPATH;
         settings.max_icon_size = 16;
 
         const char* icon_name = "edit";
@@ -97,7 +98,7 @@ TEST test_get_path_from_icon_name_scaled(void)
 
         ASSERT(result);
         printf("%s\n", result);
-        ASSERT_EQ(strcmp(result, path), 0);
+        ASSERT_STR_EQ(path, result);
 
         g_free(full_name);
         g_free(path);
@@ -107,7 +108,7 @@ TEST test_get_path_from_icon_name_scaled(void)
 
 TEST test_get_path_from_icon_name_choose_bigger(void)
 {
-        const char *iconpath = ICONPREFIX;
+        const char *iconpath = ICONPATH;
         settings.max_icon_size = 128;
 
         const char* icon_name = "edit";
@@ -120,7 +121,7 @@ TEST test_get_path_from_icon_name_choose_bigger(void)
 
         ASSERT(result);
         printf("%s\n", result);
-        ASSERT_EQ(strcmp(result, path), 0);
+        ASSERT_STR_EQ(path, result);
 
         g_free(full_name);
         g_free(path);
@@ -130,13 +131,13 @@ TEST test_get_path_from_icon_name_choose_bigger(void)
 
 TEST test_get_path_from_icon_name_full(void)
 {
-        const char *iconpath = ICONPREFIX;
+        const char *iconpath = ICONPATH;
 
         gchar *path = g_build_filename(base, iconpath, "valid", "icon1.svg", NULL);
 
         char *result = get_path_from_icon_name(path, 1);
         ASSERT(result);
-        ASSERT_EQ(strcmp(result, path), 0);
+        ASSERT_STR_EQ(result, path);
 
         g_free(path);
         g_free(result);
@@ -146,7 +147,7 @@ TEST test_get_path_from_icon_name_full(void)
 TEST test_get_pixbuf_from_file_tilde(void)
 {
         const char *home = g_get_home_dir();
-        const char *iconpath = ICONPREFIX;
+        const char *iconpath = ICONPATH;
 
         if (0 != strncmp(home, base, strlen(home))) {
                 SKIPm("Current directory is not a subdirectory from user's home."
@@ -166,7 +167,7 @@ TEST test_get_pixbuf_from_file_tilde(void)
 
 TEST test_get_pixbuf_from_file_absolute(void)
 {
-        const char *iconpath = ICONPREFIX;
+        const char *iconpath = ICONPATH;
 
         gchar *path = g_build_filename(base, iconpath, "16x16", "actions", "edit.png", NULL);
 
@@ -279,7 +280,11 @@ TEST test_get_pixbuf_from_icon_both_is_scaled(void)
 SUITE(suite_icon)
 {
         // set only valid icons in the path
-        settings.icon_path = g_build_filename(base, ICONPREFIX, NULL);
+        char *icon_path = g_build_filename(base, DATAPREFIX, NULL);
+        setenv("XDG_DATA_HOME", icon_path, 1);
+        printf("Icon path: %s\n", icon_path);
+        free(settings.icon_theme);
+        settings.icon_theme = "theme";
         RUN_TEST(test_icon_size_cmp);
         RUN_TEST(test_get_path_from_icon_name);
         RUN_TEST(test_get_path_from_icon_name_scaled);
@@ -318,6 +323,7 @@ SUITE(suite_icon)
         settings.min_icon_size = 0;
         settings.max_icon_size = 0;
 
-        g_clear_pointer(&settings.icon_path, g_free);
+        settings.icon_theme = NULL;
+        g_clear_pointer(&icon_path, g_free);
 }
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

@@ -259,8 +259,23 @@ char *get_path_from_icon_name(const char *icon_name, int scale)
                 return g_strdup(icon_name);
         }
 
-        static const char fallback[] = "%s:/usr/share/icons/hicolor";
-        char *search = g_strdup_printf(fallback, settings.icon_path);
+        const char* const* system_data_dirs = g_get_system_data_dirs();
+        const char* user_data_dir = g_get_user_data_dir();
+        static const char icons_dir_fmt[] = "%s/icons/%s:%s";
+
+        // use the hicolor theme as backup
+        char *search = g_strdup("/usr/share/icons/hicolor");
+
+        for (int i = 0; system_data_dirs[i] != NULL; i++) {
+                char *tmp = g_strdup_printf(icons_dir_fmt, system_data_dirs[i],
+                                settings.icon_theme, search);
+                free(search);
+                search = tmp;
+        }
+        char* tmp = g_strdup_printf(icons_dir_fmt, user_data_dir,
+                        settings.icon_theme, search);
+        free(search);
+        search = tmp;
 
         char *saveptr = NULL;
         char *theme_path = strtok_r(search, ":", &saveptr);
