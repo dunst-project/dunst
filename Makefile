@@ -27,6 +27,8 @@ $(error "$(PKG_CONFIG) failed!")
 endif
 endif
 
+SYSCONF_FORCE_NEW ?= $(shell [ -f ${DESTDIR}${SYSCONFFILE} ] || echo 1)
+
 CFLAGS  := ${DEFAULT_CPPFLAGS} ${CPPFLAGS} ${DEFAULT_CFLAGS} ${CFLAGS} ${INCS} -MMD -MP
 LDFLAGS := ${DEFAULT_LDFLAGS} ${LDFLAGS} ${LIBS}
 
@@ -174,11 +176,12 @@ clean-coverage-run:
 clean-wayland-protocols:
 	rm -f src/wayland/protocols/*.h
 
-.PHONY: install install-dunst install-dunstctl install-doc \
+.PHONY: install install-dunst install-dunstctl install-dunstrc \
         install-service install-service-dbus install-service-systemd \
-        uninstall uninstall-dunstctl \
-        uninstall-service uninstall-service-dbus uninstall-service-systemd
-install: install-dunst install-dunstctl install-doc install-service install-dunstify
+        uninstall uninstall-dunstctl uninstall-dunstrc \
+        uninstall-service uninstall-service-dbus uninstall-service-systemd \
+	uninstall-keepconf uninstall-purge
+install: install-dunst install-dunstctl install-dunstrc install-service install-dunstify
 
 install-dunst: dunst doc
 	install -Dm755 dunst ${DESTDIR}${BINDIR}/dunst
@@ -189,8 +192,10 @@ install-dunst: dunst doc
 install-dunstctl: dunstctl
 	install -Dm755 dunstctl ${DESTDIR}${BINDIR}/dunstctl
 
-install-doc:
-	install -Dm644 dunstrc ${DESTDIR}${SYSCONFDIR}/dunst/dunstrc
+ifeq (1,${SYSCONF_FORCE_NEW})
+install-dunstrc:
+	install -Dm644 dunstrc ${DESTDIR}${SYSCONFFILE}
+endif
 
 install-service: install-service-dbus
 install-service-dbus: service-dbus
@@ -204,13 +209,18 @@ endif
 install-dunstify: dunstify
 	install -Dm755 dunstify ${DESTDIR}${BINDIR}/dunstify
 
-uninstall: uninstall-service uninstall-dunstctl
+uninstall: uninstall-keepconf
+uninstall-purge: uninstall-keepconf uninstall-dunstrc
+uninstall-keepconf: uninstall-service uninstall-dunstctl
 	rm -f ${DESTDIR}${BINDIR}/dunst
 	rm -f ${DESTDIR}${BINDIR}/dunstify
 	rm -f ${DESTDIR}${MANPREFIX}/man1/dunst.1
 	rm -f ${DESTDIR}${MANPREFIX}/man5/dunst.5
 	rm -f ${DESTDIR}${MANPREFIX}/man1/dunstctl.1
-	rm -rf ${DESTDIR}${SYSCONFDIR}/dunst
+
+uninstall-dunstrc:
+	rm -f ${DESTDIR}${SYSCONFFILE}
+	rmdir --ignore-fail-on-non-empty ${DESTDIR}${SYSCONFDIR}/dunst
 
 uninstall-dunstctl:
 	rm -f ${DESTDIR}${BINDIR}/dunstctl
