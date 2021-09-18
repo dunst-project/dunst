@@ -672,13 +672,13 @@ void wl_deinit() {
         if (ctx.registry)
                 wl_registry_destroy(ctx.registry);
 
-        if (ctx.display)
-                wl_display_disconnect(ctx.display);
-
         if (ctx.cursor_theme != NULL) {
                 wl_cursor_theme_destroy(ctx.cursor_theme);
                 wl_surface_destroy(ctx.cursor_surface);
         }
+
+        if (ctx.display)
+                wl_display_disconnect(ctx.display);
 }
 
 static void schedule_frame_and_commit();
