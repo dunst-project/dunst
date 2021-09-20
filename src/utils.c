@@ -124,13 +124,24 @@ void string_strip_delimited(char *str, char a, char b)
         assert(str);
 
         int iread=-1, iwrite=0, copen=0;
+        int cskip = 0;
         while (str[++iread] != 0) {
                 if (str[iread] == a) {
                         ++copen;
                 } else if (str[iread] == b && copen > 0) {
                         --copen;
                 } else if (copen == 0) {
+                        cskip = 0;
                         str[iwrite++] = str[iread];
+                }
+                if (copen > 0){
+                        cskip++;
+                }
+        }
+        if (copen > 0) {
+                iread -= cskip;
+                for (int i = 0; i < cskip; i++) {
+                        str[iwrite++] = str[iread++];
                 }
         }
         str[iwrite] = 0;

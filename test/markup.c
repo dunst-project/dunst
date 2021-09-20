@@ -15,7 +15,7 @@ TEST test_markup_strip(void)
         g_free(ptr);
         ASSERT_STR_EQ("&amp;", (ptr=markup_strip(g_strdup("&amp;amp;"))));
         g_free(ptr);
-        ASSERT_STR_EQ(">A  ", (ptr=markup_strip(g_strdup(">A <img> <string"))));
+        ASSERT_STR_EQ(">A  <string", (ptr=markup_strip(g_strdup(">A <img> <string"))));
         g_free(ptr);
 
         PASS();
