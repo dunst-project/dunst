@@ -17,22 +17,67 @@
 
 struct settings settings;
 
-static FILE *xdg_config(const char *filename)
-{
-        const gchar * userdir = g_get_user_config_dir();
+/**
+ * Tries to open all existing config files in *descending* order of importance
+ *
+ * @returns GQueue* of FILE* to config files
+ *
+ * Use g_queue_pop_tail() to retrieve FILE* in *ascending* order of importance
+ *
+ * Use g_queue_free() to free if not NULL
+ */
+static GQueue *xdg_config() {
+        /*
+         * Fix peculiar behaviour if installed to a local PREFIX, i.e.
+         * /usr/local, when SYSCONFDIR should be /usr/local/etc/xdg and not
+         * /etc/xdg, hence use SYSCONFDIR (defined at compile time, see
+         * config.mk) as default for XDG_CONFIG_DIRS. The spec says 'should' and
+         * not 'must' use /etc/xdg.
+         * Users/admins can override this by explicitly setting XDG_CONFIG_DIRS
+         * to their liking at runtime or by setting SYSCONFDIR=/etc/xdg at
+         * compile time.
+         */
+        const gchar * xdg_config_dirs = g_getenv("XDG_CONFIG_DIRS");
+        xdg_config_dirs = xdg_config_dirs && strnlen(g_strstrip((gchar *) xdg_config_dirs), 1)
+                          ? xdg_config_dirs
+                          : SYSCONFDIR; // alternative default
 
-        FILE *f;
-        char *path;
+        /*
+         * Prepend XDG_CONFIG_HOME, most important first because XDG_CONFIG_DIRS
+         * is already ordered that way.
+         */
+        gchar * const all_conf_dirs = g_strconcat(g_get_user_config_dir(), ":",
+                                                  xdg_config_dirs, NULL);
+        LOG_D("Config directories: '%s'", all_conf_dirs);
 
-        path = g_strconcat(userdir, filename, NULL);
-        f = fopen(path, "r");
-        g_free(path);
+        FILE *f = NULL;
 
-        if (!f) {
-                f = fopen(SYSCONFFILE, "r");
-        }
+        /*
+         * Possible relative paths to dunstrc. First match wins.
+         * TODO: Maybe warn about deprecated location if found?
+         */
+        const char * const rel_paths[] = { "dunst/dunstrc",
+                                           "dunstrc", // deprecated since v0.2 (2013-06-23)
+                                           NULL };
 
-        return f;
+        // Used as stack, least important pushed last but popped first.
+        GQueue *config_files = g_queue_new();
+        for (gchar * const *d = string_to_array(all_conf_dirs, ":"); *d; d++)
+                // FIXME: Flatten this out after deprecation grace period
+                for (const char * const *rp = rel_paths; *rp; rp++) {
+                        f = fopen(string_to_path(g_strconcat(*d, "/", *rp, NULL)), "r");
+                        LOG_I("Trying to open config file '%s' in '%s': '%s'",
+                                                          *rp,
+                                                                   *d,
+                                                                         f ? "HIT" : "MISS");
+                        if (f) {
+                                g_queue_push_tail(config_files, f);
+                                break; // ignore deprecated
+                        }
+                }
+        g_free(all_conf_dirs);
+
+        return config_files;
 }
 
 void settings_init() {
@@ -107,42 +152,13 @@ void check_and_correct_settings(struct settings *s) {
 
 }
 
-void load_settings(char *cmdline_config_path)
-{
+static void apply_settings(FILE *config_file) {
+        if (config_file)
+                load_ini_file(config_file);
 
-        FILE *config_file = NULL;
-
-        if (cmdline_config_path) {
-                if (STR_EQ(cmdline_config_path, "-")) {
-                        config_file = stdin;
-                } else {
-                        config_file = fopen(cmdline_config_path, "r");
-                }
-
-                if (!config_file) {
-                        DIE("Cannot find config file: '%s'", cmdline_config_path);
-                }
-        }
-
-        if (!config_file) {
-                config_file = xdg_config("/dunst/dunstrc");
-        }
-
-        if (!config_file) {
-                /* Fall back to just "dunstrc", which was used before 2013-06-23
-                 * (before v0.2). */
-                config_file = xdg_config("/dunstrc");
-        }
-
-        if (!config_file) {
-                LOG_W("No dunstrc found.");
-        }
-
-        load_ini_file(config_file);
         settings_init();
         set_defaults();
         save_settings();
-
         check_and_correct_settings(&settings);
 
         for (GSList *iter = rules; iter; iter = iter->next) {
@@ -150,9 +166,36 @@ void load_settings(char *cmdline_config_path)
                 print_rule(r);
         }
 
-        if (config_file) {
+        if (config_file)
                 fclose(config_file);
-                free_ini();
+
+        free_ini();
+}
+
+void load_settings(char *cmdline_config_path) {
+        FILE *config_file = NULL;
+        if (cmdline_config_path) {
+                if (STR_EQ(cmdline_config_path, "-"))
+                        config_file = stdin;
+                else
+                        config_file = fopen(cmdline_config_path, "r");
+
+                if (config_file) {
+                        apply_settings(config_file);
+                        return;
+                } else
+                        // FIXME: Really DIE or just warn and carry on with defaults?
+                        DIE("Cannot find config file: '%s'", cmdline_config_path);
         }
+
+        GQueue *config_files = xdg_config();
+        if (g_queue_is_empty(config_files)) {
+                LOG_W("No dunstrc found, falling back on internal defaults.");
+                apply_settings(NULL);
+        } else { // Apply settings over and over, from least to most important.
+                while ((config_file = g_queue_pop_tail(config_files)))
+                        apply_settings(config_file);
+        }
+        g_queue_free(config_files);
 }
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

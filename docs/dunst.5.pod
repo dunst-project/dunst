@@ -4,11 +4,6 @@ dunst - configuration file
 
 =head1 DESCRIPTION
 
-An example configuration file is included, usually in /etc/dunst/dunstrc. Note:
-this was previously /usr/share/dunst/dunstrc.
-To change the configuration, copy this file to ~/.config/dunst/dunstrc and edit
-it accordingly.
-
 The configuration is divided into sections in an ini-like format. Every section
 start with the section's name in square brackets. After that is a list of
 key-value pairs that specify the settings. Whitespace is purely cosmetic and
@@ -1009,50 +1004,6 @@ given, seconds ("s") is taken as default.
 Time units understood by dunst are "ms", "s", "m", "h" and "d".
 
 Example time: "1000ms" "10m"
-
-=head1 MISCELLANEOUS
-
-Dunst can be paused via the `dunstctl set-paused true` command. To unpause dunst use
-`dunstctl set-paused false`.
-Alternatively you can send SIGUSR1 and SIGUSR2 to pause and unpause
-respectively. For Example:
-
-=over 4
-
-=item killall -SIGUSR1 dunst # pause
-
-=item killall -SIGUSR2 dunst # resume
-
-=back
-
-When paused dunst will not display any notifications but keep all notifications
-in a queue.  This can for example be wrapped around a screen locker (i3lock,
-slock) to prevent flickering of notifications through the lock and to read all
-missed notifications after returning to the computer.
-
-=head1 FILES
-
-These are the places where dunst will look for a configuration file. They are
-listed here in order and if dunst finds one of them, it will stop looking for
-more.
-
-$XDG_CONFIG_HOME/dunst/dunstrc
-
-$HOME/.config/dunst/dunstrc
-
--or-
-
-$XDG_CONFIG_HOME/dunst/dunstrc
-
-/etc/xdg/dunst/dunstrc
-
-=over 4
-
-=item /etc/dunst/dunstrc
-
-This is where the default config file is located
-
-=back
 
 =head1 AUTHORS
 

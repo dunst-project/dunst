@@ -54,10 +54,14 @@ Display a notification on startup.
 
 =head1 CONFIGURATION
 
-An example configuration file is included (usually /etc/dunst/dunstrc). Note:
-this was previously /usr/share/dunst/dunstrc.
-Before using dunst, copy this file to ~/.config/dunst/dunstrc and edit
-it accordingly. See dunst(5) for all possible settings.
+A default configuration file is included (usually ##SYSCONFDIR##/dunst/dunstrc)
+and serves as the least important configuration file. Note: this was previously
+/usr/share/dunst/dunstrc. You can edit this file to change the system-wide
+defaults or copy it to a more important location to override its settings. See
+the FILES section for more details on where dunst searches for its
+configuration files and how settings get applied.
+
+See dunst(5) for all possible settings.
 
 =head2 NOTIFY-SEND
 
@@ -74,31 +78,6 @@ The progress value can be set with a hint, too.
 =item notify-send -h int:value:42 "Working ..."
 
 =back
-
-=head1 ACTIONS
-
-Dunst allows notifiers (i.e.: programs that send the notifications) to specify
-actions. Dunst has support for both displaying indicators for these, and
-interacting with these actions.
-
-If "show_indicators" is true and a notification has an action, an "(A)" will be
-prepended to the notification format. Likewise, an "(U)" is prepended to
-notifications with URLs. It is possible to interact with notifications that
-have actions regardless of this setting, though it may not be obvious which
-notifications HAVE actions.
-
-The "context" keybinding is used to interact with these actions, by showing a
-menu of possible actions. This feature requires "dmenu" or a dmenu drop-in
-replacement present. It is preferred to set this keybinding with your window
-manager or desktop envirorment and let it execute C<dunsctl context>. Another
-option is to set this keybinding in your dunstrc, but this is soon to be deprecated
-(and doesn't work on Wayland).
-
-Alternatively, you can invoke an action with a middle click on the notification.
-If there is exactly one associated action, or one is marked as default, that one
-is invoked. If there are multiple, the context menu is shown. The same applies
-to URLs when there are no actions. You can change the mouse button to right click
-by setting C<mouse_right_click = close_all> in your dunstrc.
 
 =head1 MISCELLANEOUS
 
@@ -122,25 +101,38 @@ missed notifications after returning to the computer.
 
 =head1 FILES
 
-These are the places where dunst will look for a configuration file. They are
-listed here in order and if dunst finds one of them, it will stop looking for
-more.
-
-$XDG_CONFIG_HOME/dunst/dunstrc
-
-$HOME/.config/dunst/dunstrc
-
--or-
-
-$XDG_CONFIG_HOME/dunst/dunstrc
-
-/etc/xdg/dunst/dunstrc
+These are the base directories dunst searches for configuration files in
+descending order of imortance:
 
 =over 4
 
-=item /etc/dunst/dunstrc
+$XDG_CONFIG_HOME ($HOME/.config if unset or empty)
 
-This is where the default config file is located
+$XDG_CONFIG_DIRS (:-separated list of base directories in descending order
+of importance; ##SYSCONFDIR## if unset or empty) (*)
+
+=back
+
+Dunst will search these directories for the following relative paths:
+
+=over 4
+
+dunst/dunstrc
+
+dunstrc (deprecated since v0.2 and ignored if the former is found)
+
+=back
+
+All settings from all files get applied. Settings in more important files
+override those in less important ones. Settings not present in more imortant
+files are taken from a less important one or from the internal defaults if they
+are not found in any file.
+
+=over 4
+
+=item This is where the default (least important) config file is located:
+
+##SYSCONFDIR##/dunst/dunstrc
 
 =back
 
