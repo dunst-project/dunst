@@ -119,10 +119,6 @@ TEST test_string_strip_delimited(void)
         string_strip_delimited(text, '<', '>');
         ASSERT_STR_EQ("Remove html tags", text);
 
-        strcpy(text, "Calls|with|identical|delimiters|are|handled|properly");
-        string_strip_delimited(text, '|', '|');
-        ASSERT_STR_EQ("Calls", text);
-
         strcpy(text, "<Return empty string if there is nothing left>");
         string_strip_delimited(text, '<', '>');
         ASSERT_STR_EQ("", text);
@@ -130,6 +126,18 @@ TEST test_string_strip_delimited(void)
         strcpy(text, "Nothing is done if there are no delimiters in the string");
         string_strip_delimited(text, '<', '>');
         ASSERT_STR_EQ("Nothing is done if there are no delimiters in the string", text);
+
+        strcpy(text, "We <3 dunst");
+        string_strip_delimited(text, '<', '>');
+        ASSERT_STR_EQ("We <3 dunst", text);
+
+        strcpy(text, "<b>We</b> <3 dunst");
+        string_strip_delimited(text, '<', '>');
+        ASSERT_STR_EQ("We <3 dunst", text);
+
+        strcpy(text, "dunst > the rest");
+        string_strip_delimited(text, '<', '>');
+        ASSERT_STR_EQ("dunst > the rest", text);
 
         g_free(text);
         PASS();
