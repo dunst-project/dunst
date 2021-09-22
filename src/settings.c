@@ -84,13 +84,13 @@ void check_and_correct_settings(struct settings *s) {
         // restrict the icon size to a reasonable limit if we have a fixed width.
         // Otherwise the layout will be broken by too large icons.
         // See https://github.com/dunst-project/dunst/issues/540
-        if (s->geometry.width_set && s->geometry.w != 0) {
-                const int icon_size_limit = s->geometry.w / 2;
+        if (s->width.max > 0) {
+                const int icon_size_limit = s->width.max / 2;
                 if (   s->max_icon_size == 0
                     || s->max_icon_size > icon_size_limit) {
                         if (s->max_icon_size != 0) {
                                 LOG_W("Max width was set to %d but got a max_icon_size of %d, too large to use. Setting max_icon_size=%d",
-                                        s->geometry.w, s->max_icon_size, icon_size_limit);
+                                        s->width.max, s->max_icon_size, icon_size_limit);
                         } else {
                                 LOG_I("Max width was set but max_icon_size is unlimited. Limiting icons to %d pixels", icon_size_limit);
                         }
@@ -98,6 +98,13 @@ void check_and_correct_settings(struct settings *s) {
                         s->max_icon_size = icon_size_limit;
                 }
         }
+
+        int text_icon_padding = settings.text_icon_padding != 0 ? settings.text_icon_padding : settings.h_padding;
+        int max_text_width = settings.width.max - settings.max_icon_size - text_icon_padding - 2 * settings.h_padding;
+        if (max_text_width < 10) {
+                DIE("max_icon_size and horizontal padding are too large for the given width");
+        }
+
 }
 
 void load_settings(char *cmdline_config_path)

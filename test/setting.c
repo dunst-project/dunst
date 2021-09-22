@@ -25,13 +25,6 @@ TEST test_dunstrc_markup(void) {
         ASSERT_STR_EQ(e_format, got_format);
         ASSERT(settings.indicate_hidden);
 
-        ASSERT_EQ(settings.geometry.w, 300);
-        ASSERT_EQ(settings.geometry.h, 5);
-        ASSERT_EQ(settings.geometry.x, -30);
-        ASSERT_EQ(settings.geometry.y, 20);
-        ASSERT(settings.geometry.negative_x);
-        ASSERT_FALSE(settings.geometry.negative_y);
-
         g_free(config_path);
         PASS();
 }
@@ -49,13 +42,6 @@ TEST test_dunstrc_nomarkup(void) {
         const char *got_format = r->format;
         ASSERT_STR_EQ(e_format, got_format);
         ASSERT(settings.indicate_hidden);
-
-        ASSERT_EQ(settings.geometry.w, 290);
-        ASSERT_EQ(settings.geometry.h, 10);
-        ASSERT_EQ(settings.geometry.x, -30);
-        ASSERT_EQ(settings.geometry.y, 20);
-        ASSERT(settings.geometry.negative_x);
-        ASSERT_FALSE(settings.geometry.negative_y);
 
         g_free(config_path);
         PASS();
@@ -105,11 +91,11 @@ TEST test_dunstrc_defaults(void) {
                         case TYPE_DOUBLE:
                         case TYPE_STRING:
                         case TYPE_PATH:
-                        case TYPE_GEOMETRY:
                         case TYPE_LIST:
+                        case TYPE_LENGTH:
                                       break; // TODO implement these checks as well
                         default:
-                                      printf("Type unknown %s:%d", __FILE__, __LINE__);
+                                      printf("Type unknown %s:%d\n", __FILE__, __LINE__);
                 }
                 /* printf("%zu\n", offset); */
         }

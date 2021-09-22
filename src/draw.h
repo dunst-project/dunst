@@ -19,6 +19,7 @@ double draw_get_scale(void);
 
 void draw_deinit(void);
 
+void calc_window_pos(const struct screen_info *scr, int width, int height, int *ret_x, int *ret_y);
 
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

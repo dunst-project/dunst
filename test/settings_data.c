@@ -88,8 +88,8 @@ TEST test_valid_parser_and_data_per_type(void)
                 switch (curr.type) {
                         case TYPE_STRING:
                         case TYPE_TIME:
-                        case TYPE_GEOMETRY:
                         case TYPE_DOUBLE:
+                        case TYPE_LENGTH:
                         case TYPE_INT: ; // no parser and no parser data needed
                                 gchar *error1 = g_strdup_printf("Parser of setting %s should be NULL. It's not needed for this type", curr.name);
                                 gchar *error2 = g_strdup_printf("Parser data of setting %s should be NULL. It's not needed for this type", curr.name);

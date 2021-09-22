@@ -3,6 +3,7 @@
 #define DUNST_SETTINGS_H
 
 #include <stdbool.h>
+#include <pango/pango-layout.h>
 
 #ifdef ENABLE_WAYLAND
 #include "wayland/protocols/wlr-layer-shell-unstable-v1-client-header.h"
@@ -34,9 +35,43 @@ enum zwlr_layer_shell_v1_layer {
 };
 #endif /* ZWLR_LAYER_SHELL_V1_LAYER_ENUM */
 
+enum origin_values {
+        ORIGIN_TOP_LEFT = ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP | ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT,
+        ORIGIN_TOP_CENTER = ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP,
+        ORIGIN_TOP_RIGHT = ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP | ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT,
+        ORIGIN_BOTTOM_LEFT = ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM | ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT,
+        ORIGIN_BOTTOM_CENTER = ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM,
+        ORIGIN_BOTTOM_RIGHT = ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM | ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT,
+        ORIGIN_LEFT_CENTER = ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT,
+        ORIGIN_RIGHT_CENTER = ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT,
+        ORIGIN_CENTER = 0,
+};
+
+#ifndef ZWLR_LAYER_SURFACE_V1_ANCHOR_ENUM
+#define ZWLR_LAYER_SURFACE_V1_ANCHOR_ENUM
+enum zwlr_layer_surface_v1_anchor {
+	/**
+	 * the top edge of the anchor rectangle
+	 */
+	ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP = 1,
+	/**
+	 * the bottom edge of the anchor rectangle
+	 */
+	ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM = 2,
+	/**
+	 * the left edge of the anchor rectangle
+	 */
+	ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT = 4,
+	/**
+	 * the right edge of the anchor rectangle
+	 */
+	ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT = 8,
+};
+#endif /* ZWLR_LAYER_SURFACE_V1_ANCHOR_ENUM */
+
 // TODO make a TYPE_CMD, instead of using TYPE_PATH for settings like dmenu and browser
-enum setting_type { TYPE_MIN = 0, TYPE_INT, TYPE_DOUBLE, TYPE_STRING, TYPE_PATH, TYPE_TIME,
-        TYPE_GEOMETRY, TYPE_LIST, TYPE_CUSTOM,
+enum setting_type { TYPE_MIN = 0, TYPE_INT, TYPE_DOUBLE, TYPE_STRING,
+        TYPE_PATH, TYPE_TIME, TYPE_LIST, TYPE_CUSTOM, TYPE_LENGTH,
         TYPE_DEPRECATED, TYPE_MAX = TYPE_DEPRECATED + 1 }; // to be implemented
 
 struct separator_color_data {
@@ -44,15 +79,14 @@ struct separator_color_data {
         char *sep_color;
 };
 
-struct geometry {
+struct length {
+        int min;
+        int max;
+};
+
+struct position {
         int x;
         int y;
-        unsigned int w;
-        unsigned int h;
-        bool negative_x;
-        bool negative_y;
-        bool negative_width;
-        bool width_set;
 };
 
 struct settings {
@@ -69,7 +103,6 @@ struct settings {
         gint64 timeouts[3];
         char *icons[3];
         unsigned int transparency;
-        struct geometry geometry;
         char *title;
         char *class;
         int shrink;
@@ -83,10 +116,9 @@ struct settings {
         int show_indicators;
         int word_wrap;
         int ignore_dbusclose;
-        enum ellipsize ellipsize;
+        PangoEllipsizeMode ellipsize;
         int ignore_newline;
         int line_height;
-        int notification_height;
         int separator_height;
         int padding;
         int h_padding;
@@ -124,6 +156,11 @@ struct settings {
         int progress_bar_frame_width;
         bool progress_bar;
         enum zwlr_layer_shell_v1_layer layer;
+        enum origin_values origin;
+        struct length width;
+        int height;
+        struct position offset;
+        int notification_limit;
 };
 
 extern struct settings settings;

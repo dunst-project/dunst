@@ -12,6 +12,8 @@ struct dimensions {
         int y;
         int w;
         int h;
+        int text_width;
+        int text_height;
 
         int corner_radius;
 };

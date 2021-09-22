@@ -2,8 +2,10 @@
 #ifndef DUNST_SETTING_DATA_H
 #define DUNST_SETTING_DATA_H
 #include <stddef.h>
+#include <pango/pango-layout.h>
 
 #include "option_parser.h"
+#include "settings.h"
 #include "rules.h"
 
 struct string_to_enum_def {
@@ -133,6 +135,8 @@ const enum zwlr_layer_shell_v1_layer {
 enum list_type {
         INVALID_LIST = 0,
         MOUSE_LIST = 1,
+        ORIGIN_LIST = 2,
+        OFFSET_LIST = 3,
 };
 
 #define ENUM_END {NULL, 0}
@@ -179,9 +183,9 @@ static const struct string_to_enum_def horizontal_alignment_enum_data[] = {
 };
 
 static const struct string_to_enum_def ellipsize_enum_data[] = {
-        {"start",  ELLIPSE_START },
-        {"middle", ELLIPSE_MIDDLE },
-        {"end",    ELLIPSE_END },
+        {"start",  PANGO_ELLIPSIZE_START },
+        {"middle", PANGO_ELLIPSIZE_MIDDLE },
+        {"end",    PANGO_ELLIPSIZE_END },
         ENUM_END,
 };
 
@@ -250,6 +254,18 @@ static const struct string_to_enum_def layer_enum_data[] = {
         ENUM_END,
 };
 
+static const struct string_to_enum_def origin_enum_data[] = {
+        { "top-left", ORIGIN_TOP_LEFT },
+        { "top-center", ORIGIN_TOP_CENTER },
+        { "top-right", ORIGIN_TOP_RIGHT },
+        { "bottom-left", ORIGIN_BOTTOM_LEFT },
+        { "bottom-center", ORIGIN_BOTTOM_CENTER },
+        { "bottom-right", ORIGIN_BOTTOM_RIGHT },
+        { "left-center", ORIGIN_LEFT_CENTER },
+        { "right-center", ORIGIN_RIGHT_CENTER },
+        { "center", ORIGIN_CENTER },
+        ENUM_END,
+};
 
 static const struct setting allowed_settings[] = {
         // match rules below
@@ -661,16 +677,6 @@ static const struct setting allowed_settings[] = {
                 .parser_data = NULL,
         },
         {
-                .name = "notification_height",
-                .section = "global",
-                .description = "Define height of the window",
-                .type = TYPE_INT,
-                .default_value = "0",
-                .value = &settings.notification_height,
-                .parser = NULL,
-                .parser_data = NULL,
-        },
-        {
                 .name = "show_age_threshold",
                 .section = "global",
                 .description = "When should the age of the notification be displayed?",
@@ -920,16 +926,6 @@ static const struct setting allowed_settings[] = {
                 .value = &settings.f_mode,
                 .parser = string_parse_enum,
                 .parser_data = follow_mode_enum_data,
-        },
-        {
-                .name = "geometry",
-                .section = "global",
-                .description = "Geometry for the window",
-                .type = TYPE_GEOMETRY,
-                .default_value = "300x5-30+20",
-                .value = &settings.geometry,
-                .parser = NULL, // TODO replace this setting with some other format and get rid of x11 compile time dependency
-                .parser_data = NULL,
         },
         {
                 .name = "scale",
@@ -1225,6 +1221,57 @@ static const struct setting allowed_settings[] = {
                 .parser = NULL,
                 .parser_data = NULL,
         },
+        {
+                .name = "origin",
+                .section = "global",
+                .description = "Specifies the where the notification is positioned before offsetting.",
+                .type = TYPE_CUSTOM,
+                .default_value = "top-right",
+                .value = &settings.origin,
+                .parser = string_parse_enum,
+                .parser_data = origin_enum_data,
+        },
+        {
+                .name = "width",
+                .section = "global",
+                .description = "The width of the notification, excluding the frame.",
+                .type = TYPE_LENGTH,
+                .default_value = "300",
+                .value = &settings.width,
+                .parser = NULL,
+                .parser_data = NULL,
+        },
+        {
+                .name = "height",
+                .section = "global",
+                .description = "The maximum height of a single notification, excluding the frame.",
+                .type = TYPE_INT,
+                .default_value = "300",
+                .value = &settings.height,
+                .parser = NULL,
+                .parser_data = NULL,
+        },
+        {
+                .name = "offset",
+                .section = "global",
+                .description = "The offset of the notification from the origin.",
+                .type = TYPE_LIST,
+                .default_value = "10x50",
+                .value = &settings.offset,
+                .parser = NULL,
+                .parser_data = GINT_TO_POINTER(OFFSET_LIST),
+        },
+        {
+                .name = "notification_limit",
+                .section = "global",
+                .description = "Maximum number of notifications allowed",
+                .type = TYPE_INT,
+                .default_value = "0",
+                .value = &settings.notification_limit,
+                .parser = NULL,
+                .parser_data = NULL,
+        },
+
 };
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

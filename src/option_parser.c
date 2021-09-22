@@ -58,6 +58,9 @@ int string_parse_enum(const void *data, const char *s, void * ret) {
         return false;
 }
 
+// Only changes the return when succesful
+//
+// @returns True for success, false otherwise.
 int string_parse_enum_list(const void *data, char **s, void *ret_void)
 {
         int **ret = (int **) ret_void;
@@ -65,9 +68,7 @@ int string_parse_enum_list(const void *data, char **s, void *ret_void)
         ASSERT_OR_RET(s, false);
         ASSERT_OR_RET(ret, false);
 
-        int len = 0;
-        while (s[len])
-                len++;
+        int len = string_array_length(s);
 
         tmp = g_malloc_n((len + 1), sizeof(int));
         for (int i = 0; i < len; i++) {
@@ -83,6 +84,58 @@ int string_parse_enum_list(const void *data, char **s, void *ret_void)
         return true;
 }
 
+// Parse a string list of enum values and return a single integer with the
+// values bit-flipped into it. This is only useful when the enum values all
+// occupy different bits (for exampel 1<<0, 1<<1 and 1<<2) and the order
+// doesn't matter.
+// Only changes the return when succesful
+//
+// @returns True for success, false otherwise.
+int string_parse_enum_list_to_single(const void *data, char **s, int *ret)
+{
+        int tmp = 0, tmp_ret = 0;
+        ASSERT_OR_RET(s, false);
+        ASSERT_OR_RET(ret, false);
+
+        int len = string_array_length(s);
+        for (int i = 0; i < len; i++) {
+                if (!string_parse_enum(data, s[i], &tmp)) {
+                        LOG_W("Unknown mouse action value: '%s'", s[i]);
+                        return false;
+                }
+                tmp_ret |= tmp;
+        }
+        *ret = tmp_ret;
+        return true;
+}
+
+// When allow empty is true, empty strings are interpreted as -1
+bool string_parse_int_list(char **s, int **ret, bool allow_empty) {
+        int len = string_array_length(s);
+        ASSERT_OR_RET(s, false);
+
+        int *tmp = g_malloc_n((len + 1), sizeof(int));
+        for (int i = 0; i < len; i++) {
+                if (allow_empty && STR_EMPTY(s[i])) {
+                        tmp[i] = -1;
+                        continue;
+                }
+                bool success = safe_string_to_int(&tmp[i], s[i]);
+                if (!success) {
+                        LOG_W("Invalid int value: '%s'", s[i]);
+                        free(tmp);
+                        return false;
+                }
+
+        }
+
+        tmp[len] = LIST_END;
+        g_free(*ret);
+        *ret = tmp;
+        return true;
+}
+
+// Only changes the return when succesful
 int string_parse_list(const void *data, const char *s, void *ret) {
         const enum list_type type = GPOINTER_TO_INT(data);
         char **arr = NULL;
@@ -92,6 +145,32 @@ int string_parse_list(const void *data, const char *s, void *ret) {
                         arr = string_to_array(s, ",");
                         success = string_parse_enum_list(&mouse_action_enum_data,
                                         arr, ret);
+                        break;
+                case OFFSET_LIST:
+                        arr = string_to_array(s, "x");
+                        int len = string_array_length(arr);
+                        if (len != 2) {
+                                success = false;
+                                LOG_W("Offset has two values, separated by an 'x'");
+                                break;
+                        }
+                        int *int_arr = NULL;
+                        success = string_parse_int_list(arr, &int_arr, false);
+                        if (!success)
+                                break;
+
+                        // We can safely assume the length is 2, since the
+                        // string array also had length 2
+                        if (int_arr[0] < 0 || int_arr[1] < 0) {
+                                LOG_W("Offset has to be positive. Correcting...");
+                                int_arr[0] = abs(int_arr[0]);
+                                int_arr[1] = abs(int_arr[1]);
+                        }
+
+                        struct position* offset = (struct position*) ret;
+                        offset->x = int_arr[0];
+                        offset->y = int_arr[1];
+                        g_free(int_arr);
                         break;
                 default:
                         LOG_W("Don't know this list type: %i", type);
@@ -270,6 +349,76 @@ int get_setting_id(const char *key, const char *section) {
         return -1;
 }
 
+// TODO simplify this function
+int string_parse_length(void *ret_in, const char *s) {
+        struct length *ret = (struct length*) ret_in;
+        int val = 0;
+        char *s_stripped = string_strip_brackets(s);
+        if (!s_stripped)
+        {
+                // single int without brackets
+                bool success = safe_string_to_int(&val, s);
+                if (success && val > 0) {
+                        // single int
+                        ret->min = val;
+                        ret->max = val;
+                        return true;
+                }
+                if (val <= 0) {
+                        LOG_W("A length should be a positive value");
+                }
+                return false;
+        }
+
+
+        char **s_arr = string_to_array(s_stripped, ",");
+        int len = string_array_length(s_arr);
+
+        if (len <= 1) {
+                LOG_W("Please specify a minimum and maximum value or a single value without brackets");
+                g_strfreev(s_arr);
+                g_free(s_stripped);
+                return false;
+        }
+        if (len > 2) {
+                g_strfreev(s_arr);
+                g_free(s_stripped);
+                LOG_W("Too many values in array. A length should be only one or two values");
+                return false;
+        }
+
+        int *int_arr = NULL;
+        bool success = string_parse_int_list(s_arr, &int_arr, true);
+        if (!success) {
+                g_strfreev(s_arr);
+                g_free(s_stripped);
+                return false;
+        }
+
+        if (int_arr[0] == -1)
+                int_arr[0] = 0;
+
+        if (int_arr[1] == -1)
+                int_arr[1] = INT_MAX;
+
+        if (int_arr[0] < 0 || int_arr[1] < 0) {
+                LOG_W("A lengths should be positive");
+                success = false;
+        } else if (int_arr[0] > int_arr[1]) {
+                LOG_W("The minimum value should be less than the maximum value. (%i > %i)",
+                                int_arr[0], int_arr[1]);
+                success = false;
+        } else {
+                ret->min = int_arr[0];
+                ret->max = int_arr[1];
+        }
+
+        g_free(int_arr);
+        g_strfreev(s_arr);
+        g_free(s_stripped);
+        return success;
+}
+
 bool set_from_string(void *target, struct setting setting, const char *value) {
         GError *error = NULL;
 
@@ -324,12 +473,11 @@ bool set_from_string(void *target, struct setting setting, const char *value) {
                         }
                         *(gint64*) target = tmp_time;
                         return true;
-                case TYPE_GEOMETRY:
-                        *(struct geometry*) target = x_parse_geometry(value);
-                        return true;
                 case TYPE_LIST: ;
                         LOG_D("list type %i", GPOINTER_TO_INT(setting.parser_data));
                         return string_parse_list(setting.parser_data, value, target);
+                case TYPE_LENGTH:
+                        return string_parse_length(target, value);
                 default:
                         LOG_W("Setting type of '%s' is not known (type %i)", setting.name, setting.type);
                         return false;

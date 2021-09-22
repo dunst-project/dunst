@@ -754,28 +754,17 @@ static void send_frame() {
                 zwlr_layer_surface_v1_set_size(ctx.layer_surface,
                                 dim.w, dim.h);
 
-                // TODO Do this only once
-                uint32_t anchor = 0;
-                if (settings.geometry.negative_x) {
-                        anchor |= ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT;
-                } else {
-                        anchor |= ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT;
-                }
-
-                if (settings.geometry.negative_y) {
-                        anchor |= ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM;
-                } else {
-                        anchor |= ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP;
-                }
-
                 // Put the window at the right position
                 zwlr_layer_surface_v1_set_anchor(ctx.layer_surface,
-                        anchor);
+                        settings.origin);
                 zwlr_layer_surface_v1_set_margin(ctx.layer_surface,
-                                abs(settings.geometry.y), // top
-                                abs(settings.geometry.x), // right
-                                abs(settings.geometry.y), // bottom
-                                abs(settings.geometry.x));// left
+                                // Offsets where no anchors are specified are
+                                // ignored. We can safely assume the offset is
+                                // positive.
+                                settings.offset.y, // top
+                                settings.offset.x, // right
+                                settings.offset.y, // bottom
+                                settings.offset.x);// left
 
                 wl_surface_commit(ctx.surface);
 

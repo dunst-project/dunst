@@ -3,6 +3,11 @@
 
 extern const char *base;
 
+#define ARRAY_SAME_LENGTH(a, b) { \
+        ASSERT_EQm("Test is invalid. Input data has to be the same length",\
+                        G_N_ELEMENTS(a), G_N_ELEMENTS(b));\
+}
+
 TEST test_next_section(void)
 {
         const char *section = NULL;
@@ -142,6 +147,9 @@ TEST test_string_to_int(void)
                 12345678,
                 -12345678
         };
+
+        ARRAY_SAME_LENGTH(inputs, results);
+
         struct setting s;
         s.type = TYPE_INT;
 
@@ -160,10 +168,12 @@ TEST test_string_to_int_invalid(void)
         const char* inputs[] = {
                 "a0",
                 "something",
-                "x1234asdf",
-                "-dsf1234asdf",
-                "0x123",
-                "1234a567",
+                "x674asdf",
+                "-dsf4544asdf",
+                "0x145",
+                "64a567",
+                "(5678)",
+                "5678)",
         };
 
         struct setting s;
@@ -264,6 +274,8 @@ TEST test_string_to_boolean(void)
                 0,
                 0
         };
+
+        ARRAY_SAME_LENGTH(inputs, results);
 
         char buf[50];
         for (int i = 0; i < G_N_ELEMENTS(inputs); i++) {
@@ -465,6 +477,8 @@ TEST test_string_to_time(void)
                 S2US(120),
         };
 
+        ARRAY_SAME_LENGTH(inputs, results);
+
         char buf[50];
         for (int i = 0; i < G_N_ELEMENTS(inputs); i++) {
                 sprintf(buf, "Failed in round %i", i);
@@ -542,6 +556,9 @@ TEST test_string_to_path(void)
                 {expanded_home},
         };
 
+        ARRAY_SAME_LENGTH(inputs, results);
+        ARRAY_SAME_LENGTH(inputs, results2);
+
         char buf[256];
         for (int i = 0; i < G_N_ELEMENTS(inputs); i++) {
                 sprintf(buf, "Failed in round %i", i);
@@ -587,6 +604,8 @@ TEST test_string_to_sepcolor(void)
                 {SEP_CUSTOM, "#AB123C"},
         };
 
+        ARRAY_SAME_LENGTH(inputs, results);
+
         char buf[50];
         for (int i = 0; i < G_N_ELEMENTS(inputs); i++) {
                 sprintf(buf, "Failed in round %i. Expected %i, got %i", i, results[i].type, val.type);
@@ -631,6 +650,94 @@ TEST test_string_to_sepcolor_invalid(void)
 
         ASSERT_EQm("Sep color shouldn't changed from invalid inputs", 123, (int) val.type);
         ASSERT_STR_EQm("Sep color shouldn't changed from invalid inputs", "test123", val.sep_color);
+        PASS();
+}
+
+TEST test_string_to_length(void)
+{
+        struct length val = {0};
+        struct setting s;
+        s.type = TYPE_LENGTH;
+        s.value = &val.min;
+        s.name = "test_length";
+        s.parser = NULL;
+        s.parser_data = NULL;
+
+        const char* inputs[] = {
+                "123",
+                "(123, 1234)",
+                "( , )",
+                "(234, )",
+                "(, 123)",
+        };
+
+        const struct length results[] = {
+                { 123, 123 },
+                /* { 123, 123 }, */
+                { 123, 1234 },
+                /* { -123, 1234 }, */
+                /* { -1234, 123 }, */
+                /* { -1234, -123 }, */
+                /* { -123, -1 }, */
+                { 0, INT_MAX },
+                { 234, INT_MAX },
+                { 0, 123 },
+        };
+
+        ARRAY_SAME_LENGTH(inputs, results);
+
+        char buf[500];
+        for (int i = 0; i < G_N_ELEMENTS(inputs); i++) {
+                sprintf(buf, "Failed in round %i.", i);
+                ASSERTm(buf, set_from_string(&val, s, inputs[i]));
+                sprintf(buf, "Failed in round %i. Expected min to be %i, got %i", i, results[i].min, val.min);
+                ASSERT_EQm(buf, results[i].min, val.min);
+                sprintf(buf, "Failed in round %i. Expected max to be %i, got %i", i, results[i].max, val.max);
+                ASSERT_EQm(buf, results[i].max, val.max);
+        }
+
+        PASS();
+}
+
+TEST test_string_to_length_invalid(void)
+{
+        struct length val = {-123, -1234};
+        struct setting s;
+        s.type = TYPE_LENGTH;
+        s.value = &val.min;
+        s.name = "test_length";
+        s.parser = NULL;
+        s.parser_data = NULL;
+
+        const char* inputs[] = {
+                "",
+                "f00reground",
+                "fraame",
+                "asb",
+                "#ab",
+                "(456",
+                "456)",
+                "(456, 567",
+                "456, 567",
+                "456, 567)",
+                "-456",
+                "-1",
+                "(-123, 1234)", // Negative values
+                "(123, -1234)",
+                "(-123, -1234)",
+                "(-123, )",
+                "(123)",
+                "(123, 122)", // invalid order
+        };
+
+        char buf[50];
+        for (int i = 0; i < G_N_ELEMENTS(inputs); i++) {
+                sprintf(buf, "Failed in round %i.", i);
+                ASSERT_FALSEm(buf, set_from_string(&val, s, inputs[i]));
+        }
+
+        ASSERT_EQm("Length shouldn't change from invalid inputs", -123, val.min);
+        ASSERT_EQm("Length shouldn't change from invalid inputs", -1234, val.max);
         PASS();
 }
 
@@ -705,8 +812,8 @@ SUITE(suite_option_parser)
         RUN_TEST(test_string_to_sepcolor);
         RUN_TEST(test_string_to_sepcolor_invalid);
         RUN_TEST(test_enum_size);
-        // geometry is left out, since we probably want to replace it soon
-        // anyways
+        RUN_TEST(test_string_to_length);
+        RUN_TEST(test_string_to_length_invalid);
 
         g_free(config_path);
         free_ini();

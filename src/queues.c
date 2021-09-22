@@ -52,7 +52,7 @@ GList *queues_get_displayed(void)
 }
 
 /* see queues.h */
-const struct notification *queues_get_head_waiting(void)
+struct notification *queues_get_head_waiting(void)
 {
         if (waiting->length == 0)
                 return NULL;
@@ -408,14 +408,14 @@ void queues_update(struct dunst_status status)
         }
 
         int cur_displayed_limit;
-        if (settings.geometry.h == 0)
+        if (settings.notification_limit == 0)
                 cur_displayed_limit = INT_MAX;
         else if (   settings.indicate_hidden
-                 && settings.geometry.h > 1
-                 && displayed->length + waiting->length > settings.geometry.h)
-                cur_displayed_limit = settings.geometry.h-1;
+                 && settings.notification_limit > 1
+                 && displayed->length + waiting->length > settings.notification_limit)
+                cur_displayed_limit = settings.notification_limit-1;
         else
-                cur_displayed_limit = settings.geometry.h;
+                cur_displayed_limit = settings.notification_limit;
 
         /* move notifications from queue to displayed */
         iter = g_queue_peek_head_link(waiting);
