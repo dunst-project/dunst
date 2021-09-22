@@ -91,7 +91,7 @@ void string_strip_delimited(char *str, char a, char b);
  * around a length variable.
  *
  * @param string The string to convert to an array
- * @param delmiter The character that separates list entries
+ * @param delimiter The character that separates list entries
  * @returns The array of tokens.
  */
 char **string_to_array(const char *string, const char *delimiter);

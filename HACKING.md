@@ -1,6 +1,6 @@
 # Important notes on the code
 
-**You can generate an internal overview with doxygen. For this, use `make doc-doxygen` and you'll find an internal overview of all functions and symbols in `docs/internal/html`.**
+**You can generate an internal overview with doxygen. For this, use `make doc-doxygen` and you'll find an internal overview of all functions and symbols in `docs/internal/html`. You will also need `graphviz` for this.**
 
 # Comments
 
