@@ -230,6 +230,9 @@ static const struct string_to_enum_def mouse_action_enum_data[] = {
         {"do_action",      MOUSE_DO_ACTION },
         {"close_current",  MOUSE_CLOSE_CURRENT },
         {"close_all",      MOUSE_CLOSE_ALL },
+        {"context",        MOUSE_CONTEXT },
+        {"context_all",    MOUSE_CONTEXT_ALL },
+        {"open_url",       MOUSE_OPEN_URL },
         ENUM_END,
 };
 
