@@ -160,8 +160,8 @@ not being displayed due to the notification limit (see B<notification_limit>)
 will be shown B<in place of the last notification slot>.
 
 Meaning that if this is enabled the number of visible notifications will be 1
-less than what is specified in geometry, the last slot will be taken by the
-hidden count.
+less than what is specified by B<notification_limit>, the last slot will be
+taken by the hidden count.
 
 =item B<transparency> (default: 0) (X11 only)
 
