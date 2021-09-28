@@ -19,16 +19,29 @@
     # will be ignored.
     follow = mouse
 
-    # dynamic width from 0 to 400
-    # width = (0, 400)
-    # constant width of 400
-    # width = 400
+    ### Geometry ###
+
+    # dynamic width from 0 to 300
+    # width = (0, 300)
+    # constant width of 300
+    width = 300
+
+    # The maximum height of a single notification, excluding the frame.
+    height = 300
 
     # Position the notification in the top right corner
-    # origin = top-right
+    origin = top-right
+
+    # Offset from the origin
+    offset = 10x50
 
     # Scale factor. It is auto-detected if value is 0.
     scale = 0
+
+    # Maximum number of notification (0 means no limit)
+    notification_limit = 0
+
+    ### Progress bar ###
 
     # Turn on the progess bar. It appears when a progress hint is passed with
     # for example dunstify -h int:value:12
@@ -52,19 +65,10 @@
     # notification_limit).
     indicate_hidden = yes
 
-    # Shrink window if it's smaller than the width.  Will be ignored if
-    # width is 0.
-    shrink = no
-
     # The transparency of the window.  Range: [0; 100].
     # This option will only work if a compositing window manager is
     # present (e.g. xcompmgr, compiz, etc.). (X11 only)
     transparency = 0
-
-    # The height of the entire notification.  If the height is smaller
-    # than the font height and padding combined, it will be raised
-    # to the font height and padding.
-    notification_height = 0
 
     # Draw a line of "separator_height" pixel height between two
     # notifications.
@@ -162,10 +166,6 @@
     # Set to -1 to disable.
     show_age_threshold = 60
 
-    # Split notifications into multiple lines if they don't fit into
-    # geometry.
-    word_wrap = yes
-
     # When word_wrap is set to no, specify where to make an ellipsis in long lines.
     # Possible values are "start", "middle" and "end".
     ellipsize = middle
@@ -223,20 +223,6 @@
 
     # Define the class of the windows spawned by dunst
     class = Dunst
-
-    # Print a notification on startup.
-    # This is mainly for error detection, since dbus (re-)starts dunst
-    # automatically after a crash.
-    startup_notification = false
-
-    # Manage dunst's desire for talking
-    # Can be one of the following values:
-    #  crit: Critical features. Dunst aborts
-    #  warn: Only non-fatal warnings
-    #  mesg: Important Messages
-    #  info: all unimportant stuff
-    # debug: all less than unimportant stuff
-    verbosity = mesg
 
     # Define the corner radius of the notification window
     # in pixel size. If the radius is 0, you have no rounded
