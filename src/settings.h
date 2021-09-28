@@ -114,7 +114,6 @@ struct settings {
         int sticky_history;
         int history_length;
         int show_indicators;
-        int word_wrap;
         int ignore_dbusclose;
         PangoEllipsizeMode ellipsize;
         int ignore_newline;

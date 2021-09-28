@@ -391,15 +391,6 @@ See TIME FORMAT for valid times.
 
 Set to -1 to disable.
 
-=item B<word_wrap> (values: [true/false], default: false)
-
-Specifies how very long lines should be handled
-
-If it's set to false, long lines will be truncated and ellipsized.
-
-If it's set to true, long lines will be broken into multiple lines expanding
-the notification window height as necessary for them to fit.
-
 =item B<ellipsize> (values: [start/middle/end], default: middle)
 
 If word_wrap is set to false, specifies where truncated lines should be

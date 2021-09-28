@@ -6,7 +6,6 @@
     indicate_hidden = yes
     alignment = left
     show_age_threshold = 2
-    word_wrap = yes
     ignore_newline = no
     geometry = "300x5-30+20"
     transparency = 0

@@ -590,16 +590,6 @@ static const struct setting allowed_settings[] = {
                 .parser_data = boolean_enum_data,
         },
         {
-                .name = "word_wrap",
-                .section = "global",
-                .description = "Truncating long lines or do word wrap",
-                .type = TYPE_CUSTOM,
-                .default_value = "true",
-                .value = &settings.word_wrap,
-                .parser = string_parse_enum,
-                .parser_data = boolean_enum_data,
-        },
-        {
                 .name = "ignore_dbusclose",
                 .section = "global",
                 .description = "Ignore dbus CloseNotification events",
