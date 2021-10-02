@@ -30,6 +30,11 @@ List all command line flags
 =item B<-conf/-config file>
 
 Use alternative config file.
+This disables the search for other config files.
+If it cannot be opened Dunst will issue a warning and fall back on its internal
+defaults.
+(Hint: `dunst -conf - </dev/null` can be used to enforce the defaults, i.e. for
+testing)
 
 =item B<-v/--version>
 
@@ -109,17 +114,15 @@ descending order of imortance:
 $XDG_CONFIG_HOME ($HOME/.config if unset or empty)
 
 $XDG_CONFIG_DIRS (:-separated list of base directories in descending order
-of importance; ##SYSCONFDIR## if unset or empty) (*)
+of importance; ##SYSCONFDIR## if unset or empty)
 
 =back
 
-Dunst will search these directories for the following relative paths:
+Dunst will search these directories for the following relative path:
 
 =over 4
 
 dunst/dunstrc
-
-dunstrc (deprecated since v0.2 and ignored if the former is found)
 
 =back
 

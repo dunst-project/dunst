@@ -107,7 +107,7 @@ sudo make install
 - `BINDIR=<PATH>`: Set the `dunst` executable's path (Default: `${PREFIX}/bin`)
 - `DATADIR=<PATH>`: Set the path for shared files. (Default: `${PREFIX}/share`)
 - `SYSCONFDIR=<PATH>`: Set the base directory for system config files. (Default: `${PREFIX}/etc/xdg`)
-- `SYSCONFFILE=<PATH>`: Set the absolute path of the system-wide default dunstrc. (Default: `${SYSCONFDIR}/dunst/dunstrc`)
+- `SYSCONFFILE=<PATH>`: Set the absolute path to which the default dunstrc shall be installed. (Default: `${SYSCONFDIR}/dunst/dunstrc`)
 - `SYSCONF_FORCE_NEW=(0|1)`: Overwrite existing `${SYSCONFFILE}`. (Default: 0 (don't overwrite))
 - `MANDIR=<PATH>`: Set the prefix of the manpage. (Default: `${DATADIR}/man`)
 - `SYSTEMD=(0|1)`: Disable/Enable the systemd unit. (Default: autodetect systemd)
@@ -129,6 +129,10 @@ to use the spec's recommended default, set XDG_CONFIG_DIR=/etc/xdg at runtime or
 SYSCONFDIR=/etc/xdg at compile time.
 
 **Notes on SYSCONFFILE**
+
+Changing SYSCONFFILE does not affect the search for config files, meaning it
+will not take effect if you choose to install dunstrc to a location that cannot
+be found by the algorithm outlined in the FILES section of dunst(1).
 
 `make install` will not overwrite an already existing ${SYSCONFFILE} (i.e.
 /usr/local/etc/xdg/dunst/dunstrc), see SYSCONF_FORCE_NEW above. This is so you
