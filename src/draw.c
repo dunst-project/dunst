@@ -142,42 +142,6 @@ static struct color layout_get_sepcolor(struct colored_layout *cl,
         }
 }
 
-static void layout_setup_pango(PangoLayout *layout, int width, int height)
-{
-        double scale = output->get_scale();
-        pango_layout_set_wrap(layout, PANGO_WRAP_WORD_CHAR);
-        pango_layout_set_width(layout, round(width * scale * PANGO_SCALE));
-        pango_layout_set_height(layout, round(height * scale * PANGO_SCALE));
-        pango_layout_set_font_description(layout, pango_fdesc);
-        pango_layout_set_spacing(layout, round(settings.line_height * scale * PANGO_SCALE));
-
-        PangoAlignment align;
-        switch (settings.align) {
-        case ALIGN_LEFT:
-        default:
-                align = PANGO_ALIGN_LEFT;
-                break;
-        case ALIGN_CENTER:
-                align = PANGO_ALIGN_CENTER;
-                break;
-        case ALIGN_RIGHT:
-                align = PANGO_ALIGN_RIGHT;
-                break;
-        }
-        pango_layout_set_alignment(layout, align);
-
-}
-
-static void free_colored_layout(void *data)
-{
-        struct colored_layout *cl = data;
-        g_object_unref(cl->l);
-        pango_attr_list_unref(cl->attr);
-        g_free(cl->text);
-        if (cl->icon) cairo_surface_destroy(cl->icon);
-        g_free(cl);
-}
-
 static int get_text_icon_padding()
 {
         if (settings.text_icon_padding) {
@@ -202,20 +166,67 @@ static void get_text_size(PangoLayout *l, int *w, int *h, double scale) {
                 *h = round(*h / scale);
 }
 
+// Set up pango for a given layout.
+// @param width The avaiable text width in pixels, used for caluclating alignment and wrapping
+// @param height The maximum text height in pixels.
+static void layout_setup_pango(PangoLayout *layout, int width, int height)
+{
+        double scale = output->get_scale();
+        pango_layout_set_wrap(layout, PANGO_WRAP_WORD_CHAR);
+        pango_layout_set_width(layout, round(width * scale * PANGO_SCALE));
+        pango_layout_set_height(layout, round(height * scale * PANGO_SCALE));
+        pango_layout_set_font_description(layout, pango_fdesc);
+        pango_layout_set_spacing(layout, round(settings.line_height * scale * PANGO_SCALE));
+
+        PangoAlignment align;
+        switch (settings.align) {
+        case ALIGN_LEFT:
+        default:
+                align = PANGO_ALIGN_LEFT;
+                break;
+        case ALIGN_CENTER:
+                align = PANGO_ALIGN_CENTER;
+                break;
+        case ALIGN_RIGHT:
+                align = PANGO_ALIGN_RIGHT;
+                break;
+        }
+        pango_layout_set_alignment(layout, align);
+}
+
+// Set up the layout of a single notification
+// @param width Width of the layout
+// @param height Height of the layout
+static void layout_setup(struct colored_layout *cl, int width, int height, double scale)
+{
+        int icon_width = cl->icon? get_icon_width(cl->icon, scale) + get_text_icon_padding() : 0;
+        int text_width = width - icon_width - 2 * settings.h_padding;
+        int progress_bar_height = have_progress_bar(cl->n) ? settings.progress_bar_height + settings.padding : 0;
+        int max_text_height = MAX(0, settings.height - progress_bar_height - 2 * settings.padding);
+        layout_setup_pango(cl->l, text_width, max_text_height);
+}
+
+static void free_colored_layout(void *data)
+{
+        struct colored_layout *cl = data;
+        g_object_unref(cl->l);
+        pango_attr_list_unref(cl->attr);
+        g_free(cl->text);
+        if (cl->icon) cairo_surface_destroy(cl->icon);
+        g_free(cl);
+}
+
 // calculates the minimum dimensions of the notification excluding the frame
-static struct dimensions calculate_notification_dimensions(struct colored_layout *cl, int scale)
+static struct dimensions calculate_notification_dimensions(struct colored_layout *cl, double scale)
 {
         struct dimensions dim = { 0 };
+        layout_setup(cl, settings.width.max, settings.height, scale);
 
         int icon_width = cl->icon? get_icon_width(cl->icon, scale) + get_text_icon_padding() : 0;
         int icon_height = cl->icon? get_icon_height(cl->icon, scale) : 0;
-        int max_text_width = settings.width.max - icon_width - 2 * settings.h_padding;
         int progress_bar_height = have_progress_bar(cl->n) ? settings.progress_bar_height + settings.padding : 0;
-        int max_text_height = MAX(0, settings.height - progress_bar_height - 2 * settings.padding);
-
-        layout_setup_pango(cl->l, max_text_width, max_text_height);
-
         get_text_size(cl->l, &dim.text_width, &dim.text_height, scale);
+
         dim.h = MAX(icon_height, dim.text_height);
         dim.h += progress_bar_height;
         dim.w = dim.text_width + icon_width + 2 * settings.h_padding;
@@ -551,6 +562,10 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
 
 static void render_content(cairo_t *c, struct colored_layout *cl, int width, double scale)
 {
+        // Redo layout setup, while knowing the width. This is to make
+        // alignment work correctly
+        layout_setup(cl, width, settings.height, scale);
+
         const int h = layout_get_height(cl, scale);
         LOG_D("Layout height %i", h);
         int h_without_progress_bar = h;
