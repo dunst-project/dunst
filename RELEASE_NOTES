@@ -1,4 +1,40 @@
 ===================================================================================
+Release Notes For unreleased
+===================================================================================
+
+This release was long overdue. There have been a lot of changes in the mean
+time. For a full list of changes, see the changelog.
+
+For users:
+
+The wayland support of v1.6.0 was already pretty good, but this release added
+fullscreen detection and improved the stability.
+
+This release added a few improvements to the wayland support. Dunst now
+automatically falls back to X11 when the wayland compositor doesn't support the
+neccesary protocols.
+
+
+
+For maintainers:
+
+Previously the readme said dunst depended on GTK3, which hasn't been the case
+for a while. Make sure that GTK3 is not included as a dependency.
+
+The default program for opening URL's in notifications has been changed from
+firefox to xdg-open.
+
+The Makefile and dunstrc searching has been significantly changed to be more
+compliant with the XDG spec. The default config directory, `SYSCONFDIR`, has
+been changed to "${PREFIX}/etc/xdg/" and default dunstrc location,
+`${SYSCONFFILE}`, will then be to "${SYSCONFDIR}/dunst/dunstrc". Dunst will
+look for a dunstrc located at ${SYSCONFFILE}, so changing that variable will
+affect it's search path. To change back to the old behaviour, run make with:
+`make SYSCONFDIR="/etc/dunst"` (make sure to pass the same variables to make in
+subsequent calls). Take a look at the "Make parameters" section of the readme
+and the FILES section of the man page for more details.
+
+===================================================================================
 Release Notes For v1.6.0
 ===================================================================================
 

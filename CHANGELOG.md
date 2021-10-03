@@ -3,8 +3,54 @@
 ## Unreleased
 
 ### Added
+- `context` and `context_all` mouse actions for opening the context menu (#848)
+- `open_url` mouse action for opening url's in a notification (#848)
+- `action_name` rule for setting a default action to perform when using
+  `do_action` (#848)
+- HiDPI support for both Wayland and X11. On wayland the scale can be set from
+  your compositor's settings and is automatically picked up by dunst. On X11
+  dunst will guess the scale based on the DPI of the screen. If that isn't good,
+  you can set the `scale` variable in the settings. (#854 and #890)
+- `highlight` can now also be set through dbus hints with the key `hlcolor`
+  (#862)
+- Your dunstrc is now being checked by dunst. Dunst will print a warning when
+  coming across an non-existing/invalid setting. (#803)
+- Wayland fullscreen detection (#814)
+- Wayland touch support (#814)
+- Cursor is now being changed to `left_ptr` when hovering over dunst (Wayland)
+  (#903)
+
 ### Changed
+- `startup_notification` and `verbosity` are now only available as a command
+  line arguments. (#803)
+- Rule settings can now also be used in the `[global]` section. They will then
+  apply to all the notifications. (#803)
+- `fullscreen`, `ellpsize` and `word_wrap` are now rules. They can still be used
+  in the `[global]` section as well (see above). (#937 and #803)
+- The appid's now also need to match when stacking notifications. (#886)
+- `xdg-open` is now being used by default for opening URL's. (#889)
+- `geometry` has been replaced by `origin`, `width`, `height`, `offset` and
+  `notification_height`. This allows for more flexible geometry settings. (#855)
+- There were a bunch of changes in the installation and default locations. See
+  the release notes for more information.
+- Upon seeing invalid markup, dunst is a bit smarter in stripping the markup.
+
 ### Fixed
+- Lots of debug messages when `idle_timeout=0` (#814)
+- `follow=none` not working on Wayland (#814)
+- Incorrect sorting when `sort` is false
+- NULL pointer dereference on Wayland
+- Dunst not redrawing after `close_all` action.
+- Dunst not announcing icon-static capability over dbus (#867)
+- Dunst not falling back to X11 output when it can't initialize the Wayland
+  output. (#834)
+- Improve stability on Wayland. (#930 and more)
+
+### Removed
+- The `[shortcuts]` section with all it's settings. Use your WM/DE's shortcut
+  manager and `dunstctl` to replace it. (#803)
+- Setting settings via command line arguments. (#803)
+- Setting settings via `config.h`. (#803)
 
 ## 1.6.1 - 2021-02-21:
 
