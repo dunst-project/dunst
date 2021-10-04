@@ -489,38 +489,33 @@ static const struct zwlr_foreign_toplevel_manager_v1_listener foreign_toplevel_m
 
 static void handle_global(void *data, struct wl_registry *registry,
                 uint32_t name, const char *interface, uint32_t version) {
-        int *count = data;
-        if (*count == 0)
-        {
-                if (strcmp(interface, wl_compositor_interface.name) == 0) {
-                        ctx.compositor = wl_registry_bind(registry, name,
-                                        &wl_compositor_interface, 4);
-                } else if (strcmp(interface, wl_shm_interface.name) == 0) {
-                        ctx.shm = wl_registry_bind(registry, name,
-                                        &wl_shm_interface, 1);
-                } else if (strcmp(interface, zwlr_layer_shell_v1_interface.name) == 0) {
-                        ctx.layer_shell = wl_registry_bind(registry, name,
-                                        &zwlr_layer_shell_v1_interface, 1);
-                } else if (strcmp(interface, wl_seat_interface.name) == 0) {
-                        ctx.seat = wl_registry_bind(registry, name, &wl_seat_interface, 3);
-                        wl_seat_add_listener(ctx.seat, &seat_listener, ctx.seat);
-                        add_seat_to_idle_handler(ctx.seat);
-                } else if (strcmp(interface, wl_output_interface.name) == 0) {
-                        struct wl_output *output =
-                                wl_registry_bind(registry, name, &wl_output_interface, 3);
-                        create_output(output, name);
-                } else if (strcmp(interface, org_kde_kwin_idle_interface.name) == 0 &&
-                                version >= ORG_KDE_KWIN_IDLE_TIMEOUT_IDLE_SINCE_VERSION) {
-                        ctx.idle_handler = wl_registry_bind(registry, name, &org_kde_kwin_idle_interface, 1);
-                }
-        } else {
-                if (strcmp(interface, zwlr_foreign_toplevel_manager_v1_interface.name) == 0 &&
-                                version >= ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_STATE_FULLSCREEN_SINCE_VERSION) {
-                        // Only bind after the second pass to bind after binding to all the outputs.
-                        // This is because otherwise toplevel_enter evens won't be sent.
-                        ctx.toplevel_manager = wl_registry_bind(registry, name, &zwlr_foreign_toplevel_manager_v1_interface, 2);
-                        zwlr_foreign_toplevel_manager_v1_add_listener(ctx.toplevel_manager, &foreign_toplevel_manager_listener, NULL);
-                }
+        if (strcmp(interface, wl_compositor_interface.name) == 0) {
+                ctx.compositor = wl_registry_bind(registry, name,
+                                &wl_compositor_interface, 4);
+        } else if (strcmp(interface, wl_shm_interface.name) == 0) {
+                ctx.shm = wl_registry_bind(registry, name,
+                                &wl_shm_interface, 1);
+        } else if (strcmp(interface, zwlr_layer_shell_v1_interface.name) == 0) {
+                ctx.layer_shell = wl_registry_bind(registry, name,
+                                &zwlr_layer_shell_v1_interface, 1);
+        } else if (strcmp(interface, wl_seat_interface.name) == 0) {
+                ctx.seat = wl_registry_bind(registry, name, &wl_seat_interface, 3);
+                wl_seat_add_listener(ctx.seat, &seat_listener, ctx.seat);
+                add_seat_to_idle_handler(ctx.seat);
+        } else if (strcmp(interface, wl_output_interface.name) == 0) {
+                struct wl_output *output =
+                        wl_registry_bind(registry, name, &wl_output_interface, 3);
+                create_output(output, name);
+        } else if (strcmp(interface, org_kde_kwin_idle_interface.name) == 0 &&
+                        version >= ORG_KDE_KWIN_IDLE_TIMEOUT_IDLE_SINCE_VERSION) {
+                ctx.idle_handler = wl_registry_bind(registry, name, &org_kde_kwin_idle_interface, 1);
+        } else if (strcmp(interface, zwlr_foreign_toplevel_manager_v1_interface.name) == 0 &&
+                        version >= ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_STATE_FULLSCREEN_SINCE_VERSION) {
+                ctx.toplevel_manager = wl_registry_bind(registry, name,
+                                &zwlr_foreign_toplevel_manager_v1_interface,
+                                2);
+                zwlr_foreign_toplevel_manager_v1_add_listener(ctx.toplevel_manager,
+                                &foreign_toplevel_manager_listener, NULL);
         }
 }
 
@@ -551,16 +546,11 @@ bool wl_init() {
                 return false;
         }
 
-        int count = 0;
         ctx.registry = wl_display_get_registry(ctx.display);
-        wl_registry_add_listener(ctx.registry, &registry_listener, &count);
+        wl_registry_add_listener(ctx.registry, &registry_listener, NULL);
         wl_display_roundtrip(ctx.display);
-
-        count = 1;
-        // we need a second pass to let for foreign_toplevel (look there for more info)
-        ctx.registry = wl_display_get_registry(ctx.display);
-        wl_registry_add_listener(ctx.registry, &registry_listener, &count);
-        wl_display_roundtrip(ctx.display);
+        wl_display_roundtrip(ctx.display); // load list of toplevels
+        wl_display_roundtrip(ctx.display); // load toplevel details
 
         if (ctx.compositor == NULL) {
                 LOG_W("compositor doesn't support wl_compositor");
@@ -705,6 +695,19 @@ static void send_frame() {
                 ctx.width = ctx.height = 0;
                 ctx.surface_output = NULL;
                 ctx.configured = false;
+        }
+
+        {
+                struct dunst_output *o;
+                int i = 0;
+                wl_list_for_each(o, &ctx.outputs, link) {
+                        i++;
+                }
+                if (i == 0) {
+                        // There are no outputs, so don't create a surface
+                        ctx.dirty = false;
+                        return;
+                }
         }
 
         // If there are no notifications, there's no point in recreating the
