@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include <wayland-client.h>
 #include <wayland-client-protocol.h>
+#include <wayland-util.h>
 #include <wayland-cursor.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -32,6 +33,8 @@
 #include "../queues.h"
 #include "../input.h"
 #include "libgwater-wayland.h"
+#include "foreign_toplevel.h"
+#include "wl_output.h"
 
 #define MAX_TOUCHPOINTS 10
 
@@ -59,6 +62,7 @@ struct wl_ctx {
         struct wl_callback *frame_callback;
         struct org_kde_kwin_idle *idle_handler;
         struct org_kde_kwin_idle_timeout *idle_timeout;
+        uint32_t toplevel_manager_name;
         struct zwlr_foreign_toplevel_manager_v1 *toplevel_manager;
         bool configured;
         bool dirty;
@@ -85,18 +89,6 @@ struct wl_ctx {
         struct wl_cursor_theme *cursor_theme;
         const struct wl_cursor_image *cursor_image;
         struct wl_surface *cursor_surface;
-};
-
-struct dunst_output {
-        uint32_t global_name;
-        char *name;
-        struct wl_output *wl_output;
-        struct wl_list link;
-
-        uint32_t scale;
-        uint32_t subpixel; // TODO do something with it
-        bool fullscreen;
-        struct zwlr_foreign_toplevel_handle_v1 *fullscreen_toplevel; // the toplevel that is fullscreened on this output
 };
 
 struct wl_ctx ctx;
@@ -386,141 +378,34 @@ static struct dunst_output *get_configured_output() {
         }
 }
 
-// does not do null checking
-static void dunst_output_set_fullscreen(struct dunst_output *output,
-                struct zwlr_foreign_toplevel_handle_v1 *toplevel,
-                bool fullscreen) {
-        output->fullscreen = fullscreen;
-        if (fullscreen)
-                output->fullscreen_toplevel = toplevel;
-        else
-                output->fullscreen_toplevel = NULL;
-
-        LOG_D("Set output %i fullscreen state %i", output->global_name, fullscreen);
-        wake_up();
-}
-
-static void toplevel_output_leave(void *data,
-                struct zwlr_foreign_toplevel_handle_v1 *toplevel,
-                struct wl_output *output) {
-        zwlr_foreign_toplevel_handle_v1_set_user_data(toplevel, NULL);
-}
-
-static void toplevel_output_enter(void *data,
-                struct zwlr_foreign_toplevel_handle_v1 *toplevel,
-                struct wl_output *output) {
-        // FIXME toplevel can be on multiple outputs, so a list of outputs should be kept
-        zwlr_foreign_toplevel_handle_v1_set_user_data(toplevel, output);
-}
-
-static void toplevel_closed(void *data,
-                struct zwlr_foreign_toplevel_handle_v1 *toplevel) {
-        struct wl_output *output_wl = (struct wl_output*) data;
-
-        if (output_wl == NULL) {
-                return;
-        }
-        struct dunst_output *output = (struct dunst_output*) wl_output_get_user_data(output_wl);
-
-        if (output == NULL) {
-                return;
-        }
-        dunst_output_set_fullscreen(output, toplevel, false);
-}
-
-static void toplevel_state(void *data,
-                struct zwlr_foreign_toplevel_handle_v1 *toplevel,
-                struct wl_array *state) {
-        struct wl_output *output_wl = (struct wl_output*) data;
-        if (output_wl == NULL) {
-                return;
-        }
-        struct dunst_output *output = (struct dunst_output*) wl_output_get_user_data(output_wl);
-        if (output == NULL) {
-                return;
-        }
-
-        bool fullscreen = false;
-        bool activated = false;
-        enum zwlr_foreign_toplevel_handle_v1_state* element;
-        wl_array_for_each(element, state){
-                if (*element == ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_STATE_FULLSCREEN) {
-                        fullscreen = true;
-                }
-                if (*element == ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_STATE_ACTIVATED) {
-                        activated = true;
-                }
-        }
-        if (fullscreen && activated) {
-                dunst_output_set_fullscreen(output, toplevel, true);
-
-        } else {
-                if (output->fullscreen_toplevel == toplevel) {
-                        // this toplevel was fullscreen, but isn't anymore
-                        dunst_output_set_fullscreen(output, toplevel, false);
-                }
-        }
-}
-
-static const struct zwlr_foreign_toplevel_handle_v1_listener foreign_toplevel_handle_listener = {
-        .title = noop,
-        .app_id = noop,
-        .output_enter = toplevel_output_enter,
-        .output_leave = toplevel_output_leave,
-        .state = toplevel_state,
-        .done = noop,
-        .closed = toplevel_closed,
-};
-
-static void toplevel_created(void *data,
-                struct zwlr_foreign_toplevel_manager_v1 *zwlr_foreign_toplevel_manager_v1,
-                struct zwlr_foreign_toplevel_handle_v1 *toplevel){
-        zwlr_foreign_toplevel_handle_v1_add_listener(toplevel, &foreign_toplevel_handle_listener, NULL);
-}
-
-static void toplevel_finished(void *data,
-                struct zwlr_foreign_toplevel_manager_v1 *zwlr_foreign_toplevel_manager_v1){
-}
-
-static const struct zwlr_foreign_toplevel_manager_v1_listener foreign_toplevel_manager_listener = {
-        .toplevel = toplevel_created,
-        .finished = toplevel_finished,
-};
-
 static void handle_global(void *data, struct wl_registry *registry,
                 uint32_t name, const char *interface, uint32_t version) {
-        int *count = data;
-        if (*count == 0)
-        {
-                if (strcmp(interface, wl_compositor_interface.name) == 0) {
-                        ctx.compositor = wl_registry_bind(registry, name,
-                                        &wl_compositor_interface, 4);
-                } else if (strcmp(interface, wl_shm_interface.name) == 0) {
-                        ctx.shm = wl_registry_bind(registry, name,
-                                        &wl_shm_interface, 1);
-                } else if (strcmp(interface, zwlr_layer_shell_v1_interface.name) == 0) {
-                        ctx.layer_shell = wl_registry_bind(registry, name,
-                                        &zwlr_layer_shell_v1_interface, 1);
-                } else if (strcmp(interface, wl_seat_interface.name) == 0) {
-                        ctx.seat = wl_registry_bind(registry, name, &wl_seat_interface, 3);
-                        wl_seat_add_listener(ctx.seat, &seat_listener, ctx.seat);
-                        add_seat_to_idle_handler(ctx.seat);
-                } else if (strcmp(interface, wl_output_interface.name) == 0) {
-                        struct wl_output *output =
-                                wl_registry_bind(registry, name, &wl_output_interface, 3);
-                        create_output(output, name);
-                } else if (strcmp(interface, org_kde_kwin_idle_interface.name) == 0 &&
-                                version >= ORG_KDE_KWIN_IDLE_TIMEOUT_IDLE_SINCE_VERSION) {
-                        ctx.idle_handler = wl_registry_bind(registry, name, &org_kde_kwin_idle_interface, 1);
-                }
-        } else {
-                if (strcmp(interface, zwlr_foreign_toplevel_manager_v1_interface.name) == 0 &&
-                                version >= ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_STATE_FULLSCREEN_SINCE_VERSION) {
-                        // Only bind after the second pass to bind after binding to all the outputs.
-                        // This is because otherwise toplevel_enter evens won't be sent.
-                        ctx.toplevel_manager = wl_registry_bind(registry, name, &zwlr_foreign_toplevel_manager_v1_interface, 2);
-                        zwlr_foreign_toplevel_manager_v1_add_listener(ctx.toplevel_manager, &foreign_toplevel_manager_listener, NULL);
-                }
+        if (strcmp(interface, wl_compositor_interface.name) == 0) {
+                ctx.compositor = wl_registry_bind(registry, name,
+                                &wl_compositor_interface, 4);
+        } else if (strcmp(interface, wl_shm_interface.name) == 0) {
+                ctx.shm = wl_registry_bind(registry, name,
+                                &wl_shm_interface, 1);
+        } else if (strcmp(interface, zwlr_layer_shell_v1_interface.name) == 0) {
+                ctx.layer_shell = wl_registry_bind(registry, name,
+                                &zwlr_layer_shell_v1_interface, 1);
+        } else if (strcmp(interface, wl_seat_interface.name) == 0) {
+                ctx.seat = wl_registry_bind(registry, name, &wl_seat_interface, 3);
+                wl_seat_add_listener(ctx.seat, &seat_listener, ctx.seat);
+                add_seat_to_idle_handler(ctx.seat);
+        } else if (strcmp(interface, wl_output_interface.name) == 0) {
+                struct wl_output *output =
+                        wl_registry_bind(registry, name, &wl_output_interface, 3);
+                create_output(output, name);
+                LOG_W("Binding to output %i", name);
+        } else if (strcmp(interface, org_kde_kwin_idle_interface.name) == 0 &&
+                        version >= ORG_KDE_KWIN_IDLE_TIMEOUT_IDLE_SINCE_VERSION) {
+                ctx.idle_handler = wl_registry_bind(registry, name, &org_kde_kwin_idle_interface, 1);
+        } else if (strcmp(interface, zwlr_foreign_toplevel_manager_v1_interface.name) == 0 &&
+                        version >= ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_STATE_FULLSCREEN_SINCE_VERSION) {
+                LOG_W("Found toplevel manager %i", name);
+                ctx.toplevel_manager_name = name;
+                wl_list_init(&toplevel_list);
         }
 }
 
@@ -551,16 +436,24 @@ bool wl_init() {
                 return false;
         }
 
-        int count = 0;
-        ctx.registry = wl_display_get_registry(ctx.display);
-        wl_registry_add_listener(ctx.registry, &registry_listener, &count);
-        wl_display_roundtrip(ctx.display);
+        ctx.toplevel_manager_name = UINT32_MAX;
 
-        count = 1;
-        // we need a second pass to let for foreign_toplevel (look there for more info)
         ctx.registry = wl_display_get_registry(ctx.display);
-        wl_registry_add_listener(ctx.registry, &registry_listener, &count);
+        wl_registry_add_listener(ctx.registry, &registry_listener, NULL);
+        LOG_W("First roundtrip");
         wl_display_roundtrip(ctx.display);
+        if (ctx.toplevel_manager_name != UINT32_MAX) {
+                ctx.toplevel_manager = wl_registry_bind(ctx.registry, ctx.toplevel_manager_name,
+                                &zwlr_foreign_toplevel_manager_v1_interface,
+                                2);
+                zwlr_foreign_toplevel_manager_v1_add_listener(ctx.toplevel_manager,
+                                &toplevel_manager_impl, NULL);
+        }
+        LOG_W("Second roundtrip");
+        wl_display_roundtrip(ctx.display); // load list of toplevels
+        LOG_W("Third roundtrip");
+        wl_display_roundtrip(ctx.display); // load toplevel details
+        wl_display_flush(ctx.display);
 
         if (ctx.compositor == NULL) {
                 LOG_W("compositor doesn't support wl_compositor");
@@ -705,6 +598,19 @@ static void send_frame() {
                 ctx.width = ctx.height = 0;
                 ctx.surface_output = NULL;
                 ctx.configured = false;
+        }
+
+        {
+                struct dunst_output *o;
+                int i = 0;
+                wl_list_for_each(o, &ctx.outputs, link) {
+                        i++;
+                }
+                if (i == 0) {
+                        // There are no outputs, so don't create a surface
+                        ctx.dirty = false;
+                        return;
+                }
         }
 
         // If there are no notifications, there's no point in recreating the
@@ -916,25 +822,30 @@ bool wl_is_idle(void) {
 }
 
 bool wl_have_fullscreen_window(void) {
-        bool have_fullscreen = false;
-
         struct dunst_output *current_output = get_configured_output();
+        uint32_t output_name = UINT32_MAX;
+        if (current_output)
+                output_name = current_output->global_name;
 
-        if (!current_output) {
-                // Cannot detect focused output, so return true if any of the
-                // outputs is fullscreen. This will work even when unfocused
-                // outputs have fullscreen toplevels, since a toplevel has to
-                // be fullscreen and activate to consider an output fullscreen.
-                struct dunst_output *output;
-                wl_list_for_each(output, &ctx.outputs, link) {
-                        have_fullscreen |= output->fullscreen;
+        struct toplevel_v1 *toplevel;
+	wl_list_for_each(toplevel, &toplevel_list, link) {
+                if (!(toplevel->current.state & TOPLEVEL_STATE_FULLSCREEN &&
+                                        toplevel->current.state &
+                                        TOPLEVEL_STATE_ACTIVATED))
+                        continue;
+
+                struct toplevel_output *pos;
+                wl_list_for_each(pos, &toplevel->output_list, link) {
+                        if (output_name == UINT32_MAX ||
+                                        pos->dunst_output->global_name ==
+                                        output_name) {
+                                LOG_D("Fullscreen queried: 1");
+                                return true;
+                        }
                 }
-        } else {
-                have_fullscreen = current_output->fullscreen;
         }
-
-        LOG_D("Fullscreen queried: %i", have_fullscreen);
-        return have_fullscreen;
+        LOG_D("Fullscreen queried: 0");
+        return false;
 }
 
 double wl_get_scale(void) {
