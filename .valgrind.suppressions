@@ -92,27 +92,10 @@
    match-leak-kinds: definite
    fun:malloc
    obj:/usr/lib/librsvg-2.so.2.48.0
-   obj:/usr/lib/librsvg-2.so.2.48.0
-   obj:/usr/lib/librsvg-2.so.2.48.0
-   obj:/usr/lib/librsvg-2.so.2.48.0
-   obj:/usr/lib/librsvg-2.so.2.48.0
-   obj:/usr/lib/librsvg-2.so.2.48.0
-   obj:/usr/lib/librsvg-2.so.2.48.0
-   obj:/usr/lib/librsvg-2.so.2.48.0
-   obj:/usr/lib/librsvg-2.so.2.48.0
-   obj:/usr/lib/librsvg-2.so.2.48.0
-   obj:/usr/lib/librsvg-2.so.2.48.0
-   obj:/usr/lib/librsvg-2.so.2.48.0
-   obj:/usr/lib/librsvg-2.so.2.48.0
+   ...
    fun:rsvg_handle_close
    obj:/usr/lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-svg.so
    obj:/usr/lib/libgdk_pixbuf-2.0.so.0.4200.6
    fun:gdk_pixbuf_new_from_file
-   fun:notification_setup_raw_image
-   fun:notification_load_icon_with_scaling
-   fun:test_notification_icon_scaling_toosmall
-   fun:suite_notification
-   fun:greatest_run_suite
-   fun:greatest_run_suite
-   fun:main
+   ...
 }
