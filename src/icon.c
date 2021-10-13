@@ -261,24 +261,24 @@ char *get_path_from_icon_name(const char *icon_name, int scale)
 
         const char* const* system_data_dirs = g_get_system_data_dirs();
         const char* user_data_dir = g_get_user_data_dir();
-        static const char icons_dir_fmt[] = "%s/icons/%s:%s";
+        static const char icons_dir_fmt[] = "%s/icons/%s:";
 
         // use the hicolor theme as backup
-        char *search = g_strdup("/usr/share/icons/hicolor");
+        GString *search = g_string_new("/usr/share/icons/hicolor");
 
         for (int i = 0; system_data_dirs[i] != NULL; i++) {
                 char *tmp = g_strdup_printf(icons_dir_fmt, system_data_dirs[i],
-                                settings.icon_theme, search);
-                free(search);
-                search = tmp;
+                                settings.icon_theme);
+                g_string_prepend(search, tmp);
+                free(tmp);
         }
         char* tmp = g_strdup_printf(icons_dir_fmt, user_data_dir,
-                        settings.icon_theme, search);
-        free(search);
-        search = tmp;
+                        settings.icon_theme);
+        g_string_prepend(search, tmp);
+        free(tmp);
 
         char *saveptr = NULL;
-        char *theme_path = strtok_r(search, ":", &saveptr);
+        char *theme_path = strtok_r(search->str, ":", &saveptr);
 
         // Match all icon files underneath of the theme_path followed by any icon
         // size and category subdirectories. This pattern assumes that all the
@@ -388,7 +388,7 @@ char *get_path_from_icon_name(const char *icon_name, int scale)
                 globfree(&icon_glob);
         }
 
-        free(search);
+        g_string_free(search, true);
         LOG_D("Icon path: %s", icon_path);
         return icon_path;
 }
