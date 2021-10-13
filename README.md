@@ -106,6 +106,9 @@ sudo make install
 - `PREFIX=<PATH>`: Set the prefix of the installation. (Default: `/usr/local`)
 - `BINDIR=<PATH>`: Set the `dunst` executable's path (Default: `${PREFIX}/bin`)
 - `DATADIR=<PATH>`: Set the path for shared files. (Default: `${PREFIX}/share`)
+- `SYSCONFDIR=<PATH>`: Set the base directory for system config files. (Default: `${PREFIX}/etc/xdg`)
+- `SYSCONFFILE=<PATH>`: Set the absolute path to which the default dunstrc shall be installed. (Default: `${SYSCONFDIR}/dunst/dunstrc`)
+- `SYSCONF_FORCE_NEW=(0|1)`: Overwrite existing `${SYSCONFFILE}`. (Default: 0 (don't overwrite))
 - `MANDIR=<PATH>`: Set the prefix of the manpage. (Default: `${DATADIR}/man`)
 - `SYSTEMD=(0|1)`: Disable/Enable the systemd unit. (Default: autodetect systemd)
 - `WAYLAND=(0|1)`: Disable/Enable wayland support. (Default: 1 (enabled))
@@ -114,6 +117,31 @@ sudo make install
 - `EXTRA_CFLAGS=<FLAGS>`: Additional flags for the compiler.
 
 **Make sure to run all make calls with the same parameter set. So when building with `make PREFIX=/usr`, you have to install it with `make PREFIX=/usr install`, too.**
+
+**Notes on default of XDG_CONFIG_DIRS**
+
+Dunst uses a different default (${SYSCONFDIR}) for XDG_CONFIG_DIRS at runtime.
+This is a slight digression from the recommended value in the XDG Base Directory
+Specification (/etc/xdg), because the default config file gets installed to
+${SYSCONFDIR/dunst/dunstrc} to avoid conflicts with /etc/xdg/dunst/dunstrc which
+might have been installed from a distribution repository. If you do want dunst
+to use the spec's recommended default, set XDG_CONFIG_DIR=/etc/xdg at runtime or
+SYSCONFDIR=/etc/xdg at compile time.
+
+**Notes on SYSCONFFILE**
+
+Changing SYSCONFFILE does not affect the search for config files, meaning it
+will not take effect if you choose to install dunstrc to a location that cannot
+be found by the algorithm outlined in the FILES section of dunst(1).
+
+`make install` will not overwrite an already existing ${SYSCONFFILE} (i.e.
+/usr/local/etc/xdg/dunst/dunstrc), see SYSCONF_FORCE_NEW above. This is so you
+do not lose local changes to said file on upgrade. However, it is recommended
+to leave that file untouched and use a more important config location to
+override settings, see the FILES section in dunst(1) for more details.
+
+`make uninstall` will not remove ${SYSCONFFILE}, use `make uninstall-purge` if
+you do want it removed as well.
 
 ## Bug reports
 

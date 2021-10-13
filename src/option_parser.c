@@ -31,7 +31,7 @@ struct section {
 static int section_count = 0;
 static struct section *sections;
 
-static struct section *new_section(const char *name);
+static struct section *get_or_create_section(const char *name);
 static struct section *get_section(const char *name);
 static void add_entry(const char *section_name, const char *key, const char *value);
 static const char *get_value(const char *section, const char *key);
@@ -226,20 +226,21 @@ int string_parse_bool(const void *data, const char *s, void *ret)
         return success;
 }
 
-struct section *new_section(const char *name)
+struct section *get_or_create_section(const char *name)
 {
-        for (int i = 0; i < section_count; i++) {
-                if (STR_EQ(name, sections[i].name)) {
-                        DIE("Duplicated section in dunstrc detected.");
-                }
-        }
+        struct section *s = get_section(name);
+        if (!s) {
+                LOG_D("New section: [%s]", name);
 
-        section_count++;
-        sections = g_realloc(sections, sizeof(struct section) * section_count);
-        sections[section_count - 1].name = g_strdup(name);
-        sections[section_count - 1].entries = NULL;
-        sections[section_count - 1].entry_count = 0;
-        return &sections[section_count - 1];
+                section_count++;
+                sections = g_realloc(sections, sizeof(struct section) * section_count);
+
+                s = &sections[section_count - 1];
+                s->name = g_strdup(name);
+                s->entries = NULL;
+                s->entry_count = 0;
+        }
+        return s;
 }
 
 void free_ini(void)
@@ -268,10 +269,9 @@ struct section *get_section(const char *name)
 
 void add_entry(const char *section_name, const char *key, const char *value)
 {
-        struct section *s = get_section(section_name);
-        if (!s)
-                s = new_section(section_name);
+        struct section *s = get_or_create_section(section_name);
 
+        LOG_D("\t%s=%s", key, value);
         s->entry_count++;
         int len = s->entry_count;
         s->entries = g_realloc(s->entries, sizeof(struct entry) * len);
@@ -485,7 +485,7 @@ bool set_from_string(void *target, struct setting setting, const char *value) {
 }
 
 bool set_setting(struct setting setting, char* value) {
-        LOG_D("Trying to set %s to %s", setting.name, value);
+        LOG_D("[%s] Trying to set %s to %s", setting.section, setting.name, value);
         if (setting.value == NULL) {
                 // setting.value is NULL, so it must be only a rule
                 return true;
@@ -536,6 +536,7 @@ void save_settings() {
                         continue;
                 }
 
+                LOG_D("Entering section [%s]", curr_section.name);
                 for (int j = 0; j < curr_section.entry_count; j++) {
                         const struct entry curr_entry = curr_section.entries[j];
                         int setting_id = get_setting_id(curr_entry.key, curr_section.name);
@@ -606,7 +607,7 @@ int load_ini_file(FILE *fp)
 
                         g_free(current_section);
                         current_section = (g_strdup(start + 1));
-                        new_section(current_section);
+                        LOG_D("[%s]", current_section);
                         continue;
                 }
 
