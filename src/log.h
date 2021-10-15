@@ -17,24 +17,23 @@
  * @... are the arguments to above format string.
  *
  * This requires -Wno-gnu-zero-variadic-macro-arguments with clang
- * because __VA_OPTS__ seems not to be officially supported yet.
- * However, the result is the same with both gcc and clang.
+ * because of token pasting ',' and %__VA_ARGS__ being a GNU extension.
+ * However, the result is the same with both gcc and clang and since we are
+ * compiling with '-std=gnu99', this should be fine.
  */
-#if __GNUC__ >= 8
+#if __GNUC__ >= 8 || __clang_major__ >= 6
+#define MSG(format, ...) "[%16s:%04d] " format, __func__, __LINE__, ## __VA_ARGS__
+#endif
 
-#define MSG(format, ...) "[%s:%s:%04d] " format, __FILE__, __func__, __LINE__, ## __VA_ARGS__
-
+#ifdef MSG
 // These should benefit from more context
 #define LOG_E(...) g_error(MSG(__VA_ARGS__))
 #define LOG_C(...) g_critical(MSG(__VA_ARGS__))
 #define LOG_D(...) g_debug(MSG(__VA_ARGS__))
-
 #else
-
 #define LOG_E g_error
 #define LOG_C g_critical
 #define LOG_D g_debug
-
 #endif
 
 #define LOG_W g_warning
