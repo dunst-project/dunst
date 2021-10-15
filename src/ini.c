@@ -2,6 +2,7 @@
 
 #include "utils.h"
 #include "log.h"
+#include "settings.h"
 
 struct section *get_section(struct ini *ini, const char *name)
 {
@@ -91,6 +92,32 @@ struct ini *load_ini_file(FILE *fp)
         char *current_section = NULL;
         while (getline(&line, &line_len, fp) != -1) {
                 line_num++;
+
+                /** Crude file inclusion support.
+                 *
+                 * TODO: Beware of include loops!  Should we care more than
+                 * warning about it in the manual? */
+                if (0 == strncmp("@INCLUDE", line, 8) && strchr(line, '=')) {
+                        gchar **split_line = g_strsplit(line, "=", 2);
+                        gchar *inc_path;
+                        /* Double check since previous one would allow "@INCLUDEFOO" */
+                        if (0 == strcmp("@INCLUDE", g_strstrip(split_line[0]))
+                                        && (inc_path = g_strstrip(split_line[1]))) {
+                                LOG_D("Trying to include '%s'", inc_path);
+                                FILE *f;
+
+                                if ((f = fopen_conf(inc_path))) {
+                                        load_ini_file(f);
+                                        LOG_D("Closing included file, fd: '%d'", fileno(f));
+                                        fclose(f);
+                                } else
+                                        g_free(inc_path);
+                        } else
+                                LOG_W("Invalid '@INCLUDE' line '%d'", line_num);
+
+                        g_strfreev(split_line);
+                        continue;
+                }
 
                 char *start = g_strstrip(line);
 
