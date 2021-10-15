@@ -8,16 +8,14 @@
 
 #include "dunst.h"
 #include "settings.h"
+#include "ini.h"
 
 int string_parse_enum(const void* data, const char *s, void * ret);
 int string_parse_sepcolor(const void *data, const char *s, void *ret);
 int string_parse_bool(const void *data, const char *s, void *ret);
 
-int load_ini_file(FILE *);
 void set_defaults();
-void save_settings();
-bool ini_is_set(const char *ini_section, const char *ini_key);
-void free_ini(void);
+void save_settings(struct ini *ini);
 
 void cmdline_load(int argc, char *argv[]);
 /* for all cmdline_get_* key can be either "-key" or "-key/-longkey" */
@@ -29,12 +27,6 @@ double cmdline_get_double(const char *key, double def, const char *description);
 int cmdline_get_bool(const char *key, int def, const char *description);
 bool cmdline_is_set(const char *key);
 const char *cmdline_create_usage(void);
-
-/* returns the next known section.
- * if section == NULL returns first section.
- * returns NULL if no more sections are available
- */
-const char *next_section(const char *section);
 
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

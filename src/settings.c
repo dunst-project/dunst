@@ -10,6 +10,7 @@
 #include "log.h"
 #include "notification.h"
 #include "option_parser.h"
+#include "ini.h"
 #include "rules.h"
 #include "utils.h"
 #include "x11/x.h"
@@ -191,16 +192,17 @@ void load_settings(char *cmdline_config_path) {
         } else { // Add entries from all files, most important last
                 while ((config_file = g_queue_pop_tail(config_files))) {
                         LOG_I("Parsing config, fd: '%d'", fileno(config_file));
-                        load_ini_file(config_file);
+                        struct ini *ini = load_ini_file(config_file);
                         fclose(config_file);
 
                         LOG_D("Loading settings");
-                        save_settings();
+                        save_settings(ini);
 
                         LOG_D("Checking/correcting settings");
                         check_and_correct_settings(&settings);
 
-                        free_ini();
+                        finish_ini(ini);
+                        free(ini);
                 }
         }
         g_queue_free(config_files);

@@ -1,23 +1,9 @@
 #include "../src/option_parser.c"
 #include "greatest.h"
 
-extern const char *base;
-
 #define ARRAY_SAME_LENGTH(a, b) { \
         ASSERT_EQm("Test is invalid. Input data has to be the same length",\
                         G_N_ELEMENTS(a), G_N_ELEMENTS(b));\
-}
-
-TEST test_next_section(void)
-{
-        const char *section = NULL;
-        ASSERT_STR_EQ("bool", (section = next_section(section)));
-        ASSERT_STR_EQ("string", (section = next_section(section)));
-        ASSERT_STR_EQ("list", (section = next_section(section)));
-        ASSERT_STR_EQ("path", (section = next_section(section)));
-        ASSERT_STR_EQ("int", (section = next_section(section)));
-        ASSERT_STR_EQ("double", (section = next_section(section)));
-        PASS();
 }
 
 enum greatest_test_res ARRAY_EQ(char **a, char **b){
@@ -763,14 +749,6 @@ TEST test_enum_size(void)
 
 SUITE(suite_option_parser)
 {
-        char *config_path = g_strconcat(base, "/data/test-ini", NULL);
-        FILE *config_file = fopen(config_path, "r");
-        if (!config_file) {
-                fputs("\nTest config file 'data/test-ini' couldn't be opened, failing.\n", stderr);
-                exit(1);
-        }
-        load_ini_file(config_file);
-        RUN_TEST(test_next_section);
         char cmdline[] = "dunst -bool -b "
                 "-string \"A simple string from the cmdline\" -s Single_word_string "
                 "-list A,simple,list,from,the,cmdline -list2 \"A, list, with, spaces\" "
@@ -815,9 +793,6 @@ SUITE(suite_option_parser)
         RUN_TEST(test_string_to_length);
         RUN_TEST(test_string_to_length_invalid);
 
-        g_free(config_path);
-        free_ini();
         g_strfreev(argv);
-        fclose(config_file);
 }
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

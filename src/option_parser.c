@@ -17,25 +17,6 @@
 #include "rules.h"
 #include "settings_data.h"
 
-struct entry {
-        char *key;
-        char *value;
-};
-
-struct section {
-        char *name;
-        int entry_count;
-        struct entry *entries;
-};
-
-static int section_count = 0;
-static struct section *sections;
-
-static struct section *get_or_create_section(const char *name);
-static struct section *get_section(const char *name);
-static void add_entry(const char *section_name, const char *key, const char *value);
-static const char *get_value(const char *section, const char *key);
-
 static int cmdline_argc;
 static char **cmdline_argv;
 
@@ -226,92 +207,6 @@ int string_parse_bool(const void *data, const char *s, void *ret)
         return success;
 }
 
-struct section *get_or_create_section(const char *name)
-{
-        struct section *s = get_section(name);
-        if (!s) {
-                LOG_D("New section: [%s]", name);
-
-                section_count++;
-                sections = g_realloc(sections, sizeof(struct section) * section_count);
-
-                s = &sections[section_count - 1];
-                s->name = g_strdup(name);
-                s->entries = NULL;
-                s->entry_count = 0;
-        }
-        return s;
-}
-
-void free_ini(void)
-{
-        for (int i = 0; i < section_count; i++) {
-                for (int j = 0; j < sections[i].entry_count; j++) {
-                        g_free(sections[i].entries[j].key);
-                        g_free(sections[i].entries[j].value);
-                }
-                g_free(sections[i].entries);
-                g_free(sections[i].name);
-        }
-        g_clear_pointer(&sections, g_free);
-        section_count = 0;
-}
-
-struct section *get_section(const char *name)
-{
-        for (int i = 0; i < section_count; i++) {
-                if (STR_EQ(sections[i].name, name))
-                        return &sections[i];
-        }
-
-        return NULL;
-}
-
-void add_entry(const char *section_name, const char *key, const char *value)
-{
-        struct section *s = get_or_create_section(section_name);
-
-        LOG_D("\t%s=%s", key, value);
-        s->entry_count++;
-        int len = s->entry_count;
-        s->entries = g_realloc(s->entries, sizeof(struct entry) * len);
-        s->entries[s->entry_count - 1].key = g_strdup(key);
-        s->entries[s->entry_count - 1].value = string_strip_quotes(value);
-}
-
-const char *get_value(const char *section, const char *key)
-{
-        struct section *s = get_section(section);
-        ASSERT_OR_RET(s, NULL);
-
-        for (int i = 0; i < s->entry_count; i++) {
-                if (STR_EQ(s->entries[i].key, key)) {
-                        return s->entries[i].value;
-                }
-        }
-        return NULL;
-}
-
-bool ini_is_set(const char *ini_section, const char *ini_key)
-{
-        return get_value(ini_section, ini_key) != NULL;
-}
-
-const char *next_section(const char *section)
-{
-        ASSERT_OR_RET(section_count > 0, NULL);
-        ASSERT_OR_RET(section, sections[0].name);
-
-        for (int i = 0; i < section_count; i++) {
-                if (STR_EQ(section, sections[i].name)) {
-                        if (i + 1 >= section_count)
-                                return NULL;
-                        else
-                                return sections[i + 1].name;
-                }
-        }
-        return NULL;
-}
 
 int get_setting_id(const char *key, const char *section) {
         int error_code = 0;
@@ -527,9 +422,9 @@ void set_defaults() {
         }
 }
 
-void save_settings() {
-        for (int i = 0; i < section_count; i++) {
-                const struct section curr_section = sections[i];
+void save_settings(struct ini *ini) {
+        for (int i = 0; i < ini->section_count; i++) {
+                const struct section curr_section = ini->sections[i];
 
                 if (is_deprecated_section(curr_section.name)) {
                         LOG_W("Section %s is deprecated. Ignoring", curr_section.name);
@@ -577,78 +472,6 @@ void save_settings() {
                         }
                 }
         }
-}
-
-int load_ini_file(FILE *fp)
-{
-        ASSERT_OR_RET(fp, 1);
-
-        char *line = NULL;
-        size_t line_len = 0;
-
-        int line_num = 0;
-        char *current_section = NULL;
-        while (getline(&line, &line_len, fp) != -1) {
-                line_num++;
-
-                char *start = g_strstrip(line);
-
-                if (*start == ';' || *start == '#' || STR_EMPTY(start))
-                        continue;
-
-                if (*start == '[') {
-                        char *end = strchr(start + 1, ']');
-                        if (!end) {
-                                LOG_W("Invalid config file at line %d: Missing ']'.", line_num);
-                                continue;
-                        }
-
-                        *end = '\0';
-
-                        g_free(current_section);
-                        current_section = (g_strdup(start + 1));
-                        LOG_D("[%s]", current_section);
-                        continue;
-                }
-
-                char *equal = strchr(start + 1, '=');
-                if (!equal) {
-                        LOG_W("Invalid config file at line %d: Missing '='.", line_num);
-                        continue;
-                }
-
-                *equal = '\0';
-                char *key = g_strstrip(start);
-                char *value = g_strstrip(equal + 1);
-
-                char *quote = strchr(value, '"');
-                char *value_end = NULL;
-                if (quote) {
-                        value_end = strchr(quote + 1, '"');
-                        if (!value_end) {
-                                LOG_W("Invalid config file at line %d: Missing '\"'.", line_num);
-                                continue;
-                        }
-                } else {
-                        value_end = value;
-                }
-
-                char *comment = strpbrk(value_end, "#;");
-                if (comment)
-                        *comment = '\0';
-
-                value = g_strstrip(value);
-
-                if (!current_section) {
-                        LOG_W("Invalid config file at line %d: Key value pair without a section.", line_num);
-                        continue;
-                }
-
-                add_entry(current_section, key, value);
-        }
-        free(line);
-        g_free(current_section);
-        return 0;
 }
 
 void cmdline_load(int argc, char *argv[])
