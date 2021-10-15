@@ -1,10 +1,20 @@
 /* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
 
+/** @file src/settings.c
+ * @brief Take care of the settings.
+ */
+
 #include "settings.h"
 
+#include <dirent.h>
+#include <errno.h>
+#include <fnmatch.h>
 #include <glib.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #include "dunst.h"
 #include "log.h"
@@ -16,91 +26,193 @@
 #include "x11/x.h"
 #include "output.h"
 
-#ifdef SYSCONFDIR
-#define XDG_CONFIG_DIRS_DEFAULT SYSCONFDIR // alternative default
-#else
-#define XDG_CONFIG_DIRS_DEFAULT "/etc/xdg"
+#ifndef SYSCONFDIR
+/** @brief Fallback for doxygen, mostly.
+ *
+ * Since this gets defined by $DEFAULT_CPPFLAGS at compile time doxygen seems to
+ * miss the correct value.
+ */
+#define SYSCONFDIR "/usr/local/etc/xdg"
 #endif
 
-// path to dunstrc, relative to config directory
-#define RPATH_RC "dunst/dunstrc"
-#define RPATH_RC_D RPATH_RC ".d/*.conf"
+/** @brief Alternative default for XDG_CONFIG_DIRS
+ *
+ * Fix peculiar behaviour if installed to a local PREFIX, i.e.
+ * /usr/local, when SYSCONFDIR should be /usr/local/etc/xdg and not
+ * /etc/xdg, hence use SYSCONFDIR (defined at compile time, see
+ * config.mk) as default for XDG_CONFIG_DIRS. The spec says 'should'
+ * and not 'must' use /etc/xdg.  Users/admins can override this by
+ * explicitly setting XDG_CONFIG_DIRS to their liking at runtime or by
+ * setting SYSCONFDIR=/etc/xdg at compile time.
+ */
+#define XDG_CONFIG_DIRS_DEFAULT SYSCONFDIR
+
+/** @brief Convenience macro to not have to put %NULL as the last argument.
+ * 
+ * @returns a newly-allocated string that must be freed with g_free().
+ */
+#define G_STRCONCAT(...) g_strconcat(__VA_ARGS__, NULL)
+
+/** @brief Generate path to base config 'dunstrc' in a base directory
+ * 
+ * @returns a newly-allocated string that must be freed with g_free().
+ */
+#define G_BASE_RC(basedir) g_build_filename(basedir, "dunst", "dunstrc", NULL)
+
+/** @brief Generate drop-in directory path for a base directory
+ * 
+ * @returns a newly-allocated string that must be freed with g_free().
+ */
+#define G_DROP_IN_DIR(basedir) G_STRCONCAT(G_BASE_RC(basedir), ".d")
+
+/** @brief Match pattern for drop-in file names */
+#define DROP_IN_PATTERN "*.conf"
 
 struct settings settings;
 
-/**
- * Tries to open all existing config files in *descending* order of importance.
- * If cmdline_config_path is not NULL return early after trying to open the
- * referenced file.
+static const char * const *get_xdg_basedirs(void);
+
+static int is_drop_in(const struct dirent *dent);
+
+static bool fexists(char * const path);
+
+static void get_conf_files(GQueue *config_files);
+
+/** @brief Filter for scandir().
  *
- * @param cmdline_config_path
- * @returns GQueue* of FILE* to config files
- * @retval empty GQueue* if no file could be opened
+ * @returns @brief An integer indicating success
  *
- * Use g_queue_pop_tail() to retrieve FILE* in *ascending* order of importance
+ * @retval @brief 1 if file name matches #DROP_IN_PATTERN
+ * @retval @brief 0 otherwise
  *
- * Use g_queue_free() to free if not NULL
+ * @param dent [in] @brief directory entry
  */
-static GQueue *open_conf_files(char *cmdline_config_path) {
-        FILE *config_file;
+static int is_drop_in(const struct dirent *dent)
+{
+        return 0 == fnmatch(DROP_IN_PATTERN, dent->d_name, FNM_PATHNAME | FNM_PERIOD)
+                    ? 1 // success
+                    : 0;
+}
 
-        // Used as stack, least important pushed last but popped first.
-        GQueue *config_files = g_queue_new();
+/** @brief Check if file exists and is regular file or named pipe
+ *
+ * This is a convenience function to check if @p path can be resolved and makes
+ * sense to try and open as config, like regular files and FIFOs (named pipes).
+ *
+ * @param path [in] A string representing a path.
+ * @retval true in case of success.
+ * @retval false in case of failure and errno will be set EINVAL.
+ */
+static bool fexists(char * const path) {
+        struct stat statbuf;
+        bool result = false;
 
-        if (cmdline_config_path) {
-                config_file = STR_EQ(cmdline_config_path, "-")
-                              ? stdin
-                              : fopen(cmdline_config_path, "r");
+        if (0 == stat(path, &statbuf)) {
+                if (statbuf.st_mode & (S_IFIFO | S_IFREG))
+                        /** See what intersting stuff can be done with FIFOs
+                         * for dunstrc/drop-ins. */
+                        result = true;
+                else
+                        /** Sets errno if stat() was successful but @p path
+                         * [in] does not point to a file/FIFO. This just in
+                         * case someone queries errno which would otherwise
+                         * indicate success. */
+                        errno = EINVAL;
+        }
 
-                if (config_file) {
-                        LOG_I(MSG_FOPEN_SUCCESS(cmdline_config_path, config_file));
-                        g_queue_push_tail(config_files, config_file);
-                } else {
-                        // warn because we exit early
-                        LOG_W(MSG_FOPEN_FAILURE(cmdline_config_path));
+        return result;
+}
+
+/**
+ * Returns a %NULL-terminated array of all XDG Base Directories, @e most @e
+ * important @e first.
+ *
+ * @returns The array of paths to XDG base directories in @e descending order of
+ * importance
+ */
+static const char * const *get_xdg_basedirs() {
+        static const char * const *xdg_bd_arr = NULL;
+        if (!xdg_bd_arr) {
+                char * xdg_basedirs;
+
+                char * const xcd_env = getenv("XDG_CONFIG_DIRS");
+                char * const xdg_config_dirs = xcd_env && strnlen(xcd_env, 1)
+                                               ? xcd_env
+                                               : XDG_CONFIG_DIRS_DEFAULT;
+
+                /*
+                 * Prepend XDG_CONFIG_HOME, most important first because
+                 * XDG_CONFIG_DIRS is already ordered that way.
+                 */
+                xdg_basedirs = G_STRCONCAT(g_get_user_config_dir(),
+                                           ":",
+                                           xdg_config_dirs);
+                free(xdg_config_dirs);
+                LOG_D("Config directories: '%s'", xdg_basedirs);
+
+                xdg_bd_arr = (const char * const *) string_to_array(xdg_basedirs, ":");
+                g_free(xdg_basedirs);
+        }
+        return xdg_bd_arr;
+}
+
+/** @brief Find all config files.
+ *
+ * Searches all XDG base directories for config files and drop-ins and push
+ * them onto a LIFO/stack, @e least important last.
+ *
+ * @param config_files [in|out] A pointer to a GQueue of strings representing
+ * config file paths
+ *
+ * Use g_queue_pop_tail() to retrieve paths in @e ascending order of importance
+ *
+ * Use g_queue_free() to free.
+ */
+static void get_conf_files(GQueue *config_files) {
+        struct dirent **drop_ins;
+        for (const char * const *d = get_xdg_basedirs(); *d; d++) {
+                gchar * const base_rc = G_BASE_RC(*d);
+                gchar * const drop_in_dir = G_DROP_IN_DIR(*d);
+
+                int n = scandir(drop_in_dir, &drop_ins, is_drop_in, alphasort);
+                /* reverse order to get most important first */
+                while (n-- > 0) {
+                        gchar * const drop_in = G_STRCONCAT(drop_in_dir,
+                                                            "/",
+                                                            drop_ins[n]->d_name);
+                        free(drop_ins[n]);
+
+                        if (fexists(drop_in)) {
+                                LOG_D("Adding drop-in '%s'", drop_in);
+                                g_queue_push_tail(config_files, drop_in);
+                        } else
+                                g_free(drop_in);
                 }
 
-                return config_files; // ignore other config files if '-conf' given
-        }
-
-        /*
-         * Fix peculiar behaviour if installed to a local PREFIX, i.e.
-         * /usr/local, when SYSCONFDIR should be /usr/local/etc/xdg and not
-         * /etc/xdg, hence use SYSCONFDIR (defined at compile time, see
-         * config.mk) as default for XDG_CONFIG_DIRS. The spec says 'should' and
-         * not 'must' use /etc/xdg.
-         * Users/admins can override this by explicitly setting XDG_CONFIG_DIRS
-         * to their liking at runtime or by setting SYSCONFDIR=/etc/xdg at
-         * compile time.
-         */
-        gchar * const xdg_cdirs = g_strdup(g_getenv("XDG_CONFIG_DIRS"));
-        gchar * const xdg_config_dirs = xdg_cdirs && strnlen((gchar *) xdg_cdirs, 1)
-                                        ? g_strdup(xdg_cdirs)
-                                        : g_strdup(XDG_CONFIG_DIRS_DEFAULT);
-        g_free(xdg_cdirs);
-
-        /*
-         * Prepend XDG_CONFIG_HOME, most important first because XDG_CONFIG_DIRS
-         * is already ordered that way.
-         */
-        gchar * const all_conf_dirs = g_strconcat(g_get_user_config_dir(), ":",
-                                                  g_strdup(xdg_config_dirs), NULL);
-        g_free(xdg_config_dirs);
-        LOG_D("Config directories: '%s'", all_conf_dirs);
-
-        for (gchar * const *d = string_to_array(all_conf_dirs, ":"); *d; d++) {
-                gchar * const path = string_to_path(g_strconcat(*d, "/", RPATH_RC, NULL));
-                if ((config_file = fopen(path, "r"))) {
-                        LOG_I(MSG_FOPEN_SUCCESS(path, config_file));
-                        g_queue_push_tail(config_files, config_file);
+                /* base rc-file last, least important */
+                if (fexists(base_rc)) {
+                        LOG_D("Adding base config '%s'", base_rc);
+                        g_queue_push_tail(config_files, base_rc);
                 } else
-                        // debug level because of low relevance
-                        LOG_D(MSG_FOPEN_FAILURE(path));
-                g_free(path);
-        }
-        g_free(all_conf_dirs);
+                        g_free(base_rc);
 
-        return config_files;
+                g_free(drop_in_dir);
+        }
+        free(drop_ins);
+}
+
+FILE *fopen_conf(char * const path)
+{
+        FILE *f = NULL;
+        char *real_path = string_to_path(strdup(path));
+
+        if (fexists(real_path) && (f = fopen(real_path, "r")))
+                LOG_I(MSG_FOPEN_SUCCESS(path, f));
+        else
+                LOG_W(MSG_FOPEN_FAILURE(path));
+
+        free(real_path);
+        return f;
 }
 
 void settings_init() {
@@ -178,22 +290,33 @@ void check_and_correct_settings(struct settings *s) {
 
 }
 
-void load_settings(char *cmdline_config_path) {
-        FILE *config_file;
-        GQueue *config_files;
-
+void load_settings(char *path) {
         settings_init();
         LOG_D("Setting defaults");
         set_defaults();
 
-        config_files = open_conf_files(cmdline_config_path);
-        if (g_queue_is_empty(config_files)) {
+        GQueue *config_files = g_queue_new();
+
+        if (path) /** If @p path [in] was supplied it will be the only one tried. */
+                g_queue_push_tail(config_files, path);
+        else
+                get_conf_files(config_files);
+
+        if (g_queue_is_empty(config_files))
                 LOG_W("No configuration file, using defaults");
-        } else { // Add entries from all files, most important last
-                while ((config_file = g_queue_pop_tail(config_files))) {
-                        LOG_I("Parsing config, fd: '%d'", fileno(config_file));
-                        struct ini *ini = load_ini_file(config_file);
-                        fclose(config_file);
+        else { /* Load all conf files and drop-ins, least important first. */
+                gchar *path;
+                while ((path = g_queue_pop_tail(config_files))) {
+                        LOG_D("Trying to open '%s'", path);
+                        FILE *f;
+                        /* Check for "-" here, so the file handling stays in one place */
+                        if (!(f = STR_EQ(path, "-") ? stdin : fopen_conf(path)))
+                                continue;
+
+                        LOG_I("Parsing config, fd: '%d'", fileno(f));
+                        struct ini *ini = load_ini_file(f);
+                        LOG_D("Closing config, fd: '%d'", fileno(f));
+                        fclose(f);
 
                         LOG_D("Loading settings");
                         save_settings(ini);
