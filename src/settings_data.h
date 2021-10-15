@@ -1039,6 +1039,16 @@ static const struct setting allowed_settings[] = {
                 .parser_data = GINT_TO_POINTER(MOUSE_LIST),
         },
         {
+                .name = "icon_theme",
+                .section = "global",
+                .description = "Name of the icon theme",
+                .type = TYPE_STRING,
+                .default_value = "hicolor",
+                .value = &settings.icon_theme,
+                .parser = NULL,
+                .parser_data = NULL,
+        },
+        {
                 .name = "icon_path",
                 .section = "global",
                 .description = "paths to default icons",
