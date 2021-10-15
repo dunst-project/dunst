@@ -23,6 +23,7 @@ SUITE_EXTERN(suite_log);
 SUITE_EXTERN(suite_menu);
 SUITE_EXTERN(suite_dbus);
 SUITE_EXTERN(suite_setting);
+SUITE_EXTERN(suite_ini);
 
 GREATEST_MAIN_DEFS();
 
