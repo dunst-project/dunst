@@ -380,6 +380,7 @@ struct notification *notification_create(void)
 
         n->transient = false;
         n->progress = -1;
+        n->word_wrap = true;
 
         n->script_run = false;
         n->dbus_valid = false;

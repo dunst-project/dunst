@@ -30,6 +30,8 @@ void rule_apply(struct rule *r, struct notification *n)
                 n->transient = r->set_transient;
         if (r->skip_display != -1)
                 n->skip_display = r->skip_display;
+        if (r->word_wrap != -1)
+                n->word_wrap = r->word_wrap;
         if (r->action_name) {
                 g_free(n->default_action_name);
                 n->default_action_name = g_strdup(r->action_name);

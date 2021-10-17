@@ -36,6 +36,7 @@ struct rule {
         int match_transient;
         int set_transient;
         int skip_display;
+        int word_wrap;
         char *new_icon;
         char *fg;
         char *bg;

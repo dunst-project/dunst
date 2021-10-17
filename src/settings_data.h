@@ -113,6 +113,7 @@ static const struct rule empty_rule = {
         .match_transient = -1,
         .set_transient   = -1,
         .skip_display    = -1,
+        .word_wrap       = -1,
         .new_icon        = NULL,
         .fg              = NULL,
         .bg              = NULL,
@@ -517,6 +518,19 @@ static const struct setting allowed_settings[] = {
                 .rule_offset = offsetof(struct rule, history_ignore),
         },
         {
+                .name = "word_wrap",
+                .section = "*",
+                .description = "Wrap long lines of text",
+                .type = TYPE_CUSTOM,
+                .default_value = "*",
+                .value = NULL,
+                .parser = string_parse_enum,
+                .parser_data = boolean_enum_data,
+                .rule_offset = offsetof(struct rule, word_wrap),
+        },
+
+        // other settings below
+        {
                 .name = "frame_color",
                 .section = "*",
                 .description = "Color of the frame around the window",
@@ -527,8 +541,6 @@ static const struct setting allowed_settings[] = {
                 .parser_data = NULL,
                 .rule_offset = offsetof(struct rule, fc),
         },
-
-        // other settings below
         {
                 .name = "per_monitor_dpi",
                 .section = "experimental",
