@@ -115,6 +115,7 @@ static const struct rule empty_rule = {
         .skip_display    = -1,
         .word_wrap       = -1,
         .ellipsize       = -1,
+        .alignment       = -1,
         .new_icon        = NULL,
         .fg              = NULL,
         .bg              = NULL,
@@ -178,9 +179,9 @@ static const struct string_to_enum_def boolean_enum_data[] = {
 };
 
 static const struct string_to_enum_def horizontal_alignment_enum_data[] = {
-        {"left",   ALIGN_LEFT },
-        {"center", ALIGN_CENTER },
-        {"right",  ALIGN_RIGHT },
+        {"left",   PANGO_ALIGN_LEFT },
+        {"center", PANGO_ALIGN_CENTER },
+        {"right",  PANGO_ALIGN_RIGHT },
         ENUM_END,
 };
 
@@ -531,7 +532,7 @@ static const struct setting allowed_settings[] = {
         },
         {
                 .name = "ellipsize",
-                .section = "global",
+                .section = "*",
                 .description = "Ellipsize truncated lines on the start/middle/end",
                 .type = TYPE_CUSTOM,
                 .default_value = "*",
@@ -539,6 +540,17 @@ static const struct setting allowed_settings[] = {
                 .parser = string_parse_enum,
                 .parser_data = ellipsize_enum_data,
                 .rule_offset = offsetof(struct rule, ellipsize),
+        },
+        {
+                .name = "alignment",
+                .section = "*",
+                .description = "Text alignment left/center/right",
+                .type = TYPE_CUSTOM,
+                .default_value = "*",
+                .value = NULL,
+                .parser = string_parse_enum,
+                .parser_data = horizontal_alignment_enum_data,
+                .rule_offset = offsetof(struct rule, alignment),
         },
 
         // other settings below
@@ -943,16 +955,6 @@ static const struct setting allowed_settings[] = {
                 .value = &settings.scale,
                 .parser = NULL,
                 .parser_data = NULL,
-        },
-        {
-                .name = "alignment",
-                .section = "global",
-                .description = "Text alignment left/center/right",
-                .type = TYPE_CUSTOM,
-                .default_value = "left",
-                .value = &settings.align,
-                .parser = string_parse_enum,
-                .parser_data = horizontal_alignment_enum_data,
         },
         {
                 .name = "separator_color",

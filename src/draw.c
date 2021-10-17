@@ -170,7 +170,8 @@ static void get_text_size(PangoLayout *l, int *w, int *h, double scale) {
 // @param width The avaiable text width in pixels, used for caluclating alignment and wrapping
 // @param height The maximum text height in pixels.
 static void layout_setup_pango(PangoLayout *layout, int width, int height,
-                bool word_wrap, PangoEllipsizeMode ellipsize_mode)
+                bool word_wrap, PangoEllipsizeMode ellipsize_mode,
+                PangoAlignment alignment)
 {
         double scale = output->get_scale();
         pango_layout_set_wrap(layout, PANGO_WRAP_WORD_CHAR);
@@ -185,20 +186,7 @@ static void layout_setup_pango(PangoLayout *layout, int width, int height,
 
         pango_layout_set_ellipsize(layout, ellipsize_mode);
 
-        PangoAlignment align;
-        switch (settings.align) {
-        case ALIGN_LEFT:
-        default:
-                align = PANGO_ALIGN_LEFT;
-                break;
-        case ALIGN_CENTER:
-                align = PANGO_ALIGN_CENTER;
-                break;
-        case ALIGN_RIGHT:
-                align = PANGO_ALIGN_RIGHT;
-                break;
-        }
-        pango_layout_set_alignment(layout, align);
+        pango_layout_set_alignment(layout, alignment);
 }
 
 // Set up the layout of a single notification
@@ -210,7 +198,7 @@ static void layout_setup(struct colored_layout *cl, int width, int height, doubl
         int text_width = width - icon_width - 2 * settings.h_padding;
         int progress_bar_height = have_progress_bar(cl->n) ? settings.progress_bar_height + settings.padding : 0;
         int max_text_height = MAX(0, settings.height - progress_bar_height - 2 * settings.padding);
-        layout_setup_pango(cl->l, text_width, max_text_height, cl->n->word_wrap, cl->n->ellipsize);
+        layout_setup_pango(cl->l, text_width, max_text_height, cl->n->word_wrap, cl->n->ellipsize, cl->n->alignment);
 }
 
 static void free_colored_layout(void *data)

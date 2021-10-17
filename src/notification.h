@@ -88,6 +88,7 @@ struct notification {
         guint8 marked_for_closure;
         bool word_wrap;
         PangoEllipsizeMode ellipsize;
+        PangoAlignment alignment;
 
         /* derived fields */
         char *msg;            /**< formatted message */

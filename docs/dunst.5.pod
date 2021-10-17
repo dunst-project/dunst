@@ -370,10 +370,6 @@ If any of these exists in the format but hasn't been specified in the
 notification (e.g. no icon has been set), the placeholders will simply be
 removed from the format.
 
-=item B<alignment> (values: [left/center/right], default: left)
-
-Defines how the text should be aligned within the notification.
-
 =item B<vertical_alignment> (values: [top/center/bottom], default: center)
 
 Defines how the text and icon should be aligned vertically within the
@@ -870,6 +866,10 @@ the text doesn't fit in the window, it will be ellipsize according to ellipsize.
 =item B<ellipsize> (values: [start/middle/end], default: middle)
 
 Specifies where truncated lines should be ellipsized.
+
+=item B<alignment> (values: [left/center/right], default: left)
+
+Defines how the text should be aligned within the notification.
 
 =back
 

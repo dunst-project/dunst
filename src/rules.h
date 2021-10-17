@@ -38,6 +38,7 @@ struct rule {
         int skip_display;
         int word_wrap;
         int ellipsize;
+        int alignment;
         char *new_icon;
         char *fg;
         char *bg;

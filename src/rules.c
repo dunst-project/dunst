@@ -34,6 +34,8 @@ void rule_apply(struct rule *r, struct notification *n)
                 n->word_wrap = r->word_wrap;
         if (r->ellipsize != -1)
                 n->ellipsize = r->ellipsize;
+        if (r->alignment != -1)
+                n->alignment = r->alignment;
         if (r->action_name) {
                 g_free(n->default_action_name);
                 n->default_action_name = g_strdup(r->action_name);
