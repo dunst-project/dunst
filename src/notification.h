@@ -5,6 +5,7 @@
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <glib.h>
 #include <stdbool.h>
+#include <pango/pango-layout.h>
 
 #include "markup.h"
 
@@ -86,6 +87,7 @@ struct notification {
         bool script_run;        /**< Has the script been executed already? */
         guint8 marked_for_closure;
         bool word_wrap;
+        PangoEllipsizeMode ellipsize;
 
         /* derived fields */
         char *msg;            /**< formatted message */

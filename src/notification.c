@@ -381,6 +381,7 @@ struct notification *notification_create(void)
         n->transient = false;
         n->progress = -1;
         n->word_wrap = true;
+        n->ellipsize = PANGO_ELLIPSIZE_MIDDLE;
 
         n->script_run = false;
         n->dbus_valid = false;

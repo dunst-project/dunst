@@ -37,6 +37,7 @@ struct rule {
         int set_transient;
         int skip_display;
         int word_wrap;
+        int ellipsize;
         char *new_icon;
         char *fg;
         char *bg;

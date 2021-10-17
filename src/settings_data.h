@@ -114,6 +114,7 @@ static const struct rule empty_rule = {
         .set_transient   = -1,
         .skip_display    = -1,
         .word_wrap       = -1,
+        .ellipsize       = -1,
         .new_icon        = NULL,
         .fg              = NULL,
         .bg              = NULL,
@@ -528,6 +529,17 @@ static const struct setting allowed_settings[] = {
                 .parser_data = boolean_enum_data,
                 .rule_offset = offsetof(struct rule, word_wrap),
         },
+        {
+                .name = "ellipsize",
+                .section = "global",
+                .description = "Ellipsize truncated lines on the start/middle/end",
+                .type = TYPE_CUSTOM,
+                .default_value = "*",
+                .value = NULL,
+                .parser = string_parse_enum,
+                .parser_data = ellipsize_enum_data,
+                .rule_offset = offsetof(struct rule, ellipsize),
+        },
 
         // other settings below
         {
@@ -911,16 +923,6 @@ static const struct setting allowed_settings[] = {
                 .value = &settings.markup,
                 .parser = string_parse_enum,
                 .parser_data = markup_mode_enum_data,
-        },
-        {
-                .name = "ellipsize",
-                .section = "global",
-                .description = "Ellipsize truncated lines on the start/middle/end",
-                .type = TYPE_CUSTOM,
-                .default_value = "middle",
-                .value = &settings.ellipsize,
-                .parser = string_parse_enum,
-                .parser_data = ellipsize_enum_data,
         },
         {
                 .name = "follow",

@@ -169,7 +169,8 @@ static void get_text_size(PangoLayout *l, int *w, int *h, double scale) {
 // Set up pango for a given layout.
 // @param width The avaiable text width in pixels, used for caluclating alignment and wrapping
 // @param height The maximum text height in pixels.
-static void layout_setup_pango(PangoLayout *layout, int width, int height, bool word_wrap)
+static void layout_setup_pango(PangoLayout *layout, int width, int height,
+                bool word_wrap, PangoEllipsizeMode ellipsize_mode)
 {
         double scale = output->get_scale();
         pango_layout_set_wrap(layout, PANGO_WRAP_WORD_CHAR);
@@ -182,7 +183,7 @@ static void layout_setup_pango(PangoLayout *layout, int width, int height, bool 
         pango_layout_set_font_description(layout, pango_fdesc);
         pango_layout_set_spacing(layout, round(settings.line_height * scale * PANGO_SCALE));
 
-        pango_layout_set_ellipsize(layout, settings.ellipsize);
+        pango_layout_set_ellipsize(layout, ellipsize_mode);
 
         PangoAlignment align;
         switch (settings.align) {
@@ -209,7 +210,7 @@ static void layout_setup(struct colored_layout *cl, int width, int height, doubl
         int text_width = width - icon_width - 2 * settings.h_padding;
         int progress_bar_height = have_progress_bar(cl->n) ? settings.progress_bar_height + settings.padding : 0;
         int max_text_height = MAX(0, settings.height - progress_bar_height - 2 * settings.padding);
-        layout_setup_pango(cl->l, text_width, max_text_height, cl->n->word_wrap);
+        layout_setup_pango(cl->l, text_width, max_text_height, cl->n->word_wrap, cl->n->ellipsize);
 }
 
 static void free_colored_layout(void *data)

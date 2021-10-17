@@ -386,10 +386,6 @@ See TIME FORMAT for valid times.
 
 Set to -1 to disable.
 
-=item B<ellipsize> (values: [start/middle/end], default: middle)
-
-Specifies where truncated lines should be ellipsized.
-
 =item B<ignore_newline> (values: [true/false], default: false)
 
 If set to true, replace newline characters in notifications with whitespace.
@@ -870,6 +866,10 @@ Specifies whether to wrap the text if the lines get longer than the maximum
 notification width. If it's set to true, long lines will be broken into multiple
 lines expanding the notification window height as necessary for them to fit. If
 the text doesn't fit in the window, it will be ellipsize according to ellipsize.
+
+=item B<ellipsize> (values: [start/middle/end], default: middle)
+
+Specifies where truncated lines should be ellipsized.
 
 =back
 
