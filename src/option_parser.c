@@ -447,7 +447,7 @@ void save_settings(struct ini *ini) {
                         if (is_special_section(curr_section.name)) {
                                 if (is_rule) {
                                         // set as a rule, but only if it's not a filter
-                                        if (rule_offset_is_action(curr_setting.rule_offset)) {
+                                        if (rule_offset_is_modifying(curr_setting.rule_offset)) {
                                                 LOG_D("Adding rule '%s = %s' to special section %s",
                                                                 curr_entry.key,
                                                                 curr_entry.value,

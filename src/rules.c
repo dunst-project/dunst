@@ -156,7 +156,7 @@ struct rule *get_rule(const char* name) {
 /**
  * see rules.h
  */
-bool rule_offset_is_action(const size_t offset) {
+bool rule_offset_is_modifying(const size_t offset) {
         const size_t first_action = offsetof(struct rule, timeout);
         const size_t last_action = offsetof(struct rule, set_stack_tag);
         return (offset >= first_action) && (offset <= last_action);
@@ -167,7 +167,7 @@ bool rule_offset_is_action(const size_t offset) {
  */
 bool rule_offset_is_filter(const size_t offset) {
         const size_t first_filter = offsetof(struct rule, appname);
-        return (offset >= first_filter) && !rule_offset_is_action(offset);
+        return (offset >= first_filter) && !rule_offset_is_modifying(offset);
 }
 
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

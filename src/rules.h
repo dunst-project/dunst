@@ -27,8 +27,8 @@ struct rule {
         char *desktop_entry;
         int msg_urgency;
 
-        /* actions */
-        gint64 timeout; // this has to be the first action
+        /* modifying */
+        gint64 timeout; // this has to be the first modifying rule
         enum urgency urgency;
         char *action_name;
         enum markup_mode markup;
@@ -77,7 +77,7 @@ struct rule *get_rule(const char* name);
  *
  * @returns a boolean if the rule is an action
  */
-bool rule_offset_is_action(const size_t offset);
+bool rule_offset_is_modifying(const size_t offset);
 
 /**
  * Check if a rule is an filter
