@@ -738,7 +738,6 @@ TEST test_enum_size(void)
 {
         TEST_ENUM(enum markup_mode);
         TEST_ENUM(enum alignment);
-        TEST_ENUM(enum ellipsize);
         TEST_ENUM(enum icon_position);
         TEST_ENUM(enum vertical_alignment);
         TEST_ENUM(enum follow_mode);

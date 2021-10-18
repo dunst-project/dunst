@@ -370,10 +370,6 @@ If any of these exists in the format but hasn't been specified in the
 notification (e.g. no icon has been set), the placeholders will simply be
 removed from the format.
 
-=item B<alignment> (values: [left/center/right], default: left)
-
-Defines how the text should be aligned within the notification.
-
 =item B<vertical_alignment> (values: [top/center/bottom], default: center)
 
 Defines how the text and icon should be aligned vertically within the
@@ -385,11 +381,6 @@ Show age of message if message is older than this time.
 See TIME FORMAT for valid times.
 
 Set to -1 to disable.
-
-=item B<ellipsize> (values: [start/middle/end], default: middle)
-
-If word_wrap is set to false, specifies where truncated lines should be
-ellipsized.
 
 =item B<ignore_newline> (values: [true/false], default: false)
 
@@ -864,6 +855,21 @@ Sets the name of the action to be invoked on do_action. If not specified, the
 action set as default action or the only available action will be invoked.
 
 Default: "default"
+
+=item B<word_wrap> (values: [true/false], default: true)
+
+Specifies whether to wrap the text if the lines get longer than the maximum
+notification width. If it's set to true, long lines will be broken into multiple
+lines expanding the notification window height as necessary for them to fit. If
+the text doesn't fit in the window, it will be ellipsize according to ellipsize.
+
+=item B<ellipsize> (values: [start/middle/end], default: middle)
+
+Specifies where truncated lines should be ellipsized.
+
+=item B<alignment> (values: [left/center/right], default: left)
+
+Defines how the text should be aligned within the notification.
 
 =back
 

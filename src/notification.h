@@ -5,6 +5,7 @@
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <glib.h>
 #include <stdbool.h>
+#include <pango/pango-layout.h>
 
 #include "markup.h"
 
@@ -85,6 +86,9 @@ struct notification {
         enum behavior_fullscreen fullscreen; //!< The instruction what to do with it, when desktop enters fullscreen
         bool script_run;        /**< Has the script been executed already? */
         guint8 marked_for_closure;
+        bool word_wrap;
+        PangoEllipsizeMode ellipsize;
+        PangoAlignment alignment;
 
         /* derived fields */
         char *msg;            /**< formatted message */

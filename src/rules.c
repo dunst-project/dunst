@@ -30,6 +30,12 @@ void rule_apply(struct rule *r, struct notification *n)
                 n->transient = r->set_transient;
         if (r->skip_display != -1)
                 n->skip_display = r->skip_display;
+        if (r->word_wrap != -1)
+                n->word_wrap = r->word_wrap;
+        if (r->ellipsize != -1)
+                n->ellipsize = r->ellipsize;
+        if (r->alignment != -1)
+                n->alignment = r->alignment;
         if (r->action_name) {
                 g_free(n->default_action_name);
                 n->default_action_name = g_strdup(r->action_name);
@@ -156,7 +162,7 @@ struct rule *get_rule(const char* name) {
 /**
  * see rules.h
  */
-bool rule_offset_is_action(const size_t offset) {
+bool rule_offset_is_modifying(const size_t offset) {
         const size_t first_action = offsetof(struct rule, timeout);
         const size_t last_action = offsetof(struct rule, set_stack_tag);
         return (offset >= first_action) && (offset <= last_action);
@@ -167,7 +173,7 @@ bool rule_offset_is_action(const size_t offset) {
  */
 bool rule_offset_is_filter(const size_t offset) {
         const size_t first_filter = offsetof(struct rule, appname);
-        return (offset >= first_filter) && !rule_offset_is_action(offset);
+        return (offset >= first_filter) && !rule_offset_is_modifying(offset);
 }
 
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

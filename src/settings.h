@@ -3,7 +3,6 @@
 #define DUNST_SETTINGS_H
 
 #include <stdbool.h>
-#include <pango/pango-layout.h>
 
 #ifdef ENABLE_WAYLAND
 #include "wayland/protocols/wlr-layer-shell-unstable-v1-client-header.h"
@@ -16,7 +15,6 @@
 #define LIST_END (-1)
 
 enum alignment { ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT };
-enum ellipsize { ELLIPSE_START, ELLIPSE_MIDDLE, ELLIPSE_END };
 enum icon_position { ICON_LEFT, ICON_RIGHT, ICON_OFF };
 enum vertical_alignment { VERTICAL_TOP, VERTICAL_CENTER, VERTICAL_BOTTOM };
 enum separator_color { SEP_FOREGROUND, SEP_AUTO, SEP_FRAME, SEP_CUSTOM };
@@ -115,7 +113,6 @@ struct settings {
         int history_length;
         int show_indicators;
         int ignore_dbusclose;
-        PangoEllipsizeMode ellipsize;
         int ignore_newline;
         int line_height;
         int separator_height;

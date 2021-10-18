@@ -169,29 +169,24 @@ static void get_text_size(PangoLayout *l, int *w, int *h, double scale) {
 // Set up pango for a given layout.
 // @param width The avaiable text width in pixels, used for caluclating alignment and wrapping
 // @param height The maximum text height in pixels.
-static void layout_setup_pango(PangoLayout *layout, int width, int height)
+static void layout_setup_pango(PangoLayout *layout, int width, int height,
+                bool word_wrap, PangoEllipsizeMode ellipsize_mode,
+                PangoAlignment alignment)
 {
         double scale = output->get_scale();
         pango_layout_set_wrap(layout, PANGO_WRAP_WORD_CHAR);
         pango_layout_set_width(layout, round(width * scale * PANGO_SCALE));
-        pango_layout_set_height(layout, round(height * scale * PANGO_SCALE));
+
+        // When no height is set, word wrap is turned off
+        if (word_wrap)
+                pango_layout_set_height(layout, round(height * scale * PANGO_SCALE));
+
         pango_layout_set_font_description(layout, pango_fdesc);
         pango_layout_set_spacing(layout, round(settings.line_height * scale * PANGO_SCALE));
 
-        PangoAlignment align;
-        switch (settings.align) {
-        case ALIGN_LEFT:
-        default:
-                align = PANGO_ALIGN_LEFT;
-                break;
-        case ALIGN_CENTER:
-                align = PANGO_ALIGN_CENTER;
-                break;
-        case ALIGN_RIGHT:
-                align = PANGO_ALIGN_RIGHT;
-                break;
-        }
-        pango_layout_set_alignment(layout, align);
+        pango_layout_set_ellipsize(layout, ellipsize_mode);
+
+        pango_layout_set_alignment(layout, alignment);
 }
 
 // Set up the layout of a single notification
@@ -203,7 +198,7 @@ static void layout_setup(struct colored_layout *cl, int width, int height, doubl
         int text_width = width - icon_width - 2 * settings.h_padding;
         int progress_bar_height = have_progress_bar(cl->n) ? settings.progress_bar_height + settings.padding : 0;
         int max_text_height = MAX(0, settings.height - progress_bar_height - 2 * settings.padding);
-        layout_setup_pango(cl->l, text_width, max_text_height);
+        layout_setup_pango(cl->l, text_width, max_text_height, cl->n->word_wrap, cl->n->ellipsize, cl->n->alignment);
 }
 
 static void free_colored_layout(void *data)
@@ -233,6 +228,7 @@ static struct dimensions calculate_notification_dimensions(struct colored_layout
 
         dim.h = MIN(settings.height, dim.h + settings.padding * 2);
         dim.w = MAX(settings.width.min, dim.w);
+        dim.w = MIN(settings.width.max, dim.w);
 
         cl->n->displayed_height = dim.h;
         return dim;
@@ -279,8 +275,6 @@ static struct colored_layout *layout_init_shared(cairo_t *c, struct notification
 {
         struct colored_layout *cl = g_malloc(sizeof(struct colored_layout));
         cl->l = layout_create(c);
-
-        pango_layout_set_ellipsize(cl->l, settings.ellipsize);
 
         if (settings.icon_position != ICON_OFF && n->icon) {
                 cl->icon = gdk_pixbuf_to_cairo_surface(n->icon);
