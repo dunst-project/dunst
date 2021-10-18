@@ -80,3 +80,22 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: dunst/ci:${{ matrix.distro }}
+
+  doxygen:
+    strategy:
+      matrix:
+        distro:
+          - misc-doxygen
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        # Clone the whole branch, we have to fetch tags later
+        fetch-depth: 0
+
+    - name: doxygen
+      run: make -j doc-doxygen
+
+    runs-on: ubuntu-latest
+    container:
+      image: dunst/ci:${{ matrix.distro }}
