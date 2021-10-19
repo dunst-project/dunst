@@ -1,6 +1,6 @@
 # Dunst changelog
 
-## Unreleased
+## 1.7.0 -- 2021-10-19:
 
 ### Added
 - `context` and `context_all` mouse actions for opening the context menu (#848)
