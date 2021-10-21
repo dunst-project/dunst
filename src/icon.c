@@ -5,6 +5,7 @@
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <stdbool.h>
 #include <string.h>
+#include <math.h>
 
 #include "log.h"
 #include "notification.h"
