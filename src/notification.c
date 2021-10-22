@@ -155,6 +155,7 @@ void notification_run_script(struct notification *n)
                                 safe_setenv("DUNST_TIMEOUT",   n_timeout_str);
                                 safe_setenv("DUNST_TIMESTAMP", n_timestamp_str);
                                 safe_setenv("DUNST_STACK_TAG", n->stack_tag);
+                                safe_setenv("DUNST_DESKTOP_ENTRY", n->desktop_entry);
 
                                 execlp(script,
                                                 script,
