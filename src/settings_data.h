@@ -476,6 +476,17 @@ static const struct setting allowed_settings[] = {
                 .rule_offset = offsetof(struct rule, set_transient),
         },
         {
+                .name = "set_category",
+                .section = "*",
+                .description = "The category of the notification as defined by the notification spec. See https://developer.gnome.org/notification-spec/#categories",
+                .type = TYPE_STRING,
+                .default_value = "*",
+                .value = NULL,
+                .parser = NULL,
+                .parser_data = NULL,
+                .rule_offset = offsetof(struct rule, set_category),
+        },
+        {
                 .name = "timeout",
                 .section = "*",
                 .description = "Don't timeout notifications if user is longer idle than threshold",

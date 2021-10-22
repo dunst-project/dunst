@@ -698,7 +698,7 @@ The body of the notification
 =item C<category>
 
 The category of the notification as defined by the notification spec. See
-https://developer.gnome.org/notification-spec/#categories
+https://specifications.freedesktop.org/notification-spec/notification-spec-latest.html#categories.
 
 =item C<desktop_entry>
 
@@ -826,6 +826,12 @@ Transient notifications will bypass the idle_threshold setting.
 
 By default notifications are _not_ considered transient but clients can set the
 value of this by specifying the 'transient' hint when sending notifications.
+
+=item C<set_category>
+
+Sets the category of the notification. See
+https://specifications.freedesktop.org/notification-spec/notification-spec-latest.html#categories
+for a list of standard categories.
 
 =item C<timeout>
 

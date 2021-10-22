@@ -44,6 +44,7 @@ struct rule {
         char *bg;
         char *highlight;
         char *fc;
+        char *set_category;
         const char *format;
         const char *script;
         enum behavior_fullscreen fullscreen;

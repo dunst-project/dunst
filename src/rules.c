@@ -40,6 +40,10 @@ void rule_apply(struct rule *r, struct notification *n)
                 g_free(n->default_action_name);
                 n->default_action_name = g_strdup(r->action_name);
         }
+        if (r->set_category) {
+                g_free(n->category);
+                n->category = g_strdup(r->set_category);
+        }
         if (r->markup != MARKUP_NULL)
                 n->markup = r->markup;
         if (r->new_icon)
