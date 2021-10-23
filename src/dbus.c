@@ -422,6 +422,22 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
                 g_variant_unref(dict_value);
         }
 
+        dict_value = g_variant_lookup_value(hints, "image-data", G_VARIANT_TYPE("(iiibiiay)"));
+        if (!dict_value)
+                dict_value = g_variant_lookup_value(hints, "image_data", G_VARIANT_TYPE("(iiibiiay)"));
+        if (!dict_value)
+                dict_value = g_variant_lookup_value(hints, "icon_data", G_VARIANT_TYPE("(iiibiiay)"));
+        if (dict_value) {
+                notification_icon_replace_data(n, dict_value);
+                g_variant_unref(dict_value);
+        }
+
+        if ((dict_value = g_variant_lookup_value(hints, "image-path", G_VARIANT_TYPE_STRING))) {
+                g_free(n->iconname);
+                n->iconname = g_variant_dup_string(dict_value, NULL);
+                g_variant_unref(dict_value);
+        }
+
         // All attributes that have to be set before initializations are set,
         // so we can initialize the notification. This applies all rules that
         // are defined and applies the formatting to the message.
@@ -448,22 +464,6 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
 
         if ((dict_value = g_variant_lookup_value(hints, "hlcolor", G_VARIANT_TYPE_STRING))) {
                 n->colors.highlight = g_variant_dup_string(dict_value, NULL);
-                g_variant_unref(dict_value);
-        }
-
-        if ((dict_value = g_variant_lookup_value(hints, "image-path", G_VARIANT_TYPE_STRING))) {
-                g_free(n->iconname);
-                n->iconname = g_variant_dup_string(dict_value, NULL);
-                g_variant_unref(dict_value);
-        }
-
-        dict_value = g_variant_lookup_value(hints, "image-data", G_VARIANT_TYPE("(iiibiiay)"));
-        if (!dict_value)
-                dict_value = g_variant_lookup_value(hints, "image_data", G_VARIANT_TYPE("(iiibiiay)"));
-        if (!dict_value)
-                dict_value = g_variant_lookup_value(hints, "icon_data", G_VARIANT_TYPE("(iiibiiay)"));
-        if (dict_value) {
-                notification_icon_replace_data(n, dict_value);
                 g_variant_unref(dict_value);
         }
 
