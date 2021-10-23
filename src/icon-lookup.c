@@ -13,6 +13,12 @@
 
 struct icon_theme *icon_themes = NULL;
 int icon_themes_count = 0;
+int default_theme_index = -1;
+
+static bool is_readable_file(const char *filename)
+{
+        return (access(filename, R_OK) != -1);
+}
 
 int get_icon_theme(char *name) {
         for (int i = 0; i < icon_themes_count; i++) {
@@ -169,13 +175,64 @@ int load_icon_theme_from_dir(const char *icon_dir, const char *subdir_theme) {
         return index;
 }
 
-int load_icon_theme(char *name) {
-        // TODO search other directories for the theme as well
-        int theme_index = load_icon_theme_from_dir("/usr/share/icons", name);
-        if (theme_index == -1) {
-                LOG_W("Could not find theme %s", name);
+// a list of directories where icon themes might be located
+GPtrArray *theme_path = NULL;
+
+/**
+ * Adds the contents of env_name with subdir to the array, interpreting the
+ * environment variable as a colon-separated list of paths. If the environment
+ * variable doesn't exist, alternative is used.
+ *
+ * @param arr The array to add to
+ * @param env_name The name of the environment variable that contains a
+ * colon-separated list of paths.
+ * @param subdir The subdirectory to add a the end of each path in env_name
+ * @param alternative A colon-separated list of paths to use as alternative
+ * when the environment variable doesn't exits.
+ */
+void add_paths_from_env(GPtrArray *arr, char *env_name, char *subdir, char *alternative) {
+        char *xdg_data_dirs = g_strdup(g_getenv("XDG_DATA_DIRS"));
+        if (!xdg_data_dirs)
+                xdg_data_dirs = alternative;
+
+        char **xdg_data_dirs_arr = string_to_array(xdg_data_dirs, ":");
+        for (int i = 0; xdg_data_dirs_arr[i] != NULL; i++) {
+                char *loc = g_build_filename(xdg_data_dirs_arr[i], subdir, NULL);
+                g_ptr_array_add(theme_path, loc);
         }
-        return theme_index;
+        g_strfreev(xdg_data_dirs_arr);
+}
+
+void get_theme_path() {
+        theme_path = g_ptr_array_new_full(5, g_free);
+        const char *home = g_get_home_dir();
+        g_ptr_array_add(theme_path, g_build_filename(home, ".icons", NULL));
+
+        char *data_home_default = g_build_filename(home, ".local", "share", NULL);
+        add_paths_from_env(theme_path, "XDG_DATA_HOME", "icons", data_home_default);
+        g_free(data_home_default);
+
+        add_paths_from_env(theme_path, "XDG_DATA_DIRS", "icons", "/usr/local/share/:/usr/share/");
+        g_ptr_array_add(theme_path, g_strdup("/usr/share/pixmaps"));
+        for (int i = 0; i < theme_path->len; i++) {
+                printf("Theme locations: %s\n", (char*)theme_path->pdata[i]);
+        }
+}
+
+// see icon-lookup.h
+int load_icon_theme(char *name) {
+        if(!theme_path) {
+                get_theme_path();
+        }
+
+        for (int i = 0; i < theme_path->len; i++) {
+                int theme_index = load_icon_theme_from_dir(theme_path->pdata[i], name);
+                if (theme_index != -1)
+                        return theme_index;
+        }
+
+        LOG_W("Could not find theme %s", name);
+        return -1;
 }
 
 void finish_icon_theme_dir(struct icon_theme_dir *dir) {
@@ -207,11 +264,28 @@ void free_all_themes() {
         free(icon_themes);
         icon_themes_count = 0;
         icon_themes = NULL;
+        g_ptr_array_unref(theme_path);
+        theme_path = NULL;
 }
 
+// see icon-lookup.h
+void set_default_theme(int theme_index) {
+        if (theme_index < 0) {
+                LOG_W("Invalid theme index: %i", theme_index);
+                return;
+        }
+        if (theme_index >= icon_themes_count) {
+                LOG_W("Invalid theme index: %i. Theme does not exists.",
+                                theme_index);
+                return;
+        }
+        default_theme_index = theme_index;
+}
+
+// see icon-lookup.h
 char *find_icon_in_theme(const char *name, int theme_index, int size) {
         struct icon_theme *theme = &icon_themes[theme_index];
-        /* printf("There are %i dirs\n", theme->dirs_count); */
+        printf("Finding icon %s in theme %s\n", name, theme->name);
         for (int i = 0; i < theme->dirs_count; i++) {
                 bool match_size = false;
                 struct icon_theme_dir dir = theme->dirs[i];
@@ -236,7 +310,7 @@ char *find_icon_in_theme(const char *name, int theme_index, int size) {
                                 char *icon = g_build_filename(theme->location, theme->subdir_theme,
                                                 dir.name, name_with_extension,
                                                 NULL);
-                                if (access( icon, R_OK ) != -1) {
+                                if (is_readable_file(icon)) {
                                         g_free(name_with_extension);
                                         return icon;
                                 }
@@ -246,4 +320,51 @@ char *find_icon_in_theme(const char *name, int theme_index, int size) {
                 }
         }
         return NULL;
+}
+
+char *find_icon_in_theme_with_inherit(const char *name, int theme_index, int size) {
+        char *icon = find_icon_in_theme(name, theme_index, size);
+        if (icon)
+                return icon;
+
+        if (!icon) {
+                for (int i = 0; i < icon_themes[theme_index].inherits_count; i++) {
+                        icon = find_icon_in_theme(name,
+                                        icon_themes[theme_index].inherits_index[i],
+                                        size);
+                        if (icon)
+                                return icon;
+                }
+        }
+        return NULL;
+}
+
+/* see icon-lookup.h */
+char *find_icon_path(const char *name, int size) {
+        if (STR_EMPTY(name))
+                return NULL;
+
+        gchar *uri_path = NULL;
+
+        if (g_str_has_prefix(name, "file://")) {
+                uri_path = g_filename_from_uri(name, NULL, NULL);
+                if (is_readable_file(uri_path))
+                        return uri_path;
+                else
+                        return NULL;
+        }
+
+        /* absolute path? */
+        if (name[0] == '/' || name[0] == '~') {
+                if (is_readable_file(name))
+                        return g_strdup(name);
+                else
+                        return NULL;
+        }
+
+        if (default_theme_index == -1) {
+                printf("No icon theme has been set.\n");
+                return NULL;
+        }
+        return find_icon_in_theme_with_inherit(name, default_theme_index, size);
 }
