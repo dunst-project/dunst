@@ -168,12 +168,6 @@ see COLORS.
 
 This setting will only work if a compositor is running.
 
-=item B<notification_height> (default: 0)
-
-The minimum height of the notification window in pixels. If the text and
-padding cannot fit in within the height specified by this value, the height
-will be increased as needed.
-
 =item B<separator_height> (default: 2)
 
 The height in pixels of the separator between notifications, if set to 0 there

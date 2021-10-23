@@ -36,8 +36,9 @@
   in the `[global]` section as well (see above). (#937 and #803)
 - The appid's now also need to match when stacking notifications. (#886)
 - `xdg-open` is now being used by default for opening URL's. (#889)
-- `geometry` has been replaced by `origin`, `width`, `height`, `offset` and
-  `notification_height`. This allows for more flexible geometry settings. (#855)
+- `geometry` and `notification_height` have been replaced by `origin`, `width`,
+  `height`, `offset` and `notification_limit`. This allows for more flexible
+  geometry settings. (#855)
 - There were a bunch of changes in the installation and default locations. See
   the release notes for more information.
 - Upon seeing invalid markup, dunst is a bit smarter in stripping the markup.
