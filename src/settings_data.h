@@ -462,7 +462,7 @@ static const struct setting allowed_settings[] = {
                 .value = NULL,
                 .parser = NULL,
                 .parser_data = NULL,
-                .rule_offset = offsetof(struct rule, stack_tag),
+                .rule_offset = offsetof(struct rule, set_stack_tag),
         },
         {
                 .name = "set_transient",
