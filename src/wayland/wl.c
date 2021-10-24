@@ -405,7 +405,6 @@ static void handle_global(void *data, struct wl_registry *registry,
                         version >= ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_STATE_FULLSCREEN_SINCE_VERSION) {
                 LOG_D("Found toplevel manager %i", name);
                 ctx.toplevel_manager_name = name;
-                wl_list_init(&toplevel_list);
         }
 }
 
@@ -427,6 +426,7 @@ static const struct wl_registry_listener registry_listener = {
 
 bool wl_init() {
         wl_list_init(&ctx.outputs);
+        wl_list_init(&toplevel_list);
         //wl_list_init(&ctx.seats); // TODO multi-seat support
 
         ctx.display = wl_display_connect(NULL);
