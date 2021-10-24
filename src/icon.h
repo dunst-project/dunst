@@ -43,34 +43,6 @@ int get_icon_height(cairo_surface_t *icon, double scale);
  */
 char *get_path_from_icon_name(const char *iconname);
 
-/** Retrieve an icon by its name sent via the notification bus, scaled according to settings
- *
- * @param iconname A string describing a `file://` URL, an arbitary filename
- *                 or an icon name, which then gets searched for in the
- *                 settings.icon_path
- * @param scale An integer representing the output dpi scaling.
- *
- * @return an instance of `GdkPixbuf`
- * @retval NULL: file does not exist, not readable, etc..
- */
-GdkPixbuf *get_pixbuf_from_icon(const char *iconname, double scale);
-
-/** Read an icon from disk and convert it to a GdkPixbuf, scaled according to settings
- *
- * The returned id will be a unique identifier. To check if two given
- * GdkPixbufs are equal, it's sufficient to just compare the id strings.
- *
- * @param name A string describing and icon. May be a full path, a file path or
- *             just a simple name. If it's a name without a slash, the icon will
- *             get searched in the folders of the icon_path setting.
- * @param id   (necessary) A unique identifier of the returned pixbuf. Only filled,
- *             if the return value is non-NULL.
- * @param dpi_scale An integer representing the output dpi scaling.
- * @return an instance of `GdkPixbuf`, representing the name's image
- * @retval NULL: Invalid path given
- */
-GdkPixbuf *icon_get_for_name(const char *name, char **id, double dpi_scale);
-
 /** Convert a GVariant like described in GdkPixbuf, scaled according to settings
  *
  * The returned id will be a unique identifier. To check if two given

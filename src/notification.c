@@ -24,6 +24,7 @@
 #include "settings.h"
 #include "utils.h"
 #include "draw.h"
+#include "icon-lookup.h"
 
 static void notification_extract_urls(struct notification *n);
 static void notification_format_message(struct notification *n);
@@ -292,7 +293,7 @@ void notification_unref(struct notification *n)
         g_free(n->default_action_name);
 
         if (n->icon)
-                g_object_unref(n->icon);
+                cairo_surface_destroy(n->icon);
         g_free(n->icon_id);
 
         notification_private_free(n->priv);
@@ -313,10 +314,21 @@ void notification_icon_replace_path(struct notification *n, const char *new_icon
         g_free(n->iconname);
         n->iconname = g_strdup(new_icon);
 
-        g_clear_object(&n->icon);
+        cairo_surface_destroy(n->icon);
+        n->icon = NULL;
         g_clear_pointer(&n->icon_id, g_free);
 
-        n->icon = icon_get_for_name(new_icon, &n->icon_id, draw_get_scale());
+        g_free(n->icon_path);
+        n->icon_path = find_icon_path(new_icon, settings.max_icon_size);
+        if (n->icon_path) {
+                GdkPixbuf *pixbuf = get_pixbuf_from_file(n->icon_path, draw_get_scale());
+                if (pixbuf) {
+                        n->icon = gdk_pixbuf_to_cairo_surface(pixbuf);
+                        g_object_unref(pixbuf);
+                } else {
+                        LOG_W("No icon found in path: '%s'", n->icon_path);
+                }
+        }
 }
 
 void notification_icon_replace_data(struct notification *n, GVariant *new_icon)
@@ -324,10 +336,13 @@ void notification_icon_replace_data(struct notification *n, GVariant *new_icon)
         ASSERT_OR_RET(n,);
         ASSERT_OR_RET(new_icon,);
 
-        g_clear_object(&n->icon);
+        cairo_surface_destroy(n->icon);
+        n->icon = NULL;
         g_clear_pointer(&n->icon_id, g_free);
 
-        n->icon = icon_get_for_data(new_icon, &n->icon_id, draw_get_scale());
+        GdkPixbuf *icon = icon_get_for_data(new_icon, &n->icon_id, draw_get_scale());
+        n->icon = gdk_pixbuf_to_cairo_surface(icon);
+        g_object_unref(icon);
 }
 
 /* see notification.h */

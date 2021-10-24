@@ -2,10 +2,10 @@
 #ifndef DUNST_NOTIFICATION_H
 #define DUNST_NOTIFICATION_H
 
-#include <gdk-pixbuf/gdk-pixbuf.h>
 #include <glib.h>
 #include <stdbool.h>
 #include <pango/pango-layout.h>
+#include <cairo.h>
 
 #include "markup.h"
 
@@ -50,11 +50,12 @@ struct notification {
         char *desktop_entry;     /**< The desktop entry hint sent via every GApplication */
         enum urgency urgency;
 
-        GdkPixbuf *icon;         /**< The raw cached icon data used to draw */
-        char *icon_id;           /**< plain icon information, which acts as the pixbuf's id, which is saved in .icon
+        cairo_surface_t *icon;         /**< The raw cached icon data used to draw */
+        char *icon_id;           /**< Plain icon information, which acts as the icon's id.
                                       May be a hash for a raw icon or a name/path for a regular app icon. */
-        char *iconname;          /**< plain icon information (may be a path or just a name)
-                                      Use this to compare the icon name with rules.*/
+        char *iconname;          /**< plain icon information (may be a path or just a name) as recieved from dbus.
+                                   Use this to compare the icon name with rules. May also be modified by rules.*/
+        char *icon_path;         /**< Full path to the notification's icon. */
 
         gint64 start;      /**< begin of current display (in milliseconds) */
         gint64 timestamp;  /**< arrival time (in milliseconds) */

@@ -209,7 +209,6 @@ static void free_colored_layout(void *data)
         g_object_unref(cl->l);
         pango_attr_list_unref(cl->attr);
         g_free(cl->text);
-        if (cl->icon) cairo_surface_destroy(cl->icon);
         g_free(cl);
 }
 
@@ -304,17 +303,7 @@ static struct colored_layout *layout_from_notification(cairo_t *c, struct notifi
 
         struct colored_layout *cl = layout_init_shared(c, n);
 
-        if (settings.icon_position != ICON_OFF && n->icon) {
-                cl->icon = gdk_pixbuf_to_cairo_surface(n->icon);
-        } else {
-                cl->icon = NULL;
-        }
-
-        if (cl->icon && cairo_surface_status(cl->icon) != CAIRO_STATUS_SUCCESS) {
-                cairo_surface_destroy(cl->icon);
-                cl->icon = NULL;
-        }
-
+        cl->icon = n->icon;
         /* markup */
         GError *err = NULL;
         pango_parse_markup(n->text_to_render, -1, 0, &(cl->attr), &(cl->text), NULL, &err);
