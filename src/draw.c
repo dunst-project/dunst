@@ -38,6 +38,7 @@ struct colored_layout {
         PangoAttrList *attr;
         cairo_surface_t *icon;
         struct notification *n;
+        bool is_xmore;
 };
 
 const struct output *output;
@@ -151,9 +152,10 @@ static int get_text_icon_padding()
         }
 }
 
-static bool have_progress_bar(const struct notification *n)
+static bool have_progress_bar(const struct colored_layout *cl)
 {
-        return (n->progress >= 0 && settings.progress_bar == true);
+        return (cl->n->progress >= 0 && settings.progress_bar == true &&
+                        !cl->is_xmore);
 }
 
 static void get_text_size(PangoLayout *l, int *w, int *h, double scale) {
@@ -196,7 +198,7 @@ static void layout_setup(struct colored_layout *cl, int width, int height, doubl
 {
         int icon_width = cl->icon? get_icon_width(cl->icon, scale) + get_text_icon_padding() : 0;
         int text_width = width - icon_width - 2 * settings.h_padding;
-        int progress_bar_height = have_progress_bar(cl->n) ? settings.progress_bar_height + settings.padding : 0;
+        int progress_bar_height = have_progress_bar(cl) ? settings.progress_bar_height + settings.padding : 0;
         int max_text_height = MAX(0, settings.height - progress_bar_height - 2 * settings.padding);
         layout_setup_pango(cl->l, text_width, max_text_height, cl->n->word_wrap, cl->n->ellipsize, cl->n->alignment);
 }
@@ -219,7 +221,7 @@ static struct dimensions calculate_notification_dimensions(struct colored_layout
 
         int icon_width = cl->icon? get_icon_width(cl->icon, scale) + get_text_icon_padding() : 0;
         int icon_height = cl->icon? get_icon_height(cl->icon, scale) : 0;
-        int progress_bar_height = have_progress_bar(cl->n) ? settings.progress_bar_height + settings.padding : 0;
+        int progress_bar_height = have_progress_bar(cl) ? settings.progress_bar_height + settings.padding : 0;
         get_text_size(cl->l, &dim.text_width, &dim.text_height, scale);
 
         dim.h = MAX(icon_height, dim.text_height);
@@ -276,21 +278,11 @@ static struct colored_layout *layout_init_shared(cairo_t *c, struct notification
         struct colored_layout *cl = g_malloc(sizeof(struct colored_layout));
         cl->l = layout_create(c);
 
-        if (settings.icon_position != ICON_OFF && n->icon) {
-                cl->icon = gdk_pixbuf_to_cairo_surface(n->icon);
-        } else {
-                cl->icon = NULL;
-        }
-
-        if (cl->icon && cairo_surface_status(cl->icon) != CAIRO_STATUS_SUCCESS) {
-                cairo_surface_destroy(cl->icon);
-                cl->icon = NULL;
-        }
-
         cl->fg = string_to_color(n->colors.fg);
         cl->bg = string_to_color(n->colors.bg);
         cl->highlight = string_to_color(n->colors.highlight);
         cl->frame = string_to_color(n->colors.frame);
+        cl->is_xmore = false;
 
         cl->n = n;
         return cl;
@@ -301,6 +293,8 @@ static struct colored_layout *layout_derive_xmore(cairo_t *c, struct notificatio
         struct colored_layout *cl = layout_init_shared(c, n);
         cl->text = g_strdup_printf("(%d more)", qlen);
         cl->attr = NULL;
+        cl->is_xmore = true;
+        cl->icon = NULL;
         pango_layout_set_text(cl->l, cl->text, -1);
         return cl;
 }
@@ -309,6 +303,17 @@ static struct colored_layout *layout_from_notification(cairo_t *c, struct notifi
 {
 
         struct colored_layout *cl = layout_init_shared(c, n);
+
+        if (settings.icon_position != ICON_OFF && n->icon) {
+                cl->icon = gdk_pixbuf_to_cairo_surface(n->icon);
+        } else {
+                cl->icon = NULL;
+        }
+
+        if (cl->icon && cairo_surface_status(cl->icon) != CAIRO_STATUS_SUCCESS) {
+                cairo_surface_destroy(cl->icon);
+                cl->icon = NULL;
+        }
 
         /* markup */
         GError *err = NULL;
@@ -374,7 +379,7 @@ static int layout_get_height(struct colored_layout *cl, double scale)
         get_text_size(cl->l, NULL, &h, scale);
         if (cl->icon)
                 h_icon = get_icon_height(cl->icon, scale);
-        if (have_progress_bar(cl->n)){
+        if (have_progress_bar(cl)){
                 h_progress_bar = settings.progress_bar_height + settings.padding;
         }
 
@@ -563,7 +568,7 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, dou
         const int h = layout_get_height(cl, scale);
         LOG_D("Layout height %i", h);
         int h_without_progress_bar = h;
-        if (have_progress_bar(cl->n)){
+        if (have_progress_bar(cl)){
                  h_without_progress_bar -= settings.progress_bar_height + settings.padding;
         }
         int h_text;
@@ -622,7 +627,7 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, dou
         }
 
         // progress bar positioning
-        if (have_progress_bar(cl->n)){
+        if (have_progress_bar(cl)){
                 int progress = MIN(cl->n->progress, 100);
                 unsigned int frame_width = settings.progress_bar_frame_width,
                              progress_width = MIN(width - 2 * settings.h_padding, settings.progress_bar_max_width),
