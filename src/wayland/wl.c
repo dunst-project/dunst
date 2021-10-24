@@ -397,13 +397,13 @@ static void handle_global(void *data, struct wl_registry *registry,
                 struct wl_output *output =
                         wl_registry_bind(registry, name, &wl_output_interface, 3);
                 create_output(output, name);
-                LOG_W("Binding to output %i", name);
+                LOG_D("Binding to output %i", name);
         } else if (strcmp(interface, org_kde_kwin_idle_interface.name) == 0 &&
                         version >= ORG_KDE_KWIN_IDLE_TIMEOUT_IDLE_SINCE_VERSION) {
                 ctx.idle_handler = wl_registry_bind(registry, name, &org_kde_kwin_idle_interface, 1);
         } else if (strcmp(interface, zwlr_foreign_toplevel_manager_v1_interface.name) == 0 &&
                         version >= ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_STATE_FULLSCREEN_SINCE_VERSION) {
-                LOG_W("Found toplevel manager %i", name);
+                LOG_D("Found toplevel manager %i", name);
                 ctx.toplevel_manager_name = name;
                 wl_list_init(&toplevel_list);
         }
@@ -440,7 +440,6 @@ bool wl_init() {
 
         ctx.registry = wl_display_get_registry(ctx.display);
         wl_registry_add_listener(ctx.registry, &registry_listener, NULL);
-        LOG_W("First roundtrip");
         wl_display_roundtrip(ctx.display);
         if (ctx.toplevel_manager_name != UINT32_MAX) {
                 ctx.toplevel_manager = wl_registry_bind(ctx.registry, ctx.toplevel_manager_name,
@@ -449,9 +448,7 @@ bool wl_init() {
                 zwlr_foreign_toplevel_manager_v1_add_listener(ctx.toplevel_manager,
                                 &toplevel_manager_impl, NULL);
         }
-        LOG_W("Second roundtrip");
         wl_display_roundtrip(ctx.display); // load list of toplevels
-        LOG_W("Third roundtrip");
         wl_display_roundtrip(ctx.display); // load toplevel details
         wl_display_flush(ctx.display);
 
@@ -494,18 +491,18 @@ bool wl_init() {
                 if (errno == 0 && cursor_size_env[0] != 0 && end[0] == 0 && temp_size > 0) {
                         cursor_size = temp_size;
                 } else {
-                        fprintf(stderr, "Error: XCURSOR_SIZE is invalid\n");
+                        LOG_W("Error: XCURSOR_SIZE is invalid");
                 }
         }
         const char *xcursor_theme = getenv("XCURSOR_THEME");
         ctx.cursor_theme = wl_cursor_theme_load(xcursor_theme, cursor_size, ctx.shm);
         if (ctx.cursor_theme == NULL) {
-                fprintf(stderr, "couldn't find a cursor theme\n");
+                LOG_W("couldn't find a cursor theme");
                 return true;
         }
         struct wl_cursor *cursor = wl_cursor_theme_get_cursor(ctx.cursor_theme, "left_ptr");
         if (cursor == NULL) {
-                fprintf(stderr, "couldn't find cursor icon \"left_ptr\"\n");
+                LOG_W("couldn't find cursor icon \"left_ptr\"");
                 wl_cursor_theme_destroy(ctx.cursor_theme);
                 // Set to NULL so it doesn't get free'd again
                 ctx.cursor_theme = NULL;
@@ -839,12 +836,10 @@ bool wl_have_fullscreen_window(void) {
                         if (output_name == UINT32_MAX ||
                                         pos->dunst_output->global_name ==
                                         output_name) {
-                                LOG_D("Fullscreen queried: 1");
                                 return true;
                         }
                 }
         }
-        LOG_D("Fullscreen queried: 0");
         return false;
 }
 
