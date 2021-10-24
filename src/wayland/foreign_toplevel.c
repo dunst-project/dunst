@@ -27,29 +27,6 @@ static void copy_state(struct toplevel_state *current,
 
 static uint32_t global_id = 0;
 
-static void print_toplevel(struct toplevel_v1 *toplevel, bool print_endl) {
-        printf("-> %d", toplevel->id);
-
-        if (print_endl) {
-                printf("\n");
-        }
-}
-
-static void print_toplevel_state(struct toplevel_v1 *toplevel, bool print_endl) {
-        if (toplevel->current.state & TOPLEVEL_STATE_ACTIVATED) {
-                printf(" active");
-        } else {
-                printf(" inactive");
-        }
-        if (toplevel->current.state & TOPLEVEL_STATE_FULLSCREEN) {
-                printf(" fullscreen");
-        }
-
-        if (print_endl) {
-                printf("\n");
-        }
-}
-
 static void toplevel_handle_output_enter(void *data,
                 struct zwlr_foreign_toplevel_handle_v1 *zwlr_toplevel,
                 struct wl_output *wl_output) {
@@ -58,24 +35,15 @@ static void toplevel_handle_output_enter(void *data,
         struct dunst_output *dunst_output = wl_output_get_user_data(wl_output);
         toplevel_output->dunst_output = dunst_output;
 
-        print_toplevel(toplevel, false);
-        printf(" enter output %u\n", dunst_output->global_name);
         wl_list_insert(&toplevel->output_list, &toplevel_output->link);
-        struct toplevel_output *pos;
-        printf("Output list size %i\n", wl_list_length(&toplevel->output_list));
-        wl_list_for_each(pos, &toplevel->output_list, link) {
-                printf("Testing fullscreen output %i\n", pos->dunst_output->global_name);
-        }
 }
 
 static void toplevel_handle_output_leave(void *data,
                 struct zwlr_foreign_toplevel_handle_v1 *zwlr_toplevel,
                 struct wl_output *wl_output) {
         struct toplevel_v1 *toplevel = data;
-        print_toplevel(toplevel, false);
 
         struct dunst_output *output = wl_output_get_user_data(wl_output);
-        printf(" leave output %u\n", output->global_name);
         struct toplevel_output *pos, *tmp;
         wl_list_for_each_safe(pos, tmp, &toplevel->output_list, link){
                 if (pos->dunst_output->name == output->name){
@@ -112,11 +80,7 @@ static void toplevel_handle_done(void *data,
         copy_state(&toplevel->current, &toplevel->pending);
         bool is_fullscreen = wl_have_fullscreen_window();
 
-        /* print_toplevel(toplevel, !state_changed); */
         if (was_fullscreen != is_fullscreen) {
-                print_toplevel(toplevel, false);
-                print_toplevel_state(toplevel, true);
-                // TODO only wake up when important
                 wake_up();
         }
 }
@@ -124,8 +88,6 @@ static void toplevel_handle_done(void *data,
 static void toplevel_handle_closed(void *data,
                 struct zwlr_foreign_toplevel_handle_v1 *zwlr_toplevel) {
         struct toplevel_v1 *toplevel = data;
-        print_toplevel(toplevel, false);
-        printf(" closed\n");
 
         wl_list_remove(&toplevel->link);
         struct toplevel_output *pos, *tmp;
@@ -154,7 +116,6 @@ static void toplevel_manager_handle_toplevel(void *data,
                 fprintf(stderr, "Failed to allocate memory for toplevel\n");
                 return;
         }
-        printf("Found toplevel\n");
 
         toplevel->id = global_id++;
         toplevel->zwlr_toplevel = zwlr_toplevel;
