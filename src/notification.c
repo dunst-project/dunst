@@ -142,11 +142,10 @@ void notification_run_script(struct notification *n)
                                 gchar *n_progress_str = g_strdup_printf("%i", n->progress);
                                 gchar *n_timeout_str = g_strdup_printf("%li", n->timeout/1000);
                                 gchar *n_timestamp_str = g_strdup_printf("%li", n->timestamp / 1000);
-                                char* icon_path = get_path_from_icon_name(icon);
                                 safe_setenv("DUNST_APP_NAME",  appname);
                                 safe_setenv("DUNST_SUMMARY",   summary);
                                 safe_setenv("DUNST_BODY",      body);
-                                safe_setenv("DUNST_ICON_PATH", icon_path);
+                                safe_setenv("DUNST_ICON_PATH", n->icon_path);
                                 safe_setenv("DUNST_URGENCY",   urgency);
                                 safe_setenv("DUNST_ID",        n_id_str);
                                 safe_setenv("DUNST_PROGRESS",  n_progress_str);
@@ -277,6 +276,7 @@ void notification_unref(struct notification *n)
         g_free(n->summary);
         g_free(n->body);
         g_free(n->iconname);
+        g_free(n->icon_path);
         g_free(n->msg);
         g_free(n->dbus_client);
         g_free(n->category);
@@ -319,7 +319,7 @@ void notification_icon_replace_path(struct notification *n, const char *new_icon
         g_clear_pointer(&n->icon_id, g_free);
 
         g_free(n->icon_path);
-        n->icon_path = find_icon_path(new_icon, settings.max_icon_size);
+        n->icon_path = get_path_from_icon_name(new_icon, n->icon_size);
         if (n->icon_path) {
                 GdkPixbuf *pixbuf = get_pixbuf_from_file(n->icon_path, draw_get_scale());
                 if (pixbuf) {
@@ -399,6 +399,7 @@ struct notification *notification_create(void)
         n->word_wrap = true;
         n->ellipsize = PANGO_ELLIPSIZE_MIDDLE;
         n->alignment = PANGO_ALIGN_LEFT;
+        n->icon_size = 32;
 
         n->script_run = false;
         n->dbus_valid = false;

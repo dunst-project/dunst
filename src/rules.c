@@ -48,6 +48,8 @@ void rule_apply(struct rule *r, struct notification *n)
                 n->markup = r->markup;
         if (r->new_icon)
                 notification_icon_replace_path(n, r->new_icon);
+        if (r->set_icon_size > 0)
+                n->icon_size = r->set_icon_size;
         if (r->fg) {
                 g_free(n->colors.fg);
                 n->colors.fg = g_strdup(r->fg);

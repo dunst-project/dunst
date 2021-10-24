@@ -20,6 +20,7 @@
 #include "output.h"
 #include "settings.h"
 #include "utils.h"
+#include "icon-lookup.h"
 
 struct color {
         double r;
@@ -56,6 +57,9 @@ void draw_setup(void)
         win = out->win_create();
 
         pango_fdesc = pango_font_description_from_string(settings.font);
+
+        int theme_index = load_icon_theme(settings.icon_theme);
+        set_default_theme(theme_index);
 }
 
 static struct color hex_to_color(uint32_t hexValue, int dpc)

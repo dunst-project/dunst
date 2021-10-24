@@ -20,8 +20,7 @@ filters, thus applies to all notifications.
 
 See RULES for more details.
 
-The 'experimental' section contains all the features that have not yet been
-tested thoroughly and may be changed at any time.
+All experimental settings are marked with I<Experimental>
 
 =head2 Global section
 
@@ -391,6 +390,36 @@ notifications.
 
 Dunst doesn't currently do any type of icon lookup outside of these
 directories.
+
+=item B<icon_theme> (default: "hicolor") I<Experimental>
+
+The name of the the theme to use for looking up icons. This has to be the name
+of the directory in which the theme is located, not the human-friendly name of
+the theme. So for example, the theme B<Breeze Dark> is located in
+F</usr/share/icons/breeze-dark>. In this case you have to set the theme to
+B<breeze-dark>.
+
+Dunst will look for the theme in B<XDG_DATA_HOME/icons> and
+B<$XDG_DATA_DIRS/icons> as specified in the icon theme specification:
+https://specifications.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html.
+
+If the theme inherits from other themes, they will be used as a backup.
+
+This setting is experimental and not enabled by default. See
+B<enable_recursive_icon_lookup> for how to enable it.
+
+=item B<enable_recursive_icon_lookup> (default: false) I<Experimental>
+
+This setting enables the new icon lookup method.
+
+Currently icons are looked up in the B<icon_path> and scaled according to
+B<min_icon_size> and B<max_icon_size>. Since the B<icon_path> wasn't recursive,
+one had to add a ton of paths to this list.
+This has been drastically simplified by the new lookup method. Now you only have
+to set B<icon_theme> to the name of the theme and B<icon_size> to the icon size
+you want. To enable this new behaviour, set B<enable_recursive_icon_lookup> to
+true in the I<[experimental]> section. See the respective settings for more
+details.
 
 =item B<sticky_history> (values: [true/false], default: true)
 
@@ -871,6 +900,16 @@ a global setting.
 
 =back
 
+=item B<icon_size> (default: 32) I<Experimental>
+
+The size of the icon in pixels. This is commonly a multiple of 2, for example:
+16, 32 or 64. This size is used for searching the right icon in B<icon_theme>.
+If no icon of the right size can be found, no icon is displayed. When passing a
+full icon path to dunst the icon will be used even when it's not the right
+size. The icon is then scaled to be of size B<icon_size>.
+
+This setting is experimental and not enabled by default. See
+B<enable_recursive_icon_lookup> for how to enable it.
 
 =back
 

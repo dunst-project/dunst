@@ -37,11 +37,13 @@ int get_icon_height(cairo_surface_t *icon, double scale);
  * @param iconname A string describing a `file://` URL, an arbitary filename
  *                 or an icon name, which then gets searched for in the
  *                 settings.icon_path
+ * @param size     Size of the icon to look for. This is only used when
+ *                 recursive icon lookup is enabled.
  *
  * @return a newly allocated string with the icon path
  * @retval NULL: file does not exist, not readable, etc..
  */
-char *get_path_from_icon_name(const char *iconname);
+char *get_path_from_icon_name(const char *iconname, int size);
 
 /** Convert a GVariant like described in GdkPixbuf, scaled according to settings
  *

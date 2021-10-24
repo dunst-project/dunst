@@ -112,6 +112,7 @@ static const struct rule empty_rule = {
         .history_ignore  = -1,
         .match_transient = -1,
         .set_transient   = -1,
+        .set_icon_size   = -1,
         .skip_display    = -1,
         .word_wrap       = -1,
         .ellipsize       = -1,
@@ -573,6 +574,17 @@ static const struct setting allowed_settings[] = {
                 .parser = string_parse_enum,
                 .parser_data = markup_mode_enum_data,
                 .rule_offset = offsetof(struct rule, markup),
+        },
+        {
+                .name = "icon_size",
+                .section = "*",
+                .description = "Set the size of the icon",
+                .type = TYPE_INT,
+                .default_value = "*",
+                .value = NULL,
+                .parser = NULL,
+                .parser_data = NULL,
+                .rule_offset = offsetof(struct rule, set_icon_size),
         },
 
         // other settings below
@@ -1057,6 +1069,16 @@ static const struct setting allowed_settings[] = {
                 .value = &settings.icon_path,
                 .parser = NULL,
                 .parser_data = NULL,
+        },
+        {
+                .name = "enable_recursive_icon_lookup",
+                .section = "global",
+                .description = "Name of the icon theme",
+                .type = TYPE_CUSTOM,
+                .default_value = "false",
+                .value = &settings.enable_recursive_icon_lookup,
+                .parser = string_parse_bool,
+                .parser_data = boolean_enum_data,
         },
         {
                 .name = "frame_width",
