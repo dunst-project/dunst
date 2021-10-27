@@ -8,7 +8,6 @@
 #include "wayland/protocols/wlr-layer-shell-unstable-v1-client-header.h"
 #endif
 
-#include "markup.h"
 #include "notification.h"
 #include "x11/x.h"
 
@@ -90,7 +89,6 @@ struct position {
 struct settings {
         bool print_notifications;
         bool per_monitor_dpi;
-        enum markup_mode markup;
         bool stack_duplicates;
         bool hide_duplicate_count;
         char *font;

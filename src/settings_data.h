@@ -563,6 +563,17 @@ static const struct setting allowed_settings[] = {
                 .parser_data = horizontal_alignment_enum_data,
                 .rule_offset = offsetof(struct rule, alignment),
         },
+        {
+                .name = "markup",
+                .section = "*",
+                .description = "Specify how markup should be handled",
+                .type = TYPE_CUSTOM,
+                .default_value = "*",
+                .value = NULL,
+                .parser = string_parse_enum,
+                .parser_data = markup_mode_enum_data,
+                .rule_offset = offsetof(struct rule, markup),
+        },
 
         // other settings below
         {
@@ -937,16 +948,6 @@ static const struct setting allowed_settings[] = {
                 .parser_data = boolean_enum_data,
         },
         // manual extractions below
-        {
-                .name = "markup",
-                .section = "global",
-                .description = "Specify how markup should be handled",
-                .type = TYPE_CUSTOM,
-                .default_value = "full",
-                .value = &settings.markup,
-                .parser = string_parse_enum,
-                .parser_data = markup_mode_enum_data,
-        },
         {
                 .name = "follow",
                 .section = "global",

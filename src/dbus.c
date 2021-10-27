@@ -13,6 +13,7 @@
 #include "queues.h"
 #include "settings.h"
 #include "utils.h"
+#include "rules.h"
 
 #define FDN_PATH "/org/freedesktop/Notifications"
 #define FDN_IFAC "org.freedesktop.Notifications"
@@ -312,7 +313,10 @@ static void dbus_cb_GetCapabilities(
         for (int i = 0; i < sizeof(stack_tag_hints)/sizeof(*stack_tag_hints); ++i)
                 g_variant_builder_add(builder, "s", stack_tag_hints[i]);
 
-        if (settings.markup != MARKUP_NO)
+        // Since markup isn't a global variable anymore, look it up in the
+        // global rule
+        struct rule *global_rule = get_rule("global");
+        if (global_rule && global_rule->markup != MARKUP_NO)
                 g_variant_builder_add(builder, "s", "body-markup");
 
         value = g_variant_new("(as)", builder);

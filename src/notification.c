@@ -371,7 +371,7 @@ struct notification *notification_create(void)
 
         /* Unparameterized default values */
         n->first_render = true;
-        n->markup = settings.markup;
+        n->markup = MARKUP_FULL;
         n->format = settings.format;
 
         n->timestamp = time_monotonic_now();
