@@ -75,7 +75,7 @@ static GQueue *open_conf_files(char *cmdline_config_path) {
          */
         gchar * const xdg_cdirs = g_strdup(g_getenv("XDG_CONFIG_DIRS"));
         gchar * const xdg_config_dirs = xdg_cdirs && strnlen((gchar *) xdg_cdirs, 1)
-                                        ? xdg_cdirs
+                                        ? g_strdup(xdg_cdirs)
                                         : g_strdup(XDG_CONFIG_DIRS_DEFAULT);
         g_free(xdg_cdirs);
 
