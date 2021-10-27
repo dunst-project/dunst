@@ -282,49 +282,6 @@ This options is parsed as a Pango font description.
 The amount of extra spacing between text lines in pixels. Set to 0 to
 disable.
 
-=item B<markup> (values: [full/strip/no], default: no)
-
-Defines how markup in notifications is handled.
-
-It's important to note that markup in the format option will be parsed
-regardless of what this is set to.
-
-Possible values:
-
-=over 4
-
-=item B<full>
-
-Allow a small subset of html markup in notifications
-
-    <b>bold</b>
-    <i>italic</i>
-    <s>strikethrough</s>
-    <u>underline</u>
-
-For a complete reference see
-<https://developer.gnome.org/pango/stable/pango-Markup.html>
-
-=item B<strip>
-
-This setting is provided for compatibility with some broken
-clients that send markup even though it's not enabled on the
-server.
-
-Dunst will try to strip the markup but the parsing is simplistic so using this
-option outside of matching rules for specific applications B<IS GREATLY
-DISCOURAGED>.
-
-See RULES
-
-=item B<no>
-
-Disable markup parsing, incoming notifications will be treated as
-plain text. Dunst will not advertise that it can parse markup if this is set as
-a global setting.
-
-=back
-
 =item B<format> (default: "%s %b")
 
 Specifies how the various attributes of the notification should be formatted on
@@ -870,6 +827,50 @@ Specifies where truncated lines should be ellipsized.
 =item B<alignment> (values: [left/center/right], default: left)
 
 Defines how the text should be aligned within the notification.
+
+=item B<markup> (values: [full/strip/no], default: no)
+
+Defines how markup in notifications is handled.
+
+It's important to note that markup in the format option will be parsed
+regardless of what this is set to.
+
+Possible values:
+
+=over 4
+
+=item B<full>
+
+Allow a small subset of html markup in notifications
+
+    <b>bold</b>
+    <i>italic</i>
+    <s>strikethrough</s>
+    <u>underline</u>
+
+For a complete reference see
+<https://developer.gnome.org/pango/stable/pango-Markup.html>
+
+=item B<strip>
+
+This setting is provided for compatibility with some broken
+clients that send markup even though it's not enabled on the
+server.
+
+Dunst will try to strip the markup but the parsing is simplistic so using this
+option outside of matching rules for specific applications B<IS GREATLY
+DISCOURAGED>.
+
+See RULES
+
+=item B<no>
+
+Disable markup parsing, incoming notifications will be treated as
+plain text. Dunst will not advertise that it can parse markup if this is set as
+a global setting.
+
+=back
+
 
 =back
 
