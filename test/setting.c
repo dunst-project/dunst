@@ -15,7 +15,6 @@ TEST test_dunstrc_markup(void) {
         config_path = g_strconcat(base, "/data/dunstrc.markup", NULL);
         load_settings(config_path);
 
-        ASSERT_EQ(settings.markup, MARKUP_FULL);
         ASSERT_STR_EQ(settings.font, "Monospace 8");
 
 
@@ -33,7 +32,6 @@ TEST test_dunstrc_nomarkup(void) {
         config_path = g_strconcat(base, "/data/dunstrc.nomarkup", NULL);
         load_settings(config_path);
 
-        ASSERT_EQ(settings.markup, MARKUP_NO);
         ASSERT_STR_EQ(settings.font, "Monospace 8");
 
 

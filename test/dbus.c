@@ -1,5 +1,6 @@
 #define wake_up wake_up_void
 #include "../src/dbus.c"
+#include "../src/rules.h"
 #include "greatest.h"
 
 #include <assert.h>
@@ -676,7 +677,11 @@ TEST test_server_caps(enum markup_mode markup)
         GVariant *caps = NULL;
         const char **capsarray;
 
-        settings.markup = markup;
+        struct rule *global_rule = get_rule("global");
+        if (!global_rule) {
+                global_rule = rule_new("global");
+        }
+        global_rule->markup = markup;
 
         reply = dbus_invoke("GetCapabilities", NULL);
 
@@ -690,7 +695,7 @@ TEST test_server_caps(enum markup_mode markup)
         ASSERT(g_strv_contains(capsarray, "icon-static"));
         ASSERT(g_strv_contains(capsarray, "x-dunst-stack-tag"));
 
-        if (settings.markup != MARKUP_NO)
+        if (markup != MARKUP_NO)
                 ASSERT(g_strv_contains(capsarray, "body-markup"));
         else
                 ASSERT_FALSE(g_strv_contains(capsarray, "body-markup"));
