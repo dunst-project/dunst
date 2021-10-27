@@ -1,11 +1,25 @@
 # Dunst changelog
 
-## Unreleased
+## 1.7.1 -- 2021-11-01
 
 ### Added
-### Changed
+- Script environment variable `DUNST_DESKTOP_ENTRY`. (#874)
+- Rule `set_category` for change a notifications category with rules. (1b72b2a)
+
 ### Fixed
-### Removed
+- Dunst not building with WAYLAND=0. (#938)
+- Wrong icon being shown in chromium-based browsers. (#939)
+- `set_stack_tag` not working anymore. (#942)
+- Outdated documentation. (#943, #944 and more)
+- Empty strings not being allowed in settings. (#946)
+- Dunst crashing when compositor doesn't support `zwlr_foreign_toplevel_v1`. (#948)
+- Xmore notifications showing a progress bar and icon. (#915)
+- Markup is now a rule again. Before this was undocumented behaviour. (#955)
+- Double free when setting `XDG_CONFIG_DIR`. (#957)
+- Dunst crashing on some compositors. (#948)
+- Dunst not exiting when wayland compositor quits. (#961)
+- Now the separators are not responsive to mouse clicks anymore. (#960)
+- Mouse action stopping the rest of the actions. (bf58928)
 
 ## 1.7.0 -- 2021-10-19:
 
