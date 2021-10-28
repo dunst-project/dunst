@@ -430,4 +430,19 @@ bool is_readable_file(const char * const path)
 
         return result;
 }
+
+FILE *fopen_verbose(const char * const path)
+{
+        FILE *f = NULL;
+        char *real_path = string_to_path(strdup(path));
+
+        if (is_readable_file(real_path) && (f = fopen(real_path, "r")))
+                LOG_I(MSG_FOPEN_SUCCESS(path, f));
+        else
+                LOG_W(MSG_FOPEN_FAILURE(path));
+
+        free(real_path);
+        return f;
+}
+
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */
