@@ -12,9 +12,6 @@
 #include <glib.h>
 #include <stdio.h>
 #include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
 
 #include "dunst.h"
 #include "log.h"
@@ -74,8 +71,6 @@ static const char * const *get_xdg_basedirs(void);
 
 static int is_drop_in(const struct dirent *dent);
 
-static bool fexists(char * const path);
-
 static void get_conf_files(GQueue *config_files);
 
 /** @brief Filter for scandir().
@@ -92,35 +87,6 @@ static int is_drop_in(const struct dirent *dent)
         return 0 == fnmatch(DROP_IN_PATTERN, dent->d_name, FNM_PATHNAME | FNM_PERIOD)
                     ? 1 // success
                     : 0;
-}
-
-/** @brief Check if file exists and is regular file or named pipe
- *
- * This is a convenience function to check if @p path can be resolved and makes
- * sense to try and open as config, like regular files and FIFOs (named pipes).
- *
- * @param path [in] A string representing a path.
- * @retval true in case of success.
- * @retval false in case of failure and errno will be set EINVAL.
- */
-static bool fexists(char * const path) {
-        struct stat statbuf;
-        bool result = false;
-
-        if (0 == stat(path, &statbuf)) {
-                if (statbuf.st_mode & (S_IFIFO | S_IFREG))
-                        /** See what intersting stuff can be done with FIFOs
-                         * for dunstrc/drop-ins. */
-                        result = true;
-                else
-                        /** Sets errno if stat() was successful but @p path
-                         * [in] does not point to a file/FIFO. This just in
-                         * case someone queries errno which would otherwise
-                         * indicate success. */
-                        errno = EINVAL;
-        }
-
-        return result;
 }
 
 /**
@@ -182,7 +148,7 @@ static void get_conf_files(GQueue *config_files) {
                                                             drop_ins[n]->d_name);
                         free(drop_ins[n]);
 
-                        if (fexists(drop_in)) {
+                        if (is_readable_file(drop_in)) {
                                 LOG_D("Adding drop-in '%s'", drop_in);
                                 g_queue_push_tail(config_files, drop_in);
                         } else
@@ -190,7 +156,7 @@ static void get_conf_files(GQueue *config_files) {
                 }
 
                 /* base rc-file last, least important */
-                if (fexists(base_rc)) {
+                if (is_readable_file(base_rc)) {
                         LOG_D("Adding base config '%s'", base_rc);
                         g_queue_push_tail(config_files, base_rc);
                 } else
@@ -206,7 +172,7 @@ FILE *fopen_conf(char * const path)
         FILE *f = NULL;
         char *real_path = string_to_path(strdup(path));
 
-        if (fexists(real_path) && (f = fopen(real_path, "r")))
+        if (is_readable_file(real_path) && (f = fopen(real_path, "r")))
                 LOG_I(MSG_FOPEN_SUCCESS(path, f));
         else
                 LOG_W(MSG_FOPEN_FAILURE(path));
