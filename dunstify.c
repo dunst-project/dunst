@@ -81,7 +81,7 @@ void print_serverinfo(void)
  * cases. This function gets the specified argv element ignoring the first
  * terminator.
  *
- * See https://developer.gnome.org/glib/stable/glib-Commandline-option-parser.html#g-option-context-parse for details
+ * See https://docs.gtk.org/glib/method.OptionContext.parse.html for details
  */
 char *get_argv(char *argv[], int index)
 {

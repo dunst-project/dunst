@@ -125,7 +125,7 @@
     #        <u>underline</u>
     #
     #        For a complete reference see
-    #        <https://developer.gnome.org/pango/stable/pango-Markup.html>.
+    #        <https://docs.gtk.org/Pango/pango_markup.html>.
     #
     # strip: This setting is provided for compatibility with some broken
     #        clients that send markup even though it's not enabled on the
