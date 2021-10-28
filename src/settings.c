@@ -276,7 +276,7 @@ void load_settings(char *path) {
                         LOG_D("Trying to open '%s'", path);
                         FILE *f;
                         /* Check for "-" here, so the file handling stays in one place */
-                        if (!(f = STR_EQ(path, "-") ? stdin : fopen_conf(path)))
+                        if (!(f = STR_EQ(path, "-") ? stdin : fopen_verbose(path)))
                                 continue;
 
                         LOG_I("Parsing config, fd: '%d'", fileno(f));

@@ -3,8 +3,9 @@
 #define DUNST_UTILS_H
 
 #include <glib.h>
-#include <string.h>
 #include <stdbool.h>
+#include <stdio.h>
+#include <string.h>
 
 //! Test if a string is NULL or empty
 #define STR_EMPTY(s) (!s || (*s == '\0'))
@@ -217,6 +218,18 @@ int string_array_length(char **s);
  * @retval false in case of failure, errno will be set appropriately.
  */
 bool is_readable_file(const char * const path);
+
+/** @brief Open files verbosely.
+ *
+ * This is a wrapper around fopen() and is_readable_file() that does some
+ * preliminary checks and sends log messages.
+ *
+ * @p path [in] A char* string representing a filesystem path
+ * @returns The result of the fopen() call.
+ * @retval NULL if the fopen() call failed or @p path does not satisfy the
+ * conditions of is_readable_file().
+ */
+FILE * fopen_verbose(const char * const path);
 
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */
