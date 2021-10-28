@@ -44,30 +44,24 @@
  */
 #define XDG_CONFIG_DIRS_DEFAULT SYSCONFDIR
 
-/** @brief Convenience macro to not have to put %NULL as the last argument.
- * 
- * @returns a newly-allocated string that must be freed with g_free().
- */
-#define G_STRCONCAT(...) g_strconcat(__VA_ARGS__, NULL)
-
 /** @brief Generate path to base config 'dunstrc' in a base directory
  * 
- * @returns a newly-allocated string that must be freed with g_free().
+ * @returns a newly-allocated gchar* string that must be freed with g_free().
  */
-#define G_BASE_RC(basedir) g_build_filename(basedir, "dunst", "dunstrc", NULL)
+#define BASE_RC(basedir) g_build_filename(basedir, "dunst", "dunstrc", NULL)
 
 /** @brief Generate drop-in directory path for a base directory
  * 
- * @returns a newly-allocated string that must be freed with g_free().
+ * @returns a newly-allocated gchar* string that must be freed with g_free().
  */
-#define G_DROP_IN_DIR(basedir) G_STRCONCAT(G_BASE_RC(basedir), ".d")
+#define DROP_IN_DIR(basedir) g_strconcat(BASE_RC(basedir), ".d", NULL)
 
 /** @brief Match pattern for drop-in file names */
 #define DROP_IN_PATTERN "*.conf"
 
 struct settings settings;
 
-static const char * const *get_xdg_basedirs(void);
+static const char * const *get_xdg_conf_basedirs(void);
 
 static int is_drop_in(const struct dirent *dent);
 
@@ -82,38 +76,41 @@ static void get_conf_files(GQueue *config_files);
  *
  * @param dent [in] @brief directory entry
  */
-static int is_drop_in(const struct dirent *dent)
-{
+static int is_drop_in(const struct dirent *dent) {
         return 0 == fnmatch(DROP_IN_PATTERN, dent->d_name, FNM_PATHNAME | FNM_PERIOD)
                     ? 1 // success
                     : 0;
 }
 
-/**
- * Returns a %NULL-terminated array of all XDG Base Directories, @e most @e
- * important @e first.
+/** @brief Get all relevant config base directories
  *
- * @returns The array of paths to XDG base directories in @e descending order of
- * importance
+ * Returns an array of all XDG config base directories, @e most @e important @e
+ * first.
+ *
+ * @returns A %NULL-terminated array of gchar* strings representing the paths
+ * of all XDG base directories in @e descending order of importance.
+ *
+ * The result @e must @e not be freed! The array is cached in a static variable,
+ * so it is OK to call this again instead of caching its return value.
  */
-static const char * const *get_xdg_basedirs() {
+static const char * const *get_xdg_conf_basedirs() {
         static const char * const *xdg_bd_arr = NULL;
         if (!xdg_bd_arr) {
                 char * xdg_basedirs;
 
-                char * const xcd_env = getenv("XDG_CONFIG_DIRS");
-                char * const xdg_config_dirs = xcd_env && strnlen(xcd_env, 1)
-                                               ? xcd_env
-                                               : XDG_CONFIG_DIRS_DEFAULT;
+                const char * const xcd_env = getenv("XDG_CONFIG_DIRS");
+                const char * const xdg_config_dirs = xcd_env && strnlen(xcd_env, 1)
+                                                     ? xcd_env
+                                                     : XDG_CONFIG_DIRS_DEFAULT;
 
                 /*
                  * Prepend XDG_CONFIG_HOME, most important first because
                  * XDG_CONFIG_DIRS is already ordered that way.
                  */
-                xdg_basedirs = G_STRCONCAT(g_get_user_config_dir(),
+                xdg_basedirs = g_strconcat(g_get_user_config_dir(),
                                            ":",
-                                           xdg_config_dirs);
-                free(xdg_config_dirs);
+                                           xdg_config_dirs,
+                                           NULL);
                 LOG_D("Config directories: '%s'", xdg_basedirs);
 
                 xdg_bd_arr = (const char * const *) string_to_array(xdg_basedirs, ":");
@@ -124,28 +121,36 @@ static const char * const *get_xdg_basedirs() {
 
 /** @brief Find all config files.
  *
- * Searches all XDG base directories for config files and drop-ins and push
- * them onto a LIFO/stack, @e least important last.
+ * Searches all XDG config base directories for config files and drop-ins and
+ * puts them in a GQueue, @e least important last.
  *
- * @param config_files [in|out] A pointer to a GQueue of strings representing
- * config file paths
+ * @param config_files [in|out] A pointer to a GQueue of gchar* strings
+ * representing config file paths
  *
- * Use g_queue_pop_tail() to retrieve paths in @e ascending order of importance
+ * Use g_queue_pop_tail() to retrieve paths in @e ascending order of
+ * importance, or use g_queue_reverse() before iterating over it with
+ * g_queue_for_each().
  *
- * Use g_queue_free() to free.
+ * Use g_free() to free the retrieved elements of the queue.
+ *
+ * Use g_queue_free() to free after emptying it or g_queue_free_full() for a
+ * non-empty queue.
  */
 static void get_conf_files(GQueue *config_files) {
         struct dirent **drop_ins;
-        for (const char * const *d = get_xdg_basedirs(); *d; d++) {
-                gchar * const base_rc = G_BASE_RC(*d);
-                gchar * const drop_in_dir = G_DROP_IN_DIR(*d);
+        for (const char * const *d = get_xdg_conf_basedirs(); *d; d++) {
+                /* absolute path to the base rc-file */
+                gchar * const base_rc = BASE_RC(*d);
+                /* absolute path to the corresponding drop-in directory */
+                gchar * const drop_in_dir = DROP_IN_DIR(*d);
 
                 int n = scandir(drop_in_dir, &drop_ins, is_drop_in, alphasort);
                 /* reverse order to get most important first */
                 while (n-- > 0) {
-                        gchar * const drop_in = G_STRCONCAT(drop_in_dir,
+                        gchar * const drop_in = g_strconcat(drop_in_dir,
                                                             "/",
-                                                            drop_ins[n]->d_name);
+                                                            drop_ins[n]->d_name,
+                                                            NULL);
                         free(drop_ins[n]);
 
                         if (is_readable_file(drop_in)) {
@@ -154,6 +159,7 @@ static void get_conf_files(GQueue *config_files) {
                         } else
                                 g_free(drop_in);
                 }
+                g_free(drop_in_dir);
 
                 /* base rc-file last, least important */
                 if (is_readable_file(base_rc)) {
@@ -161,8 +167,6 @@ static void get_conf_files(GQueue *config_files) {
                         g_queue_push_tail(config_files, base_rc);
                 } else
                         g_free(base_rc);
-
-                g_free(drop_in_dir);
         }
         free(drop_ins);
 }
