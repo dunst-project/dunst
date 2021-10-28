@@ -303,7 +303,7 @@ Allow a small subset of html markup in notifications
     <u>underline</u>
 
 For a complete reference see
-<https://developer.gnome.org/pango/stable/pango-Markup.html>
+<https://docs.gtk.org/Pango/pango_markup.html>
 
 =item B<strip>
 
@@ -692,7 +692,7 @@ The body of the notification
 =item C<category>
 
 The category of the notification as defined by the notification spec. See
-https://specifications.freedesktop.org/notification-spec/notification-spec-latest.html#categories.
+https://specifications.freedesktop.org/notification-spec/latest/ar01s06.html
 
 =item C<desktop_entry>
 
@@ -824,7 +824,7 @@ value of this by specifying the 'transient' hint when sending notifications.
 =item C<set_category>
 
 Sets the category of the notification. See
-https://specifications.freedesktop.org/notification-spec/notification-spec-latest.html#categories
+https://specifications.freedesktop.org/notification-spec/latest/ar01s06.html
 for a list of standard categories.
 
 =item C<timeout>
