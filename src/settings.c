@@ -260,45 +260,52 @@ void check_and_correct_settings(struct settings *s) {
 
 }
 
-void load_settings(char *path) {
+static void process_conf_file(const gpointer conf_fname, gpointer n_success) {
+        const gchar * const p = conf_fname;
+
+        LOG_D("Trying to open '%s'", p);
+        /* Check for "-" here, so the file handling stays in one place */
+        FILE *f = STR_EQ(p, "-") ? stdin : fopen_verbose(p);
+        if (!f)
+                return;
+
+        LOG_I("Parsing config, fd: '%d'", fileno(f));
+        struct ini *ini = load_ini_file(f);
+        LOG_D("Closing config, fd: '%d'", fileno(f));
+        fclose(f);
+
+        LOG_D("Loading settings");
+        save_settings(ini);
+
+        LOG_D("Checking/correcting settings");
+        check_and_correct_settings(&settings);
+
+        finish_ini(ini);
+        free(ini);
+
+        ++(*(int *) n_success);
+}
+
+void load_settings(const char * const path) {
         settings_init();
         LOG_D("Setting defaults");
         set_defaults();
 
-        GQueue *config_files = g_queue_new();
+        GQueue *conf_files = g_queue_new();
 
         if (path) /** If @p path [in] was supplied it will be the only one tried. */
-                g_queue_push_tail(config_files, path);
+                g_queue_push_tail(conf_files, g_strdup(path));
         else
-                get_conf_files(config_files);
+                get_conf_files(conf_files);
 
-        if (g_queue_is_empty(config_files))
+        /* Load all conf files and drop-ins, least important first. */
+        g_queue_reverse(conf_files); /* so we can iterate from least to most important */
+        int n_loaded_confs = 0;
+        g_queue_foreach(conf_files, process_conf_file, &n_loaded_confs);
+        g_queue_free_full(conf_files, g_free);
+
+        if (0 == n_loaded_confs)
                 LOG_W("No configuration file, using defaults");
-        else { /* Load all conf files and drop-ins, least important first. */
-                gchar *path;
-                while ((path = g_queue_pop_tail(config_files))) {
-                        LOG_D("Trying to open '%s'", path);
-                        FILE *f;
-                        /* Check for "-" here, so the file handling stays in one place */
-                        if (!(f = STR_EQ(path, "-") ? stdin : fopen_verbose(path)))
-                                continue;
-
-                        LOG_I("Parsing config, fd: '%d'", fileno(f));
-                        struct ini *ini = load_ini_file(f);
-                        LOG_D("Closing config, fd: '%d'", fileno(f));
-                        fclose(f);
-
-                        LOG_D("Loading settings");
-                        save_settings(ini);
-
-                        LOG_D("Checking/correcting settings");
-                        check_and_correct_settings(&settings);
-
-                        finish_ini(ini);
-                        free(ini);
-                }
-        }
-        g_queue_free(config_files);
 
         for (GSList *iter = rules; iter; iter = iter->next) {
                 struct rule *r = iter->data;

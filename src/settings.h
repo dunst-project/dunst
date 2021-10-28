@@ -161,18 +161,7 @@ struct settings {
 
 extern struct settings settings;
 
-void load_settings(char *cmdline_config_path);
-
-/** \brief Open files verbosely.
- *
- * This is a wrapper around fopen() and fexists() that does some preliminary
- * checks and sends log messages.
- *
- * @returns The result of the fopen() call.
- * @retval NULL if the fopen() call failed or the file does not exist, see
- * also fexists().
- */
-FILE * fopen_conf(char * const path);
+void load_settings(const char * const path);
 
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */
