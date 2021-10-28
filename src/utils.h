@@ -198,5 +198,25 @@ char *string_strip_brackets(const char* s);
  * Returns the length of a string array, -1 if the input is NULL.
  */
 int string_array_length(char **s);
+
+/** @brief Check if file is readable
+ *
+ * This is a convenience function to check if @p path can be resolved and makes
+ * sense to try and open, like regular files and FIFOs (named pipes). Finally,
+ * a preliminary check is done to see if read permission is granted.
+ *
+ * Do not rely too hard on the result, though, since this is racy. A case can
+ * be made that these conditions might not be true anymore by the time the file
+ * is acutally opened for reading.
+ *
+ * Also, no tilde expansion is done. Use the result of `string_to_path()` for
+ * @p path.
+ *
+ * @param path [in] A string representing a path.
+ * @retval true in case of success.
+ * @retval false in case of failure, errno will be set appropriately.
+ */
+bool is_readable_file(const char * const path);
+
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

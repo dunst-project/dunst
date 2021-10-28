@@ -6,8 +6,11 @@
 #include <errno.h>
 #include <glib.h>
 #include <pwd.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -406,4 +409,25 @@ char *string_strip_brackets(const char* s) {
 
 }
 
+/* see utils.h */
+bool is_readable_file(const char * const path)
+{
+        struct stat statbuf;
+        bool result = false;
+
+        if (0 == stat(path, &statbuf)) {
+                /** See what intersting stuff can be done with FIFOs */
+                if (!(statbuf.st_mode & (S_IFIFO | S_IFREG))) {
+                        /** Sets errno if stat() was successful but @p path [in]
+                         * does not point to a regular file or FIFO. This
+                         * just in case someone queries errno which would
+                         * otherwise indicate success. */
+                        errno = EINVAL;
+                } else if (0 == access(path, R_OK)) { /* must also be readable */
+                        result = true;
+                }
+        }
+
+        return result;
+}
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */
