@@ -16,6 +16,7 @@
 #include <unistd.h>
 #include <linux/input-event-codes.h>
 #include <string.h>
+#include <glib.h>
 
 #include "protocols/xdg-shell-client-header.h"
 #include "protocols/xdg-shell.h"
@@ -41,12 +42,11 @@
 struct window_wl {
         cairo_surface_t *c_surface;
         cairo_t * c_ctx;
-
-        GWaterWaylandSource *esrc;
 };
 
 struct wl_ctx {
-        struct wl_display *display;
+        GWaterWaylandSource *esrc;
+        struct wl_display *display; // owned by esrc
         struct wl_registry *registry;
         struct wl_compositor *compositor;
         struct wl_shm *shm;
@@ -429,7 +429,13 @@ bool wl_init() {
         wl_list_init(&toplevel_list);
         //wl_list_init(&ctx.seats); // TODO multi-seat support
 
-        ctx.display = wl_display_connect(NULL);
+        ctx.esrc = g_water_wayland_source_new(NULL, NULL);
+        ctx.display = g_water_wayland_source_get_display(ctx.esrc);
+#if GLIB_CHECK_VERSION(2, 58, 0)
+        g_water_wayland_source_set_error_callback(ctx.esrc, G_SOURCE_FUNC(quit_signal), NULL, NULL);
+#else
+        g_water_wayland_source_set_error_callback(ctx.esrc, (GSourceFunc)quit_signal, NULL, NULL);
+#endif
 
         if (ctx.display == NULL) {
                 LOG_W("failed to create display");
@@ -567,8 +573,8 @@ void wl_deinit() {
                 wl_surface_destroy(ctx.cursor_surface);
         }
 
-        if (ctx.display)
-                wl_display_disconnect(ctx.display);
+        // this also disconnects the wl_display
+        g_water_wayland_source_free(ctx.esrc);
 }
 
 static void schedule_frame_and_commit();
@@ -740,15 +746,11 @@ void set_dirty() {
 
 window wl_win_create(void) {
         struct window_wl *win = g_malloc0(sizeof(struct window_wl));
-
-        win->esrc = g_water_wayland_source_new_for_display(NULL, ctx.display);
         return win;
 }
 
 void wl_win_destroy(window winptr) {
         struct window_wl *win = (struct window_wl*)winptr;
-
-        g_water_wayland_source_free(win->esrc);
         // FIXME: Dealloc everything
         g_free(win);
 }
