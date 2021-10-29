@@ -692,7 +692,7 @@ The body of the notification
 =item C<category>
 
 The category of the notification as defined by the notification spec. See
-https://specifications.freedesktop.org/notification-spec/latest/ar01s06.html
+https://specifications.freedesktop.org/notification-spec/latest/ar01s06.html.
 
 =item C<desktop_entry>
 
