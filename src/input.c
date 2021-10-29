@@ -6,6 +6,21 @@
 #include <stddef.h>
 #include <linux/input-event-codes.h>
 
+struct notification *get_notification_at(const int y) {
+        int curr_y = settings.frame_width;
+        for (const GList *iter = queues_get_displayed(); iter;
+                        iter = iter->next) {
+                struct notification *current = iter->data;
+                if (y > curr_y && y < curr_y + current->displayed_height) {
+                        return current;
+                }
+
+                curr_y += current->displayed_height + settings.separator_height;
+        }
+        // no matching notification was found
+        return NULL;
+}
+
 void input_handle_click(unsigned int button, bool button_down, int mouse_x, int mouse_y){
         LOG_I("Pointer handle button %i: %i", button, button_down);
 
@@ -49,19 +64,7 @@ void input_handle_click(unsigned int button, bool button_down, int mouse_x, int 
                 }
 
                 if (act == MOUSE_DO_ACTION || act == MOUSE_CLOSE_CURRENT || act == MOUSE_CONTEXT || act == MOUSE_OPEN_URL) {
-                        int y = settings.separator_height;
-                        struct notification *n = NULL;
-                        int first = true;
-                        for (const GList *iter = queues_get_displayed(); iter;
-                             iter = iter->next) {
-                                n = iter->data;
-                                if (mouse_y > y && mouse_y < y + n->displayed_height)
-                                        break;
-
-                                y += n->displayed_height + settings.separator_height;
-                                if (first)
-                                        y += settings.frame_width;
-                        }
+                        struct notification *n = get_notification_at(mouse_y);
 
                         if (n) {
                                 if (act == MOUSE_CLOSE_CURRENT) {
