@@ -300,7 +300,7 @@ static const struct setting allowed_settings[] = {
         {
                 .name = "category",
                 .section = "*",
-                .description = "The category of the notification as defined by the notification spec. See https://developer.gnome.org/notification-spec/#categories",
+                .description = "The category of the notification as defined by the notification spec. See https://specifications.freedesktop.org/notification-spec/latest/ar01s06.html",
                 .type = TYPE_STRING,
                 .default_value = "*",
                 .value = NULL,
@@ -478,7 +478,7 @@ static const struct setting allowed_settings[] = {
         {
                 .name = "set_category",
                 .section = "*",
-                .description = "The category of the notification as defined by the notification spec. See https://developer.gnome.org/notification-spec/#categories",
+                .description = "The category of the notification as defined by the notification spec. See https://specifications.freedesktop.org/notification-spec/latest/ar01s06.html",
                 .type = TYPE_STRING,
                 .default_value = "*",
                 .value = NULL,
