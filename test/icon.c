@@ -1,7 +1,8 @@
 #include "../src/icon.c"
 #include "greatest.h"
 
-#define ICONPREFIX "/data/icons/path"
+#define DATAPREFIX "/data"
+#define ICONPATH "/data/icons/theme"
 
 /* As there are no hints to test if the loaded GdkPixbuf is
  * read from a PNG or an SVG file, the sample icons in the
@@ -14,61 +15,22 @@ extern const char *base;
 
 int scale = 1;
 
-TEST test_get_path_from_icon_null(void){
-    char *result = get_path_from_icon_name(NULL);
-    ASSERT_EQ(result, NULL);
-    PASS();
-}
-
-TEST test_get_path_from_icon_sorting(void)
+TEST test_get_path_from_icon_null(void)
 {
-        const char *iconpath = ICONPREFIX;
-
-        const char* icon_names[] = { "onlypng", "onlysvg", "icon1" };
-        const char* icon_paths[] = { "valid/onlypng.png", "valid/onlysvg.svg", "invalid/icon1.svg" };
-        ASSERT_EQm("Test is incorrect", G_N_ELEMENTS(icon_names), G_N_ELEMENTS(icon_paths));
-
-        for (int i = 0; i < G_N_ELEMENTS(icon_names); i++){
-                gchar *path = g_build_filename(base, iconpath, icon_paths[i], NULL);
-                char *result = get_path_from_icon_name(icon_names[i]);
-                ASSERT(result);
-                ASSERT_EQ(strcmp(result, path), 0);
-                g_free(path);
-                g_free(result);
-        }
-
-        PASS();
-}
-
-TEST test_get_path_from_icon_name(void)
-{
-        const char *iconpath = ICONPREFIX;
-
-        const char* icon_name = "onlypng";
-        const char* expected_suffix = ".png";
-        char* full_name = g_strconcat(icon_name, expected_suffix, NULL);
-
-        gchar *path = g_build_filename(base, iconpath, "valid", full_name, NULL);
-        char *result = get_path_from_icon_name(icon_name);
-
-        ASSERT(result);
-        ASSERT_EQ(strcmp(result, path), 0);
-
-        g_free(full_name);
-        g_free(path);
-        g_free(result);
+        char *result = get_path_from_icon_name(NULL);
+        ASSERT_EQ(result, NULL);
         PASS();
 }
 
 TEST test_get_path_from_icon_name_full(void)
 {
-        const char *iconpath = ICONPREFIX;
+        const char *iconpath = ICONPATH;
 
         gchar *path = g_build_filename(base, iconpath, "valid", "icon1.svg", NULL);
 
         char *result = get_path_from_icon_name(path);
         ASSERT(result);
-        ASSERT_EQ(strcmp(result, path), 0);
+        ASSERT_STR_EQ(result, path);
 
         g_free(path);
         g_free(result);
@@ -78,36 +40,34 @@ TEST test_get_path_from_icon_name_full(void)
 TEST test_get_pixbuf_from_file_tilde(void)
 {
         const char *home = g_get_home_dir();
-        const char *iconpath = ICONPREFIX;
+        const char *iconpath = ICONPATH;
 
         if (0 != strncmp(home, base, strlen(home))) {
                 SKIPm("Current directory is not a subdirectory from user's home."
                       " Cannot test iconpath tilde expansion.\n");
         }
 
-        gchar *path = g_build_filename(base, iconpath, "valid", "icon1.svg", NULL);
+        gchar *path = g_build_filename(base, iconpath, "16x16", "actions", "edit.png", NULL);
         path = string_replace_at(path, 0, strlen(home), "~");
 
         GdkPixbuf *pixbuf = get_pixbuf_from_file(path, scale);
         g_clear_pointer(&path, g_free);
 
         ASSERT(pixbuf);
-        ASSERTm("The wrong pixbuf is loaded in the icon file.", IS_ICON_SVG(pixbuf));
         g_clear_pointer(&pixbuf, g_object_unref);
         PASS();
 }
 
 TEST test_get_pixbuf_from_file_absolute(void)
 {
-        const char *iconpath = ICONPREFIX;
+        const char *iconpath = ICONPATH;
 
-        gchar *path = g_build_filename(base, iconpath, "valid", "icon1.svg", NULL);
+        gchar *path = g_build_filename(base, iconpath, "16x16", "actions", "edit.png", NULL);
 
         GdkPixbuf *pixbuf = get_pixbuf_from_file(path, scale);
         g_clear_pointer(&path, g_free);
 
         ASSERT(pixbuf);
-        ASSERTm("The wrong pixbuf is loaded in the icon file.", IS_ICON_SVG(pixbuf));
         g_clear_pointer(&pixbuf, g_object_unref);
 
         PASS();
@@ -117,36 +77,6 @@ TEST test_get_pixbuf_from_icon_invalid(void)
 {
         GdkPixbuf *pixbuf = get_pixbuf_from_icon("invalid", scale);
         ASSERT(pixbuf == NULL);
-        g_clear_pointer(&pixbuf, g_object_unref);
-
-        PASS();
-}
-
-TEST test_get_pixbuf_from_icon_both(void)
-{
-        GdkPixbuf *pixbuf = get_pixbuf_from_icon("icon1", scale);
-        // the first icon  found is invalid, so the pixbuf is empty
-        ASSERT(!pixbuf);
-        g_clear_pointer(&pixbuf, g_object_unref);
-
-        PASS();
-}
-
-TEST test_get_pixbuf_from_icon_onlysvg(void)
-{
-        GdkPixbuf *pixbuf = get_pixbuf_from_icon("onlysvg", scale);
-        ASSERT(pixbuf);
-        ASSERTm("SVG pixbuf isn't loaded", IS_ICON_SVG(pixbuf));
-        g_clear_pointer(&pixbuf, g_object_unref);
-
-        PASS();
-}
-
-TEST test_get_pixbuf_from_icon_onlypng(void)
-{
-        GdkPixbuf *pixbuf = get_pixbuf_from_icon("onlypng", scale);
-        ASSERT(pixbuf);
-        ASSERTm("PNG pixbuf isn't loaded", IS_ICON_PNG(pixbuf));
         g_clear_pointer(&pixbuf, g_object_unref);
 
         PASS();
@@ -220,42 +150,19 @@ TEST test_icon_size_clamp_too_small_then_too_big(void)
         PASS();
 }
 
-TEST test_get_pixbuf_from_icon_both_is_scaled(void)
-{
-        GdkPixbuf *pixbuf = get_pixbuf_from_icon("onlypng", scale);
-        ASSERT(pixbuf);
-        ASSERT_EQ(gdk_pixbuf_get_width(pixbuf), 16);
-        ASSERT_EQ(gdk_pixbuf_get_height(pixbuf), 16);
-        g_clear_pointer(&pixbuf, g_object_unref);
-
-        PASS();
-}
-
 SUITE(suite_icon)
 {
         // set only valid icons in the path
-        settings.icon_path = g_strconcat(
-                     base, ICONPREFIX "/valid"
-                ":", base, ICONPREFIX "/both",
-                NULL);
-        RUN_TEST(test_get_path_from_icon_name);
-
-        g_clear_pointer(&settings.icon_path, g_free);
-        settings.icon_path = g_strconcat(
-                     base, ICONPREFIX "/invalid"
-                ":", base, ICONPREFIX "/valid"
-                ":", base, ICONPREFIX "/both",
-                NULL);
-
+        char *icon_path = g_build_filename(base, DATAPREFIX, NULL);
+        setenv("XDG_DATA_HOME", icon_path, 1);
+        printf("Icon path: %s\n", icon_path);
+        free(settings.icon_theme);
+        settings.icon_theme = "theme";
         RUN_TEST(test_get_path_from_icon_null);
-        RUN_TEST(test_get_path_from_icon_sorting);
         RUN_TEST(test_get_path_from_icon_name_full);
         RUN_TEST(test_get_pixbuf_from_file_tilde);
         RUN_TEST(test_get_pixbuf_from_file_absolute);
         RUN_TEST(test_get_pixbuf_from_icon_invalid);
-        RUN_TEST(test_get_pixbuf_from_icon_both);
-        RUN_TEST(test_get_pixbuf_from_icon_onlysvg);
-        RUN_TEST(test_get_pixbuf_from_icon_onlypng);
         RUN_TEST(test_get_pixbuf_from_icon_filename);
         RUN_TEST(test_get_pixbuf_from_icon_fileuri);
         RUN_TEST(test_icon_size_clamp_not_necessary);
@@ -263,7 +170,6 @@ SUITE(suite_icon)
         settings.min_icon_size = 16;
         settings.max_icon_size = 100;
 
-        RUN_TEST(test_get_pixbuf_from_icon_both_is_scaled);
         RUN_TEST(test_icon_size_clamp_too_small);
         RUN_TEST(test_icon_size_clamp_not_necessary);
         RUN_TEST(test_icon_size_clamp_too_big);
@@ -284,6 +190,7 @@ SUITE(suite_icon)
         settings.min_icon_size = 0;
         settings.max_icon_size = 0;
 
-        g_clear_pointer(&settings.icon_path, g_free);
+        settings.icon_theme = NULL;
+        g_clear_pointer(&icon_path, g_free);
 }
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

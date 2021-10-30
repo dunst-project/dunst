@@ -273,8 +273,6 @@ SUITE(suite_notification)
         g_clear_pointer(&a, notification_unref);
 
         RUN_TEST(test_notification_maxlength);
-
-        g_clear_pointer(&settings.icon_path, g_free);
 }
 
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
