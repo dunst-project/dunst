@@ -32,7 +32,9 @@ Type=Fixed
 
 [32x32/actions]
 Size=32
-Type=Fixed
+Type=Scalable
+MinSize=32
+MaxSize=64
 
 [32x32/apps]
 Size=32
