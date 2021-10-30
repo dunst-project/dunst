@@ -11,6 +11,7 @@
 * [Features](#features)
 * [Building](#building)
 * [Documentation](#documentation)
+* [Troubleshooting](#troubleshooting)
 * [Copyright](#copyright)
 
 # Features
@@ -142,6 +143,20 @@ override settings, see the FILES section in dunst(1) for more details.
 
 `make uninstall` will not remove ${SYSCONFFILE}, use `make uninstall-purge` if
 you do want it removed as well.
+
+## Troubleshooting
+
+### Shortcuts stopped working
+
+Shortcut support and `[shortcuts]` section in config have been removed for
+simplicity. Use your window manager/desktop environment and `dunstctl` to
+replace it.
+
+### Cannot set settings via command line
+
+This functionality was removed during the refactor. It might be re-added later
+in some form. See [#940](https://github.com/dunst-project/dunst/issues/940) for
+details.
 
 ## Bug reports
 
