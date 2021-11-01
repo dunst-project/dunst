@@ -40,5 +40,7 @@ int dunst_main(int argc, char *argv[]);
 void usage(int exit_status);
 void print_version(void);
 
+gboolean quit_signal(gpointer data);
+
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */
