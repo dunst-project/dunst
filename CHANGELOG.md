@@ -1,5 +1,11 @@
 # Dunst changelog
 
+## Unreleased
+
+### Added
+### Changed
+### Fixed
+
 ## 1.7.1 -- 2021-11-01
 
 ### Added
