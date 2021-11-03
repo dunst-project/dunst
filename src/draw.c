@@ -163,9 +163,9 @@ static void get_text_size(PangoLayout *l, int *w, int *h, double scale) {
         // scale the size down, because it may be rendered at higher DPI
 
         if (w)
-                *w = round(*w / scale);
+                *w = ceil(*w / scale);
         if (h)
-                *h = round(*h / scale);
+                *h = ceil(*h / scale);
 }
 
 // Set up pango for a given layout.
