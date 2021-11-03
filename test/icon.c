@@ -37,75 +37,6 @@ TEST test_get_path_from_icon_name_full(void)
         PASS();
 }
 
-TEST test_get_pixbuf_from_file_tilde(void)
-{
-        const char *home = g_get_home_dir();
-        const char *iconpath = ICONPATH;
-
-        if (0 != strncmp(home, base, strlen(home))) {
-                SKIPm("Current directory is not a subdirectory from user's home."
-                      " Cannot test iconpath tilde expansion.\n");
-        }
-
-        gchar *path = g_build_filename(base, iconpath, "16x16", "actions", "edit.png", NULL);
-        path = string_replace_at(path, 0, strlen(home), "~");
-
-        GdkPixbuf *pixbuf = get_pixbuf_from_file(path, scale);
-        g_clear_pointer(&path, g_free);
-
-        ASSERT(pixbuf);
-        g_clear_pointer(&pixbuf, g_object_unref);
-        PASS();
-}
-
-TEST test_get_pixbuf_from_file_absolute(void)
-{
-        const char *iconpath = ICONPATH;
-
-        gchar *path = g_build_filename(base, iconpath, "16x16", "actions", "edit.png", NULL);
-
-        GdkPixbuf *pixbuf = get_pixbuf_from_file(path, scale);
-        g_clear_pointer(&path, g_free);
-
-        ASSERT(pixbuf);
-        g_clear_pointer(&pixbuf, g_object_unref);
-
-        PASS();
-}
-
-TEST test_get_pixbuf_from_icon_invalid(void)
-{
-        GdkPixbuf *pixbuf = get_pixbuf_from_icon("invalid", scale);
-        ASSERT(pixbuf == NULL);
-        g_clear_pointer(&pixbuf, g_object_unref);
-
-        PASS();
-}
-
-TEST test_get_pixbuf_from_icon_filename(void)
-{
-        char *icon = g_strconcat(base, "/data/icons/valid.png", NULL);
-        GdkPixbuf *pixbuf = get_pixbuf_from_icon(icon, scale);
-        ASSERT(pixbuf);
-        ASSERTm("PNG pixbuf isn't loaded", IS_ICON_PNG(pixbuf));
-        g_clear_pointer(&pixbuf, g_object_unref);
-
-        g_free(icon);
-        PASS();
-}
-
-TEST test_get_pixbuf_from_icon_fileuri(void)
-{
-        char *icon = g_strconcat("file://", base, "/data/icons/valid.svg", NULL);
-        GdkPixbuf *pixbuf = get_pixbuf_from_icon(icon, scale);
-        ASSERT(pixbuf);
-        ASSERTm("SVG pixbuf isn't loaded", IS_ICON_SVG(pixbuf));
-        g_clear_pointer(&pixbuf, g_object_unref);
-
-        g_free(icon);
-        PASS();
-}
-
 TEST test_icon_size_clamp_too_small(void)
 {
         int w = 12, h = 24;
@@ -160,11 +91,6 @@ SUITE(suite_icon)
         settings.icon_theme = "theme";
         RUN_TEST(test_get_path_from_icon_null);
         RUN_TEST(test_get_path_from_icon_name_full);
-        RUN_TEST(test_get_pixbuf_from_file_tilde);
-        RUN_TEST(test_get_pixbuf_from_file_absolute);
-        RUN_TEST(test_get_pixbuf_from_icon_invalid);
-        RUN_TEST(test_get_pixbuf_from_icon_filename);
-        RUN_TEST(test_get_pixbuf_from_icon_fileuri);
         RUN_TEST(test_icon_size_clamp_not_necessary);
 
         settings.min_icon_size = 16;

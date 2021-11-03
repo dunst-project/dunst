@@ -264,35 +264,6 @@ char *get_path_from_icon_name(const char *iconname)
         return new_name;
 }
 
-GdkPixbuf *get_pixbuf_from_icon(const char *iconname, double scale)
-{
-        char *path = get_path_from_icon_name(iconname);
-        if (!path) {
-                return NULL;
-        }
-
-        GdkPixbuf *pixbuf = NULL;
-
-        pixbuf = get_pixbuf_from_file(path, scale);
-        g_free(path);
-
-        if (!pixbuf)
-                LOG_W("No icon found in path: '%s'", iconname);
-
-        return pixbuf;
-}
-
-GdkPixbuf *icon_get_for_name(const char *name, char **id, double scale)
-{
-        ASSERT_OR_RET(name, NULL);
-        ASSERT_OR_RET(id, NULL);
-
-        GdkPixbuf *pb = get_pixbuf_from_icon(name, scale);
-        if (pb)
-                *id = g_strdup(name);
-        return pb;
-}
-
 GdkPixbuf *icon_get_for_data(GVariant *data, char **id, double dpi_scale)
 {
         ASSERT_OR_RET(data, NULL);
