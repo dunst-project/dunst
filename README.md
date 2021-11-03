@@ -174,6 +174,7 @@ Please use the [issue tracker][issue-tracker] provided by GitHub to send us bug 
 
 ## Maintainers
 
+- [Friso Smit](https://github.com/fwsmit) <fw.smit01@gmail.com>
 - [Nikos Tsipinakis](https://github.com/tsipinakis) <nikos@tsipinakis.com>
 - [Benedikt Heine](https://github.com/bebehei) <bebe@bebehei.de>
 
