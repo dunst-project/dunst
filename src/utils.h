@@ -92,7 +92,7 @@ void string_strip_delimited(char *str, char a, char b);
  *
  * @param string The string to convert to an array
  * @param delimiter The character that separates list entries
- * @returns The array of tokens.
+ * @returns The array of tokens owned by the caller. Free with g_strfreev.
  */
 char **string_to_array(const char *string, const char *delimiter);
 
