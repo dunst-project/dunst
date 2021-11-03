@@ -59,6 +59,9 @@ void draw_setup(void)
         pango_fdesc = pango_font_description_from_string(settings.font);
 
         int theme_index = load_icon_theme(settings.icon_theme);
+        if (theme_index == -1)
+                theme_index = load_icon_theme("hicolor");
+
         set_default_theme(theme_index);
 }
 
