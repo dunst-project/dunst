@@ -13,7 +13,8 @@
 
 struct icon_theme *icon_themes = NULL;
 int icon_themes_count = 0;
-int default_theme_index = -1;
+int *default_themes_index = NULL;
+int default_themes_count = 0;
 
 static bool is_readable_file(const char *filename)
 {
@@ -27,13 +28,6 @@ int get_icon_theme(char *name) {
                 }
         }
         return -1;
-}
-
-void print_all_dir_counts(char *theme_name, char *msg) {
-        printf("%s: %s\n", theme_name, msg);
-        for (int i = 0; i < icon_themes_count; i++) {
-                printf("Dir count %s: %i\n", icon_themes[i].name, icon_themes[i].dirs_count);
-        }
 }
 
 /**
@@ -50,7 +44,7 @@ void print_all_dir_counts(char *theme_name, char *msg) {
  * @retval -1 means no index was found
  */
 int load_icon_theme_from_dir(const char *icon_dir, const char *subdir_theme) {
-        printf("Loading theme %s/%s\n", icon_dir, subdir_theme);
+        LOG_D("Loading theme %s/%s\n", icon_dir, subdir_theme);
         char *theme_index_dir = g_build_filename(icon_dir, subdir_theme, "index.theme", NULL);
         FILE *theme_index = fopen(theme_index_dir, "r");
         g_free(theme_index_dir);
@@ -76,7 +70,6 @@ int load_icon_theme_from_dir(const char *icon_dir, const char *subdir_theme) {
 
         // load theme directories
         icon_themes[index].dirs_count = ini->section_count - 1;
-        print_all_dir_counts(icon_themes[index].name, "First");
         icon_themes[index].dirs = calloc(icon_themes[index].dirs_count, sizeof(struct icon_theme_dir));
 
         for (int i = 0; i < icon_themes[index].dirs_count; i++) {
@@ -129,7 +122,6 @@ int load_icon_theme_from_dir(const char *icon_dir, const char *subdir_theme) {
                         }
                 }
         }
-        print_all_dir_counts(icon_themes[index].name, "Second");
 
 
         // load inherited themes
@@ -137,7 +129,7 @@ int load_icon_theme_from_dir(const char *icon_dir, const char *subdir_theme) {
         {
                 char **inherits = string_to_array(get_value(ini, "Icon Theme", "Inherits"), ",");
                 icon_themes[index].inherits_count = string_array_length(inherits);
-                printf("Theme has %i inherited themes\n", icon_themes[index].inherits_count);
+                LOG_D("Theme has %i inherited themes\n", icon_themes[index].inherits_count);
                 if (icon_themes[index].inherits_count <= 0) {
                         // set fallback theme to hicolor if there are no inherits
                         g_strfreev(inherits);
@@ -150,15 +142,13 @@ int load_icon_theme_from_dir(const char *icon_dir, const char *subdir_theme) {
                 icon_themes[index].inherits_index = calloc(icon_themes[index].inherits_count, sizeof(int));
 
                 for (int i = 0; inherits[i] != NULL; i++) {
-                        printf("inherits: %s\n", inherits[i]);
+                        LOG_D("inherits: %s\n", inherits[i]);
                         icon_themes[index].inherits_index[i] = get_icon_theme(inherits[i]);
                         if (icon_themes[index].inherits_index[i] == -1) {
-                                printf("Loading inherited theme\n");
-                                print_all_dir_counts(icon_themes[index].name, "Third");
+                                LOG_D("Loading inherited theme\n");
                                 // FIXME don't use a pointer to the theme,
                                 // since it may be invalidated after realloc. Use an index instead
                                 icon_themes[index].inherits_index[i] = load_icon_theme(inherits[i]);
-                                print_all_dir_counts("unknown", "Fourth");
                         }
                 }
                 g_strfreev(inherits);
@@ -168,10 +158,6 @@ int load_icon_theme_from_dir(const char *icon_dir, const char *subdir_theme) {
 
         finish_ini(ini);
         free(ini);
-
-        print_all_dir_counts("unknown", "End");
-        printf("Othere dirs count %i\n", icon_themes[0].dirs_count);
-        printf("index %i\n", index);
         return index;
 }
 
@@ -215,7 +201,7 @@ void get_theme_path() {
         add_paths_from_env(theme_path, "XDG_DATA_DIRS", "icons", "/usr/local/share/:/usr/share/");
         g_ptr_array_add(theme_path, g_strdup("/usr/share/pixmaps"));
         for (int i = 0; i < theme_path->len; i++) {
-                printf("Theme locations: %s\n", (char*)theme_path->pdata[i]);
+                LOG_D("Theme locations: %s\n", (char*)theme_path->pdata[i]);
         }
 }
 
@@ -244,7 +230,6 @@ void finish_icon_theme_dir(struct icon_theme_dir *dir) {
 void finish_icon_theme(struct icon_theme *theme) {
         if (!theme)
                 return;
-        printf("Finishing %i dirs\n", theme->dirs_count);
         for (int i = 0; i < theme->dirs_count; i++) {
                 finish_icon_theme_dir(&theme->dirs[i]);
         }
@@ -256,9 +241,8 @@ void finish_icon_theme(struct icon_theme *theme) {
 }
 
 void free_all_themes() {
-        printf("Finishing %i themes\n", icon_themes_count);
+        LOG_D("Finishing %i themes\n", icon_themes_count);
         for (int i = 0; i < icon_themes_count; i++) {
-                printf("Theme dirs %i\n", icon_themes[i].dirs_count);
                 finish_icon_theme(&icon_themes[i]);
         }
         free(icon_themes);
@@ -269,7 +253,7 @@ void free_all_themes() {
 }
 
 // see icon-lookup.h
-void set_default_theme(int theme_index) {
+void add_default_theme(int theme_index) {
         if (theme_index < 0) {
                 LOG_W("Invalid theme index: %i", theme_index);
                 return;
@@ -279,13 +263,16 @@ void set_default_theme(int theme_index) {
                                 theme_index);
                 return;
         }
-        default_theme_index = theme_index;
+        default_themes_count++;
+        default_themes_index = realloc(default_themes_index,
+                        default_themes_count * sizeof(int));
+        default_themes_index[default_themes_count - 1] = theme_index;
 }
 
 // see icon-lookup.h
 char *find_icon_in_theme(const char *name, int theme_index, int size) {
         struct icon_theme *theme = &icon_themes[theme_index];
-        printf("Finding icon %s in theme %s\n", name, theme->name);
+        LOG_D("Finding icon %s in theme %s\n", name, theme->name);
         for (int i = 0; i < theme->dirs_count; i++) {
                 bool match_size = false;
                 struct icon_theme_dir dir = theme->dirs[i];
@@ -362,9 +349,16 @@ char *find_icon_path(const char *name, int size) {
                         return NULL;
         }
 
-        if (default_theme_index == -1) {
-                printf("No icon theme has been set.\n");
+        if (!default_themes_index) {
+                LOG_W("No icon theme has been set.\n");
                 return NULL;
         }
-        return find_icon_in_theme_with_inherit(name, default_theme_index, size);
+        for (int i = 0; i < default_themes_count; i++) {
+                char *icon = find_icon_in_theme_with_inherit(name,
+                                default_themes_index[i], size);
+                if (icon)
+                        return icon;
+
+        }
+        return NULL;
 }

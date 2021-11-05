@@ -388,18 +388,22 @@ If B<icon_position> is set to off, this setting is ignored.
 Can be set to a colon-separated list of paths to search for icons to use with
 notifications.
 
-Dunst doesn't currently do any type of icon lookup outside of these
-directories.
+Dunst doens't search outside of these direcories. For a recursive icon lookup
+system, see B<enable_recursive_icon_lookup>. This new system will eventually
+replace this and will need new settings.
 
-=item B<icon_theme> (default: "hicolor") I<Experimental>
+=item B<icon_theme> (default: "Adwaita", example: "Adwaita, breeze") I<Experimental>
 
-The name of the the theme to use for looking up icons. This has to be the name
-of the directory in which the theme is located, not the human-friendly name of
-the theme. So for example, the theme B<Breeze Dark> is located in
-F</usr/share/icons/breeze-dark>. In this case you have to set the theme to
-B<breeze-dark>.
+Comma-separated of names of the the themes to use for looking up icons. This has
+to be the name of the directory in which the theme is located, not the
+human-friendly name of the theme. So for example, the theme B<Breeze Dark> is
+located in F</usr/share/icons/breeze-dark>. In this case you have to set the
+theme to B<breeze-dark>.
 
-Dunst will look for the theme in B<XDG_DATA_HOME/icons> and
+The first theme in the list is the most important. Only if the icon cannot be
+found in that theme, the next theme will be tried.
+
+Dunst will look for the themes in B<XDG_DATA_HOME/icons> and
 B<$XDG_DATA_DIRS/icons> as specified in the icon theme specification:
 https://specifications.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html.
 
@@ -410,7 +414,8 @@ B<enable_recursive_icon_lookup> for how to enable it.
 
 =item B<enable_recursive_icon_lookup> (default: false) I<Experimental>
 
-This setting enables the new icon lookup method.
+This setting enables the new icon lookup method. This new system will eventually
+be the old icon lookup.
 
 Currently icons are looked up in the B<icon_path> and scaled according to
 B<min_icon_size> and B<max_icon_size>. Since the B<icon_path> wasn't recursive,

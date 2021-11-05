@@ -139,8 +139,8 @@ const enum zwlr_layer_shell_v1_layer {
 enum list_type {
         INVALID_LIST = 0,
         MOUSE_LIST = 1,
-        ORIGIN_LIST = 2,
-        OFFSET_LIST = 3,
+        OFFSET_LIST = 2,
+        STRING_LIST = 3,
 };
 
 #define ENUM_END {NULL, 0}
@@ -1054,11 +1054,11 @@ static const struct setting allowed_settings[] = {
                 .name = "icon_theme",
                 .section = "global",
                 .description = "Name of the icon theme",
-                .type = TYPE_STRING,
+                .type = TYPE_LIST,
                 .default_value = "Adwaita",
                 .value = &settings.icon_theme,
                 .parser = NULL,
-                .parser_data = NULL,
+                .parser_data = GINT_TO_POINTER(STRING_LIST),
         },
         {
                 .name = "icon_path",

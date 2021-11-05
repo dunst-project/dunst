@@ -38,12 +38,13 @@ int load_icon_theme(char *name);
 
 
 /**
- * Set the default icon theme used for looking up icons. Inherited themes will
- * be used as a fallback.
+ * Add theme to the list of default themes. The theme that's added first will
+ * be used first for lookup. After that the inherited themes will be used and
+ * only after that the next default theme will be used.
  *
  * @param theme_index The index of the theme as returned by #load_icon_theme
  */
-void set_default_theme(int theme_index);
+void add_default_theme(int theme_index);
 
 /**
  * Find icon of specified size in selected theme. This function will not return
@@ -71,6 +72,11 @@ void set_default_theme(int theme_index);
  * @retval NULL if the icon cannot be found or is not readable.
  */
 char *find_icon_path(const char *name, int size);
+
+/**
+ * Free all icon themes.
+ */
+void free_all_themes();
 
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

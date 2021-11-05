@@ -49,6 +49,28 @@ PangoFontDescription *pango_fdesc;
 
 #define UINT_MAX_N(bits) ((1 << bits) - 1)
 
+void load_icon_themes()
+{
+        bool loaded_theme = false;
+
+        for (int i = 0; settings.icon_theme[i] != NULL; i++) {
+                char *theme = settings.icon_theme[i];
+                int theme_index = load_icon_theme(theme);
+                if (theme_index >= 0) {
+                        LOG_W("Adding default theme %s", theme);
+                        add_default_theme(theme_index);
+                        loaded_theme = true;
+                } else {
+                        LOG_W("NOT Adding default theme '%s'", theme);
+                }
+        }
+        if (!loaded_theme) {
+                int theme_index = load_icon_theme("hicolor");
+                add_default_theme(theme_index);
+        }
+
+}
+
 void draw_setup(void)
 {
         const struct output *out = output_create(settings.force_xwayland);
@@ -58,11 +80,8 @@ void draw_setup(void)
 
         pango_fdesc = pango_font_description_from_string(settings.font);
 
-        int theme_index = load_icon_theme(settings.icon_theme);
-        if (theme_index == -1)
-                theme_index = load_icon_theme("hicolor");
-
-        set_default_theme(theme_index);
+        if (settings.enable_recursive_icon_lookup)
+                load_icon_themes();
 }
 
 static struct color hex_to_color(uint32_t hexValue, int dpc)
@@ -787,6 +806,8 @@ void draw_deinit(void)
 {
         output->win_destroy(win);
         output->deinit();
+        if (settings.enable_recursive_icon_lookup)
+                free_all_themes();
 }
 
 double draw_get_scale(void)

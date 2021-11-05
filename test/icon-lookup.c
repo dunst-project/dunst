@@ -7,7 +7,7 @@ extern const char *base;
 int setup_test_theme(){
         char *theme_path = g_build_filename(base, ICONPREFIX,  NULL);
         int theme_index = load_icon_theme_from_dir(theme_path, "theme");
-        set_default_theme(theme_index);
+        add_default_theme(theme_index);
         g_free(theme_path);
         return theme_index;
 }
@@ -68,26 +68,80 @@ TEST test_find_path(void)
 // TODO move this out of the test suite, since this isn't a real test
 TEST test_bench_search(void)
 {
-        // At the time of committing, I get numbers like 0.001189 seconds for looking up this icon for the first time and 0.000489 for subsequent times.
+        printf("Starting benchmark\n");
+        // At the time of committing, I get numbers like 0.25 second for 1000 icon lookups
         int index = load_icon_theme("Papirus");
-        set_default_theme(index);
-        clock_t start_time = clock();
+        add_default_theme(index);
         printf("Benchmarking icons\n");
-        char *icon = find_icon_path("gnome-fallback-compiz_badge-symbolic", 512);
-        ASSERT(icon);
-        printf("Icon found: %s\n", icon);
+        clock_t start_time = clock();
+        for (int i = 0; i < 1000; i++){
+                // icon is part of papirus, right at the end of index.theme
+                char *icon = find_icon_path("weather-windy-symbolic", 512);
+                ASSERT(icon);
+                g_free(icon);
+        }
         double elapsed_time = (double)(clock() - start_time) / CLOCKS_PER_SEC;
         printf("Done in %f seconds\n", elapsed_time);
-        printf("Result :%s\n", icon);
         free_all_themes();
-        g_free(icon);
         PASS();
 }
+
+TEST test_bench_multiple_search(void)
+{
+        printf("Starting benchmark\n");
+        // At the time of committing, I get numbers like 2 second for 1000 icon lookups
+        int index = load_icon_theme("Adwaita");
+        add_default_theme(index);
+        index = load_icon_theme("Papirus");
+        add_default_theme(index);
+        printf("Benchmarking icons\n");
+        clock_t start_time = clock();
+        for (int i = 0; i < 1000; i++){
+                // icon is part of papirus, right at the end of index.theme
+                char *icon = find_icon_path("view-wrapped-rtl-symbolic", 512);
+                /* printf("%s\n", icon); */
+                ASSERT(icon);
+                g_free(icon);
+        }
+        double elapsed_time = (double)(clock() - start_time) / CLOCKS_PER_SEC;
+        printf("Done in %f seconds\n", elapsed_time);
+        free_all_themes();
+        PASS();
+}
+
+TEST test_bench_doesnt_exist(void)
+{
+        printf("Starting benchmark\n");
+        // At the time of committing, I get numbers like 9 seconds for 1000 icon lookups
+        int index = load_icon_theme("Adwaita");
+        add_default_theme(index);
+        index = load_icon_theme("Papirus");
+        add_default_theme(index);
+        printf("Benchmarking icons\n");
+        clock_t start_time = clock();
+        for (int i = 0; i < 1000; i++){
+                // Icon size is chosen as some common icon size.
+                char *icon = find_icon_path("doesn't exist", 48);
+                /* printf("%s\n", icon); */
+                ASSERT_FALSE(icon);
+                g_free(icon);
+        }
+        double elapsed_time = (double)(clock() - start_time) / CLOCKS_PER_SEC;
+        printf("Done in %f seconds\n", elapsed_time);
+        free_all_themes();
+        PASS();
+}
+
 
 SUITE (suite_icon_lookup)
 {
         RUN_TEST(test_load_theme_from_dir);
         RUN_TEST(test_find_icon);
         RUN_TEST(test_find_path);
-        /* RUN_TEST(test_bench_search); */
+        bool bench = false;
+        if (bench) {
+                RUN_TEST(test_bench_search);
+                RUN_TEST(test_bench_multiple_search);
+                RUN_TEST(test_bench_doesnt_exist);
+        }
 }

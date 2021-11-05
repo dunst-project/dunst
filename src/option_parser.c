@@ -153,6 +153,12 @@ int string_parse_list(const void *data, const char *s, void *ret) {
                         offset->y = int_arr[1];
                         g_free(int_arr);
                         break;
+                case STRING_LIST: ;
+                        g_strfreev(*(char ***) ret);
+                        *(char ***) ret = string_to_array(s, ",");
+                        success = true;
+                        break;
+
                 default:
                         LOG_W("Don't know this list type: %i", type);
                         break;

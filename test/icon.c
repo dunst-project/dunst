@@ -14,10 +14,11 @@
 extern const char *base;
 
 int scale = 1;
+int size = 16;
 
 TEST test_get_path_from_icon_null(void)
 {
-        char *result = get_path_from_icon_name(NULL);
+        char *result = get_path_from_icon_name(NULL, 16);
         ASSERT_EQ(result, NULL);
         PASS();
 }
@@ -28,7 +29,7 @@ TEST test_get_path_from_icon_name_full(void)
 
         gchar *path = g_build_filename(base, iconpath, "valid", "icon1.svg", NULL);
 
-        char *result = get_path_from_icon_name(path);
+        char *result = get_path_from_icon_name(path, size);
         ASSERT(result);
         ASSERT_STR_EQ(result, path);
 
@@ -87,8 +88,6 @@ SUITE(suite_icon)
         char *icon_path = g_build_filename(base, DATAPREFIX, NULL);
         setenv("XDG_DATA_HOME", icon_path, 1);
         printf("Icon path: %s\n", icon_path);
-        free(settings.icon_theme);
-        settings.icon_theme = "theme";
         RUN_TEST(test_get_path_from_icon_null);
         RUN_TEST(test_get_path_from_icon_name_full);
         RUN_TEST(test_icon_size_clamp_not_necessary);
@@ -115,8 +114,6 @@ SUITE(suite_icon)
 
         settings.min_icon_size = 0;
         settings.max_icon_size = 0;
-
-        settings.icon_theme = NULL;
         g_clear_pointer(&icon_path, g_free);
 }
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
