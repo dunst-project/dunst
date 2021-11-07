@@ -241,6 +241,9 @@ void finish_icon_theme(struct icon_theme *theme) {
 }
 
 void free_all_themes() {
+        free(default_themes_index);
+        default_themes_index = NULL;
+        default_themes_count = 0;
         LOG_D("Finishing %i themes\n", icon_themes_count);
         for (int i = 0; i < icon_themes_count; i++) {
                 finish_icon_theme(&icon_themes[i]);
