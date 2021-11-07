@@ -305,14 +305,31 @@ void notification_unref(struct notification *n)
         g_free(n);
 }
 
+void notification_transfer_icon(struct notification *from, struct notification *to)
+{
+        if (from->iconname && to->iconname
+                        && strcmp(from->iconname, to->iconname) == 0){
+                // Icons are the same. Transfer icon surface
+                to->icon = from->icon;
+
+                // prevent the surface being freed by the old notification
+                from->icon = NULL;
+        }
+}
+
 void notification_icon_replace_path(struct notification *n, const char *new_icon)
 {
         ASSERT_OR_RET(n,);
         ASSERT_OR_RET(new_icon,);
-        ASSERT_OR_RET(n->iconname != new_icon,);
+        if(n->iconname && n->icon && strcmp(n->iconname, new_icon) == 0) {
+                return;
+        }
 
-        g_free(n->iconname);
-        n->iconname = g_strdup(new_icon);
+        // make sure it works, even if n->iconname is passed as new_icon
+        if (n->iconname != new_icon) {
+                g_free(n->iconname);
+                n->iconname = g_strdup(new_icon);
+        }
 
         cairo_surface_destroy(n->icon);
         n->icon = NULL;
@@ -435,13 +452,8 @@ void notification_init(struct notification *n)
         /* Icon handling */
         if (STR_EMPTY(n->iconname))
                 g_clear_pointer(&n->iconname, g_free);
-        if (!n->icon && n->iconname) {
-                char *icon = g_strdup(n->iconname);
-                notification_icon_replace_path(n, icon);
-                g_free(icon);
-        }
         if (!n->icon && !n->iconname)
-                notification_icon_replace_path(n, settings.icons[n->urgency]);
+                n->iconname = g_strdup(settings.icons[n->urgency]);
 
         /* Color hints */
         struct notification_colors defcolors;

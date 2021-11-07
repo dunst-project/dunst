@@ -154,6 +154,16 @@ struct notification *notification_lock(struct notification *n);
 
 struct notification *notification_unlock(struct notification *n);
 
+/**
+ * Transfer the image surface of \p from to \p to. The image surface is
+ * transfered only if the icon names match. When the icon is transferred, it is
+ * removed from the old notification to make sure it's not freed twice.
+ *
+ * @param from The notification of which the icon surface is removed.
+ * @param to The notification that receives the icon surface.
+ */
+void notification_transfer_icon(struct notification *from, struct notification *to);
+
 /**Replace the current notification's icon with the icon specified by path.
  *
  * Removes the reference for the previous icon automatically and will also free the
