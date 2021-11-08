@@ -145,6 +145,27 @@ static void teardown(void)
         draw_deinit();
 }
 
+char *cmdline_config_path;
+
+void reload(void)
+{
+        LOG_W("Reloading config");
+
+        // temporarily pause dunst
+        struct dunst_status save = status;
+        dunst_status(S_RUNNING, false);
+        queues_update(status);
+        wake_up();
+
+        draw_deinit();
+        load_settings(cmdline_config_path);
+        draw_setup();
+
+        status = save;
+        queues_update(status);
+        wake_up();
+}
+
 int dunst_main(int argc, char *argv[])
 {
 
@@ -166,7 +187,6 @@ int dunst_main(int argc, char *argv[])
         log_set_level_from_string(verbosity);
         g_free(verbosity);
 
-        char *cmdline_config_path;
         cmdline_config_path =
             cmdline_get_string("-conf/-config", NULL,
                                "Path to configuration file");

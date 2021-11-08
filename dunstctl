@@ -62,6 +62,9 @@ case "${1:-}" in
 	"context")
 		method_call "${DBUS_IFAC_DUNST}.ContextMenuCall" >/dev/null
 		;;
+	"reload")
+		method_call "${DBUS_IFAC_DUNST}.ReloadConfig" >/dev/null
+		;;
 	"count")
 		[ $# -eq 1 ] || [ "${2}" = "displayed" ] || [ "${2}" = "history" ] || [ "${2}" = "waiting" ] \
 			|| die "Please give either 'displayed', 'history', 'waiting' or none as count parameter."

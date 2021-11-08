@@ -528,10 +528,10 @@ void wl_deinit() {
         // could have been aborted half way through, or the compositor doesn't
         // support some of these features.
         if (ctx.layer_surface != NULL) {
-                zwlr_layer_surface_v1_destroy(ctx.layer_surface);
+                g_clear_pointer(&ctx.layer_surface, zwlr_layer_surface_v1_destroy);
         }
         if (ctx.surface != NULL) {
-                wl_surface_destroy(ctx.surface);
+                g_clear_pointer(&ctx.surface, wl_surface_destroy);
         }
         finish_buffer(&ctx.buffers[0]);
         finish_buffer(&ctx.buffers[1]);
@@ -542,39 +542,40 @@ void wl_deinit() {
         wl_list_for_each_safe(output, output_tmp, &ctx.outputs, link) {
                 destroy_output(output);
         }
+        ctx.outputs = (struct wl_list) {0};
+
+        if (ctx.pointer.wl_pointer)
+                g_clear_pointer(&ctx.pointer.wl_pointer, wl_pointer_release);
 
         if (ctx.seat) {
-                if (ctx.pointer.wl_pointer)
-                        wl_pointer_release(ctx.pointer.wl_pointer);
-                wl_seat_release(ctx.seat);
-                ctx.seat = NULL;
+                g_clear_pointer(&ctx.seat, wl_seat_release);
         }
 
         if (ctx.idle_handler)
-                org_kde_kwin_idle_destroy(ctx.idle_handler);
+                g_clear_pointer(&ctx.idle_handler, org_kde_kwin_idle_destroy);
 
         if (ctx.idle_timeout)
-                org_kde_kwin_idle_timeout_release(ctx.idle_timeout);
+                g_clear_pointer(&ctx.idle_timeout, org_kde_kwin_idle_timeout_release);
 
         if (ctx.layer_shell)
-                zwlr_layer_shell_v1_destroy(ctx.layer_shell);
+                g_clear_pointer(&ctx.layer_shell, zwlr_layer_shell_v1_destroy);
 
         if (ctx.compositor)
-                wl_compositor_destroy(ctx.compositor);
+                g_clear_pointer(&ctx.compositor, wl_compositor_destroy);
 
         if (ctx.shm)
-                wl_shm_destroy(ctx.shm);
+                g_clear_pointer(&ctx.shm, wl_shm_destroy);
 
         if (ctx.registry)
-                wl_registry_destroy(ctx.registry);
+                g_clear_pointer(&ctx.registry, wl_registry_destroy);
 
-        if (ctx.cursor_theme != NULL) {
-                wl_cursor_theme_destroy(ctx.cursor_theme);
-                wl_surface_destroy(ctx.cursor_surface);
+        if (ctx.cursor_theme) {
+                g_clear_pointer(&ctx.cursor_theme, wl_cursor_theme_destroy);
+                g_clear_pointer(&ctx.cursor_surface, wl_surface_destroy);
         }
 
         // this also disconnects the wl_display
-        g_water_wayland_source_free(ctx.esrc);
+        g_clear_pointer(&ctx.esrc, g_water_wayland_source_free);
 }
 
 static void schedule_frame_and_commit();
@@ -751,7 +752,7 @@ window wl_win_create(void) {
 
 void wl_win_destroy(window winptr) {
         struct window_wl *win = (struct window_wl*)winptr;
-        // FIXME: Dealloc everything
+        wl_win_hide(win);
         g_free(win);
 }
 

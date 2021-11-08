@@ -804,6 +804,7 @@ void draw(void)
 
 void draw_deinit(void)
 {
+        pango_font_description_free(pango_fdesc);
         output->win_destroy(win);
         output->deinit();
         if (settings.enable_recursive_icon_lookup)
