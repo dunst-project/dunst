@@ -161,6 +161,8 @@ void reload(void)
         load_settings(cmdline_config_path);
         draw_setup();
 
+        queues_reapply_all_rules();
+
         status = save;
         queues_update(status);
         wake_up();

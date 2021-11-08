@@ -70,8 +70,8 @@ void rule_apply(struct rule *r, struct notification *n)
                 n->format = r->format;
         if (r->script){
                 n->scripts = g_renew(const char*,n->scripts,n->script_count + 1);
-                n->scripts[n->script_count] = r->script;
-
+                // FIXME free this as well
+                n->scripts[n->script_count] = g_strdup(r->script);
                 n->script_count++;
         }
         if (r->set_stack_tag) {
