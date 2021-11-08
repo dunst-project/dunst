@@ -20,6 +20,7 @@
 #include "output.h"
 #include "settings.h"
 #include "utils.h"
+#include "icon-lookup.h"
 
 struct color {
         double r;
@@ -48,6 +49,28 @@ PangoFontDescription *pango_fdesc;
 
 #define UINT_MAX_N(bits) ((1 << bits) - 1)
 
+void load_icon_themes()
+{
+        bool loaded_theme = false;
+
+        for (int i = 0; settings.icon_theme[i] != NULL; i++) {
+                char *theme = settings.icon_theme[i];
+                int theme_index = load_icon_theme(theme);
+                if (theme_index >= 0) {
+                        LOG_W("Adding default theme %s", theme);
+                        add_default_theme(theme_index);
+                        loaded_theme = true;
+                } else {
+                        LOG_W("NOT Adding default theme '%s'", theme);
+                }
+        }
+        if (!loaded_theme) {
+                int theme_index = load_icon_theme("hicolor");
+                add_default_theme(theme_index);
+        }
+
+}
+
 void draw_setup(void)
 {
         const struct output *out = output_create(settings.force_xwayland);
@@ -56,6 +79,9 @@ void draw_setup(void)
         win = out->win_create();
 
         pango_fdesc = pango_font_description_from_string(settings.font);
+
+        if (settings.enable_recursive_icon_lookup)
+                load_icon_themes();
 }
 
 static struct color hex_to_color(uint32_t hexValue, int dpc)
@@ -209,7 +235,6 @@ static void free_colored_layout(void *data)
         g_object_unref(cl->l);
         pango_attr_list_unref(cl->attr);
         g_free(cl->text);
-        if (cl->icon) cairo_surface_destroy(cl->icon);
         g_free(cl);
 }
 
@@ -304,17 +329,7 @@ static struct colored_layout *layout_from_notification(cairo_t *c, struct notifi
 
         struct colored_layout *cl = layout_init_shared(c, n);
 
-        if (settings.icon_position != ICON_OFF && n->icon) {
-                cl->icon = gdk_pixbuf_to_cairo_surface(n->icon);
-        } else {
-                cl->icon = NULL;
-        }
-
-        if (cl->icon && cairo_surface_status(cl->icon) != CAIRO_STATUS_SUCCESS) {
-                cairo_surface_destroy(cl->icon);
-                cl->icon = NULL;
-        }
-
+        cl->icon = n->icon;
         /* markup */
         GError *err = NULL;
         pango_parse_markup(n->text_to_render, -1, 0, &(cl->attr), &(cl->text), NULL, &err);
@@ -791,6 +806,8 @@ void draw_deinit(void)
 {
         output->win_destroy(win);
         output->deinit();
+        if (settings.enable_recursive_icon_lookup)
+                free_all_themes();
 }
 
 double draw_get_scale(void)

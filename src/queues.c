@@ -189,6 +189,10 @@ int queues_notification_insert(struct notification *n)
         if (!inserted)
                 g_queue_insert_sorted(waiting, n, notification_cmp_data, NULL);
 
+        if (!n->icon) {
+                notification_icon_replace_path(n, n->iconname);
+        }
+
         if (settings.print_notifications)
                 notification_print(n);
 
@@ -201,31 +205,33 @@ int queues_notification_insert(struct notification *n)
  * @retval true: notification got stacked
  * @retval false: notification did not get stacked
  */
-static bool queues_stack_duplicate(struct notification *n)
+static bool queues_stack_duplicate(struct notification *new)
 {
         GQueue *allqueues[] = { displayed, waiting };
         for (int i = 0; i < sizeof(allqueues)/sizeof(GQueue*); i++) {
                 for (GList *iter = g_queue_peek_head_link(allqueues[i]); iter;
                      iter = iter->next) {
-                        struct notification *orig = iter->data;
-                        if (notification_is_duplicate(orig, n)) {
+                        struct notification *old = iter->data;
+                        if (notification_is_duplicate(old, new)) {
                                 /* If the progress differs, probably notify-send was used to update the notification
                                  * So only count it as a duplicate, if the progress was not the same.
                                  * */
-                                if (orig->progress == n->progress) {
-                                        orig->dup_count++;
+                                if (old->progress == new->progress) {
+                                        old->dup_count++;
                                 } else {
-                                        orig->progress = n->progress;
+                                        old->progress = new->progress;
                                 }
-                                iter->data = n;
+                                iter->data = new;
 
-                                n->dup_count = orig->dup_count;
-                                signal_notification_closed(orig, 1);
+                                new->dup_count = old->dup_count;
+                                signal_notification_closed(old, 1);
 
                                 if (allqueues[i] == displayed)
-                                        n->start = time_monotonic_now();
+                                        new->start = time_monotonic_now();
 
-                                notification_unref(orig);
+                                notification_transfer_icon(old, new);
+
+                                notification_unref(old);
                                 return true;
                         }
                 }
@@ -258,6 +264,8 @@ static bool queues_stack_by_tag(struct notification *new)
                                         new->start = time_monotonic_now();
                                         notification_run_script(new);
                                 }
+
+                                notification_transfer_icon(old, new);
 
                                 notification_unref(old);
                                 return true;

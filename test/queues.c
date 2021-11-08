@@ -888,7 +888,6 @@ TEST test_queue_no_sort_and_pause(void)
 
 SUITE(suite_queues)
 {
-        settings.icon_path = "";
         bool store = settings.stack_duplicates;
         settings.stack_duplicates = false;
 
@@ -923,7 +922,6 @@ SUITE(suite_queues)
         RUN_TEST(test_queue_find_by_id);
         RUN_TEST(test_queue_no_sort_and_pause);
 
-        settings.icon_path = NULL;
         settings.stack_duplicates = store;
 }
 

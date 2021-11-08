@@ -24,6 +24,7 @@
 #include "settings.h"
 #include "utils.h"
 #include "draw.h"
+#include "icon-lookup.h"
 
 static void notification_extract_urls(struct notification *n);
 static void notification_format_message(struct notification *n);
@@ -141,11 +142,10 @@ void notification_run_script(struct notification *n)
                                 gchar *n_progress_str = g_strdup_printf("%i", n->progress);
                                 gchar *n_timeout_str = g_strdup_printf("%li", n->timeout/1000);
                                 gchar *n_timestamp_str = g_strdup_printf("%li", n->timestamp / 1000);
-                                char* icon_path = get_path_from_icon_name(icon);
                                 safe_setenv("DUNST_APP_NAME",  appname);
                                 safe_setenv("DUNST_SUMMARY",   summary);
                                 safe_setenv("DUNST_BODY",      body);
-                                safe_setenv("DUNST_ICON_PATH", icon_path);
+                                safe_setenv("DUNST_ICON_PATH", n->icon_path);
                                 safe_setenv("DUNST_URGENCY",   urgency);
                                 safe_setenv("DUNST_ID",        n_id_str);
                                 safe_setenv("DUNST_PROGRESS",  n_progress_str);
@@ -276,6 +276,7 @@ void notification_unref(struct notification *n)
         g_free(n->summary);
         g_free(n->body);
         g_free(n->iconname);
+        g_free(n->icon_path);
         g_free(n->msg);
         g_free(n->dbus_client);
         g_free(n->category);
@@ -292,7 +293,7 @@ void notification_unref(struct notification *n)
         g_free(n->default_action_name);
 
         if (n->icon)
-                g_object_unref(n->icon);
+                cairo_surface_destroy(n->icon);
         g_free(n->icon_id);
 
         notification_private_free(n->priv);
@@ -304,19 +305,47 @@ void notification_unref(struct notification *n)
         g_free(n);
 }
 
+void notification_transfer_icon(struct notification *from, struct notification *to)
+{
+        if (from->iconname && to->iconname
+                        && strcmp(from->iconname, to->iconname) == 0){
+                // Icons are the same. Transfer icon surface
+                to->icon = from->icon;
+
+                // prevent the surface being freed by the old notification
+                from->icon = NULL;
+        }
+}
+
 void notification_icon_replace_path(struct notification *n, const char *new_icon)
 {
         ASSERT_OR_RET(n,);
         ASSERT_OR_RET(new_icon,);
-        ASSERT_OR_RET(n->iconname != new_icon,);
+        if(n->iconname && n->icon && strcmp(n->iconname, new_icon) == 0) {
+                return;
+        }
 
-        g_free(n->iconname);
-        n->iconname = g_strdup(new_icon);
+        // make sure it works, even if n->iconname is passed as new_icon
+        if (n->iconname != new_icon) {
+                g_free(n->iconname);
+                n->iconname = g_strdup(new_icon);
+        }
 
-        g_clear_object(&n->icon);
+        cairo_surface_destroy(n->icon);
+        n->icon = NULL;
         g_clear_pointer(&n->icon_id, g_free);
 
-        n->icon = icon_get_for_name(new_icon, &n->icon_id, draw_get_scale());
+        g_free(n->icon_path);
+        n->icon_path = get_path_from_icon_name(new_icon, n->icon_size);
+        if (n->icon_path) {
+                GdkPixbuf *pixbuf = get_pixbuf_from_file(n->icon_path, draw_get_scale());
+                if (pixbuf) {
+                        n->icon = gdk_pixbuf_to_cairo_surface(pixbuf);
+                        g_object_unref(pixbuf);
+                } else {
+                        LOG_W("No icon found in path: '%s'", n->icon_path);
+                }
+        }
 }
 
 void notification_icon_replace_data(struct notification *n, GVariant *new_icon)
@@ -324,10 +353,13 @@ void notification_icon_replace_data(struct notification *n, GVariant *new_icon)
         ASSERT_OR_RET(n,);
         ASSERT_OR_RET(new_icon,);
 
-        g_clear_object(&n->icon);
+        cairo_surface_destroy(n->icon);
+        n->icon = NULL;
         g_clear_pointer(&n->icon_id, g_free);
 
-        n->icon = icon_get_for_data(new_icon, &n->icon_id, draw_get_scale());
+        GdkPixbuf *icon = icon_get_for_data(new_icon, &n->icon_id, draw_get_scale());
+        n->icon = gdk_pixbuf_to_cairo_surface(icon);
+        g_object_unref(icon);
 }
 
 /* see notification.h */
@@ -384,6 +416,7 @@ struct notification *notification_create(void)
         n->word_wrap = true;
         n->ellipsize = PANGO_ELLIPSIZE_MIDDLE;
         n->alignment = PANGO_ALIGN_LEFT;
+        n->icon_size = 32;
 
         n->script_run = false;
         n->dbus_valid = false;
@@ -419,13 +452,8 @@ void notification_init(struct notification *n)
         /* Icon handling */
         if (STR_EMPTY(n->iconname))
                 g_clear_pointer(&n->iconname, g_free);
-        if (!n->icon && n->iconname) {
-                char *icon = g_strdup(n->iconname);
-                notification_icon_replace_path(n, icon);
-                g_free(icon);
-        }
         if (!n->icon && !n->iconname)
-                notification_icon_replace_path(n, settings.icons[n->urgency]);
+                n->iconname = g_strdup(settings.icons[n->urgency]);
 
         /* Color hints */
         struct notification_colors defcolors;

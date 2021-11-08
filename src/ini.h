@@ -26,6 +26,8 @@ struct ini {
  * returns NULL if no more sections are available
  */
 const char *next_section(const struct ini *ini,const char *section);
+const char *section_get_value(struct ini *ini, const struct section *s, const char *key);
+const char *get_value(struct ini *ini, const char *section, const char *key);
 struct ini *load_ini_file(FILE *fp);
 void finish_ini(struct ini *ini);
 

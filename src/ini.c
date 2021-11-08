@@ -42,9 +42,8 @@ void add_entry(struct ini *ini, const char *section_name, const char *key, const
         s->entries[s->entry_count - 1].value = string_strip_quotes(value);
 }
 
-const char *get_value(struct ini *ini, const char *section, const char *key)
+const char *section_get_value(struct ini *ini, const struct section *s, const char *key)
 {
-        struct section *s = get_section(ini, section);
         ASSERT_OR_RET(s, NULL);
 
         for (int i = 0; i < s->entry_count; i++) {
@@ -53,6 +52,12 @@ const char *get_value(struct ini *ini, const char *section, const char *key)
                 }
         }
         return NULL;
+}
+
+const char *get_value(struct ini *ini, const char *section, const char *key)
+{
+        struct section *s = get_section(ini, section);
+        return section_get_value(ini, s, key);
 }
 
 bool ini_is_set(struct ini *ini, const char *ini_section, const char *ini_key)

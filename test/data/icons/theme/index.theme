@@ -1,0 +1,51 @@
+[Icon Theme]
+Name=theme
+Comment=Test theme for dunst
+Example=folder
+
+X-ignore-this=something
+# ignore this
+
+# Directory list
+Directories=16x16/actions,16x16/apps,16x16@2x/actions,16x16@2x/apps,32x32/actions,32x32/apps,32x32@2x/actions,32x32@2x/apps
+
+[16x16/actions]
+Size=16
+Type=Threshold
+Threshold=3
+
+[16x16/apps]
+Size=16
+Type=Threshold
+
+[16x16@2x/actions]
+Size=16
+Scale=2
+Type=Scalable
+MinSize=16
+MaxSize=32
+
+[16x16@2x/apps]
+Size=16
+Scale=2
+Type=Fixed
+
+[32x32/actions]
+Size=32
+Type=Scalable
+MinSize=32
+MaxSize=64
+
+[32x32/apps]
+Size=32
+Type=Fixed
+
+[32x32@2x/actions]
+Size=32
+Scale=2
+Type=Fixed
+
+[32x32@2x/apps]
+Size=32
+Scale=2
+Type=Fixed
