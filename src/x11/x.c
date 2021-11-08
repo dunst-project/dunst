@@ -446,7 +446,9 @@ static void x_handle_click(XEvent ev)
                 button_state = true; // button is down
         }
 
-        input_handle_click(linux_code, button_state, ev.xbutton.x, ev.xbutton.y);
+        float scale = x_get_scale();
+        input_handle_click(linux_code, button_state, ev.xbutton.x/scale,
+                        ev.xbutton.y/scale);
 }
 
 void x_free(void)
