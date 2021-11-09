@@ -77,6 +77,12 @@ unsigned int queues_length_history(void)
         return history->length;
 }
 
+/* see queues.h */
+GList *queues_get_history(void)
+{
+        return g_queue_peek_head_link(history);
+}
+
 /**
  * Swap two given queue elements. The element's data has to be a notification.
  *

@@ -27,6 +27,13 @@ void queues_init(void);
 GList *queues_get_displayed(void);
 
 /**
+ * Recieve the list of all notifications encountered
+ *
+ * @return read only list of notifications
+ */
+GList *queues_get_history(void);
+
+/**
  * Get the highest notification in line
  *
  * @returns the first notification in waiting

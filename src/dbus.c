@@ -80,6 +80,9 @@ static const char *introspection_xml =
     "        <method name=\"NotificationCloseLast\" />"
     "        <method name=\"NotificationCloseAll\"  />"
     "        <method name=\"NotificationShow\"      />"
+    "        <method name=\"NotificationListAll\">"
+    "            <arg direction=\"out\" name=\"notifications\"   type=\"aas\"/>"
+    "        </method>"
     "        <method name=\"Ping\"                  />"
 
     "        <property name=\"paused\" type=\"b\" access=\"readwrite\">"
@@ -163,6 +166,7 @@ DBUS_METHOD(dunst_NotificationAction);
 DBUS_METHOD(dunst_NotificationCloseAll);
 DBUS_METHOD(dunst_NotificationCloseLast);
 DBUS_METHOD(dunst_NotificationShow);
+DBUS_METHOD(dunst_NotificationListAll);
 DBUS_METHOD(dunst_Ping);
 static struct dbus_method methods_dunst[] = {
         {"ContextMenuCall",        dbus_cb_dunst_ContextMenuCall},
@@ -170,6 +174,7 @@ static struct dbus_method methods_dunst[] = {
         {"NotificationCloseAll",   dbus_cb_dunst_NotificationCloseAll},
         {"NotificationCloseLast",  dbus_cb_dunst_NotificationCloseLast},
         {"NotificationShow",       dbus_cb_dunst_NotificationShow},
+        {"NotificationListAll",    dbus_cb_dunst_NotificationListAll},
         {"Ping",                   dbus_cb_dunst_Ping},
 };
 
@@ -280,6 +285,50 @@ static void dbus_cb_dunst_NotificationShow(GDBusConnection *connection,
         wake_up();
 
         g_dbus_method_invocation_return_value(invocation, NULL);
+        g_dbus_connection_flush(connection, NULL, NULL, NULL);
+}
+
+static void dbus_cb_dunst_NotificationListAll(GDBusConnection *connection,
+                                           const gchar *sender,
+                                           GVariant *parameters,
+                                           GDBusMethodInvocation *invocation)
+{
+        LOG_D("CMD: Listing all notifications from history");
+
+        GVariant *answer = NULL;
+        GVariantBuilder *builder;
+
+        builder = g_variant_builder_new(G_VARIANT_TYPE("aas"));
+
+        GList *notification_list = queues_get_history();
+
+        // reverse chronological list
+        for(int i = queues_length_history(); i > 0; i--) {
+                GVariantBuilder *notif_builder;
+                struct notification *n;
+                n = g_list_nth_data(notification_list, i-1);
+
+                // create sub-list per notification
+                notif_builder = g_variant_builder_new(G_VARIANT_TYPE("as"));
+
+                g_variant_builder_add(notif_builder, "s", n->body);
+                g_variant_builder_add(notif_builder, "s", n->msg);
+                g_variant_builder_add(notif_builder, "s", n->summary);
+                g_variant_builder_add(notif_builder, "s", n->actions);
+                g_variant_builder_add(notif_builder, "s", n->appname);
+                g_variant_builder_add(notif_builder, "s", n->category);
+                g_variant_builder_add(notif_builder, "s", n->default_action_name);
+                g_variant_builder_add(notif_builder, "s", n->icon_path);
+
+                // add to whole list
+                g_variant_builder_add(builder, "as", notif_builder);
+                g_clear_pointer(&notif_builder, g_variant_builder_unref);
+        }
+
+        answer = g_variant_new("(aas)", builder);
+
+        g_clear_pointer(&builder, g_variant_builder_unref);
+        g_dbus_method_invocation_return_value(invocation, answer);
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
 }
 
