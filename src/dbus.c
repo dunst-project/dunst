@@ -311,14 +311,25 @@ static void dbus_cb_dunst_NotificationListAll(GDBusConnection *connection,
                 // create sub-list per notification
                 notif_builder = g_variant_builder_new(G_VARIANT_TYPE("as"));
 
-                g_variant_builder_add(notif_builder, "s", n->body);
-                g_variant_builder_add(notif_builder, "s", n->msg);
-                g_variant_builder_add(notif_builder, "s", n->summary);
-                g_variant_builder_add(notif_builder, "s", n->actions);
-                g_variant_builder_add(notif_builder, "s", n->appname);
-                g_variant_builder_add(notif_builder, "s", n->category);
-                g_variant_builder_add(notif_builder, "s", n->default_action_name);
-                g_variant_builder_add(notif_builder, "s", n->icon_path);
+                char *body, *msg, *summary, *appname, *category;
+                char *default_action_name, *icon_path;
+
+                body      = (n->body      == NULL) ? "" : n->body;
+                msg       = (n->msg       == NULL) ? "" : n->msg;
+                summary   = (n->summary   == NULL) ? "" : n->summary;
+                appname   = (n->appname   == NULL) ? "" : n->appname;
+                category  = (n->category  == NULL) ? "" : n->category;
+                default_action_name= (n->default_action_name == NULL) ?
+                        "" : n->default_action_name;
+                icon_path = (n->icon_path == NULL) ? "" : n->icon_path;
+
+                g_variant_builder_add(notif_builder, "s", body);
+                g_variant_builder_add(notif_builder, "s", msg);
+                g_variant_builder_add(notif_builder, "s", summary);
+                g_variant_builder_add(notif_builder, "s", appname);
+                g_variant_builder_add(notif_builder, "s", category);
+                g_variant_builder_add(notif_builder, "s", default_action_name);
+                g_variant_builder_add(notif_builder, "s", icon_path);
 
                 // add to whole list
                 g_variant_builder_add(builder, "as", notif_builder);
