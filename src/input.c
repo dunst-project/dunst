@@ -7,7 +7,7 @@
 #include <linux/input-event-codes.h>
 
 struct notification *get_notification_at(const int y) {
-        int curr_y = settings.frame_width;
+        int curr_y = settings.frame_width + settings.offset.y;
         for (const GList *iter = queues_get_displayed(); iter;
                         iter = iter->next) {
                 struct notification *current = iter->data;
