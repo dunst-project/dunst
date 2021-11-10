@@ -314,14 +314,14 @@ static void dbus_cb_dunst_NotificationListAll(GDBusConnection *connection,
                 char *body, *msg, *summary, *appname, *category;
                 char *default_action_name, *icon_path;
 
-                body      = (n->body      == NULL) ? " " : n->body;
-                msg       = (n->msg       == NULL) ? " " : n->msg;
-                summary   = (n->summary   == NULL) ? " " : n->summary;
-                appname   = (n->appname   == NULL) ? " " : n->appname;
-                category  = (n->category  == NULL) ? " " : n->category;
+                body      = (n->body      == NULL) ? "" : n->body;
+                msg       = (n->msg       == NULL) ? "" : n->msg;
+                summary   = (n->summary   == NULL) ? "" : n->summary;
+                appname   = (n->appname   == NULL) ? "" : n->appname;
+                category  = (n->category  == NULL) ? "" : n->category;
                 default_action_name= (n->default_action_name == NULL) ?
-                        " " : n->default_action_name;
-                icon_path = (n->icon_path == NULL) ? " " : n->icon_path;
+                        "" : n->default_action_name;
+                icon_path = (n->icon_path == NULL) ? "" : n->icon_path;
 
                 g_variant_builder_add(&n_builder, "{sv}", "body",
                         g_variant_new_from_bytes(G_VARIANT_TYPE("s"),
