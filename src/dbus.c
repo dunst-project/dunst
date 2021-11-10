@@ -80,7 +80,7 @@ static const char *introspection_xml =
     "        <method name=\"NotificationCloseLast\" />"
     "        <method name=\"NotificationCloseAll\"  />"
     "        <method name=\"NotificationShow\"      />"
-    "        <method name=\"NotificationListAll\">"
+    "        <method name=\"NotificationListHistory\">"
     "            <arg direction=\"out\" name=\"notifications\"   type=\"aa{sv}\"/>"
     "        </method>"
     "        <method name=\"Ping\"                  />"
@@ -166,7 +166,7 @@ DBUS_METHOD(dunst_NotificationAction);
 DBUS_METHOD(dunst_NotificationCloseAll);
 DBUS_METHOD(dunst_NotificationCloseLast);
 DBUS_METHOD(dunst_NotificationShow);
-DBUS_METHOD(dunst_NotificationListAll);
+DBUS_METHOD(dunst_NotificationListHistory);
 DBUS_METHOD(dunst_Ping);
 static struct dbus_method methods_dunst[] = {
         {"ContextMenuCall",        dbus_cb_dunst_ContextMenuCall},
@@ -174,7 +174,7 @@ static struct dbus_method methods_dunst[] = {
         {"NotificationCloseAll",   dbus_cb_dunst_NotificationCloseAll},
         {"NotificationCloseLast",  dbus_cb_dunst_NotificationCloseLast},
         {"NotificationShow",       dbus_cb_dunst_NotificationShow},
-        {"NotificationListAll",    dbus_cb_dunst_NotificationListAll},
+        {"NotificationListHistory",    dbus_cb_dunst_NotificationListHistory},
         {"Ping",                   dbus_cb_dunst_Ping},
 };
 
@@ -288,7 +288,7 @@ static void dbus_cb_dunst_NotificationShow(GDBusConnection *connection,
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
 }
 
-static void dbus_cb_dunst_NotificationListAll(GDBusConnection *connection,
+static void dbus_cb_dunst_NotificationListHistory(GDBusConnection *connection,
                                            const gchar *sender,
                                            GVariant *parameters,
                                            GDBusMethodInvocation *invocation)
