@@ -114,40 +114,8 @@ case "${1:-}" in
 			|| die "Dunst controlling interface not available. Is the version too old?"
 		;;
 	"history")
-		counter=0
-		json_string="{ notifications: ["
-		for i in $(dbus-send --print-reply --dest=org.freedesktop.Notifications /org/freedesktop/Notifications org.dunstproject.cmd0.NotificationListAll | grep "string" | cut -d'"' -f2)
-		do
-			case $(($counter%8)) in
-				"0")
-				json_string=$json_string"{body:\"$i\", "
-				;;
-				"1")
-				json_string=$json_string"message:\"$i\", "
-				;;
-				"2")
-				json_string=$json_string"summary:\"$i\", "
-				;;
-				"3")
-				json_string=$json_string"actions:\"$i\", "
-				;;
-				"4")
-				json_string=$json_string"app_name:\"$i\", "
-				;;
-				"5")
-				json_string=$json_string"category:\"$i\", "
-				;;
-				"6")
-				json_string=$json_string"default_action_name:\"$i\","
-				;;
-				"7")
-				json_string=$json_string"icon_path:\"$i\" }, "
-				;;
-			esac
-			((counter=counter+1))
-		done
-		json_string=$json_string"]}"
-		echo $json_string
+		busctl --user --json=pretty -l --no-pager call org.freedesktop.Notifications /org/freedesktop/Notifications org.dunstproject.cmd0 NotificationListAll 2>/dev/null \
+			|| die "Dunst is not running."
 		;;
 	"")
 		die "dunstctl: No command specified. Please consult the usage."

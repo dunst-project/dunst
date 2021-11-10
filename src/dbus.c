@@ -81,7 +81,7 @@ static const char *introspection_xml =
     "        <method name=\"NotificationCloseAll\"  />"
     "        <method name=\"NotificationShow\"      />"
     "        <method name=\"NotificationListAll\">"
-    "            <arg direction=\"out\" name=\"notifications\"   type=\"aas\"/>"
+    "            <arg direction=\"out\" name=\"notifications\"   type=\"aa{sv}\"/>"
     "        </method>"
     "        <method name=\"Ping\"                  />"
 
@@ -298,45 +298,71 @@ static void dbus_cb_dunst_NotificationListAll(GDBusConnection *connection,
         GVariant *answer = NULL;
         GVariantBuilder *builder;
 
-        builder = g_variant_builder_new(G_VARIANT_TYPE("aas"));
+        builder = g_variant_builder_new(G_VARIANT_TYPE("aa{sv}"));
 
         GList *notification_list = queues_get_history();
 
         // reverse chronological list
         for(int i = queues_length_history(); i > 0; i--) {
-                GVariantBuilder *notif_builder;
                 struct notification *n;
                 n = g_list_nth_data(notification_list, i-1);
 
-                // create sub-list per notification
-                notif_builder = g_variant_builder_new(G_VARIANT_TYPE("as"));
+                GVariantBuilder n_builder;
+
+                g_variant_builder_init(&n_builder, g_variant_type_new("a{sv}"));
 
                 char *body, *msg, *summary, *appname, *category;
                 char *default_action_name, *icon_path;
 
-                body      = (n->body      == NULL) ? "" : n->body;
-                msg       = (n->msg       == NULL) ? "" : n->msg;
-                summary   = (n->summary   == NULL) ? "" : n->summary;
-                appname   = (n->appname   == NULL) ? "" : n->appname;
-                category  = (n->category  == NULL) ? "" : n->category;
+                body      = (n->body      == NULL) ? " " : n->body;
+                msg       = (n->msg       == NULL) ? " " : n->msg;
+                summary   = (n->summary   == NULL) ? " " : n->summary;
+                appname   = (n->appname   == NULL) ? " " : n->appname;
+                category  = (n->category  == NULL) ? " " : n->category;
                 default_action_name= (n->default_action_name == NULL) ?
-                        "" : n->default_action_name;
-                icon_path = (n->icon_path == NULL) ? "" : n->icon_path;
+                        " " : n->default_action_name;
+                icon_path = (n->icon_path == NULL) ? " " : n->icon_path;
 
-                g_variant_builder_add(notif_builder, "s", body);
-                g_variant_builder_add(notif_builder, "s", msg);
-                g_variant_builder_add(notif_builder, "s", summary);
-                g_variant_builder_add(notif_builder, "s", appname);
-                g_variant_builder_add(notif_builder, "s", category);
-                g_variant_builder_add(notif_builder, "s", default_action_name);
-                g_variant_builder_add(notif_builder, "s", icon_path);
+                g_variant_builder_add(&n_builder, "{sv}", "body",
+                        g_variant_new_from_bytes(G_VARIANT_TYPE("s"),
+                        g_bytes_new(body, strlen(body)+1), TRUE));
+                g_variant_builder_add(&n_builder, "{sv}", "message",
+                        g_variant_new_from_bytes(G_VARIANT_TYPE("s"),
+                        g_bytes_new(msg, strlen(msg)+1), TRUE));
+                g_variant_builder_add(&n_builder, "{sv}", "summary",
+                        g_variant_new_from_bytes(G_VARIANT_TYPE("s"),
+                        g_bytes_new(summary, strlen(summary)+1), TRUE));
+                g_variant_builder_add(&n_builder, "{sv}", "appname",
+                        g_variant_new_from_bytes(G_VARIANT_TYPE("s"),
+                        g_bytes_new(appname, strlen(appname)+1), TRUE));
+                g_variant_builder_add(&n_builder, "{sv}", "category",
+                        g_variant_new_from_bytes(G_VARIANT_TYPE("s"),
+                        g_bytes_new(category, strlen(category)+1), TRUE));
+                g_variant_builder_add(&n_builder, "{sv}", "default_action_name",
+                        g_variant_new_from_bytes(G_VARIANT_TYPE("s"),
+                        g_bytes_new(default_action_name,
+                        strlen(default_action_name)+1), TRUE));
+                g_variant_builder_add(&n_builder, "{sv}", "icon_path",
+                        g_variant_new_from_bytes(G_VARIANT_TYPE("s"),
+                        g_bytes_new(icon_path, strlen(icon_path)+1), TRUE));
+                g_variant_builder_add(&n_builder, "{sv}", "id",
+                        g_variant_new_from_bytes(G_VARIANT_TYPE("i"),
+                        g_bytes_new(&n->id, sizeof(int)), TRUE));
+                g_variant_builder_add(&n_builder, "{sv}", "timestamp",
+                        g_variant_new_from_bytes(G_VARIANT_TYPE("x"),
+                        g_bytes_new(&n->timestamp, sizeof(gint64)), TRUE));
+                g_variant_builder_add(&n_builder, "{sv}", "timeout",
+                        g_variant_new_from_bytes(G_VARIANT_TYPE("x"),
+                        g_bytes_new(&n->timeout, sizeof(gint64)), TRUE));
+                g_variant_builder_add(&n_builder, "{sv}", "progress",
+                        g_variant_new_from_bytes(G_VARIANT_TYPE("i"),
+                        g_bytes_new(&n->progress, sizeof(int)), TRUE));
 
-                // add to whole list
-                g_variant_builder_add(builder, "as", notif_builder);
-                g_clear_pointer(&notif_builder, g_variant_builder_unref);
+                g_variant_builder_add(builder, "a{sv}", &n_builder);
+
         }
 
-        answer = g_variant_new("(aas)", builder);
+        answer = g_variant_new("(aa{sv})", builder);
 
         g_clear_pointer(&builder, g_variant_builder_unref);
         g_dbus_method_invocation_return_value(invocation, answer);
