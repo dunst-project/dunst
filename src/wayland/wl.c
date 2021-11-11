@@ -803,8 +803,8 @@ cairo_t* wl_win_get_context(window winptr) {
 
 const struct screen_info* wl_get_active_screen(void) {
         static struct screen_info scr = {
-                .w = 1920,
-                .h = 1080,
+                .w = 3840,
+                .h = 2160,
                 .x = 0,
                 .y = 0,
                 .id = 0,
