@@ -21,7 +21,9 @@ show_help() {
 	  close-all                         Close the all notifications
 	  context                           Open context menu
 	  count [displayed|history|waiting] Show the number of notifications
+	  history                           Display notification history (in JSON)
 	  history-pop                       Pop one notification from history
+	  history-pop-id                    Pop one notification from history using it's ID
 	  is-paused                         Check if dunst is running or paused
 	  set-paused [true|false|toggle]    Set the pause status
 	  debug                             Print debugging information
@@ -116,6 +118,9 @@ case "${1:-}" in
 	"history")
 		busctl --user --json=pretty -l --no-pager call org.freedesktop.Notifications /org/freedesktop/Notifications org.dunstproject.cmd0 NotificationListHistory 2>/dev/null \
 			|| die "Dunst is not running."
+		;;
+	"history-pop-id")
+		method_call "${DBUS_IFAC_DUNST}.NotificationPopHistory" "int32:${2:-0}" >/dev/null
 		;;
 	"")
 		die "dunstctl: No command specified. Please consult the usage."

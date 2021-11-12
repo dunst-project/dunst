@@ -114,6 +114,12 @@ void queues_notification_close(struct notification *n, enum reason reason);
 void queues_history_pop(void);
 
 /**
+ * Pushes the latest notification found in the history buffer identified by
+ * it's assigned id
+ */
+void queues_history_pop_by_id(int id);
+
+/**
  * Push a single notification to history
  * The given notification has to be removed its queue
  *

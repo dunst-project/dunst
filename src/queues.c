@@ -353,6 +353,36 @@ void queues_history_pop(void)
 }
 
 /* see queues.h */
+void queues_history_pop_by_id(int id)
+{
+        struct notification *n = NULL;
+
+        if (g_queue_is_empty(history))
+                return;
+
+        // must be a valid ID
+        assert(id > 0);
+
+        // search through the history buffer 
+        for (GList *iter = g_queue_peek_head_link(history); iter;
+                iter = iter->next) {
+                struct notification *cur = iter->data;
+                if (cur->id == id) {
+                        n = cur;
+                        break;
+                }
+        }
+
+        // must be a valid notification
+        if (n == NULL)
+                return;
+
+        n->redisplayed = true;
+        n->timeout = settings.sticky_history ? 0 : n->timeout;
+        g_queue_insert_sorted(waiting, n, notification_cmp_data, NULL);
+}
+
+/* see queues.h */
 void queues_history_push(struct notification *n)
 {
         if (!n->history_ignore) {
