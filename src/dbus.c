@@ -83,7 +83,7 @@ static const char *introspection_xml =
     "            <arg direction=\"out\" name=\"notifications\"   type=\"aa{sv}\"/>"
     "        </method>"
     "        <method name=\"NotificationPopHistory\">"
-    "            <arg direction=\"in\"  name=\"id\"              type=\"i\"/>"
+    "            <arg direction=\"in\"  name=\"id\"              type=\"u\"/>"
     "        </method>"
     "        <method name=\"NotificationShow\"      />"
     "        <method name=\"Ping\"                  />"
@@ -381,8 +381,8 @@ static void dbus_cb_dunst_NotificationPopHistory(GDBusConnection *connection,
 {
         LOG_D("CMD: Popping notification from history");
 
-        gint32 id;
-        g_variant_get(parameters, "(i)", &id);
+        guint32 id;
+        g_variant_get(parameters, "(u)", &id);
 
         queues_history_pop_by_id(id);
         wake_up();

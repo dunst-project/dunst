@@ -353,15 +353,12 @@ void queues_history_pop(void)
 }
 
 /* see queues.h */
-void queues_history_pop_by_id(int id)
+void queues_history_pop_by_id(unsigned int id)
 {
         struct notification *n = NULL;
 
         if (g_queue_is_empty(history))
                 return;
-
-        // must be a valid ID
-        assert(id > 0);
 
         // search through the history buffer 
         for (GList *iter = g_queue_peek_head_link(history); iter;

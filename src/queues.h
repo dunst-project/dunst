@@ -117,7 +117,7 @@ void queues_history_pop(void);
  * Pushes the latest notification found in the history buffer identified by
  * it's assigned id
  */
-void queues_history_pop_by_id(int id);
+void queues_history_pop_by_id(unsigned int id);
 
 /**
  * Push a single notification to history

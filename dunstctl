@@ -53,7 +53,7 @@ command -v dbus-send >/dev/null 2>/dev/null || \
 
 case "${1:-}" in
 	"action")
-		method_call "${DBUS_IFAC_DUNST}.NotificationAction" "int32:${2:-0}" >/dev/null
+		method_call "${DBUS_IFAC_DUNST}.NotificationAction" "uint32:${2:-0}" >/dev/null
 		;;
 	"close")
 		method_call "${DBUS_IFAC_DUNST}.NotificationCloseLast" >/dev/null
