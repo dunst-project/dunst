@@ -181,6 +181,8 @@ bool is_special_section(const char* s);
  */
 bool is_deprecated_section(const char* s);
 
+const char *get_section_deprecation_message(const char *s);
+
 
 /**
  * Strips a string of it's brackets if the first and last character are a

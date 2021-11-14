@@ -433,7 +433,9 @@ void save_settings(struct ini *ini) {
                 const struct section curr_section = ini->sections[i];
 
                 if (is_deprecated_section(curr_section.name)) {
-                        LOG_W("Section %s is deprecated. Ignoring", curr_section.name);
+                        LOG_W("Section %s is deprecated.\n%s\nIgnoring this section.",
+                                        curr_section.name,
+                                        get_section_deprecation_message(curr_section.name));
                         continue;
                 }
 

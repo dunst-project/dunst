@@ -359,6 +359,11 @@ static const char* deprecated_sections[] = {
         "shortcuts",
 };
 
+static const char* deprecated_sections_message[] = {
+        "The settings from the frame section have been moved to the global section.", // frame
+        "Acting on notifications has been moved to its own utility. For more information, see the manual for dunstctl.", // shortcuts
+};
+
 /* see utils.h */
 bool is_special_section(const char* s) {
         for (size_t i = 0; i < G_N_ELEMENTS(special_sections); i++) {
@@ -377,6 +382,15 @@ bool is_deprecated_section(const char* s) {
                 }
         }
         return false;
+}
+
+const char *get_section_deprecation_message(const char *s) {
+        for (size_t i = 0; i < G_N_ELEMENTS(deprecated_sections); i++) {
+                if (STR_EQ(deprecated_sections[i], s)) {
+                        return deprecated_sections_message[i];
+                }
+        }
+        return "";
 }
 
 /* see utils.h */

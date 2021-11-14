@@ -1056,6 +1056,12 @@ Time units understood by dunst are "ms", "s", "m", "h" and "d".
 
 Example time: "1000ms" "10m"
 
+=head1 MISCELLANEOUS
+
+Dunst used to provide shortcuts to act on notifications via key-bindings, but it
+has now been moved to its own utility. For more information, see the manual for
+dunstctl(1).
+
 =head1 AUTHORS
 
 Written by Sascha Kruse <knopwob@googlemail.com>
