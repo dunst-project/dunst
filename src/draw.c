@@ -284,8 +284,9 @@ static struct dimensions calculate_dimensions(GSList *layouts)
 
         /* clamp max width to screen width */
         const struct screen_info *scr = output->get_active_screen();
-        if (dim.w > scr->w) {
-                dim.w = scr->w;
+        int max_width = scr->w - settings.offset.x;
+        if (dim.w > max_width) {
+                dim.w = max_width;
         }
 
         return dim;
