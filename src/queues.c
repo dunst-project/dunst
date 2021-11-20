@@ -374,6 +374,7 @@ void queues_history_pop_by_id(unsigned int id)
         if (n == NULL)
                 return;
 
+        g_queue_remove(history, n);
         n->redisplayed = true;
         n->timeout = settings.sticky_history ? 0 : n->timeout;
         g_queue_insert_sorted(waiting, n, notification_cmp_data, NULL);
