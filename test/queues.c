@@ -234,6 +234,72 @@ TEST test_queue_notification_skip_display_redisplayed(void)
         PASS();
 }
 
+TEST test_queue_notification_skip_display_redisplayed_by_random_id(void) {
+        // breaks if the notification_buffer_size is above 5,
+        // possible bug??????
+        size_t notification_buffer_size = 5;
+
+        struct notification *n[notification_buffer_size];
+        bool is_n_popped[notification_buffer_size];
+
+        // insert notifications
+        char string[128];
+        for(size_t i=0; i<notification_buffer_size; i++) {
+                snprintf(string, 128, "n%08lu", i+1);
+
+                n[i] = test_notification(string, -1);
+                n[i]->skip_display = true;
+                n[i]->id = i+1;
+
+                // generate a noisy pop table
+                is_n_popped[i] = rand() > RAND_MAX/4;
+        }
+
+        queues_init();
+        for(size_t i=0; i<notification_buffer_size; i++) {
+                queues_notification_insert(n[i]);
+        }
+
+        QUEUE_LEN_ALL(notification_buffer_size, 0, 0);
+
+        // update notification event
+        queues_update(STATUS_NORMAL);
+
+        QUEUE_LEN_ALL(0, 0, notification_buffer_size);
+
+        // pop according to the pop table
+        size_t popped_notification_count = 0;
+        for(size_t i=0; i<notification_buffer_size; i++) {
+                if(is_n_popped[i]) {
+                        queues_history_pop_by_id(i+1);
+                        popped_notification_count++;
+                        queues_update(STATUS_NORMAL);
+                }
+        }
+
+        // test whether the notifications were unpopped properly
+        QUEUE_LEN_ALL(0, popped_notification_count,
+                        notification_buffer_size-popped_notification_count);
+
+        queues_update(STATUS_NORMAL);
+        // check if any of the notifications got moved
+        for(size_t i=0; i<notification_buffer_size; i++) {
+                if(is_n_popped[i]) {
+                        QUEUE_CONTAINSm("A skip display notification should stay in displayed "
+                                        "queue when it got pulled out of history queue",
+                                        DISP, n[i]);
+                } else {
+                        QUEUE_CONTAINSm("A skip display notification that didn't get popped"
+                                        "out of history should've stayed there",
+                                        HIST, n[i]);
+                }
+        }
+
+        queues_teardown();
+
+        PASS();
+}
+
 TEST test_queue_history_overfull(void)
 {
         settings.history_length = 10;
@@ -907,6 +973,7 @@ SUITE(suite_queues)
         RUN_TEST(test_queue_notification_close_histignore);
         RUN_TEST(test_queue_notification_skip_display);
         RUN_TEST(test_queue_notification_skip_display_redisplayed);
+        RUN_TEST(test_queue_notification_skip_display_redisplayed_by_random_id);
         RUN_TEST(test_queue_stacking);
         RUN_TEST(test_queue_stacktag);
         RUN_TEST(test_queue_different_stacktag);
