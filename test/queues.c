@@ -890,6 +890,32 @@ TEST test_queue_find_by_id(void)
         PASS();
 }
 
+TEST test_queue_get_history(void)
+{
+        struct notification *n;
+        queues_init();
+
+        n = test_notification("n", -1);
+        n->skip_display = true;
+        queues_notification_insert(n);
+        n = test_notification("n1", -1);
+        n->skip_display = true;
+        queues_notification_insert(n);
+        n = test_notification("n3", -1);
+        n->skip_display = true;
+        queues_notification_insert(n);
+
+        queues_update(STATUS_NORMAL);
+
+        QUEUE_LEN_ALL(0, 0, 3);
+
+        GList *h = queues_get_history();
+        ASSERT(g_list_length(h) == 3);
+
+        queues_teardown();
+        PASS();
+}
+
 
 void print_queues() {
         printf("\nQueues:\n");
@@ -988,6 +1014,7 @@ SUITE(suite_queues)
         RUN_TEST(test_queues_timeout_before_paused);
         RUN_TEST(test_queue_find_by_id);
         RUN_TEST(test_queue_no_sort_and_pause);
+        RUN_TEST(test_queue_get_history);
 
         settings.stack_duplicates = store;
 }
