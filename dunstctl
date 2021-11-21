@@ -97,14 +97,14 @@ case "${1:-}" in
 		fi
 		;;
         "rule")
-                [ "${2:-}" ] \
-                        || die "No rule name parameter specified. Please give the rule name"
-                state=nope
-                [ "${3}" = "disable" ] && state=0
-                [ "${3}" = "enable" ]  && state=1
-                [ "${3}" = "toggle" ]  && state=2
-                [ "${state}" = "nope" ] \
-                        && die "No valid rule state parameter specified. Please give either 'enable', 'disable' or 'toggle'"
+		[ "${2:-}" ] \
+			|| die "No rule name parameter specified. Please give the rule name"
+		state=nope
+		[ "${3}" = "disable" ] && state=0
+		[ "${3}" = "enable" ]  && state=1
+		[ "${3}" = "toggle" ]  && state=2
+		[ "${state}" = "nope" ] \
+			&& die "No valid rule state parameter specified. Please give either 'enable', 'disable' or 'toggle'"
 		method_call "${DBUS_IFAC_DUNST}.RuleEnable" "string:${2:-1}" "int32:${state}" >/dev/null
 		;;
 	"help"|"--help"|"-h")
