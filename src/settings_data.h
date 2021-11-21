@@ -122,6 +122,7 @@ static const struct rule empty_rule = {
         .bg              = NULL,
         .format          = NULL,
         .script          = NULL,
+        .enable          = true,
 };
 
 
@@ -585,6 +586,17 @@ static const struct setting allowed_settings[] = {
                 .parser = NULL,
                 .parser_data = NULL,
                 .rule_offset = offsetof(struct rule, set_icon_size),
+        },
+        {
+                .name = "enable",
+                .section = "*",
+                .description = "Enable or disable a rule",
+                .type = TYPE_CUSTOM,
+                .default_value = "true",
+                .value = NULL,
+                .parser = string_parse_bool,
+                .parser_data = boolean_enum_data,
+                .rule_offset = offsetof(struct rule, enable),
         },
 
         // other settings below
