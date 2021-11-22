@@ -175,8 +175,8 @@ static struct dbus_method methods_dunst[] = {
         {"NotificationCloseAll",   dbus_cb_dunst_NotificationCloseAll},
         {"NotificationCloseLast",  dbus_cb_dunst_NotificationCloseLast},
         {"NotificationShow",       dbus_cb_dunst_NotificationShow},
-        {"RuleEnable",             dbus_cb_dunst_RuleEnable},
         {"Ping",                   dbus_cb_dunst_Ping},
+        {"RuleEnable",             dbus_cb_dunst_RuleEnable},
 };
 
 void dbus_cb_dunst_methods(GDBusConnection *connection,

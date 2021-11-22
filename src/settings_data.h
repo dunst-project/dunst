@@ -588,7 +588,7 @@ static const struct setting allowed_settings[] = {
                 .rule_offset = offsetof(struct rule, set_icon_size),
         },
         {
-                .name = "enable",
+                .name = "enabled",
                 .section = "*",
                 .description = "Enable or disable a rule",
                 .type = TYPE_CUSTOM,
