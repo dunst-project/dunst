@@ -323,11 +323,11 @@ static void dbus_cb_dunst_RuleEnable(GDBusConnection *connection,
         }
 
         if (state == 0)
-                target_rule->enable = false;
+                target_rule->enabled = false;
         else if (state == 1)
-                target_rule->enable = true;
+                target_rule->enabled = true;
         else if (state == 2)
-                target_rule->enable = !target_rule->enable;
+                target_rule->enabled = !target_rule->enabled;
 
         g_dbus_method_invocation_return_value(invocation, NULL);
         g_dbus_connection_flush(connection, NULL, NULL, NULL);

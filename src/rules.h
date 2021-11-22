@@ -50,7 +50,7 @@ struct rule {
         const char *script;
         enum behavior_fullscreen fullscreen;
         char *set_stack_tag; // this has to be the last action
-        bool enable;
+        bool enabled;
 };
 
 extern GSList *rules;
