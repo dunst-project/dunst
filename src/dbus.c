@@ -80,6 +80,10 @@ static const char *introspection_xml =
     "        <method name=\"NotificationCloseLast\" />"
     "        <method name=\"NotificationCloseAll\"  />"
     "        <method name=\"NotificationShow\"      />"
+    "        <method name=\"RuleEnable\">"
+    "            <arg name=\"name\"     type=\"s\"/>"
+    "            <arg name=\"state\"    type=\"i\"/>"
+    "        </method>"
     "        <method name=\"Ping\"                  />"
 
     "        <property name=\"paused\" type=\"b\" access=\"readwrite\">"
@@ -163,6 +167,7 @@ DBUS_METHOD(dunst_NotificationAction);
 DBUS_METHOD(dunst_NotificationCloseAll);
 DBUS_METHOD(dunst_NotificationCloseLast);
 DBUS_METHOD(dunst_NotificationShow);
+DBUS_METHOD(dunst_RuleEnable);
 DBUS_METHOD(dunst_Ping);
 static struct dbus_method methods_dunst[] = {
         {"ContextMenuCall",        dbus_cb_dunst_ContextMenuCall},
@@ -171,6 +176,7 @@ static struct dbus_method methods_dunst[] = {
         {"NotificationCloseLast",  dbus_cb_dunst_NotificationCloseLast},
         {"NotificationShow",       dbus_cb_dunst_NotificationShow},
         {"Ping",                   dbus_cb_dunst_Ping},
+        {"RuleEnable",             dbus_cb_dunst_RuleEnable},
 };
 
 void dbus_cb_dunst_methods(GDBusConnection *connection,
@@ -282,6 +288,51 @@ static void dbus_cb_dunst_NotificationShow(GDBusConnection *connection,
         g_dbus_method_invocation_return_value(invocation, NULL);
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
 }
+
+static void dbus_cb_dunst_RuleEnable(GDBusConnection *connection,
+                                     const gchar *sender,
+                                     GVariant *parameters,
+                                     GDBusMethodInvocation *invocation)
+{
+        // dbus param state: 0 → disable, 1 → enable, 2 → toggle.
+
+        int state = 0;
+        char *name = NULL;
+        g_variant_get(parameters, "(si)", &name, &state);
+
+        LOG_D("CMD: Changing rule \"%s\" enable state to %d", name, state);
+
+        if (state < 0 || state > 2) {
+                g_dbus_method_invocation_return_error(invocation,
+                        G_DBUS_ERROR,
+                        G_DBUS_ERROR_INVALID_ARGS,
+                        "Couldn't understand state %d. It must be 0, 1 or 2",
+                        state);
+                return;
+        }
+
+        struct rule *target_rule = get_rule(name);
+
+        if (target_rule == NULL) {
+                g_dbus_method_invocation_return_error(invocation,
+                        G_DBUS_ERROR,
+                        G_DBUS_ERROR_INVALID_ARGS,
+                        "There is no rule named \"%s\"",
+                        name);
+                return;
+        }
+
+        if (state == 0)
+                target_rule->enabled = false;
+        else if (state == 1)
+                target_rule->enabled = true;
+        else if (state == 2)
+                target_rule->enabled = !target_rule->enabled;
+
+        g_dbus_method_invocation_return_value(invocation, NULL);
+        g_dbus_connection_flush(connection, NULL, NULL, NULL);
+}
+
 
 /* Just a simple Ping command to give the ability to dunstctl to test for the existence of this interface
  * Any other way requires parsing the XML of the Introspection or other foo. Just calling the Ping on an old dunst version will fail. */

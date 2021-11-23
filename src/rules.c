@@ -142,7 +142,8 @@ static inline bool rule_field_matches_string(const char *value, const char *patt
  */
 bool rule_matches_notification(struct rule *r, struct notification *n)
 {
-        return     (r->msg_urgency == URG_NONE || r->msg_urgency == n->urgency)
+        return  r->enabled
+                && (r->msg_urgency == URG_NONE || r->msg_urgency == n->urgency)
                 && (r->match_transient == -1 || (r->match_transient == n->transient))
                 && rule_field_matches_string(n->appname,        r->appname)
                 && rule_field_matches_string(n->desktop_entry,  r->desktop_entry)
