@@ -120,7 +120,7 @@ case "${1:-}" in
 			|| die "Dunst is not running."
 		;;
 	"history-pop-id")
-		method_call "${DBUS_IFAC_DUNST}.NotificationPopHistory" "int32:${2:-0}" >/dev/null
+		method_call "${DBUS_IFAC_DUNST}.NotificationPopHistory" "uint32:${2:-0}" >/dev/null
 		;;
 	"")
 		die "dunstctl: No command specified. Please consult the usage."
