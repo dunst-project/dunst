@@ -172,12 +172,12 @@ This setting will only work if a compositor is running.
 The height in pixels of the separator between notifications, if set to 0 there
 will be no separating line between notifications.
 
-=item B<padding> (default: 0)
+=item B<padding> (default: 8)
 
 The distance in pixels from the content to the separator/border of the window
 in the vertical axis
 
-=item B<horizontal_padding> (default: 0)
+=item B<horizontal_padding> (default: 8)
 
 The distance in pixels from the content to the border of the window
 in the horizontal axis
@@ -199,14 +199,10 @@ is equivalent to
     text_icon_padding=0
     horizontal_padding=10
 
-=item B<frame_width> (default: 0)
+=item B<frame_width> (default: 3)
 
 Defines width in pixels of frame around the notification window. Set to 0 to
 disable.
-
-=item B<frame_color color> (default: #888888)
-
-Defines color of the frame around the notification window. See COLORS.
 
 =item B<separator_color> (values: [auto/foreground/frame/#RRGGBB] default: auto)
 
@@ -1055,6 +1051,12 @@ given, seconds ("s") is taken as default.
 Time units understood by dunst are "ms", "s", "m", "h" and "d".
 
 Example time: "1000ms" "10m"
+
+=head1 MISCELLANEOUS
+
+Dunst used to provide shortcuts to act on notifications via key-bindings, but it
+has now been moved to its own utility. For more information, see the manual for
+dunstctl(1).
 
 =head1 AUTHORS
 

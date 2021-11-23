@@ -26,6 +26,7 @@ show_help() {
 	  history-pop-id                    Pop one notification from history using it's ID
 	  is-paused                         Check if dunst is running or paused
 	  set-paused [true|false|toggle]    Set the pause status
+	  rule name [enable|disable|toggle] Enable or disable a rule by its name
 	  debug                             Print debugging information
 	  help                              Show this help
 	EOH
@@ -96,6 +97,17 @@ case "${1:-}" in
 		else
 			property_set paused variant:boolean:"$2"
 		fi
+		;;
+        "rule")
+		[ "${2:-}" ] \
+			|| die "No rule name parameter specified. Please give the rule name"
+		state=nope
+		[ "${3}" = "disable" ] && state=0
+		[ "${3}" = "enable" ]  && state=1
+		[ "${3}" = "toggle" ]  && state=2
+		[ "${state}" = "nope" ] \
+			&& die "No valid rule state parameter specified. Please give either 'enable', 'disable' or 'toggle'"
+		method_call "${DBUS_IFAC_DUNST}.RuleEnable" "string:${2:-1}" "int32:${state}" >/dev/null
 		;;
 	"help"|"--help"|"-h")
 		show_help
