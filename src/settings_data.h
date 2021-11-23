@@ -121,6 +121,7 @@ static const struct rule empty_rule = {
         .fg              = NULL,
         .bg              = NULL,
         .format          = NULL,
+        .default_icon    = NULL,
         .script          = NULL,
         .enabled         = true,
 };
@@ -423,6 +424,17 @@ static const struct setting allowed_settings[] = {
                 .rule_offset = offsetof(struct rule, highlight),
         },
         {
+                .name = "default_icon",
+                .section = "*",
+                .description = "The default icon that is used when no icon is passed",
+                .type = TYPE_STRING,
+                .default_value = "*",
+                .value = NULL,
+                .parser = NULL,
+                .parser_data = NULL,
+                .rule_offset = offsetof(struct rule, default_icon),
+        },
+        {
                 .name = "format",
                 .section = "global",
                 .description = "The format template for the notifications",
@@ -598,6 +610,7 @@ static const struct setting allowed_settings[] = {
                 .parser_data = boolean_enum_data,
                 .rule_offset = offsetof(struct rule, enabled),
         },
+        // end of modifying rules
 
         // other settings below
         {

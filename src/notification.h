@@ -56,6 +56,7 @@ struct notification {
         char *iconname;          /**< plain icon information (may be a path or just a name) as recieved from dbus.
                                    Use this to compare the icon name with rules. May also be modified by rules.*/
         char *icon_path;         /**< Full path to the notification's icon. */
+        char *default_icon_name; /**< The icon that is used when no other icon is available. */
         int icon_size;           /**< Size of the icon used for searching the right icon. */
 
         gint64 start;      /**< begin of current display (in milliseconds) */

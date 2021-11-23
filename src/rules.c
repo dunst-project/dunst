@@ -46,8 +46,6 @@ void rule_apply(struct rule *r, struct notification *n)
         }
         if (r->markup != MARKUP_NULL)
                 n->markup = r->markup;
-        if (r->new_icon)
-                notification_icon_replace_path(n, r->new_icon);
         if (r->set_icon_size > 0)
                 n->icon_size = r->set_icon_size;
         if (r->fg) {
@@ -68,6 +66,14 @@ void rule_apply(struct rule *r, struct notification *n)
         }
         if (r->format)
                 n->format = r->format;
+        if (r->default_icon) {
+                g_free(n->default_icon_name);
+                n->default_icon_name = g_strdup(r->default_icon);
+        }
+        if (r->new_icon) {
+                g_free(n->iconname);
+                n->iconname = g_strdup(r->new_icon);
+        }
         if (r->script){
                 n->scripts = g_renew(const char*,n->scripts,n->script_count + 1);
                 n->scripts[n->script_count] = r->script;

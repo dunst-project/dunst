@@ -787,7 +787,15 @@ Default: show
 
 =item C<new_icon>
 
-Updates the icon of the notification, it should be a path to a valid image.
+Updates the icon of the notification, it should be a path or a name for a valid
+image. This overrides the icon that was sent with dunstify or another notification
+tool.
+
+=item C<default_icon>
+
+Sets the default icon of the notification, it should be a path or a name for a
+valid image. This does B<not> override the icon that was sent with dunstify or
+another notification tool.
 
 =item C<set_stack_tag>
 
