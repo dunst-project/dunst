@@ -277,7 +277,38 @@ static const struct string_to_enum_def origin_enum_data[] = {
 };
 
 static const struct setting allowed_settings[] = {
-        // match rules below
+        // These icon settings have to be above the icon rule
+        {
+                .name = "icon",
+                .section = "urgency_low",
+                .description = "Icon for notifications with low urgency",
+                .type = TYPE_STRING,
+                .default_value = "dialog-information",
+                .value = &settings.icons[URG_LOW],
+                .parser = NULL,
+                .parser_data = NULL,
+        },
+        {
+                .name = "icon",
+                .section = "urgency_normal",
+                .description = "Icon for notifications with normal urgency",
+                .type = TYPE_STRING,
+                .default_value = "dialog-information",
+                .value = &settings.icons[URG_NORM],
+                .parser = NULL,
+                .parser_data = NULL,
+        },
+        {
+                .name = "icon",
+                .section = "urgency_critical",
+                .description = "Icon for notifications with critical urgency",
+                .type = TYPE_STRING,
+                .default_value = "dialog-warning",
+                .value = &settings.icons[URG_CRIT],
+                .parser = NULL,
+                .parser_data = NULL,
+        },
+        // filtering rules below
         {
                 .name = "appname",
                 .section = "*",
@@ -1170,16 +1201,6 @@ static const struct setting allowed_settings[] = {
                 .parser_data = NULL,
         },
         {
-                .name = "icon",
-                .section = "urgency_low",
-                .description = "Icon for notifications with low urgency",
-                .type = TYPE_STRING,
-                .default_value = "dialog-information",
-                .value = &settings.icons[URG_LOW],
-                .parser = NULL,
-                .parser_data = NULL,
-        },
-        {
                 .name = "background",
                 .section = "urgency_normal",
                 .description = "Background color for notifications with normal urgency",
@@ -1230,16 +1251,6 @@ static const struct setting allowed_settings[] = {
                 .parser_data = NULL,
         },
         {
-                .name = "icon",
-                .section = "urgency_normal",
-                .description = "Icon for notifications with normal urgency",
-                .type = TYPE_STRING,
-                .default_value = "dialog-information",
-                .value = &settings.icons[URG_NORM],
-                .parser = NULL,
-                .parser_data = NULL,
-        },
-        {
                 .name = "background",
                 .section = "urgency_critical",
                 .description = "Background color for notifications with critical urgency",
@@ -1286,16 +1297,6 @@ static const struct setting allowed_settings[] = {
                 .type = TYPE_TIME,
                 .default_value = "0",
                 .value = &settings.timeouts[URG_CRIT],
-                .parser = NULL,
-                .parser_data = NULL,
-        },
-        {
-                .name = "icon",
-                .section = "urgency_critical",
-                .description = "Icon for notifications with critical urgency",
-                .type = TYPE_STRING,
-                .default_value = "dialog-warning",
-                .value = &settings.icons[URG_CRIT],
                 .parser = NULL,
                 .parser_data = NULL,
         },
