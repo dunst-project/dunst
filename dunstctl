@@ -21,7 +21,9 @@ show_help() {
 	  close-all                         Close the all notifications
 	  context                           Open context menu
 	  count [displayed|history|waiting] Show the number of notifications
+	  history                           Display notification history (in JSON)
 	  history-pop                       Pop one notification from history
+	  history-pop-id                    Pop one notification from history using it's ID
 	  is-paused                         Check if dunst is running or paused
 	  set-paused [true|false|toggle]    Set the pause status
 	  rule name [enable|disable|toggle] Enable or disable a rule by its name
@@ -52,7 +54,7 @@ command -v dbus-send >/dev/null 2>/dev/null || \
 
 case "${1:-}" in
 	"action")
-		method_call "${DBUS_IFAC_DUNST}.NotificationAction" "int32:${2:-0}" >/dev/null
+		method_call "${DBUS_IFAC_DUNST}.NotificationAction" "uint32:${2:-0}" >/dev/null
 		;;
 	"close")
 		method_call "${DBUS_IFAC_DUNST}.NotificationCloseLast" >/dev/null
@@ -124,6 +126,13 @@ case "${1:-}" in
 
 		dbus-send --print-reply=literal --dest="${DBUS_NAME}" "${DBUS_PATH}" "${DBUS_IFAC_DUNST}.Ping" >/dev/null 2>/dev/null \
 			|| die "Dunst controlling interface not available. Is the version too old?"
+		;;
+	"history")
+		busctl --user --json=pretty -l --no-pager call org.freedesktop.Notifications /org/freedesktop/Notifications org.dunstproject.cmd0 NotificationListHistory 2>/dev/null \
+			|| die "Dunst is not running."
+		;;
+	"history-pop-id")
+		method_call "${DBUS_IFAC_DUNST}.NotificationPopHistory" "uint32:${2:-0}" >/dev/null
 		;;
 	"")
 		die "dunstctl: No command specified. Please consult the usage."

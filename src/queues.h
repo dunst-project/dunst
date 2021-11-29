@@ -27,6 +27,13 @@ void queues_init(void);
 GList *queues_get_displayed(void);
 
 /**
+ * Recieve the list of all notifications encountered
+ *
+ * @return read only list of notifications
+ */
+GList *queues_get_history(void);
+
+/**
  * Get the highest notification in line
  *
  * @returns the first notification in waiting
@@ -105,6 +112,12 @@ void queues_notification_close(struct notification *n, enum reason reason);
  * and removes it from history
  */
 void queues_history_pop(void);
+
+/**
+ * Pushes the latest notification found in the history buffer identified by
+ * it's assigned id
+ */
+void queues_history_pop_by_id(unsigned int id);
 
 /**
  * Push a single notification to history

@@ -77,6 +77,12 @@ unsigned int queues_length_history(void)
         return history->length;
 }
 
+/* see queues.h */
+GList *queues_get_history(void)
+{
+        return g_queue_peek_head_link(history);
+}
+
 /**
  * Swap two given queue elements. The element's data has to be a notification.
  *
@@ -341,6 +347,34 @@ void queues_history_pop(void)
                 return;
 
         struct notification *n = g_queue_pop_tail(history);
+        n->redisplayed = true;
+        n->timeout = settings.sticky_history ? 0 : n->timeout;
+        g_queue_insert_sorted(waiting, n, notification_cmp_data, NULL);
+}
+
+/* see queues.h */
+void queues_history_pop_by_id(unsigned int id)
+{
+        struct notification *n = NULL;
+
+        if (g_queue_is_empty(history))
+                return;
+
+        // search through the history buffer 
+        for (GList *iter = g_queue_peek_head_link(history); iter;
+                iter = iter->next) {
+                struct notification *cur = iter->data;
+                if (cur->id == id) {
+                        n = cur;
+                        break;
+                }
+        }
+
+        // must be a valid notification
+        if (n == NULL)
+                return;
+
+        g_queue_remove(history, n);
         n->redisplayed = true;
         n->timeout = settings.sticky_history ? 0 : n->timeout;
         g_queue_insert_sorted(waiting, n, notification_cmp_data, NULL);
