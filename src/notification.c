@@ -276,6 +276,7 @@ void notification_unref(struct notification *n)
         g_free(n->summary);
         g_free(n->body);
         g_free(n->iconname);
+        g_free(n->default_icon_name);
         g_free(n->icon_path);
         g_free(n->msg);
         g_free(n->dbus_client);
@@ -449,12 +450,6 @@ void notification_init(struct notification *n)
         if (n->timeout < 0)
                 n->timeout = settings.timeouts[n->urgency];
 
-        /* Icon handling */
-        if (STR_EMPTY(n->iconname))
-                g_clear_pointer(&n->iconname, g_free);
-        if (!n->icon && !n->iconname)
-                n->iconname = g_strdup(settings.icons[n->urgency]);
-
         /* Color hints */
         struct notification_colors defcolors;
         switch (n->urgency) {
@@ -491,6 +486,16 @@ void notification_init(struct notification *n)
                 LOG_W("%s", msg);
                 n->body = string_append(n->body, msg, "\n");
         }
+
+        /* Icon handling */
+        if (STR_EMPTY(n->iconname))
+                g_clear_pointer(&n->iconname, g_free);
+        if (!n->icon && !n->iconname && n->default_icon_name) {
+                n->iconname = g_strdup(n->default_icon_name);
+        }
+        if (!n->icon && !n->iconname)
+                n->iconname = g_strdup(settings.icons[n->urgency]);
+
 
         /* UPDATE derived fields */
         notification_extract_urls(n);

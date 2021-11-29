@@ -60,7 +60,7 @@ keyboard focus.
 
 =item B<geometry> DEPRECATED
 
-This setting is deprecated. It's split up into B<width>, B<height>, B<origin>,
+This setting is deprecated and removed. It's split up into B<width>, B<height>, B<origin>,
 B<notification_limit> and B<offset>.
 
 =item B<width>
@@ -547,9 +547,11 @@ tracker for discussions (See REPORTING BUGS).
 
 =over 4
 
-=item B<-li/ni/ci icon>
+=item B<-li/ni/ci icon> DEPRECATED
 
-Defines the icon for low, normal and critical notifications respectively.
+Defines the icon for low, normal and critical notifications respectively. This
+setting will be replaced by the B<default_icon> setting, so it's
+recommended to replace it as soon as possible.
 
 Where I<icon> is a path to an image file containing the icon.
 
@@ -689,7 +691,8 @@ the desktop-entry won't get localized.
 =item C<icon>
 
 The icon of the notification in the form of a file path. Can be empty if no icon
-is available or a raw icon is used instead.
+is available or a raw icon is used instead. This setting is not to be confused
+with the icon setting in the urgency section.
 
 =item C<match_transient>
 
@@ -787,7 +790,15 @@ Default: show
 
 =item C<new_icon>
 
-Updates the icon of the notification, it should be a path to a valid image.
+Updates the icon of the notification, it should be a path or a name for a valid
+image. This overrides the icon that was sent with dunstify or another notification
+tool.
+
+=item C<default_icon>
+
+Sets the default icon of the notification, it should be a path or a name for a
+valid image. This does B<not> override the icon that was sent with dunstify or
+another notification tool.
 
 =item C<set_stack_tag>
 
