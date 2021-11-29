@@ -73,6 +73,11 @@ Examples:
         width = 300      # constant width of 300
         width = (0, 300) # width between 0 and 300
 
+When setting a width bigger than the screen, dunst will clamp the width to the
+screen width. So if you want the notifcation to stretch the entire screen
+dynamically, you may set the width to a high enough number, which none of your
+screens exceed (e.g. 10000).
+
 =item B<height>
 
 The maximum height of a single notification.

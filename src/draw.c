@@ -281,6 +281,14 @@ static struct dimensions calculate_dimensions(GSList *layouts)
 
         dim.w += 2 * settings.frame_width;
         dim.corner_radius = MIN(dim.corner_radius, dim.h/2);
+
+        /* clamp max width to screen width */
+        const struct screen_info *scr = output->get_active_screen();
+        int max_width = scr->w - settings.offset.x;
+        if (dim.w > max_width) {
+                dim.w = max_width;
+        }
+
         return dim;
 }
 

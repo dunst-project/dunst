@@ -107,6 +107,12 @@ static void output_handle_geometry(void *data, struct wl_output *wl_output,
         struct dunst_output *output = data;
         output->subpixel = subpixel;
 }
+static void output_handle_mode(void *data, struct wl_output *wl_output, uint32_t flags,
+                int32_t width, int32_t height, int32_t refresh) {
+        struct dunst_output *output = data;
+        output->width = width;
+        output->height = height;
+}
 
 static void output_handle_scale(void *data, struct wl_output *wl_output,
                 int32_t factor) {
@@ -118,7 +124,7 @@ static void output_handle_scale(void *data, struct wl_output *wl_output,
 
 static const struct wl_output_listener output_listener = {
         .geometry = output_handle_geometry,
-        .mode = noop,
+        .mode = output_handle_mode,
         .done = noop,
         .scale = output_handle_scale,
 };
@@ -796,17 +802,27 @@ cairo_t* wl_win_get_context(window winptr) {
 }
 
 const struct screen_info* wl_get_active_screen(void) {
-        // TODO Screen size detection
         static struct screen_info scr = {
-                .w = 1920,
-                .h = 1080,
+                .w = 3840,
+                .h = 2160,
                 .x = 0,
                 .y = 0,
                 .id = 0,
                 .mmh = 500
         };
         scr.dpi = wl_get_scale() * 96;
-        return &scr;
+
+        struct dunst_output *current_output = get_configured_output();
+        if (current_output != NULL) {
+                scr.w = current_output->width;
+                scr.h = current_output->height;
+                return &scr;
+        } else {
+                // Using auto output. We don't know on which output we are
+                // (although we might find it out by looking at the list of
+                // toplevels).
+                return &scr;
+        }
 }
 
 bool wl_is_idle(void) {

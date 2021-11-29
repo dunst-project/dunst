@@ -12,6 +12,7 @@ struct dunst_output {
 
         uint32_t scale;
         uint32_t subpixel; // TODO do something with it
+        int32_t width, height;
         bool fullscreen;
         struct zwlr_foreign_toplevel_handle_v1 *fullscreen_toplevel; // the toplevel that is fullscreened on this output
 };
