@@ -11,6 +11,7 @@ DBUS_IFAC_FDN="org.freedesktop.Notifications"
 die(){ printf "%s\n" "${1}" >&2; exit 1; }
 
 show_help() {
+	# Below, each line starts with a tab character
 	cat <<-EOH
 	Usage: dunstctl <command> [parameters]"
 	Commands:
@@ -22,8 +23,9 @@ show_help() {
 	  context                           Open context menu
 	  count [displayed|history|waiting] Show the number of notifications
 	  history                           Display notification history (in JSON)
-	  history-pop                       Pop one notification from history
-	  history-pop-id                    Pop one notification from history using it's ID
+	  history-pop [ID]                  Pop the latest notification from
+	                                    history or optionally the
+	                                    notification with given ID.
 	  is-paused                         Check if dunst is running or paused
 	  set-paused [true|false|toggle]    Set the pause status
 	  rule name [enable|disable|toggle] Enable or disable a rule by its name
@@ -77,7 +79,15 @@ case "${1:-}" in
 		fi
 		;;
 	"history-pop")
-		method_call "${DBUS_IFAC_DUNST}.NotificationShow" >/dev/null
+		if [ "$#" -eq 1 ]
+		then
+			method_call "${DBUS_IFAC_DUNST}.NotificationShow" >/dev/null
+		elif [ "$#" -eq 2 ]
+		then
+			method_call "${DBUS_IFAC_DUNST}.NotificationPopHistory" "uint32:${2:-0}" >/dev/null
+		else
+			die "Please pass the right number of arguments. History-pop takes 0 or 1 arguments"
+		fi
 		;;
 	"is-paused")
 		property_get paused | ( read -r _ _ paused; printf "%s\n" "${paused}"; )
@@ -131,9 +141,6 @@ case "${1:-}" in
 		busctl --user --json=pretty -l --no-pager call org.freedesktop.Notifications /org/freedesktop/Notifications org.dunstproject.cmd0 NotificationListHistory 2>/dev/null \
 			|| die "Dunst is not running."
 		;;
-	"history-pop-id")
-		method_call "${DBUS_IFAC_DUNST}.NotificationPopHistory" "uint32:${2:-0}" >/dev/null
-		;;
 	"")
 		die "dunstctl: No command specified. Please consult the usage."
 		;;
@@ -141,3 +148,4 @@ case "${1:-}" in
 		die "dunstctl: unrecognized command '${1:-}'. Please consult the usage."
 		;;
 esac
+# vim: noexpandtab

@@ -43,5 +43,5 @@ selection_index=$((${result:0:4}-1))
 notification_id=$(echo $history_json|jq -r .data[][$selection_index].id.data)
 
 # Tell dunst to revive said notification
-dunstctl history-pop-id $notification_id
+dunstctl history-pop $notification_id
 

@@ -34,11 +34,12 @@ currently open notifications.
 Returns the number of displayed, shown and waiting notifications. If no argument
 is provided, everything will be printed.
 
-=item B<history-pop>
+=item B<history-pop> [ID]
 
 Redisplay the notification that was most recently closed. This can be called
 multiple times to show older notifications, up to the history limit configured
-in dunst.
+in dunst. You can optionally pass an ID to history-pop, in which case the
+notification with the given ID will be shown.
 
 =item B<is-paused>
 
