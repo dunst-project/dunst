@@ -1,10 +1,35 @@
 # Dunst changelog
 
-## Unreleased
+## 1.7.2 -- 2021-11-30
 
 ### Added
+- Experimental recursive icon lookup. This is not enabled by default and can be
+  enabled by setting `enable_recursive_icon_lookup=true`. Setting icon sizes
+  still doesn't work entirely as it's supposed to and will be improved in future
+  releases. (#965)
+- You can now enable or disable rules on the fly with `dunstctl rule $name$
+  enable/disable`. (#981)
+- `dunstctl history` lists your notification history in JSON format for
+  processing by scripts. (#970)
+- You can now pop specific notifications from history by passing a notification
+  ID to `dunstctl history-pop`. (#970)
+- `default_icon` setting for setting the icon when no icons are given (#984)
+- Implemented display size detection in Wayland. (#973)
 ### Changed
 ### Fixed
+- Text being cut off on X11 when using fractional scaling. (#975)
+- Incorrect hitbox for notification on X11 with scaling. (#980)
+- Improved warning messages for deprecated sections. (#974)
+- `icon` being interpreted as a filter and not being allowed in the special
+  urgency sections. This is a compatibility fix, but it's recommended to replace
+  all usages of `icon` in these sections with `default_icon` to prevent
+  confusion with the `icon` rule in other sections. (#984)
+- `new_icon` being used in the default dunstrc where `default_icon` is the
+  intended settings. This was commented by default, so it doesn't affect any
+  default behaviour. (#984)
+- Notifications bleeding to other screens when the width was big enough. Now the
+  notification's width is lowered when it would otherwise leave the display.
+
 
 ## 1.7.1 -- 2021-11-01
 
