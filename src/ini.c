@@ -17,8 +17,6 @@ struct section *get_or_create_section(struct ini *ini, const char *name)
 {
         struct section *s = get_section(ini, name);
         if (!s) {
-                LOG_D("New section: [%s]", name);
-
                 ini->section_count++;
                 ini->sections = g_realloc(ini->sections, sizeof(struct section) * ini->section_count);
 
@@ -34,7 +32,6 @@ void add_entry(struct ini *ini, const char *section_name, const char *key, const
 {
         struct section *s = get_or_create_section(ini, section_name);
 
-        LOG_D("\t%s=%s", key, value);
         s->entry_count++;
         int len = s->entry_count;
         s->entries = g_realloc(s->entries, sizeof(struct entry) * len);
@@ -111,7 +108,6 @@ struct ini *load_ini_file(FILE *fp)
 
                         g_free(current_section);
                         current_section = (g_strdup(start + 1));
-                        LOG_D("[%s]", current_section);
                         continue;
                 }
 
