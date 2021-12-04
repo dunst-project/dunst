@@ -57,11 +57,9 @@ void load_icon_themes()
                 char *theme = settings.icon_theme[i];
                 int theme_index = load_icon_theme(theme);
                 if (theme_index >= 0) {
-                        LOG_W("Adding default theme %s", theme);
+                        LOG_I("Adding theme %s", theme);
                         add_default_theme(theme_index);
                         loaded_theme = true;
-                } else {
-                        LOG_W("NOT Adding default theme '%s'", theme);
                 }
         }
         if (!loaded_theme) {
