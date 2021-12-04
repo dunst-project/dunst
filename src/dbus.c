@@ -75,7 +75,7 @@ static const char *introspection_xml =
 
     "        <method name=\"ContextMenuCall\"       />"
     "        <method name=\"NotificationAction\">"
-    "            <arg name=\"number\"     type=\"i\"/>"
+    "            <arg name=\"number\"     type=\"u\"/>"
     "        </method>"
     "        <method name=\"NotificationCloseLast\" />"
     "        <method name=\"NotificationCloseAll\"  />"
@@ -231,12 +231,12 @@ static void dbus_cb_dunst_NotificationAction(GDBusConnection *connection,
                                              GVariant *parameters,
                                              GDBusMethodInvocation *invocation)
 {
-        int notification_nr = 0;
-        g_variant_get(parameters, "(i)", &notification_nr);
+        guint32 notification_nr = 0;
+        g_variant_get(parameters, "(u)", &notification_nr);
 
         LOG_D("CMD: Calling action for notification %d", notification_nr);
 
-        if (notification_nr < 0 || queues_length_waiting() < notification_nr) {
+        if (queues_length_waiting() < notification_nr) {
                 g_dbus_method_invocation_return_error(invocation,
                         G_DBUS_ERROR,
                         G_DBUS_ERROR_INVALID_ARGS,
