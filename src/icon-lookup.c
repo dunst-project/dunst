@@ -319,6 +319,8 @@ char *find_icon_in_theme_with_inherit(const char *name, int theme_index, int siz
 
         if (!icon) {
                 for (int i = 0; i < icon_themes[theme_index].inherits_count; i++) {
+                        if (icon_themes[theme_index].inherits_index[i] <= 0)
+                                continue; // inherited theme could not be found
                         icon = find_icon_in_theme(name,
                                         icon_themes[theme_index].inherits_index[i],
                                         size);
