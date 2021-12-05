@@ -88,16 +88,9 @@ The progress value can be set with a hint, too.
 
 Dunst can be paused via the `dunstctl set-paused true` command. To unpause dunst use
 `dunstctl set-paused false`.
-Alternatively you can send SIGUSR1 and SIGUSR2 to pause and unpause
-respectively. For Example:
-
-=over 4
-
-=item killall -SIGUSR1 dunst # pause
-
-=item killall -SIGUSR2 dunst # resume
-
-=back
+Another way is to send SIGUSR1 and SIGUSR2 to pause and unpause
+respectively. Pausing using dunstctl is recommended over using signals, because
+the meaning of the signals is not be stable and might change in the future.
 
 When paused dunst will not display any notifications but keep all notifications
 in a queue.  This can for example be wrapped around a screen locker (i3lock,
