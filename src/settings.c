@@ -44,21 +44,6 @@
  */
 #define XDG_CONFIG_DIRS_DEFAULT SYSCONFDIR
 
-/** @brief Generate path to base config 'dunstrc' in a base directory
- * 
- * @returns a newly-allocated gchar* string that must be freed with g_free().
- */
-#define BASE_RC(basedir) g_build_filename(basedir, "dunst", "dunstrc", NULL)
-
-/** @brief Generate drop-in directory path for a base directory
- * 
- * @returns a newly-allocated gchar* string that must be freed with g_free().
- */
-#define DROP_IN_DIR(basedir) g_strconcat(BASE_RC(basedir), ".d", NULL)
-
-/** @brief Match pattern for drop-in file names */
-#define DROP_IN_PATTERN "*.conf"
-
 struct settings settings;
 
 static const char * const *get_xdg_conf_basedirs(void);
@@ -71,13 +56,13 @@ static void get_conf_files(GQueue *config_files);
  *
  * @returns @brief An integer indicating success
  *
- * @retval @brief 1 if file name matches #DROP_IN_PATTERN
+ * @retval @brief 1 if file name matches *.conf
  * @retval @brief 0 otherwise
  *
  * @param dent [in] @brief directory entry
  */
 static int is_drop_in(const struct dirent *dent) {
-        return 0 == fnmatch(DROP_IN_PATTERN, dent->d_name, FNM_PATHNAME | FNM_PERIOD)
+        return 0 == fnmatch("*.conf", dent->d_name, FNM_PATHNAME | FNM_PERIOD)
                     ? 1 // success
                     : 0;
 }
@@ -140,9 +125,9 @@ static void get_conf_files(GQueue *config_files) {
         struct dirent **drop_ins;
         for (const char * const *d = get_xdg_conf_basedirs(); *d; d++) {
                 /* absolute path to the base rc-file */
-                gchar * const base_rc = BASE_RC(*d);
+                gchar * const base_rc = g_build_filename(*d, "dunst", "dunstrc", NULL);
                 /* absolute path to the corresponding drop-in directory */
-                gchar * const drop_in_dir = DROP_IN_DIR(*d);
+                gchar * const drop_in_dir = g_strconcat(base_rc, ".d", NULL);
 
                 int n = scandir(drop_in_dir, &drop_ins, is_drop_in, alphasort);
                 /* reverse order to get most important first */
