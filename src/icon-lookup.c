@@ -16,11 +16,6 @@ int icon_themes_count = 0;
 int *default_themes_index = NULL;
 int default_themes_count = 0;
 
-static bool is_readable_file(const char *filename)
-{
-        return (access(filename, R_OK) != -1);
-}
-
 int get_icon_theme(char *name) {
         for (int i = 0; i < icon_themes_count; i++) {
                 if (STR_EQ(icon_themes[i].subdir_theme, name)){
