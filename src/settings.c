@@ -122,7 +122,7 @@ static const char * const *get_xdg_conf_basedirs() {
  * non-empty queue.
  */
 static void get_conf_files(GQueue *config_files) {
-        struct dirent **drop_ins;
+        struct dirent **drop_ins = NULL;
         for (const char * const *d = get_xdg_conf_basedirs(); *d; d++) {
                 /* absolute path to the base rc-file */
                 gchar * const base_rc = g_build_filename(*d, "dunst", "dunstrc", NULL);
