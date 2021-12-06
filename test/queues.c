@@ -5,6 +5,7 @@
 
 #include "greatest.h"
 #include "queues.h"
+#include "helpers.h"
 
 struct notification *queues_debug_find_notification_by_id(int id)
 {

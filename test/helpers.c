@@ -1,6 +1,8 @@
 #include <gdk-pixbuf/gdk-pixbuf.h>
 
 #include "helpers.h"
+#include "../src/notification.h"
+#include "../src/utils.h"
 
 GVariant *notification_setup_raw_image(const char *path)
 {
@@ -30,6 +32,25 @@ GVariant *notification_setup_raw_image(const char *path)
         g_object_unref(pb);
 
         return hint;
+}
+
+struct notification *test_notification(const char *name, gint64 timeout)
+{
+        struct notification *n = notification_create();
+
+        n->dbus_client = g_strconcat(":", name, NULL);
+        n->appname =     g_strconcat("app of ", name, NULL);
+        n->summary =     g_strconcat(name, NULL);
+        n->body =        g_strconcat("See, ", name, ", I've got a body for you!", NULL);
+
+        notification_init(n);
+
+        n->format = "%s\n%b";
+
+        if (timeout != -1)
+                n->timeout = S2US(timeout);
+
+        return n;
 }
 
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
