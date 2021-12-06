@@ -22,6 +22,7 @@ If dunst segfaults (please install the debug symbols or install dunst manually a
 <details>
 <summary>Minimal dunstrc</summary>
 <!-- Try creating a minimal dunstrc that still reproduces the issue and paste it below -->
+
 ```ini
 # Dunstrc here
 ```
