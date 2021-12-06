@@ -25,6 +25,7 @@ SUITE_EXTERN(suite_dbus);
 SUITE_EXTERN(suite_setting);
 SUITE_EXTERN(suite_ini);
 SUITE_EXTERN(suite_icon_lookup);
+SUITE_EXTERN(suite_draw);
 
 GREATEST_MAIN_DEFS();
 
@@ -62,6 +63,7 @@ int main(int argc, char *argv[]) {
         RUN_SUITE(suite_dbus);
         RUN_SUITE(suite_setting);
         RUN_SUITE(suite_icon_lookup);
+        RUN_SUITE(suite_draw);
 
         base = NULL;
         g_free(config_path);

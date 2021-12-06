@@ -53,4 +53,11 @@ struct notification *test_notification(const char *name, gint64 timeout)
         return n;
 }
 
+struct notification *test_notification_with_icon(const char *name, gint64 timeout)
+{
+        struct notification *n = test_notification(name, timeout);
+        n->icon = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 1, 1);
+        return n;
+}
+
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */
