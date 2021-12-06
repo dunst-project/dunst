@@ -82,4 +82,6 @@ SUITE(suite_draw)
                         RUN_TEST(test_layout_from_notification_icon_off);
                         RUN_TEST(test_layout_from_notification_no_icon);
         });
+
+        output = NULL;
 }

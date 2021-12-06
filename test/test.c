@@ -49,21 +49,24 @@ int main(int argc, char *argv[]) {
         load_settings(config_path);
 
         GREATEST_MAIN_BEGIN();
-        RUN_SUITE(suite_utils);
-        RUN_SUITE(suite_option_parser);
-        RUN_SUITE(suite_notification);
-        RUN_SUITE(suite_markup);
-        RUN_SUITE(suite_misc);
-        RUN_SUITE(suite_icon);
-        RUN_SUITE(suite_queues);
-        RUN_SUITE(suite_dunst);
-        RUN_SUITE(suite_log);
-        RUN_SUITE(suite_menu);
-        RUN_SUITE(suite_settings_data);
-        RUN_SUITE(suite_dbus);
-        RUN_SUITE(suite_setting);
-        RUN_SUITE(suite_icon_lookup);
-        RUN_SUITE(suite_draw);
+
+        SHUFFLE_SUITES(time(NULL), {
+                        RUN_SUITE(suite_utils);
+                        RUN_SUITE(suite_option_parser);
+                        RUN_SUITE(suite_markup);
+                        RUN_SUITE(suite_misc);
+                        RUN_SUITE(suite_icon);
+                        RUN_SUITE(suite_notification);
+                        RUN_SUITE(suite_dunst);
+                        RUN_SUITE(suite_log);
+                        RUN_SUITE(suite_menu);
+                        RUN_SUITE(suite_settings_data);
+                        RUN_SUITE(suite_queues);
+                        RUN_SUITE(suite_dbus);
+                        RUN_SUITE(suite_setting);
+                        RUN_SUITE(suite_icon_lookup);
+                        RUN_SUITE(suite_draw);
+        });
 
         base = NULL;
         g_free(config_path);
