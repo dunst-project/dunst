@@ -335,7 +335,12 @@ static struct colored_layout *layout_from_notification(cairo_t *c, struct notifi
 
         struct colored_layout *cl = layout_init_shared(c, n);
 
-        cl->icon = n->icon;
+        if (settings.icon_position != ICON_OFF && n->icon) {
+                cl->icon = n->icon;
+        } else {
+                cl->icon = NULL;
+        }
+
         /* markup */
         GError *err = NULL;
         pango_parse_markup(n->text_to_render, -1, 0, &(cl->attr), &(cl->text), NULL, &err);
