@@ -1,10 +1,15 @@
 # Dunst changelog
 
-## Unreleased
+## 1.7.3 -- 2021-12-08
 
 ### Added
 ### Changed
+- `follow` is now `none` again by default. This was the case before v1.7.0 as well. (#990).
+
 ### Fixed
+- `dunstctl action` is now working again.
+- Segfault in experimental icon lookup when an inherited theme doesn't exist.
+- `icon_position = off` not being respected (#996).
 
 ## 1.7.2 -- 2021-11-30
 
