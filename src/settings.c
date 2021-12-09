@@ -32,18 +32,6 @@
 #define SYSCONFDIR "/usr/local/etc/xdg"
 #endif
 
-/** @brief Alternative default for XDG_CONFIG_DIRS
- *
- * Fix peculiar behaviour if installed to a local PREFIX, i.e.
- * /usr/local, when SYSCONFDIR should be /usr/local/etc/xdg and not
- * /etc/xdg, hence use SYSCONFDIR (defined at compile time, see
- * config.mk) as default for XDG_CONFIG_DIRS. The spec says 'should'
- * and not 'must' use /etc/xdg.  Users/admins can override this by
- * explicitly setting XDG_CONFIG_DIRS to their liking at runtime or by
- * setting SYSCONFDIR=/etc/xdg at compile time.
- */
-#define XDG_CONFIG_DIRS_DEFAULT SYSCONFDIR
-
 struct settings settings;
 
 static const char * const *get_xdg_conf_basedirs(void);
@@ -84,9 +72,17 @@ static const char * const *get_xdg_conf_basedirs() {
                 char * xdg_basedirs;
 
                 const char * const xcd_env = getenv("XDG_CONFIG_DIRS");
-                const char * const xdg_config_dirs = xcd_env && strnlen(xcd_env, 1)
-                                                     ? xcd_env
-                                                     : XDG_CONFIG_DIRS_DEFAULT;
+
+                /*
+                 * A default of SYSCONFDIR is set to separate installs to a
+                 * local PREFIX. With this default /usr/local/etc/xdg is set a
+                 * system-wide config location and not /etc/xdg. Users/admins
+                 * can override this by explicitly setting XDG_CONFIG_DIRS to
+                 * their liking at runtime or by setting SYSCONFDIR=/etc/xdg at
+                 * compile time.
+                 */
+                const char * const xdg_config_dirs = xcd_env &&
+                        strnlen(xcd_env, 1) ? xcd_env : SYSCONFDIR;
 
                 /*
                  * Prepend XDG_CONFIG_HOME, most important first because
