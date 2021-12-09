@@ -139,17 +139,14 @@ A common approach to naming drop-ins is to prefix them with numbers, i.e.:
     20-bar.conf
     99-most-important.conf
 
-The only requirements are that the name of the file must have the correct
-suffix and the first non-blank line that is not a comment must be a section or
-rule identifier.
+Only files with the B<.conf> suffix will be read.
 
 =back
 
-All settings from all files get applied. Settings in more important files
+Only settings from the last base config the corresponding drop-ins get applied.
+So if a dunstrc is first found in F<~/.config/dunst/dunstrc>, drop-ins will be
+searched in F<~/.config/dunst/dunstrc.d/*>. Settings in more important files
 override those in less important ones.
-Settings not present in more imortant files get their value from a less
-important one or from the internal defaults if respective key is not found in
-any file.
 
 =head1 AUTHORS
 
