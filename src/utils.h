@@ -231,5 +231,19 @@ bool is_readable_file(const char * const path);
  */
 FILE * fopen_verbose(const char * const path);
 
+/**
+ * Adds the contents of env_name with subdir to the array, interpreting the
+ * environment variable as a colon-separated list of paths. If the environment
+ * variable doesn't exist, alternative is used.
+ *
+ * @param arr The array to add to. This array has to be created first with
+ *            g_ptr_array_new() or a similar function.
+ * @param env_name The name of the environment variable that contains a
+ * colon-separated list of paths.
+ * @param subdir The subdirectory to add a the end of each path in env_name
+ * @param alternative A colon-separated list of paths to use as alternative
+ * when the environment variable doesn't exits.
+ */
+void add_paths_from_env(GPtrArray *arr, char *env_name, char *subdir, char *alternative);
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

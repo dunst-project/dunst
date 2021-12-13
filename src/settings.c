@@ -34,12 +34,6 @@
 
 struct settings settings;
 
-static const char * const *get_xdg_conf_basedirs(void);
-
-static int is_drop_in(const struct dirent *dent);
-
-static void get_conf_files(GQueue *config_files);
-
 /** @brief Filter for scandir().
  *
  * @returns @brief An integer indicating success
@@ -66,90 +60,81 @@ static int is_drop_in(const struct dirent *dent) {
  * The result @e must @e not be freed! The array is cached in a static variable,
  * so it is OK to call this again instead of caching its return value.
  */
-static const char * const *get_xdg_conf_basedirs() {
-        static const char * const *xdg_bd_arr = NULL;
-        if (!xdg_bd_arr) {
-                char * xdg_basedirs;
+static GPtrArray *get_xdg_conf_basedirs() {
+        GPtrArray *arr = g_ptr_array_new_full(4, g_free);
+        g_ptr_array_add(arr, g_build_filename(g_get_user_config_dir(), "dunst", NULL));
 
-                const char * const xcd_env = getenv("XDG_CONFIG_DIRS");
+        /*
+         * A default of SYSCONFDIR is set to separate installs to a
+         * local PREFIX. With this default /usr/local/etc/xdg is set a
+         * system-wide config location and not /etc/xdg. Users/admins
+         * can override this by explicitly setting XDG_CONFIG_DIRS to
+         * their liking at runtime or by setting SYSCONFDIR=/etc/xdg at
+         * compile time.
+         */
+        add_paths_from_env(arr, "XDG_CONFIG_DIRS", "dunst", SYSCONFDIR);
+        return arr;
+}
 
-                /*
-                 * A default of SYSCONFDIR is set to separate installs to a
-                 * local PREFIX. With this default /usr/local/etc/xdg is set a
-                 * system-wide config location and not /etc/xdg. Users/admins
-                 * can override this by explicitly setting XDG_CONFIG_DIRS to
-                 * their liking at runtime or by setting SYSCONFDIR=/etc/xdg at
-                 * compile time.
-                 */
-                const char * const xdg_config_dirs = xcd_env &&
-                        strnlen(xcd_env, 1) ? xcd_env : SYSCONFDIR;
-
-                /*
-                 * Prepend XDG_CONFIG_HOME, most important first because
-                 * XDG_CONFIG_DIRS is already ordered that way.
-                 */
-                xdg_basedirs = g_strconcat(g_get_user_config_dir(),
-                                           ":",
-                                           xdg_config_dirs,
-                                           NULL);
-                LOG_D("Config directories: '%s'", xdg_basedirs);
-
-                xdg_bd_arr = (const char * const *) string_to_array(xdg_basedirs, ":");
-                g_free(xdg_basedirs);
+static void config_files_add_drop_ins(GPtrArray *config_files, const char *path) {
+        int insert_index = config_files->len;
+        if (insert_index == 0) {
+                // there is no base config file
+                return;
         }
-        return xdg_bd_arr;
+        char *drop_in_dir = g_strconcat(path, ".d", NULL);
+        struct dirent **drop_ins = NULL;
+        int n = scandir(drop_in_dir, &drop_ins, is_drop_in, alphasort);
+
+        if (n == -1) {
+                // Scandir error. Most likely the directory doesn't exist.
+                return;
+        }
+
+        while (n--) {
+                char *drop_in = g_strconcat(drop_in_dir, "/",
+                                drop_ins[n]->d_name, NULL);
+                printf("Found drop-in: %s\n", drop_in);
+                g_ptr_array_insert(config_files, insert_index, drop_in);
+                free(drop_ins[n]);
+        }
+        free(drop_ins);
 }
 
 /** @brief Find all config files.
  *
- * Searches all XDG config base directories for config files and drop-ins and
- * puts them in a GQueue, @e least important last.
+ * Searches the default config locations most important config file and it's
+ * drop-ins and puts their locations in a GPtrArray, @e most important last.
  *
- * @param config_files [in|out] A pointer to a GQueue of gchar* strings
- * representing config file paths
+ * The returned GPtrArray and it's elements are owned by the caller.
  *
- * Use g_queue_pop_tail() to retrieve paths in @e ascending order of
- * importance, or use g_queue_reverse() before iterating over it with
- * g_queue_for_each().
- *
- * Use g_free() to free the retrieved elements of the queue.
- *
- * Use g_queue_free() to free after emptying it or g_queue_free_full() for a
- * non-empty queue.
+ * @param path The config path that overrides the default config path. No
+ * drop-in files or other configs are searched.
  */
-static void get_conf_files(GQueue *config_files) {
-        struct dirent **drop_ins = NULL;
-        for (const char * const *d = get_xdg_conf_basedirs(); *d; d++) {
-                /* absolute path to the base rc-file */
-                gchar * const base_rc = g_build_filename(*d, "dunst", "dunstrc", NULL);
-                /* absolute path to the corresponding drop-in directory */
-                gchar * const drop_in_dir = g_strconcat(base_rc, ".d", NULL);
-
-                int n = scandir(drop_in_dir, &drop_ins, is_drop_in, alphasort);
-                /* reverse order to get most important first */
-                while (n-- > 0) {
-                        gchar * const drop_in = g_strconcat(drop_in_dir,
-                                                            "/",
-                                                            drop_ins[n]->d_name,
-                                                            NULL);
-                        free(drop_ins[n]);
-
-                        if (is_readable_file(drop_in)) {
-                                LOG_D("Adding drop-in '%s'", drop_in);
-                                g_queue_push_tail(config_files, drop_in);
-                        } else
-                                g_free(drop_in);
-                }
-                g_free(drop_in_dir);
-
-                /* base rc-file last, least important */
-                if (is_readable_file(base_rc)) {
-                        LOG_D("Adding base config '%s'", base_rc);
-                        g_queue_push_tail(config_files, base_rc);
-                } else
-                        g_free(base_rc);
+static GPtrArray* get_conf_files(const char *path) {
+        if (path) {
+                GPtrArray *result = g_ptr_array_new_full(1, g_free);
+                g_ptr_array_add(result, g_strdup(path));
+                return result;
         }
-        free(drop_ins);
+
+        GPtrArray *config_locations = get_xdg_conf_basedirs();
+        GPtrArray *config_files = g_ptr_array_new_full(3, g_free);
+        char *dunstrc_location = NULL;
+        for (int i = 0; i < config_locations->len; i++) {
+                dunstrc_location = g_build_filename(config_locations->pdata[i],
+                                "dunstrc", NULL);
+                LOG_W("Trying config location: %s", dunstrc_location);
+                if (is_readable_file(dunstrc_location)) {
+                        g_ptr_array_add(config_files, dunstrc_location);
+                        break;
+                }
+        }
+
+        config_files_add_drop_ins(config_files, dunstrc_location);
+
+        g_ptr_array_unref(config_locations);
+        return config_files;
 }
 
 FILE *fopen_conf(char * const path)
@@ -244,15 +229,13 @@ void check_and_correct_settings(struct settings *s) {
 static void process_conf_file(const gpointer conf_fname, gpointer n_success) {
         const gchar * const p = conf_fname;
 
-        LOG_D("Trying to open '%s'", p);
+        LOG_W("Reading config file '%s'", p);
         /* Check for "-" here, so the file handling stays in one place */
         FILE *f = STR_EQ(p, "-") ? stdin : fopen_verbose(p);
         if (!f)
                 return;
 
-        LOG_I("Parsing config, fd: '%d'", fileno(f));
         struct ini *ini = load_ini_file(f);
-        LOG_D("Closing config, fd: '%d'", fileno(f));
         fclose(f);
 
         LOG_D("Loading settings");
@@ -272,25 +255,19 @@ void load_settings(const char * const path) {
         LOG_D("Setting defaults");
         set_defaults();
 
-        GQueue *conf_files = g_queue_new();
-
-        if (path) /** If @p path [in] was supplied it will be the only one tried. */
-                g_queue_push_tail(conf_files, g_strdup(path));
-        else
-                get_conf_files(conf_files);
+        GPtrArray *conf_files = get_conf_files(path);
 
         /* Load all conf files and drop-ins, least important first. */
-        g_queue_reverse(conf_files); /* so we can iterate from least to most important */
         int n_loaded_confs = 0;
-        g_queue_foreach(conf_files, process_conf_file, &n_loaded_confs);
-        g_queue_free_full(conf_files, g_free);
+        g_ptr_array_foreach(conf_files, process_conf_file, &n_loaded_confs);
 
         if (0 == n_loaded_confs)
-                LOG_W("No configuration file, using defaults");
+                LOG_I("No configuration file found, using defaults");
 
         for (GSList *iter = rules; iter; iter = iter->next) {
                 struct rule *r = iter->data;
                 print_rule(r);
         }
+        g_ptr_array_unref(conf_files);
 }
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */
