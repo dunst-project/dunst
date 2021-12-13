@@ -62,6 +62,16 @@ keyboard focus.
 
 This setting is deprecated and removed. It's split up into B<width>, B<height>, B<origin>,
 B<notification_limit> and B<offset>.
+For quickly transitioning to the new syntax, you can take the numbers from your
+old geometry config as follows:
+        geometry = <width>x<height>+<offset>
+
+In the new config you can then set the following variables (make sure to remove
+any negative signs)
+        width = <width>
+        height = <height>
+        offset = <offset>
+        origin = top-right # or top-left, or any other direction you prefer
 
 =item B<width>
 
