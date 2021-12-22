@@ -709,6 +709,10 @@ void notification_do_action(struct notification *n)
 /* see notification.h */
 void notification_open_url(struct notification *n)
 {
+        if (!n->urls) {
+                LOG_W("There are no URL's in this notification");
+                return;
+        }
         if (strstr(n->urls, "\n"))
                 notification_open_context_menu(n);
         else
