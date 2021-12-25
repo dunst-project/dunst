@@ -358,7 +358,8 @@ void notification_icon_replace_data(struct notification *n, GVariant *new_icon)
         n->icon = NULL;
         g_clear_pointer(&n->icon_id, g_free);
 
-        GdkPixbuf *icon = icon_get_for_data(new_icon, &n->icon_id, draw_get_scale());
+        GdkPixbuf *icon = icon_get_for_data(new_icon, &n->icon_id,
+                        draw_get_scale(), n->icon_size);
         n->icon = gdk_pixbuf_to_cairo_surface(icon);
         g_object_unref(icon);
 }

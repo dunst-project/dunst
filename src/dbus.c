@@ -584,16 +584,6 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
                 g_variant_unref(dict_value);
         }
 
-        dict_value = g_variant_lookup_value(hints, "image-data", G_VARIANT_TYPE("(iiibiiay)"));
-        if (!dict_value)
-                dict_value = g_variant_lookup_value(hints, "image_data", G_VARIANT_TYPE("(iiibiiay)"));
-        if (!dict_value)
-                dict_value = g_variant_lookup_value(hints, "icon_data", G_VARIANT_TYPE("(iiibiiay)"));
-        if (dict_value) {
-                notification_icon_replace_data(n, dict_value);
-                g_variant_unref(dict_value);
-        }
-
         if ((dict_value = g_variant_lookup_value(hints, "image-path", G_VARIANT_TYPE_STRING))) {
                 g_free(n->iconname);
                 n->iconname = g_variant_dup_string(dict_value, NULL);
@@ -604,6 +594,21 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
         // so we can initialize the notification. This applies all rules that
         // are defined and applies the formatting to the message.
         notification_init(n);
+
+
+        // Set raw icon data only after initializing the notification, so the
+        // desired icon size is known. This way the buffer can be immediately
+        // rescaled. If at some point you might want to match by if a
+        // notificaton has an image, this has to be reworked.
+        dict_value = g_variant_lookup_value(hints, "image-data", G_VARIANT_TYPE("(iiibiiay)"));
+        if (!dict_value)
+                dict_value = g_variant_lookup_value(hints, "image_data", G_VARIANT_TYPE("(iiibiiay)"));
+        if (!dict_value)
+                dict_value = g_variant_lookup_value(hints, "icon_data", G_VARIANT_TYPE("(iiibiiay)"));
+        if (dict_value) {
+                notification_icon_replace_data(n, dict_value);
+                g_variant_unref(dict_value);
+        }
 
         // Modify these values after the notification is initialized and all rules are applied.
         if ((dict_value = g_variant_lookup_value(hints, "fgcolor", G_VARIANT_TYPE_STRING))) {
