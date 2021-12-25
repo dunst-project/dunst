@@ -339,7 +339,8 @@ void notification_icon_replace_path(struct notification *n, const char *new_icon
         g_free(n->icon_path);
         n->icon_path = get_path_from_icon_name(new_icon, n->icon_size);
         if (n->icon_path) {
-                GdkPixbuf *pixbuf = get_pixbuf_from_file(n->icon_path, draw_get_scale());
+                GdkPixbuf *pixbuf = get_pixbuf_from_file(n->icon_path,
+                                n->icon_size, draw_get_scale());
                 if (pixbuf) {
                         n->icon = gdk_pixbuf_to_cairo_surface(pixbuf);
                         g_object_unref(pixbuf);

@@ -209,7 +209,7 @@ static GdkPixbuf *icon_pixbuf_scale_to_size(GdkPixbuf *pixbuf, int icon_size, do
         return pixbuf;
 }
 
-GdkPixbuf *get_pixbuf_from_file(const char *filename, double scale)
+GdkPixbuf *get_pixbuf_from_file(const char *filename, int icon_size, double scale)
 {
         char *path = string_to_path(g_strdup(filename));
         GError *error = NULL;
@@ -220,13 +220,24 @@ GdkPixbuf *get_pixbuf_from_file(const char *filename, double scale)
                 g_free(path);
                 return NULL;
         }
-        // TODO immediately rescale icon upon scale changes
-        icon_size_clamp(&w, &h);
-        GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file_at_scale(path,
-                                                              round(w * scale),
-                                                              round(h * scale),
-                                                              TRUE,
-                                                              &error);
+        GdkPixbuf *pixbuf = NULL;
+        if (settings.enable_recursive_icon_lookup)
+        {
+                icon_size_clamp2(&w, &h, icon_size, scale);
+                pixbuf = gdk_pixbuf_new_from_file_at_scale(path,
+                                w,
+                                h,
+                                TRUE,
+                                &error);
+        } else {
+                // TODO immediately rescale icon upon scale changes
+                icon_size_clamp(&w, &h);
+                pixbuf = gdk_pixbuf_new_from_file_at_scale(path,
+                                round(w * scale),
+                                round(h * scale),
+                                TRUE,
+                                &error);
+        }
 
         if (error) {
                 LOG_W("%s", error->message);
