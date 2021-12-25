@@ -149,6 +149,17 @@ static bool icon_size_clamp(int *w, int *h) {
         return FALSE;
 }
 
+static bool icon_size_clamp2(int *w, int *h, int desired_size, double scale) {
+        int largest_size = MAX(*w, *h);
+        int new_size = desired_size * scale;
+        if (largest_size != new_size) {
+                double scale = (double) new_size / (double) largest_size;
+                *w = round(*w * scale);
+                *h = round(*h * scale);
+                return true;
+        }
+        return false;
+}
 /**
  * Scales the given GdkPixbuf to a given size.. If the image is not square, the
  * largest size will be scaled up to the given size.
@@ -173,13 +184,8 @@ static GdkPixbuf *icon_pixbuf_scale_to_size(GdkPixbuf *pixbuf, int icon_size, do
 
         if (settings.enable_recursive_icon_lookup)
         {
-                int largest_size = MAX(w, h);
-                int new_size = icon_size * dpi_scale;
-                if (largest_size != new_size) {
-                        double scale = (double) new_size / (double) largest_size;
-                        w = round(w * scale);
-                        h = round(h * scale);
-                        needs_change = true;
+                needs_change = icon_size_clamp2(&w, &h, icon_size, dpi_scale);
+                if (needs_change) {
                         LOG_D("Scaling to a size of %ix%i", w, h);
                         LOG_D("While the icon size and scale are %ix%f", icon_size, dpi_scale);
                 }
