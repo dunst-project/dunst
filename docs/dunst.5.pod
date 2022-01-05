@@ -292,7 +292,7 @@ This options is parsed as a Pango font description.
 The amount of extra spacing between text lines in pixels. Set to 0 to
 disable.
 
-=item B<format> (default: "%s %b")
+=item B<format> (default: "<b>%s</b>\n%b")
 
 Specifies how the various attributes of the notification should be formatted on
 the notification window.
