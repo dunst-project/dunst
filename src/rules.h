@@ -39,6 +39,7 @@ struct rule {
         int word_wrap;
         int ellipsize;
         int alignment;
+        int icon_position;
         int set_icon_size;
         char *new_icon;
         char *fg;
@@ -52,6 +53,7 @@ struct rule {
         enum behavior_fullscreen fullscreen;
         char *set_stack_tag; // this has to be the last action
         bool enabled;
+
 };
 
 extern GSList *rules;

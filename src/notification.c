@@ -417,6 +417,7 @@ struct notification *notification_create(void)
         n->word_wrap = true;
         n->ellipsize = PANGO_ELLIPSIZE_MIDDLE;
         n->alignment = PANGO_ALIGN_LEFT;
+        n->icon_position = (int)settings.icon_position;
         n->icon_size = 32;
 
         n->script_run = false;

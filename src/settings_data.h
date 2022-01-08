@@ -112,6 +112,7 @@ static const struct rule empty_rule = {
         .history_ignore  = -1,
         .match_transient = -1,
         .set_transient   = -1,
+        .icon_position   = -1,
         .set_icon_size   = -1,
         .skip_display    = -1,
         .word_wrap       = -1,
@@ -212,6 +213,7 @@ static const struct string_to_enum_def fullscreen_enum_data[] = {
 static const struct string_to_enum_def icon_position_enum_data[] = {
         {"left",  ICON_LEFT },
         {"right", ICON_RIGHT },
+        {"top",   ICON_TOP },
         {"off",   ICON_OFF },
         ENUM_END,
 };
@@ -618,6 +620,17 @@ static const struct setting allowed_settings[] = {
                 .parser = string_parse_enum,
                 .parser_data = markup_mode_enum_data,
                 .rule_offset = offsetof(struct rule, markup),
+        },
+        {
+                .name = "icon_position",
+                .section = "*",
+                .description = "Align icons left/right/top/off",
+                .type = TYPE_CUSTOM,
+                .default_value = "*",
+                .value = NULL,
+                .parser = string_parse_enum,
+                .parser_data = icon_position_enum_data,
+                .rule_offset = offsetof(struct rule, icon_position),
         },
         {
                 .name = "icon_size",
@@ -1049,7 +1062,7 @@ static const struct setting allowed_settings[] = {
         {
                 .name = "icon_position",
                 .section = "global",
-                .description = "Align icons left/right/off",
+                .description = "Default icon alignment (left/right/top/off)",
                 .type = TYPE_CUSTOM,
                 .default_value = "left",
                 .value = &settings.icon_position,

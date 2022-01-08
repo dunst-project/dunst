@@ -364,7 +364,7 @@ Hide the count of stacked duplicate notifications.
 Show an indicator if a notification contains actions and/or open-able URLs. See
 ACTIONS below for further details.
 
-=item B<icon_position> (values: [left/right/off], default: off)
+=item B<icon_position> (values: [left/right/top/off], default: off)
 
 Defines the position of the icon in the notification window. Setting it to off
 disables icons.
