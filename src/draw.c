@@ -167,12 +167,21 @@ static struct color layout_get_sepcolor(struct colored_layout *cl,
         }
 }
 
-static int get_text_icon_padding()
+static int get_horizontal_text_icon_padding()
 {
         if (settings.text_icon_padding) {
                 return settings.text_icon_padding;
         } else {
                 return settings.h_padding;
+        }
+}
+
+static int get_vertical_text_icon_padding()
+{
+        if (settings.text_icon_padding) {
+                return settings.text_icon_padding;
+        } else {
+                return settings.padding;
         }
 }
 
@@ -220,8 +229,8 @@ static void layout_setup_pango(PangoLayout *layout, int width, int height,
 // @param height Height of the layout
 static void layout_setup(struct colored_layout *cl, int width, int height, double scale)
 {
-        int icon_width = cl->icon? get_icon_width(cl->icon, scale) + get_text_icon_padding() : 0;
-        int text_width = width - icon_width - 2 * settings.h_padding;
+        int icon_width = cl->icon? get_icon_width(cl->icon, scale) + get_horizontal_text_icon_padding() : 0;
+        int text_width = width - 2 * settings.h_padding - (cl->n->icon_position != ICON_TOP ? icon_width : 0);
         int progress_bar_height = have_progress_bar(cl) ? settings.progress_bar_height + settings.padding : 0;
         int max_text_height = MAX(0, settings.height - progress_bar_height - 2 * settings.padding);
         layout_setup_pango(cl->l, text_width, max_text_height, cl->n->word_wrap, cl->n->ellipsize, cl->n->alignment);
@@ -242,12 +251,18 @@ static struct dimensions calculate_notification_dimensions(struct colored_layout
         struct dimensions dim = { 0 };
         layout_setup(cl, settings.width.max, settings.height, scale);
 
-        int icon_width = cl->icon? get_icon_width(cl->icon, scale) + get_text_icon_padding() : 0;
+        int icon_width = cl->icon? get_icon_width(cl->icon, scale) + get_horizontal_text_icon_padding() : 0;
         int icon_height = cl->icon? get_icon_height(cl->icon, scale) : 0;
         int progress_bar_height = have_progress_bar(cl) ? settings.progress_bar_height + settings.padding : 0;
         get_text_size(cl->l, &dim.text_width, &dim.text_height, scale);
 
-        dim.h = MAX(icon_height, dim.text_height);
+        if (cl->n->icon_position == ICON_TOP && cl->n->icon) {
+                // dim.h = icon_height + dim.text_height + settings.padding*2 + get_vertical_text_icon_padding();
+                dim.h = icon_height + dim.text_height + get_vertical_text_icon_padding();
+        } else {
+                dim.h = MAX(icon_height, dim.text_height);
+        }
+
         dim.h += progress_bar_height;
         dim.w = dim.text_width + icon_width + 2 * settings.h_padding;
 
@@ -335,7 +350,7 @@ static struct colored_layout *layout_from_notification(cairo_t *c, struct notifi
 
         struct colored_layout *cl = layout_init_shared(c, n);
 
-        if (settings.icon_position != ICON_OFF && n->icon) {
+        if (n->icon_position != ICON_OFF && n->icon) {
                 cl->icon = n->icon;
         } else {
                 cl->icon = NULL;
@@ -399,17 +414,22 @@ static GSList *create_layouts(cairo_t *c)
 
 static int layout_get_height(struct colored_layout *cl, double scale)
 {
-        int h;
+        int h_text;
         int h_icon = 0;
         int h_progress_bar = 0;
-        get_text_size(cl->l, NULL, &h, scale);
+        get_text_size(cl->l, NULL, &h_text, scale);
         if (cl->icon)
                 h_icon = get_icon_height(cl->icon, scale);
         if (have_progress_bar(cl)){
                 h_progress_bar = settings.progress_bar_height + settings.padding;
         }
 
-        int res = MAX(h, h_icon) + h_progress_bar;
+        int res = MAX(h_text, h_icon) + h_progress_bar;
+
+        if (cl->n->icon_position == ICON_TOP && cl->n->icon) {
+                res = h_icon + h_text + h_progress_bar + get_vertical_text_icon_padding();
+        }
+
         return res;
 }
 
@@ -594,9 +614,10 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, dou
         const int h = layout_get_height(cl, scale);
         LOG_D("Layout height %i", h);
         int h_without_progress_bar = h;
-        if (have_progress_bar(cl)){
+        if (have_progress_bar(cl)) {
                  h_without_progress_bar -= settings.progress_bar_height + settings.padding;
         }
+
         int h_text;
         get_text_size(cl->l, NULL, &h_text, scale);
 
@@ -615,8 +636,10 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, dou
                 } // else VERTICAL_CENTER
 
                 // icon position
-                if (settings.icon_position == ICON_LEFT) {
-                        text_x = get_icon_width(cl->icon, scale) + settings.h_padding + get_text_icon_padding();
+                if (cl->n->icon_position == ICON_LEFT) {
+                        text_x = get_icon_width(cl->icon, scale) + settings.h_padding + get_horizontal_text_icon_padding();
+                } else if (cl->n->icon_position == ICON_TOP) {
+                        text_y = get_icon_height(cl->icon, scale) + settings.padding + get_vertical_text_icon_padding();
                 } // else ICON_RIGHT
         }
         cairo_move_to(c, round(text_x * scale), round(text_y * scale));
@@ -643,8 +666,13 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, dou
                 } // else VERTICAL_CENTER
 
                 // icon position
-                if (settings.icon_position == ICON_LEFT) {
+                if (cl->n->icon_position == ICON_LEFT) {
                         image_x = settings.h_padding;
+                } else if (cl->n->icon_position == ICON_TOP) {
+                        image_y = settings.padding;
+                        image_x = width/2 - image_width/2;
+                        // image_x = settings.h_padding + image_width/2;
+                        // image_x = image_width/2;
                 } // else ICON_RIGHT
 
                 cairo_set_source_surface(c, cl->icon, round(image_x * scale), round(image_y * scale));
@@ -701,10 +729,12 @@ static struct dimensions layout_render(cairo_surface_t *srf,
                                        bool last)
 {
         double scale = output->get_scale();
-        const int cl_h = layout_get_height(cl, scale);
 
         int h_text = 0;
         get_text_size(cl->l, NULL, &h_text, scale);
+
+        const int cl_h = layout_get_height(cl, scale);
+
 
         int bg_width = 0;
         int bg_height = MIN(settings.height, (2 * settings.padding) + cl_h);
