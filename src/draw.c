@@ -686,7 +686,7 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, dou
                 unsigned int frame_width = settings.progress_bar_frame_width,
                              progress_width = MIN(width - 2 * settings.h_padding, settings.progress_bar_max_width),
                              progress_height = settings.progress_bar_height - frame_width,
-                             frame_x = settings.h_padding,
+                             frame_x = width/2 - progress_width/2,
                              frame_y = settings.padding + h - settings.progress_bar_height,
                              progress_width_without_frame = progress_width - 2 * frame_width,
                              progress_width_1 = progress_width_without_frame * progress / 100,
