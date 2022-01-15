@@ -254,11 +254,19 @@ static struct dimensions calculate_notification_dimensions(struct colored_layout
         int icon_width = cl->icon? get_icon_width(cl->icon, scale) + get_horizontal_text_icon_padding() : 0;
         int icon_height = cl->icon? get_icon_height(cl->icon, scale) : 0;
         int progress_bar_height = have_progress_bar(cl) ? settings.progress_bar_height + settings.padding : 0;
-        get_text_size(cl->l, &dim.text_width, &dim.text_height, scale);
+
+        int vertical_padding;
+        if (!cl->n->hide_text) {
+                get_text_size(cl->l, &dim.text_width, &dim.text_height, scale);
+                vertical_padding = get_vertical_text_icon_padding();
+        } else {
+                vertical_padding = 0;
+                dim.text_width = 0;
+                dim.text_height = 0;
+        }
 
         if (cl->n->icon_position == ICON_TOP && cl->n->icon) {
-                // dim.h = icon_height + dim.text_height + settings.padding*2 + get_vertical_text_icon_padding();
-                dim.h = icon_height + dim.text_height + get_vertical_text_icon_padding();
+                dim.h = icon_height + dim.text_height + vertical_padding;
         } else {
                 dim.h = MAX(icon_height, dim.text_height);
         }
@@ -414,10 +422,18 @@ static GSList *create_layouts(cairo_t *c)
 
 static int layout_get_height(struct colored_layout *cl, double scale)
 {
-        int h_text;
+        int h_text = 0;
         int h_icon = 0;
         int h_progress_bar = 0;
-        get_text_size(cl->l, NULL, &h_text, scale);
+
+        int vertical_padding;
+        if (!cl->n->hide_text) {
+                get_text_size(cl->l, NULL, &h_text, scale);
+                vertical_padding = get_vertical_text_icon_padding();
+        } else {
+                vertical_padding = 0;
+        }
+
         if (cl->icon)
                 h_icon = get_icon_height(cl->icon, scale);
         if (have_progress_bar(cl)){
@@ -427,7 +443,7 @@ static int layout_get_height(struct colored_layout *cl, double scale)
         int res = MAX(h_text, h_icon) + h_progress_bar;
 
         if (cl->n->icon_position == ICON_TOP && cl->n->icon) {
-                res = h_icon + h_text + h_progress_bar + get_vertical_text_icon_padding();
+                res = h_icon + h_text + h_progress_bar + vertical_padding;
         }
 
         return res;
@@ -618,36 +634,37 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, dou
                  h_without_progress_bar -= settings.progress_bar_height + settings.padding;
         }
 
-        int h_text;
-        get_text_size(cl->l, NULL, &h_text, scale);
+        if (!cl->n->hide_text) {
+                int h_text = 0;
+                get_text_size(cl->l, NULL, &h_text, scale);
 
-        int text_x = settings.h_padding,
-            text_y = settings.padding + h_without_progress_bar / 2 - h_text / 2;
+                int text_x = settings.h_padding,
+                    text_y = settings.padding + h_without_progress_bar / 2 - h_text / 2;
 
-        // text positioning
-        if (cl->icon) {
-                // vertical alignment
-                if (settings.vertical_alignment == VERTICAL_TOP) {
-                        text_y = settings.padding;
-                } else if (settings.vertical_alignment == VERTICAL_BOTTOM) {
-                        text_y = h_without_progress_bar + settings.padding - h_text;
-                        if (text_y < 0)
+                // text positioning
+                if (cl->icon) {
+                        // vertical alignment
+                        if (settings.vertical_alignment == VERTICAL_TOP) {
                                 text_y = settings.padding;
-                } // else VERTICAL_CENTER
+                        } else if (settings.vertical_alignment == VERTICAL_BOTTOM) {
+                                text_y = h_without_progress_bar + settings.padding - h_text;
+                                if (text_y < 0)
+                                        text_y = settings.padding;
+                        } // else VERTICAL_CENTER
 
-                // icon position
-                if (cl->n->icon_position == ICON_LEFT) {
-                        text_x = get_icon_width(cl->icon, scale) + settings.h_padding + get_horizontal_text_icon_padding();
-                } else if (cl->n->icon_position == ICON_TOP) {
-                        text_y = get_icon_height(cl->icon, scale) + settings.padding + get_vertical_text_icon_padding();
-                } // else ICON_RIGHT
+                        // icon position
+                        if (cl->n->icon_position == ICON_LEFT) {
+                                text_x = get_icon_width(cl->icon, scale) + settings.h_padding + get_horizontal_text_icon_padding();
+                        } else if (cl->n->icon_position == ICON_TOP) {
+                                text_y = get_icon_height(cl->icon, scale) + settings.padding + get_vertical_text_icon_padding();
+                        } // else ICON_RIGHT
+                }
+                cairo_move_to(c, round(text_x * scale), round(text_y * scale));
+
+                cairo_set_source_rgba(c, cl->fg.r, cl->fg.g, cl->fg.b, cl->fg.a);
+                pango_cairo_update_layout(c, cl->l);
+                pango_cairo_show_layout(c, cl->l);
         }
-        cairo_move_to(c, round(text_x * scale), round(text_y * scale));
-
-        cairo_set_source_rgba(c, cl->fg.r, cl->fg.g, cl->fg.b, cl->fg.a);
-        pango_cairo_update_layout(c, cl->l);
-        pango_cairo_show_layout(c, cl->l);
-
 
         // icon positioning
         if (cl->icon) {
