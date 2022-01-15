@@ -671,8 +671,6 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, dou
                 } else if (cl->n->icon_position == ICON_TOP) {
                         image_y = settings.padding;
                         image_x = width/2 - image_width/2;
-                        // image_x = settings.h_padding + image_width/2;
-                        // image_x = image_width/2;
                 } // else ICON_RIGHT
 
                 cairo_set_source_surface(c, cl->icon, round(image_x * scale), round(image_y * scale));
