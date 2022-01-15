@@ -14,7 +14,6 @@
 #define LIST_END (-1)
 
 enum alignment { ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT };
-enum icon_position { ICON_LEFT, ICON_RIGHT, ICON_TOP, ICON_OFF };
 enum vertical_alignment { VERTICAL_TOP, VERTICAL_CENTER, VERTICAL_BOTTOM };
 enum separator_color { SEP_FOREGROUND, SEP_AUTO, SEP_FRAME, SEP_CUSTOM };
 enum follow_mode { FOLLOW_NONE, FOLLOW_MOUSE, FOLLOW_KEYBOARD };
