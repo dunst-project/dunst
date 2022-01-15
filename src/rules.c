@@ -5,6 +5,7 @@
 #include <fnmatch.h>
 #include <glib.h>
 #include <stddef.h>
+#include <regex.h>
 
 #include "dunst.h"
 #include "utils.h"
@@ -140,7 +141,30 @@ struct rule *rule_new(const char *name)
 
 static inline bool rule_field_matches_string(const char *value, const char *pattern)
 {
-        return !pattern || (value && !fnmatch(pattern, value, 0));
+        if (settings.enable_regex) {
+                if (!pattern) {
+                        return true;
+                }
+                if (!value) {
+                        return false;
+                }
+                regex_t     regex;
+
+                // TODO compile each regex only once
+                if (regcomp(&regex, pattern, REG_NEWLINE | REG_EXTENDED | REG_NOSUB))
+                        return false;
+
+                for (int i = 0; ; i++) {
+                        if (regexec(&regex, value, 0, NULL, 0))
+                                break;
+                        regfree(&regex);
+                        return true;
+                }
+                regfree(&regex);
+                return false;
+        } else {
+                return !pattern || (value && !fnmatch(pattern, value, 0));
+        }
 }
 
 /*

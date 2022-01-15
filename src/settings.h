@@ -133,6 +133,7 @@ struct settings {
         int max_icon_size;
         char **icon_theme; // experimental
         bool enable_recursive_icon_lookup; // experimental
+        bool enable_regex; // experimental
         char *icon_path;
         enum follow_mode f_mode;
         bool always_run_script;

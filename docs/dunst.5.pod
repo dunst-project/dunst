@@ -58,6 +58,22 @@ keyboard focus.
 
 =back
 
+=item B<enable_posix_regex> (default: false)
+
+When set to true (recommended), you can use POSIX regular expressions for
+filtering rules. It uses the POSIX Extended Regular Expression syntax:
+https://en.m.wikibooks.org/wiki/Regular_Expressions/POSIX-Extended_Regular_Expressions.
+
+If this is set to false (not recommended), dunst will us fnmatch(3) for matching
+strings. Dunst doesn't pass any flags to fnmatch, so you cannot make use of
+extended patterns.
+
+The POSIX syntax is more powerful and will eventually become the default. The main
+differences between POSIX and fnmatch(3) is that POSIX uses ".*" for wildcards
+instead of "*" and POSIX allows for partial matches without needing wildcards.
+This means that the pattern "abc" will match all strings that contain "abc",
+like "abcdef".
+
 =item B<geometry> DEPRECATED
 
 This setting is deprecated and removed. It's split up into B<width>, B<height>, B<origin>,
@@ -680,7 +696,15 @@ rule, it may affect if it's being matched by a later rule.
 
 =item B<filtering>
 
-Notifications can be matched for any of the following attributes:
+With filtering rules you can match notifications to apply rules to only a subset
+of notifications.
+
+For filtering rules that filter based on strings you can use regular
+expressions. It's recommended to set B<enable_posix_regex> to true. You can then
+use the POSIX Extended Regular Expression syntax:
+https://en.m.wikibooks.org/wiki/Regular_Expressions/POSIX-Extended_Regular_Expressions.
+
+Notifications can be matched for any of the following attributes.
 
 =over 4
 
