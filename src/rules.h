@@ -39,6 +39,7 @@ struct rule {
         int word_wrap;
         int ellipsize;
         int alignment;
+        int hide_text;
         int icon_position;
         int set_icon_size;
         char *new_icon;

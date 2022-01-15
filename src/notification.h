@@ -93,6 +93,7 @@ struct notification {
         bool word_wrap;
         PangoEllipsizeMode ellipsize;
         PangoAlignment alignment;
+        bool hide_text;
 
         /* derived fields */
         char *msg;            /**< formatted message */

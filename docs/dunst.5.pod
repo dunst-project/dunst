@@ -884,6 +884,13 @@ Specifies where truncated lines should be ellipsized.
 
 Defines how the text should be aligned within the notification.
 
+=item B<hide_text> (values: [true/false], default: false)
+
+Setting this to true will skip displaying any text related to the notification.
+The notification icon and progress bar will still be displayed. This option may
+be useful for notifications where an icon or progress bar may be sufficient
+information for the notification, such as audio volume or brightness level.
+
 =item B<markup> (values: [full/strip/no], default: no)
 
 Defines how markup in notifications is handled.
