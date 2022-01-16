@@ -230,7 +230,7 @@ static void layout_setup_pango(PangoLayout *layout, int width, int height,
 static void layout_setup(struct colored_layout *cl, int width, int height, double scale)
 {
         int icon_width = cl->icon? get_icon_width(cl->icon, scale) + get_horizontal_text_icon_padding() : 0;
-        int text_width = width - 2 * settings.h_padding - (cl->n->icon_position != ICON_TOP ? icon_width : 0);
+        int text_width = width - 2 * settings.h_padding - (cl->n->icon_position == ICON_TOP ? 0 : icon_width);
         int progress_bar_height = have_progress_bar(cl) ? settings.progress_bar_height + settings.padding : 0;
         int max_text_height = MAX(0, settings.height - progress_bar_height - 2 * settings.padding);
         layout_setup_pango(cl->l, text_width, max_text_height, cl->n->word_wrap, cl->n->ellipsize, cl->n->alignment);
