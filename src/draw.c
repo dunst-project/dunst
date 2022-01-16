@@ -256,13 +256,13 @@ static struct dimensions calculate_notification_dimensions(struct colored_layout
         int progress_bar_height = have_progress_bar(cl) ? settings.progress_bar_height + settings.padding : 0;
 
         int vertical_padding;
-        if (!cl->n->hide_text) {
-                get_text_size(cl->l, &dim.text_width, &dim.text_height, scale);
-                vertical_padding = get_vertical_text_icon_padding();
-        } else {
+        if (cl->n->hide_text) {
                 vertical_padding = 0;
                 dim.text_width = 0;
                 dim.text_height = 0;
+        } else {
+                get_text_size(cl->l, &dim.text_width, &dim.text_height, scale);
+                vertical_padding = get_vertical_text_icon_padding();
         }
 
         if (cl->n->icon_position == ICON_TOP && cl->n->icon) {
@@ -427,11 +427,11 @@ static int layout_get_height(struct colored_layout *cl, double scale)
         int h_progress_bar = 0;
 
         int vertical_padding;
-        if (!cl->n->hide_text) {
+        if (cl->n->hide_text) {
+                vertical_padding = 0;
+        } else {
                 get_text_size(cl->l, NULL, &h_text, scale);
                 vertical_padding = get_vertical_text_icon_padding();
-        } else {
-                vertical_padding = 0;
         }
 
         if (cl->icon)
