@@ -151,8 +151,15 @@ static inline bool rule_field_matches_string(const char *value, const char *patt
                 regex_t     regex;
 
                 // TODO compile each regex only once
-                if (regcomp(&regex, pattern, REG_NEWLINE | REG_EXTENDED | REG_NOSUB))
+                int err = regcomp(&regex, pattern, REG_NEWLINE | REG_EXTENDED | REG_NOSUB);
+                if (err) {
+                        size_t err_size = regerror(err, &regex, NULL, 0);
+                        char *err_buf = malloc(err_size);
+                        regerror(err, &regex, err_buf, err_size);
+                        LOG_W("%s: \"%s\"", err_buf, pattern);
+                        free(err_buf);
                         return false;
+                }
 
                 for (int i = 0; ; i++) {
                         if (regexec(&regex, value, 0, NULL, 0))

@@ -55,6 +55,8 @@ TEST test_pattern_match(void) {
 
                 // Special characters
                 ASSERT_FALSE(rule_field_matches_string("{", "{"));
+                ASSERT(rule_field_matches_string("{", "\\{"));
+                ASSERT(rule_field_matches_string("a", "(a)"));
         } else {
                 // Single character matching
                 ASSERT(rule_field_matches_string("a", "?"));
