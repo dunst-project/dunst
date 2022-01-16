@@ -98,6 +98,30 @@ struct setting {
       size_t rule_offset;
 };
 
+
+/*
+ *   How to add/change a rule
+ *   ------------------------
+ * 
+ * - Add variable to `struct rules` in `rules.h` (make sure to read the comment
+ *   at the top of the struct)
+ * - Add variable to to `struct notification` in `notification.h`
+ * - Apply the rule in `rule_apply` in `rules.c`
+ * - Change the listing in `settings_data.h` (make sure to move it to the other
+ *   rule listings for clarity)
+ * - Add the default rule value in `settings_data.h` (usually -1 or NULL)
+ * - Set default value in notification.c (`notification_create`). This is where
+ *   the real default is set.
+ * - Free the variable in `notification.c` if dynamically allocated.
+ * - Free the variable in `rules.c` if dynamically allocated.
+ * - Remove the setting from the global settings struct in `settings.h`.
+ * - Actually use the new setting.
+ * - Update the documentation
+ * - Test that it works
+ *
+ *   An example of making a setting a rule can be found in commit edc6f5a8c7a51a56b591cfa72618a43adc7b8d11
+ */
+
 static const struct rule empty_rule = {
         .name            = "empty",
         .appname         = NULL,
