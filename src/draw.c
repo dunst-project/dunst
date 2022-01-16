@@ -744,12 +744,10 @@ static struct dimensions layout_render(cairo_surface_t *srf,
                                        bool last)
 {
         double scale = output->get_scale();
+        const int cl_h = layout_get_height(cl, scale);
 
         int h_text = 0;
         get_text_size(cl->l, NULL, &h_text, scale);
-
-        const int cl_h = layout_get_height(cl, scale);
-
 
         int bg_width = 0;
         int bg_height = MIN(settings.height, (2 * settings.padding) + cl_h);
