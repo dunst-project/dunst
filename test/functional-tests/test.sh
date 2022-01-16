@@ -188,6 +188,27 @@ function progress_bar {
     keypress
 }
 
+function icon_position {
+    for position in left top right off; do
+        tmp_dunstrc dunstrc.icon_position "icon_position = $position"
+        start_dunst dunstrc.tmp
+        for urgency in l n c; do
+            ../../dunstify -a "dunst tester" -I '../data/icons/valid.png' -u $urgency "icon_position = $position"
+        done
+        rm dunstrc.tmp
+        keypress
+    done
+}
+
+function hide_text {
+    start_dunst dunstrc.hide_text
+    ../../dunstify -a "dunst tester" -I '../data/icons/valid.png' -u n "text not hidden" "You should be able to read me!\nThe next notifications should not have any text."
+    ../../dunstify -a "dunst tester" -u l "text hidden" "If you can read me then hide_text is not working."
+    ../../dunstify -a "dunst tester" -I '../data/icons/valid.png' -u l "text hidden + icon" "If you can read me then hide_text is not working."
+    ../../dunstify -a "dunst tester" -h int:value:$((RANDOM%100)) -I '../data/icons/valid.png' -u l "text hidden + icon + progress bar" "If you can read me then hide_text is not working."
+    keypress
+}
+
 if [ -n "$1" ]; then
     while [ -n "$1" ]; do
         $1
@@ -204,6 +225,8 @@ else
     replace
     markup
     progress_bar
+    icon_position
+    hide_text
 fi
 
 killall dunst
