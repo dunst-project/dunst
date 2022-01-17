@@ -2,6 +2,7 @@
     background = "#222222"
     foreground = "#888888"
     timeout = 10
+    icon_position = top
     hide_text = yes
 
 [urgency_normal]
@@ -20,7 +21,6 @@
     font = Monospace 8
     markup = full
     format = "<b>%s</b>\n%b"
-    icon_position = off
     progress_bar_min_width = 100
     progress_bar_max_width = 200
     progress_bar_frame_width = 5
