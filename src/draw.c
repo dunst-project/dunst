@@ -167,24 +167,6 @@ static struct color layout_get_sepcolor(struct colored_layout *cl,
         }
 }
 
-static int get_horizontal_text_icon_padding()
-{
-        if (settings.text_icon_padding) {
-                return settings.text_icon_padding;
-        } else {
-                return settings.h_padding;
-        }
-}
-
-static int get_vertical_text_icon_padding()
-{
-        if (settings.text_icon_padding) {
-                return settings.text_icon_padding;
-        } else {
-                return settings.padding;
-        }
-}
-
 static bool have_progress_bar(const struct colored_layout *cl)
 {
         return (cl->n->progress >= 0 && settings.progress_bar == true &&
@@ -229,7 +211,7 @@ static void layout_setup_pango(PangoLayout *layout, int width, int height,
 // @param height Height of the layout
 static void layout_setup(struct colored_layout *cl, int width, int height, double scale)
 {
-        int icon_width = cl->icon? get_icon_width(cl->icon, scale) + get_horizontal_text_icon_padding() : 0;
+        int icon_width = cl->icon? get_icon_width(cl->icon, scale) + settings.h_padding : 0;
         int text_width = width - 2 * settings.h_padding - (cl->n->icon_position == ICON_TOP ? 0 : icon_width);
         int progress_bar_height = have_progress_bar(cl) ? settings.progress_bar_height + settings.padding : 0;
         int max_text_height = MAX(0, settings.height - progress_bar_height - 2 * settings.padding);
@@ -251,7 +233,7 @@ static struct dimensions calculate_notification_dimensions(struct colored_layout
         struct dimensions dim = { 0 };
         layout_setup(cl, settings.width.max, settings.height, scale);
 
-        int icon_width = cl->icon? get_icon_width(cl->icon, scale) + get_horizontal_text_icon_padding() : 0;
+        int icon_width = cl->icon? get_icon_width(cl->icon, scale) + settings.h_padding : 0;
         int icon_height = cl->icon? get_icon_height(cl->icon, scale) : 0;
         int progress_bar_height = have_progress_bar(cl) ? settings.progress_bar_height + settings.padding : 0;
 
@@ -262,7 +244,7 @@ static struct dimensions calculate_notification_dimensions(struct colored_layout
                 dim.text_height = 0;
         } else {
                 get_text_size(cl->l, &dim.text_width, &dim.text_height, scale);
-                vertical_padding = get_vertical_text_icon_padding();
+                vertical_padding = settings.text_icon_padding;
         }
 
         if (cl->n->icon_position == ICON_TOP && cl->n->icon) {
@@ -431,12 +413,13 @@ static int layout_get_height(struct colored_layout *cl, double scale)
                 vertical_padding = 0;
         } else {
                 get_text_size(cl->l, NULL, &h_text, scale);
-                vertical_padding = get_vertical_text_icon_padding();
+                vertical_padding = settings.text_icon_padding;
         }
 
         if (cl->icon)
                 h_icon = get_icon_height(cl->icon, scale);
-        if (have_progress_bar(cl)){
+
+        if (have_progress_bar(cl)) {
                 h_progress_bar = settings.progress_bar_height + settings.padding;
         }
 
@@ -654,9 +637,9 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, dou
 
                         // icon position
                         if (cl->n->icon_position == ICON_LEFT) {
-                                text_x = get_icon_width(cl->icon, scale) + settings.h_padding + get_horizontal_text_icon_padding();
+                                text_x = get_icon_width(cl->icon, scale) + settings.h_padding * 2;
                         } else if (cl->n->icon_position == ICON_TOP) {
-                                text_y = get_icon_height(cl->icon, scale) + settings.padding + get_vertical_text_icon_padding();
+                                text_y = get_icon_height(cl->icon, scale) + settings.padding + settings.text_icon_padding;
                         } // else ICON_RIGHT
                 }
                 cairo_move_to(c, round(text_x * scale), round(text_y * scale));
