@@ -126,7 +126,6 @@ struct settings {
         char **dmenu_cmd;
         char *browser;
         char **browser_cmd;
-        enum icon_position icon_position;
         enum vertical_alignment vertical_alignment;
         int min_icon_size;
         int max_icon_size;

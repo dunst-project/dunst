@@ -48,7 +48,7 @@ void rule_apply(struct rule *r, struct notification *n)
         }
         if (r->markup != MARKUP_NULL)
                 n->markup = r->markup;
-        if (r->icon_position != -1)
+        if (r->icon_position != ICON_OFF)
                 n->icon_position = r->icon_position;
         if (r->set_icon_size > 0)
                 n->icon_size = r->set_icon_size;
