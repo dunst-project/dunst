@@ -189,11 +189,30 @@ function progress_bar {
 }
 
 function icon_position {
-    for position in left top right off; do
-        tmp_dunstrc dunstrc.icon_position "icon_position = $position"    # use default icon theme
+    padding_cases=(
+        '0 0 0 no padding'
+        '15 1 1 vertical'
+        '1 50 1 horizontal'
+        '1 1 25 icon '
+    )
+
+    for padding_case in "${padding_cases[@]}"; do
+        read vertical horizontal icon label <<<"$padding_case"
+
+        padding_settings="
+            padding = $vertical
+            horizontal_padding = $horizontal
+            text_icon_padding = $icon
+        "
+
+        tmp_dunstrc dunstrc.icon_position "$padding_settings"
         start_dunst dunstrc.tmp
-        for urgency in l n c; do
-            ../../dunstify -a "dunst tester" -u $urgency "icon_position = $position"
+
+        for position in left top right off; do
+            for alignment in left center right; do
+                category="icon-$position-alignment-$alignment"
+                ../../dunstify -a "dunst tester" --hints string:category:$category -u n "$category"$'\n'"padding emphasis: $label"
+            done
         done
         rm dunstrc.tmp
         keypress
