@@ -216,7 +216,7 @@ bool notification_is_duplicate(const struct notification *a, const struct notifi
         return STR_EQ(a->appname, b->appname)
             && STR_EQ(a->summary, b->summary)
             && STR_EQ(a->body, b->body)
-            && (settings.icon_position != ICON_OFF ? STR_EQ(a->icon_id, b->icon_id) : 1)
+            && (a->icon_position != ICON_OFF ? STR_EQ(a->icon_id, b->icon_id) : 1)
             && a->urgency == b->urgency;
 }
 
@@ -419,6 +419,8 @@ struct notification *notification_create(void)
         n->word_wrap = true;
         n->ellipsize = PANGO_ELLIPSIZE_MIDDLE;
         n->alignment = PANGO_ALIGN_LEFT;
+        n->hide_text = false;
+        n->icon_position = ICON_LEFT;
         n->icon_size = 32;
 
         n->script_run = false;

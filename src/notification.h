@@ -11,6 +11,13 @@
 
 #define DUNST_NOTIF_MAX_CHARS 50000
 
+enum icon_position {
+        ICON_LEFT,
+        ICON_RIGHT,
+        ICON_TOP,
+        ICON_OFF
+};
+
 enum behavior_fullscreen {
         FS_NULL,      //!< Invalid value
         FS_DELAY,     //!< Delay the notification until leaving fullscreen mode
@@ -58,6 +65,7 @@ struct notification {
         char *icon_path;         /**< Full path to the notification's icon. */
         char *default_icon_name; /**< The icon that is used when no other icon is available. */
         int icon_size;           /**< Size of the icon used for searching the right icon. */
+        enum icon_position icon_position;       /**< Icon position (enum left,right,top,off). */
 
         gint64 start;      /**< begin of current display (in milliseconds) */
         gint64 timestamp;  /**< arrival time (in milliseconds) */
@@ -92,6 +100,7 @@ struct notification {
         bool word_wrap;
         PangoEllipsizeMode ellipsize;
         PangoAlignment alignment;
+        bool hide_text;
 
         /* derived fields */
         char *msg;            /**< formatted message */

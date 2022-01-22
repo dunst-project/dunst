@@ -37,6 +37,8 @@ void rule_apply(struct rule *r, struct notification *n)
                 n->ellipsize = r->ellipsize;
         if (r->alignment != -1)
                 n->alignment = r->alignment;
+        if (r->hide_text != -1)
+                n->hide_text = r->hide_text;
         if (r->action_name) {
                 g_free(n->default_action_name);
                 n->default_action_name = g_strdup(r->action_name);
@@ -47,6 +49,8 @@ void rule_apply(struct rule *r, struct notification *n)
         }
         if (r->markup != MARKUP_NULL)
                 n->markup = r->markup;
+        if (r->icon_position != -1)
+                n->icon_position = r->icon_position;
         if (r->set_icon_size > 0)
                 n->icon_size = r->set_icon_size;
         if (r->fg) {

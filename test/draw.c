@@ -33,8 +33,8 @@ const struct output dummy_output = {
 
 TEST test_layout_from_notification(void)
 {
-        settings.icon_position = ICON_LEFT;
         struct notification *n = test_notification_with_icon("test", 10);
+        n->icon_position = ICON_LEFT;
         ASSERT(n->icon);
         n->text_to_render = g_strdup("");
         struct colored_layout *cl = layout_from_notification(c, n);
@@ -46,8 +46,8 @@ TEST test_layout_from_notification(void)
 
 TEST test_layout_from_notification_icon_off(void)
 {
-        settings.icon_position = ICON_OFF;
         struct notification *n = test_notification_with_icon("test", 10);
+        n->icon_position = ICON_OFF;
         ASSERT(n->icon);
         n->text_to_render = g_strdup("");
         struct colored_layout *cl = layout_from_notification(c, n);
@@ -59,8 +59,8 @@ TEST test_layout_from_notification_icon_off(void)
 
 TEST test_layout_from_notification_no_icon(void)
 {
-        settings.icon_position = ICON_LEFT;
         struct notification *n = test_notification("test", 10);
+        n->icon_position = ICON_LEFT;
         ASSERT_FALSE(n->icon);
         n->text_to_render = g_strdup("");
         struct colored_layout *cl = layout_from_notification(c, n);

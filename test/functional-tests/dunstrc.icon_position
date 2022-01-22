@@ -1,0 +1,85 @@
+[urgency_low]
+    background = "#222222"
+    foreground = "#888888"
+    timeout = 10
+
+[urgency_normal]
+    background = "#285577"
+    foreground = "#ffffff"
+    timeout = 0
+
+[urgency_critical]
+    background = "#900000"
+    foreground = "#ffffff"
+    timeout = 0
+
+[icon-left-alignment-left]
+    category = "icon-left-alignment-left"
+    icon_position = left
+    alignment = left
+
+[icon-left-alignment-right]
+    category = "icon-left-alignment-right"
+    icon_position = left
+    alignment = right
+
+[icon-left-alignment-center]
+    category = "icon-left-alignment-center"
+    icon_position = left
+    alignment = center
+
+[icon-right-alignment-left]
+    category = "icon-right-alignment-left"
+    icon_position = right
+    alignment = left
+
+[icon-right-alignment-right]
+    category = "icon-right-alignment-right"
+    icon_position = right
+    alignment = right
+
+[icon-right-alignment-center]
+    category = "icon-right-alignment-center"
+    icon_position = right
+    alignment = center
+
+[icon-top-alignment-left]
+    category = "icon-top-alignment-left"
+    icon_position = top
+    alignment = left
+
+[icon-top-alignment-right]
+    category = "icon-top-alignment-right"
+    icon_position = top
+    alignment = right
+
+[icon-top-alignment-center]
+    category = "icon-top-alignment-center"
+    icon_position = top
+    alignment = center
+
+[icon-off-alignment-left]
+    category = "icon-off-alignment-left"
+    icon_position = off
+    alignment = left
+
+[icon-off-alignment-right]
+    category = "icon-off-alignment-right"
+    icon_position = off
+    alignment = right
+
+[icon-off-alignment-center]
+    category = "icon-off-alignment-center"
+    icon_position = off
+    alignment = center
+
+[global]
+    font = Monospace 8
+    markup = full
+    format = "<b>%s</b>\n%b"
+    progress_bar_min_width = 100
+    progress_bar_max_width = 200
+    progress_bar_frame_width = 5
+    progress_bar_height = 30
+    width = (500,750)
+    icon_path = /usr/share/icons/Papirus/24x24/status/:/usr/share/icons/Papirus/24x24/devices/:/usr/share/icons/gnome/16x16/status/:/usr/share/icons/gnome/16x16/devices/

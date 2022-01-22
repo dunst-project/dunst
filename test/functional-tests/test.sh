@@ -188,6 +188,48 @@ function progress_bar {
     keypress
 }
 
+function icon_position {
+    padding_cases=(
+        '0 0 0 no padding'
+        '15 1 1 vertical'
+        '1 50 1 horizontal'
+        '1 1 25 icon '
+    )
+
+    for padding_case in "${padding_cases[@]}"; do
+        read vertical horizontal icon label <<<"$padding_case"
+
+        padding_settings="
+            padding = $vertical
+            horizontal_padding = $horizontal
+            text_icon_padding = $icon
+        "
+
+        tmp_dunstrc dunstrc.icon_position "$padding_settings"
+        start_dunst dunstrc.tmp
+
+        for position in left top right off; do
+            for alignment in left center right; do
+                category="icon-$position-alignment-$alignment"
+                ../../dunstify -a "dunst tester" --hints string:category:$category -u n "$category"$'\n'"padding emphasis: $label"
+            done
+        done
+        rm dunstrc.tmp
+        keypress
+    done
+}
+
+function hide_text {
+    start_dunst dunstrc.hide_text
+    ../../dunstify -a "dunst tester" -u c "text not hidden" "You should be able to read me!\nThe next notifications should not have any text."
+    local hidden_body="If you can read me then hide_text is not working."
+    ../../dunstify -a "dunst tester" -u l "text hidden" "$hidden_body"
+    ../../dunstify -a "dunst tester" -h int:value:$((RANDOM%100)) -u l "text hidden + progress bar" "$hidden_body"
+    ../../dunstify -a "dunst tester" -u n "text hidden + icon" "$hidden_body"
+    ../../dunstify -a "dunst tester" -h int:value:$((RANDOM%100)) -u n "text hidden + icon + progress bar" "$hidden_body"
+    keypress
+}
+
 if [ -n "$1" ]; then
     while [ -n "$1" ]; do
         $1
@@ -204,6 +246,8 @@ else
     replace
     markup
     progress_bar
+    icon_position
+    hide_text
 fi
 
 killall dunst

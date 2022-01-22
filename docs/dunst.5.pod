@@ -380,7 +380,7 @@ Hide the count of stacked duplicate notifications.
 Show an indicator if a notification contains actions and/or open-able URLs. See
 ACTIONS below for further details.
 
-=item B<icon_position> (values: [left/right/off], default: off)
+=item B<icon_position> (values: [left/right/top/off], default: left)
 
 Defines the position of the icon in the notification window. Setting it to off
 disables icons.
@@ -907,6 +907,13 @@ Specifies where truncated lines should be ellipsized.
 =item B<alignment> (values: [left/center/right], default: left)
 
 Defines how the text should be aligned within the notification.
+
+=item B<hide_text> (values: [true/false], default: false)
+
+Setting this to true will skip displaying any text related to the notification.
+The notification icon and progress bar will still be displayed. This option may
+be useful for notifications where an icon or progress bar may be sufficient
+information for the notification, such as audio volume or brightness level.
 
 =item B<markup> (values: [full/strip/no], default: no)
 

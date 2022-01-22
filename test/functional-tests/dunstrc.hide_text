@@ -1,0 +1,28 @@
+[urgency_low]
+    background = "#222222"
+    foreground = "#888888"
+    timeout = 10
+    icon_position = top
+    hide_text = yes
+
+[urgency_normal]
+    background = "#285577"
+    foreground = "#ffffff"
+    timeout = 10
+    icon_position = top
+    hide_text = yes
+
+[urgency_critical]
+    background = "#900000"
+    foreground = "#ffffff"
+    timeout = 0
+
+[global]
+    font = Monospace 8
+    markup = full
+    format = "<b>%s</b>\n%b"
+    progress_bar_min_width = 100
+    progress_bar_max_width = 200
+    progress_bar_frame_width = 5
+    progress_bar_height = 30
+    icon_path = /usr/share/icons/Papirus/24x24/status/:/usr/share/icons/Papirus/24x24/devices/:/usr/share/icons/gnome/16x16/status/:/usr/share/icons/gnome/16x16/devices/
