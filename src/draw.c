@@ -423,13 +423,12 @@ static int layout_get_height(struct colored_layout *cl, double scale)
                 h_progress_bar = settings.progress_bar_height + settings.padding;
         }
 
-        int res = MAX(h_text, h_icon) + h_progress_bar;
 
         if (cl->n->icon_position == ICON_TOP && cl->n->icon) {
-                res = h_icon + h_text + h_progress_bar + vertical_padding;
+                return h_icon + h_text + h_progress_bar + vertical_padding;
+        } else {
+                return MAX(h_text, h_icon) + h_progress_bar;
         }
-
-        return res;
 }
 
 /* Attempt to make internal radius more organic.
