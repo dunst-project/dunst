@@ -654,10 +654,18 @@ TEST test_timeout_overflow(void)
         n_dbus = dbus_notification_new();
         n_dbus->app_name = "dunstteststack";
         n_dbus->app_icon = "NONE";
-        n_dbus->summary = "test_hint_urgency";
+        n_dbus->summary = "test_timeout_overflow";
         n_dbus->body = "Summary of it";
         n_dbus->expire_timeout = 2147484;
         gint64 expected_timeout = G_GINT64_CONSTANT(2147484000);
+
+        // Disable urgency_normal rule in order to avoid timeout override
+        struct rule *urgency_normal_rule = get_rule("urgency_normal");
+        bool previous_urgency_normal_rule_state = false;
+        if (urgency_normal_rule) {
+                previous_urgency_normal_rule_state = urgency_normal_rule->enabled;
+                urgency_normal_rule->enabled = false;
+        }
 
         guint id;
         ASSERT(dbus_notification_fire(n_dbus, &id));
@@ -665,6 +673,10 @@ TEST test_timeout_overflow(void)
 
         n = queues_debug_find_notification_by_id(id);
         ASSERT_EQ_FMT(expected_timeout, n->timeout, "%" G_GINT64_FORMAT);
+
+        if (urgency_normal_rule) {
+                urgency_normal_rule->enabled = previous_urgency_normal_rule_state;
+        }
 
         dbus_notification_free(n_dbus);
 
