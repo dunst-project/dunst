@@ -98,7 +98,9 @@ int get_icon_height(cairo_surface_t *icon, double scale) {
 
 cairo_surface_t *gdk_pixbuf_to_cairo_surface(GdkPixbuf *pixbuf)
 {
-        assert(pixbuf);
+        if (!pixbuf) {
+                return NULL;
+        }
 
         int width  = gdk_pixbuf_get_width(pixbuf);
         int height = gdk_pixbuf_get_height(pixbuf);
