@@ -380,11 +380,6 @@ Hide the count of stacked duplicate notifications.
 Show an indicator if a notification contains actions and/or open-able URLs. See
 ACTIONS below for further details.
 
-=item B<icon_position> (values: [left/right/top/off], default: left)
-
-Defines the position of the icon in the notification window. Setting it to off
-disables icons.
-
 =item B<min_icon_size> (default: 0)
 
 Defines the minimum size in pixels for the icons.
@@ -832,6 +827,11 @@ Default: show
 Updates the icon of the notification, it should be a path or a name for a valid
 image. This overrides the icon that was sent with dunstify or another notification
 tool.
+
+=item C<icon_position> (values: [left/right/top/off], default: left)
+
+Defines the position of the icon in the notification window. Setting it to off
+disables icons.
 
 =item C<default_icon>
 
