@@ -177,7 +177,7 @@ GPtrArray *theme_path = NULL;
  * when the environment variable doesn't exits.
  */
 void add_paths_from_env(GPtrArray *arr, char *env_name, char *subdir, char *alternative) {
-        char *xdg_data_dirs = g_strdup(g_getenv("XDG_DATA_DIRS"));
+        const char *xdg_data_dirs = g_getenv("XDG_DATA_DIRS");
         if (!xdg_data_dirs)
                 xdg_data_dirs = alternative;
 
