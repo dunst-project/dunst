@@ -235,7 +235,7 @@ is equivalent to
 Defines width in pixels of frame around the notification window. Set to 0 to
 disable.
 
-=item B<separator_color> (values: [auto/foreground/frame/#RRGGBB] default: auto)
+=item B<separator_color> (values: [auto/foreground/frame/#RRGGBB] default: frame)
 
 Sets the color of the separator line between two notifications.
 
@@ -352,7 +352,7 @@ removed from the format.
 Defines how the text and icon should be aligned vertically within the
 notification. If icons are disabled, this option has no effect.
 
-=item B<show_age_threshold> (default: -1)
+=item B<show_age_threshold> (default: 60)
 
 Show age of message if message is older than this time.
 See TIME FORMAT for valid times.
@@ -391,14 +391,14 @@ Set to 0 to disable icon upscaling. (default)
 
 If B<icon_position> is set to off, this setting is ignored.
 
-=item B<max_icon_size> (default: 0)
+=item B<max_icon_size> (default: 32)
 
 Defines the maximum size in pixels for the icons.
 If the icon is smaller than or equal to the specified value it won't be affected.
 If it's larger then it will be scaled down so that the larger axis is equivalent
 to the specified size.
 
-Set to 0 to disable icon downscaling. (default)
+Set to 0 to disable icon downscaling.
 
 If both B<min_icon_size> and B<max_icon_size> are enabled, the latter
 gets the last say.
@@ -459,7 +459,7 @@ Maximum number of notifications that will be kept in history. After that limit
 is reached, older notifications will be deleted once a new one arrives. See
 HISTORY.
 
-=item B<dmenu> (default: "/usr/bin/dmenu")
+=item B<dmenu> (default: "/usr/bin/dmenu -p dunst")
 
 The command that will be run when opening the context menu. Should be either
 a dmenu command or a dmenu-compatible menu.
