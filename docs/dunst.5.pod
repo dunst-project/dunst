@@ -565,11 +565,8 @@ normal and critical urgency respectively.
 
 See the example configuration file for examples.
 
-Additionally, you can override these settings via the following command line
-flags:
-
-Please note these flags may be removed in the future. See issue #328 in the bug
-tracker for discussions (See REPORTING BUGS).
+The flags for setting the colors notifications of different urgencies have been
+removed. See issue #328 in the bug tracker for discussions (See REPORTING BUGS).
 
 =over 4
 
@@ -581,31 +578,31 @@ recommended to replace it as soon as possible.
 
 Where I<icon> is a path to an image file containing the icon.
 
-=item B<-lf/nf/cf color>
+=item B<-lf/nf/cf color> REMOVED
 
 Defines the foreground color for low, normal and critical notifications respectively.
 
 See COLORS for the value format.
 
-=item B<-lb/nb/cb color>
+=item B<-lb/nb/cb color> REMOVED
 
 Defines the background color for low, normal and critical notifications respectively.
 
 See COLORS for the value format.
 
-=item B<-lh/nh/ch color>
+=item B<-lh/nh/ch color> REMOVED
 
 Defines the highlight color for low, normal and critical notifications respectively.
 
 See COLORS for the value format.
 
-=item B<-lfr/nfr/cfr color>
+=item B<-lfr/nfr/cfr color> REMOVED
 
 Defines the frame color for low, normal and critical notifications respectively.
 
 See COLORS for more information
 
-=item B<-lto/nto/cto secs>
+=item B<-lto/nto/cto secs> REMOVED
 
 Defines the timeout time for low, normal and critical notifications
 respectively.
