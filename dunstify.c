@@ -29,7 +29,7 @@ static GOptionEntry entries[] =
     { "urgency",      'u', 0, G_OPTION_ARG_STRING,       &urgency_str,    "The urgency of this notification", "URG" },
     { "hints",        'h', 0, G_OPTION_ARG_STRING_ARRAY, &hint_strs,      "User specified hints", "HINT" },
     { "action",       'A', 0, G_OPTION_ARG_STRING_ARRAY, &action_strs,    "Actions the user can invoke", "ACTION" },
-    { "timeout",      't', 0, G_OPTION_ARG_INT,          &timeout,        "The time until the notification expires", "TIMEOUT" },
+    { "timeout",      't', 0, G_OPTION_ARG_INT,          &timeout,        "The time in milliseconds until the notification expires", "TIMEOUT" },
     { "icon",         'i', 0, G_OPTION_ARG_STRING,       &icon,           "An Icon that should be displayed with the notification", "ICON" },
     { "raw_icon",     'I', 0, G_OPTION_ARG_STRING,       &raw_icon_path,  "Path to the icon to be sent as raw image data", "RAW_ICON"},
     { "capabilities", 'c', 0, G_OPTION_ARG_NONE,         &capabilities,   "Print the server capabilities and exit", NULL},
