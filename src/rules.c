@@ -76,8 +76,11 @@ void rule_apply(struct rule *r, struct notification *n)
                 n->default_icon_name = g_strdup(r->default_icon);
         }
         if (r->new_icon) {
-                g_free(n->iconname);
-                n->iconname = g_strdup(r->new_icon);
+                // FIXME This is not efficient when the icon is replaced
+                // multiple times for the same notification. To fix this, a
+                // separate variable is needed to track if the icon is
+                // replaced, like in 86cbc1d34bb0f551461dbd466cd9e4860ae01817.
+                notification_icon_replace_path(n, r->new_icon);
         }
         if (r->script){
                 n->scripts = g_renew(const char*,n->scripts,n->script_count + 1);

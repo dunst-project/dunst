@@ -590,12 +590,6 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
                 g_variant_unref(dict_value);
         }
 
-        // All attributes that have to be set before initializations are set,
-        // so we can initialize the notification. This applies all rules that
-        // are defined and applies the formatting to the message.
-        notification_init(n);
-
-
         // Set raw icon data only after initializing the notification, so the
         // desired icon size is known. This way the buffer can be immediately
         // rescaled. If at some point you might want to match by if a
@@ -609,6 +603,11 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
                 notification_icon_replace_data(n, dict_value);
                 g_variant_unref(dict_value);
         }
+
+        // All attributes that have to be set before initializations are set,
+        // so we can initialize the notification. This applies all rules that
+        // are defined and applies the formatting to the message.
+        notification_init(n);
 
         // Modify these values after the notification is initialized and all rules are applied.
         if ((dict_value = g_variant_lookup_value(hints, "fgcolor", G_VARIANT_TYPE_STRING))) {
