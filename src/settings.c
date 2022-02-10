@@ -150,6 +150,9 @@ void check_and_correct_settings(struct settings *s) {
                 if (s->progress_bar_max_width < s->progress_bar_min_width){
                         DIE("setting progress_bar_max_width is smaller than progress_bar_min_width");
                 }
+                if (s->progress_bar_min_width > s->width.max) {
+                        LOG_W("Progress bar min width is greater than the max width of the notification.");
+                }
         }
 
         // restrict the icon size to a reasonable limit if we have a fixed width.

@@ -282,6 +282,9 @@ static struct dimensions calculate_notification_dimensions(struct colored_layout
 
         dim.h = MIN(settings.height, dim.h + settings.padding * 2);
         dim.w = MAX(settings.width.min, dim.w);
+        if (have_progress_bar(cl))
+                dim.w = MAX(settings.progress_bar_min_width, dim.w);
+
         dim.w = MIN(settings.width.max, dim.w);
 
         cl->n->displayed_height = dim.h;
