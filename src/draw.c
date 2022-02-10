@@ -707,15 +707,27 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, dou
         // progress bar positioning
         if (have_progress_bar(cl)){
                 int progress = MIN(cl->n->progress, 100);
+                unsigned int frame_x = 0;
                 unsigned int frame_width = settings.progress_bar_frame_width,
                              progress_width = MIN(width - 2 * settings.h_padding, settings.progress_bar_max_width),
                              progress_height = settings.progress_bar_height - frame_width,
-                             frame_x = width/2 - progress_width/2,
                              frame_y = settings.padding + h - settings.progress_bar_height,
                              progress_width_without_frame = progress_width - 2 * frame_width,
                              progress_width_1 = progress_width_without_frame * progress / 100,
-                             progress_width_2 = progress_width_without_frame - progress_width_1,
-                             x_bar_1 = frame_x + frame_width,
+                             progress_width_2 = progress_width_without_frame - progress_width_1;
+
+                switch (cl->n->progress_bar_alignment) {
+                        case PANGO_ALIGN_LEFT:
+                             frame_x = settings.h_padding;
+                             break;
+                        case PANGO_ALIGN_CENTER:
+                             frame_x = width/2 - progress_width/2;
+                             break;
+                        case PANGO_ALIGN_RIGHT:
+                             frame_x = width - progress_width - settings.h_padding;
+                             break;
+                }
+                unsigned int x_bar_1 = frame_x + frame_width,
                              x_bar_2 = x_bar_1 + progress_width_1;
 
                 double half_frame_width = frame_width / 2.0;

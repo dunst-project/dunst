@@ -52,8 +52,9 @@ struct rule {
         const char *format;
         const char *script;
         enum behavior_fullscreen fullscreen;
-        char *set_stack_tag; // this has to be the last action
         bool enabled;
+        PangoAlignment progress_bar_alignment;
+        char *set_stack_tag; // this has to be the last modifying rule
 };
 
 extern GSList *rules;

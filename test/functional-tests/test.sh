@@ -157,6 +157,16 @@ function test_height {
     keypress
 }
 
+function test_progress_bar_alignment {
+    tmp_dunstrc dunstrc.default "progress_bar_horizontal_alignment = $1\n progress_bar_max_width = 200"
+    start_dunst dunstrc.tmp
+    ../../dunstify -a "dunst tester" -u c "alignment = $1"
+    ../../dunstify -h int:value:33 -a "dunst tester" -u n "The progress bar should not be the entire width"
+    ../../dunstify -h int:value:33 -a "dunst tester" -u c "Short"
+    rm dunstrc.tmp
+    keypress
+}
+
 function height {
     echo "###################################"
     echo "height"
@@ -186,6 +196,9 @@ function progress_bar {
     ../../dunstify -h int:value:33 -a "dunst tester" -u n "You might also notice height and frame size are changed"
     ../../dunstify -h int:value:33 -a "dunst tester" -u c "Short"
     keypress
+    test_progress_bar_alignment "left"
+    test_progress_bar_alignment "center"
+    test_progress_bar_alignment "right"
 }
 
 function icon_position {

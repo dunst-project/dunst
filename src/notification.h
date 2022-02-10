@@ -71,6 +71,7 @@ struct notification {
         gint64 timestamp;  /**< arrival time (in milliseconds) */
         gint64 timeout;    /**< time to display (in milliseconds) */
         int locked;     /**< If non-zero the notification is locked **/
+        PangoAlignment progress_bar_alignment; /**< Horizontal alignment of the progress bar **/
 
         GHashTable *actions;
         char *default_action_name; /**< The name of the action to be invoked on do_action */

@@ -420,6 +420,7 @@ struct notification *notification_create(void)
         n->word_wrap = true;
         n->ellipsize = PANGO_ELLIPSIZE_MIDDLE;
         n->alignment = PANGO_ALIGN_LEFT;
+        n->progress_bar_alignment = PANGO_ALIGN_CENTER;
         n->hide_text = false;
         n->icon_position = ICON_LEFT;
         n->icon_size = 32;

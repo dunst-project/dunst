@@ -39,6 +39,8 @@ void rule_apply(struct rule *r, struct notification *n)
                 n->alignment = r->alignment;
         if (r->hide_text != -1)
                 n->hide_text = r->hide_text;
+        if (r->progress_bar_alignment != -1)
+                n->progress_bar_alignment = r->progress_bar_alignment;
         if (r->action_name) {
                 g_free(n->default_action_name);
                 n->default_action_name = g_strdup(r->action_name);

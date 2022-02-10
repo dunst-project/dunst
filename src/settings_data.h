@@ -150,6 +150,7 @@ static const struct rule empty_rule = {
         .default_icon    = NULL,
         .script          = NULL,
         .enabled         = true,
+        .progress_bar_alignment   = -1,
 };
 
 
@@ -689,6 +690,17 @@ static const struct setting allowed_settings[] = {
                 .parser = string_parse_bool,
                 .parser_data = boolean_enum_data,
                 .rule_offset = offsetof(struct rule, enabled),
+        },
+        {
+                .name = "progress_bar_horizontal_alignment",
+                .section = "*",
+                .description = "Set the horizontal alignment of the progress bar",
+                .type = TYPE_CUSTOM,
+                .default_value = "center",
+                .value = NULL,
+                .parser = string_parse_enum,
+                .parser_data = horizontal_alignment_enum_data,
+                .rule_offset = offsetof(struct rule, progress_bar_alignment),
         },
         // end of modifying rules
 

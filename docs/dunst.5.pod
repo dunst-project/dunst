@@ -158,6 +158,11 @@ When an integer value is passed to dunst as a hint (see B<NOTIFY-SEND>), a
 progress bar will be drawn at the bottom of the notification. This
 behavior can be turned off by setting this setting to false.
 
+=item B<progress_bar_horizontal_alignment> (values: [left/center/right], default: center)
+
+Horizontal alignment of the progress bar. The progress bar will always keep a
+distance of B<horizontal_padding> from the edge of the notification.
+
 =item B<progress_bar_height> (default: 10)
 
 The height of the progress bar in pixel. This includes the frame. Make sure
