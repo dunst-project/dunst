@@ -1,5 +1,8 @@
 #include "greatest.h"
 #include "../src/icon-lookup.c"
+#include "helpers.h"
+#include "../src/notification.h"
+#include "../src/settings_data.h"
 
 extern const char *base;
 #define ICONPREFIX "data", "icons"
@@ -61,6 +64,40 @@ TEST test_find_path(void)
         find_path_test(path2, "16x16", "actions", "edit.png");
         g_free(path2);
         g_free(path);
+        free_all_themes();
+        PASS();
+}
+
+
+TEST test_new_icon_overrides_raw_icon(void) {
+        setup_test_theme();
+
+        struct notification *n = test_notification_with_icon("new_icon", 10);
+        struct rule *rule = malloc(sizeof(struct rule));
+        *rule = empty_rule;
+        rule->summary = g_strdup("new_icon");
+        rule->new_icon = g_strdup("edit");
+
+        ASSERT(n->icon);
+
+        void *old_icon = (void*) n->icon;
+        ASSERT(old_icon == n->icon);
+        rule_apply(rule, n);
+        ASSERT(old_icon != n->icon);
+        /* n->icon = malloc(1); // allocate some data to emulate a raw icon */
+
+        /* printf("%lu\n", sizeof(n->icon)); */
+
+
+        /* printf("%lu\n", sizeof(n->icon)); */
+
+        free(n->icon);
+        n->icon = NULL;
+
+        notification_unref(n);
+        g_free(rule->summary);
+        g_free(rule->new_icon);
+        g_free(rule);
         free_all_themes();
         PASS();
 }
@@ -138,6 +175,7 @@ SUITE (suite_icon_lookup)
         RUN_TEST(test_load_theme_from_dir);
         RUN_TEST(test_find_icon);
         RUN_TEST(test_find_path);
+        RUN_TEST(test_new_icon_overrides_raw_icon);
         bool bench = false;
         if (bench) {
                 RUN_TEST(test_bench_search);

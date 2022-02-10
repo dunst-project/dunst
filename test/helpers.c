@@ -34,7 +34,7 @@ GVariant *notification_setup_raw_image(const char *path)
         return hint;
 }
 
-struct notification *test_notification(const char *name, gint64 timeout)
+struct notification *test_notification_uninitialized(const char *name)
 {
         struct notification *n = notification_create();
 
@@ -42,6 +42,13 @@ struct notification *test_notification(const char *name, gint64 timeout)
         n->appname =     g_strconcat("app of ", name, NULL);
         n->summary =     g_strconcat(name, NULL);
         n->body =        g_strconcat("See, ", name, ", I've got a body for you!", NULL);
+
+        return n;
+}
+
+struct notification *test_notification(const char *name, gint64 timeout)
+{
+        struct notification *n = test_notification_uninitialized(name);
 
         notification_init(n);
 
