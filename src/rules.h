@@ -53,7 +53,7 @@ struct rule {
         const char *script;
         enum behavior_fullscreen fullscreen;
         bool enabled;
-        PangoAlignment progress_bar_alignment;
+        int progress_bar_alignment;
         char *set_stack_tag; // this has to be the last modifying rule
 };
 
