@@ -146,12 +146,6 @@ you do want it removed as well.
 
 ## Troubleshooting
 
-### Shortcuts stopped working
-
-Shortcut support and `[shortcuts]` section in config have been removed for
-simplicity. Use your window manager/desktop environment and `dunstctl` to
-replace it.
-
 ### Cannot set settings via command line
 
 This functionality was removed during the refactor. It might be re-added later

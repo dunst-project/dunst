@@ -1412,6 +1412,47 @@ static const struct setting allowed_settings[] = {
                 .parser_data = NULL,
         },
 
+        // Keyboard shortcuts (still in global section)
+        {
+                .name = "close",
+                .section = "global",
+                .description = "Shortcut for closing one notification",
+                .type = TYPE_STRING,
+                .default_value = "none",
+                .value = &settings.close_ks.str,
+                .parser = NULL,
+                .parser_data = NULL,
+        },
+        {
+                .name = "close_all",
+                .section = "global",
+                .description = "Shortcut for closing all notifications",
+                .type = TYPE_STRING,
+                .default_value = "none",
+                .value = &settings.close_all_ks.str,
+                .parser = NULL,
+                .parser_data = NULL,
+        },
+        {
+                .name = "history",
+                .section = "global",
+                .description = "Shortcut to pop the last notification from history",
+                .type = TYPE_STRING,
+                .default_value = "none",
+                .value = &settings.history_ks.str,
+                .parser = NULL,
+                .parser_data = NULL,
+        },
+        {
+                .name = "context",
+                .section = "global",
+                .description = "Shortcut for context menu",
+                .type = TYPE_STRING,
+                .default_value = "none",
+                .value = &settings.context_ks.str,
+                .parser = NULL,
+                .parser_data = NULL,
+        },
 };
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

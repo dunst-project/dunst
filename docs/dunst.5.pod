@@ -558,6 +558,37 @@ the notification sent before the user defined timeout.
 
 =back
 
+=head2 Keyboard shortcuts (X11 only)
+
+Keyboard shortcuts are defined in the following format: "Modifier+key" where the
+modifier is one of ctrl,mod1,mod2,mod3,mod4 and key is any keyboard key.
+
+Note that the keyboard shortcuts have been moved to the B<global> section of the
+config for consistency with other settings.
+
+Alternatively you can also define shortcuts inside your window manager and bind
+them to dunstctl(1) commands.
+
+=over 4
+
+=item B<close>
+
+Specifies the keyboard shortcut for closing a notification.
+
+=item B<close_all>
+
+Specifies the keyboard shortcut for closing all currently displayed notifications.
+
+=item B<history>
+
+Specifies the keyboard shortcut for recalling a single notification from history.
+
+=item B<context>
+
+Specifies the keyboard shortcut that opens the context menu.
+
+=back
+
 =head2 Urgency sections
 
 The urgency sections work in a similar way to rules and can be used to specify
@@ -1110,12 +1141,6 @@ given, seconds ("s") is taken as default.
 Time units understood by dunst are "ms", "s", "m", "h" and "d".
 
 Example time: "1000ms" "10m"
-
-=head1 MISCELLANEOUS
-
-Dunst used to provide shortcuts to act on notifications via key-bindings, but it
-has now been moved to its own utility. For more information, see the manual for
-dunstctl(1).
 
 =head1 AUTHORS
 
