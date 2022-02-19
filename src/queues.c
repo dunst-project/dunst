@@ -528,7 +528,7 @@ gint64 queues_get_next_datachange(gint64 time)
                 struct notification *n = iter->data;
                 gint64 ttl = n->timeout - (time - n->start);
 
-                if (n->timeout > 0) {
+                if (n->timeout > 0 && n->locked == 0) {
                         if (ttl > 0)
                                 sleep = MIN(sleep, ttl);
                         else

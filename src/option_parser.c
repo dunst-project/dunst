@@ -140,14 +140,6 @@ int string_parse_list(const void *data, const char *s, void *ret) {
                         if (!success)
                                 break;
 
-                        // We can safely assume the length is 2, since the
-                        // string array also had length 2
-                        if (int_arr[0] < 0 || int_arr[1] < 0) {
-                                LOG_W("Offset has to be positive. Correcting...");
-                                int_arr[0] = abs(int_arr[0]);
-                                int_arr[1] = abs(int_arr[1]);
-                        }
-
                         struct position* offset = (struct position*) ret;
                         offset->x = int_arr[0];
                         offset->y = int_arr[1];

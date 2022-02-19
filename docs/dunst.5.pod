@@ -136,8 +136,8 @@ Origin can be one of:
 =item B<offset> format: (horizontal, vertical)
 
 Respectively the horizontal and vertical offset in pixels from the corner
-of the screen specified by B<origin>. Both values should always be positive or
-zero.
+of the screen specified by B<origin>. A negative offset will lead to the
+notification being off screen.
 
 Examples:
         origin = top-right
