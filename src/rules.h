@@ -29,6 +29,7 @@ struct rule {
 
         /* modifying */
         gint64 timeout; // this has to be the first modifying rule
+        gint64 override_dbus_timeout;
         enum urgency urgency;
         char *action_name;
         enum markup_mode markup;

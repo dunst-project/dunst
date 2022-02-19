@@ -414,6 +414,7 @@ struct notification *notification_create(void)
 
         n->urgency = URG_NORM;
         n->timeout = -1;
+        n->dbus_timeout = -1;
 
         n->transient = false;
         n->progress = -1;

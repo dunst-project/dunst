@@ -21,6 +21,8 @@ void rule_apply(struct rule *r, struct notification *n)
 {
         if (r->timeout != -1)
                 n->timeout = r->timeout;
+        if (r->override_dbus_timeout != -1)
+                n->dbus_timeout = r->override_dbus_timeout;
         if (r->urgency != URG_NONE)
                 n->urgency = r->urgency;
         if (r->fullscreen != FS_NULL)
