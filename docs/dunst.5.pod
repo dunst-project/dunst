@@ -870,6 +870,11 @@ for a list of standard categories.
 
 Equivalent to the C<timeout> setting in the urgency sections.
 
+=item C<override_dbus_timeout>
+
+Overrides the timeout specified in dbus.
+This takes precedence over C<timeout>.
+
 =item C<urgency>
 
 This sets the notification urgency.
