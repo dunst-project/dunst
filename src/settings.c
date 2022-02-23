@@ -94,7 +94,7 @@ static void config_files_add_drop_ins(GPtrArray *config_files, const char *path)
         while (n--) {
                 char *drop_in = g_strconcat(drop_in_dir, "/",
                                 drop_ins[n]->d_name, NULL);
-                printf("Found drop-in: %s\n", drop_in);
+                LOG_D("Found drop-in: %s\n", drop_in);
                 g_ptr_array_insert(config_files, insert_index, drop_in);
                 free(drop_ins[n]);
         }
@@ -124,7 +124,7 @@ static GPtrArray* get_conf_files(const char *path) {
         for (int i = 0; i < config_locations->len; i++) {
                 dunstrc_location = g_build_filename(config_locations->pdata[i],
                                 "dunstrc", NULL);
-                LOG_W("Trying config location: %s", dunstrc_location);
+                LOG_D("Trying config location: %s", dunstrc_location);
                 if (is_readable_file(dunstrc_location)) {
                         g_ptr_array_add(config_files, dunstrc_location);
                         break;
@@ -232,7 +232,7 @@ void check_and_correct_settings(struct settings *s) {
 static void process_conf_file(const gpointer conf_fname, gpointer n_success) {
         const gchar * const p = conf_fname;
 
-        LOG_W("Reading config file '%s'", p);
+        LOG_D("Reading config file '%s'", p);
         /* Check for "-" here, so the file handling stays in one place */
         FILE *f = STR_EQ(p, "-") ? stdin : fopen_verbose(p);
         if (!f)
