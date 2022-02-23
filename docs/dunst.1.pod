@@ -100,37 +100,53 @@ missed notifications after returning to the computer.
 =head1 FILES
 
 These are the base directories dunst searches for configuration files in
-descending order of imortance:
+I<descending order of imortance>:
 
-=over 4
+=over 8
 
-$XDG_CONFIG_HOME ($HOME/.config if unset or empty)
+=item C<$XDG_CONFIG_HOME>
 
-$XDG_CONFIG_DIRS (:-separated list of base directories in descending order
-of importance; ##SYSCONFDIR## if unset or empty)
+This is the most important directory. (C<$HOME/.config> if unset or empty)
 
-=back
+=item C<$XDG_CONFIG_DIRS>
 
-Dunst will search these directories for the following relative path:
-
-=over 4
-
-dunst/dunstrc
+This, like C<$PATH> for instance, is a :-separated list of base directories
+in I<descending order of importance>.
+(F<##SYSCONFDIR##> if unset or empty)
 
 =back
 
-All settings from all files get applied. Settings in more important files
-override those in less important ones. Settings not present in more imortant
-files are taken from a less important one or from the internal defaults if they
-are not found in any file.
+Dunst will search these directories for the following relative file paths:
 
-=over 4
+=over 8
 
-=item This is where the default (least important) config file is located:
+=item F<dunst/dunstrc>
 
-##SYSCONFDIR##/dunst/dunstrc
+This is the base config and as such the least important in a particular base
+directory.
+
+=item F<dunst/dunstrc.d/*.conf>
+
+These are "drop-ins" (mind the ".d" suffix of the directory).
+They are more important than the base dunstrc in the parent directory, as they
+are considered to be small snippets to override settings.
+The last in lexical order is the most important one, so you can easily change
+the order by renaming them.
+A common approach to naming drop-ins is to prefix them with numbers, i.e.:
+
+    00-least-important.conf
+    01-foo.conf
+    20-bar.conf
+    99-most-important.conf
+
+Only files with the B<.conf> suffix will be read.
 
 =back
+
+Only settings from the last base config the corresponding drop-ins get applied.
+So if a dunstrc is first found in F<~/.config/dunst/dunstrc>, drop-ins will be
+searched in F<~/.config/dunst/dunstrc.d/*>. Settings in more important files
+override those in less important ones.
 
 =head1 AUTHORS
 

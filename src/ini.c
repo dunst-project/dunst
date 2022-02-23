@@ -2,6 +2,7 @@
 
 #include "utils.h"
 #include "log.h"
+#include "settings.h"
 
 struct section *get_section(struct ini *ini, const char *name)
 {
@@ -107,7 +108,7 @@ struct ini *load_ini_file(FILE *fp)
                         *end = '\0';
 
                         g_free(current_section);
-                        current_section = (g_strdup(start + 1));
+                        current_section = g_strdup(start + 1);
                         continue;
                 }
 

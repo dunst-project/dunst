@@ -6,8 +6,11 @@
 #include <errno.h>
 #include <glib.h>
 #include <pwd.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -404,6 +407,57 @@ char *string_strip_brackets(const char* s) {
         else
                 return NULL;
 
+}
+
+/* see utils.h */
+bool is_readable_file(const char * const path)
+{
+        struct stat statbuf;
+        bool result = false;
+
+        if (0 == stat(path, &statbuf)) {
+                /** See what intersting stuff can be done with FIFOs */
+                if (!(statbuf.st_mode & (S_IFIFO | S_IFREG))) {
+                        /** Sets errno if stat() was successful but @p path [in]
+                         * does not point to a regular file or FIFO. This
+                         * just in case someone queries errno which would
+                         * otherwise indicate success. */
+                        errno = EINVAL;
+                } else if (0 == access(path, R_OK)) { /* must also be readable */
+                        result = true;
+                }
+        }
+
+        return result;
+}
+
+/* see utils.h */
+FILE *fopen_verbose(const char * const path)
+{
+        FILE *f = NULL;
+        char *real_path = string_to_path(strdup(path));
+
+        if (is_readable_file(real_path) && (f = fopen(real_path, "r")))
+                LOG_I(MSG_FOPEN_SUCCESS(path, f));
+        else
+                LOG_W(MSG_FOPEN_FAILURE(path));
+
+        free(real_path);
+        return f;
+}
+
+/* see utils.h */
+void add_paths_from_env(GPtrArray *arr, char *env_name, char *subdir, char *alternative) {
+        char *xdg_data_dirs = g_strdup(g_getenv("XDG_DATA_DIRS"));
+        if (!xdg_data_dirs)
+                xdg_data_dirs = alternative;
+
+        char **xdg_data_dirs_arr = string_to_array(xdg_data_dirs, ":");
+        for (int i = 0; xdg_data_dirs_arr[i] != NULL; i++) {
+                char *loc = g_build_filename(xdg_data_dirs_arr[i], subdir, NULL);
+                g_ptr_array_add(arr, loc);
+        }
+        g_strfreev(xdg_data_dirs_arr);
 }
 
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

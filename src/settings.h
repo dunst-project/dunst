@@ -160,7 +160,7 @@ struct settings {
 
 extern struct settings settings;
 
-void load_settings(char *cmdline_config_path);
+void load_settings(const char * const path);
 
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

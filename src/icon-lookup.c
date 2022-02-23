@@ -16,11 +16,6 @@ int icon_themes_count = 0;
 int *default_themes_index = NULL;
 int default_themes_count = 0;
 
-static bool is_readable_file(const char *filename)
-{
-        return (access(filename, R_OK) != -1);
-}
-
 int get_icon_theme(char *name) {
         for (int i = 0; i < icon_themes_count; i++) {
                 if (STR_EQ(icon_themes[i].subdir_theme, name)){
@@ -163,31 +158,6 @@ int load_icon_theme_from_dir(const char *icon_dir, const char *subdir_theme) {
 
 // a list of directories where icon themes might be located
 GPtrArray *theme_path = NULL;
-
-/**
- * Adds the contents of env_name with subdir to the array, interpreting the
- * environment variable as a colon-separated list of paths. If the environment
- * variable doesn't exist, alternative is used.
- *
- * @param arr The array to add to
- * @param env_name The name of the environment variable that contains a
- * colon-separated list of paths.
- * @param subdir The subdirectory to add a the end of each path in env_name
- * @param alternative A colon-separated list of paths to use as alternative
- * when the environment variable doesn't exits.
- */
-void add_paths_from_env(GPtrArray *arr, char *env_name, char *subdir, char *alternative) {
-        const char *xdg_data_dirs = g_getenv("XDG_DATA_DIRS");
-        if (!xdg_data_dirs)
-                xdg_data_dirs = alternative;
-
-        char **xdg_data_dirs_arr = string_to_array(xdg_data_dirs, ":");
-        for (int i = 0; xdg_data_dirs_arr[i] != NULL; i++) {
-                char *loc = g_build_filename(xdg_data_dirs_arr[i], subdir, NULL);
-                g_ptr_array_add(theme_path, loc);
-        }
-        g_strfreev(xdg_data_dirs_arr);
-}
 
 void get_theme_path() {
         theme_path = g_ptr_array_new_full(5, g_free);

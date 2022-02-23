@@ -3,8 +3,9 @@
 #define DUNST_UTILS_H
 
 #include <glib.h>
-#include <string.h>
 #include <stdbool.h>
+#include <stdio.h>
+#include <string.h>
 
 //! Test if a string is NULL or empty
 #define STR_EMPTY(s) (!s || (*s == '\0'))
@@ -198,5 +199,51 @@ char *string_strip_brackets(const char* s);
  * Returns the length of a string array, -1 if the input is NULL.
  */
 int string_array_length(char **s);
+
+/** @brief Check if file is readable
+ *
+ * This is a convenience function to check if @p path can be resolved and makes
+ * sense to try and open, like regular files and FIFOs (named pipes). Finally,
+ * a preliminary check is done to see if read permission is granted.
+ *
+ * Do not rely too hard on the result, though, since this is racy. A case can
+ * be made that these conditions might not be true anymore by the time the file
+ * is acutally opened for reading.
+ *
+ * Also, no tilde expansion is done. Use the result of `string_to_path()` for
+ * @p path.
+ *
+ * @param path [in] A string representing a path.
+ * @retval true in case of success.
+ * @retval false in case of failure, errno will be set appropriately.
+ */
+bool is_readable_file(const char * const path);
+
+/** @brief Open files verbosely.
+ *
+ * This is a wrapper around fopen() and is_readable_file() that does some
+ * preliminary checks and sends log messages.
+ *
+ * @p path [in] A char* string representing a filesystem path
+ * @returns The result of the fopen() call.
+ * @retval NULL if the fopen() call failed or @p path does not satisfy the
+ * conditions of is_readable_file().
+ */
+FILE * fopen_verbose(const char * const path);
+
+/**
+ * Adds the contents of env_name with subdir to the array, interpreting the
+ * environment variable as a colon-separated list of paths. If the environment
+ * variable doesn't exist, alternative is used.
+ *
+ * @param arr The array to add to. This array has to be created first with
+ *            g_ptr_array_new() or a similar function.
+ * @param env_name The name of the environment variable that contains a
+ * colon-separated list of paths.
+ * @param subdir The subdirectory to add a the end of each path in env_name
+ * @param alternative A colon-separated list of paths to use as alternative
+ * when the environment variable doesn't exits.
+ */
+void add_paths_from_env(GPtrArray *arr, char *env_name, char *subdir, char *alternative);
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

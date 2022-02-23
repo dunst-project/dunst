@@ -205,7 +205,6 @@ int string_parse_bool(const void *data, const char *s, void *ret)
         return success;
 }
 
-
 int get_setting_id(const char *key, const char *section) {
         int error_code = 0;
         int partial_match_id = -1;
