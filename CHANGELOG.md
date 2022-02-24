@@ -1,10 +1,51 @@
 # Dunst changelog
 
-## Unreleased
+## 1.8.0 -- 2022-02-24
 
 ### Added
+- Implemented `progress_bar_min_width`. Before it was an unused setting. (#1006)
+- `progress_bar_horizontal_alignment` for changing the alignment of the progress
+  bar. (#1021)
+- Support for config drop-ins. You can add as many configuration files as you
+  want in `dunstrc.d`. See the man page dunst(1) for more information. This was
+  done with help from @WhitePeter. (#997)
+- Thanks to @m-barlett you can place your icons at the center of your
+  notifications with `icon_position = top`.
+- `icon_position` is now a rule (also by @m-barlett).
+- `hide_text` for hiding all text of a notification. This also removes all
+  padding that would be present for a notification without text. (also by
+  @m-barlett) (#985)
+- The previously removed keyboard shortcuts have been added again, but now they
+  are in the `[global]` section of the config. Not everything that was possible
+  with the keyboard shortcuts was possible with dunstctl on X11. Mainly
+  activating a keyboard shortcut only when notifications are on screen. Thanks
+  to @wgmayer0 for testing. (#1033).
+
 ### Changed
+- Improved the man page regarding transitioning from the old geometry.
+- The default alignment of the progress bar is now center instead of left.
+- Better regex matching for rules. When you set `enable_posix_regex`. Take a
+  look at
+  https://en.m.wikibooks.org/wiki/Regular_Expressions/POSIX-Extended_Regular_Expressions
+  for how the new regex syntax works. Note that you cannot do inverse matching
+  yet, I'm working on that in #1040. (#1017)
+- Thanks to @kurogetsusai you can once again use negative offsets to put a
+  notification window slightly off-screen if you so like. (#1027)
+- As mentioned above, the keyboard shortcuts have been moved to the `[global]`
+  section. Please move your settings there.
+
+
 ### Fixed
+- Crash when `open_url` was used without URL's. (#1000)
+- Icons sometimes being incorrectly sized with the new icon lookup. (#1003)
+- Incorrect defaults mentioned in the documentation. (#1004, #1029 and more)
+- Crash when icon could not be read by glib. (#1023)
+- Not being able to override anymore raw icons with `new_icon` (#1009)
+- High cpu usage when selecting an action in dmenu or similar. This was caused
+  by dunst not going to sleep when waiting for a response. (#898)
+- Updated default values documentation (with help from @profpatch) (#1004 and
+  more)
+
 
 ## 1.7.3 -- 2021-12-08
 
