@@ -448,7 +448,7 @@ FILE *fopen_verbose(const char * const path)
 
 /* see utils.h */
 void add_paths_from_env(GPtrArray *arr, char *env_name, char *subdir, char *alternative) {
-        const char *xdg_data_dirs = g_getenv("XDG_DATA_DIRS");
+        const char *xdg_data_dirs = g_getenv(env_name);
         if (!xdg_data_dirs)
                 xdg_data_dirs = alternative;
 
