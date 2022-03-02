@@ -1,5 +1,11 @@
 # Dunst changelog
 
+## 1.8.1 -- 2022-03-02
+
+### Fixed
+- Dunst sometimes not using the right config file, sometimes falling back to the
+  internal defaults.
+
 ## 1.8.0 -- 2022-02-24
 
 ### Added
