@@ -605,7 +605,8 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
         }
 
         // Set the dbus timeout
-        n->dbus_timeout = timeout < 0 ? timeout : ((gint64)timeout) * 1000;
+        if (timeout >= 0)
+                n->dbus_timeout = ((gint64)timeout) * 1000;
 
         // All attributes that have to be set before initializations are set,
         // so we can initialize the notification. This applies all rules that
@@ -635,9 +636,6 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
                 n->colors.highlight = g_variant_dup_string(dict_value, NULL);
                 g_variant_unref(dict_value);
         }
-
-        if (n->dbus_timeout >= 0)
-                n->timeout = n->dbus_timeout;
 
         g_variant_unref(hints);
         g_variant_type_free(required_type);

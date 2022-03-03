@@ -507,6 +507,11 @@ void notification_init(struct notification *n)
         /* UPDATE derived fields */
         notification_extract_urls(n);
         notification_format_message(n);
+
+        /* Update timeout: dbus_timeout has priority over timeout */
+        if (n->dbus_timeout >= 0)
+                n->timeout = n->dbus_timeout;
+
 }
 
 static void notification_format_message(struct notification *n)
