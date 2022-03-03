@@ -26,6 +26,7 @@ struct rule {
         char *stack_tag;
         char *desktop_entry;
         int msg_urgency;
+        gint64 match_dbus_timeout;
 
         /* modifying */
         gint64 timeout; // this has to be the first modifying rule
