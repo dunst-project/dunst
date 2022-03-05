@@ -815,6 +815,91 @@ TEST assert_methodlists_sorted(void)
         PASS();
 }
 
+TEST test_override_dbus_timeout(void)
+{
+        struct notification *n;
+        struct dbus_notification *n_dbus;
+        struct rule *rule;
+
+        n_dbus = dbus_notification_new();
+        n_dbus->app_name = "dunstteststack";
+        n_dbus->expire_timeout = 2147484;
+
+        rule = rule_new("test_override_dbus_timeout");
+        rule->appname = "dunstteststack";
+        rule->override_dbus_timeout = 100000;
+
+        gint64 expected_timeout = rule->override_dbus_timeout;
+
+        guint id;
+        ASSERT(dbus_notification_fire(n_dbus, &id));
+        ASSERT(id != 0);
+
+        n = queues_debug_find_notification_by_id(id);
+        ASSERT_EQ_FMT(expected_timeout, n->timeout, "%" G_GINT64_FORMAT);
+
+        dbus_notification_free(n_dbus);
+        rule->enabled = false;
+
+        PASS();
+}
+
+TEST test_match_dbus_timeout(void)
+{
+        struct notification *n;
+        struct dbus_notification *n_dbus;
+        struct rule *rule;
+
+        n_dbus = dbus_notification_new();
+        n_dbus->app_name = "dunstteststack";
+        n_dbus->expire_timeout = 2147484;
+
+        rule = rule_new("test_match_dbus_timeout");
+        rule->match_dbus_timeout = 2147484000;
+        rule->override_dbus_timeout = 100000;
+
+        gint64 expected_timeout = rule->override_dbus_timeout;
+
+        guint id;
+        ASSERT(dbus_notification_fire(n_dbus, &id));
+        ASSERT(id != 0);
+
+        n = queues_debug_find_notification_by_id(id);
+        ASSERT_EQ_FMT(expected_timeout, n->timeout, "%" G_GINT64_FORMAT);
+
+        dbus_notification_free(n_dbus);
+        rule->enabled = false;
+
+        PASS();
+}
+
+TEST test_timeout(void)
+{
+        struct notification *n;
+        struct dbus_notification *n_dbus;
+        struct rule *rule;
+
+        n_dbus = dbus_notification_new();
+        n_dbus->app_name = "dunstteststack";
+
+        rule = rule_new("test_timeout");
+        rule->appname = "dunstteststack";
+        rule->timeout = 100001;
+
+        gint64 expected_timeout = rule->timeout;
+
+        guint id;
+        ASSERT(dbus_notification_fire(n_dbus, &id));
+        ASSERT(id != 0);
+
+        n = queues_debug_find_notification_by_id(id);
+        ASSERT_EQ_FMT(expected_timeout, n->timeout, "%" G_GINT64_FORMAT);
+
+        dbus_notification_free(n_dbus);
+        rule->enabled = false;
+
+        PASS();
+}
 
 // TESTS END
 
@@ -844,6 +929,9 @@ gpointer run_threaded_tests(gpointer data)
         RUN_TEST(test_close_and_signal);
         RUN_TEST(test_signal_actioninvoked);
         RUN_TEST(test_timeout_overflow);
+        RUN_TEST(test_override_dbus_timeout);
+        RUN_TEST(test_match_dbus_timeout);
+        RUN_TEST(test_timeout);
 
         RUN_TEST(assert_methodlists_sorted);
 

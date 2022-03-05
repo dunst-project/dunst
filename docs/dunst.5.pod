@@ -768,6 +768,13 @@ some other rule.
 
 See C<set_transient> for more details about this attribute.
 
+=item C<match_dbus_timeout>
+
+Matches the dbus timeout of the notification as set by the client or by some
+other rule.
+
+See C<override_dbus_timeout> for more details about this attribute.
+
 =item C<msg_urgency>
 
 Matches the urgency of the notification as set by the client or by some other
@@ -900,6 +907,11 @@ for a list of standard categories.
 =item C<timeout>
 
 Equivalent to the C<timeout> setting in the urgency sections.
+
+=item C<override_dbus_timeout>
+
+Overrides the timeout specified in dbus.
+This takes precedence over C<timeout>.
 
 =item C<urgency>
 

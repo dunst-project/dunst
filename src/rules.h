@@ -26,9 +26,11 @@ struct rule {
         char *stack_tag;
         char *desktop_entry;
         int msg_urgency;
+        gint64 match_dbus_timeout;
 
         /* modifying */
         gint64 timeout; // this has to be the first modifying rule
+        gint64 override_dbus_timeout;
         enum urgency urgency;
         char *action_name;
         enum markup_mode markup;
