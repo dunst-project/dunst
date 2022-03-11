@@ -1477,6 +1477,27 @@ static const struct setting allowed_settings[] = {
                 .parser = NULL,
                 .parser_data = NULL,
         },
+        // custom
+        {
+                .name = "gaps",
+                .section = "global",
+                .description = "Custom",
+                .type = TYPE_CUSTOM,
+                .default_value = "false",
+                .value = &settings.gaps,
+                .parser = string_parse_enum,
+                .parser_data = boolean_enum_data,
+        },
+        {
+                .name = "gap_size",
+                .section = "global",
+                .description = "Custom",
+                .type = TYPE_INT,
+                .default_value = "10",
+                .value = &settings.gap_size,
+                .parser = NULL,
+                .parser_data = NULL,
+        },
 };
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

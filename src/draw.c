@@ -856,17 +856,36 @@ void draw(void)
         LOG_D("Window dimensions %ix%i", dim.w, dim.h);
         double scale = output->get_scale();
 
+        if (settings.gaps) {
+                int extra_height_per_layout = settings.gap_size + (2 * settings.frame_width);
+                int total_extra_height = extra_height_per_layout * g_slist_length(layouts);
+                dim.h += total_extra_height;
+        }
+
         cairo_surface_t *image_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
                                                                     round(dim.w * scale),
                                                                     round(dim.h * scale));
 
         bool first = true;
+        bool last = true;
         for (GSList *iter = layouts; iter; iter = iter->next) {
 
                 struct colored_layout *cl_this = iter->data;
                 struct colored_layout *cl_next = iter->next ? iter->next->data : NULL;
 
-                dim = layout_render(image_surface, cl_this, cl_next, dim, first, !cl_next);
+                last = !cl_next;
+                if (settings.gaps) {
+                        dim.h += settings.gap_size;
+                        // if using gaps, treat each notification as both first
+                        // and last, i.e. a "single" notification
+                        first = true;
+                        last = true;
+                }
+
+                dim = layout_render(image_surface, cl_this, cl_next, dim, first, last);
+                // increment y offset by gap size to create gap between next notification
+                if (settings.gaps)
+                        dim.y += settings.gap_size;
 
                 first = false;
         }
