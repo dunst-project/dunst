@@ -16,8 +16,9 @@ struct notification *get_notification_at(const int y) {
                 }
 
                 curr_y += current->displayed_height + settings.separator_height;
+
                 if(settings.gaps)
-                        curr_y += settings.gap_size + settings.frame_width;
+                        curr_y += settings.gap_size + (settings.frame_width * 2);
         }
         // no matching notification was found
         return NULL;
