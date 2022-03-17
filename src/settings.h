@@ -156,7 +156,6 @@ struct settings {
         int height;
         struct position offset;
         int notification_limit;
-        // custom
         int gap_size;
         bool gaps;
 };

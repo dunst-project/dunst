@@ -1489,11 +1489,10 @@ static const struct setting allowed_settings[] = {
                 .parser = NULL,
                 .parser_data = NULL,
         },
-        // custom
         {
                 .name = "gaps",
                 .section = "global",
-                .description = "Custom",
+                .description = "Enable or disable gaps between notifications",
                 .type = TYPE_CUSTOM,
                 .default_value = "false",
                 .value = &settings.gaps,
@@ -1503,7 +1502,7 @@ static const struct setting allowed_settings[] = {
         {
                 .name = "gap_size",
                 .section = "global",
-                .description = "Custom",
+                .description = "Size of gap between notifications if gaps are enabled",
                 .type = TYPE_INT,
                 .default_value = "10",
                 .value = &settings.gap_size,
