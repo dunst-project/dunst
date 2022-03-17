@@ -851,14 +851,18 @@ void draw(void)
         assert(queues_length_displayed() > 0);
 
         GSList *layouts = create_layouts(output->win_get_context(win));
+        int layout_count = g_slist_length(layouts);
 
         struct dimensions dim = calculate_dimensions(layouts);
         LOG_D("Window dimensions %ix%i", dim.w, dim.h);
         double scale = output->get_scale();
 
         if (settings.gaps) {
-                int extra_height_per_layout = settings.gap_size + (2 * settings.frame_width);
-                int total_extra_height = extra_height_per_layout * g_slist_length(layouts);
+                // very roughly, 2x frame borders and 1x gap size extra height
+                // required per notification to create correct image surface size
+                int extra_frame_height = ((layout_count - 1) * 2) * settings.frame_width;
+                int extra_gap_height = (layout_count * settings.gap_size) - settings.gap_size;
+                int total_extra_height = extra_frame_height + extra_gap_height;
                 dim.h += total_extra_height;
         }
 
@@ -875,17 +879,17 @@ void draw(void)
 
                 last = !cl_next;
                 if (settings.gaps) {
-                        dim.h += settings.gap_size;
                         // if using gaps, treat each notification as both first
-                        // and last, i.e. a "single" notification
+                        // and last to draw both top and bottom frame borders
                         first = true;
                         last = true;
                 }
 
                 dim = layout_render(image_surface, cl_this, cl_next, dim, first, last);
-                // increment y offset by gap size to create gap between next notification
+                // increment y offset by gap size and extra frame width to create blank
+                // gap before drawing next notification
                 if (settings.gaps)
-                        dim.y += settings.gap_size;
+                        dim.y += settings.gap_size + settings.frame_width;
 
                 first = false;
         }
