@@ -125,6 +125,7 @@ struct setting {
 static const struct rule empty_rule = {
         .name            = "empty",
         .appname         = NULL,
+        .action_name     = NULL,
         .summary         = NULL,
         .body            = NULL,
         .icon            = NULL,
@@ -472,6 +473,17 @@ static const struct setting allowed_settings[] = {
                 .parser = NULL,
                 .parser_data = NULL,
                 .rule_offset = offsetof(struct rule, bg),
+        },
+        {
+                .name = "action_name",
+                .section = "*",
+                .description = "Sets the name of the action to be invoked on do_action.",
+                .type = TYPE_STRING,
+                .default_value = "*",
+                .value = NULL,
+                .parser = NULL,
+                .parser_data = NULL,
+                .rule_offset = offsetof(struct rule, action_name),
         },
         {
                 .name = "foreground",

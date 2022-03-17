@@ -328,6 +328,9 @@ a literal newline.
 If any of the following strings are present, they will be replaced with the
 equivalent notification attribute.
 
+For a complete markup reference, see
+<https://docs.gtk.org/Pango/pango_markup.html>.
+
 =over 4
 
 =item B<%a>  appname
