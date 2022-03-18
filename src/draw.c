@@ -298,7 +298,8 @@ static struct dimensions calculate_dimensions(GSList *layouts)
         double scale = output->get_scale();
 
         dim.h += 2 * settings.frame_width;
-        dim.h += (layout_count - 1) * settings.separator_height;
+        if (!settings.gaps)
+                dim.h += (layout_count - 1) * settings.separator_height;
 
         dim.corner_radius = settings.corner_radius;
 
