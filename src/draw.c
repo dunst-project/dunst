@@ -293,11 +293,12 @@ static struct dimensions calculate_notification_dimensions(struct colored_layout
 
 static struct dimensions calculate_dimensions(GSList *layouts)
 {
+        int layout_count = g_slist_length(layouts);
         struct dimensions dim = { 0 };
         double scale = output->get_scale();
 
         dim.h += 2 * settings.frame_width;
-        dim.h += (g_slist_length(layouts) - 1) * settings.separator_height;
+        dim.h += (layout_count - 1) * settings.separator_height;
 
         dim.corner_radius = settings.corner_radius;
 
@@ -317,6 +318,15 @@ static struct dimensions calculate_dimensions(GSList *layouts)
         int max_width = scr->w - settings.offset.x;
         if (dim.w > max_width) {
                 dim.w = max_width;
+        }
+
+        if (settings.gaps) {
+                // very roughly, 2x frame borders and 1x gap size extra height
+                // required per notification to create correct image surface size
+                int extra_frame_height = ((layout_count - 1) * 2) * settings.frame_width;
+                int extra_gap_height = (layout_count * settings.gap_size) - settings.gap_size;
+                int total_extra_height = extra_frame_height + extra_gap_height;
+                dim.h += total_extra_height;
         }
 
         return dim;
@@ -773,6 +783,13 @@ static struct dimensions layout_render(cairo_surface_t *srf,
         int bg_width = 0;
         int bg_height = MIN(settings.height, (2 * settings.padding) + cl_h);
 
+        if (settings.gaps) {
+                // if using gaps, treat each notification as both first
+                // and last to draw both top and bottom frame borders
+                first = true;
+                last = true;
+        }
+
         cairo_surface_t *content = render_background(srf, cl, cl_next, dim.y, dim.w, bg_height, dim.corner_radius, first, last, &bg_width, scale);
         cairo_t *c = cairo_create(content);
 
@@ -790,6 +807,11 @@ static struct dimensions layout_render(cairo_surface_t *srf,
                 dim.y += cl_h + 2 * settings.padding;
         else
                 dim.y += settings.height;
+
+        // increment y offset by gap size and extra frame width to create blank
+        // gap before drawing next notification
+        if (settings.gaps)
+                dim.y += settings.gap_size + settings.frame_width;
 
         cairo_destroy(c);
         cairo_surface_destroy(content);
@@ -851,45 +873,22 @@ void draw(void)
         assert(queues_length_displayed() > 0);
 
         GSList *layouts = create_layouts(output->win_get_context(win));
-        int layout_count = g_slist_length(layouts);
 
         struct dimensions dim = calculate_dimensions(layouts);
         LOG_D("Window dimensions %ix%i", dim.w, dim.h);
         double scale = output->get_scale();
-
-        if (settings.gaps) {
-                // very roughly, 2x frame borders and 1x gap size extra height
-                // required per notification to create correct image surface size
-                int extra_frame_height = ((layout_count - 1) * 2) * settings.frame_width;
-                int extra_gap_height = (layout_count * settings.gap_size) - settings.gap_size;
-                int total_extra_height = extra_frame_height + extra_gap_height;
-                dim.h += total_extra_height;
-        }
 
         cairo_surface_t *image_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
                                                                     round(dim.w * scale),
                                                                     round(dim.h * scale));
 
         bool first = true;
-        bool last = true;
         for (GSList *iter = layouts; iter; iter = iter->next) {
 
                 struct colored_layout *cl_this = iter->data;
                 struct colored_layout *cl_next = iter->next ? iter->next->data : NULL;
 
-                last = !cl_next;
-                if (settings.gaps) {
-                        // if using gaps, treat each notification as both first
-                        // and last to draw both top and bottom frame borders
-                        first = true;
-                        last = true;
-                }
-
-                dim = layout_render(image_surface, cl_this, cl_next, dim, first, last);
-                // increment y offset by gap size and extra frame width to create blank
-                // gap before drawing next notification
-                if (settings.gaps)
-                        dim.y += settings.gap_size + settings.frame_width;
+                dim = layout_render(image_surface, cl_this, cl_next, dim, first, !cl_next);
 
                 first = false;
         }
