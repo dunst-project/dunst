@@ -322,8 +322,8 @@ static struct dimensions calculate_dimensions(GSList *layouts)
         }
 
         if (settings.gaps) {
-                // very roughly, 2x frame borders and 1x gap size extra height
-                // required per notification to create correct image surface size
+                // roughly 2x frame borders and 1x gap size extra height required
+                // per notification to create correct image surface size
                 int extra_frame_height = ((layout_count - 1) * 2) * settings.frame_width;
                 int extra_gap_height = (layout_count * settings.gap_size) - settings.gap_size;
                 int total_extra_height = extra_frame_height + extra_gap_height;

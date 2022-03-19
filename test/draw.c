@@ -2,7 +2,6 @@
 #include "greatest.h"
 #include "helpers.h"
 #include <cairo.h>
-#include <glib.h>
 
 cairo_t *c;
 
@@ -242,7 +241,6 @@ TEST test_layout_render_no_gaps(void)
 
         bool first = true;
         for (GSList *iter = layouts; iter; iter = iter->next) {
-
                 struct colored_layout *cl_this = iter->data;
                 struct colored_layout *cl_next = iter->next ? iter->next->data : NULL;
 
@@ -280,7 +278,6 @@ TEST test_layout_render_gaps(void)
 
         bool first = true;
         for (GSList *iter = layouts; iter; iter = iter->next) {
-
                 struct colored_layout *cl_this = iter->data;
                 struct colored_layout *cl_next = iter->next ? iter->next->data : NULL;
 
