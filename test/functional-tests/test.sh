@@ -243,6 +243,26 @@ function hide_text {
     keypress
 }
 
+function gaps {
+    echo "###################################"
+    echo "gaps"
+    echo "###################################"
+    start_dunst dunstrc.gaps
+    CHOICE=$(../../dunstify -a "dunst tester" -A "default,Default" -A "optional,Optional" "Gap demo 1 - click me" -u l) \
+        && echo Clicked $CHOICE for \#1 &
+    CHOICE=$(../../dunstify -a "dunst tester" -A "default,Default" -A "optional,Optional" "Gap demo 2 - click me" -u n) \
+        && echo Clicked $CHOICE for \#2 &
+    CHOICE=$(../../dunstify -a "dunst tester" -A "default,Default" -A "optional,Optional" "Gap demo 3 - click me" -u c) \
+        && echo Clicked $CHOICE for \#3 &
+    CHOICE=$(../../dunstify -a "dunst tester" -A "default,Default" -A "optional,Optional" "Gap demo 4 - click me" -u l) \
+        && echo Clicked $CHOICE for \#4 &
+    CHOICE=$(../../dunstify -a "dunst tester" -A "default,Default" -A "optional,Optional" "Gap demo 5 - click me" -u n) \
+        && echo Clicked $CHOICE for \#5 &
+    CHOICE=$(../../dunstify -a "dunst tester" -A "default,Default" -A "optional,Optional" "Gap demo 6 - click me" -u c) \
+        && echo Clicked $CHOICE for \#6 &
+    keypress
+}
+
 if [ -n "$1" ]; then
     while [ -n "$1" ]; do
         $1
@@ -261,6 +281,7 @@ else
     progress_bar
     icon_position
     hide_text
+    gaps
 fi
 
 killall dunst
