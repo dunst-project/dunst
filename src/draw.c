@@ -512,7 +512,7 @@ void draw_rounded_rect(cairo_t *c, int x, int y, int width, int height, int corn
 
         cairo_new_sub_path(c);
 
-        if (last) {
+        if (last || settings.gaps) {
                 // bottom right
                 cairo_arc(c,
                           x + width - corner_radius,
@@ -532,7 +532,7 @@ void draw_rounded_rect(cairo_t *c, int x, int y, int width, int height, int corn
                 cairo_line_to(c, x,         y + height);
         }
 
-        if (first) {
+        if (first || settings.gaps) {
                 // top left
                 cairo_arc(c,
                           x + corner_radius,
@@ -585,9 +585,9 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
         /* for correct combination of adjacent areas */
         cairo_set_operator(c, CAIRO_OPERATOR_ADD);
 
-        if (first)
+        if (first || settings.gaps)
                 height += settings.frame_width;
-        if (last)
+        if (last || settings.gaps)
                 height += settings.frame_width;
         else
                 height += settings.separator_height;
@@ -596,14 +596,14 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
 
         /* adding frame */
         x += settings.frame_width;
-        if (first) {
+        if (first || settings.gaps) {
                 y += settings.frame_width;
                 height -= settings.frame_width;
         }
 
         width -= 2 * settings.frame_width;
 
-        if (last)
+        if (last || settings.gaps)
                 height -= settings.frame_width;
         else
                 height -= settings.separator_height;
@@ -784,23 +784,19 @@ static struct dimensions layout_render(cairo_surface_t *srf,
         int bg_width = 0;
         int bg_height = MIN(settings.height, (2 * settings.padding) + cl_h);
 
-        if (settings.gaps) {
-                // if using gaps, treat each notification as both first
-                // and last to draw both top and bottom frame borders
-                first = true;
-                last = true;
-        }
-
         cairo_surface_t *content = render_background(srf, cl, cl_next, dim.y, dim.w, bg_height, dim.corner_radius, first, last, &bg_width, scale);
         cairo_t *c = cairo_create(content);
 
         render_content(c, cl, bg_width, scale);
 
         /* adding frame */
-        if (first)
+        if (first || settings.gaps)
                 dim.y += settings.frame_width;
 
-        if (!last)
+        if (last || settings.gaps)
+                dim.y += settings.frame_width;
+
+        if (!last && !settings.gaps)
                 dim.y += settings.separator_height;
 
 
@@ -810,9 +806,9 @@ static struct dimensions layout_render(cairo_surface_t *srf,
                 dim.y += settings.height;
 
         // increment y offset by gap size and extra frame width to create blank
-        // gap before drawing next notification
-        if (settings.gaps)
-                dim.y += settings.gap_size + settings.frame_width;
+        // gap before drawing next notifications
+        if (settings.gaps && !last)
+                dim.y += settings.gap_size;
 
         cairo_destroy(c);
         cairo_surface_destroy(content);
