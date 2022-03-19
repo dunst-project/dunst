@@ -6,7 +6,7 @@
 
 cairo_t *c;
 
-double dummy_get_scale() { return 1; }
+double get_dummy_scale() { return 1; }
 
 const struct screen_info* noop_screen(void) {
         static struct screen_info i;
@@ -31,21 +31,35 @@ const struct output dummy_output = {
         x_is_idle,
         have_fullscreen_window,
 
-        dummy_get_scale,
+        get_dummy_scale,
 };
 
-GSList *get_dummy_layouts(int count) {
-        GSList *layouts = NULL;
+GSList *get_dummy_notifications(int count) {
+        GSList *notifications = NULL;
 
-        for(int i=0;i<count;i++) {
+        for (int i = 0; i < count; i++) {
                 struct notification *n = test_notification("test", 10);
                 n->icon_position = ICON_LEFT;
                 n->text_to_render = g_strdup("dummy layout");
-                struct colored_layout *cl = layout_from_notification(c, n);
-                layouts = g_slist_append(layouts, cl);
+                notifications = g_slist_append(notifications, n);
         }
+        return notifications;
+}
 
+GSList *get_dummy_layouts(GSList *notifications) {
+        GSList *layouts = NULL;
+
+        for (GSList *iter = notifications; iter; iter = iter->next) {
+                struct colored_layout *cl = layout_from_notification(c, iter->data);
+                layouts = g_slist_append(layouts, cl);
+
+        }
         return layouts;
+}
+
+void free_dummy_notification(void *notification) {
+        // wrapper function to work with g_slist_free_full
+        notification_unref((struct notification *) notification);
 }
 
 void set_small_max_height() {
@@ -133,27 +147,37 @@ TEST test_calculate_dimensions_height_no_gaps(void)
         set_small_max_height();
         settings.gaps = 0;
         int layout_count;
+        GSList *notifications;
         GSList *layouts;
         struct dimensions dim;
         int expected_height;
 
         layout_count = 1;
-        layouts = get_dummy_layouts(layout_count);
+        notifications = get_dummy_notifications(layout_count);
+        layouts = get_dummy_layouts(notifications);
         dim = calculate_dimensions(layouts);
         expected_height = get_expected_dimension_height(layout_count);
         ASSERT(dim.h == expected_height);
+        g_slist_free_full(layouts, free_colored_layout);
+        g_slist_free_full(notifications, free_dummy_notification);
 
         layout_count = 2;
-        layouts = get_dummy_layouts(layout_count);
+        notifications = get_dummy_notifications(layout_count);
+        layouts = get_dummy_layouts(notifications);
         dim = calculate_dimensions(layouts);
         expected_height = get_expected_dimension_height(layout_count);
         ASSERT(dim.h == expected_height);
+        g_slist_free_full(layouts, free_colored_layout);
+        g_slist_free_full(notifications, free_dummy_notification);
 
         layout_count = 3;
-        layouts = get_dummy_layouts(layout_count);
+        notifications = get_dummy_notifications(layout_count);
+        layouts = get_dummy_layouts(notifications);
         dim = calculate_dimensions(layouts);
         expected_height = get_expected_dimension_height(layout_count);
         ASSERT(dim.h == expected_height);
+        g_slist_free_full(layouts, free_colored_layout);
+        g_slist_free_full(notifications, free_dummy_notification);
 
         PASS();
 }
@@ -164,27 +188,37 @@ TEST test_calculate_dimensions_height_gaps(void)
         settings.gaps = 1;
         settings.gap_size = 27;
         int layout_count;
+        GSList *notifications;
         GSList *layouts;
         struct dimensions dim;
         int expected_height;
 
         layout_count = 1;
-        layouts = get_dummy_layouts(layout_count);
+        notifications = get_dummy_notifications(layout_count);
+        layouts = get_dummy_layouts(notifications);
         dim = calculate_dimensions(layouts);
         expected_height = get_expected_dimension_height(layout_count);
         ASSERT(dim.h == expected_height);
+        g_slist_free_full(layouts, free_colored_layout);
+        g_slist_free_full(notifications, free_dummy_notification);
 
         layout_count = 2;
-        layouts = get_dummy_layouts(layout_count);
+        notifications = get_dummy_notifications(layout_count);
+        layouts = get_dummy_layouts(notifications);
         dim = calculate_dimensions(layouts);
         expected_height = get_expected_dimension_height(layout_count);
         ASSERT(dim.h == expected_height);
+        g_slist_free_full(layouts, free_colored_layout);
+        g_slist_free_full(notifications, free_dummy_notification);
 
         layout_count = 3;
-        layouts = get_dummy_layouts(layout_count);
+        notifications = get_dummy_notifications(layout_count);
+        layouts = get_dummy_layouts(notifications);
         dim = calculate_dimensions(layouts);
         expected_height = get_expected_dimension_height(layout_count);
         ASSERT(dim.h == expected_height);
+        g_slist_free_full(layouts, free_colored_layout);
+        g_slist_free_full(notifications, free_dummy_notification);
 
         PASS();
 }
@@ -194,13 +228,15 @@ TEST test_layout_render_no_gaps(void)
         set_small_max_height();
         settings.gaps = 0;
         int layout_count;
+        GSList *notifications;
         GSList *layouts;
         struct dimensions dim;
         cairo_surface_t *image_surface;
         int expected_y;
 
         layout_count = 3;
-        layouts = get_dummy_layouts(layout_count);
+        notifications = get_dummy_notifications(layout_count);
+        layouts = get_dummy_layouts(notifications);
         dim = calculate_dimensions(layouts);
         image_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 1, 1);
 
@@ -218,6 +254,9 @@ TEST test_layout_render_no_gaps(void)
         expected_y = get_expected_dimension_y_offset(layout_count);
         ASSERT(dim.y == expected_y);
 
+        g_slist_free_full(layouts, free_colored_layout);
+        g_slist_free_full(notifications, free_dummy_notification);
+        cairo_surface_destroy(image_surface);
         PASS();
 }
 
@@ -227,13 +266,15 @@ TEST test_layout_render_gaps(void)
         settings.gaps = 1;
         settings.gap_size = 27;
         int layout_count;
+        GSList *notifications;
         GSList *layouts;
         struct dimensions dim;
         cairo_surface_t *image_surface;
         int expected_y;
 
         layout_count = 3;
-        layouts = get_dummy_layouts(layout_count);
+        notifications = get_dummy_notifications(layout_count);
+        layouts = get_dummy_layouts(notifications);
         dim = calculate_dimensions(layouts);
         image_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 1, 1);
 
@@ -251,9 +292,11 @@ TEST test_layout_render_gaps(void)
         expected_y = get_expected_dimension_y_offset(layout_count);
         ASSERT(dim.y == expected_y);
 
+        g_slist_free_full(layouts, free_colored_layout);
+        g_slist_free_full(notifications, free_dummy_notification);
+        cairo_surface_destroy(image_surface);
         PASS();
 }
-
 
 SUITE(suite_draw)
 {
@@ -270,4 +313,9 @@ SUITE(suite_draw)
                         RUN_TEST(test_layout_render_no_gaps);
                         RUN_TEST(test_layout_render_gaps);
         });
+
+        // suppresses valgrind error in pango_layout_get_pixel_size by
+        // unreffing the default font map
+        // https://docs.gtk.org/PangoCairo/method.FontMap.set_default.html
+        pango_cairo_font_map_set_default(NULL);
 }
