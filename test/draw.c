@@ -48,6 +48,46 @@ GSList *get_dummy_layouts(int count) {
         return layouts;
 }
 
+void set_small_max_height() {
+        // to keep test calculations simpler, set max height small to
+        // only test cases where height is not dynamically determined
+        // by notification content
+        // future tests targeting dynamic sizing logic could be added
+        // to address this limitation
+        settings.height = 10;
+}
+
+int get_expected_dimension_height(int layout_count) {
+        // assumes settings.height == notification height, see set_small_max_height
+        int separator_height = (layout_count - 1) * settings.separator_height;
+        int gap_size = (layout_count - 1) * settings.gap_size;
+        int height = settings.height * layout_count;
+        int frame_width;
+        int expected_height;
+        if(settings.gaps) {
+                frame_width = layout_count * (2 * settings.frame_width);
+                expected_height = height + frame_width + gap_size;
+        } else {
+                frame_width = 2 * settings.frame_width;
+                expected_height = separator_height + height + frame_width;
+        }
+        return expected_height;
+}
+
+int get_expected_dimension_y_offset(int layout_count) {
+        // assumes settings.height == notification height, see set_small_max_height
+        int expected_y = 0;
+        expected_y += (layout_count * (settings.height));
+        if(settings.gaps) {
+                expected_y += (layout_count * settings.frame_width * 2);
+                expected_y += ((layout_count - 1) * (settings.gap_size));
+        } else {
+                expected_y += (2 * settings.frame_width);
+                expected_y += ((layout_count - 1) * (settings.separator_height));
+        }
+        return expected_y;
+}
+
 TEST test_layout_from_notification(void)
 {
         struct notification *n = test_notification_with_icon("test", 10);
@@ -90,46 +130,29 @@ TEST test_layout_from_notification_no_icon(void)
 
 TEST test_calculate_dimensions_height_no_gaps(void)
 {
-        // to keep test calculations simpler, set max height small to
-        // only test cases where height is not dynamically determined
-        // by notification content
-        // future tests targeting dynamic sizing logic could be added
-        // to address this limitation
-        settings.height = 10;
+        set_small_max_height();
         settings.gaps = 0;
         int layout_count;
         GSList *layouts;
         struct dimensions dim;
-        int separator_height;
-        int height;
-        int frame_width;
         int expected_height;
 
         layout_count = 1;
         layouts = get_dummy_layouts(layout_count);
         dim = calculate_dimensions(layouts);
-        separator_height = (layout_count - 1) * settings.separator_height;
-        height = settings.height * layout_count;
-        frame_width = 2 * settings.frame_width;
-        expected_height = separator_height + height + frame_width;
+        expected_height = get_expected_dimension_height(layout_count);
         ASSERT(dim.h == expected_height);
 
         layout_count = 2;
         layouts = get_dummy_layouts(layout_count);
         dim = calculate_dimensions(layouts);
-        separator_height = (layout_count - 1) * settings.separator_height;
-        height = settings.height * layout_count;
-        frame_width = 2 * settings.frame_width;
-        expected_height = separator_height + height + frame_width;
+        expected_height = get_expected_dimension_height(layout_count);
         ASSERT(dim.h == expected_height);
 
         layout_count = 3;
         layouts = get_dummy_layouts(layout_count);
         dim = calculate_dimensions(layouts);
-        separator_height = (layout_count - 1) * settings.separator_height;
-        height = settings.height * layout_count;
-        frame_width = 2 * settings.frame_width;
-        expected_height = separator_height + height + frame_width;
+        expected_height = get_expected_dimension_height(layout_count);
         ASSERT(dim.h == expected_height);
 
         PASS();
@@ -137,52 +160,100 @@ TEST test_calculate_dimensions_height_no_gaps(void)
 
 TEST test_calculate_dimensions_height_gaps(void)
 {
-        // to keep test calculations simpler, set max height small to
-        // only test cases where height is not dynamically determined
-        // by notification content
-        // future tests targeting dynamic sizing logic could be added
-        // to address this limitation
-        settings.height = 10;
+        set_small_max_height();
         settings.gaps = 1;
         settings.gap_size = 27;
         int layout_count;
         GSList *layouts;
         struct dimensions dim;
-        int height;
-        int frame_width;
         int expected_height;
-        int gap_size;
-        int separator_height = 0;
 
         layout_count = 1;
         layouts = get_dummy_layouts(layout_count);
         dim = calculate_dimensions(layouts);
-        height = settings.height * layout_count;
-        frame_width = layout_count * (2 * settings.frame_width);
-        gap_size = (layout_count - 1) * settings.gap_size;
-        expected_height = height + frame_width + gap_size + separator_height;
+        expected_height = get_expected_dimension_height(layout_count);
         ASSERT(dim.h == expected_height);
 
         layout_count = 2;
         layouts = get_dummy_layouts(layout_count);
         dim = calculate_dimensions(layouts);
-        height = settings.height * layout_count;
-        frame_width = layout_count * (2 * settings.frame_width);
-        gap_size = (layout_count - 1) * settings.gap_size;
-        expected_height = height + frame_width + gap_size + separator_height;
+        expected_height = get_expected_dimension_height(layout_count);
         ASSERT(dim.h == expected_height);
 
         layout_count = 3;
         layouts = get_dummy_layouts(layout_count);
         dim = calculate_dimensions(layouts);
-        height = settings.height * layout_count;
-        frame_width = layout_count * (2 * settings.frame_width);
-        gap_size = (layout_count - 1) * settings.gap_size;
-        expected_height = height + frame_width + gap_size + separator_height;
+        expected_height = get_expected_dimension_height(layout_count);
         ASSERT(dim.h == expected_height);
 
         PASS();
 }
+
+TEST test_layout_render_no_gaps(void)
+{
+        set_small_max_height();
+        settings.gaps = 0;
+        int layout_count;
+        GSList *layouts;
+        struct dimensions dim;
+        cairo_surface_t *image_surface;
+        int expected_y;
+
+        layout_count = 3;
+        layouts = get_dummy_layouts(layout_count);
+        dim = calculate_dimensions(layouts);
+        image_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 1, 1);
+
+        bool first = true;
+        for (GSList *iter = layouts; iter; iter = iter->next) {
+
+                struct colored_layout *cl_this = iter->data;
+                struct colored_layout *cl_next = iter->next ? iter->next->data : NULL;
+
+                dim = layout_render(image_surface, cl_this, cl_next, dim, first, !cl_next);
+
+                first = false;
+        }
+
+        expected_y = get_expected_dimension_y_offset(layout_count);
+        ASSERT(dim.y == expected_y);
+
+        PASS();
+}
+
+TEST test_layout_render_gaps(void)
+{
+        set_small_max_height();
+        settings.gaps = 1;
+        settings.gap_size = 27;
+        int layout_count;
+        GSList *layouts;
+        struct dimensions dim;
+        cairo_surface_t *image_surface;
+        int expected_y;
+
+        layout_count = 3;
+        layouts = get_dummy_layouts(layout_count);
+        dim = calculate_dimensions(layouts);
+        image_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 1, 1);
+
+        bool first = true;
+        for (GSList *iter = layouts; iter; iter = iter->next) {
+
+                struct colored_layout *cl_this = iter->data;
+                struct colored_layout *cl_next = iter->next ? iter->next->data : NULL;
+
+                dim = layout_render(image_surface, cl_this, cl_next, dim, first, !cl_next);
+
+                first = false;
+        }
+
+        expected_y = get_expected_dimension_y_offset(layout_count);
+        ASSERT(dim.y == expected_y);
+
+        PASS();
+}
+
 
 SUITE(suite_draw)
 {
@@ -196,5 +267,7 @@ SUITE(suite_draw)
                         RUN_TEST(test_layout_from_notification_no_icon);
                         RUN_TEST(test_calculate_dimensions_height_no_gaps);
                         RUN_TEST(test_calculate_dimensions_height_gaps);
+                        RUN_TEST(test_layout_render_no_gaps);
+                        RUN_TEST(test_layout_render_gaps);
         });
 }
