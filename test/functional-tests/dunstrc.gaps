@@ -21,4 +21,3 @@
     mouse_left_click = do_action
     mouse_middle_click = close_current
     mouse_right_click = context
-
