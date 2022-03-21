@@ -810,12 +810,12 @@ void calc_window_pos(const struct screen_info *scr, int width, int height, int *
                 case ORIGIN_TOP_LEFT:
                 case ORIGIN_LEFT_CENTER:
                 case ORIGIN_BOTTOM_LEFT:
-                        *ret_x = scr->x + settings.offset.x;
+                        *ret_x = scr->x + round(settings.offset.x * draw_get_scale());
                         break;
                 case ORIGIN_TOP_RIGHT:
                 case ORIGIN_RIGHT_CENTER:
                 case ORIGIN_BOTTOM_RIGHT:
-                        *ret_x = scr->x + (scr->w - width) - settings.offset.x;
+                        *ret_x = scr->x + (scr->w - width) - round(settings.offset.x * draw_get_scale());
                         break;
                 case ORIGIN_TOP_CENTER:
                 case ORIGIN_CENTER:
@@ -830,12 +830,12 @@ void calc_window_pos(const struct screen_info *scr, int width, int height, int *
                 case ORIGIN_TOP_LEFT:
                 case ORIGIN_TOP_CENTER:
                 case ORIGIN_TOP_RIGHT:
-                        *ret_y = scr->y + settings.offset.y;
+                        *ret_y = scr->y + round(settings.offset.y * draw_get_scale());
                         break;
                 case ORIGIN_BOTTOM_LEFT:
                 case ORIGIN_BOTTOM_CENTER:
                 case ORIGIN_BOTTOM_RIGHT:
-                        *ret_y = scr->y + (scr->h - height) - settings.offset.y;
+                        *ret_y = scr->y + (scr->h - height) - round(settings.offset.y * draw_get_scale());
                         break;
                 case ORIGIN_LEFT_CENTER:
                 case ORIGIN_CENTER:
