@@ -297,10 +297,6 @@ static struct dimensions calculate_dimensions(GSList *layouts)
         struct dimensions dim = { 0 };
         double scale = output->get_scale();
 
-        dim.h += 2 * settings.frame_width;
-        if (!settings.gaps)
-                dim.h += (layout_count - 1) * settings.separator_height;
-
         dim.corner_radius = settings.corner_radius;
 
         for (GSList *iter = layouts; iter; iter = iter->next) {
@@ -322,12 +318,13 @@ static struct dimensions calculate_dimensions(GSList *layouts)
         }
 
         if (settings.gaps) {
-                // roughly 2x frame borders and 1x gap size extra height required
-                // per notification to create correct image surface size
-                int extra_frame_height = ((layout_count - 1) * 2) * settings.frame_width;
+                int extra_frame_height = layout_count * (2 * settings.frame_width);
                 int extra_gap_height = (layout_count * settings.gap_size) - settings.gap_size;
                 int total_extra_height = extra_frame_height + extra_gap_height;
                 dim.h += total_extra_height;
+        } else {
+                dim.h += 2 * settings.frame_width;
+                dim.h += (layout_count - 1) * settings.separator_height;
         }
 
         return dim;
@@ -512,7 +509,7 @@ void draw_rounded_rect(cairo_t *c, int x, int y, int width, int height, int corn
 
         cairo_new_sub_path(c);
 
-        if (last || settings.gaps) {
+        if (last) {
                 // bottom right
                 cairo_arc(c,
                           x + width - corner_radius,
@@ -532,7 +529,7 @@ void draw_rounded_rect(cairo_t *c, int x, int y, int width, int height, int corn
                 cairo_line_to(c, x,         y + height);
         }
 
-        if (first || settings.gaps) {
+        if (first) {
                 // top left
                 cairo_arc(c,
                           x + corner_radius,
@@ -585,9 +582,9 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
         /* for correct combination of adjacent areas */
         cairo_set_operator(c, CAIRO_OPERATOR_ADD);
 
-        if (first || settings.gaps)
+        if (first)
                 height += settings.frame_width;
-        if (last || settings.gaps)
+        if (last)
                 height += settings.frame_width;
         else
                 height += settings.separator_height;
@@ -596,14 +593,14 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
 
         /* adding frame */
         x += settings.frame_width;
-        if (first || settings.gaps) {
+        if (first) {
                 y += settings.frame_width;
                 height -= settings.frame_width;
         }
 
         width -= 2 * settings.frame_width;
 
-        if (last || settings.gaps)
+        if (last)
                 height -= settings.frame_width;
         else
                 height -= settings.separator_height;
@@ -790,25 +787,21 @@ static struct dimensions layout_render(cairo_surface_t *srf,
         render_content(c, cl, bg_width, scale);
 
         /* adding frame */
-        if (first || settings.gaps)
+        if (first)
                 dim.y += settings.frame_width;
 
-        if (last || settings.gaps)
+        if (last)
                 dim.y += settings.frame_width;
-
-        if (!last && !settings.gaps)
-                dim.y += settings.separator_height;
-
 
         if ((2 * settings.padding + cl_h) < settings.height)
                 dim.y += cl_h + 2 * settings.padding;
         else
                 dim.y += settings.height;
 
-        // increment y offset by gap size and extra frame width to create blank
-        // gap before drawing next notifications
-        if (settings.gaps && !last)
+        if (settings.gaps)
                 dim.y += settings.gap_size;
+        else
+                dim.y += settings.separator_height;
 
         cairo_destroy(c);
         cairo_surface_destroy(content);
@@ -880,12 +873,19 @@ void draw(void)
                                                                     round(dim.h * scale));
 
         bool first = true;
+        bool last = true;
         for (GSList *iter = layouts; iter; iter = iter->next) {
 
                 struct colored_layout *cl_this = iter->data;
                 struct colored_layout *cl_next = iter->next ? iter->next->data : NULL;
+                last = !cl_next;
 
-                dim = layout_render(image_surface, cl_this, cl_next, dim, first, !cl_next);
+                if (settings.gaps) {
+                        first = true;
+                        last = true;
+                }
+
+                dim = layout_render(image_surface, cl_this, cl_next, dim, first, last);
 
                 first = false;
         }

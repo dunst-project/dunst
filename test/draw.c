@@ -73,30 +73,29 @@ void set_small_max_height() {
 int get_expected_dimension_height(int layout_count) {
         // assumes settings.height == notification height, see set_small_max_height
         int separator_height = (layout_count - 1) * settings.separator_height;
-        int gap_size = (layout_count - 1) * settings.gap_size;
+        int total_gap_size = (layout_count - 1) * settings.gap_size;
         int height = settings.height * layout_count;
-        int frame_width;
+        int frame_width_total_height;
         int expected_height;
         if(settings.gaps) {
-                frame_width = layout_count * (2 * settings.frame_width);
-                expected_height = height + frame_width + gap_size;
+                frame_width_total_height = layout_count * (2 * settings.frame_width);
+                expected_height = height + frame_width_total_height + total_gap_size;
         } else {
-                frame_width = 2 * settings.frame_width;
-                expected_height = separator_height + height + frame_width;
+                frame_width_total_height = 2 * settings.frame_width;
+                expected_height = separator_height + height + frame_width_total_height;
         }
         return expected_height;
 }
 
 int get_expected_dimension_y_offset(int layout_count) {
         // assumes settings.height == notification height, see set_small_max_height
-        int expected_y = 0;
-        expected_y += (layout_count * (settings.height));
+        int expected_y = layout_count * settings.height;
         if(settings.gaps) {
-                expected_y += (layout_count * settings.frame_width * 2);
-                expected_y += ((layout_count - 1) * (settings.gap_size));
+                expected_y += (layout_count * (2 * settings.frame_width));
+                expected_y += (layout_count * settings.gap_size);
         } else {
                 expected_y += (2 * settings.frame_width);
-                expected_y += ((layout_count - 1) * (settings.separator_height));
+                expected_y += (layout_count * settings.separator_height);
         }
         return expected_y;
 }
@@ -276,14 +275,11 @@ TEST test_layout_render_gaps(void)
         dim = calculate_dimensions(layouts);
         image_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 1, 1);
 
-        bool first = true;
         for (GSList *iter = layouts; iter; iter = iter->next) {
                 struct colored_layout *cl_this = iter->data;
                 struct colored_layout *cl_next = iter->next ? iter->next->data : NULL;
 
-                dim = layout_render(image_surface, cl_this, cl_next, dim, first, !cl_next);
-
-                first = false;
+                dim = layout_render(image_surface, cl_this, cl_next, dim, true, true);
         }
 
         expected_y = get_expected_dimension_y_offset(layout_count);
