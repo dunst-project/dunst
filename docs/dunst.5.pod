@@ -240,6 +240,16 @@ is equivalent to
 Defines width in pixels of frame around the notification window. Set to 0 to
 disable.
 
+=item B<gaps> (values: [true/false], default: false)
+
+If set to true, display a gap of size B<gap_size> between notifications.
+
+This setting requires a compositor and any applications displayed between the gaps are not currently clickable.
+
+=item B<gap_size> (default: 10)
+
+Size of gap to display between notifications if B<gaps> is set to true.
+
 =item B<separator_color> (values: [auto/foreground/frame/#RRGGBB] default: frame)
 
 Sets the color of the separator line between two notifications.
