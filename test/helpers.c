@@ -67,4 +67,14 @@ struct notification *test_notification_with_icon(const char *name, gint64 timeou
         return n;
 }
 
+void pango_memory_cleanup()
+{
+        // unrefs the default font map
+        // https://docs.gtk.org/PangoCairo/method.FontMap.set_default.html
+        pango_cairo_font_map_set_default(NULL);
+        // frees all data structures allocated by previous calls to fontconfig functions
+        // https://www.freedesktop.org/software/fontconfig/fontconfig-devel/fcfini.html
+        FcFini();
+}
+
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

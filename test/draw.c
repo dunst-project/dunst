@@ -33,7 +33,8 @@ const struct output dummy_output = {
         get_dummy_scale,
 };
 
-GSList *get_dummy_notifications(int count) {
+GSList *get_dummy_notifications(int count)
+{
         GSList *notifications = NULL;
 
         for (int i = 0; i < count; i++) {
@@ -45,7 +46,8 @@ GSList *get_dummy_notifications(int count) {
         return notifications;
 }
 
-GSList *get_dummy_layouts(GSList *notifications) {
+GSList *get_dummy_layouts(GSList *notifications)
+{
         GSList *layouts = NULL;
 
         for (GSList *iter = notifications; iter; iter = iter->next) {
@@ -56,22 +58,26 @@ GSList *get_dummy_layouts(GSList *notifications) {
         return layouts;
 }
 
-void free_dummy_notification(void *notification) {
+void free_dummy_notification(void *notification)
+{
         // wrapper function to work with g_slist_free_full
         notification_unref((struct notification *) notification);
 }
 
-void set_small_max_height() {
+int get_small_max_height()
+{
         // to keep test calculations simpler, set max height small to
         // only test cases where height is not dynamically determined
         // by notification content
         // future tests targeting dynamic sizing logic could be added
         // to address this limitation
-        settings.height = 10;
+        int small_max_height = 10;
+        return small_max_height;
 }
 
-int get_expected_dimension_height(int layout_count) {
-        // assumes settings.height == notification height, see set_small_max_height
+int get_expected_dimension_height(int layout_count)
+{
+        // assumes settings.height == notification height, see get_small_max_height
         int separator_height = (layout_count - 1) * settings.separator_height;
         int total_gap_size = (layout_count - 1) * settings.gap_size;
         int height = settings.height * layout_count;
@@ -87,8 +93,9 @@ int get_expected_dimension_height(int layout_count) {
         return expected_height;
 }
 
-int get_expected_dimension_y_offset(int layout_count) {
-        // assumes settings.height == notification height, see set_small_max_height
+int get_expected_dimension_y_offset(int layout_count)
+{
+        // assumes settings.height == notification height, see get_small_max_height
         int expected_y = layout_count * settings.height;
         if(settings.gaps) {
                 expected_y += (layout_count * (2 * settings.frame_width));
@@ -142,8 +149,11 @@ TEST test_layout_from_notification_no_icon(void)
 
 TEST test_calculate_dimensions_height_no_gaps(void)
 {
-        set_small_max_height();
-        settings.gaps = 0;
+        int original_height = settings.height;
+        bool original_gap_setting = settings.gaps;
+        settings.height = get_small_max_height();
+        settings.gaps = false;
+
         int layout_count;
         GSList *notifications;
         GSList *layouts;
@@ -176,15 +186,20 @@ TEST test_calculate_dimensions_height_no_gaps(void)
         ASSERT(dim.h == expected_height);
         g_slist_free_full(layouts, free_colored_layout);
         g_slist_free_full(notifications, free_dummy_notification);
+
+        settings.gaps = original_gap_setting;
+        settings.height = original_height;
 
         PASS();
 }
 
 TEST test_calculate_dimensions_height_gaps(void)
 {
-        set_small_max_height();
-        settings.gaps = 1;
-        settings.gap_size = 27;
+        int original_height = settings.height;
+        bool original_gap_setting = settings.gaps;
+        settings.height = get_small_max_height();
+        settings.gaps = true;
+
         int layout_count;
         GSList *notifications;
         GSList *layouts;
@@ -215,16 +230,22 @@ TEST test_calculate_dimensions_height_gaps(void)
         dim = calculate_dimensions(layouts);
         expected_height = get_expected_dimension_height(layout_count);
         ASSERT(dim.h == expected_height);
+
         g_slist_free_full(layouts, free_colored_layout);
         g_slist_free_full(notifications, free_dummy_notification);
+        settings.gaps = original_gap_setting;
+        settings.height = original_height;
 
         PASS();
 }
 
 TEST test_layout_render_no_gaps(void)
 {
-        set_small_max_height();
-        settings.gaps = 0;
+        int original_height = settings.height;
+        bool original_gap_setting = settings.gaps;
+        settings.height = get_small_max_height();
+        settings.gaps = false;
+
         int layout_count;
         GSList *notifications;
         GSList *layouts;
@@ -254,14 +275,19 @@ TEST test_layout_render_no_gaps(void)
         g_slist_free_full(layouts, free_colored_layout);
         g_slist_free_full(notifications, free_dummy_notification);
         cairo_surface_destroy(image_surface);
+        settings.gaps = original_gap_setting;
+        settings.height = original_height;
+
         PASS();
 }
 
 TEST test_layout_render_gaps(void)
 {
-        set_small_max_height();
-        settings.gaps = 1;
-        settings.gap_size = 27;
+        int original_height = settings.height;
+        bool original_gap_setting = settings.gaps;
+        settings.height = get_small_max_height();
+        settings.gaps = true;
+
         int layout_count;
         GSList *notifications;
         GSList *layouts;
@@ -288,6 +314,9 @@ TEST test_layout_render_gaps(void)
         g_slist_free_full(layouts, free_colored_layout);
         g_slist_free_full(notifications, free_dummy_notification);
         cairo_surface_destroy(image_surface);
+        settings.gaps = original_gap_setting;
+        settings.height = original_height;
+
         PASS();
 }
 
@@ -306,9 +335,4 @@ SUITE(suite_draw)
                         RUN_TEST(test_layout_render_no_gaps);
                         RUN_TEST(test_layout_render_gaps);
         });
-
-        // suppresses valgrind error in pango_layout_get_pixel_size by
-        // unreffing the default font map
-        // https://docs.gtk.org/PangoCairo/method.FontMap.set_default.html
-        pango_cairo_font_map_set_default(NULL);
 }
