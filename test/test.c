@@ -71,7 +71,6 @@ int main(int argc, char *argv[]) {
         base = NULL;
         g_free(config_path);
         free(prog);
-        pango_memory_cleanup();
 
         // this returns the error code
         GREATEST_MAIN_END();
