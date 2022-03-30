@@ -14,7 +14,6 @@
     timeout = 0
 
 [global]
-    gaps = true
     gap_size = 35
     frame_width = 15
 

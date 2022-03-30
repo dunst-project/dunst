@@ -157,7 +157,6 @@ struct settings {
         struct position offset;
         int notification_limit;
         int gap_size;
-        bool gaps;
 };
 
 extern struct settings settings;

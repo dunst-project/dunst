@@ -83,7 +83,7 @@ int get_expected_dimension_height(int layout_count)
         int height = settings.height * layout_count;
         int frame_width_total_height;
         int expected_height;
-        if(settings.gaps) {
+        if(settings.gap_size) {
                 frame_width_total_height = layout_count * (2 * settings.frame_width);
                 expected_height = height + frame_width_total_height + total_gap_size;
         } else {
@@ -97,7 +97,7 @@ int get_expected_dimension_y_offset(int layout_count)
 {
         // assumes settings.height == notification height, see get_small_max_height
         int expected_y = layout_count * settings.height;
-        if(settings.gaps) {
+        if(settings.gap_size) {
                 expected_y += (layout_count * (2 * settings.frame_width));
                 expected_y += (layout_count * settings.gap_size);
         } else {
@@ -150,9 +150,9 @@ TEST test_layout_from_notification_no_icon(void)
 TEST test_calculate_dimensions_height_no_gaps(void)
 {
         int original_height = settings.height;
-        bool original_gap_setting = settings.gaps;
+        bool orginal_gap_size = settings.gap_size;
         settings.height = get_small_max_height();
-        settings.gaps = false;
+        settings.gap_size = 10;
 
         int layout_count;
         GSList *notifications;
@@ -187,7 +187,7 @@ TEST test_calculate_dimensions_height_no_gaps(void)
         g_slist_free_full(layouts, free_colored_layout);
         g_slist_free_full(notifications, free_dummy_notification);
 
-        settings.gaps = original_gap_setting;
+        settings.gap_size = orginal_gap_size;
         settings.height = original_height;
 
         PASS();
@@ -196,9 +196,9 @@ TEST test_calculate_dimensions_height_no_gaps(void)
 TEST test_calculate_dimensions_height_gaps(void)
 {
         int original_height = settings.height;
-        bool original_gap_setting = settings.gaps;
+        bool orginal_gap_size = settings.gap_size;
         settings.height = get_small_max_height();
-        settings.gaps = true;
+        settings.gap_size = 10;
 
         int layout_count;
         GSList *notifications;
@@ -233,7 +233,7 @@ TEST test_calculate_dimensions_height_gaps(void)
 
         g_slist_free_full(layouts, free_colored_layout);
         g_slist_free_full(notifications, free_dummy_notification);
-        settings.gaps = original_gap_setting;
+        settings.gap_size = orginal_gap_size;
         settings.height = original_height;
 
         PASS();
@@ -242,9 +242,9 @@ TEST test_calculate_dimensions_height_gaps(void)
 TEST test_layout_render_no_gaps(void)
 {
         int original_height = settings.height;
-        bool original_gap_setting = settings.gaps;
+        bool orginal_gap_size = settings.gap_size;
         settings.height = get_small_max_height();
-        settings.gaps = false;
+        settings.gap_size = 0;
 
         int layout_count;
         GSList *notifications;
@@ -275,7 +275,7 @@ TEST test_layout_render_no_gaps(void)
         g_slist_free_full(layouts, free_colored_layout);
         g_slist_free_full(notifications, free_dummy_notification);
         cairo_surface_destroy(image_surface);
-        settings.gaps = original_gap_setting;
+        settings.gap_size = orginal_gap_size;
         settings.height = original_height;
 
         PASS();
@@ -284,9 +284,9 @@ TEST test_layout_render_no_gaps(void)
 TEST test_layout_render_gaps(void)
 {
         int original_height = settings.height;
-        bool original_gap_setting = settings.gaps;
+        bool orginal_gap_size = settings.gap_size;
         settings.height = get_small_max_height();
-        settings.gaps = true;
+        settings.gap_size = 10;
 
         int layout_count;
         GSList *notifications;
@@ -314,7 +314,7 @@ TEST test_layout_render_gaps(void)
         g_slist_free_full(layouts, free_colored_layout);
         g_slist_free_full(notifications, free_dummy_notification);
         cairo_surface_destroy(image_surface);
-        settings.gaps = original_gap_setting;
+        settings.gap_size = orginal_gap_size;
         settings.height = original_height;
 
         PASS();

@@ -91,12 +91,9 @@
     # Defines color of the frame around the notification window.
     frame_color = "#aaaaaa"
 
-    # enable or disable gaps - requires a compositor
-    gaps = false
-
-    # if enabled, size of gap to display between notifications
+    # size of gap to display between notifications - requires a compositor
     # note that click events on gaps do not currently propagate to applications below
-    gap_size = 10
+    gap_size = 0
 
     # Define a color for the separator.
     # possible values are:

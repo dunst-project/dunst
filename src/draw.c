@@ -317,7 +317,7 @@ static struct dimensions calculate_dimensions(GSList *layouts)
                 dim.w = max_width;
         }
 
-        if (settings.gaps) {
+        if (settings.gap_size) {
                 int extra_frame_height = layout_count * (2 * settings.frame_width);
                 int extra_gap_height = (layout_count * settings.gap_size) - settings.gap_size;
                 int total_extra_height = extra_frame_height + extra_gap_height;
@@ -798,7 +798,7 @@ static struct dimensions layout_render(cairo_surface_t *srf,
         else
                 dim.y += settings.height;
 
-        if (settings.gaps)
+        if (settings.gap_size)
                 dim.y += settings.gap_size;
         else
                 dim.y += settings.separator_height;
@@ -880,7 +880,7 @@ void draw(void)
                 struct colored_layout *cl_next = iter->next ? iter->next->data : NULL;
                 last = !cl_next;
 
-                if (settings.gaps) {
+                if (settings.gap_size) {
                         first = true;
                         last = true;
                 }
