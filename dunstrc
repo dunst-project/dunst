@@ -73,6 +73,7 @@
     # Draw a line of "separator_height" pixel height between two
     # notifications.
     # Set to 0 to disable.
+    # If gap_size is greater than 0, this setting will be ignored.
     separator_height = 2
 
     # Padding between text and separator.
@@ -91,8 +92,10 @@
     # Defines color of the frame around the notification window.
     frame_color = "#aaaaaa"
 
-    # size of gap to display between notifications - requires a compositor
-    # note that click events on gaps do not currently propagate to applications below
+    # Size of gap to display between notifications - requires a compositor.
+    # If value is greater than 0, separator_height will be ignored and a border
+    # of size frame_width will be drawn around each notification instead.
+    # Click events on gaps do not currently propagate to applications below.
     gap_size = 0
 
     # Define a color for the separator.

@@ -206,7 +206,8 @@ This setting will only work if a compositor is running.
 =item B<separator_height> (default: 2)
 
 The height in pixels of the separator between notifications, if set to 0 there
-will be no separating line between notifications.
+will be no separating line between notifications. This setting will be ignored
+if B<gap_size> is greater than 0.
 
 =item B<padding> (default: 8)
 
@@ -244,7 +245,11 @@ disable.
 
 Size of gap to display between notifications.
 
-This setting requires a compositor and any applications displayed between the gaps are not currently clickable.
+If value is greater than 0, B<separator_height> will be ignored and a border
+of size B<frame_width> will be drawn around each notification instead.
+
+This setting requires a compositor and any applications displayed between the
+gaps are not currently clickable.
 
 =item B<separator_color> (values: [auto/foreground/frame/#RRGGBB] default: frame)
 
