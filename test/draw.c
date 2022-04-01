@@ -33,19 +33,6 @@ const struct output dummy_output = {
         get_dummy_scale,
 };
 
-GSList *get_dummy_notifications(int count)
-{
-        GSList *notifications = NULL;
-
-        for (int i = 0; i < count; i++) {
-                struct notification *n = test_notification("test", 10);
-                n->icon_position = ICON_LEFT;
-                n->text_to_render = g_strdup("dummy layout");
-                notifications = g_slist_append(notifications, n);
-        }
-        return notifications;
-}
-
 GSList *get_dummy_layouts(GSList *notifications)
 {
         GSList *layouts = NULL;
@@ -56,12 +43,6 @@ GSList *get_dummy_layouts(GSList *notifications)
 
         }
         return layouts;
-}
-
-void free_dummy_notification(void *notification)
-{
-        // wrapper function to work with g_slist_free_full
-        notification_unref((struct notification *) notification);
 }
 
 int get_small_max_height()

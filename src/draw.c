@@ -873,7 +873,7 @@ void draw(void)
                                                                     round(dim.h * scale));
 
         bool first = true;
-        bool last = true;
+        bool last;
         for (GSList *iter = layouts; iter; iter = iter->next) {
 
                 struct colored_layout *cl_this = iter->data;

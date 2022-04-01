@@ -67,4 +67,26 @@ struct notification *test_notification_with_icon(const char *name, gint64 timeou
         return n;
 }
 
+GSList *get_dummy_notifications(int count)
+{
+        GSList *notifications = NULL;
+
+        int message_size = 24;
+        for (int i = 0; i < count; i++) {
+                char msg[message_size];
+                snprintf(msg, message_size, "test %d", i);
+                struct notification *n = test_notification(msg, 10);
+                n->icon_position = ICON_LEFT;
+                n->text_to_render = g_strdup("dummy layout");
+                notifications = g_slist_append(notifications, n);
+        }
+        return notifications;
+}
+
+void free_dummy_notification(void *notification)
+{
+        // wrapper function to work with g_slist_free_full
+        notification_unref((struct notification *) notification);
+}
+
 /* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

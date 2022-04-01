@@ -248,18 +248,32 @@ function gaps {
     echo "gaps"
     echo "###################################"
     start_dunst dunstrc.gaps
-    CHOICE=$(../../dunstify -a "dunst tester" -A "default,Default" -A "optional,Optional" "Gap demo 1 - click me" -u l) \
+    CHOICE=$(../../dunstify -a "dunst tester" -A "default,Default" -A "optional,Optional" "Click #1" -u l) \
         && echo Clicked $CHOICE for \#1 &
-    CHOICE=$(../../dunstify -a "dunst tester" -A "default,Default" -A "optional,Optional" "Gap demo 2 - click me" -u n) \
+    CHOICE=$(../../dunstify -a "dunst tester" -A "default,Default" -A "optional,Optional" "Click #2" -u n) \
         && echo Clicked $CHOICE for \#2 &
-    CHOICE=$(../../dunstify -a "dunst tester" -A "default,Default" -A "optional,Optional" "Gap demo 3 - click me" -u c) \
+    CHOICE=$(../../dunstify -a "dunst tester" -A "default,Default" -A "optional,Optional" "Click #3" -u c) \
         && echo Clicked $CHOICE for \#3 &
-    CHOICE=$(../../dunstify -a "dunst tester" -A "default,Default" -A "optional,Optional" "Gap demo 4 - click me" -u l) \
+    CHOICE=$(../../dunstify -a "dunst tester" -A "default,Default" -A "optional,Optional" "Click #4" -u l) \
         && echo Clicked $CHOICE for \#4 &
-    CHOICE=$(../../dunstify -a "dunst tester" -A "default,Default" -A "optional,Optional" "Gap demo 5 - click me" -u n) \
+    CHOICE=$(../../dunstify -a "dunst tester" -A "default,Default" -A "optional,Optional" "Click #5" -u n) \
         && echo Clicked $CHOICE for \#5 &
-    CHOICE=$(../../dunstify -a "dunst tester" -A "default,Default" -A "optional,Optional" "Gap demo 6 - click me" -u c) \
+    CHOICE=$(../../dunstify -a "dunst tester" -A "default,Default" -A "optional,Optional" "Click #6" -u c) \
         && echo Clicked $CHOICE for \#6 &
+    keypress
+}
+
+function separator_click {
+    echo "###################################"
+    echo "separator_click"
+    echo "###################################"
+    start_dunst dunstrc.separator_click
+    CHOICE=$(../../dunstify -a "dunst tester" -A "default,Default" -A "optional,Optional" "Click #1" -u l) \
+        && echo Clicked $CHOICE for \#1 &
+    CHOICE=$(../../dunstify -a "dunst tester" -A "default,Default" -A "optional,Optional" "Click #2" -u c) \
+        && echo Clicked $CHOICE for \#2 &
+    CHOICE=$(../../dunstify -a "dunst tester" -A "default,Default" -A "optional,Optional" "Click #3" -u n) \
+        && echo Clicked $CHOICE for \#3 &
     keypress
 }
 
@@ -282,6 +296,7 @@ else
     icon_position
     hide_text
     gaps
+    separator_click
 fi
 
 killall dunst
