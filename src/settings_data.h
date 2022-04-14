@@ -1489,6 +1489,16 @@ static const struct setting allowed_settings[] = {
                 .parser = NULL,
                 .parser_data = NULL,
         },
+        {
+                .name = "gap_size",
+                .section = "global",
+                .description = "Size of gap between notifications",
+                .type = TYPE_INT,
+                .default_value = "0",
+                .value = &settings.gap_size,
+                .parser = NULL,
+                .parser_data = NULL,
+        },
 };
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

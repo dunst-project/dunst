@@ -243,6 +243,40 @@ function hide_text {
     keypress
 }
 
+function gaps {
+    echo "###################################"
+    echo "gaps"
+    echo "###################################"
+    start_dunst dunstrc.gaps
+    CHOICE=$(../../dunstify -a "dunst tester" -A "default,Default" -A "optional,Optional" "Click #1" -u l) \
+        && echo Clicked $CHOICE for \#1 &
+    CHOICE=$(../../dunstify -a "dunst tester" -A "default,Default" -A "optional,Optional" "Click #2" -u n) \
+        && echo Clicked $CHOICE for \#2 &
+    CHOICE=$(../../dunstify -a "dunst tester" -A "default,Default" -A "optional,Optional" "Click #3" -u c) \
+        && echo Clicked $CHOICE for \#3 &
+    CHOICE=$(../../dunstify -a "dunst tester" -A "default,Default" -A "optional,Optional" "Click #4" -u l) \
+        && echo Clicked $CHOICE for \#4 &
+    CHOICE=$(../../dunstify -a "dunst tester" -A "default,Default" -A "optional,Optional" "Click #5" -u n) \
+        && echo Clicked $CHOICE for \#5 &
+    CHOICE=$(../../dunstify -a "dunst tester" -A "default,Default" -A "optional,Optional" "Click #6" -u c) \
+        && echo Clicked $CHOICE for \#6 &
+    keypress
+}
+
+function separator_click {
+    echo "###################################"
+    echo "separator_click"
+    echo "###################################"
+    start_dunst dunstrc.separator_click
+    CHOICE=$(../../dunstify -a "dunst tester" -A "default,Default" -A "optional,Optional" "Click #1" -u l) \
+        && echo Clicked $CHOICE for \#1 &
+    CHOICE=$(../../dunstify -a "dunst tester" -A "default,Default" -A "optional,Optional" "Click #2" -u c) \
+        && echo Clicked $CHOICE for \#2 &
+    CHOICE=$(../../dunstify -a "dunst tester" -A "default,Default" -A "optional,Optional" "Click #3" -u n) \
+        && echo Clicked $CHOICE for \#3 &
+    keypress
+}
+
 if [ -n "$1" ]; then
     while [ -n "$1" ]; do
         $1
@@ -261,6 +295,8 @@ else
     progress_bar
     icon_position
     hide_text
+    gaps
+    separator_click
 fi
 
 killall dunst

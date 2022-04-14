@@ -6,16 +6,43 @@
 #include <stddef.h>
 #include <linux/input-event-codes.h>
 
+int get_notification_clickable_height(struct notification *n, bool first, bool last)
+{
+        int notification_size = n->displayed_height;
+        if (settings.gap_size) {
+                notification_size += settings.frame_width * 2;
+        } else {
+                double half_separator = settings.separator_height / 2.0;
+                notification_size += settings.separator_height;
+                if(first)
+                    notification_size += (settings.frame_width - half_separator);
+                if(last)
+                    notification_size += (settings.frame_width - half_separator);
+        }
+        return notification_size;
+}
+
 struct notification *get_notification_at(const int y) {
-        int curr_y = settings.frame_width;
+        int curr_y = 0;
+        bool first = true;
+        bool last;
         for (const GList *iter = queues_get_displayed(); iter;
                         iter = iter->next) {
                 struct notification *current = iter->data;
-                if (y > curr_y && y < curr_y + current->displayed_height) {
+                struct notification *next = iter->next ? iter->next->data : NULL;
+
+                last = !next;
+                int notification_size = get_notification_clickable_height(current, first, last);
+
+                if (y >= curr_y && y < curr_y + notification_size) {
                         return current;
                 }
 
-                curr_y += current->displayed_height + settings.separator_height;
+                curr_y += notification_size;
+                if (settings.gap_size)
+                        curr_y += settings.gap_size;
+
+                first = false;
         }
         // no matching notification was found
         return NULL;

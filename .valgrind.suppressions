@@ -99,3 +99,16 @@
    fun:gdk_pixbuf_new_from_file
    ...
 }
+
+# fontconfig memory leaks that occur when using certain pango library
+# functions, such as pango_layout_get_pixel_size
+{
+   fontconfig_pango_leaks
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   obj:*fontconfig*
+   ...
+   obj:*pango*
+   ...
+}

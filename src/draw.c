@@ -293,11 +293,9 @@ static struct dimensions calculate_notification_dimensions(struct colored_layout
 
 static struct dimensions calculate_dimensions(GSList *layouts)
 {
+        int layout_count = g_slist_length(layouts);
         struct dimensions dim = { 0 };
         double scale = output->get_scale();
-
-        dim.h += 2 * settings.frame_width;
-        dim.h += (g_slist_length(layouts) - 1) * settings.separator_height;
 
         dim.corner_radius = settings.corner_radius;
 
@@ -317,6 +315,16 @@ static struct dimensions calculate_dimensions(GSList *layouts)
         int max_width = scr->w - settings.offset.x;
         if (dim.w > max_width) {
                 dim.w = max_width;
+        }
+
+        if (settings.gap_size) {
+                int extra_frame_height = layout_count * (2 * settings.frame_width);
+                int extra_gap_height = (layout_count * settings.gap_size) - settings.gap_size;
+                int total_extra_height = extra_frame_height + extra_gap_height;
+                dim.h += total_extra_height;
+        } else {
+                dim.h += 2 * settings.frame_width;
+                dim.h += (layout_count - 1) * settings.separator_height;
         }
 
         return dim;
@@ -782,14 +790,18 @@ static struct dimensions layout_render(cairo_surface_t *srf,
         if (first)
                 dim.y += settings.frame_width;
 
-        if (!last)
-                dim.y += settings.separator_height;
-
+        if (last)
+                dim.y += settings.frame_width;
 
         if ((2 * settings.padding + cl_h) < settings.height)
                 dim.y += cl_h + 2 * settings.padding;
         else
                 dim.y += settings.height;
+
+        if (settings.gap_size)
+                dim.y += settings.gap_size;
+        else
+                dim.y += settings.separator_height;
 
         cairo_destroy(c);
         cairo_surface_destroy(content);
@@ -861,12 +873,19 @@ void draw(void)
                                                                     round(dim.h * scale));
 
         bool first = true;
+        bool last;
         for (GSList *iter = layouts; iter; iter = iter->next) {
 
                 struct colored_layout *cl_this = iter->data;
                 struct colored_layout *cl_next = iter->next ? iter->next->data : NULL;
+                last = !cl_next;
 
-                dim = layout_render(image_surface, cl_this, cl_next, dim, first, !cl_next);
+                if (settings.gap_size) {
+                        first = true;
+                        last = true;
+                }
+
+                dim = layout_render(image_surface, cl_this, cl_next, dim, first, last);
 
                 first = false;
         }

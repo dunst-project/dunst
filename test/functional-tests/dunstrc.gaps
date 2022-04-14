@@ -1,0 +1,22 @@
+[urgency_low]
+    background = "#222222"
+    foreground = "#888888"
+    timeout = 10
+
+[urgency_normal]
+    background = "#285577"
+    foreground = "#ffffff"
+    timeout = 10
+
+[urgency_critical]
+    background = "#900000"
+    foreground = "#ffffff"
+    timeout = 0
+
+[global]
+    gap_size = 35
+    frame_width = 15
+
+    mouse_left_click = do_action
+    mouse_middle_click = close_current
+    mouse_right_click = context

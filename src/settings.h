@@ -156,6 +156,7 @@ struct settings {
         int height;
         struct position offset;
         int notification_limit;
+        int gap_size;
 };
 
 extern struct settings settings;
