@@ -135,17 +135,27 @@ static void create_output( struct wl_output *wl_output, uint32_t global_name) {
                 LOG_E("allocation failed");
                 return;
         }
+
+        bool recreate_surface = false;
         static int number = 0;
         LOG_I("New output found - id %i", number);
         output->global_name = global_name;
         output->wl_output = wl_output;
         output->scale = 1;
         output->fullscreen = false;
+
+        recreate_surface = wl_list_empty(&ctx.outputs);
+
         wl_list_insert(&ctx.outputs, &output->link);
 
         wl_output_set_user_data(wl_output, output);
         wl_output_add_listener(wl_output, &output_listener, output);
         number++;
+
+        if (recreate_surface) {
+                // We had no outputs, force our surface to redraw
+                set_dirty(ctx.surface);
+        }
 }
 
 static void destroy_output(struct dunst_output *output) {
