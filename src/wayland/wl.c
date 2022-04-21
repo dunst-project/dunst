@@ -589,6 +589,11 @@ static void schedule_frame_and_commit();
 static void send_frame() {
         int scale = wl_get_scale();
 
+        if (wl_list_empty(&ctx.outputs)) {
+                ctx.dirty = false;
+                return;
+        }
+
         struct dunst_output *output = get_configured_output();
         int height = ctx.cur_dim.h;
         int width = ctx.cur_dim.w;
