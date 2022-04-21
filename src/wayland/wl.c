@@ -290,13 +290,19 @@ static void send_frame();
 static void layer_surface_handle_configure(void *data,
                 struct zwlr_layer_surface_v1 *surface,
                 uint32_t serial, uint32_t width, uint32_t height) {
+        zwlr_layer_surface_v1_ack_configure(surface, serial);
+
+        if (ctx.configured &&
+                        ctx.width == (int32_t) width &&
+                        ctx.height == (int32_t) height) {
+                wl_surface_commit(ctx.surface);
+                return;
+        }
+
         ctx.configured = true;
         ctx.width = width;
         ctx.height = height;
 
-        // not needed as it is set somewhere else
-        /* zwlr_layer_surface_v1_set_size(surface, width, height);  */
-        zwlr_layer_surface_v1_ack_configure(surface, serial);
         send_frame();
 }
 
