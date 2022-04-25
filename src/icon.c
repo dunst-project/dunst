@@ -150,11 +150,8 @@ static bool icon_size_clamp(int *w, int *h) {
  * Scales the given GdkPixbuf to a given size.. If the image is not square, the
  * largest size will be scaled up to the given size.
  *
- * The icon is scaled to a size of icon_size * dpi_scale.
- *
  * @param pixbuf (nullable) The pixbuf, which may be too big.
  *                          Takes ownership of the reference.
- * @param icon_size An integer the unscaled icon size.
  * @param dpi_scale A double for the dpi scaling.
  * @return the scaled version of the pixbuf. If scaling wasn't
  *         necessary, it returns the same pixbuf. Transfers full

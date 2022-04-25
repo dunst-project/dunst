@@ -55,8 +55,6 @@ void rule_apply(struct rule *r, struct notification *n)
                 n->markup = r->markup;
         if (r->icon_position != -1)
                 n->icon_position = r->icon_position;
-        if (r->set_icon_size > 0)
-                n->icon_size = r->set_icon_size;
         if (r->fg) {
                 g_free(n->colors.fg);
                 n->colors.fg = g_strdup(r->fg);

@@ -1006,17 +1006,6 @@ a global setting.
 
 =back
 
-=item B<icon_size> (default: 32) I<Experimental>
-
-The size of the icon in pixels. This is commonly a multiple of 2, for example:
-16, 32 or 64. This size is used for searching the right icon in B<icon_theme>.
-If no icon of the right size can be found, no icon is displayed. When passing a
-full icon path to dunst the icon will be used even when it's not the right
-size. The icon is then scaled to be of size B<icon_size>.
-
-This setting is experimental and not enabled by default. See
-B<enable_recursive_icon_lookup> for how to enable it.
-
 =back
 
 As with the filtering attributes, each one corresponds to

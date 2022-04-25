@@ -424,7 +424,6 @@ struct notification *notification_create(void)
         n->progress_bar_alignment = PANGO_ALIGN_CENTER;
         n->hide_text = false;
         n->icon_position = ICON_LEFT;
-        n->icon_size = 32;
 
         n->script_run = false;
         n->dbus_valid = false;
