@@ -43,6 +43,8 @@ struct rule {
         int alignment;
         int hide_text;
         int icon_position;
+        int min_icon_size;
+        int max_icon_size;
         char *new_icon;
         char *fg;
         char *bg;

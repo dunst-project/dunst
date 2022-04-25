@@ -153,6 +153,8 @@ static const struct rule empty_rule = {
         .script          = NULL,
         .enabled         = true,
         .progress_bar_alignment   = -1,
+        .min_icon_size   = -1,
+        .max_icon_size   = -1,
 };
 
 
@@ -726,6 +728,28 @@ static const struct setting allowed_settings[] = {
                 .parser_data = horizontal_alignment_enum_data,
                 .rule_offset = offsetof(struct rule, progress_bar_alignment),
         },
+        {
+                .name = "min_icon_size",
+                .section = "global",
+                .description = "Scale smaller icons up to this size, set to 0 to disable. If max_icon_size also specified, that has the final say.",
+                .type = TYPE_INT,
+                .default_value = "*",
+                .value = NULL,
+                .parser = NULL,
+                .parser_data = NULL,
+                .rule_offset = offsetof(struct rule, min_icon_size),
+        },
+        {
+                .name = "max_icon_size",
+                .section = "global",
+                .description = "Scale larger icons down to this size, set to 0 to disable",
+                .type = TYPE_INT,
+                .default_value = "*",
+                .value = NULL,
+                .parser = NULL,
+                .parser_data = NULL,
+                .rule_offset = offsetof(struct rule, max_icon_size),
+        },
         // end of modifying rules
 
         // other settings below
@@ -1069,26 +1093,6 @@ static const struct setting allowed_settings[] = {
                 .value = &settings.browser,
                 .parser = NULL,
                 .parser_data = &settings.browser_cmd,
-        },
-        {
-                .name = "min_icon_size",
-                .section = "global",
-                .description = "Scale smaller icons up to this size, set to 0 to disable. If max_icon_size also specified, that has the final say.",
-                .type = TYPE_INT,
-                .default_value = "32",
-                .value = &settings.min_icon_size,
-                .parser = NULL,
-                .parser_data = NULL,
-        },
-        {
-                .name = "max_icon_size",
-                .section = "global",
-                .description = "Scale larger icons down to this size, set to 0 to disable",
-                .type = TYPE_INT,
-                .default_value = "128",
-                .value = &settings.max_icon_size,
-                .parser = NULL,
-                .parser_data = NULL,
         },
         {
                 .name = "always_run_script",
