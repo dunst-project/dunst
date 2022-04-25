@@ -146,17 +146,6 @@ static bool icon_size_clamp(int *w, int *h) {
         return FALSE;
 }
 
-static bool icon_size_clamp2(int *w, int *h, int desired_size, double scale) {
-        int largest_size = MAX(*w, *h);
-        int new_size = desired_size * scale;
-        if (largest_size != new_size) {
-                double scale = (double) new_size / (double) largest_size;
-                *w = round(*w * scale);
-                *h = round(*h * scale);
-                return true;
-        }
-        return false;
-}
 /**
  * Scales the given GdkPixbuf to a given size.. If the image is not square, the
  * largest size will be scaled up to the given size.
@@ -171,38 +160,25 @@ static bool icon_size_clamp2(int *w, int *h, int desired_size, double scale) {
  *         necessary, it returns the same pixbuf. Transfers full
  *         ownership of the reference.
  */
-static GdkPixbuf *icon_pixbuf_scale_to_size(GdkPixbuf *pixbuf, int icon_size, double dpi_scale)
+static GdkPixbuf *icon_pixbuf_scale_to_size(GdkPixbuf *pixbuf, double dpi_scale)
 {
         ASSERT_OR_RET(pixbuf, NULL);
 
         int w = gdk_pixbuf_get_width(pixbuf);
         int h = gdk_pixbuf_get_height(pixbuf);
-        bool needs_change = false;
 
-        if (settings.enable_recursive_icon_lookup)
-        {
-                needs_change = icon_size_clamp2(&w, &h, icon_size, dpi_scale);
-                if (needs_change) {
-                        LOG_D("Scaling to a size of %ix%i", w, h);
-                        LOG_D("While the icon size and scale are %ix%f", icon_size, dpi_scale);
-                }
-        } else {
-                // TODO immediately rescale icon upon scale changes
-                if(icon_size_clamp(&w, &h)) {
-                        w = round(w * dpi_scale);
-                        h = round(h * dpi_scale);
-                        needs_change = true;
-                }
+        // TODO immediately rescale icon upon scale changes
+        if(icon_size_clamp(&w, &h)) {
+                w = round(w * dpi_scale);
+                h = round(h * dpi_scale);
         }
-        if (needs_change) {
-                GdkPixbuf *scaled = gdk_pixbuf_scale_simple(
-                                pixbuf,
-                                w,
-                                h,
-                                GDK_INTERP_BILINEAR);
-                g_object_unref(pixbuf);
-                pixbuf = scaled;
-        }
+        GdkPixbuf *scaled = gdk_pixbuf_scale_simple(
+                        pixbuf,
+                        w,
+                        h,
+                        GDK_INTERP_BILINEAR);
+        g_object_unref(pixbuf);
+        pixbuf = scaled;
         return pixbuf;
 }
 
@@ -218,23 +194,13 @@ GdkPixbuf *get_pixbuf_from_file(const char *filename, int icon_size, double scal
                 return NULL;
         }
         GdkPixbuf *pixbuf = NULL;
-        if (settings.enable_recursive_icon_lookup)
-        {
-                icon_size_clamp2(&w, &h, icon_size, scale);
-                pixbuf = gdk_pixbuf_new_from_file_at_scale(path,
-                                w,
-                                h,
-                                TRUE,
-                                &error);
-        } else {
-                // TODO immediately rescale icon upon scale changes
-                icon_size_clamp(&w, &h);
-                pixbuf = gdk_pixbuf_new_from_file_at_scale(path,
-                                round(w * scale),
-                                round(h * scale),
-                                TRUE,
-                                &error);
-        }
+        // TODO immediately rescale icon upon scale changes
+        icon_size_clamp(&w, &h);
+        pixbuf = gdk_pixbuf_new_from_file_at_scale(path,
+                        round(w * scale),
+                        round(h * scale),
+                        TRUE,
+                        &error);
 
         if (error) {
                 LOG_W("%s", error->message);
@@ -415,7 +381,7 @@ GdkPixbuf *icon_get_for_data(GVariant *data, char **id, double dpi_scale, int ic
         g_free(data_chk);
         g_variant_unref(data_variant);
 
-        pixbuf = icon_pixbuf_scale_to_size(pixbuf, icon_size, dpi_scale);
+        pixbuf = icon_pixbuf_scale_to_size(pixbuf, dpi_scale);
 
         return pixbuf;
 }
