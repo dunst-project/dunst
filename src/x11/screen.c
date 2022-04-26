@@ -389,12 +389,12 @@ sc_cleanup:
  */
 static Window get_focused_window(void)
 {
-        Window focused;
+        Window focused, root = RootWindow(xctx.dpy, DefaultScreen(xctx.dpy));
         int ignored;
 
         XGetInputFocus(xctx.dpy, &focused, &ignored);
 
-        if (focused == None || focused == PointerRoot)
+        if (focused == None || focused == PointerRoot || focused == root)
                 focused = 0;
         return focused;
 }
