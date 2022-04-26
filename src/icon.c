@@ -122,6 +122,8 @@ cairo_surface_t *gdk_pixbuf_to_cairo_surface(GdkPixbuf *pixbuf)
  *
  * @param w a pointer to the image width, to be modified in-place
  * @param h a pointer to the image height, to be modified in-place
+ * @param min_size the minimum icon size setting for this notification
+ * @param max_size the maximum icon size setting for this notification
  * @return TRUE if the dimensions were updated, FALSE if they were left unchanged
  */
 static bool icon_size_clamp(int *w, int *h, int min_size, int max_size) {

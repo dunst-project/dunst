@@ -56,7 +56,7 @@ char *get_path_from_icon_name(const char *iconname, int size);
  *             like described in the notification spec.
  * @param id   (necessary) A unique identifier of the returned pixbuf.
  *             Only filled, if the return value is non-NULL.
- * @param scale An integer representing the output dpi scaling.
+ * @param dpi_scale An integer representing the output dpi scaling.
  * @param min_size An integer representing the desired minimum unscaled icon size.
  * @param max_size An integer representing the desired maximum unscaled icon size.
  * @return an instance of `GdkPixbuf` derived from the GVariant
