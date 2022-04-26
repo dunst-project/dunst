@@ -337,7 +337,7 @@ void notification_icon_replace_path(struct notification *n, const char *new_icon
         g_clear_pointer(&n->icon_id, g_free);
 
         g_free(n->icon_path);
-        n->icon_path = get_path_from_icon_name(new_icon, n->icon_size);
+        n->icon_path = get_path_from_icon_name(new_icon, n->icon_size * draw_get_scale());
         if (n->icon_path) {
                 GdkPixbuf *pixbuf = get_pixbuf_from_file(n->icon_path,
                                 n->icon_size, draw_get_scale());
