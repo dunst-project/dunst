@@ -135,17 +135,27 @@ static void create_output( struct wl_output *wl_output, uint32_t global_name) {
                 LOG_E("allocation failed");
                 return;
         }
+
+        bool recreate_surface = false;
         static int number = 0;
         LOG_I("New output found - id %i", number);
         output->global_name = global_name;
         output->wl_output = wl_output;
         output->scale = 1;
         output->fullscreen = false;
+
+        recreate_surface = wl_list_empty(&ctx.outputs);
+
         wl_list_insert(&ctx.outputs, &output->link);
 
         wl_output_set_user_data(wl_output, output);
         wl_output_add_listener(wl_output, &output_listener, output);
         number++;
+
+        if (recreate_surface) {
+                // We had no outputs, force our surface to redraw
+                set_dirty(ctx.surface);
+        }
 }
 
 static void destroy_output(struct dunst_output *output) {
@@ -280,13 +290,19 @@ static void send_frame();
 static void layer_surface_handle_configure(void *data,
                 struct zwlr_layer_surface_v1 *surface,
                 uint32_t serial, uint32_t width, uint32_t height) {
+        zwlr_layer_surface_v1_ack_configure(surface, serial);
+
+        if (ctx.configured &&
+                        ctx.width == (int32_t) width &&
+                        ctx.height == (int32_t) height) {
+                wl_surface_commit(ctx.surface);
+                return;
+        }
+
         ctx.configured = true;
         ctx.width = width;
         ctx.height = height;
 
-        // not needed as it is set somewhere else
-        /* zwlr_layer_surface_v1_set_size(surface, width, height);  */
-        zwlr_layer_surface_v1_ack_configure(surface, serial);
         send_frame();
 }
 
@@ -588,6 +604,11 @@ static void schedule_frame_and_commit();
 // Draw and commit a new frame.
 static void send_frame() {
         int scale = wl_get_scale();
+
+        if (wl_list_empty(&ctx.outputs)) {
+                ctx.dirty = false;
+                return;
+        }
 
         struct dunst_output *output = get_configured_output();
         int height = ctx.cur_dim.h;
