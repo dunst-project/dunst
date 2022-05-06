@@ -11,13 +11,14 @@ cairo_surface_t *gdk_pixbuf_to_cairo_surface(GdkPixbuf *pixbuf);
 /** Retrieve an icon by its full filepath, scaled according to settings.
  *
  * @param filename A string representing a readable file path
- * @param icon_size An iteger representing the desired unscaled icon size.
+ * @param min_size An iteger representing the desired minimum unscaled icon size.
+ * @param max_size An iteger representing the desired maximum unscaled icon size.
  * @param scale An integer representing the output dpi scaling.
  *
  * @return an instance of `GdkPixbuf`
  * @retval NULL: file does not exist, not readable, etc..
  */
-GdkPixbuf *get_pixbuf_from_file(const char *filename, int icon_size, double scale);
+GdkPixbuf *get_pixbuf_from_file(const char *filename, int min_size, int max_size, double scale);
 
 
 /**
@@ -55,12 +56,13 @@ char *get_path_from_icon_name(const char *iconname, int size);
  *             like described in the notification spec.
  * @param id   (necessary) A unique identifier of the returned pixbuf.
  *             Only filled, if the return value is non-NULL.
- * @param scale An integer representing the output dpi scaling.
- * @param icon_size An integer representing the desired unscaled icon size.
+ * @param dpi_scale An integer representing the output dpi scaling.
+ * @param min_size An integer representing the desired minimum unscaled icon size.
+ * @param max_size An integer representing the desired maximum unscaled icon size.
  * @return an instance of `GdkPixbuf` derived from the GVariant
  * @retval NULL: GVariant parameter nulled, invalid or in wrong format
  */
-GdkPixbuf *icon_get_for_data(GVariant *data, char **id, double scale, int icon_size);
+GdkPixbuf *icon_get_for_data(GVariant *data, char **id, double dpi_scale, int min_size, int max_size);
 
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

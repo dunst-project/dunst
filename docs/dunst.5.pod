@@ -399,31 +399,6 @@ Hide the count of stacked duplicate notifications.
 Show an indicator if a notification contains actions and/or open-able URLs. See
 ACTIONS below for further details.
 
-=item B<min_icon_size> (default: 0)
-
-Defines the minimum size in pixels for the icons.
-If the icon is larger than or equal to the specified value it won't be affected.
-If it's smaller then it will be scaled up so that the smaller axis is equivalent
-to the specified size.
-
-Set to 0 to disable icon upscaling. (default)
-
-If B<icon_position> is set to off, this setting is ignored.
-
-=item B<max_icon_size> (default: 32)
-
-Defines the maximum size in pixels for the icons.
-If the icon is smaller than or equal to the specified value it won't be affected.
-If it's larger then it will be scaled down so that the larger axis is equivalent
-to the specified size.
-
-Set to 0 to disable icon downscaling.
-
-If both B<min_icon_size> and B<max_icon_size> are enabled, the latter
-gets the last say.
-
-If B<icon_position> is set to off, this setting is ignored.
-
 =item B<icon_path> (default: "/usr/share/icons/gnome/16x16/status/:/usr/share/icons/gnome/16x16/devices/")
 
 Can be set to a colon-separated list of paths to search for icons to use with
@@ -458,14 +433,12 @@ B<enable_recursive_icon_lookup> for how to enable it.
 This setting enables the new icon lookup method. This new system will eventually
 be the old icon lookup.
 
-Currently icons are looked up in the B<icon_path> and scaled according to
-B<min_icon_size> and B<max_icon_size>. Since the B<icon_path> wasn't recursive,
-one had to add a ton of paths to this list.
+Currently icons are looked up in the B<icon_path>. Since the B<icon_path> wasn't
+recursive, one had to add a ton of paths to this list.
 This has been drastically simplified by the new lookup method. Now you only have
-to set B<icon_theme> to the name of the theme and B<icon_size> to the icon size
-you want. To enable this new behaviour, set B<enable_recursive_icon_lookup> to
-true in the I<[experimental]> section. See the respective settings for more
-details.
+to set B<icon_theme> to the name of the theme you want. To enable this new
+behaviour, set B<enable_recursive_icon_lookup> to true in the I<[experimental]>
+section. See the respective settings for more details.
 
 =item B<sticky_history> (values: [true/false], default: true)
 
@@ -876,6 +849,33 @@ Wayland.
 
 Default: show
 
+=item B<min_icon_size> (default: 32)
+
+Defines the minimum size in pixels for the icons.
+If the icon is larger than or equal to the specified value it won't be affected.
+If it's smaller then it will be scaled up so that the smaller axis is equivalent
+to the specified size.
+
+When using recursive icon lookup (see B<enable_recursive_icon_lookup>), all
+icons from a theme will be this size.
+
+If B<icon_position> is set to off, this setting is ignored.
+
+=item B<max_icon_size> (default: 128)
+
+Defines the maximum size in pixels for the icons.
+If the icon is smaller than or equal to the specified value it won't be affected.
+If it's larger then it will be scaled down so that the larger axis is equivalent
+to the specified size.
+
+Set to 0 to disable icon downscaling.
+
+If both B<min_icon_size> and B<max_icon_size> are enabled, the latter
+gets the last say.
+
+If B<icon_position> is set to off, this setting is ignored.
+
+
 =item C<new_icon>
 
 Updates the icon of the notification, it should be a path or a name for a valid
@@ -1016,17 +1016,6 @@ plain text. Dunst will not advertise that it can parse markup if this is set as
 a global setting.
 
 =back
-
-=item B<icon_size> (default: 32) I<Experimental>
-
-The size of the icon in pixels. This is commonly a multiple of 2, for example:
-16, 32 or 64. This size is used for searching the right icon in B<icon_theme>.
-If no icon of the right size can be found, no icon is displayed. When passing a
-full icon path to dunst the icon will be used even when it's not the right
-size. The icon is then scaled to be of size B<icon_size>.
-
-This setting is experimental and not enabled by default. See
-B<enable_recursive_icon_lookup> for how to enable it.
 
 =back
 
