@@ -87,6 +87,7 @@ void rule_apply(struct rule *r, struct notification *n)
                 // separate variable is needed to track if the icon is
                 // replaced, like in 86cbc1d34bb0f551461dbd466cd9e4860ae01817.
                 notification_icon_replace_path(n, r->new_icon);
+                n->receiving_raw_icon = false;
         }
         if (r->script){
                 n->scripts = g_renew(const char*,n->scripts,n->script_count + 1);

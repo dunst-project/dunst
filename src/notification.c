@@ -426,7 +426,8 @@ struct notification *notification_create(void)
         n->hide_text = false;
         n->icon_position = ICON_LEFT;
         n->min_icon_size = 32;
-        n->max_icon_size = 128;
+        n->max_icon_size = 32;
+        n->receiving_raw_icon = false;
 
         n->script_run = false;
         n->dbus_valid = false;

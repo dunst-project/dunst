@@ -67,6 +67,7 @@ struct notification {
         int min_icon_size;  /**< Minimum icon size. Also used for looking up icon names. */
         int max_icon_size; /**< Maximum icon size. */
         enum icon_position icon_position;       /**< Icon position (enum left,right,top,off). */
+        bool receiving_raw_icon; /**< Still waiting for raw icon to be received */
 
         gint64 start;      /**< begin of current display (in milliseconds) */
         gint64 timestamp;  /**< arrival time (in milliseconds) */
