@@ -127,8 +127,6 @@ struct settings {
         char *browser;
         char **browser_cmd;
         enum vertical_alignment vertical_alignment;
-        int min_icon_size;
-        int max_icon_size;
         char **icon_theme; // experimental
         bool enable_recursive_icon_lookup; // experimental
         bool enable_regex; // experimental

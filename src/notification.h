@@ -64,8 +64,10 @@ struct notification {
                                    Use this to compare the icon name with rules. May also be modified by rules.*/
         char *icon_path;         /**< Full path to the notification's icon. */
         char *default_icon_name; /**< The icon that is used when no other icon is available. */
-        int icon_size;           /**< Size of the icon used for searching the right icon. */
+        int min_icon_size;  /**< Minimum icon size. Also used for looking up icon names. */
+        int max_icon_size; /**< Maximum icon size. */
         enum icon_position icon_position;       /**< Icon position (enum left,right,top,off). */
+        bool receiving_raw_icon; /**< Still waiting for raw icon to be received */
 
         gint64 start;      /**< begin of current display (in milliseconds) */
         gint64 timestamp;  /**< arrival time (in milliseconds) */
