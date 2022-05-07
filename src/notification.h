@@ -202,7 +202,11 @@ void notification_icon_replace_data(struct notification *n, GVariant *new_icon);
  * If the script of the notification has been executed already and
  * settings.always_run_script is not set, do nothing.
  */
-void notification_run_script(struct notification *n);
+//void notification_run_script(struct notification *n);
+#define notification_run_script(N)   __notification_run_script(N, false, __func__)
+#define notification_run_script_blocking(N)   __notification_run_script(N, true, __func__)
+
+int __notification_run_script(struct notification *n, bool blocking, char * caller);
 /**
  * print a human readable representation
  * of the given notification to stdout.

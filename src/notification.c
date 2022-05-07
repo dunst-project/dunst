@@ -12,6 +12,7 @@
 #include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <sys/mman.h>
 
 #include "dbus.h"
 #include "dunst.h"
@@ -47,130 +48,444 @@ struct _notification_private {
         gint refcount;
 };
 
+extern char **environ;
+
+
+//TODO: Move to utils.c but for now I wanna edit only the files I have to...
+#define ESCAPE_NEWLINES(VAR)    string_replace_all("\n", "\\n", string_replace_all("\r", "", g_strdup(VAR)))
+#define UNESCAPE_NEWLINES(VAR)  string_replace_all("\\n", "\n", g_strdup(VAR))
+#define SCRIPT_BUFFER            32*1024
+
+//TODO: Move to utils.c but for now I wanna edit only the files I have to...
+#define STR_HEXDUMP(VAR)        hexdump(VAR, strlen(VAR))
+void hexdump(char * buffer, int len) {
+    int x;
+
+    char linebuff_x[256] = { 0 };
+    char linebuff_c[32] = { 0 };
+    int pos_x = 0;
+    int pos_c = 0;
+
+    for( x=0 ; x<=len ; x++ ) {
+        pos_x += snprintf( linebuff_x+pos_x, 256-pos_x, "%02X ", (unsigned char) buffer[x] );
+        pos_c += snprintf( linebuff_c+pos_c, 32-pos_x, "%c", buffer[x] <= ' ' ? '.' : (unsigned char) buffer[x] );
+
+        if( !((x+1) % 8) || x+1>=len ) {
+            // pad hex to full length...
+            for( ; (x+1) % 8 ; x++ ) strcat(linebuff_x, "   ");
+
+            printf("%s  | %s\n", linebuff_x, linebuff_c);
+            pos_x = 0;
+            pos_c = 0;
+        }
+    }
+}
+
+
+
 /* see notification.h */
 void notification_print(const struct notification *n)
 {
-        //TODO: use logging info for this
-        printf("{\n");
-        printf("\tappname: '%s'\n", n->appname);
-        printf("\tsummary: '%s'\n", n->summary);
-        printf("\tbody: '%s'\n", n->body);
-        printf("\ticon: '%s'\n", n->iconname);
-        printf("\traw_icon set: %s\n", (n->icon_id && !STR_EQ(n->iconname, n->icon_id)) ? "true" : "false");
-        printf("\ticon_id: '%s'\n", n->icon_id);
-        printf("\tdesktop_entry: '%s'\n", n->desktop_entry ? n->desktop_entry : "");
-        printf("\tcategory: %s\n", n->category);
-        printf("\ttimeout: %ld\n", n->timeout/1000);
-        printf("\turgency: %s\n", notification_urgency_to_string(n->urgency));
-        printf("\ttransient: %d\n", n->transient);
-        printf("\tformatted: '%s'\n", n->msg);
-        printf("\tfg: %s\n", n->colors.fg);
-        printf("\tbg: %s\n", n->colors.bg);
-        printf("\thighlight: %s\n", n->colors.highlight);
-        printf("\tframe: %s\n", n->colors.frame);
-        printf("\tfullscreen: %s\n", enum_to_string_fullscreen(n->fullscreen));
-        printf("\tformat: %s\n", n->format);
-        printf("\tprogress: %d\n", n->progress);
-        printf("\tstack_tag: %s\n", (n->stack_tag ? n->stack_tag : ""));
-        printf("\tid: %d\n", n->id);
+        // Nice & readable :-) It was not valid JSON in the first place, so we
+        // can shave a couple of newlines here and there. And we can skip unset
+        // or empty variables. Fewer lines = more readable logs that don't scroll
+        // away at the speed of light.
+
+        char timeout_buffer[32] = { 0 };
+        if( n->timeout>=1000000 ) {
+            snprintf(timeout_buffer, 32, "%lds", n->timeout/1000000);
+        } else {
+            snprintf(timeout_buffer, 32, "%ldms", n->timeout/1000);
+        }
+
+        LOG_I("Notification  [ID=%d  TIMEOUT=%s  URGENCY=%s  TRANSIENT=%c  FULLSCREEN=%s]",
+              n->id,
+              timeout_buffer,
+              notification_urgency_to_string(n->urgency),
+              n->transient ? 'Y' : 'N',
+              enum_to_string_fullscreen(n->fullscreen));
+        LOG_I("{");
+
+        // Most important things first: source identification
+        LOG_I("\tappname: '%s'", n->appname);
+        if( !STR_EMPTY(n->desktop_entry) )
+            LOG_I("\tdesktop_entry: '%s'", n->desktop_entry);
+
+        // Followed by important stuff such as title/text
+        LOG_I("\tsummary: '%s'", n->summary);
+        if( !STR_EMPTY(n->body) )
+            LOG_I("\tbody: '%s'", n->body);
+        LOG_I("\tformat: %s", n->format);
+        LOG_I("\tformatted: '%s'", n->msg);
+
+        // Less important stuff, special params etc
+        if( !STR_EMPTY(n->category) )
+            LOG_I("\tcategory: %s", n->category);
+        if( n->progress >= 0 )
+            LOG_I("\tprogress: %d", n->progress);
+        if( !STR_EMPTY(n->stack_tag) )
+            LOG_I("\tstack_tag: %s",n->stack_tag);
+
+        // Eye candy goes to the end (almost)
+        LOG_I("\ticon: '%s'", n->iconname);
+        LOG_I("\traw_icon set: %c", (n->icon_id && !STR_EQ(n->iconname, n->icon_id)) ? 'Y' : 'N');
+        if( !STR_EMPTY(n->icon_id) )
+            LOG_I("\ticon_id: '%s'", n->icon_id);
+
+        LOG_I("\tfg: %s", n->colors.fg);
+        LOG_I("\tbg: %s", n->colors.bg);
+        LOG_I("\thighlight: %s", n->colors.highlight);
+        LOG_I("\tframe: %s", n->colors.frame);
+
+        // Lists at the end
         if (n->urls) {
                 char *urls = string_replace_all("\n", "\t\t\n", g_strdup(n->urls));
-                printf("\turls:\n");
-                printf("\t{\n");
-                printf("\t\t%s\n", urls);
-                printf("\t}\n");
+                LOG_I("\turls:");
+                LOG_I("\t{");
+                LOG_I("\t\t%s", urls);
+                LOG_I("\t}");
                 g_free(urls);
         }
-        if (g_hash_table_size(n->actions) == 0) {
-                printf("\tactions: {}\n");
-        } else {
+
+        if (g_hash_table_size(n->actions) > 0) {
                 gpointer p_key, p_value;
                 GHashTableIter iter;
                 g_hash_table_iter_init(&iter, n->actions);
-                printf("\tactions: {\n");
+                LOG_I("\tactions: {");
                 while (g_hash_table_iter_next(&iter, &p_key, &p_value))
-                        printf("\t\t\"%s\": \"%s\"\n", (char*)p_key, (char*)p_value);
-                printf("\t}\n");
+                        LOG_I("\t\t\"%s\": \"%s\"", (char*)p_key, (char*)p_value);
+                LOG_I("\t}");
         }
-        printf("\tscript_count: %d\n", n->script_count);
+
         if (n->script_count > 0) {
-                printf("\tscripts: ");
+                LOG_I("\tscripts: {");
                 for (int i = 0; i < n->script_count; i++) {
-                        printf("'%s' ",n->scripts[i]);
+                        LOG_I("\t\t'%s'",n->scripts[i]);
                 }
-                printf("\n");
+                LOG_I("\t}");
         }
-        printf("}\n");
-        fflush(stdout);
+        LOG_I("}");
 }
 
+// Macro used in script_handle_env_line(). We have many similar blocks and this
+// way we don't have to copy-paste that much. Final solution might be something
+// like a table of script variables paired to notification struct members but
+// for now this is good enough...
+// Condition used here handles NULL and empty string as the same
+#define OVERRIDE_IF_DIFFERENT_STR(N, NAME, VALUE)                           \
+    if ( !STR_EQ(N->NAME, VALUE) && (N->NAME && strlen(VALUE)) ) {          \
+        LOG_I("Script overrides "#NAME": '%s' -> '%s'", N->NAME, VALUE);    \
+        if( N->NAME ) g_free( N->NAME );                                    \
+        N->NAME = g_strndup(VALUE, DUNST_NOTIF_MAX_CHARS);                  \
+        ret = 1;                                                            \
+    }
+
+
+int script_handle_env_line( struct notification *n, const char * line ) {
+    char envName[128] = { 0 };
+    char *en = envName;
+    char envValue_buff[1024] = { 0 };
+    char *ev = envValue_buff;
+    const char *lb = line;
+    int ret = 0;
+    char *c = NULL;
+
+    LOG_D("Parsing script ENV line: '%s'", line);
+
+    // Now we can indulge in some pointer porn ^_^
+    // Skip any leading whitespaces
+    while( *lb < ' ' ) lb++;
+
+    // Copy variable name (stop on '=')
+    while( *lb && *lb != '=') *en++ = *lb++;
+
+    // Skip ="
+    lb += 2;
+
+    // Copy everything to the end of the line
+    while( *lb ) *ev++ = *lb++;
+
+    // Trim last quotes
+    *--ev = 0;
+
+
+    // Get rid of double-escapes. Unescaping has to be done individually as
+    // some fields need escaped (format) and some raw (body, summary) data.
+    char * envValue = string_replace_all("\\\\", "\\", g_strdup(envValue_buff));
+
+
+    if( STR_EQ("DUNST_TIMEOUT", envName) ) {
+        gint64 v = g_ascii_strtoll(envValue, NULL, 10);
+        if (!v) {
+            LOG_W("Script tried to set DUNST_TIMEOUT to invalid value (%s), ignoring", envValue);
+        } else {
+            if (n->timeout/1000 != v) {
+                LOG_I("Script overrides TIMEOUT: %ld -> %ld", n->timeout / 1000, v);
+                n->timeout = v * 1000;
+                ret = 1;
+            }
+        }
+
+    } else if( STR_EQ("DUNST_PROGRESS", envName) ) {
+        int v = (int) g_ascii_strtoll(envValue, NULL, 10);
+        if (n->progress != v) {
+            LOG_I("Script overrides PROGRESS: %d -> %d", n->progress, v);
+            n->progress = v;
+            ret = 1;
+        }
+
+    } else if( STR_EQ("DUNST_SUMMARY", envName) ) {
+        c = UNESCAPE_NEWLINES(envValue);
+        OVERRIDE_IF_DIFFERENT_STR(n, summary, c);
+
+    } else if( STR_EQ("DUNST_BODY", envName) ) {
+        c = UNESCAPE_NEWLINES(envValue);
+        OVERRIDE_IF_DIFFERENT_STR(n, body, c);
+
+    } else if( STR_EQ("DUNST_FORMAT", envName) ) {
+        // Took me 3 goddamn hours to figure out that format is not allocated per
+        // notification - it is a pointer to some global value. And if you free
+        // it, you will screw up all the following notifications... FML!
+        if ( !STR_EQ(n->format, envValue) && (n->format && strlen(envValue)) ) {
+            LOG_I("Script overrides format: '%s' -> '%s'",n->format, envValue);
+            n->format = g_strndup(envValue, DUNST_NOTIF_MAX_CHARS);
+            ret = 1;
+        }
+
+    } else if( STR_EQ("DUNST_CATEGORY", envName) ) {
+        OVERRIDE_IF_DIFFERENT_STR(n, category, envValue);
+
+    } else if( STR_EQ("DUNST_STACK_TAG", envName) ) {
+        OVERRIDE_IF_DIFFERENT_STR(n, stack_tag, envValue);
+
+    } else if( STR_EQ("DUNST_ICON_PATH", envName) ) {
+        OVERRIDE_IF_DIFFERENT_STR(n, icon_path, envValue);
+
+    }  else if( STR_EQ("DUNST_URGENCY", envName) ) {
+        enum urgency u = URG_NONE;
+
+        // Dictionary would be nice, but hey...
+        if( STR_EQ("LOW", envValue) ) u = URG_LOW;
+        else if( STR_EQ("NORMAL", envValue) ) u = URG_NORM;
+        else if( STR_EQ("CRITICAL", envValue) ) u = URG_CRIT;
+        else {
+            LOG_W("Script passed invalid value in DUNST_URGENCY: '%s'", envValue);
+        }
+
+        if( u != URG_NONE && n->urgency != u) {
+            LOG_I("Script overrides URGENCY: %s -> %s",
+                  notification_urgency_to_string(n->urgency),
+                  notification_urgency_to_string(u));
+            n->urgency = u;
+            ret = 1;
+        }
+
+    } else if( STR_EQ("DUNST_ID", envName) ||
+               STR_EQ("DUNST_URLS", envName) ||
+               STR_EQ("DUNST_DESKTOP_ENTRY", envName) ||
+               STR_EQ("DUNST_APP_NAME", envName) ||
+            STR_EQ("DUNST_TIMESTAMP", envName) ) {
+        // Quietly ignore read-only properties...
+    } else {
+        LOG_W("Script tried to set unknown property %s to '%s' (ignoring)", envName, envValue);
+    }
+
+    g_free(envValue);
+    if( c ) g_free(c);
+    return ret;
+}
+
+
+int script_handle_env_buffer( struct notification *n, const unsigned char * buffer ) {
+    char line_buffer[1024] = {0 };
+    int line_buffer_pos = 0;
+    int changes = 0;
+
+    if( STR_EMPTY(buffer) )
+        return 0;
+
+    // Chop buffer to individual lines
+    while( *buffer ) {
+        // Handle line
+        if((*buffer == '\n' || *buffer == '\r') && line_buffer_pos ) {
+            // Terminate buffer, so we don't need to memset it to 0 every line
+            line_buffer[line_buffer_pos] = 0;
+
+            if( script_handle_env_line(n, line_buffer) )
+                changes++;
+
+            line_buffer_pos = 0;
+            continue;
+        }
+
+        if(line_buffer_pos >= 1023 ) {
+            LOG_W("Script line_buffer overflow - dropping line!");
+            line_buffer_pos = 0;
+            continue;
+        }
+
+        // Skip any control chars
+        if( *buffer >= ' ' )
+            line_buffer[line_buffer_pos++] = *buffer;
+
+        buffer++;
+    }
+
+    return changes;
+}
+
+
 /* see notification.h */
-void notification_run_script(struct notification *n)
+//TODO: *caller is only temporary for ease of debugging, will be removed
+//TODO: Add script timeout - perhaps global config?
+//TODO: Deprecate the ARGS style in the future? It is quite unsafe, no escaping etc...
+int __notification_run_script(struct notification *n, bool blocking, char *caller)
 {
+        printf("run_script called by: %s()\n", caller);
+
         if (n->script_run && !settings.always_run_script)
-                return;
+                return 0;
 
         n->script_run = true;
 
+        int status;
         const char *appname = n->appname ? n->appname : "";
         const char *summary = n->summary ? n->summary : "";
         const char *body = n->body ? n->body : "";
         const char *icon = n->iconname ? n->iconname : "";
+        unsigned char * script_output; // Our memory-mapped dirty secret
 
-        const char *urgency = notification_urgency_to_string(n->urgency);
+        // Allocate shared memory map, so we can pass data from our forked children. Of
+        // course, we could do this nicer - with pthreads for example, but as a simple
+        // proof-of-concept this should be quite ok. We are allocating static amount of
+        // memory, which of course is not ideal etc.
+        // Btw don't need to memset to 0 because MAP_ANONYMOUS does this for us :)
+        script_output = (unsigned char *) mmap(0, SCRIPT_BUFFER,
+                                  PROT_READ|PROT_WRITE,
+                                  MAP_SHARED|MAP_ANONYMOUS,
+                                  -1, 0);
+
 
         for(int i = 0; i < n->script_count; i++) {
-
                 const char *script = n->scripts[i];
 
                 if (STR_EMPTY(script))
                         continue;
 
+                LOG_I("Firing %sblocking script: %s",
+                      (blocking ? "" : "non-"), script);
+
+                gint64 script_start = time_monotonic_now();
+
                 int pid1 = fork();
-
                 if (pid1) {
-                        int status;
                         waitpid(pid1, &status, 0);
-                } else {
-                        // second fork to prevent zombie processes
-                        int pid2 = fork();
-                        if (pid2) {
-                                exit(0);
-                        } else {
-                                // Set environment variables
-                                gchar *n_id_str = g_strdup_printf("%i", n->id);
-                                gchar *n_progress_str = g_strdup_printf("%i", n->progress);
-                                gchar *n_timeout_str = g_strdup_printf("%li", n->timeout/1000);
-                                gchar *n_timestamp_str = g_strdup_printf("%li", n->timestamp / 1000);
-                                safe_setenv("DUNST_APP_NAME",  appname);
-                                safe_setenv("DUNST_SUMMARY",   summary);
-                                safe_setenv("DUNST_BODY",      body);
-                                safe_setenv("DUNST_ICON_PATH", n->icon_path);
-                                safe_setenv("DUNST_URGENCY",   urgency);
-                                safe_setenv("DUNST_ID",        n_id_str);
-                                safe_setenv("DUNST_PROGRESS",  n_progress_str);
-                                safe_setenv("DUNST_CATEGORY",  n->category);
-                                safe_setenv("DUNST_STACK_TAG", n->stack_tag);
-                                safe_setenv("DUNST_URLS",      n->urls);
-                                safe_setenv("DUNST_TIMEOUT",   n_timeout_str);
-                                safe_setenv("DUNST_TIMESTAMP", n_timestamp_str);
-                                safe_setenv("DUNST_STACK_TAG", n->stack_tag);
-                                safe_setenv("DUNST_DESKTOP_ENTRY", n->desktop_entry);
+                        gint64 script_duration = (time_monotonic_now()-script_start)/1000;
+                        LOG_I("Script '%s' returned %d in %ldms - received %d bytes",
+                              script,
+                              WEXITSTATUS(status),
+                              script_duration,
+                              strlen(script_output));
 
-                                execlp(script,
-                                                script,
-                                                appname,
-                                                summary,
-                                                body,
-                                                icon,
-                                                urgency,
-                                                (char *)NULL);
-
-                                LOG_W("Unable to run script %s: %s", n->scripts[i], strerror(errno));
-                                exit(EXIT_FAILURE);
+                        if( script_duration > 3000 ) {
+                            LOG_W("Script '%s' took quite long (%ldms) to finish!",
+                                  script,
+                                  script_duration);
+                            LOG_W("Please check the script as slow scripts will delay notifications");
                         }
+
+                        // If script changed notification we need to handle reformatting etc
+                        if( script_handle_env_buffer( n, script_output ) > 0 ) {
+                            LOG_I("Script made some changes, will re-format the message");
+                            notification_format_message(n);
+                        }
+
+                        munmap(script_output, SCRIPT_BUFFER);
+
+                        return (WEXITSTATUS(status) != 0);
                 }
+
+                // second fork to prevent zombie processes
+                int pid2 = fork();
+                if (pid2) {
+                        // Non-blocking scripts can do whatever they want, and
+                        // we don't care about the result. Fire & forget
+                        if( !blocking ) exit(0);
+
+                        // Blocking scripts, however, we do care about. We need
+                        // to wait for them to finish and get results
+                        waitpid(pid2, &status, 0);
+
+                        // Propagate return value back to first fork
+                        exit(WEXITSTATUS(status));
+                }
+
+                // Set environment variables
+                gchar *n_id_str = g_strdup_printf("%i", n->id);
+                gchar *n_progress_str = g_strdup_printf("%i", n->progress);
+                gchar *n_timeout_str = g_strdup_printf("%li", n->timeout/1000);
+                gchar *n_timestamp_str = g_strdup_printf("%li", n->timestamp / 1000);
+                const char *urgency = notification_urgency_to_string(n->urgency);
+
+                safe_setenv("DUNST_APP_NAME",  ESCAPE_NEWLINES(appname));
+                safe_setenv("DUNST_SUMMARY",   ESCAPE_NEWLINES(summary));
+                safe_setenv("DUNST_FORMAT",    n->format);
+                safe_setenv("DUNST_BODY",      ESCAPE_NEWLINES(body));
+                safe_setenv("DUNST_ICON_PATH", n->icon_path);
+                safe_setenv("DUNST_URGENCY",   urgency);
+                safe_setenv("DUNST_ID",        n_id_str);
+                safe_setenv("DUNST_PROGRESS",  n_progress_str);
+                safe_setenv("DUNST_CATEGORY",  n->category);
+                safe_setenv("DUNST_STACK_TAG", n->stack_tag);
+                safe_setenv("DUNST_URLS",      n->urls);
+                safe_setenv("DUNST_TIMEOUT",   n_timeout_str);
+                safe_setenv("DUNST_TIMESTAMP", n_timestamp_str);
+                safe_setenv("DUNST_STACK_TAG", n->stack_tag);
+                safe_setenv("DUNST_DESKTOP_ENTRY", n->desktop_entry);
+
+
+                // Now there is multiple ways to skin a cat. Either way the cat is not going to like it.
+                // We can do full-blown IPC with all the bells and whistles, but it would be quite a lot
+                // of work and error-prone. Or we can go for some BASH-magic & extract env variables as
+                // strings and parse them. That should be easier if we constrain our parser with some
+                // basic rules:
+                //  1) Unknown lines are ignored
+                //  2) Invalid values and parse errors = line ignored
+                //  3) Only single-line variables (for now). You want multi = you escape it
+                char script_command[1024] = { 0 };
+                char lbuff[1024] = { 0 };
+                int lbuff_pos = 0;
+
+                snprintf(script_command, sizeof(script_command),
+                         "(. %s  '%s' '%s' '%s' '%s' '%s' && export) | grep -o 'DUNST_.*$'",
+                         script,
+                         ESCAPE_NEWLINES(appname),
+                         ESCAPE_NEWLINES(summary),
+                         ESCAPE_NEWLINES(body),
+                         icon,
+                         urgency);
+                LOG_D("Command[%lu]: %s", strlen(script_command), script_command);
+
+                FILE *proc = popen(script_command, "r");
+
+                if( proc == NULL ) {
+                    LOG_W("Unable to run script %s: %s", n->scripts[i], strerror(errno));
+                    exit(EXIT_FAILURE);
+                }
+
+                // Copy script output to shared memory. Simple string appends, not much love
+                // or care given here. Just pump the data as fast as possible.
+                while( fgets(lbuff, sizeof(lbuff), proc) != NULL ) {
+                    lbuff_pos += strlen(lbuff);
+                    strncat((char *) script_output, lbuff, SCRIPT_BUFFER-lbuff_pos);
+                }
+
+                // We only care whether script returned 0 or not.
+                status = pclose(proc);
+                exit(status != 0);
         }
+
+        return 0;
 }
 
 /*
@@ -516,6 +831,31 @@ void notification_init(struct notification *n)
 
 static void notification_format_message(struct notification *n)
 {
+        // Reapply colors based on urgency - this bothered me for quite a long time...
+        // When rule changed urgency, it did not change default colors, so my rules had
+        // to have multiple overrides that were copied back and forth in config file.
+        //TODO: Maybe add notification flag to distinguish that someone overrode one specific
+        //      color and that we should not touch colors?
+        struct notification_colors * new_color = NULL;
+        switch (n->urgency) {
+            case URG_LOW:
+                new_color = &settings.colors_low;
+                break;
+            case URG_NORM:
+                new_color = &settings.colors_norm;
+                break;
+            case URG_CRIT:
+                new_color = &settings.colors_crit;
+                break;
+        }
+        if ( new_color != NULL ) {
+            n->colors.fg = g_strdup(new_color->fg);
+            n->colors.bg = g_strdup(new_color->bg);
+            n->colors.highlight = g_strdup(new_color->highlight);
+            n->colors.frame = g_strdup(new_color->frame);
+        }
+
+
         g_clear_pointer(&n->msg, g_free);
 
         n->msg = string_replace_all("\\n", "\n", g_strdup(n->format));

@@ -473,7 +473,14 @@ void queues_update(struct dunst_status status)
                 }
 
                 n->start = time_monotonic_now();
-                notification_run_script(n);
+                int script_ret = notification_run_script_blocking(n);
+
+                if( script_ret ) {
+                    LOG_M("Script flagged notification as moot (returned 1), not displaying");
+                    n->skip_display = 1;
+                }
+
+                notification_print(n);
 
                 if (n->skip_display && !n->redisplayed) {
                         queues_notification_close(n, REASON_USER);
@@ -508,6 +515,7 @@ void queues_update(struct dunst_status status)
                                 struct notification *todisp = i_waiting->data;
 
                                 todisp->start = time_monotonic_now();
+                                printf("22222\n");
                                 notification_run_script(todisp);
 
                                 queues_swap_notifications(displayed, i_displayed, waiting, i_waiting);
