@@ -182,47 +182,59 @@ void notification_print(const struct notification *n)
 
 
 int script_handle_env_line( struct notification *n, const char * line ) {
-    char envName[128] = { 0 };
-    char *en = envName;
-    char envValue_buff[1024] = { 0 };
-    char *ev = envValue_buff;
-    const char *lb = line;
-    int ret = 0;
-    char *c = NULL;
+        char envName[128] = { 0 };
+        char *en = envName;
+        char envValue_buff[1024] = { 0 };
+        char *ev = envValue_buff;
+        const char *lb = line;
+        int ret = 0;
+        char *c = NULL;
 
-    LOG_D("Parsing script ENV line: '%s'", line);
+        LOG_D("Parsing script ENV line: '%s'", line);
 
-    // Now we can indulge in some pointer porn ^_^
-    // Skip any leading whitespaces & control chars:
-    // |   VAR="VALUE VALUE"
-    //  ^^^
-    while( *lb <= ' ' ) lb++;
+        // Now we can indulge in some pointer porn ^_^
+        // Skip any leading whitespaces & control chars:
+        // |   VAR="VALUE VALUE"
+        //  ^^^
+        while( *lb <= ' ' ) lb++;
 
-    // Copy variable name (stop on '=')
-    // |VAR="VALUE VALUE"
-    //  ^^^
-    while( *lb && *lb != '=') *en++ = *lb++;
+        // Copy variable name (stop on '=')
+        // |VAR="VALUE VALUE"
+        //  ^^^
+        while( *lb && *lb != '=') *en++ = *lb++;
 
-    // Skip ="
-    // |="VALUE VALUE"
-    //  ^^
-    lb += 2;
+        // Check that line is atleast somewhat valid by checking that 1) it has more
+        // data, 2) variable name is not empty and 3) that next character is '"' by
+        // advancing buffer and skipping over =
+        // |="VALUE VALUE"
+        //  ^
+        if( !*lb || STR_EMPTY(envName) || *++lb != '"' ) {
+            LOG_W("Ignoring invalid script line: '%s'", line);
+            return 0;
+        }
 
-    // Copy everything to the end of the line
-    // |VALUE VALUE"
-    //  ^^^^^^^^^^^^
-    while( *lb ) *ev++ = *lb++;
+        // Skip "
+        // |"VALUE VALUE"
+        //  ^
+        lb++;
 
-    // Trim last quotes
-    *--ev = 0;
+        // Copy everything to the end of the line
+        // |VALUE VALUE"
+        //  ^^^^^^^^^^^^
+        while( *lb ) *ev++ = *lb++;
+
+        // Trim last quotes
+        *--ev = 0;
+
+        LOG_I("Setting %s='%s'", envName, envValue_buff);
 
 
-    // Get rid of double-escapes. Unescaping has to be done individually as
-    // some fields need escaped (format) and some raw (body, summary) data.
-    char * envValue = string_replace_all("\\\\", "\\", g_strdup(envValue_buff));
+        // Get rid of double-escapes. Unescaping has to be done individually as
+        // some fields need escaped (format) and some raw (body, summary) data.
+        char * envValue = string_replace_all("\\\\", "\\", g_strdup(envValue_buff));
 
 
-    if( STR_EQ("DUNST_TIMEOUT", envName) ) {
+        if( STR_EQ("DUNST_TIMEOUT", envName) ) {
         gint64 v = g_ascii_strtoll(envValue, NULL, 10);
         if (!v) {
             LOG_W("Script tried to set DUNST_TIMEOUT to invalid value (%s), ignoring", envValue);
@@ -234,7 +246,7 @@ int script_handle_env_line( struct notification *n, const char * line ) {
             }
         }
 
-    } else if( STR_EQ("DUNST_PROGRESS", envName) ) {
+        } else if( STR_EQ("DUNST_PROGRESS", envName) ) {
         int v = (int) g_ascii_strtoll(envValue, NULL, 10);
         if (n->progress != v) {
             LOG_I("Script overrides PROGRESS: %d -> %d", n->progress, v);
@@ -242,7 +254,7 @@ int script_handle_env_line( struct notification *n, const char * line ) {
             ret = 1;
         }
 
-    }  else if( STR_EQ("DUNST_TRANSIENT", envName) ) {
+        }  else if( STR_EQ("DUNST_TRANSIENT", envName) ) {
         bool v = (g_ascii_strtoll(envValue, NULL, 10) > 0);
         if (n->transient != v) {
             LOG_I("Script overrides TRANSIENT: %d -> %d", n->transient, v);
@@ -250,15 +262,15 @@ int script_handle_env_line( struct notification *n, const char * line ) {
             ret = 1;
         }
 
-    } else if( STR_EQ("DUNST_SUMMARY", envName) ) {
+        } else if( STR_EQ("DUNST_SUMMARY", envName) ) {
         c = UNESCAPE_NEWLINES(envValue);
         OVERRIDE_IF_DIFFERENT_STR(n, summary, c);
 
-    } else if( STR_EQ("DUNST_BODY", envName) ) {
+        } else if( STR_EQ("DUNST_BODY", envName) ) {
         c = UNESCAPE_NEWLINES(envValue);
         OVERRIDE_IF_DIFFERENT_STR(n, body, c);
 
-    } else if( STR_EQ("DUNST_FORMAT", envName) ) {
+        } else if( STR_EQ("DUNST_FORMAT", envName) ) {
         // Took me 3 goddamn hours to figure out that format is not allocated per
         // notification - it is a pointer to some global value. And if you free
         // it, you will screw up all the following notifications... FML!
@@ -268,16 +280,16 @@ int script_handle_env_line( struct notification *n, const char * line ) {
             ret = 1;
         }
 
-    } else if( STR_EQ("DUNST_CATEGORY", envName) ) {
+        } else if( STR_EQ("DUNST_CATEGORY", envName) ) {
         OVERRIDE_IF_DIFFERENT_STR(n, category, envValue);
 
-    } else if( STR_EQ("DUNST_STACK_TAG", envName) ) {
+        } else if( STR_EQ("DUNST_STACK_TAG", envName) ) {
         OVERRIDE_IF_DIFFERENT_STR(n, stack_tag, envValue);
 
-    } else if( STR_EQ("DUNST_ICON_PATH", envName) ) {
+        } else if( STR_EQ("DUNST_ICON_PATH", envName) ) {
         OVERRIDE_IF_DIFFERENT_STR(n, icon_path, envValue);
 
-    }  else if( STR_EQ("DUNST_URGENCY", envName) ) {
+        }  else if( STR_EQ("DUNST_URGENCY", envName) ) {
         enum urgency u = URG_NONE;
 
         // Dictionary would be nice, but hey...
@@ -296,19 +308,19 @@ int script_handle_env_line( struct notification *n, const char * line ) {
             ret = 1;
         }
 
-    } else if( STR_EQ("DUNST_ID", envName) ||
+        } else if( STR_EQ("DUNST_ID", envName) ||
                STR_EQ("DUNST_URLS", envName) ||
                STR_EQ("DUNST_DESKTOP_ENTRY", envName) ||
                STR_EQ("DUNST_APP_NAME", envName) ||
             STR_EQ("DUNST_TIMESTAMP", envName) ) {
         // Quietly ignore read-only properties...
-    } else {
+        } else {
         LOG_W("Script tried to set unknown property %s to '%s' (ignoring)", envName, envValue);
-    }
+        }
 
-    g_free(envValue);
-    if( c ) g_free(c);
-    return ret;
+        g_free(envValue);
+        if( c ) g_free(c);
+        return ret;
 }
 
 
