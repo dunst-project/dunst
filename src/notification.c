@@ -797,6 +797,8 @@ struct notification *notification_create(void)
         n->actions = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
         n->default_action_name = g_strdup("default");
 
+        n->colors_match_urgency = true;
+
         n->script_count = 0;
         return n;
 }
@@ -835,6 +837,7 @@ void notification_init(struct notification *n)
                 default:
                         g_error("Unhandled urgency type: %d", n->urgency);
         }
+
         if (!n->colors.fg)
                 n->colors.fg = g_strdup(defcolors.fg);
         if (!n->colors.bg)
@@ -883,7 +886,7 @@ static void notification_format_message(struct notification *n)
         // When rule changed urgency, it did not change default colors, so my rules had
         // to have multiple overrides that were copied back and forth in config file.
         //TODO: Maybe add notification flag to distinguish that someone overrode one specific
-        //      color and that we should not touch colors?
+        //      color and that we should not touch colors? <DONE>
         struct notification_colors * new_color = NULL;
         switch (n->urgency) {
             case URG_LOW:
@@ -896,7 +899,7 @@ static void notification_format_message(struct notification *n)
                 new_color = &settings.colors_crit;
                 break;
         }
-        if ( new_color != NULL ) {
+        if ( new_color != NULL && n->colors_match_urgency ) {
             n->colors.fg = g_strdup(new_color->fg);
             n->colors.bg = g_strdup(new_color->bg);
             n->colors.highlight = g_strdup(new_color->highlight);

@@ -84,6 +84,7 @@ struct notification {
         const char **scripts;
         int script_count;
         struct notification_colors colors;
+        bool colors_match_urgency; /**< Indicates whether colors has been manually overridden */
 
         char *stack_tag;    /**< stack notifications by tag */
 
