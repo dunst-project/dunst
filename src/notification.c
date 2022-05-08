@@ -54,7 +54,7 @@ extern char **environ;
 //TODO: Move to utils.c but for now I wanna edit only the files I have to...
 #define ESCAPE_NEWLINES(VAR)    string_replace_all("\n", "\\n", string_replace_all("\r", "", g_strdup(VAR)))
 #define UNESCAPE_NEWLINES(VAR)  string_replace_all("\\n", "\n", g_strdup(VAR))
-#define SCRIPT_BUFFER            32*1024
+#define SCRIPT_BUFFER_LEN       32*1024 // [b] how big should the MMAP region be
 
 //TODO: Move to utils.c but for now I wanna edit only the files I have to...
 #define STR_HEXDUMP(VAR)        hexdump(VAR, strlen(VAR))
@@ -193,16 +193,24 @@ int script_handle_env_line( struct notification *n, const char * line ) {
     LOG_D("Parsing script ENV line: '%s'", line);
 
     // Now we can indulge in some pointer porn ^_^
-    // Skip any leading whitespaces
-    while( *lb < ' ' ) lb++;
+    // Skip any leading whitespaces & control chars:
+    // |   VAR="VALUE VALUE"
+    //  ^^^
+    while( *lb <= ' ' ) lb++;
 
     // Copy variable name (stop on '=')
+    // |VAR="VALUE VALUE"
+    //  ^^^
     while( *lb && *lb != '=') *en++ = *lb++;
 
     // Skip ="
+    // |="VALUE VALUE"
+    //  ^^
     lb += 2;
 
     // Copy everything to the end of the line
+    // |VALUE VALUE"
+    //  ^^^^^^^^^^^^
     while( *lb ) *ev++ = *lb++;
 
     // Trim last quotes
@@ -231,6 +239,14 @@ int script_handle_env_line( struct notification *n, const char * line ) {
         if (n->progress != v) {
             LOG_I("Script overrides PROGRESS: %d -> %d", n->progress, v);
             n->progress = v;
+            ret = 1;
+        }
+
+    }  else if( STR_EQ("DUNST_TRANSIENT", envName) ) {
+        bool v = (g_ascii_strtoll(envValue, NULL, 10) > 0);
+        if (n->transient != v) {
+            LOG_I("Script overrides TRANSIENT: %d -> %d", n->transient, v);
+            n->transient = v;
             ret = 1;
         }
 
@@ -318,13 +334,13 @@ int script_handle_env_buffer( struct notification *n, const unsigned char * buff
             continue;
         }
 
-        if(line_buffer_pos >= 1023 ) {
+        if(line_buffer_pos >= sizeof(line_buffer)-1 ) {
             LOG_W("Script line_buffer overflow - dropping line!");
             line_buffer_pos = 0;
             continue;
         }
 
-        // Skip any control chars
+        // Skip any control chars (keep whitespaces)
         if( *buffer >= ' ' )
             line_buffer[line_buffer_pos++] = *buffer;
 
@@ -341,6 +357,8 @@ int script_handle_env_buffer( struct notification *n, const unsigned char * buff
 //TODO: Deprecate the ARGS style in the future? It is quite unsafe, no escaping etc...
 int __notification_run_script(struct notification *n, bool blocking, char *caller)
 {
+        //TODO: delete this, just for me to quickly untangle where is this being
+        //      called from etc...
         printf("run_script called by: %s()\n", caller);
 
         if (n->script_run && !settings.always_run_script)
@@ -353,17 +371,23 @@ int __notification_run_script(struct notification *n, bool blocking, char *calle
         const char *summary = n->summary ? n->summary : "";
         const char *body = n->body ? n->body : "";
         const char *icon = n->iconname ? n->iconname : "";
-        unsigned char * script_output; // Our memory-mapped dirty secret
+
+        // Our memory-mapped dirty secret
+        unsigned char * script_output;
 
         // Allocate shared memory map, so we can pass data from our forked children. Of
         // course, we could do this nicer - with pthreads for example, but as a simple
         // proof-of-concept this should be quite ok. We are allocating static amount of
         // memory, which of course is not ideal etc.
         // Btw don't need to memset to 0 because MAP_ANONYMOUS does this for us :)
-        script_output = (unsigned char *) mmap(0, SCRIPT_BUFFER,
-                                  PROT_READ|PROT_WRITE,
-                                  MAP_SHARED|MAP_ANONYMOUS,
-                                  -1, 0);
+        script_output = (unsigned char *) mmap(0, SCRIPT_BUFFER_LEN,
+                                               PROT_READ|PROT_WRITE,
+                                               MAP_SHARED|MAP_ANONYMOUS,
+                                               -1, 0);
+
+        if( script_output == MAP_FAILED ) {
+            LOG_E("Failed to allocate %d bytes of shared memory for script output!", SCRIPT_BUFFER_LEN);
+        }
 
 
         for(int i = 0; i < n->script_count; i++) {
@@ -381,11 +405,11 @@ int __notification_run_script(struct notification *n, bool blocking, char *calle
                 if (pid1) {
                         waitpid(pid1, &status, 0);
                         gint64 script_duration = (time_monotonic_now()-script_start)/1000;
-                        LOG_I("Script '%s' returned %d in %ldms - received %d bytes",
+                        LOG_I("Script '%s' returned %d in %ldms - received %zu bytes",
                               script,
                               WEXITSTATUS(status),
                               script_duration,
-                              strlen(script_output));
+                              strlen((char*) script_output));
 
                         if( script_duration > 3000 ) {
                             LOG_W("Script '%s' took quite long (%ldms) to finish!",
@@ -400,9 +424,15 @@ int __notification_run_script(struct notification *n, bool blocking, char *calle
                             notification_format_message(n);
                         }
 
-                        munmap(script_output, SCRIPT_BUFFER);
 
-                        return (WEXITSTATUS(status) != 0);
+                        // If script returned 1, it means that we should drop the notification
+                        // outright. So we stop processing scripts in that case and just quit.
+                        if( WEXITSTATUS(status) != 0 ) {
+                            munmap(script_output, SCRIPT_BUFFER_LEN);
+                            return 1;
+                        }
+
+                        continue;
                 }
 
                 // second fork to prevent zombie processes
@@ -441,7 +471,8 @@ int __notification_run_script(struct notification *n, bool blocking, char *calle
                 safe_setenv("DUNST_TIMEOUT",   n_timeout_str);
                 safe_setenv("DUNST_TIMESTAMP", n_timestamp_str);
                 safe_setenv("DUNST_STACK_TAG", n->stack_tag);
-                safe_setenv("DUNST_DESKTOP_ENTRY", n->desktop_entry);
+                safe_setenv("DUNST_DESKTOP_ENTRY",  n->desktop_entry);
+                safe_setenv("DUNST_TRANSIENT",      n->transient ? "1" : "0");
 
 
                 // Now there is multiple ways to skin a cat. Either way the cat is not going to like it.
@@ -453,8 +484,8 @@ int __notification_run_script(struct notification *n, bool blocking, char *calle
                 //  2) Invalid values and parse errors = line ignored
                 //  3) Only single-line variables (for now). You want multi = you escape it
                 char script_command[1024] = { 0 };
-                char lbuff[1024] = { 0 };
-                int lbuff_pos = 0;
+                char lbuff[512] = { 0 };
+                size_t lbuff_pos = 0;
 
                 snprintf(script_command, sizeof(script_command),
                          "(. %s  '%s' '%s' '%s' '%s' '%s' && export) | grep -o 'DUNST_.*$'",
@@ -468,23 +499,37 @@ int __notification_run_script(struct notification *n, bool blocking, char *calle
 
                 FILE *proc = popen(script_command, "r");
 
+                // Failure to run script = ignore it and carry on
                 if( proc == NULL ) {
                     LOG_W("Unable to run script %s: %s", n->scripts[i], strerror(errno));
-                    exit(EXIT_FAILURE);
+                    exit(0);
                 }
+
+                // Multiple scripts can be run so need to clear up after every one...
+                memset(script_output, 0, SCRIPT_BUFFER_LEN);
 
                 // Copy script output to shared memory. Simple string appends, not much love
                 // or care given here. Just pump the data as fast as possible.
                 while( fgets(lbuff, sizeof(lbuff), proc) != NULL ) {
                     lbuff_pos += strlen(lbuff);
-                    strncat((char *) script_output, lbuff, SCRIPT_BUFFER-lbuff_pos);
+                    strncat((char *) script_output, lbuff, SCRIPT_BUFFER_LEN-lbuff_pos);
                 }
 
                 // We only care whether script returned 0 or not.
                 status = pclose(proc);
+
+                // If script overflows, we just drop everything. It'd be foolish to try to make
+                // sense from incomplete data as the result would most likely not be what the
+                // user expects...
+                if( lbuff_pos != strlen((char*) script_output) ) {
+                    LOG_W("Data from script overflowed (%zu bytes), ignoring script completely!", lbuff_pos);
+                    exit(0);
+                }
+
                 exit(status != 0);
         }
 
+        munmap(script_output, SCRIPT_BUFFER_LEN);
         return 0;
 }
 
