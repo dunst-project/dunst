@@ -206,10 +206,11 @@ void notification_icon_replace_data(struct notification *n, GVariant *new_icon);
  * settings.always_run_script is not set, do nothing.
  */
 //void notification_run_script(struct notification *n);
+// For the ease of debugging I've added these. It also servers as backwards compatible
+// thing so I don't have to search&replace all the calls throughout the code.
 #define notification_run_script(N)   __notification_run_script(N, false, __func__)
 #define notification_run_script_blocking(N)   __notification_run_script(N, true, __func__)
-
-int __notification_run_script(struct notification *n, bool blocking, char * caller);
+int __notification_run_script(struct notification *n, bool blocking, const char * caller);
 /**
  * print a human readable representation
  * of the given notification to stdout.

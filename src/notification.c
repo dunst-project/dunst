@@ -208,7 +208,7 @@ int script_handle_env_line( struct notification *n, const char * line ) {
         // advancing buffer and skipping over =
         // |="VALUE VALUE"
         //  ^
-        if( !*lb || STR_EMPTY(envName) || *++lb != '"' ) {
+        if( !*lb || !strlen(envName) || *++lb != '"' ) {
             LOG_W("Ignoring invalid script line: '%s'", line);
             return 0;
         }
@@ -367,7 +367,7 @@ int script_handle_env_buffer( struct notification *n, const unsigned char * buff
 //TODO: *caller is only temporary for ease of debugging, will be removed
 //TODO: Add script timeout - perhaps global config?
 //TODO: Deprecate the ARGS style in the future? It is quite unsafe, no escaping etc...
-int __notification_run_script(struct notification *n, bool blocking, char *caller)
+int __notification_run_script(struct notification *n, bool blocking, const char *caller)
 {
         //TODO: delete this, just for me to quickly untangle where is this being
         //      called from etc...
@@ -901,15 +901,21 @@ static void notification_format_message(struct notification *n)
         //      color and that we should not touch colors? <DONE>
         struct notification_colors * new_color = NULL;
         switch (n->urgency) {
-            case URG_LOW:
-                new_color = &settings.colors_low;
-                break;
-            case URG_NORM:
-                new_color = &settings.colors_norm;
-                break;
-            case URG_CRIT:
-                new_color = &settings.colors_crit;
-                break;
+                case URG_LOW:
+                        new_color = &settings.colors_low;
+                        break;
+                case URG_NORM:
+                        new_color = &settings.colors_norm;
+                        break;
+                case URG_CRIT:
+                        new_color = &settings.colors_crit;
+                        break;
+
+                default:
+                        // Sigh...
+                        LOG_W("Unhandled urgency value: %d (%s)",
+                              n->urgency, notification_urgency_to_string(n->urgency));
+                        break;
         }
         if ( new_color != NULL && n->colors_match_urgency ) {
             n->colors.fg = g_strdup(new_color->fg);
