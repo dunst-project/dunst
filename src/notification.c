@@ -209,8 +209,8 @@ int script_handle_env_line( struct notification *n, const char * line ) {
         // |="VALUE VALUE"
         //  ^
         if( !*lb || !strlen(envName) || *++lb != '"' ) {
-            LOG_W("Ignoring invalid script line: '%s'", line);
-            return 0;
+                LOG_W("Ignoring invalid script line: '%s'", line);
+                return 0;
         }
 
         // Skip "
@@ -226,7 +226,7 @@ int script_handle_env_line( struct notification *n, const char * line ) {
         // Trim last quotes
         *--ev = 0;
 
-        LOG_I("Setting %s='%s'", envName, envValue_buff);
+        LOG_D("Script setting %s='%s'", envName, envValue_buff);
 
 
         // Get rid of double-escapes. Unescaping has to be done individually as
@@ -235,77 +235,77 @@ int script_handle_env_line( struct notification *n, const char * line ) {
 
 
         if( STR_EQ("DUNST_TIMEOUT", envName) ) {
-        gint64 v = g_ascii_strtoll(envValue, NULL, 10);
-        if (!v) {
-            LOG_W("Script tried to set DUNST_TIMEOUT to invalid value (%s), ignoring", envValue);
-        } else {
-            if (n->timeout/1000 != v) {
-                LOG_I("Script overrides TIMEOUT: %ld -> %ld", n->timeout / 1000, v);
-                n->timeout = v * 1000;
-                ret = 1;
-            }
-        }
+                gint64 v = g_ascii_strtoll(envValue, NULL, 10);
+                if (!v) {
+                        LOG_W("Script tried to set DUNST_TIMEOUT to invalid value (%s), ignoring", envValue);
+                } else {
+                        if (n->timeout/1000 != v) {
+                                LOG_I("Script overrides TIMEOUT: %ld -> %ld", n->timeout / 1000, v);
+                                n->timeout = v * 1000;
+                                ret = 1;
+                        }
+                }
 
         } else if( STR_EQ("DUNST_PROGRESS", envName) ) {
-        int v = (int) g_ascii_strtoll(envValue, NULL, 10);
-        if (n->progress != v) {
-            LOG_I("Script overrides PROGRESS: %d -> %d", n->progress, v);
-            n->progress = v;
-            ret = 1;
-        }
+                int v = (int) g_ascii_strtoll(envValue, NULL, 10);
+                if (n->progress != v) {
+                        LOG_I("Script overrides PROGRESS: %d -> %d", n->progress, v);
+                        n->progress = v;
+                        ret = 1;
+                }
 
         }  else if( STR_EQ("DUNST_TRANSIENT", envName) ) {
-        bool v = (g_ascii_strtoll(envValue, NULL, 10) > 0);
-        if (n->transient != v) {
-            LOG_I("Script overrides TRANSIENT: %d -> %d", n->transient, v);
-            n->transient = v;
-            ret = 1;
-        }
+                bool v = (g_ascii_strtoll(envValue, NULL, 10) > 0);
+                if (n->transient != v) {
+                        LOG_I("Script overrides TRANSIENT: %d -> %d", n->transient, v);
+                        n->transient = v;
+                        ret = 1;
+                }
 
         } else if( STR_EQ("DUNST_SUMMARY", envName) ) {
-        c = UNESCAPE_NEWLINES(envValue);
-        OVERRIDE_IF_DIFFERENT_STR(n, summary, c);
+                c = UNESCAPE_NEWLINES(envValue);
+                OVERRIDE_IF_DIFFERENT_STR(n, summary, c);
 
         } else if( STR_EQ("DUNST_BODY", envName) ) {
-        c = UNESCAPE_NEWLINES(envValue);
-        OVERRIDE_IF_DIFFERENT_STR(n, body, c);
+                c = UNESCAPE_NEWLINES(envValue);
+                OVERRIDE_IF_DIFFERENT_STR(n, body, c);
 
         } else if( STR_EQ("DUNST_FORMAT", envName) ) {
         // Took me 3 goddamn hours to figure out that format is not allocated per
         // notification - it is a pointer to some global value. And if you free
         // it, you will screw up all the following notifications... FML!
         if ( !STR_EQ(n->format, envValue) && (n->format && strlen(envValue)) ) {
-            LOG_I("Script overrides format: '%s' -> '%s'",n->format, envValue);
-            n->format = g_strndup(envValue, DUNST_NOTIF_MAX_CHARS);
-            ret = 1;
+                LOG_I("Script overrides format: '%s' -> '%s'",n->format, envValue);
+                n->format = g_strndup(envValue, DUNST_NOTIF_MAX_CHARS);
+                ret = 1;
         }
 
         } else if( STR_EQ("DUNST_CATEGORY", envName) ) {
-        OVERRIDE_IF_DIFFERENT_STR(n, category, envValue);
+                OVERRIDE_IF_DIFFERENT_STR(n, category, envValue);
 
         } else if( STR_EQ("DUNST_STACK_TAG", envName) ) {
-        OVERRIDE_IF_DIFFERENT_STR(n, stack_tag, envValue);
+                OVERRIDE_IF_DIFFERENT_STR(n, stack_tag, envValue);
 
         } else if( STR_EQ("DUNST_ICON_PATH", envName) ) {
-        OVERRIDE_IF_DIFFERENT_STR(n, icon_path, envValue);
+                OVERRIDE_IF_DIFFERENT_STR(n, icon_path, envValue);
 
         }  else if( STR_EQ("DUNST_URGENCY", envName) ) {
-        enum urgency u = URG_NONE;
+                enum urgency u = URG_NONE;
 
-        // Dictionary would be nice, but hey...
-        if( STR_EQ("LOW", envValue) ) u = URG_LOW;
-        else if( STR_EQ("NORMAL", envValue) ) u = URG_NORM;
-        else if( STR_EQ("CRITICAL", envValue) ) u = URG_CRIT;
-        else {
-            LOG_W("Script passed invalid value in DUNST_URGENCY: '%s'", envValue);
-        }
+                // Dictionary would be nice, but hey...
+                if( STR_EQ("LOW", envValue) ) u = URG_LOW;
+                else if( STR_EQ("NORMAL", envValue) ) u = URG_NORM;
+                else if( STR_EQ("CRITICAL", envValue) ) u = URG_CRIT;
+                else {
+                        LOG_W("Script passed invalid value in DUNST_URGENCY: '%s'", envValue);
+                }
 
         if( u != URG_NONE && n->urgency != u) {
-            LOG_I("Script overrides URGENCY: %s -> %s",
-                  notification_urgency_to_string(n->urgency),
-                  notification_urgency_to_string(u));
-            n->urgency = u;
-            ret = 1;
+                LOG_I("Script overrides URGENCY: %s -> %s",
+                        notification_urgency_to_string(n->urgency),
+                        notification_urgency_to_string(u));
+                        n->urgency = u;
+                ret = 1;
         }
 
         } else if( STR_EQ("DUNST_ID", envName) ||
@@ -315,7 +315,7 @@ int script_handle_env_line( struct notification *n, const char * line ) {
             STR_EQ("DUNST_TIMESTAMP", envName) ) {
         // Quietly ignore read-only properties...
         } else {
-        LOG_W("Script tried to set unknown property %s to '%s' (ignoring)", envName, envValue);
+                LOG_W("Script tried to set unknown property %s to '%s' (ignoring)", envName, envValue);
         }
 
         g_free(envValue);
@@ -325,41 +325,41 @@ int script_handle_env_line( struct notification *n, const char * line ) {
 
 
 int script_handle_env_buffer( struct notification *n, const unsigned char * buffer ) {
-    char line_buffer[1024] = {0 };
-    int line_buffer_pos = 0;
-    int changes = 0;
+        char line_buffer[1024] = {0 };
+        int line_buffer_pos = 0;
+        int changes = 0;
 
-    if( STR_EMPTY(buffer) )
-        return 0;
+        if( STR_EMPTY(buffer) )
+                return 0;
 
-    // Chop buffer to individual lines
-    while( *buffer ) {
-        // Handle line
-        if((*buffer == '\n' || *buffer == '\r') && line_buffer_pos ) {
-            // Terminate buffer, so we don't need to memset it to 0 every line
-            line_buffer[line_buffer_pos] = 0;
+        // Chop buffer to individual lines
+        while( *buffer ) {
+                // Handle line
+                if((*buffer == '\n' || *buffer == '\r') && line_buffer_pos ) {
+                        // Terminate buffer, so we don't need to memset it to 0 every line
+                        line_buffer[line_buffer_pos] = 0;
 
-            if( script_handle_env_line(n, line_buffer) )
-                changes++;
+                        if( script_handle_env_line(n, line_buffer) )
+                                changes++;
 
-            line_buffer_pos = 0;
-            continue;
+                        line_buffer_pos = 0;
+                        continue;
+                }
+
+                if(line_buffer_pos >= sizeof(line_buffer)-1 ) {
+                        LOG_W("Script line_buffer overflow - dropping line!");
+                        line_buffer_pos = 0;
+                        continue;
+                }
+
+                // Skip any control chars (keep whitespaces)
+                if( *buffer >= ' ' )
+                        line_buffer[line_buffer_pos++] = *buffer;
+
+                buffer++;
         }
 
-        if(line_buffer_pos >= sizeof(line_buffer)-1 ) {
-            LOG_W("Script line_buffer overflow - dropping line!");
-            line_buffer_pos = 0;
-            continue;
-        }
-
-        // Skip any control chars (keep whitespaces)
-        if( *buffer >= ' ' )
-            line_buffer[line_buffer_pos++] = *buffer;
-
-        buffer++;
-    }
-
-    return changes;
+        return changes;
 }
 
 
@@ -398,7 +398,7 @@ int __notification_run_script(struct notification *n, bool blocking, const char 
                                                -1, 0);
 
         if( script_output == MAP_FAILED ) {
-            LOG_E("Failed to allocate %d bytes of shared memory for script output!", SCRIPT_BUFFER_LEN);
+                LOG_E("Failed to allocate %d bytes of shared memory for script output!", SCRIPT_BUFFER_LEN);
         }
 
 
@@ -408,8 +408,7 @@ int __notification_run_script(struct notification *n, bool blocking, const char 
                 if (STR_EMPTY(script))
                         continue;
 
-                LOG_I("Firing %sblocking script: %s",
-                      (blocking ? "" : "non-"), script);
+                LOG_I("Firing %sblocking script: %s", (blocking ? "" : "non-"), script);
 
                 gint64 script_start = time_monotonic_now();
 
@@ -424,24 +423,24 @@ int __notification_run_script(struct notification *n, bool blocking, const char 
                               strlen((char*) script_output));
 
                         if( script_duration > 3000 ) {
-                            LOG_W("Script '%s' took quite long (%ldms) to finish!",
-                                  script,
-                                  script_duration);
-                            LOG_W("Please check the script as slow scripts will delay notifications");
+                                LOG_W("Script '%s' took quite long (%ldms) to finish!",
+                                        script,
+                                        script_duration);
+                                LOG_W("Please check the script as slow scripts will delay notifications");
                         }
 
                         // If script changed notification we need to handle reformatting etc
                         if( script_handle_env_buffer( n, script_output ) > 0 ) {
-                            LOG_I("Script made some changes, will re-format the message");
-                            notification_format_message(n);
+                                LOG_I("Script made some changes, will re-format the message");
+                                notification_format_message(n);
                         }
 
 
                         // If script returned 1, it means that we should drop the notification
                         // outright. So we stop processing scripts in that case and just quit.
                         if( WEXITSTATUS(status) != 0 ) {
-                            munmap(script_output, SCRIPT_BUFFER_LEN);
-                            return 1;
+                                munmap(script_output, SCRIPT_BUFFER_LEN);
+                                return 1;
                         }
 
                         continue;
@@ -513,8 +512,8 @@ int __notification_run_script(struct notification *n, bool blocking, const char 
 
                 // Failure to run script = ignore it and carry on
                 if( proc == NULL ) {
-                    LOG_W("Unable to run script %s: %s", n->scripts[i], strerror(errno));
-                    exit(0);
+                        LOG_W("Unable to run script %s: %s", n->scripts[i], strerror(errno));
+                        exit(0);
                 }
 
                 // Multiple scripts can be run so need to clear up after every one...
@@ -523,8 +522,8 @@ int __notification_run_script(struct notification *n, bool blocking, const char 
                 // Copy script output to shared memory. Simple string appends, not much love
                 // or care given here. Just pump the data as fast as possible.
                 while( fgets(lbuff, sizeof(lbuff), proc) != NULL ) {
-                    lbuff_pos += strlen(lbuff);
-                    strncat((char *) script_output, lbuff, SCRIPT_BUFFER_LEN-lbuff_pos);
+                        lbuff_pos += strlen(lbuff);
+                        strncat((char *) script_output, lbuff, SCRIPT_BUFFER_LEN-lbuff_pos);
                 }
 
                 // We only care whether script returned 0 or not.
@@ -534,8 +533,8 @@ int __notification_run_script(struct notification *n, bool blocking, const char 
                 // sense from incomplete data as the result would most likely not be what the
                 // user expects...
                 if( lbuff_pos != strlen((char*) script_output) ) {
-                    LOG_W("Data from script overflowed (%zu bytes), ignoring script completely!", lbuff_pos);
-                    exit(0);
+                        LOG_W("Data from script overflowed (%zu bytes), ignoring script completely!", lbuff_pos);
+                        exit(0);
                 }
 
                 exit(status != 0);
@@ -918,10 +917,15 @@ static void notification_format_message(struct notification *n)
                         break;
         }
         if ( new_color != NULL && n->colors_match_urgency ) {
-            n->colors.fg = g_strdup(new_color->fg);
-            n->colors.bg = g_strdup(new_color->bg);
-            n->colors.highlight = g_strdup(new_color->highlight);
-            n->colors.frame = g_strdup(new_color->frame);
+                if( n->colors.fg ) g_free( n->colors.fg);
+                if( n->colors.bg ) g_free( n->colors.bg);
+                if( n->colors.highlight ) g_free( n->colors.highlight);
+                if( n->colors.frame ) g_free( n->colors.frame);
+
+                n->colors.fg = g_strdup(new_color->fg);
+                n->colors.bg = g_strdup(new_color->bg);
+                n->colors.highlight = g_strdup(new_color->highlight);
+                n->colors.frame = g_strdup(new_color->frame);
         }
 
 
