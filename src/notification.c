@@ -393,8 +393,10 @@ int __notification_run_script(struct notification *n, bool blocking, const char 
                                                MAP_SHARED|MAP_ANONYMOUS,
                                                -1, 0);
 
+        // If allocation failed, we just carry on without running any script at all
         if( script_output == MAP_FAILED ) {
-                LOG_E("Failed to allocate %d bytes of shared memory for script output!", SCRIPT_BUFFER_LEN);
+                LOG_W("Failed to allocate %d bytes of shared memory for script output, skipping!", SCRIPT_BUFFER_LEN);
+                return 0;
         }
 
 
@@ -427,7 +429,8 @@ int __notification_run_script(struct notification *n, bool blocking, const char 
 
                         // If script changed notification we need to handle reformatting etc
                         if( script_handle_env_buffer( n, script_output ) > 0 ) {
-                                LOG_I("Script made some changes, will re-format the message");
+                                LOG_I("Script made some changes, will apply rules and re-format the message");
+                                rule_apply_all(n);
                                 notification_format_message(n);
                         }
 
@@ -814,8 +817,6 @@ struct notification *notification_create(void)
         n->actions = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
         n->default_action_name = g_strdup("default");
 
-        n->colors_match_urgency = true;
-
         n->script_count = 0;
         return n;
 }
@@ -899,42 +900,6 @@ void notification_init(struct notification *n)
 
 static void notification_format_message(struct notification *n)
 {
-        // Reapply colors based on urgency - this bothered me for quite a long time...
-        // When rule changed urgency, it did not change default colors, so my rules had
-        // to have multiple overrides that were copied back and forth in config file.
-        //TODO: Maybe add notification flag to distinguish that someone overrode one specific
-        //      color and that we should not touch colors? <DONE>
-        struct notification_colors * new_color = NULL;
-        switch (n->urgency) {
-                case URG_LOW:
-                        new_color = &settings.colors_low;
-                        break;
-                case URG_NORM:
-                        new_color = &settings.colors_norm;
-                        break;
-                case URG_CRIT:
-                        new_color = &settings.colors_crit;
-                        break;
-
-                default:
-                        // Sigh...
-                        LOG_W("Unhandled urgency value: %d (%s)",
-                              n->urgency, notification_urgency_to_string(n->urgency));
-                        break;
-        }
-        if ( new_color != NULL && n->colors_match_urgency ) {
-                if( n->colors.fg ) g_free( n->colors.fg);
-                if( n->colors.bg ) g_free( n->colors.bg);
-                if( n->colors.highlight ) g_free( n->colors.highlight);
-                if( n->colors.frame ) g_free( n->colors.frame);
-
-                n->colors.fg = g_strdup(new_color->fg);
-                n->colors.bg = g_strdup(new_color->bg);
-                n->colors.highlight = g_strdup(new_color->highlight);
-                n->colors.frame = g_strdup(new_color->frame);
-        }
-
-
         g_clear_pointer(&n->msg, g_free);
 
         n->msg = string_replace_all("\\n", "\n", g_strdup(n->format));

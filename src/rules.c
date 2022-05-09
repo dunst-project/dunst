@@ -64,30 +64,18 @@ void rule_apply(struct rule *r, struct notification *n)
         // made by urgency rules or something else. If the change was made by something
         // else, we "lock" the colors so the urgency-based colors will not re-apply
         if (r->fg) {
-                if( !is_special_section(r->name) )
-                        n->colors_match_urgency = false;
-
                 g_free(n->colors.fg);
                 n->colors.fg = g_strdup(r->fg);
         }
         if (r->bg) {
-                if( !is_special_section(r->name) )
-                        n->colors_match_urgency = false;
-
                 g_free(n->colors.bg);
                 n->colors.bg = g_strdup(r->bg);
         }
         if (r->highlight) {
-                if( !is_special_section(r->name) )
-                        n->colors_match_urgency = false;
-
                 g_free(n->colors.highlight);
                 n->colors.highlight = g_strdup(r->highlight);
         }
         if (r->fc) {
-                if( !is_special_section(r->name) )
-                        n->colors_match_urgency = false;
-
                 g_free(n->colors.frame);
                 n->colors.frame = g_strdup(r->fc);
         }
