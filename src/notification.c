@@ -379,10 +379,6 @@ int __notification_run_script(struct notification *n, bool blocking, const char 
         n->script_run = true;
 
         int status;
-        const char *appname = n->appname ? n->appname : "";
-        const char *summary = n->summary ? n->summary : "";
-        const char *body = n->body ? n->body : "";
-        const char *icon = n->iconname ? n->iconname : "";
 
         // Our memory-mapped dirty secret
         unsigned char * script_output;
@@ -467,11 +463,15 @@ int __notification_run_script(struct notification *n, bool blocking, const char 
                 gchar *n_timeout_str = g_strdup_printf("%li", n->timeout/1000);
                 gchar *n_timestamp_str = g_strdup_printf("%li", n->timestamp / 1000);
                 const char *urgency = notification_urgency_to_string(n->urgency);
+                const char *appname = n->appname ? n->appname : "";
+                const char *summary = n->summary ? ESCAPE_NEWLINES(n->summary) : "";
+                const char *body = n->body ? ESCAPE_NEWLINES(n->body) : "";
+                const char *icon = n->iconname ? n->iconname : "";
 
-                safe_setenv("DUNST_APP_NAME",  ESCAPE_NEWLINES(appname));
-                safe_setenv("DUNST_SUMMARY",   ESCAPE_NEWLINES(summary));
+                safe_setenv("DUNST_APP_NAME",  appname);
+                safe_setenv("DUNST_SUMMARY",   summary);
                 safe_setenv("DUNST_FORMAT",    n->format);
-                safe_setenv("DUNST_BODY",      ESCAPE_NEWLINES(body));
+                safe_setenv("DUNST_BODY",      body);
                 safe_setenv("DUNST_ICON_PATH", n->icon_path);
                 safe_setenv("DUNST_URGENCY",   urgency);
                 safe_setenv("DUNST_ID",        n_id_str);
@@ -501,11 +501,17 @@ int __notification_run_script(struct notification *n, bool blocking, const char 
                 snprintf(script_command, sizeof(script_command),
                          "(. %s  '%s' '%s' '%s' '%s' '%s' && export) | grep -o 'DUNST_.*$'",
                          script,
-                         ESCAPE_NEWLINES(appname),
-                         ESCAPE_NEWLINES(summary),
-                         ESCAPE_NEWLINES(body),
+                         appname,
+                         summary,
+                         body,
                          icon,
                          urgency);
+
+                // Don't need these anymore
+                if( *summary ) g_free(summary);
+                if( *body ) g_free(body);
+
+
                 LOG_D("Command[%lu]: %s", strlen(script_command), script_command);
 
                 FILE *proc = popen(script_command, "r");
