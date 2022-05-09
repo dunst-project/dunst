@@ -74,11 +74,12 @@ static gboolean run(void *data)
         static gint64 next_timeout = 0;
 
         LOG_D("RUN");
+        gint64 now = time_monotonic_now();
 
         dunst_status(S_FULLSCREEN, output->have_fullscreen_window());
         dunst_status(S_IDLE, output->is_idle());
 
-        queues_update(status);
+        queues_update(status, now);
 
         bool active = queues_length_displayed() > 0;
 
@@ -91,7 +92,6 @@ static gboolean run(void *data)
         }
 
         if (active) {
-                gint64 now = time_monotonic_now();
                 gint64 sleep = queues_get_next_datachange(now);
                 gint64 timeout_at = now + sleep;
 

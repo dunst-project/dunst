@@ -134,10 +134,11 @@ static bool queues_notification_is_ready(const struct notification *n, struct du
  *
  * @param n the notification to check
  * @param status the current status of dunst
+ * @param time the current time
  * @retval true: the notification is timed out
  * @retval false: otherwise
  */
-static bool queues_notification_is_finished(struct notification *n, struct dunst_status status)
+static bool queues_notification_is_finished(struct notification *n, struct dunst_status status, gint64 time)
 {
         assert(n);
 
@@ -156,7 +157,7 @@ static bool queues_notification_is_finished(struct notification *n, struct dunst
         }
 
         /* remove old message */
-        if (time_monotonic_now() - n->start > n->timeout) {
+        if (time - n->start > n->timeout) {
                 return true;
         }
 
@@ -408,7 +409,7 @@ void queues_history_push_all(void)
 }
 
 /* see queues.h */
-void queues_update(struct dunst_status status)
+void queues_update(struct dunst_status status, gint64 time)
 {
         GList *iter, *nextiter;
 
@@ -433,7 +434,7 @@ void queues_update(struct dunst_status status)
                 }
 
 
-                if (queues_notification_is_finished(n, status)){
+                if (queues_notification_is_finished(n, status, time)){
                         queues_notification_close(n, REASON_TIME);
                         iter = nextiter;
                         continue;

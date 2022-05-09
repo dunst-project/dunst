@@ -141,8 +141,9 @@ void queues_history_push_all(void);
  *       (which closes old and shows new notifications on screen)
  *
  * @param status the current status of dunst
+ * @param time the current time
  */
-void queues_update(struct dunst_status status);
+void queues_update(struct dunst_status status, gint64 time);
 
 /**
  * Calculate the distance to the next event, when an element in the
