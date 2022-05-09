@@ -66,14 +66,15 @@ void wake_up(void)
         }
 
         LOG_D("Waking up");
-        run(NULL);
+        run(GINT_TO_POINTER(1));
 }
 
 static gboolean run(void *data)
 {
         static gint64 next_timeout = 0;
+        int reason = GPOINTER_TO_INT(data);
 
-        LOG_D("RUN");
+        LOG_D("RUN, reason %i", reason);
         gint64 now = time_monotonic_now();
 
         dunst_status(S_FULLSCREEN, output->have_fullscreen_window());
@@ -98,7 +99,7 @@ static gboolean run(void *data)
                 LOG_D("Sleeping for %li ms", sleep/1000);
 
                 if (sleep >= 0) {
-                        if (next_timeout < now || timeout_at < next_timeout) {
+                        if (reason == 0 || next_timeout < now || timeout_at < next_timeout) {
                                 g_timeout_add(sleep/1000, run, NULL);
                                 next_timeout = timeout_at;
                         }
