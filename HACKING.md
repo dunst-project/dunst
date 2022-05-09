@@ -2,6 +2,78 @@
 
 **You can generate an internal overview with doxygen. For this, use `make doc-doxygen` and you'll find an internal overview of all functions and symbols in `docs/internal/html`. You will also need `graphviz` for this.**
 
+
+For people wanting to develop new features or fix bugs for dunst, here are the
+steps you should take.
+
+# Running dunst
+
+For building dunst, you should take a look at the README. After dunst is build,
+you can run it with:
+
+        ./dunst
+
+This might not work, however, since dunst will abort when another instance of
+dunst or another notification daemon is running. You will see a message like:
+
+        CRITICAL: [dbus_cb_name_lost:1044] Cannot acquire 'org.freedesktop.Notifications': Name is acquired by 'dunst' with PID '20937'.
+
+So it's best to kill any running instance of dunst before trying to run the
+version you just built. You can do that by making a shell function as follows
+and put it in your bashrc/zshrc/config.fish:
+
+```sh
+run_dunst() {
+        if make -j dunst; then
+                pkill dunst
+        else
+                return 1
+        fi
+        ./dunst $@
+}
+```
+
+If you run this function is the root directory of the repository, it will build
+dunst, kill any running instances and run your freshly built version of dunst.
+
+# Testing dunst
+
+To test dunst, it's good to know the following commands. This way you can test
+dunst on your local system and you don't have to wait for CI to finish.
+
+## Run test suite
+
+This will build dunst if there were any changes and run the test suite. You will
+need `awk` for this to work (to color the output of the tests).
+
+        make test
+
+## Run memory leak tests
+
+This will build dunst if there were any changes and run the test suite with
+valgrind to make sure there aren't any memory leaks. You will have to build your
+tests so that they free all allocated memory after you are done, otherwise this
+test will fail. You will need to have `valgrind` installed for this.
+
+        make test-valgrind
+
+
+## Build the doxygen documentation
+
+The internal documentation can be built with (`doxygen` and `graphviz` required):
+
+        make doc-doxygen
+
+To open them in your browser you can run something like:
+
+        firefox docs/internal/html/index.html
+
+
+# Running the tests with docker
+
+Dunst has a few docker images for running tests on different distributions. The
+documentation for this can be found at https://github.com/dunst-project/docker-images
+
 # Comments
 
 - Comment system is held similar to JavaDoc
