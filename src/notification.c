@@ -508,8 +508,8 @@ int __notification_run_script(struct notification *n, bool blocking, const char 
                          urgency);
 
                 // Don't need these anymore
-                if( *summary ) g_free(summary);
-                if( *body ) g_free(body);
+                if( *summary ) g_free((char *) summary);
+                if( *body ) g_free((char *) body);
 
 
                 LOG_D("Command[%lu]: %s", strlen(script_command), script_command);
