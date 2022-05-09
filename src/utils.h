@@ -21,6 +21,8 @@
 //! Assert that expr evaluates to true, if not return with val
 #define ASSERT_OR_RET(expr, val) if (!(expr)) return val;
 
+
+
 //! Convert a second into the internal time representation
 #define S2US(s) (((gint64)(s)) * 1000 * 1000)
 
@@ -245,5 +247,23 @@ FILE * fopen_verbose(const char * const path);
  * when the environment variable doesn't exits.
  */
 void add_paths_from_env(GPtrArray *arr, char *env_name, char *subdir, char *alternative);
+
+/**
+ * Hexdumps buffer, 1 line = 8 bytes with character representation
+ *
+ * @param buffer Buffer to hexdump
+ * @param len Length of the buffer
+ */
+void hexdump(char * buffer, int len);
+
+//! Wrapper around hexdump() for string
+#define STR_HEXDUMP(STR)        hexdump(STR, strlen(STR))
+
+//! Escape LF and remove CR from string: \n -> \\n
+#define ESCAPE_NEWLINES(VAR)    string_replace_all("\n", "\\n", string_replace_all("\r", "", g_strdup(VAR)))
+
+//! Convert LF from ecaped form back to CR: \\n -> \n
+#define UNESCAPE_NEWLINES(VAR)  string_replace_all("\\n", "\n", g_strdup(VAR))
+
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

@@ -60,9 +60,6 @@ void rule_apply(struct rule *r, struct notification *n)
         if (r->icon_position != -1)
                 n->icon_position = r->icon_position;
 
-        // special_section check is here, so we can distinguish color changes that were
-        // made by urgency rules or something else. If the change was made by something
-        // else, we "lock" the colors so the urgency-based colors will not re-apply
         if (r->fg) {
                 g_free(n->colors.fg);
                 n->colors.fg = g_strdup(r->fg);

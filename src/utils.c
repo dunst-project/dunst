@@ -460,4 +460,27 @@ void add_paths_from_env(GPtrArray *arr, char *env_name, char *subdir, char *alte
         g_strfreev(xdg_data_dirs_arr);
 }
 
+/* see utils.h */
+void hexdump(char * buffer, int len) {
+        int x;
+
+        char linebuff_x[256] = { 0 };
+        char linebuff_c[32] = { 0 };
+        int pos_x = 0;
+        int pos_c = 0;
+
+        for( x=0 ; x<=len ; x++ ) {
+                pos_x += snprintf( linebuff_x+pos_x, 256-pos_x, "%02X ", (unsigned char) buffer[x] );
+                pos_c += snprintf( linebuff_c+pos_c, 32-pos_x, "%c", buffer[x] <= ' ' ? '.' : (unsigned char) buffer[x] );
+
+                if( !((x+1) % 8) || x+1>=len ) {
+                        // pad hex to full length...
+                        for( ; (x+1) % 8 ; x++ ) strcat(linebuff_x, "   ");
+
+                        printf("%s  | %s\n", linebuff_x, linebuff_c);
+                        pos_x = 0;
+                        pos_c = 0;
+                }
+        }
+}
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

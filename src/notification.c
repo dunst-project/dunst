@@ -27,6 +27,8 @@
 #include "draw.h"
 #include "icon-lookup.h"
 
+#define SCRIPT_BUFFER_LEN       32*1024 // [b] how big should the MMAP region be
+
 static void notification_extract_urls(struct notification *n);
 static void notification_format_message(struct notification *n);
 
@@ -49,38 +51,6 @@ struct _notification_private {
 };
 
 extern char **environ;
-
-
-//TODO: Move to utils.c but for now I wanna edit only the files I have to...
-#define ESCAPE_NEWLINES(VAR)    string_replace_all("\n", "\\n", string_replace_all("\r", "", g_strdup(VAR)))
-#define UNESCAPE_NEWLINES(VAR)  string_replace_all("\\n", "\n", g_strdup(VAR))
-#define SCRIPT_BUFFER_LEN       32*1024 // [b] how big should the MMAP region be
-
-//TODO: Move to utils.c but for now I wanna edit only the files I have to...
-#define STR_HEXDUMP(VAR)        hexdump(VAR, strlen(VAR))
-void hexdump(char * buffer, int len) {
-    int x;
-
-    char linebuff_x[256] = { 0 };
-    char linebuff_c[32] = { 0 };
-    int pos_x = 0;
-    int pos_c = 0;
-
-    for( x=0 ; x<=len ; x++ ) {
-        pos_x += snprintf( linebuff_x+pos_x, 256-pos_x, "%02X ", (unsigned char) buffer[x] );
-        pos_c += snprintf( linebuff_c+pos_c, 32-pos_x, "%c", buffer[x] <= ' ' ? '.' : (unsigned char) buffer[x] );
-
-        if( !((x+1) % 8) || x+1>=len ) {
-            // pad hex to full length...
-            for( ; (x+1) % 8 ; x++ ) strcat(linebuff_x, "   ");
-
-            printf("%s  | %s\n", linebuff_x, linebuff_c);
-            pos_x = 0;
-            pos_c = 0;
-        }
-    }
-}
-
 
 
 /* see notification.h */
