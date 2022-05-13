@@ -2,6 +2,7 @@
 #include "queues.h"
 #include "greatest.h"
 #include "helpers.h"
+#include "../src/utils.h"
 
 TEST test_get_notification_clickable_height_first(void)
 {
@@ -98,7 +99,7 @@ TEST test_notification_at(void)
                 queues_notification_insert(n);
         }
 
-        queues_update(STATUS_NORMAL);
+        queues_update(STATUS_NORMAL, time_monotonic_now());
 
         struct notification *top_notification = g_slist_nth_data(notifications, 0);
         int top_notification_height = get_notification_clickable_height(top_notification, true, false);
