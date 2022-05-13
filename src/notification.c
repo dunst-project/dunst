@@ -399,8 +399,7 @@ int __notification_run_script(struct notification *n, bool blocking, const char 
 
                         // If script changed notification we need to handle reformatting etc
                         if( script_handle_env_buffer( n, script_output ) > 0 ) {
-                                LOG_I("Script made some changes, will apply rules and re-format the message");
-                                rule_apply_all(n);
+                                LOG_I("Script made some changes, will re-format the message");
                                 notification_format_message(n);
                         }
 

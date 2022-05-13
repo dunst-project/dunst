@@ -98,7 +98,6 @@ test-coverage-report: test-coverage
 test/%.o: test/%.c src/%.c
 	${CC} -o $@ -c $< ${CFLAGS}
 
-test/test: CFLAGS += -Wpedantic -Werror
 test/test: ${OBJ} ${TEST_OBJ}
 	${CC} -o ${@} ${TEST_OBJ} $(filter-out ${TEST_OBJ:test/%=src/%},${OBJ}) ${CFLAGS} ${LDFLAGS}
 
