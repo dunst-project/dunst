@@ -1,5 +1,38 @@
 # Dunst changelog
 
+## 1.9.0 -- 2022-06-21
+
+### Added
+- `override_dbus_timeout` setting to override the notification timeout set via
+  dbus. (#1035)
+- Support notification gaps via the `gap_size` setting. Note that since the
+  notifications are not separate windows, you cannot click in between the
+  notifications. (#1053)
+- Make `min_icon_size` and `max_icon_size` a rule for even more flexibility
+  (#1069)
+
+### Changed
+- The window offset is now scaled according to `scale` as well. This way
+  notification stay visually in the same place on higher DPI screens. (#1039)
+- For the recursive icon lookup, revert to using `min_icon_size` and
+  `max_icon_size` instead of `icon_size`. `min_icon_size` is used as the size to
+  look for in icon themes. This way of defining icon size is more flexible and
+  compatible with the old icon lookup. The new icon lookup should now be
+  superior for all use cases. (#1069)
+- Recursive icon lookup is no longer experimental. No breaking changes are
+  expected soon after this release.
+
+### Fixed
+- Added back the `action_name` setting that was accidentally dropped. (#1051)
+- Broken `dunstctl history`. (#1060)
+- Merged a few wayland fixes from mako (https://github.com/emersion/mako)
+  (#1067)
+- `follow=keyboard`: Fix regression where we don't fall back to mouse (#1062)
+- Raw icons not being scaled according to icon size (#1043)
+- Notifications not disappearing. For some people notifications would sometimes
+  stay on screen until a new notification appeared. This should not happen
+  anymore (#1073).
+
 ## 1.8.1 -- 2022-03-02
 
 ### Fixed
