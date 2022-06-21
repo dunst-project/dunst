@@ -408,7 +408,7 @@ Dunst doens't search outside of these direcories. For a recursive icon lookup
 system, see B<enable_recursive_icon_lookup>. This new system will eventually
 replace this and will need new settings.
 
-=item B<icon_theme> (default: "Adwaita", example: "Adwaita, breeze") I<Experimental>
+=item B<icon_theme> (default: "Adwaita", example: "Adwaita, breeze")
 
 Comma-separated of names of the the themes to use for looking up icons. This has
 to be the name of the directory in which the theme is located, not the
@@ -428,7 +428,7 @@ If the theme inherits from other themes, they will be used as a backup.
 This setting is experimental and not enabled by default. See
 B<enable_recursive_icon_lookup> for how to enable it.
 
-=item B<enable_recursive_icon_lookup> (default: false) I<Experimental>
+=item B<enable_recursive_icon_lookup> (default: false)
 
 This setting enables the new icon lookup method. This new system will eventually
 be the old icon lookup.
