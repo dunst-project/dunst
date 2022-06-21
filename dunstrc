@@ -191,6 +191,15 @@
 
     ### Icons ###
 
+    # Recursive icon lookup. You can set a single theme, instead of having to
+    # define all lookup paths.
+    enable_recursive_icon_lookup = true
+
+    # Set icon theme (only used for recursive icon lookup)
+    icon_theme = Adwaita
+    # You can also set multiple icon themes, with the leftmost one being used first.
+    # icon_theme = "Adwaita, breeze"
+
     # Align icons left/right/top/off
     icon_position = left
 
@@ -202,7 +211,7 @@
     # Scale larger icons down to this size, set to 0 to disable
     max_icon_size = 128
 
-    # Paths to default icons.
+    # Paths to default icons (only neccesary when not using recursive icon lookup)
     icon_path = /usr/share/icons/gnome/16x16/status/:/usr/share/icons/gnome/16x16/devices/
 
     ### History ###
