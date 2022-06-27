@@ -27,7 +27,7 @@ TEST test_get_path_from_icon_name_full(void)
 {
         const char *iconpath = ICONPATH;
 
-        gchar *path = g_build_filename(base, iconpath, "valid", "icon1.svg", NULL);
+        gchar *path = g_build_filename(base, iconpath, "16x16", "actions", "edit.png", NULL);
 
         char *result = get_path_from_icon_name(path, size);
         ASSERT(result);

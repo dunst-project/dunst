@@ -80,16 +80,9 @@ TEST test_new_icon_overrides_raw_icon(void) {
 
         ASSERT(n->icon);
 
-        void *old_icon = (void*) n->icon;
-        ASSERT(old_icon == n->icon);
+        int old_width = cairo_image_surface_get_width(n->icon);
         rule_apply(rule, n);
-        ASSERT(old_icon != n->icon);
-        /* n->icon = malloc(1); // allocate some data to emulate a raw icon */
-
-        /* printf("%lu\n", sizeof(n->icon)); */
-
-
-        /* printf("%lu\n", sizeof(n->icon)); */
+        ASSERT(old_width != cairo_image_surface_get_width(n->icon));
 
         free(n->icon);
         n->icon = NULL;

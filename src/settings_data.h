@@ -96,6 +96,16 @@ struct setting {
        *        .rule_offset = offsetof(struct rule, *member*);
        */
       size_t rule_offset;
+
+      /**
+       * True if a setting has a different default in the default dunstrc.
+       * This is useful to transition a default value without breaking exisitng
+       * configs. This value is needed for the test suite to skip testing this
+       * setting against the default dunstrc.
+       *
+       * False by default.
+       */
+      bool different_default;
 };
 
 
@@ -1214,6 +1224,7 @@ static const struct setting allowed_settings[] = {
                 .value = &settings.enable_recursive_icon_lookup,
                 .parser = string_parse_bool,
                 .parser_data = boolean_enum_data,
+                .different_default = true,
         },
         {
                 .name = "enable_posix_regex",

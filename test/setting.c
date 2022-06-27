@@ -64,6 +64,9 @@ TEST test_dunstrc_defaults(void) {
                 if (!allowed_settings[i].value) {
                         continue; // it's a rule, that's harder to test
                 }
+                if (allowed_settings[i].different_default) {
+                        continue; // Skip testing, since it's an intended difference.
+                }
                 size_t offset = (char*)allowed_settings[i].value - (char*)&settings;
                 enum setting_type type = allowed_settings[i].type;
                 snprintf(message, 500, "The default of setting %s does not match. Different defaults are set in code and dunstrc"
