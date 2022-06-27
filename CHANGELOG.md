@@ -1,6 +1,6 @@
 # Dunst changelog
 
-## 1.9.0 -- 2022-06-21
+## 1.9.0 -- 2022-06-27
 
 ### Added
 - `override_dbus_timeout` setting to override the notification timeout set via
@@ -19,8 +19,9 @@
   look for in icon themes. This way of defining icon size is more flexible and
   compatible with the old icon lookup. The new icon lookup should now be
   superior for all use cases. (#1069)
-- Recursive icon lookup is no longer experimental. No breaking changes are
-  expected soon after this release.
+- Recursive icon lookup is no longer experimental.
+- Recursive icon lookup is enabled in the default dunstrc. This does not change
+  your settings when you have a custom dunstrc.
 
 ### Fixed
 - Added back the `action_name` setting that was accidentally dropped. (#1051)
