@@ -1,4 +1,17 @@
 ===================================================================================
+Release Notes For v1.9.0
+===================================================================================
+
+This release marks the point for a few big features to be useable. The
+recursive icon lookup is marked stable and is used by default for new users. It
+is now also possible to add gaps between notifications, although it is not done
+with separate windows, so clicks in between notification will not register to
+the below window. You'll also need a compositor for the transparancy to take
+effect.
+
+Take a look at the changelog for a more detailed change description.
+
+===================================================================================
 Release Notes For v1.8.0
 ===================================================================================
 
