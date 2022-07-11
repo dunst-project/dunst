@@ -364,7 +364,7 @@ static const char* deprecated_sections[] = {
 
 static const char* deprecated_sections_message[] = {
         "The settings from the frame section have been moved to the global section.", // frame
-        "Settings in the shortcuts sections have been moved to the global section.\nAlternatively you can bind shortcuts in you window manager to dunstctl commands. For that, see the manual for dunstctl.", // shortcuts
+        "Settings in the shortcuts sections have been moved to the global section.\nAlternatively you can bind shortcuts in your window manager to dunstctl commands. For that, see the manual for dunstctl.", // shortcuts
 };
 
 /* see utils.h */
