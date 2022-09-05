@@ -71,7 +71,7 @@ case $state in
       history-pop)
          local -a history_ids;
          history_ids=(
-           `dunstctl history | jq '.data[0][].id.data'`
+           `dunstctl history | jq -M '.data[0][].id.data'`
          )
         _describe history_ids history_ids && ret=0
         ;;
