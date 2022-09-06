@@ -21,7 +21,7 @@ case $state in
     case $line[1] in
       -verbosity)
         local -a verbosity_params;
-        verbosity_opts=(
+        verbosity_params=(
           "crit"
           "warn"
           "mesg"
