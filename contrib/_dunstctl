@@ -5,7 +5,7 @@ local curcontext="$curcontext" ret=1
 local -a state line subs
 
 if [[ -v XDG_CONFIG_HOME || -n "$XDG_CONFIG_HOME" ]]; then
-  local DUNSTRC="$XDG_CONFIG_HOME/dunst/dunstrc"
+  local DUNSTRC="${XDG_CONFIG_HOME:-$HOME/.config}/dunst/dunstrc"
 else
   local DUNSTRC=$HOME/.config/dunst/dunstrc
 fi
