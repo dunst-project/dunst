@@ -1,4 +1,4 @@
-#compdef _dunst dunst
+#compdef _dunst dunstG
 
 local curcontext="$curcontext" ret=1
 local -a state line subs
