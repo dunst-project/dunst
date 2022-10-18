@@ -1,4 +1,6 @@
 #compdef _dunstctl dunstctl
+
+# ZSH arguments completion script for the dunstctl commnd
 # Depends on: gAWK (rule), jq (history-pop)
 
 local curcontext="$curcontext" ret=1
