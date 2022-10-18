@@ -1,4 +1,6 @@
-#compdef _dunst dunstG
+#compdef _dunst dunst
+
+# ZSH arguments completion script for the dunst commnd
 
 local curcontext="$curcontext" ret=1
 local -a state line subs
