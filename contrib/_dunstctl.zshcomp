@@ -1,0 +1,96 @@
+#compdef _dunstctl dunstctl
+
+# ZSH arguments completion script for the dunstctl commnd
+# Depends on: gAWK (rule), jq (history-pop)
+
+local curcontext="$curcontext" ret=1
+local -a state line subs
+
+local DUNSTRC="${XDG_CONFIG_HOME:-$HOME/.config}/dunst/dunstrc"
+
+_arguments -C \
+  '1:cmd:->cmds' \
+  '2:opt:->opts' \
+  '3:third:->thirds' \
+  && ret=0
+
+case $state in
+  (cmds)
+    local -a commands
+    commands=(
+      'action:Perform the default action, or open the context menu of the notification at the given position'
+      'close:Close the last notification'
+      'close-all:Close the all notifications'
+      'context:Open context menu'
+      'count:Show the number of notifications'
+      'history:Display notification history (in JSON)'
+      'history-pop:Pop the latest notification from history or optionally the notification with given ID.'
+      'is-paused:Check if dunst is running or paused'
+      'set-paused:Set the pause status'
+      'rule:Enable or disable a rule by its name'
+      'debug:Print debugging information'
+      'help:Show this help'
+    )
+    _describe commands commands && ret=0
+    ;;
+
+  (opts)
+    case $line[1] in
+      count)
+        local -a count_opts;
+        count_opts=(
+          "displayed"
+          "history"
+          "waiting"
+        )
+
+        _describe count_opts count_opts && ret=0
+        ;;
+
+      set-paused)
+        local -a setpaused_opts;
+        setpaused_opts=(
+          "true"
+          "false"
+          "toggle"
+        )
+
+        _describe setpaused_opts setpaused_opts && ret=0
+        ;;
+
+      rule)
+        local -a rules;
+        rules=(
+          `awk '/^\[.*\]/{ if ( match($0, /^\[global|urgency|experimental/) == 0 ) { print substr($0, 2, length($0)-2) }   }' < "$DUNSTRC"`
+        )
+        _describe rules_opts rules && ret=0
+        ;;
+
+      history-pop)
+         local -a history_ids;
+         history_ids=(
+           `dunstctl history | jq -M '.data[0][].id.data'`
+         )
+        _describe history_ids history_ids && ret=0
+        ;;
+
+    esac
+    ;;
+
+  (thirds)
+    case $line[1] in
+      rule)
+        local -a rulestates_opts;
+        rulestates_opts=(
+          "enable"
+          "disable"
+          "toggle"
+        )
+
+        _describe rulestates_opts rulestates_opts && ret=0
+        ;;
+
+    esac
+esac
+
+return ret
