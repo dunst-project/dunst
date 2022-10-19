@@ -1,0 +1,41 @@
+#compdef _dunst dunst
+
+# ZSH arguments completion script for the dunst command
+
+local curcontext="$curcontext" ret=1
+local -a state line subs
+
+_arguments -C \
+  '1:opt:->opts' \
+  '2:param:->params' \
+  && ret=0
+
+case $state in
+  (opts)
+    _arguments \
+      {-v,--version,-version}"[Print version]" \
+      '(-verbosity)-verbosity[Minimum level for message]' \
+      {-conf,--config}"[Path to configuration file]:file:_files" \
+      {-h,-help,--help}"[Print help]"
+      ;;
+
+  (params)
+    case $line[1] in
+      -verbosity)
+        local -a verbosity_params;
+        verbosity_params=(
+          "crit"
+          "warn"
+          "mesg"
+          "info"
+          "debug"
+        )
+        _describe verbosity_params verbosity_params && ret=0
+        ;;
+
+      -conf|--config)
+        _arguments '*:file:_files' && ret=0
+        ;;
+
+    esac
+esac
