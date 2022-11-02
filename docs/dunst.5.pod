@@ -5,9 +5,9 @@ dunst - configuration file
 =head1 DESCRIPTION
 
 The configuration is divided into sections in an ini-like format. Every section
-start with the section's name in square brackets. After that is a list of
+starts with the section's name in square brackets. After that is a list of
 key-value pairs that specify the settings. Whitespace is purely cosmetic and
-doesn't matter for the result.
+doesn't change the result.
 
 The 'global' section contains the general settings applying to all of dunst. The
 rest of the settings can be specified via rules and can be located in any
