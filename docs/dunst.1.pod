@@ -12,7 +12,7 @@ Dunst is a highly configurable and lightweight notification daemon.
 
 =head2 Autostarting dunst
 
-On most installations dunst should be able to automatically be started by D-Bus
+On most installations, dunst should be able to automatically be started by D-Bus
 when a notification is sent. This is not recommended when multiple notification
 deamons are installed, because D-Bus will not know which one to start.
 Other ways of autostarting dunst include starting dunst with your desktop
@@ -31,7 +31,7 @@ List all command line flags
 
 Use alternative config file.
 This disables the search for other config files.
-If it cannot be opened Dunst will issue a warning and fall back on its internal
+If it cannot be opened, dunst will issue a warning and fall back on its internal
 defaults.
 (Hint: `dunst -conf - </dev/null` can be used to enforce the defaults, i.e. for
 testing)
@@ -90,11 +90,11 @@ Dunst can be paused via the `dunstctl set-paused true` command. To unpause dunst
 `dunstctl set-paused false`.
 Another way is to send SIGUSR1 and SIGUSR2 to pause and unpause
 respectively. Pausing using dunstctl is recommended over using signals, because
-the meaning of the signals is not be stable and might change in the future.
+the meaning of the signals isn't stable and might change in the future.
 
-When paused dunst will not display any notifications but keep all notifications
-in a queue.  This can for example be wrapped around a screen locker (i3lock,
-slock) to prevent flickering of notifications through the lock and to read all
+When paused, dunst won't display any notifications, but keeps all notifications
+in a queue. This can for example be wrapped around a screen locker (i3lock,
+slock) to prevent flickering of notifications through the lock, and to read all
 missed notifications after returning to the computer.
 
 =head1 FILES
