@@ -201,8 +201,11 @@ void check_and_correct_settings(struct settings *s) {
                 if (s->progress_bar_min_width > s->width.max) {
                         LOG_W("Progress bar min width is greater than the max width of the notification.");
                 }
-                if (s->progress_bar_corner_radius > 100) {
-                        LOG_W("Progress bar corner radius clamped to maximum value (100).");
+                int progress_bar_max_corner_radius = (s->progress_bar_height / 2);
+                if (s->progress_bar_corner_radius > progress_bar_max_corner_radius) {
+                        settings.progress_bar_corner_radius = progress_bar_max_corner_radius;
+                        LOG_W(  progress_bar_max_corner_radius, 
+                                "Progress bar corner radius clamped to half of progress bar height (%i).");
                 }
         }
 

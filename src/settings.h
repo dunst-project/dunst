@@ -144,7 +144,7 @@ struct settings {
         enum mouse_action *mouse_middle_click;
         enum mouse_action *mouse_right_click;
         int progress_bar_height;
-        int progress_bar_min_width;        
+        int progress_bar_min_width;
         int progress_bar_max_width;
         int progress_bar_frame_width;
         int progress_bar_corner_radius;
