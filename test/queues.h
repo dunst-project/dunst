@@ -29,6 +29,9 @@
 #define QUEUE_CONTAINS(q, n) QUEUE_CONTAINSm("QUEUE_CONTAINS(" #q "," #n ")", q, n)
 #define QUEUE_CONTAINSm(msg, q, n) ASSERTm(msg, g_queue_find(QUEUE(q), n))
 
+#define QUEUE_NOT_CONTAINS(q, n) QUEUE_NOT_CONTAINSm("QUEUE_NOT_CONTAINS(" #q "," #n ")", q, n)
+#define QUEUE_NOT_CONTAINSm(msg, q, n) ASSERTm(msg, g_queue_find(QUEUE(q), n) == NULL)
+
 #define NOT_LAST(n) do {ASSERT_EQm("Notification " #n " should have been deleted.", 1, notification_refcount_get(n)); g_clear_pointer(&n, notification_unref); } while(0)
 
 /* Retrieve a notification by its id. Solely for debugging purposes */

@@ -133,6 +133,11 @@ void queues_history_push(struct notification *n);
 void queues_history_push_all(void);
 
 /**
+ * Removes an notification identified by the given id from the history 
+ */
+void queues_history_remove_by_id(unsigned int id);
+
+/**
  * Move inserted notifications from waiting queue to displayed queue
  * and show them. In displayed queue, the amount of elements is limited
  * to the amount set via queues_displayed_limit()

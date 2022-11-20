@@ -26,6 +26,8 @@ show_help() {
 	  history-pop [ID]                  Pop the latest notification from
 	                                    history or optionally the
 	                                    notification with given ID.
+	  history-rm [ID]					Remove the notification from
+	                                    history with given ID.
 	  is-paused                         Check if dunst is running or paused
 	  set-paused [true|false|toggle]    Set the pause status
 	  rule name [enable|disable|toggle] Enable or disable a rule by its name
@@ -87,6 +89,13 @@ case "${1:-}" in
 			method_call "${DBUS_IFAC_DUNST}.NotificationPopHistory" "uint32:${2:-0}" >/dev/null
 		else
 			die "Please pass the right number of arguments. History-pop takes 0 or 1 arguments"
+		fi
+		;;
+	"history-rm")
+		if [ $# -eq 2 ]; then
+			method_call "${DBUS_IFAC_DUNST}.NotificationRemoveFromHistory" "uint32:${2}" >/dev/null
+		else
+			die "Please pass the right number of arguments. History-rm takes 1 arguments"
 		fi
 		;;
 	"is-paused")
