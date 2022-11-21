@@ -403,9 +403,9 @@ static void dbus_cb_dunst_NotificationPopHistory(GDBusConnection *connection,
 }
 
 static void dbus_cb_dunst_NotificationRemoveFromHistory(GDBusConnection *connection,
-                                           const gchar *sender,
-                                           GVariant *parameters,
-                                           GDBusMethodInvocation *invocation)
+                                                        const gchar *sender,
+                                                        GVariant *parameters,
+                                                        GDBusMethodInvocation *invocation)
 {
         LOG_D("CMD: Removing notification from history");
 

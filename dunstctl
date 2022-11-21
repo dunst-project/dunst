@@ -26,7 +26,7 @@ show_help() {
 	  history-pop [ID]                  Pop the latest notification from
 	                                    history or optionally the
 	                                    notification with given ID.
-	  history-rm [ID]					Remove the notification from
+	  history-rm [ID]                   Remove the notification from
 	                                    history with given ID.
 	  is-paused                         Check if dunst is running or paused
 	  set-paused [true|false|toggle]    Set the pause status
