@@ -85,7 +85,7 @@ distro's repositories, don't worry, it's not hard to build it yourself.
 - libxss
 - glib
 - pango/cairo
-- libnotify (optional, for dunstify)
+- libnotify (can build without, for dunstify, see [make parameters](#make-parameters))
 - wayland-client (can build without, see [make parameters](#make-parameters))
 - wayland-protocols (optional, for recompiling protocols)
 - xdg-utils (optional, xdg-open is the default 'browser' for opening URLs)
@@ -113,6 +113,7 @@ sudo make install
 - `MANDIR=<PATH>`: Set the prefix of the manpage. (Default: `${DATADIR}/man`)
 - `SYSTEMD=(0|1)`: Disable/Enable the systemd unit. (Default: autodetect systemd)
 - `WAYLAND=(0|1)`: Disable/Enable wayland support. (Default: 1 (enabled))
+- `DUNSTIFY=(0|1)`: Disable/Enable the libnotify dunstctl utility. (Default: 1 (enabled))
 - `SERVICEDIR_SYSTEMD=<PATH>`: The path to put the systemd user service file. Unused, if `SYSTEMD=0`. (Default: `${PREFIX}/lib/systemd/user`)
 - `SERVICEDIR_DBUS=<PATH>`: The path to put the dbus service file. (Default: `${DATADIR}/dbus-1/services`)
 - `EXTRA_CFLAGS=<FLAGS>`: Additional flags for the compiler.
