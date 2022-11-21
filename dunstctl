@@ -23,6 +23,7 @@ show_help() {
 	  context                           Open context menu
 	  count [displayed|history|waiting] Show the number of notifications
 	  history                           Display notification history (in JSON)
+	  history-clear                     Delete all notifications from history                   
 	  history-pop [ID]                  Pop the latest notification from
 	                                    history or optionally the
 	                                    notification with given ID.
@@ -77,6 +78,9 @@ case "${1:-}" in
 		else
 			property_get ${2}Length | ( read -r _ _ notifications; printf "%s\n" "${notifications}"; )
 		fi
+		;;
+	"history-clear")
+		method_call "${DBUS_IFAC_DUNST}.NotificationClearHistory" >/dev/null
 		;;
 	"history-pop")
 		if [ "$#" -eq 1 ]

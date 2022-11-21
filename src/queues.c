@@ -342,6 +342,15 @@ void queues_notification_close(struct notification *n, enum reason reason)
 }
 
 /* see queues.h */
+void queues_history_clear(void)
+{
+        if (g_queue_is_empty(history))
+                return;
+
+        g_queue_clear_full(history, (GDestroyNotify)notification_unref);
+}
+
+/* see queues.h */
 void queues_history_pop(void)
 {
         if (g_queue_is_empty(history))

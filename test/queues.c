@@ -301,6 +301,24 @@ TEST test_queue_notification_skip_display_redisplayed_by_random_id(void) {
         PASS();
 }
 
+TEST test_queue_history_clear(void)
+{
+        struct notification *n;
+
+        n = test_notification("n", -1);
+
+        queues_init();
+        queues_notification_insert(n);
+        queues_history_push_all();
+
+        QUEUE_LEN_ALL(0, 0, 1);
+        queues_history_clear();
+        QUEUE_LEN_ALL(0, 0, 0);
+        queues_teardown();
+
+        PASS();
+}
+
 TEST test_queue_history_overfull(void)
 {
         settings.history_length = 10;
@@ -989,6 +1007,7 @@ SUITE(suite_queues)
         RUN_TEST(test_datachange_endless_agethreshold);
         RUN_TEST(test_datachange_queues);
         RUN_TEST(test_datachange_ttl);
+        RUN_TEST(test_queue_history_clear);
         RUN_TEST(test_queue_history_overfull);
         RUN_TEST(test_queue_history_pushall);
         RUN_TEST(test_queue_init);

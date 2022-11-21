@@ -77,6 +77,7 @@ static const char *introspection_xml =
     "        <method name=\"NotificationAction\">"
     "            <arg name=\"number\"     type=\"u\"/>"
     "        </method>"
+    "        <method name=\"NotificationClearHistory\"/>"
     "        <method name=\"NotificationCloseLast\" />"
     "        <method name=\"NotificationCloseAll\"  />"
     "        <method name=\"NotificationListHistory\">"
@@ -170,6 +171,7 @@ void dbus_cb_fdn_methods(GDBusConnection *connection,
 
 DBUS_METHOD(dunst_ContextMenuCall);
 DBUS_METHOD(dunst_NotificationAction);
+DBUS_METHOD(dunst_NotificationClearHistory);
 DBUS_METHOD(dunst_NotificationCloseAll);
 DBUS_METHOD(dunst_NotificationCloseLast);
 DBUS_METHOD(dunst_NotificationListHistory);
@@ -178,15 +180,16 @@ DBUS_METHOD(dunst_NotificationShow);
 DBUS_METHOD(dunst_RuleEnable);
 DBUS_METHOD(dunst_Ping);
 static struct dbus_method methods_dunst[] = {
-        {"ContextMenuCall",           dbus_cb_dunst_ContextMenuCall},
-        {"NotificationAction",        dbus_cb_dunst_NotificationAction},
-        {"NotificationCloseAll",      dbus_cb_dunst_NotificationCloseAll},
-        {"NotificationCloseLast",     dbus_cb_dunst_NotificationCloseLast},
-        {"NotificationListHistory",   dbus_cb_dunst_NotificationListHistory},
-        {"NotificationPopHistory",    dbus_cb_dunst_NotificationPopHistory},
-        {"NotificationShow",          dbus_cb_dunst_NotificationShow},
-        {"Ping",                      dbus_cb_dunst_Ping},
-        {"RuleEnable",                dbus_cb_dunst_RuleEnable},
+        {"ContextMenuCall",                     dbus_cb_dunst_ContextMenuCall},
+        {"NotificationAction",                  dbus_cb_dunst_NotificationAction},
+        {"NotificationClearHistory",            dbus_cb_dunst_NotificationClearHistory},
+        {"NotificationCloseAll",                dbus_cb_dunst_NotificationCloseAll},
+        {"NotificationCloseLast",               dbus_cb_dunst_NotificationCloseLast},
+        {"NotificationListHistory",             dbus_cb_dunst_NotificationListHistory},
+        {"NotificationPopHistory",              dbus_cb_dunst_NotificationPopHistory},
+        {"NotificationShow",                    dbus_cb_dunst_NotificationShow},
+        {"Ping",                                dbus_cb_dunst_Ping},
+        {"RuleEnable",                          dbus_cb_dunst_RuleEnable},
 };
 
 void dbus_cb_dunst_methods(GDBusConnection *connection,
@@ -251,6 +254,19 @@ static void dbus_cb_dunst_NotificationAction(GDBusConnection *connection,
                 LOG_D("CMD: Calling action for notification %s", n->summary);
                 notification_do_action(n);
         }
+
+        g_dbus_method_invocation_return_value(invocation, NULL);
+        g_dbus_connection_flush(connection, NULL, NULL, NULL);
+}
+
+static void dbus_cb_dunst_NotificationClearHistory(GDBusConnection *connection,
+                                                const gchar *sender,
+                                                GVariant *parameters,
+                                                GDBusMethodInvocation *invocation)
+{
+        LOG_D("CMD: Clearing the history");
+        queues_history_clear();
+        wake_up();
 
         g_dbus_method_invocation_return_value(invocation, NULL);
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
