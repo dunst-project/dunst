@@ -372,7 +372,7 @@ TEST test_queue_history_remove_by_id(void)
         queues_init();
 
         struct notification *n;
-        struct notification *n1;
+        struct notification *n1 = test_notification("temp", -1);
 
 
         for (int i = 0; i < 5; i++) {
@@ -380,6 +380,7 @@ TEST test_queue_history_remove_by_id(void)
                 n = test_notification(name, -1);
                 queues_notification_insert(n);
 
+                // Store notification at arbitrary position to remove
                 if(i==1) {
                         n1 = n;
                 }
