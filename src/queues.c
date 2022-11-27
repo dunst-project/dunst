@@ -347,7 +347,10 @@ void queues_history_clear(void)
         if (g_queue_is_empty(history))
                 return;
 
-        g_queue_clear_full(history, (GDestroyNotify)notification_unref);
+        while (!g_queue_is_empty(history)) {
+                struct notification *n = g_queue_pop_head(history);
+                notification_unref(n);
+        }
 }
 
 /* see queues.h */
