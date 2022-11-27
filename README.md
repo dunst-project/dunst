@@ -10,6 +10,7 @@
 
 * [Features](#features)
 * [Building](#building)
+* [Contributing](#contributing)
 * [Documentation](#documentation)
 * [Troubleshooting](#troubleshooting)
 * [Copyright](#copyright)
@@ -144,6 +145,14 @@ override settings, see the FILES section in dunst(1) for more details.
 
 `make uninstall` will not remove ${SYSCONFFILE}, use `make uninstall-purge` if
 you do want it removed as well.
+
+## Contributing
+
+Contributions are very welcome. Before contributing, make sure to look at the
+contribution documentation in [HACKING.md](./HACKING.md).
+
+Make sure you test your code and where possible add automated tests. These
+tests are also checked on memory leaks (with `make test-valgrind`).
 
 ## Troubleshooting
 
