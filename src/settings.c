@@ -204,8 +204,8 @@ void check_and_correct_settings(struct settings *s) {
                 int progress_bar_max_corner_radius = (s->progress_bar_height / 2);
                 if (s->progress_bar_corner_radius > progress_bar_max_corner_radius) {
                         settings.progress_bar_corner_radius = progress_bar_max_corner_radius;
-                        LOG_W(  progress_bar_max_corner_radius, 
-                                "Progress bar corner radius clamped to half of progress bar height (%i).");
+                        LOG_W("Progress bar corner radius clamped to half of progress bar height (%i).",
+                                progress_bar_max_corner_radius);
                 }
         }
 
