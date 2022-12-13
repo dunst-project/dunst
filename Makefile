@@ -47,7 +47,7 @@ DEPS := ${SRC:.c=.d} ${TEST_SRC:.c=.d}
 
 
 .PHONY: all debug
-all: doc dunst dunstify service
+all: doc dunst service
 
 debug: CFLAGS   += ${CPPFLAGS_DEBUG} ${CFLAGS_DEBUG}
 debug: LDFLAGS  += ${LDFLAGS_DEBUG}
@@ -64,8 +64,11 @@ ${OBJ} ${TEST_OBJ}: Makefile config.mk
 dunst: ${OBJ} main.o
 	${CC} -o ${@} ${OBJ} main.o ${CFLAGS} ${LDFLAGS}
 
+ifneq (0,${DUNSTIFY})
+all: dunstify
 dunstify: dunstify.o
 	${CC} -o ${@} dunstify.o ${CFLAGS} ${LDFLAGS}
+endif
 
 .PHONY: test test-valgrind test-coverage
 test: test/test clean-coverage-run
@@ -181,7 +184,7 @@ clean-wayland-protocols:
         uninstall uninstall-dunstctl uninstall-dunstrc \
         uninstall-service uninstall-service-dbus uninstall-service-systemd \
 	uninstall-keepconf uninstall-purge
-install: install-dunst install-dunstctl install-dunstrc install-service install-dunstify
+install: install-dunst install-dunstctl install-dunstrc install-service 
 
 install-dunst: dunst doc
 	install -Dm755 dunst ${DESTDIR}${BINDIR}/dunst
@@ -206,8 +209,11 @@ install-service-systemd: service-systemd
 	install -Dm644 dunst.systemd.service ${DESTDIR}${SERVICEDIR_SYSTEMD}/dunst.service
 endif
 
+ifneq (0,${DUNSTIFY})
+install: install-dunstify
 install-dunstify: dunstify
 	install -Dm755 dunstify ${DESTDIR}${BINDIR}/dunstify
+endif
 
 uninstall: uninstall-keepconf
 uninstall-purge: uninstall-keepconf uninstall-dunstrc

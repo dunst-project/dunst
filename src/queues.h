@@ -108,6 +108,11 @@ void queues_notification_close_id(int id, enum reason reason);
 void queues_notification_close(struct notification *n, enum reason reason);
 
 /**
+ * Removes all notifications from history
+ */
+void queues_history_clear(void);
+
+/**
  * Pushes the latest notification of history to the displayed queue
  * and removes it from history
  */
