@@ -201,6 +201,12 @@ void check_and_correct_settings(struct settings *s) {
                 if (s->progress_bar_min_width > s->width.max) {
                         LOG_W("Progress bar min width is greater than the max width of the notification.");
                 }
+                int progress_bar_max_corner_radius = (s->progress_bar_height / 2);
+                if (s->progress_bar_corner_radius > progress_bar_max_corner_radius) {
+                        settings.progress_bar_corner_radius = progress_bar_max_corner_radius;
+                        LOG_W("Progress bar corner radius clamped to half of progress bar height (%i).",
+                                progress_bar_max_corner_radius);
+                }
         }
 
         // TODO Implement this with icon sizes as rules

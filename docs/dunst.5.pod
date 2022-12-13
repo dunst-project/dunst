@@ -183,6 +183,11 @@ to fit the progress bar.
 The frame width of the progress bar in pixels. This value should be smaller
 than half of the progress bar height.
 
+=item B<progress_bar_corner_radius> (default: 0)
+
+The corner radius of the progress bar in pixels. Gives the progress bar
+rounded corners. Set to 0 to disable.
+
 =item B<indicate_hidden> (values: [true/false], default: true)
 
 If this is set to true, a notification indicating how many notifications are

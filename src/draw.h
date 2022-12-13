@@ -12,7 +12,7 @@ void draw_setup(void);
 
 void draw(void);
 
-void draw_rounded_rect(cairo_t *c, int x, int y, int width, int height, int corner_radius, double scale, bool first, bool last);
+void draw_rounded_rect(cairo_t *c, float x, float y, int width, int height, int corner_radius, double scale, bool first, bool last);
 
 // TODO get rid of this function by passing scale to everything that needs it.
 double draw_get_scale(void);
