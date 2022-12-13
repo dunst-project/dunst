@@ -86,6 +86,9 @@ static const char *introspection_xml =
     "        <method name=\"NotificationPopHistory\">"
     "            <arg direction=\"in\"  name=\"id\"              type=\"u\"/>"
     "        </method>"
+    "        <method name=\"NotificationRemoveFromHistory\">"
+    "            <arg direction=\"in\"  name=\"id\"              type=\"u\"/>"
+    "        </method>"
     "        <method name=\"NotificationShow\"      />"
     "        <method name=\"RuleEnable\">"
     "            <arg name=\"name\"     type=\"s\"/>"
@@ -176,6 +179,7 @@ DBUS_METHOD(dunst_NotificationCloseAll);
 DBUS_METHOD(dunst_NotificationCloseLast);
 DBUS_METHOD(dunst_NotificationListHistory);
 DBUS_METHOD(dunst_NotificationPopHistory);
+DBUS_METHOD(dunst_NotificationRemoveFromHistory);
 DBUS_METHOD(dunst_NotificationShow);
 DBUS_METHOD(dunst_RuleEnable);
 DBUS_METHOD(dunst_Ping);
@@ -187,6 +191,7 @@ static struct dbus_method methods_dunst[] = {
         {"NotificationCloseLast",               dbus_cb_dunst_NotificationCloseLast},
         {"NotificationListHistory",             dbus_cb_dunst_NotificationListHistory},
         {"NotificationPopHistory",              dbus_cb_dunst_NotificationPopHistory},
+        {"NotificationRemoveFromHistory",       dbus_cb_dunst_NotificationRemoveFromHistory},
         {"NotificationShow",                    dbus_cb_dunst_NotificationShow},
         {"Ping",                                dbus_cb_dunst_Ping},
         {"RuleEnable",                          dbus_cb_dunst_RuleEnable},
@@ -407,6 +412,23 @@ static void dbus_cb_dunst_NotificationPopHistory(GDBusConnection *connection,
         g_variant_get(parameters, "(u)", &id);
 
         queues_history_pop_by_id(id);
+        wake_up();
+
+        g_dbus_method_invocation_return_value(invocation, NULL);
+        g_dbus_connection_flush(connection, NULL, NULL, NULL);
+}
+
+static void dbus_cb_dunst_NotificationRemoveFromHistory(GDBusConnection *connection,
+                                                        const gchar *sender,
+                                                        GVariant *parameters,
+                                                        GDBusMethodInvocation *invocation)
+{
+        LOG_D("CMD: Removing notification from history");
+
+        guint32 id;
+        g_variant_get(parameters, "(u)", &id);
+
+        queues_history_remove_by_id(id);
         wake_up();
 
         g_dbus_method_invocation_return_value(invocation, NULL);
