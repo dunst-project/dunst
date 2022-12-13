@@ -342,6 +342,13 @@ void queues_notification_close(struct notification *n, enum reason reason)
 }
 
 /* see queues.h */
+void queues_history_clear(void)
+{
+        g_queue_foreach(history, (GFunc)notification_unref, NULL);
+        g_queue_clear(history);
+}
+
+/* see queues.h */
 void queues_history_pop(void)
 {
         if (g_queue_is_empty(history))
