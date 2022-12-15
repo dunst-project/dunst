@@ -547,6 +547,7 @@ void queues_update(struct dunst_status status, gint64 time)
                         }
                 }
         }
+        signal_length_propertieschanged();
 }
 
 /* see queues.h */

@@ -694,6 +694,73 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
         return n;
 }
 
+void signal_length_propertieschanged()
+{
+
+        static unsigned int last_displayed = 0;
+        static unsigned int last_history = 0;
+        static unsigned int last_waiting = 0;
+
+        if (!dbus_conn)
+                return;
+
+        GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE_VARDICT);
+        GVariantBuilder *invalidated_builder = g_variant_builder_new(G_VARIANT_TYPE_STRING_ARRAY);
+
+        unsigned int displayed = queues_length_displayed();
+        unsigned int history = queues_length_history();
+        unsigned int waiting = queues_length_waiting();
+        bool properties_changed = false;
+
+        if (last_displayed != displayed) {
+                g_variant_builder_add(builder,
+                                      "{sv}",
+                                      "displayedLength", g_variant_new_uint32(displayed));
+                last_displayed = displayed;
+                properties_changed = true;
+        }
+
+        if (last_history != history) {
+                g_variant_builder_add(builder,
+                                      "{sv}",
+                                      "historyLength", g_variant_new_uint32(history));
+                last_history = history;
+                properties_changed = true;
+        }
+        if (last_waiting != waiting) {
+                g_variant_builder_add(builder,
+                                      "{sv}",
+                                      "waitingLength", g_variant_new_uint32(waiting));
+                last_waiting = waiting;
+                properties_changed = true;
+        }
+
+        if (properties_changed) {
+                GVariant *body = g_variant_new("(sa{sv}as)",
+                                               DUNST_IFAC,
+                                               builder,
+                                               invalidated_builder);
+
+                GError *err = NULL;
+
+                g_dbus_connection_emit_signal(dbus_conn,
+                                              NULL,
+                                              FDN_PATH,
+                                              PROPERTIES_IFAC,
+                                              "PropertiesChanged",
+                                              body,
+                                              &err);
+                                
+                if (err) {
+                        LOG_W("Unable to emit signal: %s", err->message);
+                        g_error_free(err);
+                }
+        }
+
+        g_clear_pointer(&builder, g_variant_builder_unref);
+        g_clear_pointer(&invalidated_builder, g_variant_builder_unref);
+}
+
 static void dbus_cb_Notify(
                 GDBusConnection *connection,
                 const gchar *sender,
@@ -886,21 +953,24 @@ gboolean dbus_cb_dunst_Properties_Set(GDBusConnection *connection,
                 dunst_status(S_RUNNING, !g_variant_get_boolean(value));
                 wake_up();
 
-                GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE_ARRAY);
-                GVariantBuilder *invalidated_builder = g_variant_builder_new(G_VARIANT_TYPE("as"));
+                GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE_VARDICT);
+                GVariantBuilder *invalidated_builder = g_variant_builder_new(G_VARIANT_TYPE_STRING_ARRAY);
                 g_variant_builder_add(builder,
                                       "{sv}",
                                       "paused", g_variant_new_boolean(g_variant_get_boolean(value)));
                 g_dbus_connection_emit_signal(connection,
                                               NULL,
                                               object_path,
-                                              "org.freedesktop.DBus.Properties",
+                                              PROPERTIES_IFAC,
                                               "PropertiesChanged",
                                               g_variant_new("(sa{sv}as)",
                                                             interface_name,
                                                             builder,
                                                             invalidated_builder),
                                               NULL);
+
+                g_clear_pointer(&builder, g_variant_builder_unref);
+                g_clear_pointer(&invalidated_builder, g_variant_builder_unref);
                 return true;
         }
 
