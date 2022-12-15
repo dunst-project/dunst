@@ -371,6 +371,56 @@ TEST test_invalid_notification(void)
         PASS();
 }
 
+TEST test_dbus_cb_dunst_Properties_Set(void)
+{
+
+        GDBusConnection *connection_client;
+        GError *error = NULL;
+        struct signal_propertieschanged sig = {NULL, NULL, NULL, -1};
+
+        dbus_signal_subscribe_propertieschanged(&sig);
+
+        connection_client = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, NULL);
+
+        GVariant *pause_variant = g_variant_new_boolean(TRUE);
+
+
+       ASSERT(dbus_cb_dunst_Properties_Set(connection_client,
+                                      FDN_NAME,
+                                      FDN_PATH,
+                                      DUNST_IFAC,
+                                      "paused",
+                                      pause_variant,
+                                      &error,
+                                      NULL));
+
+        if (error) {
+                printf("Error while calling dbus_cb_dunst_Properties_Set: %s\n", error->message);
+                g_error_free(error);
+        }
+
+        uint waiting = 0;
+        while (!sig.interface && waiting < 2000) {
+                usleep(500);
+                waiting++;
+        }
+
+        ASSERT_STR_EQ(sig.interface, DUNST_IFAC);
+
+        gboolean paused;
+        g_variant_lookup(sig.array_dict_sv_data, "paused", "b", &paused);
+
+        ASSERT(paused);
+
+        g_variant_unref(pause_variant);
+        g_free(sig.interface);
+        g_variant_unref(sig.array_dict_sv_data);
+        g_variant_unref(sig.array_s_data);
+        dbus_signal_unsubscribe_propertieschanged(&sig);
+        g_object_unref(connection_client);
+        PASS();
+}
+
 TEST test_empty_notification(void)
 {
         struct dbus_notification *n = dbus_notification_new();
@@ -1027,6 +1077,7 @@ gpointer run_threaded_tests(gpointer data)
         RUN_TEST(test_dbus_init);
 
         RUN_TEST(test_get_fdn_daemon_info);
+        RUN_TEST(test_dbus_cb_dunst_Properties_Set);
 
         RUN_TEST(test_empty_notification);
         RUN_TEST(test_basic_notification);
