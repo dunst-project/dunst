@@ -25,7 +25,7 @@
 
 #define PROPERTIES_IFAC "org.freedesktop.DBus.Properties"
 
-GDBusConnection *dbus_conn;
+GDBusConnection *dbus_conn = NULL;
 
 static GDBusNodeInfo *introspection_data = NULL;
 
@@ -1184,6 +1184,7 @@ void dbus_teardown(int owner_id)
         g_clear_pointer(&introspection_data, g_dbus_node_info_unref);
 
         g_bus_unown_name(owner_id);
+        dbus_conn = NULL;
 }
 
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */
