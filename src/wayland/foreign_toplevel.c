@@ -46,7 +46,7 @@ static void toplevel_handle_output_leave(void *data,
         struct dunst_output *output = wl_output_get_user_data(wl_output);
         struct toplevel_output *pos, *tmp;
         wl_list_for_each_safe(pos, tmp, &toplevel->output_list, link){
-                if (pos->dunst_output->name == output->name){
+                if (pos->dunst_output->name == output->name) {
                         wl_list_remove(&pos->link);
                 }
         }

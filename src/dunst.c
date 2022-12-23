@@ -59,8 +59,7 @@ void wake_up(void)
 {
         // If wake_up is being called before the output has been setup we should
         // return.
-        if (!setup_done)
-        {
+        if (!setup_done) {
                 LOG_D("Ignoring wake up");
                 return;
         }

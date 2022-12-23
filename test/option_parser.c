@@ -10,7 +10,7 @@ enum greatest_test_res ARRAY_EQ(char **a, char **b){
         ASSERT(a);
         ASSERT(b);
         int i = 0;
-        while (a[i] && b[i]){
+        while (a[i] && b[i]) {
                 ASSERT_STR_EQ(a[i], b[i]);
                 i++;
         }
@@ -388,7 +388,7 @@ TEST test_string_to_list(void)
                 sprintf(buf, "Failed in round %i", i);
                 ASSERTm(buf, set_from_string(s.value, s, inputs[i]));
                 ASSERT_EQm(buf, get_list_len(val), get_list_len(results[i]));
-                for (int j = 0; val[j] != MOUSE_ACTION_END; j++){
+                for (int j = 0; val[j] != MOUSE_ACTION_END; j++) {
                         sprintf(buf, "Failed in round %i, element %i. Is %i, should be %i", i, j, val[j], results[i][j]);
                         ASSERT_EQm(buf, val[j], results[i][j]);
                 }

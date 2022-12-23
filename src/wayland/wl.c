@@ -355,7 +355,7 @@ static const struct org_kde_kwin_idle_timeout_listener idle_timeout_listener = {
 };
 
 static void add_seat_to_idle_handler(struct wl_seat *seat) {
-        if (!ctx.idle_handler){
+        if (!ctx.idle_handler) {
                 return;
         }
         if (settings.idle_threshold > 0) {

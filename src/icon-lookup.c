@@ -18,7 +18,7 @@ int default_themes_count = 0;
 
 int get_icon_theme(char *name) {
         for (int i = 0; i < icon_themes_count; i++) {
-                if (STR_EQ(icon_themes[i].subdir_theme, name)){
+                if (STR_EQ(icon_themes[i].subdir_theme, name)) {
                         return i;
                 }
         }
@@ -78,7 +78,7 @@ int load_icon_theme_from_dir(const char *icon_dir, const char *subdir_theme) {
                 // read optional scale, defaulting to 1
                 const char *scale_str = section_get_value(ini, &section, "Scale");
                 icon_themes[index].dirs[i].scale = 1;
-                if (scale_str){
+                if (scale_str) {
                         safe_string_to_int(&icon_themes[index].dirs[i].scale, scale_str);
                 }
 
@@ -112,7 +112,7 @@ int load_icon_theme_from_dir(const char *icon_dir, const char *subdir_theme) {
                 } else if (icon_themes[index].dirs[i].type == THEME_DIR_THRESHOLD) {
                         icon_themes[index].dirs[i].threshold = 2;
                         const char *threshold = section_get_value(ini, &section, "Threshold");
-                        if (threshold){
+                        if (threshold) {
                                 safe_string_to_int(&icon_themes[index].dirs[i].threshold, threshold);
                         }
                 }
@@ -120,8 +120,7 @@ int load_icon_theme_from_dir(const char *icon_dir, const char *subdir_theme) {
 
 
         // load inherited themes
-        if (!STR_EQ(icon_themes[index].name, "Hicolor"))
-        {
+        if (!STR_EQ(icon_themes[index].name, "Hicolor")) {
                 char **inherits = string_to_array(get_value(ini, "Icon Theme", "Inherits"), ",");
                 icon_themes[index].inherits_count = string_array_length(inherits);
                 LOG_D("Theme has %i inherited themes\n", icon_themes[index].inherits_count);

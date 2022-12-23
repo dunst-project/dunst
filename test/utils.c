@@ -175,7 +175,7 @@ TEST test_string_to_time(void)
         gint64  exp[] = {      5000,     5000, 100000, 10000, 120000, 39600000, 777600000,     5,         0};
 
         int i = 0;
-        while (input[i]){
+        while (input[i]) {
                 ASSERT_EQ_FMT(string_to_time(input[i]), exp[i]*1000, "%ld");
                 i++;
         }

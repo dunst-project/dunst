@@ -243,7 +243,7 @@ bool window_is_fullscreen(Window window)
         ASSERT_OR_RET(window, false);
 
         Atom has_wm_state = XInternAtom(xctx.dpy, "_NET_WM_STATE", True);
-        if (has_wm_state == None){
+        if (has_wm_state == None) {
                 return false;
         }
 
