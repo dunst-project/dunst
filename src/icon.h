@@ -18,7 +18,7 @@ cairo_surface_t *gdk_pixbuf_to_cairo_surface(GdkPixbuf *pixbuf);
  * @return an instance of `GdkPixbuf`
  * @retval NULL: file does not exist, not readable, etc..
  */
-GdkPixbuf *get_pixbuf_from_file(const char *filename, int min_size, int max_size, double scale);
+GdkPixbuf *get_pixbuf_from_notification(struct notification *n, double scale);
 
 
 /**

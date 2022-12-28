@@ -339,9 +339,7 @@ void notification_icon_replace_path(struct notification *n, const char *new_icon
         g_free(n->icon_path);
         n->icon_path = get_path_from_icon_name(new_icon, n->min_icon_size);
         if (n->icon_path) {
-                GdkPixbuf *pixbuf = get_pixbuf_from_file(n->icon_path,
-                                n->min_icon_size, n->max_icon_size,
-                                draw_get_scale());
+                GdkPixbuf *pixbuf = get_pixbuf_from_notification(n, draw_get_scale());
                 if (pixbuf) {
                         n->icon = gdk_pixbuf_to_cairo_surface(pixbuf);
                         g_object_unref(pixbuf);
@@ -704,7 +702,7 @@ void notification_update_text_to_render(struct notification *n)
 void notification_do_action(struct notification *n)
 {
         assert(n->default_action_name);
-        
+
         if (g_hash_table_size(n->actions)) {
                 if (g_hash_table_contains(n->actions, n->default_action_name)) {
                         signal_action_invoked(n, n->default_action_name);

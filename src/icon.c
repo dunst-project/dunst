@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <cairo.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
+#include <librsvg/rsvg.h>
 #include <stdbool.h>
 #include <string.h>
 #include <math.h>
@@ -183,25 +184,41 @@ static GdkPixbuf *icon_pixbuf_scale_to_size(GdkPixbuf *pixbuf, double dpi_scale,
         return pixbuf;
 }
 
-GdkPixbuf *get_pixbuf_from_file(const char *filename, int min_size, int max_size, double scale)
+GdkPixbuf *get_pixbuf_from_notification(struct notification *n , double scale)
 {
-        char *path = string_to_path(g_strdup(filename));
+        char *path = string_to_path(g_strdup(n->icon_path));
         GError *error = NULL;
         gint w, h;
 
         if (!gdk_pixbuf_get_file_info (path, &w, &h)) {
-                LOG_W("Failed to load image info for %s", filename);
+                LOG_W("Failed to load image info for %s", n->icon_path);
                 g_free(path);
                 return NULL;
         }
+
         GdkPixbuf *pixbuf = NULL;
         // TODO immediately rescale icon upon scale changes
-        icon_size_clamp(&w, &h, min_size, max_size);
-        pixbuf = gdk_pixbuf_new_from_file_at_scale(path,
-                        round(w * scale),
-                        round(h * scale),
-                        TRUE,
-                        &error);
+        icon_size_clamp(&w, &h, n->min_icon_size, n->max_icon_size);
+
+        const char *ext = strrchr(path, '.');
+        if (ext && !strcmp(ext, ".svg")) {
+                RsvgHandle *handle = rsvg_handle_new_from_file(path, &error);
+                const guint8 stylesheet[35];
+                sprintf((char*)stylesheet, "path { fill: %s !important; }", n->colors.fg);
+                rsvg_handle_set_stylesheet(handle, stylesheet, sizeof(stylesheet) / sizeof(guint8), &error);
+
+                // Default DPI is 96
+                rsvg_handle_set_dpi(handle, scale * 96);
+
+                pixbuf = rsvg_handle_get_pixbuf(handle);
+                g_object_unref(handle);
+        } else {
+                pixbuf = gdk_pixbuf_new_from_file_at_scale(path,
+                                round(w * scale),
+                                round(h * scale),
+                                TRUE,
+                                &error);
+        }
 
         if (error) {
                 LOG_W("%s", error->message);
