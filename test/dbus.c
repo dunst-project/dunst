@@ -371,6 +371,52 @@ TEST test_invalid_notification(void)
         PASS();
 }
 
+TEST test_dbus_cb_dunst_Properties_Get(void)
+{
+
+        GDBusConnection *connection_client;
+        GError *error = NULL;
+
+        connection_client = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, NULL);
+
+        GVariant *pause_variant = dbus_cb_dunst_Properties_Get(connection_client,
+                                      FDN_NAME,
+                                      FDN_PATH,
+                                      DUNST_IFAC,
+                                      "paused",
+                                      &error,
+                                      NULL);
+
+        if (error) {
+                printf("Error while calling dbus_cb_dunst_Properties_Get: %s\n", error->message);
+                g_error_free(error);
+        }
+
+        ASSERT_FALSE(g_variant_get_boolean(pause_variant));
+        g_variant_unref(pause_variant);
+
+        dunst_status(S_RUNNING, false);
+
+        pause_variant = dbus_cb_dunst_Properties_Get(connection_client,
+                                      FDN_NAME,
+                                      FDN_PATH,
+                                      DUNST_IFAC,
+                                      "paused",
+                                      &error,
+                                      NULL);
+
+        if (error) {
+                printf("Error while calling dbus_cb_dunst_Properties_Get: %s\n", error->message);
+                g_error_free(error);
+        }
+
+        ASSERT(g_variant_get_boolean(pause_variant));
+        g_variant_unref(pause_variant);
+
+        g_object_unref(connection_client);
+        PASS();
+}
+
 TEST test_dbus_cb_dunst_Properties_Set(void)
 {
 
@@ -1077,6 +1123,7 @@ gpointer run_threaded_tests(gpointer data)
         RUN_TEST(test_dbus_init);
 
         RUN_TEST(test_get_fdn_daemon_info);
+        RUN_TEST(test_dbus_cb_dunst_Properties_Get);
         RUN_TEST(test_dbus_cb_dunst_Properties_Set);
 
         RUN_TEST(test_empty_notification);
