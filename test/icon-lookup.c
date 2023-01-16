@@ -104,7 +104,7 @@ TEST test_bench_search(void)
         add_default_theme(index);
         printf("Benchmarking icons\n");
         clock_t start_time = clock();
-        for (int i = 0; i < 1000; i++){
+        for (int i = 0; i < 1000; i++) {
                 // icon is part of papirus, right at the end of index.theme
                 char *icon = find_icon_path("weather-windy-symbolic", 512);
                 ASSERT(icon);
@@ -126,7 +126,7 @@ TEST test_bench_multiple_search(void)
         add_default_theme(index);
         printf("Benchmarking icons\n");
         clock_t start_time = clock();
-        for (int i = 0; i < 1000; i++){
+        for (int i = 0; i < 1000; i++) {
                 // icon is part of papirus, right at the end of index.theme
                 char *icon = find_icon_path("view-wrapped-rtl-symbolic", 512);
                 /* printf("%s\n", icon); */
@@ -149,7 +149,7 @@ TEST test_bench_doesnt_exist(void)
         add_default_theme(index);
         printf("Benchmarking icons\n");
         clock_t start_time = clock();
-        for (int i = 0; i < 1000; i++){
+        for (int i = 0; i < 1000; i++) {
                 // Icon size is chosen as some common icon size.
                 char *icon = find_icon_path("doesn't exist", 48);
                 /* printf("%s\n", icon); */

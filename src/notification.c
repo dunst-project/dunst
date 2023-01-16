@@ -299,7 +299,7 @@ void notification_unref(struct notification *n)
 
         notification_private_free(n->priv);
 
-        if (n->script_count > 0){
+        if (n->script_count > 0) {
                 g_free(n->scripts);
         }
 

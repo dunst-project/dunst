@@ -716,7 +716,7 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, dou
         }
 
         // progress bar positioning
-        if (have_progress_bar(cl)){
+        if (have_progress_bar(cl)) {
                 int progress = MIN(cl->n->progress, 100);
                 unsigned int frame_x = 0;
                 unsigned int frame_width = settings.progress_bar_frame_width,

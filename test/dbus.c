@@ -21,6 +21,14 @@ struct signal_actioninvoked {
         GDBusConnection *conn;
 };
 
+struct signal_propertieschanged {
+        gchar *interface;
+        GVariant *array_dict_sv_data;
+        GVariant *array_s_data;
+        guint subscription_id;
+        GDBusConnection *conn;
+};
+
 struct signal_closed {
         guint32 id;
         guint32 reason;
@@ -79,6 +87,73 @@ void dbus_signal_unsubscribe_actioninvoked(struct signal_actioninvoked *actionin
 
         actioninvoked->conn = NULL;
         actioninvoked->subscription_id = -1;
+}
+
+void dbus_signal_cb_propertieschanged(GDBusConnection *connection,
+                                  const gchar *sender_name,
+                                  const gchar *object_path,
+                                  const gchar *interface_name,
+                                  const gchar *signal_name,
+                                  GVariant *parameters,
+                                  gpointer user_data)
+{
+        g_return_if_fail(user_data);
+
+        gchar *interface;
+        GVariant *array_dict_sv_data;
+        GVariant *array_s_data;
+
+        struct signal_propertieschanged *sig = (struct signal_propertieschanged*) user_data;
+
+        g_variant_get(parameters, "(s@a{sv}@as)", &interface, &array_dict_sv_data, &array_s_data);
+
+        if (g_strcmp0(interface, DUNST_IFAC) == 0) {
+                sig->interface = interface;
+                sig->array_dict_sv_data = array_dict_sv_data;
+                sig->array_s_data = array_s_data;
+        }
+
+}
+
+void dbus_signal_subscribe_propertieschanged(struct signal_propertieschanged *propertieschanged)
+{
+        assert(propertieschanged);
+
+        propertieschanged->conn = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, NULL);
+        propertieschanged->subscription_id =
+                g_dbus_connection_signal_subscribe(
+                        // GDBusConnection *connection,
+                        propertieschanged->conn,
+                        // const gchar *sender,
+                        FDN_NAME,
+                        // const gchar *interface_name,
+                        PROPERTIES_IFAC,
+                        // const gchar *member,
+                        "PropertiesChanged",
+                        // const gchar *object_path,
+                        FDN_PATH,
+                        // const gchar *arg0,
+                        NULL,
+                        // GDBusSignalFlags flags,
+                        G_DBUS_SIGNAL_FLAGS_NONE,
+                        // GDBusSignalCallback callback,
+                        dbus_signal_cb_propertieschanged,
+                        // gpointer user_data,
+                        propertieschanged,
+                        // GDestroyNotify user_data_free_func
+                        NULL);
+
+}
+
+void dbus_signal_unsubscribe_propertieschanged(struct signal_propertieschanged *propertieschanged)
+{
+        assert(propertieschanged);
+
+        g_dbus_connection_signal_unsubscribe(propertieschanged->conn, propertieschanged->subscription_id);
+        g_object_unref(propertieschanged->conn);
+
+        propertieschanged->conn = NULL;
+        propertieschanged->subscription_id = -1;
 }
 
 void dbus_signal_cb_closed(GDBusConnection *connection,
@@ -293,6 +368,102 @@ TEST test_invalid_notification(void)
         ASSERT(NULL == dbus_invoke("Notify", faulty));
 
         g_variant_unref(faulty);
+        PASS();
+}
+
+TEST test_dbus_cb_dunst_Properties_Get(void)
+{
+
+        GDBusConnection *connection_client;
+        GError *error = NULL;
+
+        connection_client = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, NULL);
+
+        GVariant *pause_variant = dbus_cb_dunst_Properties_Get(connection_client,
+                                      FDN_NAME,
+                                      FDN_PATH,
+                                      DUNST_IFAC,
+                                      "paused",
+                                      &error,
+                                      NULL);
+
+        if (error) {
+                printf("Error while calling dbus_cb_dunst_Properties_Get: %s\n", error->message);
+                g_error_free(error);
+        }
+
+        ASSERT_FALSE(g_variant_get_boolean(pause_variant));
+        g_variant_unref(pause_variant);
+
+        dunst_status(S_RUNNING, false);
+
+        pause_variant = dbus_cb_dunst_Properties_Get(connection_client,
+                                      FDN_NAME,
+                                      FDN_PATH,
+                                      DUNST_IFAC,
+                                      "paused",
+                                      &error,
+                                      NULL);
+
+        if (error) {
+                printf("Error while calling dbus_cb_dunst_Properties_Get: %s\n", error->message);
+                g_error_free(error);
+        }
+
+        ASSERT(g_variant_get_boolean(pause_variant));
+        g_variant_unref(pause_variant);
+
+        g_object_unref(connection_client);
+        PASS();
+}
+
+TEST test_dbus_cb_dunst_Properties_Set(void)
+{
+
+        GDBusConnection *connection_client;
+        GError *error = NULL;
+        struct signal_propertieschanged sig = {NULL, NULL, NULL, -1};
+
+        dbus_signal_subscribe_propertieschanged(&sig);
+
+        connection_client = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, NULL);
+
+        GVariant *pause_variant = g_variant_new_boolean(TRUE);
+
+
+       ASSERT(dbus_cb_dunst_Properties_Set(connection_client,
+                                      FDN_NAME,
+                                      FDN_PATH,
+                                      DUNST_IFAC,
+                                      "paused",
+                                      pause_variant,
+                                      &error,
+                                      NULL));
+
+        if (error) {
+                printf("Error while calling dbus_cb_dunst_Properties_Set: %s\n", error->message);
+                g_error_free(error);
+        }
+
+        uint waiting = 0;
+        while (!sig.interface && waiting < 2000) {
+                usleep(500);
+                waiting++;
+        }
+
+        ASSERT_STR_EQ(sig.interface, DUNST_IFAC);
+
+        gboolean paused;
+        g_variant_lookup(sig.array_dict_sv_data, "paused", "b", &paused);
+
+        ASSERT(paused);
+
+        g_variant_unref(pause_variant);
+        g_free(sig.interface);
+        g_variant_unref(sig.array_dict_sv_data);
+        g_variant_unref(sig.array_s_data);
+        dbus_signal_unsubscribe_propertieschanged(&sig);
+        g_object_unref(connection_client);
         PASS();
 }
 
@@ -740,6 +911,47 @@ TEST test_signal_actioninvoked(void)
         PASS();
 }
 
+TEST test_signal_length_propertieschanged(void)
+{
+        struct dbus_notification *n_dbus;
+        struct signal_propertieschanged sig = {NULL, NULL, NULL, -1};
+
+        dbus_signal_subscribe_propertieschanged(&sig);
+
+        n_dbus = dbus_notification_new();
+        n_dbus->app_name = "dunstteststack";
+        n_dbus->app_icon = "NONE2";
+        n_dbus->summary = "Headline for New";
+        n_dbus->body = "Text";
+        g_hash_table_insert(n_dbus->actions, g_strdup("actionkey"), g_strdup("Print this text"));
+
+        guint id;
+        ASSERT(dbus_notification_fire(n_dbus, &id));
+        ASSERT(id != 0);
+
+        queues_update(STATUS_NORMAL, time_monotonic_now());
+
+        uint waiting = 0;
+        while (!sig.interface && waiting < 2000) {
+                usleep(500);
+                waiting++;
+        }
+
+        ASSERT_STR_EQ(sig.interface, DUNST_IFAC);
+
+        guint32 displayed_length;
+        g_variant_lookup(sig.array_dict_sv_data, "displayedLength", "u", &displayed_length);
+
+        ASSERT_EQ(displayed_length, queues_length_displayed());
+
+        g_free(sig.interface);
+        g_variant_unref(sig.array_dict_sv_data);
+        g_variant_unref(sig.array_s_data);
+        dbus_notification_free(n_dbus);
+        dbus_signal_unsubscribe_propertieschanged(&sig);
+        PASS();
+}
+
 TEST test_close_and_signal(void)
 {
         GVariant *data, *ret;
@@ -911,6 +1123,8 @@ gpointer run_threaded_tests(gpointer data)
         RUN_TEST(test_dbus_init);
 
         RUN_TEST(test_get_fdn_daemon_info);
+        RUN_TEST(test_dbus_cb_dunst_Properties_Get);
+        RUN_TEST(test_dbus_cb_dunst_Properties_Set);
 
         RUN_TEST(test_empty_notification);
         RUN_TEST(test_basic_notification);
@@ -928,6 +1142,7 @@ gpointer run_threaded_tests(gpointer data)
         RUN_TESTp(test_server_caps, MARKUP_NO);
         RUN_TEST(test_close_and_signal);
         RUN_TEST(test_signal_actioninvoked);
+        RUN_TEST(test_signal_length_propertieschanged);
         RUN_TEST(test_timeout_overflow);
         RUN_TEST(test_override_dbus_timeout);
         RUN_TEST(test_match_dbus_timeout);

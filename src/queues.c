@@ -464,7 +464,7 @@ void queues_update(struct dunst_status status, gint64 time)
                 }
 
 
-                if (queues_notification_is_finished(n, status, time)){
+                if (queues_notification_is_finished(n, status, time)) {
                         queues_notification_close(n, REASON_TIME);
                         iter = nextiter;
                         continue;
@@ -547,6 +547,7 @@ void queues_update(struct dunst_status status, gint64 time)
                         }
                 }
         }
+        signal_length_propertieschanged();
 }
 
 /* see queues.h */

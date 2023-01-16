@@ -30,7 +30,7 @@ static int cmdline_find_option(const char *key);
 int string_parse_enum(const void *data, const char *s, void * ret) {
         struct string_to_enum_def *string_to_enum = (struct string_to_enum_def*)data;
         for (int i = 0; string_to_enum[i].string != NULL; i++) {
-                if (strcmp(s, string_to_enum[i].string) == 0){
+                if (strcmp(s, string_to_enum[i].string) == 0) {
                         *(int*) ret = string_to_enum[i].enum_value;
                         LOG_D("Setting enum to %i (%s)", *(int*) ret, string_to_enum[i].string);
                         return true;
@@ -246,8 +246,7 @@ int string_parse_length(void *ret_in, const char *s) {
         struct length *ret = (struct length*) ret_in;
         int val = 0;
         char *s_stripped = string_strip_brackets(s);
-        if (!s_stripped)
-        {
+        if (!s_stripped) {
                 // single int without brackets
                 bool success = safe_string_to_int(&val, s);
                 if (success && val > 0) {
@@ -435,7 +434,7 @@ void save_settings(struct ini *ini) {
                         const struct entry curr_entry = curr_section.entries[j];
                         int setting_id = get_setting_id(curr_entry.key, curr_section.name);
                         struct setting curr_setting = allowed_settings[setting_id];
-                        if (setting_id < 0){
+                        if (setting_id < 0) {
                                 if (setting_id == -1) {
                                         LOG_W("Setting %s in section %s doesn't exist", curr_entry.key, curr_section.name);
                                 }

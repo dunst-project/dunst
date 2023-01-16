@@ -172,7 +172,7 @@ void print_rule(struct rule* r) {
 void check_and_correct_settings(struct settings *s) {
 
 #ifndef ENABLE_WAYLAND
-        if (is_running_wayland()){
+        if (is_running_wayland()) {
                 /* We are using xwayland now. Setting force_xwayland to make sure
                  * the idle workaround below is activated */
                 settings.force_xwayland = true;
@@ -189,13 +189,13 @@ void check_and_correct_settings(struct settings *s) {
 
         // check sanity of the progress bar options
         {
-                if (s->progress_bar_height < (2 * s->progress_bar_frame_width)){
+                if (s->progress_bar_height < (2 * s->progress_bar_frame_width)) {
                         DIE("setting progress_bar_frame_width is bigger than half of progress_bar_height");
                 }
-                if (s->progress_bar_max_width < (2 * s->progress_bar_frame_width)){
+                if (s->progress_bar_max_width < (2 * s->progress_bar_frame_width)) {
                         DIE("setting progress_bar_frame_width is bigger than half of progress_bar_max_width");
                 }
-                if (s->progress_bar_max_width < s->progress_bar_min_width){
+                if (s->progress_bar_max_width < s->progress_bar_min_width) {
                         DIE("setting progress_bar_max_width is smaller than progress_bar_min_width");
                 }
                 if (s->progress_bar_min_width > s->width.max) {
