@@ -184,7 +184,7 @@ static GdkPixbuf *icon_pixbuf_scale_to_size(GdkPixbuf *pixbuf, double dpi_scale,
         return pixbuf;
 }
 
-GdkPixbuf *get_pixbuf_from_notification(struct notification *n , double scale)
+cairo_surface_t *get_cairo_surface_from_notification(struct notification *n , double scale)
 {
         char *path = string_to_path(g_strdup(n->icon_path));
         GError *error = NULL;
@@ -196,9 +196,13 @@ GdkPixbuf *get_pixbuf_from_notification(struct notification *n , double scale)
                 return NULL;
         }
 
-        GdkPixbuf *pixbuf = NULL;
         // TODO immediately rescale icon upon scale changes
         icon_size_clamp(&w, &h, n->min_icon_size, n->max_icon_size);
+        cairo_surface_t *icon_surface = cairo_image_surface_create(
+                        CAIRO_FORMAT_ARGB32,
+                        round(w * scale),
+                        round(h * scale)
+                );
 
         const char *ext = strrchr(path, '.');
         if (ext && !strcmp(ext, ".svg")) {
@@ -207,17 +211,24 @@ GdkPixbuf *get_pixbuf_from_notification(struct notification *n , double scale)
                 sprintf((char*)stylesheet, "path { fill: %s !important; }", n->colors.fg);
                 rsvg_handle_set_stylesheet(handle, stylesheet, sizeof(stylesheet) / sizeof(guint8), &error);
 
-                // Default DPI is 96
-                rsvg_handle_set_dpi(handle, scale * 96);
-
-                pixbuf = rsvg_handle_get_pixbuf(handle);
+                cairo_t *cr = cairo_create(icon_surface);
+                RsvgRectangle viewport = {
+                        0,
+                        0,
+                        cairo_image_surface_get_width(icon_surface),
+                        cairo_image_surface_get_height(icon_surface)
+                };
+                rsvg_handle_render_document(handle, cr, &viewport, &error);
+                cairo_destroy(cr);
                 g_object_unref(handle);
         } else {
-                pixbuf = gdk_pixbuf_new_from_file_at_scale(path,
+                GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file_at_scale(path,
                                 round(w * scale),
                                 round(h * scale),
                                 TRUE,
                                 &error);
+                icon_surface = gdk_pixbuf_to_cairo_surface(pixbuf);
+                g_object_unref(pixbuf);
         }
 
         if (error) {
@@ -226,7 +237,7 @@ GdkPixbuf *get_pixbuf_from_notification(struct notification *n , double scale)
         }
 
         g_free(path);
-        return pixbuf;
+        return icon_surface;
 }
 
 char *get_path_from_icon_name(const char *iconname, int size)
