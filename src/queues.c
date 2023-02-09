@@ -554,6 +554,7 @@ void queues_update(struct dunst_status status, gint64 time)
 gint64 queues_get_next_datachange(gint64 time)
 {
         gint64 sleep = G_MAXINT64;
+        gint64 until_next_second = S2US(1) - (time % S2US(1));
 
         for (GList *iter = g_queue_peek_head_link(displayed); iter;
                         iter = iter->next) {
@@ -571,9 +572,15 @@ gint64 queues_get_next_datachange(gint64 time)
                 if (settings.show_age_threshold >= 0) {
                         gint64 age = time - n->timestamp;
 
-                        // sleep exactly until the next shift of the second happens
-                        if (age > settings.show_age_threshold - S2US(1))
-                                sleep = MIN(sleep, (S2US(1) - (age % S2US(1))));
+                        if (age > settings.show_age_threshold - S2US(1)) {
+                                /* Notification age should be updated -- sleep
+                                 * until the next turn of second.
+                                 * This ensures that all notifications' ages
+                                 * will change at once, and that at most one
+                                 * update will occur each second for this
+                                 * purpose. */
+                                sleep = MIN(sleep, until_next_second);
+                        }
                         else
                                 sleep = MIN(sleep, settings.show_age_threshold - age);
                 }
