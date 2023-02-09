@@ -711,7 +711,7 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, dou
                 } // else ICON_RIGHT
 
                 cairo_set_source_surface(c, cl->icon, round(image_x * scale), round(image_y * scale));
-                draw_rect(c, image_x, image_y, image_width, image_height, scale);
+                draw_rounded_rect(c, image_x, image_y, image_width, image_height, settings.icon_corner_radius, scale, true, true);
                 cairo_fill(c);
         }
 

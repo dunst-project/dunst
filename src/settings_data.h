@@ -1075,6 +1075,16 @@ static const struct setting allowed_settings[] = {
                 .parser_data = NULL,
         },
         {
+                .name = "icon_corner_radius",
+                .section = "global",
+                .description = "Icon corner radius",
+                .type = TYPE_INT,
+                .default_value = "0",
+                .value = &settings.icon_corner_radius,
+                .parser = NULL,
+                .parser_data = NULL,
+        },
+        {
                 .name = "progress_bar",
                 .section = "global",
                 .description = "Show the progress bar",
