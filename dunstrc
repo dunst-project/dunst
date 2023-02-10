@@ -39,7 +39,7 @@
     scale = 0
 
     # Maximum number of notification (0 means no limit)
-    notification_limit = 0
+    notification_limit = 20
 
     ### Progress bar ###
 
