@@ -71,6 +71,7 @@ void wake_up(void)
 static gboolean run(void *data)
 {
         static gint64 next_timeout = 0;
+        static guint next_timeout_id = 0;
         int reason = GPOINTER_TO_INT(data);
 
         LOG_D("RUN, reason %i", reason);
@@ -92,6 +93,8 @@ static gboolean run(void *data)
         }
 
         if (active) {
+                // Previous computations may have taken time, update `now`
+                now = time_monotonic_now();
                 gint64 sleep = queues_get_next_datachange(now);
                 gint64 timeout_at = now + sleep;
 
@@ -99,7 +102,10 @@ static gboolean run(void *data)
 
                 if (sleep >= 0) {
                         if (reason == 0 || next_timeout < now || timeout_at < next_timeout) {
-                                g_timeout_add(sleep/1000, run, NULL);
+                                if (next_timeout != 0) {
+                                        g_source_remove(next_timeout_id);
+                                }
+                                next_timeout_id = g_timeout_add(sleep/1000, run, NULL);
                                 next_timeout = timeout_at;
                         }
                 }
