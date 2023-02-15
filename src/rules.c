@@ -169,9 +169,11 @@ static inline bool rule_field_matches_string(const char *value, const char *patt
                 if (err) {
                         size_t err_size = regerror(err, &regex, NULL, 0);
                         char *err_buf = malloc(err_size);
-                        regerror(err, &regex, err_buf, err_size);
-                        LOG_W("%s: \"%s\"", err_buf, pattern);
-                        free(err_buf);
+                        if (err_buf != NULL) {
+                                regerror(err, &regex, err_buf, err_size);
+                                LOG_W("%s: \"%s\"", err_buf, pattern);
+                                free(err_buf);
+                        }
                         return false;
                 }
 
