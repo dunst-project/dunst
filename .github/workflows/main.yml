@@ -7,6 +7,18 @@ on:
       - master
 
 jobs:
+  # Enforce the standard of g_malloc instead of malloc in the project
+  enforce-g_malloc:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        # Clone the whole branch, we have to fetch tags later
+        fetch-depth: 0
+
+    - name: enforce-g_malloc
+      run: "! git grep -P '(?<!g_)malloc' ':!.valgrind.suppressions' ':!.github/workflows/main.yml'"
+
   build:
     strategy:
       matrix:

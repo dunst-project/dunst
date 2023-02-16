@@ -3,7 +3,6 @@
 
 #include <glib.h>
 #include <stdio.h>
-#include <malloc.h>
 #include <unistd.h>
 #include <assert.h>
 
