@@ -676,9 +676,9 @@ void notification_update_text_to_render(struct notification *n)
 
         if (settings.show_age_threshold >= 0
             && t_delta >= settings.show_age_threshold) {
-                hours   = t_delta / G_USEC_PER_SEC / 3600;
-                minutes = t_delta / G_USEC_PER_SEC / 60 % 60;
-                seconds = t_delta / G_USEC_PER_SEC % 60;
+                hours   = US2S(t_delta) / 3600;
+                minutes = US2S(t_delta) / 60 % 60;
+                seconds = US2S(t_delta) % 60;
 
                 char *new_buf;
                 if (hours > 0) {

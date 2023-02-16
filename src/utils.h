@@ -22,7 +22,8 @@
 #define ASSERT_OR_RET(expr, val) if (!(expr)) return val;
 
 //! Convert a second into the internal time representation
-#define S2US(s) (((gint64)(s)) * 1000 * 1000)
+#define S2US(s) (((gint64)(s)) * G_USEC_PER_SEC)
+#define US2S(s) (((gint64)(s)) / G_USEC_PER_SEC)
 
 /**
  * Replaces all occurrences of the char \p needle with the char \p replacement in \p haystack.
