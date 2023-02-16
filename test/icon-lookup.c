@@ -73,7 +73,7 @@ TEST test_new_icon_overrides_raw_icon(void) {
         setup_test_theme();
 
         struct notification *n = test_notification_with_icon("new_icon", 10);
-        struct rule *rule = malloc(sizeof(struct rule));
+        struct rule *rule = g_malloc(sizeof(struct rule));
         *rule = empty_rule;
         rule->summary = g_strdup("new_icon");
         rule->new_icon = g_strdup("edit");
