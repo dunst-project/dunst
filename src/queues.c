@@ -553,20 +553,20 @@ void queues_update(struct dunst_status status, gint64 time)
 /* see queues.h */
 gint64 queues_get_next_datachange(gint64 time)
 {
-        gint64 sleep = G_MAXINT64;
-        gint64 until_next_second = S2US(1) - (time % S2US(1));
+        gint64 wakeup_time = G_MAXINT64;
+        gint64 next_second = time + S2US(1) - (time % S2US(1));
 
         for (GList *iter = g_queue_peek_head_link(displayed); iter;
                         iter = iter->next) {
                 struct notification *n = iter->data;
-                gint64 ttl = n->timeout - (time - n->start);
+                gint64 timeout_ts = n->timestamp + n->timeout;
 
                 if (n->timeout > 0 && n->locked == 0) {
-                        if (ttl > 0)
-                                sleep = MIN(sleep, ttl);
+                        if (timeout_ts > time)
+                                wakeup_time = MIN(wakeup_time, timeout_ts);
                         else
-                                // while we're processing, the notification already timed out
-                                return 0;
+                                // while we're processing or while locked, the notification already timed out
+                                return time;
                 }
 
                 if (settings.show_age_threshold >= 0) {
@@ -579,14 +579,14 @@ gint64 queues_get_next_datachange(gint64 time)
                                  * will change at once, and that at most one
                                  * update will occur each second for this
                                  * purpose. */
-                                sleep = MIN(sleep, until_next_second);
+                                wakeup_time = MIN(wakeup_time, next_second);
                         }
                         else
-                                sleep = MIN(sleep, settings.show_age_threshold - age);
+                                wakeup_time = MIN(wakeup_time, n->timestamp + settings.show_age_threshold);
                 }
         }
 
-        return sleep != G_MAXINT64 ? sleep : -1;
+        return wakeup_time != G_MAXINT64 ? wakeup_time : -1;
 }
 
 

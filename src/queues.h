@@ -161,7 +161,7 @@ void queues_update(struct dunst_status status, gint64 time);
  *
  * @param time the current time
  *
- * @return the distance to the next event in the queue, which forces
+ * @return the timestamp of the next event in the queue, which forces
  *         an update visible to the user. This may be:
  *             - notification hits timeout
  *             - notification's age second changes

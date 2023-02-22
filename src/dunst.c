@@ -93,10 +93,13 @@ static gboolean run(void *data)
         }
 
         if (active) {
+                gint64 timeout_at = queues_get_next_datachange(now);
                 // Previous computations may have taken time, update `now`
+                // This might mean that `timeout_at` is now before `now`, so
+                // we have to make sure that `sleep` is still positive.
                 now = time_monotonic_now();
-                gint64 sleep = queues_get_next_datachange(now);
-                gint64 timeout_at = now + sleep;
+                gint64 sleep = timeout_at - now;
+                sleep = MAX(sleep, 1000); // Sleep at least 1ms
 
                 LOG_D("Sleeping for %li ms", sleep/1000);
 
