@@ -801,6 +801,10 @@ void wl_display_surface(cairo_surface_t *srf, window winptr, const struct dimens
         ctx.current_buffer = get_next_buffer(ctx.shm, ctx.buffers,
                         dim->w * scale, dim->h * scale);
 
+        if(ctx.current_buffer == NULL) {
+                return;
+        }
+
         cairo_t *c = ctx.current_buffer->cairo;
         cairo_save(c);
         cairo_set_source_surface(c, srf, 0, 0);
@@ -817,6 +821,11 @@ void wl_display_surface(cairo_surface_t *srf, window winptr, const struct dimens
 cairo_t* wl_win_get_context(window winptr) {
         struct window_wl *win = (struct window_wl*)winptr;
         ctx.current_buffer = get_next_buffer(ctx.shm, ctx.buffers, 500, 500);
+
+        if(ctx.current_buffer == NULL) {
+                return NULL;
+        }
+
         win->c_surface = ctx.current_buffer->surface;
         win->c_ctx = ctx.current_buffer->cairo;
         return win->c_ctx;
