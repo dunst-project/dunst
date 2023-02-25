@@ -870,7 +870,13 @@ void draw(void)
 {
         assert(queues_length_displayed() > 0);
 
-        GSList *layouts = create_layouts(output->win_get_context(win));
+        cairo_t *c = output->win_get_context(win);
+
+        if(c == NULL) {
+                return;
+        }
+
+        GSList *layouts = create_layouts(c);
 
         struct dimensions dim = calculate_dimensions(layouts);
         LOG_D("Window dimensions %ix%i", dim.w, dim.h);
