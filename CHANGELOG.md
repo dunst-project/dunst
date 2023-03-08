@@ -1,5 +1,23 @@
 # Dunst changelog
 
+## 1.9.1 -- 2023-03-08
+
+### Added
+- zsh completion for dunst and dunstctl (#1107 and #1108)
+- dunstctl `history-clear` command to delete all notifications from history (#1131)
+- dunstctl `history-rm command` to remove a single notification from history (#1128)
+- `progress_bar_corner_radius` option for adding rounded corners to the progress bar (off by default) (#1119)
+- `icon_corner_radius` option for adding rounded corners to notification icons (#1139)
+
+### Changed
+- Make libnotify and dunstify optional in build (#1129)
+
+### Fixed
+- Man page typo's and readability (#1088 and #1121)
+- Length changes not being emitted over D-Bus (#1127)
+- Crash when locking screen with swaylock on Sway (#1148)
+- Dunst using 100% in some configurations with `idle_threshold` turned on (#1140)
+
 ## 1.9.0 -- 2022-06-27
 
 ### Added

@@ -1,4 +1,16 @@
 ===================================================================================
+Release Notes For v1.9.1
+===================================================================================
+
+If you like rounded corners, this release is for you. You can now add rounded
+corners to your progress bar and notification icons. Dunstctl added more
+options for changing the notification history, so I'm excited for what you can
+build with that. Dunst also is even more stable now with a crash being fixed
+and not using 100% of your cpu anymore in some situations.
+
+Take a look at the changelog for a more detailed change description.
+
+===================================================================================
 Release Notes For v1.9.0
 ===================================================================================
 
