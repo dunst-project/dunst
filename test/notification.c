@@ -256,11 +256,13 @@ SUITE(suite_notification)
                 "%b", "Look at my shiny <notification>",
                 "%I", "icoknpath.png",
                 "%i", "/this/is/my/icoknpath.png",
+                "%A", "",
+                "%U", "",
                 "%p", "[ 95%]",
                 "%n", "95",
                 "%%", "%",
                 "%",  "%",
-                "%UNKNOWN", "%UNKNOWN",
+                "%unknown", "%unknown",
                 NULL
         };
 

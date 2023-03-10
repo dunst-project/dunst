@@ -589,6 +589,27 @@ static void notification_format_message(struct notification *n)
                                 n->progress != -1 ? pg : "",
                                 MARKUP_NO);
                         break;
+                case 'D':
+                        notification_replace_single_field(
+                                &n->msg,
+                                &substr,
+                                n->dup_count > 0 ? g_strdup_printf("(%d)", n->dup_count) : "",
+                                MARKUP_NO);
+                        break;
+                case 'A':
+                        notification_replace_single_field(
+                                &n->msg,
+                                &substr,
+                                !settings.show_indicators && g_hash_table_size(n->actions) ? settings.action_indicator : "",
+                                MARKUP_NO);
+                        break;
+                case 'U':
+                        notification_replace_single_field(
+                                &n->msg,
+                                &substr,
+                                !settings.show_indicators && n->urls ? settings.url_indicator : "",
+                                MARKUP_NO);
+                        break;
                 case '%':
                         notification_replace_single_field(
                                 &n->msg,
@@ -653,17 +674,18 @@ void notification_update_text_to_render(struct notification *n)
 
         char *msg = g_strchomp(n->msg);
 
+        /* ToDo: deprecate this in favor of a format string */
         /* print dup_count and msg */
         if ((n->dup_count > 0 && !settings.hide_duplicate_count)
             && (g_hash_table_size(n->actions) || n->urls) && settings.show_indicators) {
                 buf = g_strdup_printf("(%d%s%s) %s",
                                       n->dup_count,
-                                      g_hash_table_size(n->actions) ? "A" : "",
-                                      n->urls ? "U" : "", msg);
+                                      g_hash_table_size(n->actions) ? settings.action_indicator : "",
+                                      n->urls ? settings.url_indicator : "", msg);
         } else if ((g_hash_table_size(n->actions) || n->urls) && settings.show_indicators) {
                 buf = g_strdup_printf("(%s%s) %s",
-                                      g_hash_table_size(n->actions) ? "A" : "",
-                                      n->urls ? "U" : "", msg);
+                                      g_hash_table_size(n->actions) ? settings.action_indicator : "",
+                                      n->urls ? settings.url_indicator : "", msg);
         } else if (n->dup_count > 0 && !settings.hide_duplicate_count) {
                 buf = g_strdup_printf("(%d) %s", n->dup_count, msg);
         } else {
