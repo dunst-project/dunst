@@ -108,7 +108,7 @@ void parse_commandline(int argc, char *argv[])
     GError *error = NULL;
     GOptionContext *context;
 
-    context = g_option_context_new("- Dunstify");
+    context = g_option_context_new("SUMMARY BODY");
     g_option_context_add_main_entries(context, entries, NULL);
     if (!g_option_context_parse(context, &argc, &argv, &error)){
         g_printerr("Invalid commandline: %s\n", error->message);
