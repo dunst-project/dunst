@@ -13,7 +13,7 @@ die(){ printf "%s\n" "${1}" >&2; exit 1; }
 show_help() {
 	# Below, each line starts with a tab character
 	cat <<-EOH
-	Usage: dunstctl <command> [parameters]"
+	Usage: dunstctl <command> [parameters]
 	Commands:
 	  action                            Perform the default action, or open the
 	                                    context menu of the notification at the
