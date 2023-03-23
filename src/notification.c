@@ -195,11 +195,32 @@ const char *notification_urgency_to_string(const enum urgency urgency)
 /* see notification.h */
 int notification_cmp(const struct notification *a, const struct notification *b)
 {
-        if (settings.sort && a->urgency != b->urgency) {
-                return b->urgency - a->urgency;
+        const struct notification *a_order;
+        const struct notification *b_order;
+        if(settings.sort_ascending){
+                a_order = a;
+                b_order = b;
         } else {
-                return a->id - b->id;
+                a_order = b;
+                b_order = a;
         }
+
+        if (settings.sort) {
+                if(a->urgency != b->urgency){
+                        return b_order->urgency - a_order->urgency;
+                }
+        } else {
+                if(a->urgency != b->urgency){
+                        if(settings.sort_type == SORT_TYPE_URGENCY_ASCENDING){
+                                return a->urgency - b->urgency;
+                        } else if (settings.sort_type == SORT_TYPE_URGENCY_DESCENDING) {
+                                return b->urgency - a->urgency;
+                        }
+                }
+        }
+
+
+        return a_order->id - b_order->id;
 }
 
 /* see notification.h */

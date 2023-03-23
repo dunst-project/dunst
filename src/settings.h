@@ -14,6 +14,7 @@
 #define LIST_END (-1)
 
 enum alignment { ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT };
+enum sort_type { SORT_TYPE_ID, SORT_TYPE_URGENCY_ASCENDING, SORT_TYPE_URGENCY_DESCENDING };
 enum vertical_alignment { VERTICAL_TOP, VERTICAL_CENTER, VERTICAL_BOTTOM };
 enum separator_color { SEP_FOREGROUND, SEP_AUTO, SEP_FRAME, SEP_CUSTOM };
 enum follow_mode { FOLLOW_NONE, FOLLOW_MOUSE, FOLLOW_KEYBOARD };
@@ -102,6 +103,8 @@ struct settings {
         char *class;
         int shrink;
         int sort;
+        int sort_ascending;
+        enum sort_type sort_type;
         int indicate_hidden;
         gint64 idle_threshold;
         gint64 show_age_threshold;
