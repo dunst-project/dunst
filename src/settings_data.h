@@ -222,6 +222,13 @@ static const struct string_to_enum_def boolean_enum_data[] = {
         ENUM_END,
 };
 
+static const struct string_to_enum_def sort_type_enum_data[] = {
+        {"id",                  SORT_TYPE_ID},
+        {"urgency_ascending",   SORT_TYPE_URGENCY_ASCENDING },
+        {"urgency_descending",  SORT_TYPE_URGENCY_DESCENDING },
+        ENUM_END,
+};
+
 static const struct string_to_enum_def horizontal_alignment_enum_data[] = {
         {"left",   PANGO_ALIGN_LEFT },
         {"center", PANGO_ALIGN_CENTER },
@@ -823,6 +830,26 @@ static const struct setting allowed_settings[] = {
                 .value = &settings.sort,
                 .parser = string_parse_enum,
                 .parser_data = boolean_enum_data,
+        },
+        {
+                .name = "sort_ascending",
+                .section = "global",
+                .description = "Sort ascending or descending",
+                .type = TYPE_CUSTOM,
+                .default_value = "true",
+                .value = &settings.sort_ascending,
+                .parser = string_parse_enum,
+                .parser_data = boolean_enum_data,
+        },
+        {
+                .name = "sort_type",
+                .section = "global",
+                .description = "Sort type id/urgency/update",
+                .type = TYPE_CUSTOM,
+                .default_value = "urgency_descending",
+                .value = &settings.sort_type,
+                .parser = string_parse_enum,
+                .parser_data = sort_type_enum_data,
         },
         {
                 .name = "indicate_hidden",
