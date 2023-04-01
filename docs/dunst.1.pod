@@ -33,7 +33,7 @@ Use alternative config file.
 This disables the search for other config files.
 If it cannot be opened, dunst will issue a warning and fall back on its internal
 defaults.
-(Hint: `dunst -conf - </dev/null` can be used to enforce the defaults, i.e. for
+(Hint: C<dunst -conf - </dev/null> can be used to enforce the defaults, i.e. for
 testing)
 
 =item B<-v/--version>
@@ -59,7 +59,7 @@ Display a notification on startup.
 
 =head1 CONFIGURATION
 
-A default configuration file is included (usually ##SYSCONFDIR##/dunst/dunstrc)
+A default configuration file is included (usually F<$SYSCONFDIR/dunst/dunstrc>)
 and serves as the least important configuration file. Note: this was previously
 /usr/share/dunst/dunstrc. You can edit this file to change the system-wide
 defaults or copy it to a more important location to override its settings. See
@@ -86,10 +86,10 @@ The progress value can be set with a hint, too.
 
 =head1 MISCELLANEOUS
 
-Dunst can be paused via the `dunstctl set-paused true` command. To unpause dunst use
-`dunstctl set-paused false`.
-Another way is to send SIGUSR1 and SIGUSR2 to pause and unpause
-respectively. Pausing using dunstctl is recommended over using signals, because
+Dunst can be paused via the C<dunstctl set-paused true> command. To unpause dunst use
+C<dunstctl set-paused false>.
+Another way is to send C<SIGUSR1> and C<SIGUSR2> to pause and unpause
+respectively. Pausing using C<dunstctl> is recommended over using signals, because
 the meaning of the signals isn't stable and might change in the future.
 
 When paused, dunst won't display any notifications, but keeps all notifications
@@ -100,19 +100,19 @@ missed notifications after returning to the computer.
 =head1 FILES
 
 These are the base directories dunst searches for configuration files in
-I<descending order of imortance>:
+I<descending order of importance>:
 
 =over 8
 
 =item C<$XDG_CONFIG_HOME>
 
-This is the most important directory. (C<$HOME/.config> if unset or empty)
+This is the most important directory. (defaults to F<$HOME/.config> if unset or empty)
 
 =item C<$XDG_CONFIG_DIRS>
 
 This, like C<$PATH> for instance, is a :-separated list of base directories
 in I<descending order of importance>.
-(F<##SYSCONFDIR##> if unset or empty)
+(defaults to F<$SYSCONFDIR> if unset or empty)
 
 =back
 
