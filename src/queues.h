@@ -12,6 +12,15 @@
 #include "notification.h"
 
 /**
+ * If the current update is less than this constant away from the next turn of
+ * second (in microseconds), then the notification's displayed age will be
+ * updated as if the turn of second passed. This prevents weird behaviours when
+ * the sleep between two main loop runs is slightly shorter than what was
+ * requested.
+ */
+#define TURN_OF_SECOND_THRESHOLD_US 10000
+
+/**
  * Initialise necessary queues
  *
  * @pre Do not call consecutively to avoid memory leaks

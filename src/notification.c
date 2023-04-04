@@ -673,7 +673,9 @@ void notification_update_text_to_render(struct notification *n)
         /* print age */
         gint64 hours, minutes, seconds;
         // Timestamp is floored to the second for display purposes -- see queues.c
-        gint64 t_delta = time_monotonic_now() - (n->timestamp - n->timestamp % S2US(1));
+        gint64 t_delta = time_monotonic_now()
+                - (n->timestamp - n->timestamp % S2US(1))
+                + TURN_OF_SECOND_THRESHOLD_US;
 
         if (settings.show_age_threshold >= 0
             && t_delta >= settings.show_age_threshold) {

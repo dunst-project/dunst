@@ -555,6 +555,14 @@ gint64 queues_get_next_datachange(gint64 time)
 {
         gint64 wakeup_time = G_MAXINT64;
         gint64 next_second = time + S2US(1) - (time % S2US(1));
+        if(next_second - time < TURN_OF_SECOND_THRESHOLD_US) {
+                /* Sometimes, the actual sleep will be a few microseconds
+                   shorter than requested. If we were sleeping until next
+                   second, this new run will be just before the turn of second,
+                   and next_second will be less than this threshold away: in
+                   this case, just sleep 1s more. */
+                next_second += S2US(1);
+        }
 
         for (GList *iter = g_queue_peek_head_link(displayed); iter;
                         iter = iter->next) {

@@ -525,16 +525,22 @@ TEST test_datachange_agethreshold_at_second(void)
         ASSERTm("Age threshold is activated, first wakeup should be at 5.5s",
                         queues_get_next_datachange(cur_time) == S2US(5) + 500000);
 
-        const int NB_MICROSECS = 6;
-        const gint64 MICROSECS[] = {
-                0, 10, NOTIF_DELTA, NOTIF_DELTA + 1, 124131, S2US(1)-1
+        const int NB_MICROSECS = 7;
+        const gint64 MICROSECS[] = { // Do not re-order!
+                S2US(1) - 1, 0, 10, NOTIF_DELTA, NOTIF_DELTA + 1, 124131, S2US(1)-TURN_OF_SECOND_THRESHOLD_US
         };
         for(gint64 base_time = S2US(5); base_time <= S2US(7); base_time += S2US(1)) {
                 for(int musec_id = 0; musec_id < NB_MICROSECS; ++musec_id) {
                         cur_time = base_time + MICROSECS[musec_id];
                         gint64 next_wakeup = queues_get_next_datachange(cur_time);
+                        gint64 expected_next_wakeup = base_time + S2US(1);
+                        if(musec_id == 0) {
+                                // If cur_time is less than 1ms away from the
+                                // next turn of second, wait one second more.
+                                expected_next_wakeup += S2US(1);
+                        }
                         ASSERTm("Age threshold is activated, next wakeup should be at next turn of second",
-                                        next_wakeup == base_time + S2US(1));
+                                        next_wakeup == expected_next_wakeup);
                 }
         }
 
