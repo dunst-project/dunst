@@ -559,7 +559,7 @@ gint64 queues_get_next_datachange(gint64 time)
         for (GList *iter = g_queue_peek_head_link(displayed); iter;
                         iter = iter->next) {
                 struct notification *n = iter->data;
-                gint64 timeout_ts = n->timestamp + n->timeout;
+                gint64 timeout_ts = n->start + n->timeout;
 
                 if (n->timeout > 0 && n->locked == 0) {
                         if (timeout_ts > time)
