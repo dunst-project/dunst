@@ -61,6 +61,7 @@ void notification_print(const struct notification *n)
         printf("\tdesktop_entry: '%s'\n", n->desktop_entry ? n->desktop_entry : "");
         printf("\tcategory: %s\n", n->category);
         printf("\ttimeout: %ld\n", n->timeout/1000);
+        printf("\tstart: %ld\n", n->start);
         printf("\turgency: %s\n", notification_urgency_to_string(n->urgency));
         printf("\ttransient: %d\n", n->transient);
         printf("\tformatted: '%s'\n", n->msg);
@@ -195,6 +196,20 @@ const char *notification_urgency_to_string(const enum urgency urgency)
 /* see notification.h */
 int notification_cmp(const struct notification *a, const struct notification *b)
 {
+        if(settings.sort == SORT_TYPE_URGENCY_ASCENDING){
+                if(a->urgency != b->urgency){
+                        return a->urgency - b->urgency;
+                }
+        } else if (settings.sort == SORT_TYPE_URGENCY_DESCENDING) {
+                if(a->urgency != b->urgency){
+                        return b->urgency - a->urgency;
+                }
+        } else if(settings.sort == SORT_TYPE_UPDATE){
+                if(a->start != b->start){
+                        return a->start - b->start;
+                }
+        }
+
         const struct notification *a_order;
         const struct notification *b_order;
         if(settings.sort_ascending){
@@ -204,21 +219,6 @@ int notification_cmp(const struct notification *a, const struct notification *b)
                 a_order = b;
                 b_order = a;
         }
-
-        if (settings.sort) {
-                if(a->urgency != b->urgency){
-                        return b_order->urgency - a_order->urgency;
-                }
-        } else {
-                if(a->urgency != b->urgency){
-                        if(settings.sort_type == SORT_TYPE_URGENCY_ASCENDING){
-                                return a->urgency - b->urgency;
-                        } else if (settings.sort_type == SORT_TYPE_URGENCY_DESCENDING) {
-                                return b->urgency - a->urgency;
-                        }
-                }
-        }
-
 
         return a_order->id - b_order->id;
 }

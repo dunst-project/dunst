@@ -224,9 +224,28 @@ static const struct string_to_enum_def boolean_enum_data[] = {
 };
 
 static const struct string_to_enum_def sort_type_enum_data[] = {
+        {"True", SORT_TYPE_URGENCY_ASCENDING },
+        {"true", SORT_TYPE_URGENCY_ASCENDING },
+        {"On", SORT_TYPE_URGENCY_ASCENDING },
+        {"on", SORT_TYPE_URGENCY_ASCENDING },
+        {"Yes", SORT_TYPE_URGENCY_ASCENDING },
+        {"yes", SORT_TYPE_URGENCY_ASCENDING },
+        {"1", SORT_TYPE_URGENCY_ASCENDING },
+        {"False", SORT_TYPE_ID },
+        {"false", SORT_TYPE_ID },
+        {"Off", SORT_TYPE_ID },
+        {"off", SORT_TYPE_ID },
+        {"No", SORT_TYPE_ID },
+        {"no", SORT_TYPE_ID },
+        {"0", SORT_TYPE_ID },
+        {"n", SORT_TYPE_ID },
+        {"y", SORT_TYPE_ID },
+        {"N", SORT_TYPE_ID },
+        {"Y", SORT_TYPE_URGENCY_ASCENDING },
         {"id",                  SORT_TYPE_ID},
         {"urgency_ascending",   SORT_TYPE_URGENCY_ASCENDING },
         {"urgency_descending",  SORT_TYPE_URGENCY_DESCENDING },
+        {"update",  SORT_TYPE_UPDATE },
         ENUM_END,
 };
 
@@ -836,12 +855,12 @@ static const struct setting allowed_settings[] = {
         {
                 .name = "sort",
                 .section = "global",
-                .description = "Sort notifications by urgency and date?",
+                .description = "Sort type by id/urgency/update",
                 .type = TYPE_CUSTOM,
                 .default_value = "true",
                 .value = &settings.sort,
                 .parser = string_parse_enum,
-                .parser_data = boolean_enum_data,
+                .parser_data = sort_type_enum_data,
         },
         {
                 .name = "sort_ascending",
@@ -852,16 +871,6 @@ static const struct setting allowed_settings[] = {
                 .value = &settings.sort_ascending,
                 .parser = string_parse_enum,
                 .parser_data = boolean_enum_data,
-        },
-        {
-                .name = "sort_type",
-                .section = "global",
-                .description = "Sort type id/urgency/update",
-                .type = TYPE_CUSTOM,
-                .default_value = "urgency_descending",
-                .value = &settings.sort_type,
-                .parser = string_parse_enum,
-                .parser_data = sort_type_enum_data,
         },
         {
                 .name = "indicate_hidden",
