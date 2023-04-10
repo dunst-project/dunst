@@ -191,7 +191,9 @@ int queues_notification_insert(struct notification *n)
                 inserted = true;
 
         if (!inserted && settings.stack_duplicates && queues_stack_duplicate(n)){
-                g_queue_sort(displayed, notification_cmp_data, NULL);
+                if(settings.sort == SORT_TYPE_UPDATE){
+                        g_queue_sort(displayed, notification_cmp_data, NULL);
+                }
                 inserted = true;
         }
 
