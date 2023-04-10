@@ -62,6 +62,7 @@ void notification_print(const struct notification *n)
         printf("\tcategory: %s\n", n->category);
         printf("\ttimeout: %ld\n", n->timeout/1000);
         printf("\tstart: %ld\n", n->start);
+        printf("\ttimestamp: %ld\n", n->timestamp);
         printf("\turgency: %s\n", notification_urgency_to_string(n->urgency));
         printf("\ttransient: %d\n", n->transient);
         printf("\tformatted: '%s'\n", n->msg);
@@ -205,7 +206,7 @@ int notification_cmp(const struct notification *a, const struct notification *b)
                         return b->urgency - a->urgency;
                 }
         } else if(settings.sort == SORT_TYPE_UPDATE){
-                return b->start - a->start;
+                return b->timestamp - a->timestamp;
         }
 
         const struct notification *a_order;
