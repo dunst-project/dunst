@@ -111,17 +111,15 @@
     #  * anything else will be interpreted as a X color.
     separator_color = frame
 
-    # Sort messages by urgency.
-    sort = yes
-    # Sort fallback ascending, otherwise descending.
-    sort_ascending = true
     # Sort type.
     # possible values are:
     #  * id: sort by id
     #  * urgency_ascending: sort by urgency (low>normal>critical)
     #  * urgency_descending: sort by urgency (critical>normal>low)
-    sort_type = urgency_ascending
-
+    #  * update: sort by update (most recent always at the top)
+    sort = yes
+    # Sort fallback ascending, otherwise descending.
+    sort_ascending = true
 
     # Don't remove messages, if the user is idle (no mouse or keyboard input)
     # for longer than idle_threshold seconds.
