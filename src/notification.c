@@ -205,9 +205,7 @@ int notification_cmp(const struct notification *a, const struct notification *b)
                         return b->urgency - a->urgency;
                 }
         } else if(settings.sort == SORT_TYPE_UPDATE){
-                if(a->start != b->start){
-                        return a->start - b->start;
-                }
+                return b->start - a->start;
         }
 
         const struct notification *a_order;
