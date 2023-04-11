@@ -828,7 +828,7 @@ TEST test_queues_update_paused(void)
 TEST test_queues_update_seeping(void)
 {
         settings.notification_limit = 5;
-        settings.sort = true;
+        settings.sort = SORT_TYPE_URGENCY_DESCENDING;
         settings.indicate_hidden = false;
         struct notification *nl1, *nl2, *nl3, *nl4, *nl5;
         struct notification *nc1, *nc2, *nc3, *nc4, *nc5;
