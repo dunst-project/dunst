@@ -108,7 +108,7 @@ screens exceed (e.g. 10000).
 
 The maximum height of a single notification.
 
-=item B<notification_limit> (default: 0)
+=item B<notification_limit> (default: 20)
 
 The number of notifications that can appear at one time. When this
 limit is reached any additional notifications will be queued and displayed when
