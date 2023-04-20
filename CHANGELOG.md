@@ -1,5 +1,12 @@
 # Dunst changelog
 
+## 1.9.2 -- 2023-04-20
+
+### Fixed
+- Various documentation issues (#1151, #1154, #1162)
+- High cpu usage when `show_age_treshold = -1` (#1164)
+- High cpu usage in some situation. This is often correlated with being idle. (#1158)
+
 ## 1.9.1 -- 2023-03-08
 
 ### Added
