@@ -53,8 +53,14 @@ int load_icon_theme_from_dir(const char *icon_dir, const char *subdir_theme) {
                 return -1;
         }
 
+		struct icon_theme *temp_icon_themes = realloc(icon_themes, (icon_themes_count + 1) * sizeof(struct icon_theme));
+		if (temp_icon_themes == NULL) {
+			LOG_W("Reallocation failed when loading icon theme...");
+			return -1;
+		}
+		icon_themes = temp_icon_themes;
+
         icon_themes_count++;
-        icon_themes = realloc(icon_themes, icon_themes_count * sizeof(struct icon_theme));
         int index = icon_themes_count - 1;
         icon_themes[index].name = g_strdup(section_get_value(ini, &ini->sections[0], "Name"));
         icon_themes[index].location = g_strdup(icon_dir);
@@ -234,9 +240,15 @@ void add_default_theme(int theme_index) {
                                 theme_index);
                 return;
         }
+
+		int *temp_default_themes_index = realloc(default_themes_index,
+                        (default_themes_count + 1) * sizeof(int));
+		if (temp_default_themes_index == NULL) {
+			LOG_W("Reallocation failed when adding default theme...");
+			return;
+		}
         default_themes_count++;
-        default_themes_index = realloc(default_themes_index,
-                        default_themes_count * sizeof(int));
+		default_themes_index = temp_default_themes_index;
         default_themes_index[default_themes_count - 1] = theme_index;
 }
 
