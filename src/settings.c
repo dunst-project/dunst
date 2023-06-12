@@ -96,9 +96,9 @@ static void config_files_add_drop_ins(GPtrArray *config_files, const char *path)
                                 drop_ins[n]->d_name, NULL);
                 LOG_D("Found drop-in: %s\n", drop_in);
                 g_ptr_array_insert(config_files, insert_index, drop_in);
-                free(drop_ins[n]);
+                g_free(drop_ins[n]);
         }
-        free(drop_ins);
+        g_free(drop_ins);
 }
 
 /** @brief Find all config files.
@@ -140,14 +140,14 @@ static GPtrArray* get_conf_files(const char *path) {
 FILE *fopen_conf(char * const path)
 {
         FILE *f = NULL;
-        char *real_path = string_to_path(strdup(path));
+        char *real_path = string_to_path(g_strdup(path));
 
         if (is_readable_file(real_path) && (f = fopen(real_path, "r")))
                 LOG_I(MSG_FOPEN_SUCCESS(path, f));
         else
                 LOG_W(MSG_FOPEN_FAILURE(path));
 
-        free(real_path);
+        g_free(real_path);
         return f;
 }
 
@@ -256,7 +256,7 @@ static void process_conf_file(const gpointer conf_fname, gpointer n_success) {
         check_and_correct_settings(&settings);
 
         finish_ini(ini);
-        free(ini);
+        g_free(ini);
 
         ++(*(int *) n_success);
 }
