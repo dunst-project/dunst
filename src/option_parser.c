@@ -104,7 +104,7 @@ bool string_parse_int_list(char **s, int **ret, bool allow_empty) {
                 bool success = safe_string_to_int(&tmp[i], s[i]);
                 if (!success) {
                         LOG_W("Invalid int value: '%s'", s[i]);
-                        free(tmp);
+                        g_free(tmp);
                         return false;
                 }
 

@@ -49,12 +49,12 @@ int load_icon_theme_from_dir(const char *icon_dir, const char *subdir_theme) {
         fclose(theme_index);
         if (ini->section_count == 0) {
                 finish_ini(ini);
-                free(ini);
+                g_free(ini);
                 return -1;
         }
 
         icon_themes_count++;
-        icon_themes = realloc(icon_themes, icon_themes_count * sizeof(struct icon_theme));
+        icon_themes = g_realloc(icon_themes, icon_themes_count * sizeof(struct icon_theme));
         int index = icon_themes_count - 1;
         icon_themes[index].name = g_strdup(section_get_value(ini, &ini->sections[0], "Name"));
         icon_themes[index].location = g_strdup(icon_dir);
@@ -64,7 +64,7 @@ int load_icon_theme_from_dir(const char *icon_dir, const char *subdir_theme) {
 
         // load theme directories
         icon_themes[index].dirs_count = ini->section_count - 1;
-        icon_themes[index].dirs = calloc(icon_themes[index].dirs_count, sizeof(struct icon_theme_dir));
+        icon_themes[index].dirs = g_malloc0(icon_themes[index].dirs_count * sizeof(struct icon_theme_dir));
 
         for (int i = 0; i < icon_themes[index].dirs_count; i++) {
                 struct section section = ini->sections[i+1];
@@ -126,13 +126,13 @@ int load_icon_theme_from_dir(const char *icon_dir, const char *subdir_theme) {
                 if (icon_themes[index].inherits_count <= 0) {
                         // set fallback theme to hicolor if there are no inherits
                         g_strfreev(inherits);
-                        inherits = calloc(2, sizeof(char*));
+                        inherits = g_malloc(2 * sizeof(char*));
                         inherits[0] = g_strdup("hicolor");
                         inherits[1] = NULL;
                         icon_themes[index].inherits_count = 1;
                 }
 
-                icon_themes[index].inherits_index = calloc(icon_themes[index].inherits_count, sizeof(int));
+                icon_themes[index].inherits_index = g_malloc0(icon_themes[index].inherits_count * sizeof(int));
 
                 for (int i = 0; inherits[i] != NULL; i++) {
                         LOG_D("inherits: %s\n", inherits[i]);
@@ -150,7 +150,7 @@ int load_icon_theme_from_dir(const char *icon_dir, const char *subdir_theme) {
 
 
         finish_ini(ini);
-        free(ini);
+        g_free(ini);
         return index;
 }
 
@@ -192,7 +192,7 @@ int load_icon_theme(char *name) {
 void finish_icon_theme_dir(struct icon_theme_dir *dir) {
         if (!dir)
                 return;
-        free(dir->name);
+        g_free(dir->name);
 }
 
 void finish_icon_theme(struct icon_theme *theme) {
@@ -201,22 +201,22 @@ void finish_icon_theme(struct icon_theme *theme) {
         for (int i = 0; i < theme->dirs_count; i++) {
                 finish_icon_theme_dir(&theme->dirs[i]);
         }
-        free(theme->name);
-        free(theme->location);
-        free(theme->subdir_theme);
-        free(theme->inherits_index);
-        free(theme->dirs);
+        g_free(theme->name);
+        g_free(theme->location);
+        g_free(theme->subdir_theme);
+        g_free(theme->inherits_index);
+        g_free(theme->dirs);
 }
 
 void free_all_themes() {
-        free(default_themes_index);
+        g_free(default_themes_index);
         default_themes_index = NULL;
         default_themes_count = 0;
         LOG_D("Finishing %i themes\n", icon_themes_count);
         for (int i = 0; i < icon_themes_count; i++) {
                 finish_icon_theme(&icon_themes[i]);
         }
-        free(icon_themes);
+        g_free(icon_themes);
         icon_themes_count = 0;
         icon_themes = NULL;
         g_ptr_array_unref(theme_path);
@@ -235,7 +235,7 @@ void add_default_theme(int theme_index) {
                 return;
         }
         default_themes_count++;
-        default_themes_index = realloc(default_themes_index,
+        default_themes_index = g_realloc(default_themes_index,
                         default_themes_count * sizeof(int));
         default_themes_index[default_themes_count - 1] = theme_index;
 }

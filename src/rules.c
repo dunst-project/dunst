@@ -171,7 +171,7 @@ static inline bool rule_field_matches_string(const char *value, const char *patt
                         char *err_buf = g_malloc(err_size);
                         regerror(err, &regex, err_buf, err_size);
                         LOG_W("%s: \"%s\"", err_buf, pattern);
-                        free(err_buf);
+                        g_free(err_buf);
                         return false;
                 }
 

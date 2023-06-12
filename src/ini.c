@@ -84,7 +84,7 @@ struct ini *load_ini_file(FILE *fp)
         if (!fp)
                 return NULL;
 
-        struct ini *ini = calloc(1, sizeof(struct ini));
+        struct ini *ini = g_malloc0(sizeof(struct ini));
         char *line = NULL;
         size_t line_len = 0;
 
