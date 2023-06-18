@@ -207,6 +207,10 @@ void check_and_correct_settings(struct settings *s) {
                         LOG_W("Progress bar corner radius clamped to half of progress bar height (%i).",
                                 progress_bar_max_corner_radius);
                 }
+                if (s->progress_bar_corner_radius < 0) {
+                        settings.progress_bar_corner_radius = 0;
+                        LOG_W("setting progress_bar_corner_radius is negative. Setting progress_bar_corner_radius=0");
+                }
         }
 
         // TODO Implement this with icon sizes as rules
