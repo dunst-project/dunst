@@ -764,7 +764,7 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, dou
                 cairo_set_line_width(c, frame_width * scale);
                 draw_rounded_rect(c,
                                 frame_x + half_frame_width,
-                                frame_y + half_frame_width,
+                                frame_y,
                                 progress_width - frame_width,
                                 progress_height,
                                 settings.progress_bar_corner_radius,
