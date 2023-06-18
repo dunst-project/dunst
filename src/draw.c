@@ -515,7 +515,7 @@ void draw_rounded_rect(cairo_t *c, float x, float y, int width, int height, int 
         if (last) {
                 // bottom right
                 cairo_arc(c,
-                          x + width - corner_radius,
+                          (width < corner_radius) ? x : x + width - corner_radius,
                           y + height - corner_radius,
                           corner_radius,
                           degrees * 0,
@@ -542,7 +542,7 @@ void draw_rounded_rect(cairo_t *c, float x, float y, int width, int height, int 
                           degrees * 270);
                 // top right
                 cairo_arc(c,
-                          x + width - corner_radius,
+                          (width < corner_radius) ? x : x + width - corner_radius,
                           y + corner_radius,
                           corner_radius,
                           degrees * 270,
