@@ -64,7 +64,7 @@ int load_icon_theme_from_dir(const char *icon_dir, const char *subdir_theme) {
 
         // load theme directories
         icon_themes[index].dirs_count = ini->section_count - 1;
-        icon_themes[index].dirs = g_malloc0(icon_themes[index].dirs_count * sizeof(struct icon_theme_dir));
+        icon_themes[index].dirs = g_malloc0_n(icon_themes[index].dirs_count, sizeof(struct icon_theme_dir));
 
         for (int i = 0; i < icon_themes[index].dirs_count; i++) {
                 struct section section = ini->sections[i+1];
@@ -126,13 +126,13 @@ int load_icon_theme_from_dir(const char *icon_dir, const char *subdir_theme) {
                 if (icon_themes[index].inherits_count <= 0) {
                         // set fallback theme to hicolor if there are no inherits
                         g_strfreev(inherits);
-                        inherits = g_malloc(2 * sizeof(char*));
+                        inherits = g_malloc0_n(2, sizeof(char*));
                         inherits[0] = g_strdup("hicolor");
                         inherits[1] = NULL;
                         icon_themes[index].inherits_count = 1;
                 }
 
-                icon_themes[index].inherits_index = g_malloc0(icon_themes[index].inherits_count * sizeof(int));
+                icon_themes[index].inherits_index = g_malloc0_n(icon_themes[index].inherits_count, sizeof(int));
 
                 for (int i = 0; inherits[i] != NULL; i++) {
                         LOG_D("inherits: %s\n", inherits[i]);
