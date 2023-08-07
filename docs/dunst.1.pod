@@ -100,7 +100,7 @@ missed notifications after returning to the computer.
 =head1 FILES
 
 These are the base directories dunst searches for configuration files in
-I<descending order of imortance>:
+I<descending order of importance>:
 
 =over 8
 
