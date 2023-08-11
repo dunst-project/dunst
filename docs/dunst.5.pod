@@ -11,12 +11,12 @@ doesn't change the result.
 
 The 'global' section contains the general settings applying to all of dunst. The
 rest of the settings can be specified via rules and can be located in any
-section. These rules can change a notification based on it's properties. There
-are filtering rules and modifying rules. The filtering rules specify on what
-notifications the rule is applied and the modifying rules specify what is
-changed about the matching notifications. Some special sections have implied
-filters that cannot be changed. The "global" section, for example has no
-filters, thus applies to all notifications.
+section. These rules can change a notification based on its properties. There
+are filtering rules and modifying rules. Filtering rules specify what
+notifications the rule applies to. Modifying rules specify changes
+to the matching notifications. Some special sections have implied
+filters that cannot be changed. For example, the "global" section has no
+filters: it applies to all notifications.
 
 See RULES for more details.
 

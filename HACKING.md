@@ -8,7 +8,7 @@ steps you should take.
 
 # Running dunst
 
-For building dunst, you should take a look at the README. After dunst is build,
+For building dunst, you should take a look at the README. After dunst is built,
 you can run it with:
 
         ./dunst
