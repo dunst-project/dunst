@@ -45,7 +45,7 @@ GSList *get_dummy_layouts(GSList *notifications)
         return layouts;
 }
 
-int get_small_max_height()
+int get_small_max_height(void)
 {
         // to keep test calculations simpler, set max height small to
         // only test cases where height is not dynamically determined

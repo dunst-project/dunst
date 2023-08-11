@@ -49,7 +49,7 @@ PangoFontDescription *pango_fdesc;
 
 #define UINT_MAX_N(bits) ((1 << bits) - 1)
 
-void load_icon_themes()
+void load_icon_themes(void)
 {
         bool loaded_theme = false;
 
