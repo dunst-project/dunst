@@ -744,7 +744,7 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, dou
                 double half_frame_width = frame_width / 2.0;
 
                 /* Draw progress bar
-                * TODO: Modify draw_rounde_rect to fix blurry lines due to fractional scaling
+                * TODO: Modify draw_rounded_rect to fix blurry lines due to fractional scaling
                 * Note: the bar could be drawn a bit smaller, because the frame is drawn on top 
                 */
                 // left side (fill)
