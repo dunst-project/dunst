@@ -694,7 +694,7 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
         return n;
 }
 
-void signal_length_propertieschanged()
+void signal_length_propertieschanged(void)
 {
 
         static unsigned int last_displayed = 0;
