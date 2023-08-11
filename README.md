@@ -126,7 +126,7 @@ sudo make install
 Dunst uses a different default (`${SYSCONFDIR}`) for XDG_CONFIG_DIRS at runtime.
 This is a slight digression from the recommended value in the XDG Base Directory
 Specification (/etc/xdg), because the default config file gets installed to
-`${SYSCONFDIR/dunst/dunstrc}` to avoid conflicts with /etc/xdg/dunst/dunstrc which
+`${SYSCONFDIR}/dunst/dunstrc` to avoid conflicts with /etc/xdg/dunst/dunstrc which
 might have been installed from a distribution repository. If you do want dunst
 to use the spec's recommended default, set XDG_CONFIG_DIR=/etc/xdg at runtime or
 SYSCONFDIR=/etc/xdg at compile time.
