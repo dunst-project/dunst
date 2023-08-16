@@ -488,6 +488,8 @@ void notification_init(struct notification *n)
         if (n->progress < 0)
                 n->progress = -1;
 
+        n->override_pause_level = 0;
+
         /* Process rules */
         rule_apply_all(n);
 

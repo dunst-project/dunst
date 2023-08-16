@@ -100,6 +100,10 @@ static const char *introspection_xml =
     "            <annotation name=\"org.freedesktop.DBus.Property.EmitsChangedSignal\" value=\"true\"/>"
     "        </property>"
 
+    "        <property name=\"pauseLevel\" type=\"u\" access=\"readwrite\">"
+    "            <annotation name=\"org.freedesktop.DBus.Property.EmitsChangedSignal\" value=\"true\"/>"
+    "        </property>"
+
     "        <property name=\"displayedLength\" type=\"u\" access=\"read\" />"
     "        <property name=\"historyLength\" type=\"u\" access=\"read\" />"
     "        <property name=\"waitingLength\" type=\"u\" access=\"read\" />"
@@ -923,7 +927,9 @@ GVariant *dbus_cb_dunst_Properties_Get(GDBusConnection *connection,
         struct dunst_status status = dunst_status_get();
 
         if (STR_EQ(property_name, "paused")) {
-                return g_variant_new_boolean(!status.running);
+                return g_variant_new_boolean(status.pause_level != 0);
+        } else if (STR_EQ(property_name, "pauseLevel")) {
+                return g_variant_new_uint32(status.pause_level);
         } else if (STR_EQ(property_name, "displayedLength")) {
                 unsigned int displayed = queues_length_displayed();
                 return g_variant_new_uint32(displayed);
@@ -949,15 +955,29 @@ gboolean dbus_cb_dunst_Properties_Set(GDBusConnection *connection,
                                       GError **error,
                                       gpointer user_data)
 {
+        int targetPauseLevel = -1;
         if (STR_EQ(property_name, "paused")) {
-                dunst_status(S_RUNNING, !g_variant_get_boolean(value));
+                if (g_variant_get_boolean(value)) {
+                        targetPauseLevel = 100;                 
+                } else {
+                        targetPauseLevel = 0;
+                }
+        } else if STR_EQ(property_name, "pauseLevel") {
+                targetPauseLevel = g_variant_get_uint32(value);
+        }
+
+        if (targetPauseLevel >= 0) {
+                dunst_status_int(S_PAUSE_LEVEL, targetPauseLevel);
                 wake_up();
 
                 GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE_VARDICT);
                 GVariantBuilder *invalidated_builder = g_variant_builder_new(G_VARIANT_TYPE_STRING_ARRAY);
                 g_variant_builder_add(builder,
                                       "{sv}",
-                                      "paused", g_variant_new_boolean(g_variant_get_boolean(value)));
+                                      "paused", g_variant_new_boolean(targetPauseLevel == 0));
+                g_variant_builder_add(builder,
+                                      "{sv}",
+                                      "pauseLevel", g_variant_new_uint32(targetPauseLevel));
                 g_dbus_connection_emit_signal(connection,
                                               NULL,
                                               object_path,

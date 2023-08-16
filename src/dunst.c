@@ -37,11 +37,21 @@ void dunst_status(const enum dunst_status_field field,
         case S_IDLE:
                 status.idle = value;
                 break;
-        case S_RUNNING:
-                status.running = value;
+        default:
+                LOG_E("Invalid %s enum value in %s:%d for bool type", "dunst_status", __FILE__, __LINE__);
+                break;
+        }
+}
+
+void dunst_status_int(const enum dunst_status_field field,
+                  int value)
+{
+        switch (field) {
+        case S_PAUSE_LEVEL:
+                status.pause_level = value;
                 break;
         default:
-                LOG_E("Invalid %s enum value in %s:%d", "dunst_status", __FILE__, __LINE__);
+                LOG_E("Invalid %s enum value in %s:%d fot int type", "dunst_status", __FILE__, __LINE__);
                 break;
         }
 }
@@ -123,7 +133,7 @@ static gboolean run(void *data)
 
 gboolean pause_signal(gpointer data)
 {
-        dunst_status(S_RUNNING, false);
+        dunst_status_int(S_PAUSE_LEVEL, 100);
         wake_up();
 
         return G_SOURCE_CONTINUE;
@@ -131,7 +141,7 @@ gboolean pause_signal(gpointer data)
 
 gboolean unpause_signal(gpointer data)
 {
-        dunst_status(S_RUNNING, true);
+        dunst_status_int(S_PAUSE_LEVEL, 0);
         wake_up();
 
         return G_SOURCE_CONTINUE;
@@ -156,7 +166,7 @@ static void teardown(void)
 int dunst_main(int argc, char *argv[])
 {
 
-        dunst_status(S_RUNNING, true);
+        dunst_status_int(S_PAUSE_LEVEL, 0);
         dunst_status(S_IDLE, false);
 
         queues_init();

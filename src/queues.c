@@ -120,7 +120,10 @@ static void queues_swap_notifications(GQueue *queueA,
  */
 static bool queues_notification_is_ready(const struct notification *n, struct dunst_status status, bool shown)
 {
-        ASSERT_OR_RET(status.running, false);
+        if (status.pause_level > n->override_pause_level) {
+                return false;
+        }
+
         if (status.fullscreen && shown)
                 return n && n->fullscreen != FS_PUSHBACK;
         else if (status.fullscreen && !shown)

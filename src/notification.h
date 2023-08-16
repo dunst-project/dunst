@@ -56,6 +56,7 @@ struct notification {
         char *category;
         char *desktop_entry;     /**< The desktop entry hint sent via every GApplication */
         enum urgency urgency;
+        int override_pause_level;
 
         cairo_surface_t *icon;         /**< The raw cached icon data used to draw */
         char *icon_id;           /**< Plain icon information, which acts as the icon's id.
