@@ -99,6 +99,9 @@ void rule_apply(struct rule *r, struct notification *n)
                 g_free(n->stack_tag);
                 n->stack_tag = g_strdup(r->set_stack_tag);
         }
+        if (r->override_pause_level != -1) {
+                n->override_pause_level = r->override_pause_level;
+        }
 }
 
 /*

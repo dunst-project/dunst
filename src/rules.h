@@ -45,6 +45,7 @@ struct rule {
         int icon_position;
         int min_icon_size;
         int max_icon_size;
+        int override_pause_level;
         char *new_icon;
         char *fg;
         char *bg;

@@ -165,6 +165,7 @@ static const struct rule empty_rule = {
         .progress_bar_alignment   = -1,
         .min_icon_size   = -1,
         .max_icon_size   = -1,
+        .override_pause_level = -1
 };
 
 
@@ -759,6 +760,17 @@ static const struct setting allowed_settings[] = {
                 .parser = NULL,
                 .parser_data = NULL,
                 .rule_offset = offsetof(struct rule, max_icon_size),
+        },
+        {
+                .name = "override_pause_level",
+                .section = "*",
+                .description = "TODO",
+                .type = TYPE_INT,
+                .default_value = "-1",
+                .value = NULL,
+                .parser = NULL,
+                .parser_data = NULL,
+                .rule_offset = offsetof(struct rule, override_pause_level),
         },
         // end of modifying rules
 
