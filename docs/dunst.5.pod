@@ -37,7 +37,7 @@ Defines where the notifications should be placed in a multi-monitor setup. All
 values except I<none> override the B<monitor> setting.
 
 On Wayland there is no difference between mouse and keyboard focus. When either
-of the is used, the compositor will choose an output. This will generally be
+of them is used, the compositor will choose an output. This will generally be
 the output last interacted with.
 
 =over 4
