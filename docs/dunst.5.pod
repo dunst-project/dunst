@@ -1064,7 +1064,7 @@ the notification.
 Note that some variables may be empty.
 
 If the notification is suppressed, the script will not be run unless
-B<always_run_scripts> is set to true.
+B<always_run_script> is set to true.
 
 If '~/' occurs at the beginning of the script parameter, it will get replaced by the
 users' home directory. If the value is not an absolute path, the directories in the
