@@ -825,6 +825,43 @@ TEST test_queues_update_paused(void)
         PASS();
 }
 
+TEST test_queues_update_pause_level(void)
+{
+        settings.notification_limit = 5;
+        struct notification *n1, *n2, *n3;
+        queues_init();
+
+        n1 = test_notification("n1", 0);
+        n2 = test_notification("n2", 0);
+        n3 = test_notification("n3", 0);
+
+        n1->override_pause_level = 0;
+        n2->override_pause_level = 5;
+        n3->override_pause_level = 10;
+
+        queues_notification_insert(n1);
+        queues_notification_insert(n2);
+        queues_notification_insert(n3);
+
+        queues_update(STATUS_PAUSE_7, time_monotonic_now());
+        QUEUE_LEN_ALL(2,1,0);
+        ASSERT(strcmp(((struct notification*) g_queue_peek_nth(QUEUE(DISP), 0))->summary, "n3") == 0);
+        ASSERT(strcmp(((struct notification*) g_queue_peek_nth(QUEUE(WAIT), 0))->summary, "n1") == 0);
+        ASSERT(strcmp(((struct notification*) g_queue_peek_nth(QUEUE(WAIT), 1))->summary, "n2") == 0);
+
+        queues_update(STATUS_NORMAL, time_monotonic_now());
+        QUEUE_LEN_ALL(0,3,0);
+
+        queues_update(STATUS_PAUSE_7, time_monotonic_now());
+        QUEUE_LEN_ALL(2,1,0);
+        ASSERT(strcmp(((struct notification*) g_queue_peek_nth(QUEUE(DISP), 0))->summary, "n3") == 0);
+        ASSERT(strcmp(((struct notification*) g_queue_peek_nth(QUEUE(WAIT), 0))->summary, "n1") == 0);
+        ASSERT(strcmp(((struct notification*) g_queue_peek_nth(QUEUE(WAIT), 1))->summary, "n2") == 0);
+
+        queues_teardown();
+        PASS();
+}
+
 TEST test_queues_update_seeping(void)
 {
         settings.notification_limit = 5;
@@ -1105,6 +1142,7 @@ SUITE(suite_queues)
         RUN_TEST(test_queue_insert_id_replacement);
         RUN_TEST(test_queue_insert_id_valid_newid);
         RUN_TEST(test_queue_length);
+        
         RUN_TEST(test_queue_notification_close);
         RUN_TEST(test_queue_notification_close_histignore);
         RUN_TEST(test_queue_notification_skip_display);
@@ -1118,6 +1156,8 @@ SUITE(suite_queues)
         RUN_TEST(test_queue_timeout);
         RUN_TEST(test_queues_update_fullscreen);
         RUN_TEST(test_queues_update_paused);
+        RUN_TEST(test_queues_update_pause_level
+        );
         RUN_TEST(test_queues_update_seep_showlowurg);
         RUN_TEST(test_queues_update_seeping);
         RUN_TEST(test_queues_update_xmore);
