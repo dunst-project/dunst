@@ -958,12 +958,15 @@ gboolean dbus_cb_dunst_Properties_Set(GDBusConnection *connection,
         int targetPauseLevel = -1;
         if (STR_EQ(property_name, "paused")) {
                 if (g_variant_get_boolean(value)) {
-                        targetPauseLevel = 100;                 
+                        targetPauseLevel = MAX_PAUSE_LEVEL;                 
                 } else {
                         targetPauseLevel = 0;
                 }
         } else if STR_EQ(property_name, "pauseLevel") {
                 targetPauseLevel = g_variant_get_uint32(value);
+                if (targetPauseLevel > MAX_PAUSE_LEVEL) {
+                        targetPauseLevel = MAX_PAUSE_LEVEL;
+                }
         }
 
         if (targetPauseLevel >= 0) {

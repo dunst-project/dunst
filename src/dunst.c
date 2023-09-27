@@ -133,7 +133,7 @@ static gboolean run(void *data)
 
 gboolean pause_signal(gpointer data)
 {
-        dunst_status_int(S_PAUSE_LEVEL, 100);
+        dunst_status_int(S_PAUSE_LEVEL, MAX_PAUSE_LEVEL);
         wake_up();
 
         return G_SOURCE_CONTINUE;

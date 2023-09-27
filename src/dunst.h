@@ -10,6 +10,8 @@
 
 #include "notification.h"
 
+#define MAX_PAUSE_LEVEL 100
+
 //!< A structure to describe dunst's global window status
 struct dunst_status {
         bool fullscreen; //!< a fullscreen window is currently focused
