@@ -14,6 +14,7 @@
 #define STATUS_FSIDLE ((struct dunst_status) {.fullscreen=true,  .pause_level=0,  .idle=true})
 #define STATUS_FS     ((struct dunst_status) {.fullscreen=true,  .pause_level=0,  .idle=false})
 #define STATUS_PAUSE  ((struct dunst_status) {.fullscreen=false, .pause_level=100, .idle=false})
+#define STATUS_PAUSE_7  ((struct dunst_status) {.fullscreen=false, .pause_level=7, .idle=false})
 
 #define QUEUE_WAIT waiting
 #define QUEUE_DISP displayed
