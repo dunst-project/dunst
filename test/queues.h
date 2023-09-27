@@ -9,11 +9,11 @@
 #include "../src/notification.h"
 #include "../src/queues.h"
 
-#define STATUS_NORMAL ((struct dunst_status) {.fullscreen=false, .running=true,  .idle=false})
-#define STATUS_IDLE   ((struct dunst_status) {.fullscreen=false, .running=true,  .idle=true})
-#define STATUS_FSIDLE ((struct dunst_status) {.fullscreen=true,  .running=true,  .idle=true})
-#define STATUS_FS     ((struct dunst_status) {.fullscreen=true,  .running=true,  .idle=false})
-#define STATUS_PAUSE  ((struct dunst_status) {.fullscreen=false, .running=false, .idle=false})
+#define STATUS_NORMAL ((struct dunst_status) {.fullscreen=false, .pause_level=0,  .idle=false})
+#define STATUS_IDLE   ((struct dunst_status) {.fullscreen=false, .pause_level=0,  .idle=true})
+#define STATUS_FSIDLE ((struct dunst_status) {.fullscreen=true,  .pause_level=0,  .idle=true})
+#define STATUS_FS     ((struct dunst_status) {.fullscreen=true,  .pause_level=0,  .idle=false})
+#define STATUS_PAUSE  ((struct dunst_status) {.fullscreen=false, .pause_level=100, .idle=false})
 
 #define QUEUE_WAIT waiting
 #define QUEUE_DISP displayed
