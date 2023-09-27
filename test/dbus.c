@@ -395,7 +395,7 @@ TEST test_dbus_cb_dunst_Properties_Get(void)
         ASSERT_FALSE(g_variant_get_boolean(pause_variant));
         g_variant_unref(pause_variant);
 
-        dunst_status(S_RUNNING, false);
+        dunst_status_int(S_PAUSE_LEVEL, 100);
 
         pause_variant = dbus_cb_dunst_Properties_Get(connection_client,
                                       FDN_NAME,

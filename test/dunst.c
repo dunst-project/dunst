@@ -9,8 +9,8 @@ TEST test_dunst_status(void)
         ASSERT(status.fullscreen);
         dunst_status(S_IDLE, true);
         ASSERT(status.idle);
-        dunst_status(S_RUNNING, true);
-        ASSERT(status.running);
+        dunst_status_int(S_PAUSE_LEVEL, 0);
+        ASSERT(status.pause_level == 0);
 
         PASS();
 }

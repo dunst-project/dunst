@@ -15,7 +15,7 @@
 //!< A structure to describe dunst's global window status
 struct dunst_status {
         bool fullscreen; //!< a fullscreen window is currently focused
-        int pause_level;    //!< set true if dunst is currently running
+        int pause_level;    //!< current pause level. 0 = all notifications come through, 100 = no notifications come through
         bool idle;       //!< set true if the user is idle
 };
 
