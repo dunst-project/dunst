@@ -228,6 +228,12 @@
     # Maximum amount of notifications kept in history
     history_length = 20
 
+    ### DND ###
+
+    # Allow this notification to appear even when paused. Notification will appear whenever notification's override_pause_level >= dunst's paused level.
+    # This can be used to set partial pause modes, where more urgent notifications get through, but less urgent stay paused.
+    override_pause_level = 0
+
     ### Misc/Advanced ###
 
     # dmenu path.

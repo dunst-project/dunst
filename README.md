@@ -56,6 +56,10 @@ If you want to take a break and not receive any notifications for a while, just
 pause dunst. All notifications will be saved for you to catch up
 later.
 
+Additionally, you can set a numeric pause level, which allows you to pause dunst 
+selectively for some notifications, where more urgent notifications get through, 
+but less urgent stay paused.
+
 ## 🕘 History
 
 Catch an unread notification disappearing from the corner of your eye? Just tap
