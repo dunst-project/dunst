@@ -977,7 +977,7 @@ gboolean dbus_cb_dunst_Properties_Set(GDBusConnection *connection,
                 GVariantBuilder *invalidated_builder = g_variant_builder_new(G_VARIANT_TYPE_STRING_ARRAY);
                 g_variant_builder_add(builder,
                                       "{sv}",
-                                      "paused", g_variant_new_boolean(targetPauseLevel == 0));
+                                      "paused", g_variant_new_boolean(targetPauseLevel != 0));
                 g_variant_builder_add(builder,
                                       "{sv}",
                                       "pauseLevel", g_variant_new_uint32(targetPauseLevel));
