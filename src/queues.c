@@ -508,7 +508,7 @@ void queues_update(struct dunst_status status, gint64 time)
                         continue;
                 }
 
-                n->start = time_monotonic_now();
+                n->start = time;
                 notification_run_script(n);
 
                 if (n->skip_display && !n->redisplayed) {
@@ -543,7 +543,7 @@ void queues_update(struct dunst_status status, gint64 time)
                         if (i_waiting && notification_cmp(i_displayed->data, i_waiting->data) > 0) {
                                 struct notification *todisp = i_waiting->data;
 
-                                todisp->start = time_monotonic_now();
+                                todisp->start = time;
                                 notification_run_script(todisp);
 
                                 queues_swap_notifications(displayed, i_displayed, waiting, i_waiting);
@@ -564,7 +564,7 @@ gint64 queues_get_next_datachange(gint64 time)
         for (GList *iter = g_queue_peek_head_link(displayed); iter;
                         iter = iter->next) {
                 struct notification *n = iter->data;
-                gint64 timeout_ts = n->timestamp + n->timeout;
+                gint64 timeout_ts = n->start + n->timeout;
 
                 if (n->timeout > 0 && n->locked == 0) {
                         if (timeout_ts > time)

@@ -1,0 +1,33 @@
+_dunstctl() {
+    local opts cur prev split=false
+    local DUNSTRC=${XDG_CONFIG_HOME:-$HOME/.config}/dunst/dunstrc
+    _get_comp_words_by_ref cur prev
+    COMPREPLY=()
+    opts='action close close-all context count debug help history history-clear history-pop history-rm is-paused rule set-paused'
+
+    case "$prev" in
+        count) COMPREPLY=('displayed' 'history' 'waiting')
+            return ;;
+        set-paused) COMPREPLY=('true' 'false' 'toggle')
+            return ;;
+        history-pop|history-rm)
+            COMPREPLY=( $(dunstctl history | grep -A2 '"id" :' |
+                          awk '/"data" :/{print $3}' | sort -u) )
+            return ;;
+        rule)
+            COMPREPLY=( $(awk \
+                '/^\[.*\]/{ if ( match($0, /^\[global|experimental/) == 0 ) print substr($0, 2, length($0)-2) }' "$DUNSTRC" ) )
+            return ;;
+    esac
+
+    case "${COMP_WORDS[1]}" in
+        rule) COMPREPLY=('enabled' 'disable' 'toggle')
+            return ;;
+    esac
+
+    case "$cur" in
+        *) COMPREPLY=( $( compgen -W "$opts" -- "$cur" ) ) ;;
+    esac
+} && complete -F _dunstctl dunstctl
+
+# ex: filetype=sh

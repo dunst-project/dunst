@@ -11,12 +11,12 @@ doesn't change the result.
 
 The 'global' section contains the general settings applying to all of dunst. The
 rest of the settings can be specified via rules and can be located in any
-section. These rules can change a notification based on it's properties. There
-are filtering rules and modifying rules. The filtering rules specify on what
-notifications the rule is applied and the modifying rules specify what is
-changed about the matching notifications. Some special sections have implied
-filters that cannot be changed. The "global" section, for example has no
-filters, thus applies to all notifications.
+section. These rules can change a notification based on its properties. There
+are filtering rules and modifying rules. Filtering rules specify what
+notifications the rule applies to. Modifying rules specify changes
+to the matching notifications. Some special sections have implied
+filters that cannot be changed. For example, the "global" section has no
+filters: it applies to all notifications.
 
 See RULES for more details.
 
@@ -37,7 +37,7 @@ Defines where the notifications should be placed in a multi-monitor setup. All
 values except I<none> override the B<monitor> setting.
 
 On Wayland there is no difference between mouse and keyboard focus. When either
-of the is used, the compositor will choose an output. This will generally be
+of them is used, the compositor will choose an output. This will generally be
 the output last interacted with.
 
 =over 4
@@ -108,7 +108,7 @@ screens exceed (e.g. 10000).
 
 The maximum height of a single notification.
 
-=item B<notification_limit> (default: 0)
+=item B<notification_limit> (default: 20)
 
 The number of notifications that can appear at one time. When this
 limit is reached any additional notifications will be queued and displayed when
@@ -1064,7 +1064,7 @@ the notification.
 Note that some variables may be empty.
 
 If the notification is suppressed, the script will not be run unless
-B<always_run_scripts> is set to true.
+B<always_run_script> is set to true.
 
 If '~/' occurs at the beginning of the script parameter, it will get replaced by the
 users' home directory. If the value is not an absolute path, the directories in the

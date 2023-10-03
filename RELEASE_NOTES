@@ -1,4 +1,12 @@
 ===================================================================================
+Release Notes For v1.9.2
+===================================================================================
+
+This release fixes two issues with high cpu usage one of which was introduced
+when trying to fix another cpu usage issue. So if you have experienced dunst
+making your fans spin harder than usual that should be fixed with this release.
+
+===================================================================================
 Release Notes For v1.9.1
 ===================================================================================
 

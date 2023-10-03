@@ -82,18 +82,17 @@ static gboolean run(void *data)
 
         queues_update(status, now);
 
-        bool active = queues_length_displayed() > 0;
-
-        if (active) {
-                // Call draw before showing the window to avoid flickering
-                draw();
-                output->win_show(win);
-        } else {
+        if (!queues_length_displayed()) {
                 output->win_hide(win);
+                return G_SOURCE_REMOVE;
         }
 
-        if (active) {
-                gint64 timeout_at = queues_get_next_datachange(now);
+        // Call draw before showing the window to avoid flickering
+        draw();
+        output->win_show(win);
+
+        gint64 timeout_at = queues_get_next_datachange(now);
+        if (timeout_at != -1) {
                 // Previous computations may have taken time, update `now`
                 // This might mean that `timeout_at` is now before `now`, so
                 // we have to make sure that `sleep` is still positive.
