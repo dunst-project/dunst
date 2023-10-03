@@ -114,12 +114,10 @@
     # Sort type.
     # possible values are:
     #  * id: sort by id
-    #  * urgency_ascending: sort by urgency (low>normal>critical)
-    #  * urgency_descending: sort by urgency (critical>normal>low)
+    #  * urgency_ascending: sort by urgency (low then normal then critical)
+    #  * urgency_descending: sort by urgency (critical then normal then low)
     #  * update: sort by update (most recent always at the top)
     sort = yes
-    # Sort fallback ascending, otherwise descending.
-    sort_ascending = true
 
     # Don't remove messages, if the user is idle (no mouse or keyboard input)
     # for longer than idle_threshold seconds.

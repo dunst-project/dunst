@@ -197,26 +197,26 @@ const char *notification_urgency_to_string(const enum urgency urgency)
 /* see notification.h */
 int notification_cmp(const struct notification *a, const struct notification *b)
 {
-        if(settings.sort == SORT_TYPE_URGENCY_ASCENDING){
-                if(a->urgency != b->urgency){
-                        return a->urgency - b->urgency;
-                }
-        } else if (settings.sort == SORT_TYPE_URGENCY_DESCENDING) {
-                if(a->urgency != b->urgency){
-                        return b->urgency - a->urgency;
-                }
-        } else if(settings.sort == SORT_TYPE_UPDATE){
-                return b->timestamp - a->timestamp;
-        }
-
         const struct notification *a_order;
         const struct notification *b_order;
-        if(settings.sort_ascending){
-                a_order = a;
-                b_order = b;
-        } else {
+        if(settings.sort == SORT_TYPE_UPDATE && settings.origin & ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM){
                 a_order = b;
                 b_order = a;
+        } else {
+                a_order = a;
+                b_order = b;
+        }
+
+        if(settings.sort == SORT_TYPE_URGENCY_ASCENDING){
+                if(a_order->urgency != b_order->urgency){
+                        return a_order->urgency - b_order->urgency;
+                }
+        } else if (settings.sort == SORT_TYPE_URGENCY_DESCENDING) {
+                if(a_order->urgency != b_order->urgency){
+                        return b_order->urgency - a_order->urgency;
+                }
+        } else if(settings.sort == SORT_TYPE_UPDATE){
+                return b_order->timestamp - a_order->timestamp;
         }
 
         return a_order->id - b_order->id;

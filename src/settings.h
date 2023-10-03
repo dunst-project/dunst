@@ -103,7 +103,6 @@ struct settings {
         char *class;
         int shrink;
         enum sort_type sort;
-        int sort_ascending;
         int indicate_hidden;
         gint64 idle_threshold;
         gint64 show_age_threshold;

@@ -863,16 +863,6 @@ static const struct setting allowed_settings[] = {
                 .parser_data = sort_type_enum_data,
         },
         {
-                .name = "sort_ascending",
-                .section = "global",
-                .description = "Sort ascending or descending",
-                .type = TYPE_CUSTOM,
-                .default_value = "true",
-                .value = &settings.sort_ascending,
-                .parser = string_parse_enum,
-                .parser_data = boolean_enum_data,
-        },
-        {
                 .name = "indicate_hidden",
                 .section = "global",
                 .description = "Show how many notifications are hidden",
