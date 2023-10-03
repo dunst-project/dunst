@@ -291,17 +291,15 @@ Any other value is interpreted as a color, see COLORS
 =item B<sort> (values: [true/false/id/urgency_ascending/urgency_descending/update], default: true)
 
 If set to true or urgency_descending, display notifications with higher urgency above the others.
+low first, then normal, then critical.
 
 If set to false or id, sort notifications by id.
-
-If set to urgency_descending, notifications are sorted by urgency, 
-low first, then normal, then critical.
 
 If set to urgency_ascending, notifications are sorted by urgency, 
 critical first, then normal, then low.
 
 If set to update, notifications are sorted by their update_time. 
-So the most recent is always at the top.This means that if you set sort to update, 
+So the most recent is always at the top. This means that if you set sort to update, 
 and stack_duplicates to true, the duplicate will always be at the top.
 
 =item B<idle_threshold> (default: 0)
