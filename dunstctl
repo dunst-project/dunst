@@ -30,9 +30,9 @@ show_help() {
 	  history-rm [ID]                   Remove the notification from
 	                                    history with given ID.
 	  is-paused                         Check if pause level is > 0
-	  set-paused [true|false|toggle] Set the pause status	  
-	  get-paused-level    Get the current pause level
-	  set-paused-level [level]    Set the pause level
+	  set-paused [true|false|toggle]    Set the pause status	  
+	  get-paused-level                  Get the current pause level
+	  set-paused-level [level]          Set the pause level
 	  rule name [enable|disable|toggle] Enable or disable a rule by its name
 	  debug                             Print debugging information
 	  help                              Show this help
