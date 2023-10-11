@@ -608,14 +608,14 @@ void cmdline_usage_append(const char *key, const char *type, const char *descrip
 
         if (!usage_str) {
                 usage_str =
-                    g_strdup_printf("%-40s - %s\n", key_type, description);
+                    g_strdup_printf("%-50s - %s\n", key_type, description);
                 g_free(key_type);
                 return;
         }
 
         char *tmp;
         tmp =
-            g_strdup_printf("%s%-40s - %s\n", usage_str, key_type, description);
+            g_strdup_printf("%s%-50s - %s\n", usage_str, key_type, description);
         g_free(key_type);
 
         g_free(usage_str);

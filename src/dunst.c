@@ -183,8 +183,8 @@ int dunst_main(int argc, char *argv[])
                 settings.print_notifications = true;
         }
 
-        settings.startup_notification = cmdline_get_bool("--startup_notification",
-                        0, "Display a notification on startup.");
+        settings.startup_notification = cmdline_get_bool("-startup_notification/--startup_notification",
+                        false, "Display a notification on startup.");
 
         /* Help should always be the last to set up as calls to cmdline_get_* (as a side effect) add entries to the usage list. */
         if (cmdline_get_bool("-h/-help/--help", false, "Print help")) {
