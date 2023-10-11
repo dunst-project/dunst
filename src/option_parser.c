@@ -482,33 +482,18 @@ int cmdline_find_option(const char *key)
 {
         ASSERT_OR_RET(key, -1);
 
-        char *key1 = g_strdup(key);
-        char *key2 = strchr(key1, '/');
+        gchar **keys = g_strsplit(key, "/", -1);
 
-        if (key2) {
-                *key2 = '\0';
-                key2++;
-        }
-
-        /* look for first key */
-        for (int i = 0; i < cmdline_argc; i++) {
-                if (STR_EQ(key1, cmdline_argv[i])) {
-                        g_free(key1);
-                        return i;
-                }
-        }
-
-        /* look for second key if one was specified */
-        if (key2) {
-                for (int i = 0; i < cmdline_argc; i++) {
-                        if (STR_EQ(key2, cmdline_argv[i])) {
-                                g_free(key1);
-                                return i;
+        for (int i = 0; keys[i] != NULL; i++) {
+                for (int j = 0; j < cmdline_argc; j++) {
+                        if (STR_EQ(keys[i], cmdline_argv[j])) {
+                                g_strfreev(keys);
+                                return j;
                         }
                 }
         }
 
-        g_free(key1);
+        g_strfreev(keys);
         return -1;
 }
 
