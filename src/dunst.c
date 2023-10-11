@@ -179,16 +179,17 @@ int dunst_main(int argc, char *argv[])
                                "Path to configuration file");
         load_settings(cmdline_config_path);
 
-        if (cmdline_get_bool("-h/-help/--help", false, "Print help")) {
-                usage(EXIT_SUCCESS);
-        }
-
         if (cmdline_get_bool("-print/--print", false, "Print notifications to stdout")) {
                 settings.print_notifications = true;
         }
 
         settings.startup_notification = cmdline_get_bool("--startup_notification",
                         0, "Display a notification on startup.");
+
+        /* Help should always be the last to set up as calls to cmdline_get_* (as a side effect) add entries to the usage list. */
+        if (cmdline_get_bool("-h/-help/--help", false, "Print help")) {
+                usage(EXIT_SUCCESS);
+        }
 
         int dbus_owner_id = dbus_init();
 
