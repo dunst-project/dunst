@@ -34,6 +34,7 @@ show_help() {
 	  get-pause-level                   Get the current pause level
 	  set-pause-level level             Set the pause level
 	  rule name enable|disable|toggle   Enable or disable a rule by its name
+	  rules                             Displays configured rules (in JSON)
 	  debug                             Print debugging information
 	  help                              Show this help
 	EOH
@@ -122,6 +123,10 @@ case "${1:-}" in
 		else
 			property_set paused variant:boolean:"$2"
 		fi
+		;;
+	"rules")
+		busctl --user --json=pretty --no-pager call org.freedesktop.Notifications /org/freedesktop/Notifications org.dunstproject.cmd0 RuleList 2>/dev/null \
+			|| die "Dunst is not running."
 		;;
 	"rule")
 		[ "${2:-}" ] \
