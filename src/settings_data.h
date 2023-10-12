@@ -122,6 +122,7 @@ struct setting {
  * - Add the default rule value in `settings_data.h` (usually -1 or NULL)
  * - Set default value in notification.c (`notification_create`). This is where
  *   the real default is set.
+ * - Add the rule to the output of `dbus_cb_dunst_RuleList` in `dbus.c`.
  * - Free the variable in `notification.c` if dynamically allocated.
  * - Free the variable in `rules.c` if dynamically allocated.
  * - Remove the setting from the global settings struct in `settings.h`.
