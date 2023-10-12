@@ -1,0 +1,35 @@
+if command -q jq
+    function __fish_dunstctl_history
+        dunstctl history | jq -r '.data[][] | "\(.id.data)\t\(.appname.data)"'
+    end
+else
+    function __fish_dunstctl_history
+        dunstctl history | awk '/"id" :/ {getline; getline; print $3}'
+    end
+end
+
+# commands
+complete -c dunstctl -f -n __fish_use_subcommand -a action -d 'Perform the default action, or open the context menu of the notification at the given position'
+complete -c dunstctl -f -n __fish_use_subcommand -a close -d 'Close the last notification'
+complete -c dunstctl -f -n __fish_use_subcommand -a close-all -d 'Close the all notifications'
+complete -c dunstctl -f -n __fish_use_subcommand -a context -d 'Open context menu'
+complete -c dunstctl -f -n __fish_use_subcommand -a count -d 'Show the number of notifications'
+complete -c dunstctl -f -n __fish_use_subcommand -a history -d 'Display notification history (in JSON)'
+complete -c dunstctl -f -n __fish_use_subcommand -a history-clear -d 'Delete all notifications from history'
+complete -c dunstctl -f -n __fish_use_subcommand -a history-pop -d 'Pop the latest notification from history or optionally the notification with given ID'
+complete -c dunstctl -f -n __fish_use_subcommand -a history-rm -d 'Remove the notification from history with given ID'
+complete -c dunstctl -f -n __fish_use_subcommand -a is-paused -d 'Check if dunst is running or paused'
+complete -c dunstctl -f -n __fish_use_subcommand -a set-paused -d 'Set the pause status'
+complete -c dunstctl -f -n __fish_use_subcommand -a rule -d 'Enable or disable a rule by its name'
+complete -c dunstctl -f -n __fish_use_subcommand -a debug -d 'Print debugging information'
+complete -c dunstctl -f -n __fish_use_subcommand -a help -d 'Show this help'
+
+# command specific arguments
+complete -c dunstctl -x -n '__fish_seen_subcommand_from action close close-all context history history-clear is-paused debug help'
+complete -c dunstctl -x -n '__fish_seen_subcommand_from count' -a 'displayed history waiting'
+complete -c dunstctl -x -n '__fish_seen_subcommand_from history-pop history-rm' -a '(__fish_dunstctl_history)'
+complete -c dunstctl -x -n '__fish_seen_subcommand_from set-paused' -a 'true false toggle'
+
+# TODO: add completion for rule when there is a proper way to get configured rules
+
+# ex: filetype=fish
