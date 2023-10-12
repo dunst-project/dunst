@@ -208,7 +208,7 @@ void dbus_signal_unsubscribe_closed(struct signal_closed *closed)
         closed->subscription_id = -1;
 }
 
-GVariant *dbus_invoke(const char *method, GVariant *params)
+static GVariant *dbus_invoke_ifac(const char *method, GVariant *params, const char *ifac)
 {
         GDBusConnection *connection_client;
         GVariant *retdata;
@@ -219,7 +219,7 @@ GVariant *dbus_invoke(const char *method, GVariant *params)
                                 connection_client,
                                 FDN_NAME,
                                 FDN_PATH,
-                                FDN_IFAC,
+                                ifac,
                                 method,
                                 params,
                                 NULL,
@@ -235,6 +235,11 @@ GVariant *dbus_invoke(const char *method, GVariant *params)
         g_object_unref(connection_client);
 
         return retdata;
+}
+
+GVariant *dbus_invoke(const char *method, GVariant *params)
+{
+        return dbus_invoke_ifac(method, params, FDN_IFAC);
 }
 
 struct dbus_notification {
@@ -514,6 +519,83 @@ TEST test_dbus_cb_dunst_Properties_Set_pause_level(void)
         g_variant_unref(sig.array_s_data);
         dbus_signal_unsubscribe_propertieschanged(&sig);
         g_object_unref(connection_client);
+        PASS();
+}
+
+TEST test_dbus_cb_dunst_RuleList(void)
+{
+        struct rule *rule = rule_new("testing RuleList");
+        rule->appname = "dunstify";
+        rule->urgency = URG_CRIT;
+
+        GVariant *result = dbus_invoke_ifac("RuleList", NULL, DUNST_IFAC);
+        ASSERT(result != NULL);
+        ASSERT_STR_EQ("(aa{sv})", g_variant_get_type_string(result));
+
+        GVariantIter tuple_iter;
+        g_variant_iter_init(&tuple_iter, result);
+        GVariant *array = g_variant_iter_next_value(&tuple_iter);
+
+        GVariantIter array_iter;
+        g_variant_iter_init(&array_iter, array);
+        GVariant *dict = g_variant_iter_next_value(&array_iter);
+
+        GVariantIter dict_iter;
+        g_variant_iter_init(&dict_iter, dict);
+
+        char *key;
+        GVariant *value;
+
+        // first entry should always be the name => {"name", "testing RuleList"}
+        GVariant *entry = g_variant_iter_next_value(&dict_iter);
+        ASSERT(entry != NULL);
+        g_variant_get(entry, "{sv}", &key, &value);
+        ASSERT_STR_EQ("name", key);
+        ASSERT_STR_EQ("s", g_variant_get_type_string(value));
+        ASSERT_STR_EQ("testing RuleList", g_variant_get_string(value, NULL));
+        g_free(key);
+        g_variant_unref(value);
+        g_variant_unref(entry);
+
+        // second entry should always be enabled => {"enabled", true}
+        entry = g_variant_iter_next_value(&dict_iter);
+        ASSERT(entry != NULL);
+        g_variant_get(entry, "{sv}", &key, &value);
+        ASSERT_STR_EQ("enabled", key);
+        ASSERT_STR_EQ("b", g_variant_get_type_string(value));
+        ASSERT(g_variant_get_boolean(value));
+        g_free(key);
+        g_variant_unref(value);
+        g_variant_unref(entry);
+
+        // first filter, appname in this case => {"appname", "dunstify"}
+        entry = g_variant_iter_next_value(&dict_iter);
+        ASSERT(entry != NULL);
+        g_variant_get(entry, "{sv}", &key, &value);
+        ASSERT_STR_EQ("appname", key);
+        ASSERT_STR_EQ("s", g_variant_get_type_string(value));
+        ASSERT_STR_EQ("dunstify", g_variant_get_string(value, NULL));
+        g_free(key);
+        g_variant_unref(value);
+        g_variant_unref(entry);
+
+        // applied changes, urgency here => {"urgency", "critical"}
+        entry = g_variant_iter_next_value(&dict_iter);
+        ASSERT(entry != NULL);
+        g_variant_get(entry, "{sv}", &key, &value);
+        ASSERT_STR_EQ("urgency", key);
+        ASSERT_STR_EQ("s", g_variant_get_type_string(value));
+        ASSERT_STR_EQ("critical", g_variant_get_string(value, NULL));
+        g_free(key);
+        g_variant_unref(value);
+        g_variant_unref(entry);
+
+        g_variant_unref(dict);
+        g_variant_unref(array);
+        g_variant_unref(result);
+        rules = g_slist_remove(rules, rule);
+        g_free(rule->name);
+        g_free(rule);
         PASS();
 }
 
@@ -1101,7 +1183,9 @@ TEST test_override_dbus_timeout(void)
         ASSERT_EQ_FMT(expected_timeout, n->timeout, "%" G_GINT64_FORMAT);
 
         dbus_notification_free(n_dbus);
-        rule->enabled = false;
+        rules = g_slist_remove(rules, rule);
+        g_free(rule->name);
+        g_free(rule);
 
         PASS();
 }
@@ -1130,7 +1214,9 @@ TEST test_match_dbus_timeout(void)
         ASSERT_EQ_FMT(expected_timeout, n->timeout, "%" G_GINT64_FORMAT);
 
         dbus_notification_free(n_dbus);
-        rule->enabled = false;
+        rules = g_slist_remove(rules, rule);
+        g_free(rule->name);
+        g_free(rule);
 
         PASS();
 }
@@ -1158,7 +1244,9 @@ TEST test_timeout(void)
         ASSERT_EQ_FMT(expected_timeout, n->timeout, "%" G_GINT64_FORMAT);
 
         dbus_notification_free(n_dbus);
-        rule->enabled = false;
+        rules = g_slist_remove(rules, rule);
+        g_free(rule->name);
+        g_free(rule);
 
         PASS();
 }
@@ -1198,6 +1286,7 @@ gpointer run_threaded_tests(gpointer data)
         RUN_TEST(test_override_dbus_timeout);
         RUN_TEST(test_match_dbus_timeout);
         RUN_TEST(test_timeout);
+        RUN_TEST(test_dbus_cb_dunst_RuleList);
 
         RUN_TEST(assert_methodlists_sorted);
 
