@@ -911,7 +911,8 @@ If B<icon_position> is set to off, this setting is ignored.
 
 Updates the icon of the notification, it should be a path or a name for a valid
 image. This overrides the icon that was sent with dunstify or another notification
-tool.
+tool. Expansion of the argument is carried out using wordexp(3)
+with command substitution disabled.
 
 =item C<icon_position> (values: [left/right/top/off], default: left)
 
@@ -922,7 +923,8 @@ disables icons.
 
 Sets the default icon of the notification, it should be a path or a name for a
 valid image. This does B<not> override the icon that was sent with dunstify or
-another notification tool.
+another notification tool. Expansion of the argument is carried out using
+wordexp(3) with command substitution disabled.
 
 =item C<set_stack_tag>
 
@@ -1087,9 +1089,10 @@ Note that some variables may be empty.
 If the notification is suppressed, the script will not be run unless
 B<always_run_script> is set to true.
 
-If '~/' occurs at the beginning of the script parameter, it will get replaced by the
-users' home directory. If the value is not an absolute path, the directories in the
-PATH variable will be searched for an executable of the same name.
+The script parameter is expanded according to wordexp(3) with command
+substitution disabled. If the expanded value is not an absolute path, the
+directories in the PATH variable will be searched for an executable of the same
+name.
 
 =head1 COLORS
 
