@@ -13,6 +13,7 @@
 #include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
+#include <wordexp.h>
 
 #include "log.h"
 #include "settings_data.h"
@@ -179,16 +180,34 @@ int string_array_length(char **s)
 /* see utils.h */
 char *string_to_path(char *string)
 {
+        ASSERT_OR_RET(string, string);
 
-        if (string && STRN_EQ(string, "~/", 2)) {
-                char *home = g_strconcat(user_get_home(), "/", NULL);
-
-                string = string_replace_at(string, 0, 2, home);
-
-                g_free(home);
+        wordexp_t we;
+        switch (wordexp(string, &we, WRDE_NOCMD | WRDE_UNDEF)) {
+                case 0:
+                        break;
+                case WRDE_BADCHAR:
+                        LOG_W("Expansion of \"%s\" failed. It contains invalid characters.", string);
+                        return string;
+                case WRDE_BADVAL:
+                        LOG_W("Expansion of \"%s\" failed. It contains an undefined variable.", string);
+                        return string;
+                case WRDE_CMDSUB:
+                        LOG_W("Expansion of \"%s\" failed. The requested command substitution is currently not supported.", string);
+                        return string;
+                case WRDE_NOSPACE:
+                        LOG_W("Expansion of \"%s\" failed. We ran out of memory.", string);
+                        return string;
+                case WRDE_SYNTAX:
+                        LOG_W("Expansion of \"%s\" failed. It contains invalid syntax.", string);
+                        return string;
         }
+        g_free(string);
 
-        return string;
+        char *res = g_strjoinv(" ", we.we_wordv);
+        wordfree(&we);
+
+        return res;
 }
 
 /* see utils.h */

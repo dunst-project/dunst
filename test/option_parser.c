@@ -521,9 +521,14 @@ TEST test_string_to_path(void)
                 "/path/p argument",
                 "p with multiple arguments",
                 "~/p/p",
+                "$HOME/p/p",
+                "$TEST_ENV/p/p",
         };
 
+        setenv("TEST_ENV", "foobar", 1);
+
         char *expanded_home = g_strconcat(user_get_home(), "/", "p/p", NULL);
+        char *expanded_env = g_strconcat("foobar", "/p/p", NULL);
         const char* results[] = {
                 "/bin/something",
                 "something",
@@ -531,6 +536,8 @@ TEST test_string_to_path(void)
                 "/path/p argument",
                 "p with multiple arguments",
                 expanded_home,
+                expanded_home,
+                expanded_env,
         };
 
         const char* results2[][5] = {
@@ -540,6 +547,8 @@ TEST test_string_to_path(void)
                 {"/path/p", "argument", NULL},
                 {"p", "with", "multiple", "arguments", NULL},
                 {expanded_home},
+                {expanded_home},
+                {expanded_env},
         };
 
         ARRAY_SAME_LENGTH(inputs, results);
@@ -557,6 +566,7 @@ TEST test_string_to_path(void)
         }
 
         g_free(val);
+        g_free(expanded_env);
         g_free(expanded_home);
         g_strfreev(val2);
         PASS();

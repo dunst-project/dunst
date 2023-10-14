@@ -6,6 +6,19 @@
    obj:/lib/ld-musl-x86_64.so.1
 }
 
+# Ignore another musls' weird error
+{
+   musl_alpine_libc
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:realloc
+   fun:getdelim
+   obj:*
+   fun:vgMemCheck_new_block
+   obj:*
+}
+
 # rsvg_error_handle_close got fixed in
 # - GNOME/librsvg@7bf1014
 # (2018-11-12, first tags: v2.45.0, v2.44.9)
