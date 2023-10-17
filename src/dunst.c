@@ -177,7 +177,6 @@ int dunst_main(int argc, char *argv[])
         cmdline_config_path =
             cmdline_get_string("-conf/-config", NULL,
                                "Path to configuration file");
-        load_settings(cmdline_config_path);
 
         if (cmdline_get_bool("-print/--print", false, "Print notifications to stdout")) {
                 settings.print_notifications = true;
@@ -191,6 +190,7 @@ int dunst_main(int argc, char *argv[])
                 usage(EXIT_SUCCESS);
         }
 
+        load_settings(cmdline_config_path);
         int dbus_owner_id = dbus_init();
 
         mainloop = g_main_loop_new(NULL, FALSE);
