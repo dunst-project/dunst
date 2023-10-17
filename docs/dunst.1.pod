@@ -4,7 +4,7 @@ dunst - A customizable and lightweight notification-daemon
 
 =head1 SYNOPSIS
 
-dunst [-conf file] [-verbosity v] [-print] [--startup-notification]
+dunst [-conf file] [-verbosity v] [-print] [--startup_notification]
 
 =head1 DESCRIPTION
 
@@ -23,7 +23,7 @@ systemd service.
 
 =over 4
 
-=item B<-h/--help>
+=item B<-h/-help/--help>
 
 List all command line flags
 
@@ -36,7 +36,7 @@ defaults.
 (Hint: `dunst -conf - </dev/null` can be used to enforce the defaults, i.e. for
 testing)
 
-=item B<-v/--version>
+=item B<-v/-version/--version>
 
 Print version information.
 
@@ -46,12 +46,12 @@ Do not display log messages, which have lower precedence than specified
 verbosity. This won't affect printing notifications on the terminal. Use
 the '-print' option for this.
 
-=item B<-print>
+=item B<-print/--print>
 
 Print notifications to stdout. This might be useful for logging, setting up
 rules or using the output in other scripts.
 
-=item B<--startup_notification> (values: [true/false], default: false)
+=item B<-startup_notification/--startup_notification>
 
 Display a notification on startup.
 
