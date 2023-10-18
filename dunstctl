@@ -30,9 +30,9 @@ show_help() {
 	  history-rm [ID]                   Remove the notification from
 	                                    history with given ID.
 	  is-paused                         Check if pause level is > 0
-	  set-paused [true|false|toggle]    Set the pause status	  
-	  get-paused-level                  Get the current pause level
-	  set-paused-level [level]          Set the pause level
+	  set-paused [true|false|toggle]   Set the pause status	  
+	  get-pause-level                   Get the current pause level
+	  set-pause-level [level]           Set the pause level
 	  rule name [enable|disable|toggle] Enable or disable a rule by its name
 	  debug                             Print debugging information
 	  help                              Show this help
@@ -134,10 +134,10 @@ case "${1:-}" in
 			&& die "No valid rule state parameter specified. Please give either 'enable', 'disable' or 'toggle'"
 		method_call "${DBUS_IFAC_DUNST}.RuleEnable" "string:${2:-1}" "int32:${state}" >/dev/null
 		;;
-	"get-paused-level")
+	"get-pause-level")
 		property_get pauseLevel | ( read -r _ _ paused; printf "%s\n" "${paused}"; )
 		;;
-	"set-paused-level")
+	"set-pause-level")
 		[ "${2:-}" ] \
 			|| die "No status parameter specified. Please give a number as paused parameter."
 		[ "$2" ] && [ -z "${2//[0-9]}" ] \
