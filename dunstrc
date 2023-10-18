@@ -323,6 +323,7 @@
     background = "#285577"
     foreground = "#ffffff"
     timeout = 10
+    override_pause_level = 30
     # Icon for notifications with normal urgency, uncomment to enable
     #default_icon = /path/to/icon
 
@@ -331,6 +332,7 @@
     foreground = "#ffffff"
     frame_color = "#ff0000"
     timeout = 0
+    override_pause_level = 60
     # Icon for notifications with critical urgency, uncomment to enable
     #default_icon = /path/to/icon
 
