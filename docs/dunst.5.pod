@@ -553,6 +553,16 @@ Ignore the dbus closeNotification message. This is useful to enforce the timeout
 set by dunst configuration. Without this parameter, an application may close
 the notification sent before the user defined timeout.
 
+=item B<override_pause_level> (values: [0-100], default: 0)
+
+A Notification will appear whenever notification's 
+override_pause_level >= dunst's paused level. Setting this to values other than 0
+allows you to create partial pause modes, where more urgent notifications get through,
+but less urgent stay paused. For example, when you can set a low battery noficiation's
+override_pause_level to 2 and then set dunst's pause level to 2. This will cause dunst to
+only show battery level notification (and other notifications with override_pause_level >= 2),
+while suspending others.
+
 =back
 
 =head2 Keyboard shortcuts (X11 only)
