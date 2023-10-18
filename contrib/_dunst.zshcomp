@@ -16,6 +16,8 @@ case $state in
       {-v,--version,-version}"[Print version]" \
       '(-verbosity)-verbosity[Minimum level for message]' \
       {-conf,--config}"[Path to configuration file]:file:_files" \
+      {-print,--print}"[Print notifications to stdout]" \
+      {-startup_notification,--startup_notification}"[Display a notification on startup]" \
       {-h,-help,--help}"[Print help]"
       ;;
 
