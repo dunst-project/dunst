@@ -606,8 +606,6 @@ void draw_rounded_rect(cairo_t *c, float x, float y, int width, int height, int 
                                   bot_left_angle2);
                 } else {
                         cairo_line_to(c, x, y + height);
-                        if (width <= corner_radius*2)
-                        printf("LINE BOT LEFT\n");
                 }
         }
 
@@ -622,8 +620,6 @@ void draw_rounded_rect(cairo_t *c, float x, float y, int width, int height, int 
                                   top_left_angle2);
                 } else {
                         cairo_line_to(c, x, y);
-                        if (width <= corner_radius*2)
-                        printf("LINE TOP LEFT\n");
                 }
         }
 
@@ -638,8 +634,6 @@ void draw_rounded_rect(cairo_t *c, float x, float y, int width, int height, int 
                                   top_right_angle2);
                 } else {
                         cairo_line_to(c, x + width, y);
-                        if (width <= corner_radius*2)
-                        printf("LINE TOP RIGHT\n");
                 }
         }
 
@@ -654,8 +648,6 @@ void draw_rounded_rect(cairo_t *c, float x, float y, int width, int height, int 
                                   bot_right_angle2);
                 } else {
                         cairo_line_to(c, x + width, y + height);
-                        if (width <= corner_radius*2)
-                        printf("LINE BOT RIGHT\n");
                 }
         }
 
@@ -971,7 +963,7 @@ void draw(void)
 
         cairo_t *c = output->win_get_context(win);
 
-        if(c == NULL) {
+        if (c == NULL) {
                 return;
         }
 
