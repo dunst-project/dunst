@@ -493,6 +493,14 @@ static int frame_internal_radius (int r, int w, int h)
 }
 
 /**
+ * A small wrapper around cairo_rectange for drawing a scaled rectangle.
+ */
+static inline void draw_rect(cairo_t *c, double x, double y, double width, double height, double scale)
+{
+        cairo_rectangle(c, round(x * scale), round(y * scale), round(width * scale), round(height * scale));
+}
+
+/**
  * Create a path on the given cairo context to draw the background of a notification.
  * The top corners will get rounded by `corner_radius`, if `first` is set.
  * Respectably the same for `last` with the bottom corners.
@@ -500,66 +508,158 @@ static int frame_internal_radius (int r, int w, int h)
  * TODO: Pass additional frame width information to fix blurry lines due to fractional scaling
  *       X and Y can then be calculated as:  x = round(x*scale) + half_frame_width
  */
-void draw_rounded_rect(cairo_t *c, float x, float y, int width, int height, int corner_radius, double scale, bool first, bool last)
+void draw_rounded_rect(cairo_t *c, float x, float y, int width, int height, int corner_radius, double scale, enum corner_pos corners)
 {
+        // Fast path for simple rects
+        if (corners == C_NONE || corner_radius <= 0)
+                return draw_rect(c, x, y, width, height, scale);
+
         width = round(width * scale);
         height = round(height * scale);
         x *= scale;
         y *= scale;
         corner_radius = round(corner_radius * scale);
 
+        if (width <= 0 || height <= 0 || scale <= 0)
+                return;
+
         const double degrees = M_PI / 180.0;
+
+        enum corner_pos skip = C_NONE;
+
+        float top_y_off = 0, bot_y_off = 0;
+        float top_x_off = MAX(width - corner_radius, corner_radius),
+              bot_x_off = MAX(width - corner_radius, corner_radius);
+
+        double bot_left_angle1 = degrees * 90;
+        double bot_left_angle2 = degrees * 180;
+
+        double top_left_angle1 = degrees * 180;
+        double top_left_angle2 = degrees * 270;
+
+        double top_right_angle1 = degrees * 270;
+        double top_right_angle2 = degrees * 360;
+
+        double bot_right_angle1 = degrees * 0;
+        double bot_right_angle2 = degrees * 90;
+
+        // The trickiest cases to handle are when the width is less than corner_radius and corner_radius * 2,
+        // because we have to split the angle for the arc in the rounded corner
+        if (width <= corner_radius) {
+                double angle1 = 0, angle2 = 0;
+
+                // If there are two corners on the top/bottom they occupy half of the width
+                if ((corners & C_TOP) == C_TOP)
+                        angle1 = acos(1.0 - ((double)width / 2.0) / (double)corner_radius);
+                else
+                        angle1 = acos(1.0 - (double)width / (double)corner_radius);
+
+                if ((corners & C_BOT) == C_BOT)
+                        angle2 = acos(1.0 - ((double)width / 2.0) / (double)corner_radius);
+                else
+                        angle2 = acos(1.0 - (double)width / (double)corner_radius);
+
+                if ((corners & (C_TOP_RIGHT | C_BOT_LEFT)) == (C_TOP_RIGHT | C_BOT_LEFT)
+                                && !(corners & C_TOP_LEFT)) {
+                        top_y_off -= corner_radius * (1.0 - sin(angle1));
+                }
+
+                if ((corners & (C_TOP_LEFT | C_BOT_RIGHT)) == (C_TOP_LEFT | C_BOT_RIGHT)
+                                && !(corners & C_BOT_LEFT)) {
+                        bot_y_off = corner_radius * (1.0 - sin(angle2));
+                }
+
+                top_left_angle2 = degrees * 180 + angle1;
+                top_right_angle1 = degrees * 360 - angle1;
+                bot_left_angle1 = degrees * 180 - angle2;
+                bot_right_angle2 = angle2;
+
+                top_x_off = -(corner_radius - width);
+                bot_x_off = -(corner_radius - width);
+                skip = ~corners;
+        } else if (width <= corner_radius * 2 && (corners & C_LEFT && corners & C_RIGHT)) {
+                double angle1 = 0, angle2 = 0;
+                if (!(corners & C_TOP_LEFT) && corners & C_TOP_RIGHT)
+                        top_x_off = width - corner_radius;
+                else
+                        angle1 = acos((double)width / (double)corner_radius - 1.0);
+
+                if (!(corners & C_BOT_LEFT) && corners & C_BOT_RIGHT)
+                        bot_x_off = width - corner_radius;
+                else
+                        angle2 = acos((double)width / (double)corner_radius - 1.0);
+
+                top_right_angle2 = degrees * 360 - angle1;
+                bot_right_angle1 = angle2;
+        }
 
         cairo_new_sub_path(c);
 
-        if (last) {
-                // bottom right
-                cairo_arc(c,
-                          x + width - corner_radius,
-                          y + height - corner_radius,
-                          corner_radius,
-                          degrees * 0,
-                          degrees * 90);
-                // bottom left
-                cairo_arc(c,
-                          x + corner_radius,
-                          y + height - corner_radius,
-                          corner_radius,
-                          degrees * 90,
-                          degrees * 180);
-        } else {
-                cairo_line_to(c, x + width, y + height);
-                cairo_line_to(c, x,         y + height);
+        // bottom left
+        if (!(skip & C_BOT_LEFT)) {
+                if (corners & C_BOT_LEFT) {
+                        cairo_arc(c,
+                                  x + corner_radius,
+                                  y + height - corner_radius,
+                                  corner_radius,
+                                  bot_left_angle1,
+                                  bot_left_angle2);
+                } else {
+                        cairo_line_to(c, x, y + height);
+                        if (width <= corner_radius*2)
+                        printf("LINE BOT LEFT\n");
+                }
         }
 
-        if (first) {
-                // top left
-                cairo_arc(c,
-                          x + corner_radius,
-                          y + corner_radius,
-                          corner_radius,
-                          degrees * 180,
-                          degrees * 270);
-                // top right
-                cairo_arc(c,
-                          x + width - corner_radius,
-                          y + corner_radius,
-                          corner_radius,
-                          degrees * 270,
-                          degrees * 360);
-        } else {
-                cairo_line_to(c, x,         y);
-                cairo_line_to(c, x + width, y);
+        // top left
+        if (!(skip & C_TOP_LEFT)) {
+                if (corners & C_TOP_LEFT) {
+                        cairo_arc(c,
+                                  x + corner_radius,
+                                  y + corner_radius,
+                                  corner_radius,
+                                  top_left_angle1,
+                                  top_left_angle2);
+                } else {
+                        cairo_line_to(c, x, y);
+                        if (width <= corner_radius*2)
+                        printf("LINE TOP LEFT\n");
+                }
+        }
+
+        // top right
+        if (!(skip & C_TOP_RIGHT)) {
+                if (corners & C_TOP_RIGHT) {
+                        cairo_arc(c,
+                                  x + top_x_off,
+                                  y + corner_radius + top_y_off,
+                                  corner_radius,
+                                  top_right_angle1,
+                                  top_right_angle2);
+                } else {
+                        cairo_line_to(c, x + width, y);
+                        if (width <= corner_radius*2)
+                        printf("LINE TOP RIGHT\n");
+                }
+        }
+
+        // bottom right
+        if (!(skip & C_BOT_RIGHT)) {
+                if (corners & C_BOT_RIGHT) {
+                        cairo_arc(c,
+                                  x + bot_x_off,
+                                  y + height - corner_radius + bot_y_off,
+                                  corner_radius,
+                                  bot_right_angle1,
+                                  bot_right_angle2);
+                } else {
+                        cairo_line_to(c, x + width, y + height);
+                        if (width <= corner_radius*2)
+                        printf("LINE BOT RIGHT\n");
+                }
         }
 
         cairo_close_path(c);
-}
-
-/**
- * A small wrapper around cairo_rectange for drawing a scaled rectangle.
- */
-static void draw_rect(cairo_t *c, double x, double y, double width, double height, double scale) {
-        cairo_rectangle(c, round(x * scale), round(y * scale), round(width * scale), round(height * scale));
 }
 
 static cairo_surface_t *render_background(cairo_surface_t *srf,
@@ -569,8 +669,7 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
                                           int width,
                                           int height,
                                           int corner_radius,
-                                          bool first,
-                                          bool last,
+                                          enum corner_pos corners,
                                           int *ret_width,
                                           double scale)
 {
@@ -585,36 +684,36 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
         /* for correct combination of adjacent areas */
         cairo_set_operator(c, CAIRO_OPERATOR_ADD);
 
-        if (first)
+        if (corners & C_TOP)
                 height += settings.frame_width;
-        if (last)
+        if (corners & C_BOT)
                 height += settings.frame_width;
         else
                 height += settings.separator_height;
 
-        draw_rounded_rect(c, x, y, width, height, corner_radius, scale, first, last);
+        draw_rounded_rect(c, x, y, width, height, corner_radius, scale, corners);
 
         /* adding frame */
         x += settings.frame_width;
-        if (first) {
+        if (corners & C_TOP) {
                 y += settings.frame_width;
                 height -= settings.frame_width;
         }
 
         width -= 2 * settings.frame_width;
 
-        if (last)
+        if (corners & C_BOT)
                 height -= settings.frame_width;
         else
                 height -= settings.separator_height;
 
         radius_int = frame_internal_radius(corner_radius, settings.frame_width, height);
 
-        draw_rounded_rect(c, x, y, width, height, radius_int, scale, first, last);
+        draw_rounded_rect(c, x, y, width, height, radius_int, scale, corners);
         cairo_set_source_rgba(c, cl->frame.r, cl->frame.g, cl->frame.b, cl->frame.a);
         cairo_fill(c);
 
-        draw_rounded_rect(c, x, y, width, height, radius_int, scale, first, last);
+        draw_rounded_rect(c, x, y, width, height, radius_int, scale, corners);
         cairo_set_source_rgba(c, cl->bg.r, cl->bg.g, cl->bg.b, cl->bg.a);
         cairo_fill(c);
 
@@ -622,7 +721,7 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
 
         if (   settings.sep_color.type != SEP_FRAME
             && settings.separator_height > 0
-            && !last) {
+            && !(corners & C_BOT)) {
                 struct color sep_color = layout_get_sepcolor(cl, cl_next);
                 cairo_set_source_rgba(c, sep_color.r, sep_color.g, sep_color.b, sep_color.a);
 
@@ -711,7 +810,7 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, dou
                 } // else ICON_RIGHT
 
                 cairo_set_source_surface(c, cl->icon, round(image_x * scale), round(image_y * scale));
-                draw_rounded_rect(c, image_x, image_y, image_width, image_height, settings.icon_corner_radius, scale, true, true);
+                draw_rounded_rect(c, image_x, image_y, image_width, image_height, settings.icon_corner_radius, scale, C_ALL);
                 cairo_fill(c);
         }
 
@@ -741,22 +840,23 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, dou
                 unsigned int x_bar_1 = frame_x + frame_width,
                              x_bar_2 = x_bar_1 + progress_width_1;
 
-                double half_frame_width = frame_width / 2.0;
+                float half_frame_width = (float)frame_width / 2.0f;
 
                 /* Draw progress bar
                 * TODO: Modify draw_rounded_rect to fix blurry lines due to fractional scaling
-                * Note: the bar could be drawn a bit smaller, because the frame is drawn on top 
+                * Note: the bar could be drawn a bit smaller, because the frame is drawn on top
                 */
-                // left side (fill)
-                cairo_set_source_rgba(c, cl->highlight.r, cl->highlight.g, cl->highlight.b, cl->highlight.a);
-                draw_rounded_rect(c, x_bar_1, frame_y, progress_width_1, progress_height, 
-                        settings.progress_bar_corner_radius, scale, true, true);
-                cairo_fill(c);
+
                 // right side (background)
                 cairo_set_source_rgba(c, cl->bg.r, cl->bg.g, cl->bg.b, cl->bg.a);
-                draw_rounded_rect(c, x_bar_2, frame_y, progress_width_2, progress_height, 
-                        settings.progress_bar_corner_radius, scale, true, true);
+                draw_rounded_rect(c, x_bar_1, frame_y, progress_width_without_frame, progress_height,
+                        settings.progress_bar_corner_radius, scale, C_ALL);
+                cairo_fill(c);
 
+                // left side (fill)
+                cairo_set_source_rgba(c, cl->highlight.r, cl->highlight.g, cl->highlight.b, cl->highlight.a);
+                draw_rounded_rect(c, x_bar_1, frame_y, progress_width_1, progress_height,
+                        settings.progress_bar_corner_radius, scale, C_ALL);
                 cairo_fill(c);
 
                 // border
@@ -764,11 +864,11 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, dou
                 cairo_set_line_width(c, frame_width * scale);
                 draw_rounded_rect(c,
                                 frame_x + half_frame_width,
-                                frame_y + half_frame_width,
+                                frame_y,
                                 progress_width - frame_width,
                                 progress_height,
                                 settings.progress_bar_corner_radius,
-                                scale, true, true);
+                                scale, C_ALL);
                 cairo_stroke(c);
         }
 }
@@ -777,8 +877,7 @@ static struct dimensions layout_render(cairo_surface_t *srf,
                                        struct colored_layout *cl,
                                        struct colored_layout *cl_next,
                                        struct dimensions dim,
-                                       bool first,
-                                       bool last)
+                                       enum corner_pos corners)
 {
         double scale = output->get_scale();
         const int cl_h = layout_get_height(cl, scale);
@@ -789,16 +888,16 @@ static struct dimensions layout_render(cairo_surface_t *srf,
         int bg_width = 0;
         int bg_height = MIN(settings.height, (2 * settings.padding) + cl_h);
 
-        cairo_surface_t *content = render_background(srf, cl, cl_next, dim.y, dim.w, bg_height, dim.corner_radius, first, last, &bg_width, scale);
+        cairo_surface_t *content = render_background(srf, cl, cl_next, dim.y, dim.w, bg_height, dim.corner_radius, corners, &bg_width, scale);
         cairo_t *c = cairo_create(content);
 
         render_content(c, cl, bg_width, scale);
 
         /* adding frame */
-        if (first)
+        if (corners & C_TOP)
                 dim.y += settings.frame_width;
 
-        if (last)
+        if (corners & C_BOT)
                 dim.y += settings.frame_width;
 
         if ((2 * settings.padding + cl_h) < settings.height)
@@ -886,22 +985,19 @@ void draw(void)
                                                                     round(dim.w * scale),
                                                                     round(dim.h * scale));
 
-        bool first = true;
-        bool last;
+        enum corner_pos corners = C_TOP;
         for (GSList *iter = layouts; iter; iter = iter->next) {
 
                 struct colored_layout *cl_this = iter->data;
                 struct colored_layout *cl_next = iter->next ? iter->next->data : NULL;
-                last = !cl_next;
 
-                if (settings.gap_size) {
-                        first = true;
-                        last = true;
-                }
+                if (settings.gap_size)
+                        corners = C_ALL;
+                else if (!cl_next)
+                        corners = C_BOT;
 
-                dim = layout_render(image_surface, cl_this, cl_next, dim, first, last);
-
-                first = false;
+                dim = layout_render(image_surface, cl_this, cl_next, dim, corners);
+                corners &= ~C_TOP;
         }
 
         output->display_surface(image_surface, win, &dim);

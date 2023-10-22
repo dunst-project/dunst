@@ -114,7 +114,7 @@ static void x_win_corners_shape(struct window_x11 *win, const int rad)
         draw_rounded_rect(cr, 0, 0,
                           width, height,
                           rad, 1,
-                          true, true);
+                          C_ALL);
         cairo_fill(cr);
 
         cairo_show_page(cr);
