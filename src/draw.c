@@ -511,8 +511,10 @@ static inline void draw_rect(cairo_t *c, double x, double y, double width, doubl
 void draw_rounded_rect(cairo_t *c, float x, float y, int width, int height, int corner_radius, double scale, enum corner_pos corners)
 {
         // Fast path for simple rects
-        if (corners == C_NONE || corner_radius <= 0)
-                return draw_rect(c, x, y, width, height, scale);
+        if (corners == C_NONE || corner_radius <= 0) {
+                draw_rect(c, x, y, width, height, scale);
+                return;
+        }
 
         width = round(width * scale);
         height = round(height * scale);
@@ -520,6 +522,7 @@ void draw_rounded_rect(cairo_t *c, float x, float y, int width, int height, int 
         y *= scale;
         corner_radius = round(corner_radius * scale);
 
+        // Nothing to draw...
         if (width <= 0 || height <= 0 || scale <= 0)
                 return;
 
@@ -576,7 +579,10 @@ void draw_rounded_rect(cairo_t *c, float x, float y, int width, int height, int 
 
                 top_x_off = -(corner_radius - width);
                 bot_x_off = -(corner_radius - width);
-                skip = ~corners;
+
+                if (corners != C_TOP && corners != C_BOT)
+                        skip = ~corners;
+
         } else if (width <= corner_radius * 2 && (corners & C_LEFT && corners & C_RIGHT)) {
                 double angle1 = 0, angle2 = 0;
                 if (!(corners & C_TOP_LEFT) && corners & C_TOP_RIGHT)
@@ -816,8 +822,7 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, dou
                              progress_height = settings.progress_bar_height - frame_width,
                              frame_y = settings.padding + h - settings.progress_bar_height,
                              progress_width_without_frame = progress_width - 2 * frame_width,
-                             progress_width_1 = progress_width_without_frame * progress / 100,
-                             progress_width_2 = progress_width_without_frame - progress_width_1;
+                             progress_width_fill = progress_width_without_frame * progress / 100;
 
                 switch (cl->n->progress_bar_alignment) {
                         case PANGO_ALIGN_LEFT:
@@ -830,9 +835,8 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, dou
                              frame_x = width - progress_width - settings.h_padding;
                              break;
                 }
-                unsigned int x_bar_1 = frame_x + frame_width,
-                             x_bar_2 = x_bar_1 + progress_width_1;
 
+                unsigned int x_bar = frame_x + frame_width;
                 float half_frame_width = (float)frame_width / 2.0f;
 
                 /* Draw progress bar
@@ -843,13 +847,13 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, dou
                 // progress_bar_corners
                 // right side (background)
                 cairo_set_source_rgba(c, cl->bg.r, cl->bg.g, cl->bg.b, cl->bg.a);
-                draw_rounded_rect(c, x_bar_1, frame_y, progress_width_without_frame, progress_height,
+                draw_rounded_rect(c, x_bar, frame_y, progress_width_without_frame, progress_height,
                         settings.progress_bar_corner_radius, scale, settings.corners);
                 cairo_fill(c);
 
                 // left side (fill)
                 cairo_set_source_rgba(c, cl->highlight.r, cl->highlight.g, cl->highlight.b, cl->highlight.a);
-                draw_rounded_rect(c, x_bar_1, frame_y, progress_width_1, progress_height,
+                draw_rounded_rect(c, x_bar, frame_y, progress_width_fill, progress_height,
                         settings.progress_bar_corner_radius, scale, settings.corners);
                 cairo_fill(c);
 
