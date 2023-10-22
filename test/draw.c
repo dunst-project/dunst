@@ -240,14 +240,16 @@ TEST test_layout_render_no_gaps(void)
         dim = calculate_dimensions(layouts);
         image_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 1, 1);
 
-        bool first = true;
+        enum corner_pos corners = C_TOP;
         for (GSList *iter = layouts; iter; iter = iter->next) {
                 struct colored_layout *cl_this = iter->data;
                 struct colored_layout *cl_next = iter->next ? iter->next->data : NULL;
 
-                dim = layout_render(image_surface, cl_this, cl_next, dim, first, !cl_next);
+                if (!cl_next)
+                        corners |= C_BOT;
+                dim = layout_render(image_surface, cl_this, cl_next, dim, corners);
 
-                first = false;
+                corners &= ~C_TOP;
         }
 
         expected_y = get_expected_dimension_y_offset(layout_count);
@@ -286,7 +288,7 @@ TEST test_layout_render_gaps(void)
                 struct colored_layout *cl_this = iter->data;
                 struct colored_layout *cl_next = iter->next ? iter->next->data : NULL;
 
-                dim = layout_render(image_surface, cl_this, cl_next, dim, true, true);
+                dim = layout_render(image_surface, cl_this, cl_next, dim, C_ALL);
         }
 
         expected_y = get_expected_dimension_y_offset(layout_count);
