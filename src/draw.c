@@ -822,7 +822,8 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, dou
                              progress_height = settings.progress_bar_height - frame_width,
                              frame_y = settings.padding + h - settings.progress_bar_height,
                              progress_width_without_frame = progress_width - 2 * frame_width,
-                             progress_width_fill = progress_width_without_frame * progress / 100;
+                             progress_width_1 = progress_width_without_frame * progress / 100,
+                             progress_width_2 = progress_width_without_frame - 1;
 
                 switch (cl->n->progress_bar_alignment) {
                         case PANGO_ALIGN_LEFT:
@@ -836,24 +837,28 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, dou
                              break;
                 }
 
-                unsigned int x_bar = frame_x + frame_width;
+                unsigned int x_bar_1 = frame_x + frame_width,
+                             x_bar_2 = x_bar_1 + 0.5;
+
                 float half_frame_width = (float)frame_width / 2.0f;
 
                 /* Draw progress bar
                 * TODO: Modify draw_rounded_rect to fix blurry lines due to fractional scaling
-                * Note: the bar could be drawn a bit smaller, because the frame is drawn on top
+                *
+                * Note: for now the bar background is drawn a little bit smaller than the fill, however
+                *       this solution is not particularly solid (basically subracting a pixel or two)
                 */
 
                 // progress_bar_corners
-                // right side (background)
+                // back layer (background)
                 cairo_set_source_rgba(c, cl->bg.r, cl->bg.g, cl->bg.b, cl->bg.a);
-                draw_rounded_rect(c, x_bar, frame_y, progress_width_without_frame, progress_height,
+                draw_rounded_rect(c, x_bar_2, frame_y, progress_width_2, progress_height,
                         settings.progress_bar_corner_radius, scale, settings.corners);
                 cairo_fill(c);
 
-                // left side (fill)
+                // top layer (fill)
                 cairo_set_source_rgba(c, cl->highlight.r, cl->highlight.g, cl->highlight.b, cl->highlight.a);
-                draw_rounded_rect(c, x_bar, frame_y, progress_width_fill, progress_height,
+                draw_rounded_rect(c, x_bar_1, frame_y, progress_width_1, progress_height,
                         settings.progress_bar_corner_radius, scale, settings.corners);
                 cairo_fill(c);
 
@@ -861,9 +866,9 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, dou
                 cairo_set_source_rgba(c, cl->frame.r, cl->frame.g, cl->frame.b, cl->frame.a);
                 cairo_set_line_width(c, frame_width * scale);
                 draw_rounded_rect(c,
-                                frame_x + half_frame_width,
+                                frame_x + half_frame_width + 1,
                                 frame_y,
-                                progress_width - frame_width,
+                                progress_width - frame_width - 2,
                                 progress_height,
                                 settings.progress_bar_corner_radius,
                                 scale, settings.corners);
@@ -992,7 +997,7 @@ void draw(void)
                 if (settings.gap_size)
                         corners = settings.corners;
                 else if (!cl_next)
-                        corners = (settings.corners & C_BOT) | _C_LAST;
+                        corners |= (settings.corners & C_BOT) | _C_LAST;
 
                 dim = layout_render(image_surface, cl_this, cl_next, dim, corners);
                 corners &= ~(C_TOP | _C_FIRST);
