@@ -26,7 +26,6 @@ enum corner_pos {
         C_TOP_RIGHT = 1 << 1,
         C_BOT_LEFT = 1 << 2,
         C_BOT_RIGHT = 1 << 3,
-
         C_TOP = C_TOP_LEFT | C_TOP_RIGHT,
         C_BOT = C_BOT_LEFT | C_BOT_RIGHT,
         C_LEFT = C_TOP_LEFT | C_BOT_LEFT,

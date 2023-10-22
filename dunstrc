@@ -255,9 +255,8 @@
     # Define which corners to round when drawing the window. If the corner radius
     # is set to 0 this option will be ignored.
     #
-    # The accepted values are all, none, or a comma-separated list of the corners.
-    # The accepted corner values are bottom-right, bottom-left, top-right, top-left,
-    # top, bottom, left, right.
+    # Comma-separated list of the corners. The accepted corner values are bottom-right,
+    # bottom-left, top-right, top-left, top, bottom, left, right or all.
     corners = all
 
     # Ignore the dbus closeNotification message.

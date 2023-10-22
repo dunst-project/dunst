@@ -327,6 +327,7 @@ static const struct string_to_enum_def corners_enum_data[] = {
         { "right",        C_RIGHT },
         { "top",          C_TOP },
         { "bottom",       C_BOT },
+        { "all",          C_ALL },
         ENUM_END,
 };
 

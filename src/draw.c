@@ -979,7 +979,8 @@ void draw(void)
                                                                     round(dim.w * scale),
                                                                     round(dim.h * scale));
 
-        enum corner_pos corners = settings.corners;
+        bool rounded = settings.corner_radius > 0;
+        enum corner_pos corners = rounded ? settings.corners & C_TOP : C_TOP;
         for (GSList *iter = layouts; iter; iter = iter->next) {
 
                 struct colored_layout *cl_this = iter->data;
@@ -988,7 +989,7 @@ void draw(void)
                 if (settings.gap_size)
                         corners = settings.corners;
                 else if (!cl_next)
-                        corners = settings.corners & C_BOT;
+                        corners = rounded ? settings.corners & C_BOT : C_BOT;
 
                 dim = layout_render(image_surface, cl_this, cl_next, dim, corners);
                 corners &= ~C_TOP;

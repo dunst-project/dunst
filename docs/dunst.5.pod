@@ -513,9 +513,8 @@ automatically lowered to half of the notification height if it exceeds it.
 Define which corners to round when drawing the window. If the corner radius
 is set to 0 this option will be ignored.
 
-The accepted values are all, none, or a comma-separated list of the corners.
-The accepted corner values are bottom-right, bottom-left, top-right, top-left,
-top, bottom, left, right.
+Comma-separated list of the corners. The accepted corner values are bottom-right,
+bottom-left, top-right, top-left, top, bottom, left, right or all.
 
 =item B<mouse_left/middle/right_click> (values: [none/do_action/close_current/close_all/context/context_all])
 
