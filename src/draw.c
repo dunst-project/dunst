@@ -808,8 +808,7 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, dou
                 } // else ICON_RIGHT
 
                 cairo_set_source_surface(c, cl->icon, round(image_x * scale), round(image_y * scale));
-                // icon_corners
-                draw_rounded_rect(c, image_x, image_y, image_width, image_height, settings.icon_corner_radius, scale, settings.corners);
+                draw_rounded_rect(c, image_x, image_y, image_width, image_height, settings.icon_corner_radius, scale, settings.icon_corners);
                 cairo_fill(c);
         }
 
@@ -849,17 +848,16 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, dou
                 *       this solution is not particularly solid (basically subracting a pixel or two)
                 */
 
-                // progress_bar_corners
                 // back layer (background)
                 cairo_set_source_rgba(c, cl->bg.r, cl->bg.g, cl->bg.b, cl->bg.a);
                 draw_rounded_rect(c, x_bar_2, frame_y, progress_width_2, progress_height,
-                        settings.progress_bar_corner_radius, scale, settings.corners);
+                        settings.progress_bar_corner_radius, scale, settings.progress_bar_corners);
                 cairo_fill(c);
 
                 // top layer (fill)
                 cairo_set_source_rgba(c, cl->highlight.r, cl->highlight.g, cl->highlight.b, cl->highlight.a);
                 draw_rounded_rect(c, x_bar_1, frame_y, progress_width_1, progress_height,
-                        settings.progress_bar_corner_radius, scale, settings.corners);
+                        settings.progress_bar_corner_radius, scale, settings.progress_bar_corners);
                 cairo_fill(c);
 
                 // border
@@ -871,7 +869,7 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, dou
                                 progress_width - frame_width - 2,
                                 progress_height,
                                 settings.progress_bar_corner_radius,
-                                scale, settings.corners);
+                                scale, settings.progress_bar_corners);
                 cairo_stroke(c);
         }
 }

@@ -63,8 +63,16 @@
     # Corner radius for the progress bar. 0 disables rounded corners.
     progress_bar_corner_radius = 0
 
+    # Define which corners to round when drawing the progress bar. If progress_bar_corner_radius
+    # is set to 0 this option will be ignored.
+    progress_bar_corners = all
+
     # Corner radius for the icon image.
     icon_corner_radius = 0
+
+    # Define which corners to round when drawing the icon image. If icon_corner_radius
+    # is set to 0 this option will be ignored.
+    icon_corners = all
 
     # Show how many messages are currently hidden (because of
     # notification_limit).

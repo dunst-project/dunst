@@ -151,6 +151,8 @@ struct settings {
         int progress_bar_corner_radius;
         int icon_corner_radius;
         enum corner_pos corners;
+        enum corner_pos progress_bar_corners;
+        enum corner_pos icon_corners;
         bool progress_bar;
         enum zwlr_layer_shell_v1_layer layer;
         enum origin_values origin;
