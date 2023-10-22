@@ -12,7 +12,29 @@ void draw_setup(void);
 
 void draw(void);
 
-void draw_rounded_rect(cairo_t *c, float x, float y, int width, int height, int corner_radius, double scale, bool first, bool last);
+/**
+ * Specify which corner to draw in draw_rouned_rect
+ *
+ *  C_TOP_LEFT   0001
+ *  C_TOP_RIGHT  0010
+ *  C_BOT_LEFT   0100
+ *  C_BOT_RIGHT  1000
+ */
+enum corner_pos {
+        C_NONE = 0,
+        C_TOP_LEFT = 1 << 0,
+        C_TOP_RIGHT = 1 << 1,
+        C_BOT_LEFT = 1 << 2,
+        C_BOT_RIGHT = 1 << 3,
+
+        C_TOP = C_TOP_LEFT | C_TOP_RIGHT,
+        C_BOT = C_BOT_LEFT | C_BOT_RIGHT,
+        C_LEFT = C_TOP_LEFT | C_BOT_LEFT,
+        C_RIGHT = C_TOP_RIGHT | C_BOT_RIGHT,
+        C_ALL = C_TOP | C_BOT,
+};
+
+void draw_rounded_rect(cairo_t *c, float x, float y, int width, int height, int corner_radius, double scale, enum corner_pos corners);
 
 // TODO get rid of this function by passing scale to everything that needs it.
 double draw_get_scale(void);
