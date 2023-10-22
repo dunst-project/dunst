@@ -522,17 +522,19 @@ void draw_rounded_rect(cairo_t *c, float x, float y, int width, int height, int 
         y *= scale;
         corner_radius = round(corner_radius * scale);
 
-        // Nothing to draw...
+        // Nothing valid to draw
         if (width <= 0 || height <= 0 || scale <= 0)
                 return;
 
         const double degrees = M_PI / 180.0;
 
+        // This seems to be needed for a problem that occurs mostly when using cairo_stroke
+        // and not cairo_fill. Since the only case where we have partial angles is the progress
+        // bar and there we use fill, maybe this can be removed completely?
         enum corner_pos skip = C_NONE;
 
-        float top_y_off = 0, bot_y_off = 0;
-        float top_x_off = MAX(width - corner_radius, corner_radius),
-              bot_x_off = MAX(width - corner_radius, corner_radius);
+        float top_y_off = 0, bot_y_off = 0, top_x_off, bot_x_off;
+        top_x_off = bot_x_off = MAX(width - corner_radius, corner_radius);
 
         double bot_left_angle1 = degrees * 90;
         double bot_left_angle2 = degrees * 180;
@@ -562,13 +564,11 @@ void draw_rounded_rect(cairo_t *c, float x, float y, int width, int height, int 
                 else
                         angle2 = acos(1.0 - (double)width / (double)corner_radius);
 
-                if ((corners & (C_TOP_RIGHT | C_BOT_LEFT)) == (C_TOP_RIGHT | C_BOT_LEFT)
-                                && !(corners & C_TOP_LEFT)) {
+                if ((corners & (C_TOP_RIGHT | C_BOT_LEFT)) == (C_TOP_RIGHT | C_BOT_LEFT) && !(corners & C_TOP_LEFT)) {
                         top_y_off -= corner_radius * (1.0 - sin(angle1));
                 }
 
-                if ((corners & (C_TOP_LEFT | C_BOT_RIGHT)) == (C_TOP_LEFT | C_BOT_RIGHT)
-                                && !(corners & C_BOT_LEFT)) {
+                if ((corners & (C_TOP_LEFT | C_BOT_RIGHT)) == (C_TOP_LEFT | C_BOT_RIGHT) && !(corners & C_BOT_LEFT)) {
                         bot_y_off = corner_radius * (1.0 - sin(angle2));
                 }
 
@@ -682,9 +682,9 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
         /* for correct combination of adjacent areas */
         cairo_set_operator(c, CAIRO_OPERATOR_ADD);
 
-        if (corners & C_TOP)
+        if (corners & (C_TOP | _C_FIRST))
                 height += settings.frame_width;
-        if (corners & C_BOT)
+        if (corners & (C_BOT | _C_LAST))
                 height += settings.frame_width;
         else
                 height += settings.separator_height;
@@ -693,14 +693,14 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
 
         /* adding frame */
         x += settings.frame_width;
-        if (corners & C_TOP) {
+        if (corners & (C_TOP | _C_FIRST)) {
                 y += settings.frame_width;
                 height -= settings.frame_width;
         }
 
         width -= 2 * settings.frame_width;
 
-        if (corners & C_BOT)
+        if (corners & (C_BOT | _C_LAST))
                 height -= settings.frame_width;
         else
                 height -= settings.separator_height;
@@ -719,7 +719,7 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
 
         if (   settings.sep_color.type != SEP_FRAME
             && settings.separator_height > 0
-            && !(corners & C_BOT)) {
+            && (corners & (C_BOT | _C_LAST)) == 0) {
                 struct color sep_color = layout_get_sepcolor(cl, cl_next);
                 cairo_set_source_rgba(c, sep_color.r, sep_color.g, sep_color.b, sep_color.a);
 
@@ -892,10 +892,10 @@ static struct dimensions layout_render(cairo_surface_t *srf,
         render_content(c, cl, bg_width, scale);
 
         /* adding frame */
-        if (corners & C_TOP)
+        if (corners & (C_TOP | _C_FIRST))
                 dim.y += settings.frame_width;
 
-        if (corners & C_BOT)
+        if (corners & (C_BOT | _C_LAST))
                 dim.y += settings.frame_width;
 
         if ((2 * settings.padding + cl_h) < settings.height)
@@ -983,8 +983,7 @@ void draw(void)
                                                                     round(dim.w * scale),
                                                                     round(dim.h * scale));
 
-        bool rounded = settings.corner_radius > 0;
-        enum corner_pos corners = rounded ? settings.corners & C_TOP : C_TOP;
+        enum corner_pos corners = (settings.corners & C_TOP) | _C_FIRST;
         for (GSList *iter = layouts; iter; iter = iter->next) {
 
                 struct colored_layout *cl_this = iter->data;
@@ -993,10 +992,10 @@ void draw(void)
                 if (settings.gap_size)
                         corners = settings.corners;
                 else if (!cl_next)
-                        corners = rounded ? settings.corners & C_BOT : C_BOT;
+                        corners = (settings.corners & C_BOT) | _C_LAST;
 
                 dim = layout_render(image_surface, cl_this, cl_next, dim, corners);
-                corners &= ~C_TOP;
+                corners &= ~(C_TOP | _C_FIRST);
         }
 
         output->display_surface(image_surface, win, &dim);
