@@ -112,7 +112,7 @@ struct setting {
 /*
  *   How to add/change a rule
  *   ------------------------
- * 
+ *
  * - Add variable to `struct rules` in `rules.h` (make sure to read the comment
  *   at the top of the struct)
  * - Add variable to to `struct notification` in `notification.h`
@@ -188,37 +188,37 @@ enum list_type {
 
 #define ENUM_END {NULL, 0}
 static const struct string_to_enum_def verbosity_enum_data[] = {
-        {"critical", G_LOG_LEVEL_CRITICAL },
-        {"crit", G_LOG_LEVEL_CRITICAL },
-        {"warning", G_LOG_LEVEL_WARNING },
-        {"warn", G_LOG_LEVEL_WARNING },
-        {"message", G_LOG_LEVEL_MESSAGE },
-        {"mesg", G_LOG_LEVEL_MESSAGE },
-        {"info", G_LOG_LEVEL_INFO },
-        {"debug", G_LOG_LEVEL_DEBUG },
-        {"deb", G_LOG_LEVEL_DEBUG },
+        {"critical",    G_LOG_LEVEL_CRITICAL },
+        {"crit",        G_LOG_LEVEL_CRITICAL },
+        {"warning",     G_LOG_LEVEL_WARNING },
+        {"warn",        G_LOG_LEVEL_WARNING },
+        {"message",     G_LOG_LEVEL_MESSAGE },
+        {"mesg",        G_LOG_LEVEL_MESSAGE },
+        {"info",        G_LOG_LEVEL_INFO },
+        {"debug",       G_LOG_LEVEL_DEBUG },
+        {"deb",         G_LOG_LEVEL_DEBUG },
         ENUM_END,
 };
 
 static const struct string_to_enum_def boolean_enum_data[] = {
-        {"True", true },
-        {"true", true },
-        {"On", true },
-        {"on", true },
-        {"Yes", true },
-        {"yes", true },
-        {"1", true },
+        {"True",  true },
+        {"true",  true },
+        {"On",    true },
+        {"on",    true },
+        {"Yes",   true },
+        {"yes",   true },
+        {"1",     true },
         {"False", false },
         {"false", false },
-        {"Off", false },
-        {"off", false },
-        {"No", false },
-        {"no", false },
-        {"0", false },
-        {"n", false },
-        {"y", false },
-        {"N", false },
-        {"Y", true },
+        {"Off",   false },
+        {"off",   false },
+        {"No",    false },
+        {"no",    false },
+        {"0",     false },
+        {"n",     false },
+        {"y",     false },
+        {"N",     false },
+        {"Y",     true },
         ENUM_END,
 };
 
@@ -306,15 +306,27 @@ static const struct string_to_enum_def layer_enum_data[] = {
 };
 
 static const struct string_to_enum_def origin_enum_data[] = {
-        { "top-left", ORIGIN_TOP_LEFT },
-        { "top-center", ORIGIN_TOP_CENTER },
-        { "top-right", ORIGIN_TOP_RIGHT },
-        { "bottom-left", ORIGIN_BOTTOM_LEFT },
+        { "top-left",      ORIGIN_TOP_LEFT },
+        { "top-center",    ORIGIN_TOP_CENTER },
+        { "top-right",     ORIGIN_TOP_RIGHT },
+        { "bottom-left",   ORIGIN_BOTTOM_LEFT },
         { "bottom-center", ORIGIN_BOTTOM_CENTER },
-        { "bottom-right", ORIGIN_BOTTOM_RIGHT },
-        { "left-center", ORIGIN_LEFT_CENTER },
-        { "right-center", ORIGIN_RIGHT_CENTER },
-        { "center", ORIGIN_CENTER },
+        { "bottom-right",  ORIGIN_BOTTOM_RIGHT },
+        { "left-center",   ORIGIN_LEFT_CENTER },
+        { "right-center",  ORIGIN_RIGHT_CENTER },
+        { "center",        ORIGIN_CENTER },
+        ENUM_END,
+};
+
+static const struct string_to_enum_def corners_enum_data[] = {
+        { "top-left",     C_TOP_LEFT },
+        { "top-right",    C_TOP_RIGHT },
+        { "bottom-left",  C_BOT_LEFT },
+        { "bottom-right", C_BOT_RIGHT },
+        { "left",         C_LEFT },
+        { "right",        C_RIGHT },
+        { "top",          C_TOP },
+        { "bottom",       C_BOT },
         ENUM_END,
 };
 
@@ -1023,6 +1035,16 @@ static const struct setting allowed_settings[] = {
                 .value = &settings.corner_radius,
                 .parser = NULL,
                 .parser_data = NULL,
+        },
+        {
+                .name = "corners",
+                .section = "global",
+                .description = "Select the corners to round",
+                .type = TYPE_CUSTOM,
+                .default_value = "all",
+                .value = &settings.corners,
+                .parser = string_parse_corners,
+                .parser_data = corners_enum_data,
         },
         {
                 .name = "progress_bar_height",

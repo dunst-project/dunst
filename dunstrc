@@ -252,6 +252,14 @@
     # notification height to avoid clipping text and/or icons.
     corner_radius = 0
 
+    # Define which corners to round when drawing the window. If the corner radius
+    # is set to 0 this option will be ignored.
+    #
+    # The accepted values are all, none, or a comma-separated list of the corners.
+    # The accepted corner values are bottom-right, bottom-left, top-right, top-left,
+    # top, bottom, left, right.
+    corners = all
+
     # Ignore the dbus closeNotification message.
     # Useful to enforce the timeout set by dunst configuration. Without this
     # parameter, an application may close the notification sent before the

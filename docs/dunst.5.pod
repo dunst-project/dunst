@@ -420,8 +420,8 @@ replace this and will need new settings.
 
 =item B<icon_theme> (default: "Adwaita", example: "Adwaita, breeze")
 
-Comma-separated of names of the the themes to use for looking up icons. This has
-to be the name of the directory in which the theme is located, not the
+Comma-separated list of names of the the themes to use for looking up icons. This
+has to be the name of the directory in which the theme is located, not the
 human-friendly name of the theme. So for example, the theme B<Breeze Dark> is
 located in F</usr/share/icons/breeze-dark>. In this case you have to set the
 theme to B<breeze-dark>.
@@ -507,6 +507,15 @@ single notification.
 
 To avoid the corners clipping the icon or text the corner radius will be
 automatically lowered to half of the notification height if it exceeds it.
+
+=item B<corners> (default: all)
+
+Define which corners to round when drawing the window. If the corner radius
+is set to 0 this option will be ignored.
+
+The accepted values are all, none, or a comma-separated list of the corners.
+The accepted corner values are bottom-right, bottom-left, top-right, top-left,
+top, bottom, left, right.
 
 =item B<mouse_left/middle/right_click> (values: [none/do_action/close_current/close_all/context/context_all])
 

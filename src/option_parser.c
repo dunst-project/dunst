@@ -205,6 +205,21 @@ int string_parse_bool(const void *data, const char *s, void *ret)
         return success;
 }
 
+int string_parse_corners(const void *data, const char *s, void *ret)
+{
+        bool success = true;
+        if (strcmp(s, "all") == 0)
+                *(enum corner_pos *)ret = C_ALL;
+        else if (strcmp(s, "none") == 0)
+                *(enum corner_pos *)ret = C_NONE;
+        else {
+                char **s_arr = string_to_array(s, ",");
+                success = string_parse_enum_list_to_single(data, s_arr, ret);
+        }
+
+        return success;
+}
+
 int get_setting_id(const char *key, const char *section) {
         int error_code = 0;
         int partial_match_id = -1;
