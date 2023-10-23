@@ -364,6 +364,14 @@ For a complete markup reference, see
 
 =item B<%I>  iconname (without its path)
 
+=item B<%D>  duplicate notification count
+
+=item B<%A>  custom action indicator
+
+=item B<%C>  action count
+
+=item B<%U>  custom URL indicator
+
 =item B<%p>  progress value ([  0%] to [100%])
 
 =item B<%n>  progress value without any extra characters

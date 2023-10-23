@@ -600,14 +600,21 @@ static void notification_format_message(struct notification *n)
                         notification_replace_single_field(
                                 &n->msg,
                                 &substr,
-                                !settings.show_indicators && g_hash_table_size(n->actions) ? settings.action_indicator : "",
+                                g_hash_table_size(n->actions) ? settings.action_indicator : "",
+                                MARKUP_NO);
+                        break;
+                case 'C':
+                        notification_replace_single_field(
+                                &n->msg,
+                                &substr,
+                                g_strdup_printf("%d", g_hash_table_size(n->actions)),
                                 MARKUP_NO);
                         break;
                 case 'U':
                         notification_replace_single_field(
                                 &n->msg,
                                 &substr,
-                                !settings.show_indicators && n->urls ? settings.url_indicator : "",
+                                n->urls ? settings.url_indicator : "",
                                 MARKUP_NO);
                         break;
                 case '%':
@@ -672,22 +679,30 @@ void notification_update_text_to_render(struct notification *n)
 
         char *buf = NULL;
 
+        char *indicators = NULL;
+
         char *msg = g_strchomp(n->msg);
 
-        /* ToDo: deprecate this in favor of a format string */
-        /* print dup_count and msg */
-        if ((n->dup_count > 0 && !settings.hide_duplicate_count)
-            && (g_hash_table_size(n->actions) || n->urls) && settings.show_indicators) {
-                buf = g_strdup_printf("(%d%s%s) %s",
-                                      n->dup_count,
-                                      g_hash_table_size(n->actions) ? settings.action_indicator : "",
-                                      n->urls ? settings.url_indicator : "", msg);
-        } else if ((g_hash_table_size(n->actions) || n->urls) && settings.show_indicators) {
-                buf = g_strdup_printf("(%s%s) %s",
-                                      g_hash_table_size(n->actions) ? settings.action_indicator : "",
-                                      n->urls ? settings.url_indicator : "", msg);
-        } else if (n->dup_count > 0 && !settings.hide_duplicate_count) {
-                buf = g_strdup_printf("(%d) %s", n->dup_count, msg);
+        if (n->dup_count > 0 && !settings.hide_duplicate_count) {
+                indicators = g_strdup_printf("%d ", n->dup_count);
+        }
+
+        if (settings.show_indicators) {
+                if(g_hash_table_size(n->actions)) {
+                        indicators = g_strdup_printf("%s%s%s",
+                                indicators ? indicators : "",
+                                settings.show_action_count ? g_strdup_printf("%d", g_hash_table_size(n->actions)) : "",
+                                settings.action_indicator
+                        );
+                }
+                if(n->urls) {
+                        indicators = g_strdup_printf("%s%s", indicators ? indicators : "", settings.url_indicator);
+                }
+        }
+
+        if (indicators) {
+                buf = g_strdup_printf("(%s) %s", indicators, msg);
+                g_free(indicators);
         } else {
                 buf = g_strdup(msg);
         }
@@ -727,7 +742,7 @@ void notification_update_text_to_render(struct notification *n)
 void notification_do_action(struct notification *n)
 {
         assert(n->default_action_name);
-        
+
         if (g_hash_table_size(n->actions)) {
                 if (g_hash_table_contains(n->actions, n->default_action_name)) {
                         signal_action_invoked(n, n->default_action_name);

@@ -112,7 +112,7 @@ struct setting {
 /*
  *   How to add/change a rule
  *   ------------------------
- * 
+ *
  * - Add variable to `struct rules` in `rules.h` (make sure to read the comment
  *   at the top of the struct)
  * - Add variable to to `struct notification` in `notification.h`
@@ -961,6 +961,16 @@ static const struct setting allowed_settings[] = {
                 .type = TYPE_CUSTOM,
                 .default_value = "true",
                 .value = &settings.show_indicators,
+                .parser = string_parse_enum,
+                .parser_data = boolean_enum_data,
+        },
+        {
+                .name = "show_action_count",
+                .section = "global",
+                .description = "Show the number of actions available for a notification",
+                .type = TYPE_CUSTOM,
+                .default_value = "true",
+                .value = &settings.show_action_count,
                 .parser = string_parse_enum,
                 .parser_data = boolean_enum_data,
         },
