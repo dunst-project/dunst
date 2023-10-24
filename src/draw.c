@@ -511,8 +511,10 @@ static inline void draw_rect(cairo_t *c, double x, double y, double width, doubl
 void draw_rounded_rect(cairo_t *c, float x, float y, int width, int height, int corner_radius, double scale, enum corner_pos corners)
 {
         // Fast path for simple rects
-        if (corners == C_NONE || corner_radius <= 0)
-                return draw_rect(c, x, y, width, height, scale);
+        if (corners == C_NONE || corner_radius <= 0) {
+                draw_rect(c, x, y, width, height, scale);
+                return;
+        }
 
         width = round(width * scale);
         height = round(height * scale);
