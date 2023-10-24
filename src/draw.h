@@ -27,11 +27,17 @@ enum corner_pos {
         C_BOT_LEFT = 1 << 2,
         C_BOT_RIGHT = 1 << 3,
 
+        // Handy combinations of the corners
         C_TOP = C_TOP_LEFT | C_TOP_RIGHT,
         C_BOT = C_BOT_LEFT | C_BOT_RIGHT,
         C_LEFT = C_TOP_LEFT | C_BOT_LEFT,
         C_RIGHT = C_TOP_RIGHT | C_BOT_RIGHT,
         C_ALL = C_TOP | C_BOT,
+
+        // These two values are internal only and
+        // should not be used outside of draw.c !
+        _C_FIRST = 1 << 4,
+        _C_LAST = 1 << 5,
 };
 
 void draw_rounded_rect(cairo_t *c, float x, float y, int width, int height, int corner_radius, double scale, enum corner_pos corners);
