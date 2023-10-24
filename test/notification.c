@@ -233,16 +233,21 @@ TEST test_notification_with_default_indicators(void)
 {
         struct notification *n = notification_create();
 
+        char *dummy_action = g_strdup("dummy_action");
+
         n->summary = "sum";
         n->body = "bod";
         n->urls = "https://example.com";
-        g_hash_table_insert(n->actions, g_strdup("dummy_action"), g_strdup("dummy_action"));
+        g_hash_table_insert(n->actions, dummy_action, dummy_action);
 
         n->msg = "foo";
 
         notification_update_text_to_render(n);
 
         ASSERT(STRN_EQ(n->text_to_render, "(1AU) foo", 9));
+
+        g_free(dummy_action);
+        notification_unref(n);
 
         PASS();
 }
@@ -252,13 +257,19 @@ TEST test_notification_with_custom_indicators(void)
 {
         struct notification *n = notification_create();
 
+        char *dummy_action = g_strdup("dummy_action");
+
         n->format = "%C %A %U";
         n->urls = "https://example.com";
-        g_hash_table_insert(n->actions, g_strdup("dummy_action"), g_strdup("dummy_action"));
+        g_hash_table_insert(n->actions, dummy_action, dummy_action);
 
         notification_format_message(n);
 
         ASSERT(STRN_EQ(n->msg, "1 A U", 5));
+
+        g_free(dummy_action);
+        notification_unref(n);
+
         PASS();
 }
 

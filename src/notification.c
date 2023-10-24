@@ -590,11 +590,13 @@ static void notification_format_message(struct notification *n)
                                 MARKUP_NO);
                         break;
                 case 'D':
+                        char *dup_count = g_strdup_printf("(%d)", n->dup_count);
                         notification_replace_single_field(
                                 &n->msg,
                                 &substr,
-                                n->dup_count > 0 ? g_strdup_printf("(%d)", n->dup_count) : "",
+                                n->dup_count > 0 ? dup_count : "",
                                 MARKUP_NO);
+                        g_free(dup_count);
                         break;
                 case 'A':
                         notification_replace_single_field(
@@ -604,11 +606,13 @@ static void notification_format_message(struct notification *n)
                                 MARKUP_NO);
                         break;
                 case 'C':
+                        char *action_count = g_strdup_printf("%d", g_hash_table_size(n->actions));
                         notification_replace_single_field(
                                 &n->msg,
                                 &substr,
-                                g_strdup_printf("%d", g_hash_table_size(n->actions)),
+                                action_count,
                                 MARKUP_NO);
+                        g_free(action_count);
                         break;
                 case 'U':
                         notification_replace_single_field(
@@ -679,6 +683,7 @@ void notification_update_text_to_render(struct notification *n)
 
         char *buf = NULL;
 
+        char *prev_indicators = NULL;
         char *indicators = NULL;
 
         char *msg = g_strchomp(n->msg);
@@ -689,14 +694,24 @@ void notification_update_text_to_render(struct notification *n)
 
         if (settings.show_indicators) {
                 if(g_hash_table_size(n->actions)) {
+                        prev_indicators = indicators;
+                        char *action_count = g_strdup_printf("%d", g_hash_table_size(n->actions));
+
                         indicators = g_strdup_printf("%s%s%s",
-                                indicators ? indicators : "",
-                                settings.show_action_count ? g_strdup_printf("%d", g_hash_table_size(n->actions)) : "",
+                                prev_indicators ? prev_indicators : "",
+                                settings.show_action_count ? action_count : "",
                                 settings.action_indicator
                         );
+
+                        g_free(prev_indicators);
+                        g_free(action_count);
                 }
                 if(n->urls) {
-                        indicators = g_strdup_printf("%s%s", indicators ? indicators : "", settings.url_indicator);
+                        prev_indicators = indicators;
+
+                        indicators = g_strdup_printf("%s%s", prev_indicators ? prev_indicators : "", settings.url_indicator);
+
+                        g_free(prev_indicators);
                 }
         }
 
