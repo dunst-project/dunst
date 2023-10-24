@@ -412,10 +412,24 @@ it, summary, body, icon and urgency are all identical.
 
 Hide the count of stacked duplicate notifications.
 
-=item B<show_indicators> (values: [true/false], default: true)
+=item B<show_indicators> DEPRECATED (values: [true/false], default: true)
 
 Show an indicator if a notification contains actions and/or open-able URLs. See
-ACTIONS below for further details.
+ACTIONS below for further details. This setting is deprecated, please use
+action_indicator and url_indicator instead.
+
+=item B<show_action_count> (values: [true/false], default: true)
+
+Includes the number of actions available in the default action indicator.
+If %C is used in the format string, it will be shown regardless of this setting.
+
+=item B<action_indicator> (default: "A")
+
+Indicator used in the format string replacing %A when the notification has actions.
+
+=item B<url_indicator> (default: "U")
+
+Indicator used in the format string replacing %U when the notification has URLs.
 
 =item B<icon_path> (default: "/usr/share/icons/gnome/16x16/status/:/usr/share/icons/gnome/16x16/devices/")
 
