@@ -302,6 +302,7 @@ If set to update, notifications are sorted by their update_time.
 So the most recent is always at the top. This means that if you set sort to update, 
 and stack_duplicates to true, the duplicate will always be at the top.
 
+When the notification window is at the bottom of the screen, this order is automatically reversed.
 =item B<idle_threshold> (default: 0)
 
 Don't timeout notifications if user is idle longer than this time.
