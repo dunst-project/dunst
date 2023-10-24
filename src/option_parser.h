@@ -15,7 +15,7 @@ int string_parse_sepcolor(const void *data, const char *s, void *ret);
 int string_parse_bool(const void *data, const char *s, void *ret);
 int string_parse_corners(const void *data, const char *s, void *ret);
 
-void set_defaults();
+void set_defaults(void);
 void save_settings(struct ini *ini);
 
 void cmdline_load(int argc, char *argv[]);

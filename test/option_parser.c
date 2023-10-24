@@ -729,7 +729,7 @@ TEST test_string_to_length_invalid(void)
 
 TEST test_string_to_corners(void)
 {
-        enum corner_pos corners = -1;
+        enum corner_pos corners = C_NONE;
 
         struct setting s;
         s.type = TYPE_CUSTOM;
@@ -777,7 +777,7 @@ TEST test_string_to_corners(void)
 
 TEST test_string_to_corners_invalid(void)
 {
-        enum corner_pos corners = -1;
+        enum corner_pos corners = C_ALL + 1;
 
         struct setting s;
         s.type = TYPE_CUSTOM;
@@ -799,7 +799,7 @@ TEST test_string_to_corners_invalid(void)
                 sprintf(buf, "Failed in round %i", i);
                 ASSERT_FALSEm(buf, set_from_string(&corners, s, invalid_inputs[i]));
         }
-        ASSERT_EQm("Enum should not change from invalid values", corners, -1);
+        ASSERT_EQm("Enum should not change from invalid values", corners, C_ALL + 1);
         PASS();
 }
 
