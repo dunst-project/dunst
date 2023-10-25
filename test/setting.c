@@ -11,9 +11,17 @@ extern const char *base;
 
 char *config_path;
 
+static void load_config(char *path)
+{
+        char *config_paths[2];
+        config_paths[0] = g_strconcat(base, path, NULL);
+        config_paths[1] = NULL;
+        load_settings(config_paths);
+        g_free(config_paths[0]);
+}
+
 TEST test_dunstrc_markup(void) {
-        config_path = g_strconcat(base, "/data/dunstrc.markup", NULL);
-        load_settings(config_path);
+        load_config("/data/dunstrc.markup");
 
         ASSERT_STR_EQ(settings.font, "Monospace 8");
 
@@ -24,13 +32,11 @@ TEST test_dunstrc_markup(void) {
         ASSERT_STR_EQ(e_format, got_format);
         ASSERT(settings.indicate_hidden);
 
-        g_free(config_path);
         PASS();
 }
 
 TEST test_dunstrc_nomarkup(void) {
-        config_path = g_strconcat(base, "/data/dunstrc.nomarkup", NULL);
-        load_settings(config_path);
+        load_config("/data/dunstrc.nomarkup");
 
         ASSERT_STR_EQ(settings.font, "Monospace 8");
 
@@ -41,7 +47,6 @@ TEST test_dunstrc_nomarkup(void) {
         ASSERT_STR_EQ(e_format, got_format);
         ASSERT(settings.indicate_hidden);
 
-        g_free(config_path);
         PASS();
 }
 
@@ -50,11 +55,10 @@ TEST test_dunstrc_defaults(void) {
         struct settings s_default;
         struct settings s_dunstrc;
 
-        config_path = g_strconcat(base, "/data/dunstrc.default", NULL);
         set_defaults();
         s_default = settings;
 
-        load_settings(config_path);
+        load_config("/data/dunstrc.default");
         s_dunstrc = settings;
 
         ASSERT_EQ(s_default.corner_radius, s_dunstrc.corner_radius);
@@ -101,7 +105,6 @@ TEST test_dunstrc_defaults(void) {
                 /* printf("%zu\n", offset); */
         }
 
-        g_free(config_path);
         PASS();
 }
 

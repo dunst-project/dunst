@@ -131,7 +131,7 @@ static bool add_dunstrc_path(char *path, GPtrArray *config_files)
  * @param paths The config paths that override the default config paths.
  * Drop-in files are searched if one of the paths is a directory.
  */
-static GPtrArray* get_conf_files(const char **paths)
+static GPtrArray* get_conf_files(char **paths)
 {
         if (paths && *paths) {
                 GPtrArray *result = g_ptr_array_new_full(g_strv_length(paths), g_free);
