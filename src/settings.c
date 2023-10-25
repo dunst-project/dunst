@@ -114,7 +114,35 @@ static void config_files_add_drop_ins(GPtrArray *config_files, const char *path)
 static GPtrArray* get_conf_files(const char *path) {
         if (path) {
                 GPtrArray *result = g_ptr_array_new_full(1, g_free);
-                g_ptr_array_add(result, g_strdup(path));
+
+                // If the user uses -config with a directory load all the
+                // drop-ins from that
+                if (g_file_test(path, G_FILE_TEST_IS_DIR)) {
+
+                        char *dunstrc_location = g_build_filename(path, "dunstrc", NULL);
+                        if (is_readable_file(dunstrc_location)) {
+                                LOG_D("Found dunstrc: %s\n", dunstrc_location);
+                                g_ptr_array_add(result, dunstrc_location);
+                        }
+
+                        struct dirent **drop_ins = NULL;
+                        int n = scandir(path, &drop_ins, is_drop_in, alphasort);
+
+                        if (n == -1) {
+                                // Scandir error. Most likely the directory doesn't exist.
+                                return result;
+                        }
+
+                        while (n--) {
+                                char *drop_in = g_strconcat(path, "/",
+                                                drop_ins[n]->d_name, NULL);
+                                LOG_D("Found drop-in: %s\n", drop_in);
+                                g_ptr_array_add(result, drop_in);
+                                g_free(drop_ins[n]);
+                        }
+                        g_free(drop_ins);
+                } else
+                        g_ptr_array_add(result, g_strdup(path));
                 return result;
         }
 
