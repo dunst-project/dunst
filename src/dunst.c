@@ -165,8 +165,7 @@ int dunst_main(int argc, char *argv[])
 
         dunst_log_init(false);
 
-        if (cmdline_get_bool("-v/-version", false, "Print version")
-            || cmdline_get_bool("--version", false, "Print version")) {
+        if (cmdline_get_bool("-v/-version/--version", false, "Print version")) {
                 print_version();
         }
 
@@ -178,22 +177,21 @@ int dunst_main(int argc, char *argv[])
         cmdline_config_paths =
             cmdline_get_list("-conf/-config", NULL,
                                "Path(s) to configuration file");
-        load_settings(cmdline_config_paths);
-        g_strfreev(cmdline_config_paths);
 
-        if (cmdline_get_bool("-h/-help", false, "Print help")
-            || cmdline_get_bool("--help", false, "Print help")) {
-                usage(EXIT_SUCCESS);
-        }
-
-        if (cmdline_get_bool("-print", false, "Print notifications to stdout")
-            || cmdline_get_bool("--print", false, "Print notifications to stdout")) {
+        if (cmdline_get_bool("-print/--print", false, "Print notifications to stdout")) {
                 settings.print_notifications = true;
         }
 
-        settings.startup_notification = cmdline_get_bool("--startup_notification",
-                        0, "Display a notification on startup.");
+        settings.startup_notification = cmdline_get_bool("-startup_notification/--startup_notification",
+                        false, "Display a notification on startup.");
 
+        /* Help should always be the last to set up as calls to cmdline_get_* (as a side effect) add entries to the usage list. */
+        if (cmdline_get_bool("-h/-help/--help", false, "Print help")) {
+                usage(EXIT_SUCCESS);
+        }
+
+        load_settings(cmdline_config_paths);
+        g_strfreev(cmdline_config_paths);
         int dbus_owner_id = dbus_init();
 
         mainloop = g_main_loop_new(NULL, FALSE);
