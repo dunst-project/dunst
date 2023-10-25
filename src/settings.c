@@ -101,6 +101,26 @@ static void config_files_add_drop_ins(GPtrArray *config_files, const char *path)
         g_free(drop_ins);
 }
 
+/** @brief Check if there is a dunstrc in dir
+ *
+ *
+ * @param path The directory where we are searching the dunstrc
+ * @param files The GPtrArray where we append the dunstrc path if successful
+ *
+ * @retval @brief true if dunstrc was found
+ * @retval @brief false otherwise
+ */
+static bool add_dunstrc_path(char *path, GPtrArray *config_files)
+{
+        char *dunstrc_location = g_build_filename(path, "dunstrc", NULL);
+        if (is_readable_file(dunstrc_location)) {
+                LOG_D("Found dunstrc: %s\n", dunstrc_location);
+                g_ptr_array_add(config_files, dunstrc_location);
+                return true;
+        }
+        return false;
+}
+
 /** @brief Find all config files.
  *
  * Searches the default config locations most important config file and it's
@@ -108,41 +128,45 @@ static void config_files_add_drop_ins(GPtrArray *config_files, const char *path)
  *
  * The returned GPtrArray and it's elements are owned by the caller.
  *
- * @param path The config path that overrides the default config path. No
- * drop-in files or other configs are searched.
+ * @param paths The config paths that override the default config paths.
+ * Drop-in files are searched if one of the paths is a directory.
  */
-static GPtrArray* get_conf_files(const char *path) {
-        if (path) {
-                GPtrArray *result = g_ptr_array_new_full(1, g_free);
+static GPtrArray* get_conf_files(const char **paths)
+{
+        if (paths && *paths) {
+                GPtrArray *result = g_ptr_array_new_full(g_strv_length(paths), g_free);
 
-                // If the user uses -config with a directory load all the
-                // drop-ins from that
-                if (g_file_test(path, G_FILE_TEST_IS_DIR)) {
+                // We load only the first dunstrc and skip others
+                bool found_dunstrc = false;
+                for (int i = 0; paths[i] != NULL; i++) {
+                        // If the path is a directory we load add drop-ins in it
+                        if (g_file_test(paths[i], G_FILE_TEST_IS_DIR)) {
+                                LOG_D("Checking config directory: %s\n", paths[i]);
 
-                        char *dunstrc_location = g_build_filename(path, "dunstrc", NULL);
-                        if (is_readable_file(dunstrc_location)) {
-                                LOG_D("Found dunstrc: %s\n", dunstrc_location);
-                                g_ptr_array_add(result, dunstrc_location);
+                                // Just in case search for a dunstrc in the directory
+                                found_dunstrc = !found_dunstrc && add_dunstrc_path(paths[i], result);
+
+                                struct dirent **drop_ins = NULL;
+                                int n = scandir(paths[i], &drop_ins, is_drop_in, alphasort);
+
+                                if (n == -1) {
+                                        // Scandir error. Most likely the directory doesn't exist.
+                                        continue;
+                                }
+
+                                while (n--) {
+                                        char *drop_in = g_strconcat(paths[i], "/",
+                                                        drop_ins[n]->d_name, NULL);
+                                        LOG_D("Found drop-in: %s\n", drop_in);
+                                        g_ptr_array_add(result, drop_in);
+                                        g_free(drop_ins[n]);
+                                }
+                                g_free(drop_ins);
+                        } else {
+                                // NOTE: Should we check for duplicate dunstrc here?
+                                g_ptr_array_add(result, g_strdup(paths[i]));
                         }
-
-                        struct dirent **drop_ins = NULL;
-                        int n = scandir(path, &drop_ins, is_drop_in, alphasort);
-
-                        if (n == -1) {
-                                // Scandir error. Most likely the directory doesn't exist.
-                                return result;
-                        }
-
-                        while (n--) {
-                                char *drop_in = g_strconcat(path, "/",
-                                                drop_ins[n]->d_name, NULL);
-                                LOG_D("Found drop-in: %s\n", drop_in);
-                                g_ptr_array_add(result, drop_in);
-                                g_free(drop_ins[n]);
-                        }
-                        g_free(drop_ins);
-                } else
-                        g_ptr_array_add(result, g_strdup(path));
+                }
                 return result;
         }
 
@@ -150,13 +174,9 @@ static GPtrArray* get_conf_files(const char *path) {
         GPtrArray *config_files = g_ptr_array_new_full(3, g_free);
         char *dunstrc_location = NULL;
         for (int i = 0; i < config_locations->len; i++) {
-                dunstrc_location = g_build_filename(config_locations->pdata[i],
-                                "dunstrc", NULL);
-                LOG_D("Trying config location: %s", dunstrc_location);
-                if (is_readable_file(dunstrc_location)) {
-                        g_ptr_array_add(config_files, dunstrc_location);
+                LOG_D("Trying config location: %s", (char *)config_locations->pdata[i]);
+                if (add_dunstrc_path(config_locations->pdata[i], config_files))
                         break;
-                }
         }
 
         config_files_add_drop_ins(config_files, dunstrc_location);
@@ -289,12 +309,12 @@ static void process_conf_file(const gpointer conf_fname, gpointer n_success) {
         ++(*(int *) n_success);
 }
 
-void load_settings(const char * const path) {
+void load_settings(char ** paths) {
         settings_init();
         LOG_D("Setting defaults");
         set_defaults();
 
-        GPtrArray *conf_files = get_conf_files(path);
+        GPtrArray *conf_files = get_conf_files(paths);
 
         /* Load all conf files and drop-ins, least important first. */
         int n_loaded_confs = 0;

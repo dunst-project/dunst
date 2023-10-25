@@ -174,11 +174,12 @@ int dunst_main(int argc, char *argv[])
         log_set_level_from_string(verbosity);
         g_free(verbosity);
 
-        char *cmdline_config_path;
-        cmdline_config_path =
-            cmdline_get_string("-conf/-config", NULL,
-                               "Path to configuration file");
-        load_settings(cmdline_config_path);
+        char **cmdline_config_paths;
+        cmdline_config_paths =
+            cmdline_get_list("-conf/-config", NULL,
+                               "Path(s) to configuration file");
+        load_settings(cmdline_config_paths);
+        g_strfreev(cmdline_config_paths);
 
         if (cmdline_get_bool("-h/-help", false, "Print help")
             || cmdline_get_bool("--help", false, "Print help")) {
