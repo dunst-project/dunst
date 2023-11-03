@@ -89,7 +89,7 @@ TEST helper_markup_strip_a (const char *in, const char *exp, const char *urls)
         PASS();
 }
 
-TEST test_markup_strip_a(void)
+SUITE(test_markup_strip_a_suite)
 {
         RUN_TESTp(helper_markup_strip_a, "<a href=\"https://url.com\">valid</a> link",   "valid link", "[valid] https://url.com");
         RUN_TESTp(helper_markup_strip_a, "<a href=\"\">valid</a> link",                  "valid link", "[valid] ");
@@ -98,8 +98,6 @@ TEST test_markup_strip_a(void)
 
         RUN_TESTp(helper_markup_strip_a, "<a href=\"https://url.com\" invalid</a> link", " link",      NULL);
         RUN_TESTp(helper_markup_strip_a, "<a invalid</a> link",                          " link",      NULL);
-
-        PASS();
 }
 
 TEST helper_markup_strip_img (const char *in, const char *exp, const char *urls)
@@ -126,7 +124,7 @@ TEST helper_markup_strip_img (const char *in, const char *exp, const char *urls)
         PASS();
 }
 
-TEST test_markup_strip_img(void)
+SUITE(test_markup_strip_img_suite)
 {
         RUN_TESTp(helper_markup_strip_img, "v <img> img",                                         "v [image] img", NULL);
         RUN_TESTp(helper_markup_strip_img, "v <img alt=\"valid\" alt=\"invalid\"> img",           "v valid img",   NULL);
@@ -145,15 +143,13 @@ TEST test_markup_strip_img(void)
         RUN_TESTp(helper_markup_strip_img, "i <img src=\"url.com   alt=\"invalid > img",          "i [image] img", NULL);
 
         RUN_TESTp(helper_markup_strip_img, "i <img src=\"url.com\" alt=\"invalid\" img",          "i ",            NULL);
-
-        PASS();
 }
 
 SUITE(suite_markup)
 {
         RUN_TEST(test_markup_strip);
-        RUN_TEST(test_markup_strip_a);
-        RUN_TEST(test_markup_strip_img);
+        test_markup_strip_a_suite();
+        test_markup_strip_img_suite();
         RUN_TEST(test_markup_transform);
 }
 
