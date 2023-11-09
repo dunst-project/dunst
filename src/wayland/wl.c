@@ -93,11 +93,7 @@ struct wl_ctx {
 
 struct wl_ctx ctx;
 
-static void noop() {
-        // This space intentionally left blank
-}
-
-void set_dirty();
+void set_dirty(void);
 
 static void output_handle_geometry(void *data, struct wl_output *wl_output,
                 int32_t x, int32_t y, int32_t phy_width, int32_t phy_height,
@@ -122,10 +118,14 @@ static void output_handle_scale(void *data, struct wl_output *wl_output,
         wake_up();
 }
 
+static void output_listener_done_handler(void *data, struct wl_output *output) {
+        // do nothing
+}
+
 static const struct wl_output_listener output_listener = {
         .geometry = output_handle_geometry,
         .mode = output_handle_mode,
-        .done = noop,
+        .done = output_listener_done_handler,
         .scale = output_handle_scale,
 };
 
@@ -154,7 +154,7 @@ static void create_output( struct wl_output *wl_output, uint32_t global_name) {
 
         if (recreate_surface) {
                 // We had no outputs, force our surface to redraw
-                set_dirty(ctx.surface);
+                set_dirty();
         }
 }
 
@@ -220,20 +220,34 @@ static void pointer_handle_button(void *data, struct wl_pointer *wl_pointer,
         input_handle_click(button, button_state, ctx.pointer.x, ctx.pointer.y);
 }
 
+static void pointer_handle_leave(void *data, struct wl_pointer *wl_pointer,
+                uint32_t serial, struct wl_surface *surface) {
+}
+
+static void pointer_handle_axis(void *data, struct wl_pointer *wl_pointer,
+                uint32_t time, uint32_t axis, wl_fixed_t value) {
+}
+
 static const struct wl_pointer_listener pointer_listener = {
         .enter = pointer_handle_enter,
-        .leave = noop,
+        .leave = pointer_handle_leave,
         .motion = pointer_handle_motion,
         .button = pointer_handle_button,
-        .axis = noop,
+        .axis = pointer_handle_axis,
 };
+
+static void touch_handle_frame(void *data, struct wl_touch *wl_touch) {
+}
+
+static void touch_handle_cancel(void *data, struct wl_touch *wl_touch) {
+}
 
 static const struct wl_touch_listener touch_listener = {
         .down = touch_handle_down,
         .up = touch_handle_up,
         .motion = touch_handle_motion,
-        .frame = noop,
-        .cancel = noop,
+        .frame = touch_handle_frame,
+        .cancel = touch_handle_cancel,
 };
 
 static void seat_handle_capabilities(void *data, struct wl_seat *wl_seat,
@@ -259,9 +273,12 @@ static void seat_handle_capabilities(void *data, struct wl_seat *wl_seat,
         }
 }
 
+static void seat_handle_name(void *data, struct wl_seat *wl_seat,
+                const char *name) {}
+
 static const struct wl_seat_listener seat_listener = {
         .capabilities = seat_handle_capabilities,
-        .name = noop,
+        .name = seat_handle_name,
 };
 
 
@@ -284,8 +301,8 @@ static const struct wl_surface_listener surface_listener = {
 };
 
 
-static void schedule_frame_and_commit();
-static void send_frame();
+static void schedule_frame_and_commit(void);
+static void send_frame(void);
 
 static void layer_surface_handle_configure(void *data,
                 struct zwlr_layer_surface_v1 *surface,
@@ -367,7 +384,7 @@ static void add_seat_to_idle_handler(struct wl_seat *seat) {
 }
 
 // Warning, can return NULL
-static struct dunst_output *get_configured_output() {
+static struct dunst_output *get_configured_output(void) {
         int n = 0;
         int target_monitor = settings.monitor;
 
@@ -446,7 +463,7 @@ static const struct wl_registry_listener registry_listener = {
         .global_remove = handle_global_remove,
 };
 
-bool wl_init() {
+bool wl_init(void) {
         wl_list_init(&ctx.outputs);
         wl_list_init(&toplevel_list);
         //wl_list_init(&ctx.seats); // TODO multi-seat support
@@ -545,7 +562,7 @@ bool wl_init() {
         return true;
 }
 
-void wl_deinit() {
+void wl_deinit(void) {
         // We need to check if any of these are NULL, since the initialization
         // could have been aborted half way through, or the compositor doesn't
         // support some of these features.
@@ -599,10 +616,10 @@ void wl_deinit() {
         g_water_wayland_source_free(ctx.esrc);
 }
 
-static void schedule_frame_and_commit();
+static void schedule_frame_and_commit(void);
 
 // Draw and commit a new frame.
-static void send_frame() {
+static void send_frame(void) {
         int scale = wl_get_scale();
 
         if (wl_list_empty(&ctx.outputs)) {
@@ -749,7 +766,7 @@ static const struct wl_callback_listener frame_listener = {
         .done = frame_handle_done,
 };
 
-static void schedule_frame_and_commit() {
+static void schedule_frame_and_commit(void) {
         if (ctx.frame_callback) {
                 return;
         }
@@ -763,7 +780,7 @@ static void schedule_frame_and_commit() {
         wl_surface_commit(ctx.surface);
 }
 
-void set_dirty() {
+void set_dirty(void) {
         if (ctx.dirty) {
                 return;
         }

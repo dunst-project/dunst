@@ -5,7 +5,7 @@
 
 cairo_t *c;
 
-double get_dummy_scale() { return 1; }
+double get_dummy_scale(void) { return 1; }
 
 const struct screen_info* noop_screen(void) {
         static struct screen_info i;

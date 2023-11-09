@@ -76,7 +76,7 @@ char *find_icon_path(const char *name, int size);
 /**
  * Free all icon themes.
  */
-void free_all_themes();
+void free_all_themes(void);
 
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

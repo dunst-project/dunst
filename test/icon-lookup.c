@@ -7,7 +7,7 @@
 extern const char *base;
 #define ICONPREFIX "data", "icons"
 
-int setup_test_theme(){
+int setup_test_theme(void) {
         char *theme_path = g_build_filename(base, ICONPREFIX,  NULL);
         int theme_index = load_icon_theme_from_dir(theme_path, "theme");
         add_default_theme(theme_index);

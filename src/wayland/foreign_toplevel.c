@@ -12,10 +12,6 @@
 
 struct wl_list toplevel_list;
 
-static void noop() {
-        // This space intentionally left blank
-}
-
 static void copy_state(struct toplevel_state *current,
                 struct toplevel_state *pending) {
         if (!(pending->state & TOPLEVEL_STATE_INVALID)) {
@@ -98,9 +94,19 @@ static void toplevel_handle_closed(void *data,
         zwlr_foreign_toplevel_handle_v1_destroy(zwlr_toplevel);
 }
 
+static void toplevel_handle_title(void *data,
+                struct zwlr_foreign_toplevel_handle_v1 *zwlr_foreign_toplevel_handle_v1,
+                const char *title) {
+}
+
+static void toplevel_handle_app_id(void *data,
+                struct zwlr_foreign_toplevel_handle_v1 *zwlr_foreign_toplevel_handle_v1,
+                const char *title) {
+}
+
 static const struct zwlr_foreign_toplevel_handle_v1_listener toplevel_impl = {
-        .title = noop,
-        .app_id = noop,
+        .title = toplevel_handle_title,
+        .app_id = toplevel_handle_app_id,
         .output_enter = toplevel_handle_output_enter,
         .output_leave = toplevel_handle_output_leave,
         .state = toplevel_handle_state,

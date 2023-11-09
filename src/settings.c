@@ -60,7 +60,7 @@ static int is_drop_in(const struct dirent *dent) {
  * The result @e must @e not be freed! The array is cached in a static variable,
  * so it is OK to call this again instead of caching its return value.
  */
-static GPtrArray *get_xdg_conf_basedirs() {
+static GPtrArray *get_xdg_conf_basedirs(void) {
         GPtrArray *arr = g_ptr_array_new_full(4, g_free);
         g_ptr_array_add(arr, g_build_filename(g_get_user_config_dir(), "dunst", NULL));
 
@@ -151,7 +151,7 @@ FILE *fopen_conf(char * const path)
         return f;
 }
 
-void settings_init() {
+void settings_init(void) {
         static bool init_done = false;
         if (!init_done) {
                 LOG_D("Initializing settings");

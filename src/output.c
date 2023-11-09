@@ -57,7 +57,7 @@ const struct output output_wl = {
 };
 #endif
 
-const struct output* get_x11_output() {
+const struct output* get_x11_output(void) {
         const struct output* output = &output_x11;
         if (output->init()) {
                 return output;
@@ -67,7 +67,7 @@ const struct output* get_x11_output() {
 }
 
 #ifdef ENABLE_WAYLAND
-const struct output* get_wl_output() {
+const struct output* get_wl_output(void) {
         const struct output* output = &output_wl;
         if (output->init()) {
                 return output;
