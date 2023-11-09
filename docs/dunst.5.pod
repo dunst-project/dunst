@@ -559,8 +559,8 @@ A Notification will appear whenever notification's
 override_pause_level >= dunst's paused level. Setting this to values other than 0
 allows you to create partial pause modes, where more urgent notifications get through,
 but less urgent stay paused. For example, when you can set a low battery noficiation's
-override_pause_level to 2 and then set dunst's pause level to 2. This will cause dunst to
-only show battery level notification (and other notifications with override_pause_level >= 2),
+override_pause_level to 60 and then set dunst's pause level to 60. This will cause dunst to
+only show battery level notification (and other notifications with override_pause_level >= 60),
 while suspending others.
 
 =back
