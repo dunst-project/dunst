@@ -23,14 +23,14 @@ show_help() {
 	  context                           Open context menu
 	  count [displayed|history|waiting] Show the number of notifications
 	  history                           Display notification history (in JSON)
-	  history-clear                     Delete all notifications from history                   
+	  history-clear                     Delete all notifications from history
 	  history-pop [ID]                  Pop the latest notification from
 	                                    history or optionally the
 	                                    notification with given ID.
 	  history-rm [ID]                   Remove the notification from
 	                                    history with given ID.
 	  is-paused                         Check if pause level is > 0
-	  set-paused [true|false|toggle]   Set the pause status	  
+	  set-paused [true|false|toggle]    Set the pause status
 	  get-pause-level                   Get the current pause level
 	  set-pause-level [level]           Set the pause level
 	  rule name [enable|disable|toggle] Enable or disable a rule by its name
