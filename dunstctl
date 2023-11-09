@@ -140,8 +140,12 @@ case "${1:-}" in
 	"set-pause-level")
 		[ "${2:-}" ] \
 			|| die "No status parameter specified. Please give a number as paused parameter."
-		[ "$2" ] && [ -z "${2//[0-9]}" ] \
-			|| die "Please give a number as paused level parameter."
+		case "$2" in
+			(*[!0123456789]*)
+				die "Please give a number as paused level parameter." ;;
+			('')
+				die "Please give a number as paused level parameter." ;;
+		esac
 		property_set pauseLevel variant:uint32:"$2"
 		;;
 	"help"|"--help"|"-h")
