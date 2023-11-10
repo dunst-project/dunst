@@ -27,13 +27,13 @@ show_help() {
 	  history-pop [ID]                  Pop the latest notification from
 	                                    history or optionally the
 	                                    notification with given ID.
-	  history-rm [ID]                   Remove the notification from
+	  history-rm ID                     Remove the notification from
 	                                    history with given ID.
 	  is-paused                         Check if pause level is > 0
-	  set-paused [true|false|toggle]    Set the pause status
+	  set-paused true|false|toggle      Set the pause status
 	  get-pause-level                   Get the current pause level
-	  set-pause-level [level]           Set the pause level
-	  rule name [enable|disable|toggle] Enable or disable a rule by its name
+	  set-pause-level level             Set the pause level
+	  rule name enable|disable|toggle   Enable or disable a rule by its name
 	  debug                             Print debugging information
 	  help                              Show this help
 	EOH
