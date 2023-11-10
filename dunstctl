@@ -34,7 +34,8 @@ show_help() {
 	  get-pause-level                   Get the current pause level
 	  set-pause-level level             Set the pause level
 	  rule name enable|disable|toggle   Enable or disable a rule by its name
-	  rules                             Displays configured rules (in JSON)
+	  rules [--json]                    Displays configured rules (optionally
+	                                    in JSON)
 	  debug                             Print debugging information
 	  help                              Show this help
 	EOH
@@ -125,8 +126,23 @@ case "${1:-}" in
 		fi
 		;;
 	"rules")
-		busctl --user --json=pretty --no-pager call org.freedesktop.Notifications /org/freedesktop/Notifications org.dunstproject.cmd0 RuleList 2>/dev/null \
-			|| die "Dunst is not running."
+		case "${2:-}" in
+			"" | --json)
+				busctl --user --json=pretty --no-pager call "${DBUS_NAME}" "${DBUS_PATH}" "${DBUS_IFAC_DUNST}" RuleList \
+				| {
+					if [ "${2:-}" = '--json' ]
+					then
+						cat
+					else
+						jq --raw-output '.data[][] | ["[\(.name.data)]"], [to_entries[] | select(.key != "name") | "    \(.key) = \(.value.data)"] | join("\n")'
+					fi
+				} \
+					|| die "Dunst is not running."
+			;;
+			*)
+				die "Unknown format \"${2}\". Please use either \"--json\" or no option at all."
+			;;
+		esac
 		;;
 	"rule")
 		[ "${2:-}" ] \
