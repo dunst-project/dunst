@@ -1115,16 +1115,16 @@ See RULES for more detailed explanations for some options.
 =over 4
 
 =item B<fgcolor>:
-Foreground cololor
+Foreground color.
 
 =item B<bgcolor>:
-Background color
+Background color.
 
 =item B<frcolor>:
-Frame color
+Frame color.
 
 =item B<hlcolor>:
-Highlight color
+Highlight color.
 
 =item B<value>:
 Progress value.
