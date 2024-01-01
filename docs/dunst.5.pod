@@ -458,7 +458,7 @@ Currently icons are looked up in the B<icon_path>. Since the B<icon_path> wasn't
 recursive, one had to add a ton of paths to this list.
 This has been drastically simplified by the new lookup method. Now you only have
 to set B<icon_theme> to the name of the theme you want. To enable this new
-behaviour, set B<enable_recursive_icon_lookup> to true in the I<[experimental]>
+behaviour, set B<enable_recursive_icon_lookup> to true in the I<[global]>
 section. See the respective settings for more details.
 
 =item B<sticky_history> (values: [true/false], default: true)
