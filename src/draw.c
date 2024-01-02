@@ -749,13 +749,22 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, dou
                 */
                 // left side (fill)
                 cairo_set_source_rgba(c, cl->highlight.r, cl->highlight.g, cl->highlight.b, cl->highlight.a);
-                draw_rounded_rect(c, x_bar_1, frame_y, progress_width_1, progress_height, 
-                        settings.progress_bar_corner_radius, scale, true, true);
+                
+                // Stops rounding when progress bar should be empty
+                if (progress_width_1 != 0) {
+                        draw_rounded_rect(c, x_bar_1, frame_y, progress_width_1, progress_height, 
+                                settings.progress_bar_corner_radius, scale, true, true);
+                }
+
                 cairo_fill(c);
                 // right side (background)
                 cairo_set_source_rgba(c, cl->bg.r, cl->bg.g, cl->bg.b, cl->bg.a);
-                draw_rounded_rect(c, x_bar_2, frame_y, progress_width_2, progress_height, 
-                        settings.progress_bar_corner_radius, scale, true, true);
+                
+                // stops rounding when progress bar should be empty
+                if (progress_width_2 != 0) {
+                        draw_rounded_rect(c, x_bar_2, frame_y, progress_width_2, progress_height, 
+                                settings.progress_bar_corner_radius, scale, true, true);
+                }
 
                 cairo_fill(c);
 
