@@ -28,6 +28,12 @@
 #include "protocols/idle.h"
 #include "pool-buffer.h"
 
+#ifdef HAVE_WL_CURSOR_SHAPE
+#include "protocols/cursor-shape-v1-client-header.h"
+#include "protocols/cursor-shape-v1.h"
+#include "protocols/tablet-unstable-v2.h"
+#endif
+
 #ifdef HAVE_WL_EXT_IDLE_NOTIFY
 #include "protocols/ext-idle-notify-v1-client-header.h"
 #include "protocols/ext-idle-notify-v1.h"
@@ -89,6 +95,9 @@ struct wl_ctx {
         struct dunst_output *layer_surface_output;
         struct wl_callback *frame_callback;
         struct org_kde_kwin_idle *idle_handler;
+#ifdef HAVE_WL_CURSOR_SHAPE
+        struct wp_cursor_shape_manager_v1 *cursor_shape_manager;
+#endif
 #ifdef HAVE_WL_EXT_IDLE_NOTIFY
         struct ext_idle_notifier_v1 *ext_idle_notifier;
 #endif
@@ -226,6 +235,16 @@ static void touch_handle_up(void *data, struct wl_touch *wl_touch,
 
 static void pointer_handle_enter(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface, wl_fixed_t x, wl_fixed_t y) {
         // Change the mouse cursor to "left_ptr"
+#ifdef HAVE_WL_CURSOR_SHAPE
+        if (ctx.cursor_shape_manager != NULL) {
+                struct wp_cursor_shape_device_v1 *device =
+                        wp_cursor_shape_manager_v1_get_pointer(ctx.cursor_shape_manager, wl_pointer);
+                wp_cursor_shape_device_v1_set_shape(device, serial,
+                                WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_DEFAULT);
+                wp_cursor_shape_device_v1_destroy(device);
+                return;
+        }
+#endif
         if (ctx.cursor_theme != NULL) {
                 wl_pointer_set_cursor(wl_pointer, serial, ctx.cursor_surface, ctx.cursor_image->hotspot_x, ctx.cursor_image->hotspot_y);
         }
@@ -571,6 +590,11 @@ static void handle_global(void *data, struct wl_registry *registry,
                 ctx.ext_idle_notifier = wl_registry_bind(registry, name, &ext_idle_notifier_v1_interface, 1);
                 LOG_D("Found ext-idle-notify-v1");
 #endif
+#ifdef HAVE_WL_CURSOR_SHAPE
+        } else if (strcmp(interface, wp_cursor_shape_manager_v1_interface.name) == 0) {
+                ctx.cursor_shape_manager = wl_registry_bind(registry, name,
+                                &wp_cursor_shape_manager_v1_interface, 1);
+#endif
         } else if (strcmp(interface, zwlr_foreign_toplevel_manager_v1_interface.name) == 0 &&
                         version >= ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_STATE_FULLSCREEN_SINCE_VERSION) {
                 LOG_D("Found toplevel manager %i", name);
@@ -729,6 +753,11 @@ void wl_deinit() {
         wl_list_for_each_safe(seat, seat_tmp, &ctx.seats, link) {
                 destroy_seat(seat);
         }
+
+#ifdef HAVE_WL_CURSOR_SHAPE
+        if (ctx.cursor_shape_manager)
+                wp_cursor_shape_manager_v1_destroy(ctx.cursor_shape_manager);
+#endif
 
 #ifdef HAVE_WL_EXT_IDLE_NOTIFY
         if (ctx.ext_idle_notifier)
