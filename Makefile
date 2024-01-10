@@ -38,6 +38,7 @@ ifeq (0,${WAYLAND})
 SRC := $(sort $(shell ${FIND} src/ -not \( -path src/wayland -prune \) -name '*.c'))
 else
 # with Wayland support
+CFLAGS += -DHAVE_WL_CURSOR_SHAPE -DHAVE_WL_EXT_IDLE_NOTIFY
 SRC := $(sort $(shell ${FIND} src/ -name '*.c'))
 endif
 OBJ := ${SRC:.c=.o}
@@ -141,6 +142,18 @@ wayland-protocols: src/wayland/protocols/wlr-layer-shell-unstable-v1.xml src/way
 	wayland-scanner private-code src/wayland/protocols/idle.xml src/wayland/protocols/idle.h
 	wayland-scanner client-header src/wayland/protocols/wlr-foreign-toplevel-management-unstable-v1.xml src/wayland/protocols/wlr-foreign-toplevel-management-unstable-v1-client-header.h
 	wayland-scanner private-code src/wayland/protocols/wlr-foreign-toplevel-management-unstable-v1.xml src/wayland/protocols/wlr-foreign-toplevel-management-unstable-v1.h
+	# wayland-protocols >= 1.27
+ifneq (,$(wildcard ${DATA_DIR_WAYLAND_PROTOCOLS}/staging/ext-idle-notify/ext-idle-notify-v1.xml))
+	wayland-scanner client-header ${DATA_DIR_WAYLAND_PROTOCOLS}/staging/ext-idle-notify/ext-idle-notify-v1.xml src/wayland/protocols/ext-idle-notify-v1-client-header.h
+	wayland-scanner private-code ${DATA_DIR_WAYLAND_PROTOCOLS}/staging/ext-idle-notify/ext-idle-notify-v1.xml src/wayland/protocols/ext-idle-notify-v1.h
+endif
+	# wayland-protocols >= 1.32
+ifneq (,$(wildcard ${DATA_DIR_WAYLAND_PROTOCOLS}/staging/cursor-shape/cursor-shape-v1.xml))
+	wayland-scanner client-header ${DATA_DIR_WAYLAND_PROTOCOLS}/staging/cursor-shape/cursor-shape-v1.xml src/wayland/protocols/cursor-shape-v1-client-header.h
+	wayland-scanner private-code ${DATA_DIR_WAYLAND_PROTOCOLS}/staging/cursor-shape/cursor-shape-v1.xml src/wayland/protocols/cursor-shape-v1.h
+	wayland-scanner client-header ${DATA_DIR_WAYLAND_PROTOCOLS}/unstable/tablet/tablet-unstable-v2.xml src/wayland/protocols/tablet-unstable-v2-client-header.h
+	wayland-scanner private-code ${DATA_DIR_WAYLAND_PROTOCOLS}/unstable/tablet/tablet-unstable-v2.xml src/wayland/protocols/tablet-unstable-v2.h
+endif
 endif
 
 .PHONY: clean clean-dunst clean-dunstify clean-doc clean-tests clean-coverage clean-coverage-run clean-wayland-protocols
