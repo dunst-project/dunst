@@ -28,6 +28,10 @@
 #include "protocols/idle.h"
 #include "pool-buffer.h"
 
+#ifdef HAVE_WL_EXT_IDLE_NOTIFY
+#include "protocols/ext-idle-notify-v1-client-header.h"
+#include "protocols/ext-idle-notify-v1.h"
+#endif
 
 #include "../log.h"
 #include "../settings.h"
@@ -50,6 +54,9 @@ struct dunst_seat {
         char *name;
         struct wl_seat *wl_seat;
         struct org_kde_kwin_idle_timeout *idle_timeout;
+#ifdef HAVE_WL_EXT_IDLE_NOTIFY
+        struct ext_idle_notification_v1 *ext_idle_notification;
+#endif
         bool is_idle;
 
         struct {
@@ -82,6 +89,9 @@ struct wl_ctx {
         struct dunst_output *layer_surface_output;
         struct wl_callback *frame_callback;
         struct org_kde_kwin_idle *idle_handler;
+#ifdef HAVE_WL_EXT_IDLE_NOTIFY
+        struct ext_idle_notifier_v1 *ext_idle_notifier;
+#endif
         uint32_t toplevel_manager_name;
         struct zwlr_foreign_toplevel_manager_v1 *toplevel_manager;
         bool configured;
@@ -281,6 +291,13 @@ static void destroy_seat(struct dunst_seat *seat) {
                 seat->idle_timeout = NULL;
         }
 
+#ifdef HAVE_WL_EXT_IDLE_NOTIFY
+        if (seat->ext_idle_notification != NULL) {
+                ext_idle_notification_v1_destroy(seat->ext_idle_notification);
+                seat->ext_idle_notification = NULL;
+        }
+#endif
+
         wl_list_remove(&seat->link);
 
 #ifdef WL_SEAT_RELEASE_SINCE_VERSION
@@ -427,12 +444,50 @@ static const struct org_kde_kwin_idle_timeout_listener idle_timeout_listener = {
         .resumed = idle_stop,
 };
 
+#ifdef HAVE_WL_EXT_IDLE_NOTIFY
+static void ext_idle_notification_handle_idled(void *data, struct ext_idle_notification_v1 *notification) {
+        struct dunst_seat *seat = data;
+
+        seat->is_idle = true;
+        LOG_D("User went idle on seat \"%s\"", seat->name);
+}
+
+static void ext_idle_notification_handle_resumed(void *data, struct ext_idle_notification_v1 *notification) {
+        struct dunst_seat *seat = data;
+
+        seat->is_idle = false;
+        LOG_D("User isn't idle anymore on seat \"%s\"", seat->name);
+}
+
+static const struct ext_idle_notification_v1_listener ext_idle_notification_listener = {
+        .idled = ext_idle_notification_handle_idled,
+        .resumed = ext_idle_notification_handle_resumed,
+};
+#endif
+
 static void add_seat_to_idle_handler(struct dunst_seat *seat) {
         if (settings.idle_threshold <= 0) {
                 return;
         }
         uint32_t timeout_ms = settings.idle_threshold/1000;
 
+#ifdef HAVE_WL_EXT_IDLE_NOTIFY
+        if (ctx.ext_idle_notifier != NULL) {
+                if (seat->ext_idle_notification == NULL) {
+                        seat->ext_idle_notification =
+                                ext_idle_notifier_v1_get_idle_notification(ctx.ext_idle_notifier,
+                                                timeout_ms, seat->wl_seat);
+                        ext_idle_notification_v1_add_listener(seat->ext_idle_notification,
+                                        &ext_idle_notification_listener, seat);
+                }
+                // In the unlikely case where we already set up org_kde_kwin_idle_timeout, destroy it
+                if (seat->idle_timeout != NULL) {
+                        org_kde_kwin_idle_timeout_release(seat->idle_timeout);
+                        seat->idle_timeout = NULL;
+                }
+                return;
+        }
+#endif
         if (ctx.idle_handler != NULL && seat->idle_timeout == NULL) {
                 seat->idle_timeout = org_kde_kwin_idle_get_idle_timeout(ctx.idle_handler, seat->wl_seat, timeout_ms);
                 org_kde_kwin_idle_timeout_add_listener(seat->idle_timeout, &idle_timeout_listener, seat);
@@ -505,12 +560,17 @@ static void handle_global(void *data, struct wl_registry *registry,
                 LOG_D("Binding to output %i", name);
         } else if (strcmp(interface, org_kde_kwin_idle_interface.name) == 0 &&
                         version >= ORG_KDE_KWIN_IDLE_TIMEOUT_IDLE_SINCE_VERSION) {
+#ifdef HAVE_WL_EXT_IDLE_NOTIFY
+                if (ctx.ext_idle_notifier)
+                        return;
+#endif
                 ctx.idle_handler = wl_registry_bind(registry, name, &org_kde_kwin_idle_interface, 1);
-
-                struct dunst_seat *seat = NULL;
-                wl_list_for_each(seat, &ctx.seats, link) {
-                        add_seat_to_idle_handler(seat);
-                }
+                LOG_D("Found org_kde_kwin_idle");
+#ifdef HAVE_WL_EXT_IDLE_NOTIFY
+        } else if (strcmp(interface, ext_idle_notifier_v1_interface.name) == 0) {
+                ctx.ext_idle_notifier = wl_registry_bind(registry, name, &ext_idle_notifier_v1_interface, 1);
+                LOG_D("Found ext-idle-notify-v1");
+#endif
         } else if (strcmp(interface, zwlr_foreign_toplevel_manager_v1_interface.name) == 0 &&
                         version >= ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_STATE_FULLSCREEN_SINCE_VERSION) {
                 LOG_D("Found toplevel manager %i", name);
@@ -590,9 +650,17 @@ bool wl_init() {
         }
         if (wl_list_empty(&ctx.seats)) {
                 LOG_W("no seat was found, so dunst cannot see input");
+        } else if (ctx.idle_handler == NULL
+#ifdef HAVE_WL_EXT_IDLE_NOTIFY
+                && ctx.ext_idle_notifier == NULL
+#endif
+        ) {
+                LOG_I("compositor doesn't support org_kde_kwin_idle or ext-idle-notify-v1");
         } else {
-                if (ctx.idle_handler == NULL) {
-                        LOG_I("compositor doesn't support org_kde_kwin_idle_interface");
+                // Set up idle monitoring for any seats that we received before the idle protocols
+                struct dunst_seat *seat = NULL;
+                wl_list_for_each(seat, &ctx.seats, link) {
+                        add_seat_to_idle_handler(seat);
                 }
         }
 
@@ -661,6 +729,11 @@ void wl_deinit() {
         wl_list_for_each_safe(seat, seat_tmp, &ctx.seats, link) {
                 destroy_seat(seat);
         }
+
+#ifdef HAVE_WL_EXT_IDLE_NOTIFY
+        if (ctx.ext_idle_notifier)
+                ext_idle_notifier_v1_destroy(ctx.ext_idle_notifier);
+#endif
 
         if (ctx.idle_handler)
                 org_kde_kwin_idle_destroy(ctx.idle_handler);
