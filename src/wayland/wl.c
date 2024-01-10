@@ -147,11 +147,24 @@ static void output_handle_scale(void *data, struct wl_output *wl_output,
         wake_up();
 }
 
+#ifdef WL_OUTPUT_NAME_SINCE_VERSION
+static void output_handle_name(void *data, struct wl_output *wl_output,
+                const char *name) {
+        struct dunst_output *output = data;
+        output->name = g_strdup(name);
+        LOG_D("Output global %" PRIu32 " name %s", output->global_name, name);
+}
+#endif
+
 static const struct wl_output_listener output_listener = {
         .geometry = output_handle_geometry,
         .mode = output_handle_mode,
         .done = noop,
         .scale = output_handle_scale,
+#ifdef WL_OUTPUT_NAME_SINCE_VERSION
+        .name = output_handle_name,
+        .description = noop,
+#endif
 };
 
 static void create_output(struct wl_registry *registry, uint32_t global_name, uint32_t version) {
@@ -161,12 +174,16 @@ static void create_output(struct wl_registry *registry, uint32_t global_name, ui
                 return;
         }
 
+        uint32_t max_version = 3;
+#ifdef WL_OUTPUT_NAME_SINCE_VERSION
+        max_version = WL_OUTPUT_NAME_SINCE_VERSION;
+#endif
         bool recreate_surface = false;
         static int number = 0;
         LOG_I("New output found - id %i", number);
         output->global_name = global_name;
-        output->wl_output = wl_registry_bind(registry, global_name, &wl_output_interface, 3);
-
+        output->wl_output = wl_registry_bind(registry, global_name, &wl_output_interface,
+                        CLAMP(version, 3, max_version));
         output->scale = 1;
         output->fullscreen = false;
 
@@ -193,8 +210,8 @@ static void destroy_output(struct dunst_output *output) {
         }
         wl_list_remove(&output->link);
         wl_output_destroy(output->wl_output);
-        free(output->name);
-        free(output);
+        g_free(output->name);
+        g_free(output);
 }
 
 static void touch_handle_motion(void *data, struct wl_touch *wl_touch,
@@ -529,7 +546,8 @@ static void create_seat(struct wl_registry *registry, uint32_t global_name, uint
 // Warning, can return NULL
 static struct dunst_output *get_configured_output() {
         int n = 0;
-        int target_monitor = settings.monitor;
+        int target_monitor = settings.monitor_num;
+        const char *name = settings.monitor;
 
         struct dunst_output *first_output = NULL, *configured_output = NULL,
                             *tmp_output = NULL;
@@ -537,6 +555,8 @@ static struct dunst_output *get_configured_output() {
                 if (n == 0)
                         first_output = tmp_output;
                 if (n == target_monitor)
+                        configured_output = tmp_output;
+                if (g_strcmp0(name, tmp_output->name) == 0)
                         configured_output = tmp_output;
                 n++;
         }
@@ -548,7 +568,7 @@ static struct dunst_output *get_configured_output() {
         switch (settings.f_mode){
                 case FOLLOW_NONE: ; // this semicolon is neccesary
                         if (!configured_output) {
-                                LOG_W("Monitor %i doesn't exist, using focused monitor", settings.monitor);
+                                LOG_W("Monitor %s doesn't exist, using focused monitor", settings.monitor);
                         }
                         return configured_output;
                 case FOLLOW_MOUSE:

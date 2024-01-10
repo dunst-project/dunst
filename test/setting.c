@@ -80,6 +80,9 @@ TEST test_dunstrc_defaults(void) {
                                                 ASSERT_EQm(message, a, b);
                                         }
                                         break;
+                                } else if (allowed_settings[i].parser == string_parse_maybe_int) {
+                                        // not a number
+                                        break;
                                 } // else fall through
                         case TYPE_TIME:
                         case TYPE_INT:;

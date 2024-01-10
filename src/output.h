@@ -19,6 +19,7 @@ struct dimensions {
 };
 
 struct screen_info {
+        char *name;
         int id;
         int x;
         int y;

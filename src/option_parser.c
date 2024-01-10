@@ -205,6 +205,19 @@ int string_parse_bool(const void *data, const char *s, void *ret)
         return success;
 }
 
+// Parse a string that may represent an integer value
+int string_parse_maybe_int(const void *data, const char *s, void *ret)
+{
+        int *intval = (int *)data;
+        if (!safe_string_to_int(intval, s)) {
+               *intval = INT_MIN;
+        }
+
+        g_free(*(char**) ret);
+        *(char**) ret = g_strdup(s);
+        return true;
+}
+
 int get_setting_id(const char *key, const char *section) {
         int error_code = 0;
         int partial_match_id = -1;
