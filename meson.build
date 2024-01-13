@@ -56,7 +56,7 @@ configure_file(
 	input: 'org.knopwob.dunst.service.in',
 	output: '@BASENAME@',
 	configuration: conf_data,
-	install_dir: join_paths(get_option('datadir'), 'dbus-1/services'),
+	install_dir: get_option('datadir') / 'dbus-1/services',
 )
 
 if systemd.found()
