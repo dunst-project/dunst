@@ -21,10 +21,10 @@ test_src_files = [
 	'utils.c',
 ]
 
+fs = import('fs')
 foreach dunst_src_file : dunst_src_files
-	src_file = dunst_src_file.split('/')[-1]
-	if src_file not in test_src_files
-		test_src_files += '..' / 'src' / dunst_src_file
+	if fs.name(dunst_src_file) not in test_src_files
+		test_src_files += dunst_src_file
 	endif
 endforeach
 
