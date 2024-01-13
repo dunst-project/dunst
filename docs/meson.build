@@ -1,6 +1,5 @@
-pod2man = find_program('pod2man', native: true)
-man1 = join_paths(get_option('mandir'), 'man1')
-man5 = join_paths(get_option('mandir'), 'man5')
+man1 = get_option('mandir') / 'man1'
+man5 = get_option('mandir') / 'man5'
 pod2man_version_arg = '--release=@0@'.format(meson.project_version())
 
 dunst1 = configure_file(
