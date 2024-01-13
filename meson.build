@@ -78,9 +78,7 @@ if libnotify.found()
 	)
 endif
 
-if get_option('test')
-	subdir('test')
-endif
+subdir('test')
 
 pod2man = find_program('pod2man', native: true, required: get_option('docs'))
 if pod2man.found()
