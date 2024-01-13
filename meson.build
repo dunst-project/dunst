@@ -7,7 +7,7 @@ project(
 	default_options: [
 		'c_std=gnu99',
 		'warning_level=1',
-		'buildtype=release',
+		'b_ndebug=if-release',
 	],
 )
 
