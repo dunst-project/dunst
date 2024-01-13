@@ -135,8 +135,6 @@ wayland-protocols: src/wayland/protocols/wlr-layer-shell-unstable-v1.xml src/way
 	mkdir -p src/wayland/protocols
 	wayland-scanner private-code ${DATA_DIR_WAYLAND_PROTOCOLS}/stable/xdg-shell/xdg-shell.xml src/wayland/protocols/xdg-shell.h
 	wayland-scanner client-header ${DATA_DIR_WAYLAND_PROTOCOLS}/stable/xdg-shell/xdg-shell.xml src/wayland/protocols/xdg-shell-client-header.h
-	wayland-scanner client-header ${DATA_DIR_WAYLAND_PROTOCOLS}/unstable/xdg-output/xdg-output-unstable-v1.xml src/wayland/protocols/xdg-output-unstable-v1-client-header.h
-	wayland-scanner private-code ${DATA_DIR_WAYLAND_PROTOCOLS}/unstable/xdg-output/xdg-output-unstable-v1.xml src/wayland/protocols/xdg-output-unstable-v1.h
 	wayland-scanner client-header src/wayland/protocols/wlr-layer-shell-unstable-v1.xml src/wayland/protocols/wlr-layer-shell-unstable-v1-client-header.h
 	wayland-scanner private-code src/wayland/protocols/wlr-layer-shell-unstable-v1.xml src/wayland/protocols/wlr-layer-shell-unstable-v1.h
 	wayland-scanner client-header src/wayland/protocols/idle.xml src/wayland/protocols/idle-client-header.h
