@@ -60,7 +60,7 @@ conf_data.set('sysconfdir', sysconfdir)
 
 configure_file(
 	input: 'org.knopwob.dunst.service.in',
-	output: '@BASENAME@',
+	output: 'dunst.service',
 	configuration: conf_data,
 	install_dir: get_option('datadir') / 'dbus-1/services',
 )
