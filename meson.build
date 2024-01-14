@@ -42,15 +42,21 @@ wayland_protos = dependency('wayland-protocols', version: '>=1.32', required: ge
 wayland_cursor = dependency('wayland-cursor', required: get_option('wayland'))
 
 c_version_arg = '-DVERSION="@0@"'.format(meson.project_version())
+sysconfdir = get_option('sysconfdir') / 'xdg'
+
+add_project_arguments(
+	'-DSYSCONFDIR="@0@"'.format(get_option('prefix') / sysconfdir),
+	language: 'c'
+)
 
 subdir('src')
 
 install_data('dunstctl', install_dir: get_option('bindir'))
-install_data('dunstrc', install_dir: get_option('sysconfdir') / 'dunst')
+install_data('dunstrc', install_dir: sysconfdir / 'dunst')
 
 conf_data = configuration_data()
 conf_data.set('bindir', get_option('bindir'))
-conf_data.set('sysconfdir', get_option('sysconfdir'))
+conf_data.set('sysconfdir', sysconfdir)
 
 configure_file(
 	input: 'org.knopwob.dunst.service.in',
@@ -60,7 +66,7 @@ configure_file(
 )
 
 if systemd.found()
-	user_units_dir = systemd.get_pkgconfig_variable('systemduserunitdir')
+	user_units_dir = systemd.get_variable(pkgconfig: 'systemduserunitdir')
 	configure_file(
 		configuration: conf_data,
 		input: 'dunst.systemd.service.in',
