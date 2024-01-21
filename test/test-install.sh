@@ -31,9 +31,16 @@ systemd/dunst.service
 testprefix/bin/dunst
 testprefix/bin/dunstctl
 testprefix/bin/dunstify
+testprefix/share/bash-completion/completions/dunst
+testprefix/share/bash-completion/completions/dunstctl
+testprefix/share/fish/vendor_completions.d/dunst
+testprefix/share/fish/vendor_completions.d/dunstctl
+testprefix/share/fish/vendor_completions.d/dunstify
 testprefix/share/man/man1/dunst.1
 testprefix/share/man/man1/dunstctl.1
 testprefix/share/man/man5/dunst.5
+testprefix/share/zsh/site-functions/_dunst
+testprefix/share/zsh/site-functions/_dunstctl
 EOF
 
 do_make uninstall

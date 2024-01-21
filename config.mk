@@ -4,6 +4,9 @@ BINDIR ?= ${PREFIX}/bin
 SYSCONFDIR ?= ${PREFIX}/etc/xdg
 SYSCONFFILE ?= ${SYSCONFDIR}/dunst/dunstrc
 DATADIR ?= ${PREFIX}/share
+BASHCOMPLETIONDIR ?= ${DATADIR}/bash-completion/completions
+FISHCOMPLETIONDIR ?= ${DATADIR}/fish/vendor_completions.d
+ZSHCOMPLETIONDIR ?= ${DATADIR}/zsh/site-functions
 # around for backwards compatibility
 MANPREFIX ?= ${DATADIR}/man
 MANDIR ?= ${MANPREFIX}
@@ -35,6 +38,9 @@ VALGRIND ?= valgrind
 # Do this if you have your own utility to send notifications.
 # Other applications will continue to work, as they use direct D-Bus.
 # DUNSTIFY ?=0
+
+# Disable installation of completions.
+# COMPLETIONS ?= 0
 
 ifneq (0, ${WAYLAND})
 ENABLE_WAYLAND= -DENABLE_WAYLAND

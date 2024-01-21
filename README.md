@@ -8,12 +8,12 @@
 
 ## Table of Contents
 
-* [Features](#features)
-* [Building](#building)
-* [Contributing](#contributing)
-* [Documentation](#documentation)
-* [Troubleshooting](#troubleshooting)
-* [Copyright](#copyright)
+- [Features](#features)
+- [Building](#building)
+- [Contributing](#contributing)
+- [Documentation](#documentation)
+- [Troubleshooting](#troubleshooting)
+- [Copyright](#copyright)
 
 # Features
 
@@ -56,8 +56,8 @@ If you want to take a break and not receive any notifications for a while, just
 pause dunst. All notifications will be saved for you to catch up
 later.
 
-Additionally, you can set a numeric pause level, which allows you to pause dunst 
-selectively for some notifications, where more urgent notifications get through, 
+Additionally, you can set a numeric pause level, which allows you to pause dunst
+selectively for some notifications, where more urgent notifications get through,
 but less urgent stay paused.
 
 ## 🕘 History
@@ -112,6 +112,9 @@ sudo make install
 - `PREFIX=<PATH>`: Set the prefix of the installation. (Default: `/usr/local`)
 - `BINDIR=<PATH>`: Set the `dunst` executable's path (Default: `${PREFIX}/bin`)
 - `DATADIR=<PATH>`: Set the path for shared files. (Default: `${PREFIX}/share`)
+- `BASHCOMPLETIONDIR=<PATH>`: Set the path for installation of bash completion files. (Default: `${DATADIR}/bash-completion/completions`)
+- `FISHCOMPLETIONDIR=<PATH>`: Set the path for installation of fish completion files. (Default: `${DATADIR}/fish/vendor_completions.d`)
+- `ZSHCOMPLETIONDIR=<PATH>`: Set the path for installation of zsh completion files. (Default: `${DATADIR}/zsh/site-functions`)
 - `SYSCONFDIR=<PATH>`: Set the base directory for system config files. (Default: `${PREFIX}/etc/xdg`)
 - `SYSCONFFILE=<PATH>`: Set the absolute path to which the default dunstrc shall be installed. (Default: `${SYSCONFDIR}/dunst/dunstrc`)
 - `SYSCONF_FORCE_NEW=(0|1)`: Overwrite existing `${SYSCONFFILE}`. (Default: 0 (don't overwrite))
@@ -120,6 +123,7 @@ sudo make install
 - `WAYLAND=(0|1)`: Disable/Enable wayland support. (Default: 1 (enabled))
 - `X11=(0|1)`: Disable/Enable X11 support. (Default: 1 (enabled))
 - `DUNSTIFY=(0|1)`: Disable/Enable the libnotify dunstctl utility. (Default: 1 (enabled))
+- `COMPLETIONS=(0|1)`: Disable/Enable installation of shell completions. (Default: 1 (enabled))
 - `SERVICEDIR_SYSTEMD=<PATH>`: The path to put the systemd user service file. Unused, if `SYSTEMD=0`. (Default: `${PREFIX}/lib/systemd/user`)
 - `SERVICEDIR_DBUS=<PATH>`: The path to put the dbus service file. (Default: `${DATADIR}/dbus-1/services`)
 - `EXTRA_CFLAGS=<FLAGS>`: Additional flags for the compiler.
@@ -197,7 +201,7 @@ Written by Sascha Kruse <dunst@knopwob.de>
 
 Copyright 2013 Sascha Kruse and contributors (see [`LICENSE`](./LICENSE) for licensing information)
 
-[issue-tracker]:  https://github.com/dunst-project/dunst/issues
+[issue-tracker]: https://github.com/dunst-project/dunst/issues
 [wiki]: https://github.com/dunst-project/dunst/wiki
 [website]: https://dunst-project.org
 [FAQ]: https://dunst-project.org/faq
