@@ -463,7 +463,7 @@ static void dbus_cb_dunst_RuleList(GDBusConnection *connection,
         LOG_D("CMD: Listing all configured rules");
 
         GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE("aa{sv}"));
-        GVariantBuilder n_builder;
+        GVariantDict dict;
 
         for (GSList *iter = rules; iter; iter = iter->next) {
                 struct rule *r = iter->data;
@@ -472,157 +472,109 @@ static void dbus_cb_dunst_RuleList(GDBusConnection *connection,
                         continue;
                 }
 
-                g_variant_builder_init(&n_builder, G_VARIANT_TYPE("a{sv}"));
-                g_variant_builder_add(&n_builder, "{sv}", "name", g_variant_new_string(r->name));
+                g_variant_dict_init(&dict, NULL);
+                g_variant_dict_insert(&dict, "name", "s", r->name);
 
                 // filters - order according to rule_matches_notification
-                g_variant_builder_add(&n_builder, "{sv}", "enabled", g_variant_new_boolean(r->enabled));
+                g_variant_dict_insert(&dict, "enabled", "b", r->enabled);
                 // undocumented filter?
                 if (r->match_dbus_timeout > -1)
-                        g_variant_builder_add(&n_builder,
-                                              "{sv}",
-                                              "match_dbus_timeout",
-                                              g_variant_new_int32(r->match_dbus_timeout));
+                        g_variant_dict_insert(&dict, "match_dbus_timeout", "i", r->match_dbus_timeout);
                 if (r->msg_urgency != URG_NONE)
-                        g_variant_builder_add(&n_builder,
-                                              "{sv}",
+                        g_variant_dict_insert(&dict,
                                               "msg_urgency",
-                                              g_variant_new_string(enum_to_string(urgency_enum_data, r->msg_urgency)));
+                                              "s",
+                                              enum_to_string(urgency_enum_data, r->msg_urgency));
                 if (r->match_transient > -1)
-                        g_variant_builder_add(&n_builder,
-                                              "{sv}",
-                                              "match_transient",
-                                              g_variant_new_boolean(r->match_transient));
+                        g_variant_dict_insert(&dict, "match_transient", "b", r->match_transient);
                 if (r->appname)
-                        g_variant_builder_add(&n_builder, "{sv}", "appname", g_variant_new_string(r->appname));
+                        g_variant_dict_insert(&dict, "appname", "s", r->appname);
                 if (r->desktop_entry)
-                        g_variant_builder_add(&n_builder,
-                                              "{sv}",
-                                              "desktop_entry",
-                                              g_variant_new_string(r->desktop_entry));
+                        g_variant_dict_insert(&dict, "desktop_entry", "s", r->desktop_entry);
                 if (r->summary)
-                        g_variant_builder_add(&n_builder, "{sv}", "summary", g_variant_new_string(r->summary));
+                        g_variant_dict_insert(&dict, "summary", "s", r->summary);
                 if (r->body)
-                        g_variant_builder_add(&n_builder, "{sv}", "body", g_variant_new_string(r->body));
+                        g_variant_dict_insert(&dict, "body", "s", r->body);
                 if (r->category)
-                        g_variant_builder_add(&n_builder, "{sv}", "category", g_variant_new_string(r->category));
+                        g_variant_dict_insert(&dict, "category", "s", r->category);
                 if (r->stack_tag)
-                        g_variant_builder_add(&n_builder, "{sv}", "stack_tag", g_variant_new_string(r->stack_tag));
+                        g_variant_dict_insert(&dict, "stack_tag", "s", r->stack_tag);
 
                 // settings to apply - order according to rule_apply
                 if (r->timeout != -1)
-                        g_variant_builder_add(&n_builder, "{sv}", "timeout", g_variant_new_int64(r->timeout));
+                        g_variant_dict_insert(&dict, "timeout", "x", r->timeout);
                 if (r->override_dbus_timeout != -1)
-                        g_variant_builder_add(&n_builder,
-                                              "{sv}",
-                                              "override_dbus_timeout",
-                                              g_variant_new_int64(r->override_dbus_timeout));
+                        g_variant_dict_insert(&dict, "override_dbus_timeout", "x", r->override_dbus_timeout);
                 if (r->urgency != URG_NONE)
-                        g_variant_builder_add(&n_builder,
-                                              "{sv}",
-                                              "urgency",
-                                              g_variant_new_string(enum_to_string(urgency_enum_data, r->urgency)));
+                        g_variant_dict_insert(&dict, "urgency", "s", enum_to_string(urgency_enum_data, r->urgency));
                 if (r->fullscreen != FS_NULL)
-                        g_variant_builder_add(&n_builder,
-                                              "{sv}",
+                        g_variant_dict_insert(&dict,
                                               "fullscreen",
-                                              g_variant_new_string(enum_to_string(fullscreen_enum_data,
-                                                                                  r->fullscreen)));
+                                              "s",
+                                              enum_to_string(fullscreen_enum_data, r->fullscreen));
                 if (r->history_ignore != -1)
-                        g_variant_builder_add(&n_builder,
-                                              "{sv}",
-                                              "history_ignore",
-                                              g_variant_new_boolean(r->history_ignore));
+                        g_variant_dict_insert(&dict, "history_ignore", "b", r->history_ignore);
                 if (r->set_transient != -1)
-                        g_variant_builder_add(&n_builder,
-                                              "{sv}",
-                                              "set_transient",
-                                              g_variant_new_boolean(r->set_transient));
+                        g_variant_dict_insert(&dict, "set_transient", "b", r->set_transient);
                 if (r->skip_display != -1)
-                        g_variant_builder_add(&n_builder,
-                                              "{sv}",
-                                              "skip_display",
-                                              g_variant_new_boolean(r->skip_display));
+                        g_variant_dict_insert(&dict, "skip_display", "b", r->skip_display);
                 if (r->word_wrap != -1)
-                        g_variant_builder_add(&n_builder, "{sv}", "word_wrap", g_variant_new_boolean(r->word_wrap));
+                        g_variant_dict_insert(&dict, "word_wrap", "b", r->word_wrap);
                 if (r->ellipsize != -1)
-                        g_variant_builder_add(&n_builder,
-                                              "{sv}",
+                        g_variant_dict_insert(&dict,
                                               "ellipsize",
-                                              g_variant_new_string(enum_to_string(ellipsize_enum_data, r->ellipsize)));
+                                              "s",
+                                              enum_to_string(ellipsize_enum_data, r->ellipsize));
                 if (r->alignment != -1)
-                        g_variant_builder_add(&n_builder,
-                                              "{sv}",
+                        g_variant_dict_insert(&dict,
                                               "alignment",
-                                              g_variant_new_string(enum_to_string(horizontal_alignment_enum_data,
-                                                                                  r->alignment)));
+                                              "s",
+                                              enum_to_string(horizontal_alignment_enum_data, r->alignment));
                 if (r->hide_text != -1)
-                        g_variant_builder_add(&n_builder, "{sv}", "hide_text", g_variant_new_boolean(r->hide_text));
+                        g_variant_dict_insert(&dict, "hide_text", "b", r->hide_text);
                 if (r->progress_bar_alignment != -1)
-                        g_variant_builder_add(&n_builder,
-                                              "{sv}",
+                        g_variant_dict_insert(&dict,
                                               "progress_bar_alignment",
-                                              g_variant_new_string(enum_to_string(horizontal_alignment_enum_data,
-                                                                                  r->progress_bar_alignment)));
+                                              "s",
+                                              enum_to_string(horizontal_alignment_enum_data,
+                                                             r->progress_bar_alignment));
                 if (r->min_icon_size != -1)
-                        g_variant_builder_add(&n_builder,
-                                              "{sv}",
-                                              "min_icon_size",
-                                              g_variant_new_int32(r->min_icon_size));
+                        g_variant_dict_insert(&dict, "min_icon_size", "i", r->min_icon_size);
                 if (r->max_icon_size != -1)
-                        g_variant_builder_add(&n_builder,
-                                              "{sv}",
-                                              "max_icon_size",
-                                              g_variant_new_int32(r->max_icon_size));
+                        g_variant_dict_insert(&dict, "max_icon_size", "i", r->max_icon_size);
                 if (r->action_name)
-                        g_variant_builder_add(&n_builder, "{sv}", "action_name", g_variant_new_string(r->action_name));
+                        g_variant_dict_insert(&dict, "action_name", "s", r->action_name);
                 if (r->set_category)
-                        g_variant_builder_add(&n_builder,
-                                              "{sv}",
-                                              "set_category",
-                                              g_variant_new_string(r->set_category));
+                        g_variant_dict_insert(&dict, "set_category", "s", r->set_category);
                 if (r->markup != MARKUP_NULL)
-                        g_variant_builder_add(&n_builder,
-                                              "{sv}",
-                                              "markup",
-                                              g_variant_new_string(enum_to_string(markup_mode_enum_data, r->markup)));
+                        g_variant_dict_insert(&dict, "markup", "s", enum_to_string(markup_mode_enum_data, r->markup));
                 if (r->icon_position != -1)
-                        g_variant_builder_add(&n_builder,
-                                              "{sv}",
+                        g_variant_dict_insert(&dict,
                                               "icon_position",
-                                              g_variant_new_string(enum_to_string(icon_position_enum_data,
-                                                                                  r->icon_position)));
+                                              "s",
+                                              enum_to_string(icon_position_enum_data, r->icon_position));
                 if (r->fg)
-                        g_variant_builder_add(&n_builder, "{sv}", "fg", g_variant_new_string(r->fg));
+                        g_variant_dict_insert(&dict, "fg", "s", r->fg);
                 if (r->bg)
-                        g_variant_builder_add(&n_builder, "{sv}", "bg", g_variant_new_string(r->bg));
+                        g_variant_dict_insert(&dict, "bg", "s", r->bg);
                 if (r->highlight)
-                        g_variant_builder_add(&n_builder, "{sv}", "highlight", g_variant_new_string(r->highlight));
+                        g_variant_dict_insert(&dict, "highlight", "s", r->highlight);
                 if (r->fc)
-                        g_variant_builder_add(&n_builder, "{sv}", "fc", g_variant_new_string(r->fc));
+                        g_variant_dict_insert(&dict, "fc", "s", r->fc);
                 if (r->format)
-                        g_variant_builder_add(&n_builder, "{sv}", "format", g_variant_new_string(r->format));
+                        g_variant_dict_insert(&dict, "format", "s", r->format);
                 if (r->default_icon)
-                        g_variant_builder_add(&n_builder,
-                                              "{sv}",
-                                              "default_icon",
-                                              g_variant_new_string(r->default_icon));
+                        g_variant_dict_insert(&dict, "default_icon", "s", r->default_icon);
                 if (r->new_icon)
-                        g_variant_builder_add(&n_builder, "{sv}", "new_icon", g_variant_new_string(r->new_icon));
+                        g_variant_dict_insert(&dict, "new_icon", "s", r->new_icon);
                 if (r->script)
-                        g_variant_builder_add(&n_builder, "{sv}", "script", g_variant_new_string(r->script));
+                        g_variant_dict_insert(&dict, "script", "s", r->script);
                 if (r->set_stack_tag)
-                        g_variant_builder_add(&n_builder,
-                                              "{sv}",
-                                              "set_stack_tag",
-                                              g_variant_new_string(r->set_stack_tag));
+                        g_variant_dict_insert(&dict, "set_stack_tag", "s", r->set_stack_tag);
                 if (r->override_pause_level != -1)
-                        g_variant_builder_add(&n_builder,
-                                              "{sv}",
-                                              "override_pause_level",
-                                              g_variant_new_int32(r->override_pause_level));
+                        g_variant_dict_insert(&dict, "override_pause_level", "i", r->override_pause_level);
 
-                g_variant_builder_add(builder, "a{sv}", &n_builder);
+                g_variant_builder_add_value(builder, g_variant_dict_end(&dict));
         }
 
         GVariant *answer = g_variant_new("(aa{sv})", builder);

@@ -134,7 +134,7 @@ case "${1:-}" in
 					then
 						cat
 					else
-						jq --raw-output '.data[][] | to_entries[] | if (.key == "name") then "[\(.value.data)]" else "    \(.key) = \(.value.data)" end'
+						jq --raw-output '.data[][] | ["[\(.name.data)]"], [to_entries[] | select(.key != "name") | "    \(.key) = \(.value.data)"] | join("\n")'
 					fi
 				} \
 					|| die "Dunst is not running."

@@ -540,56 +540,28 @@ TEST test_dbus_cb_dunst_RuleList(void)
         g_variant_iter_init(&array_iter, array);
         GVariant *dict = g_variant_iter_next_value(&array_iter);
 
-        GVariantIter dict_iter;
-        g_variant_iter_init(&dict_iter, dict);
+        GVariantDict d;
+        g_variant_dict_init(&d, dict);
 
-        char *key;
-        GVariant *value;
+        char *str;
+        bool boolean;
 
-        // first entry should always be the name => {"name", "testing RuleList"}
-        GVariant *entry = g_variant_iter_next_value(&dict_iter);
-        ASSERT(entry != NULL);
-        g_variant_get(entry, "{sv}", &key, &value);
-        ASSERT_STR_EQ("name", key);
-        ASSERT_STR_EQ("s", g_variant_get_type_string(value));
-        ASSERT_STR_EQ("testing RuleList", g_variant_get_string(value, NULL));
-        g_free(key);
-        g_variant_unref(value);
-        g_variant_unref(entry);
+        ASSERT(g_variant_dict_lookup(&d, "name", "s", &str));
+        ASSERT_STR_EQ("testing RuleList", str);
+        g_free(str);
 
-        // second entry should always be enabled => {"enabled", true}
-        entry = g_variant_iter_next_value(&dict_iter);
-        ASSERT(entry != NULL);
-        g_variant_get(entry, "{sv}", &key, &value);
-        ASSERT_STR_EQ("enabled", key);
-        ASSERT_STR_EQ("b", g_variant_get_type_string(value));
-        ASSERT(g_variant_get_boolean(value));
-        g_free(key);
-        g_variant_unref(value);
-        g_variant_unref(entry);
+        ASSERT(g_variant_dict_lookup(&d, "enabled", "b", &boolean));
+        ASSERT(boolean);
 
-        // first filter, appname in this case => {"appname", "dunstify"}
-        entry = g_variant_iter_next_value(&dict_iter);
-        ASSERT(entry != NULL);
-        g_variant_get(entry, "{sv}", &key, &value);
-        ASSERT_STR_EQ("appname", key);
-        ASSERT_STR_EQ("s", g_variant_get_type_string(value));
-        ASSERT_STR_EQ("dunstify", g_variant_get_string(value, NULL));
-        g_free(key);
-        g_variant_unref(value);
-        g_variant_unref(entry);
+        ASSERT(g_variant_dict_lookup(&d, "appname", "s", &str));
+        ASSERT_STR_EQ("dunstify", str);
+        g_free(str);
 
-        // applied changes, urgency here => {"urgency", "critical"}
-        entry = g_variant_iter_next_value(&dict_iter);
-        ASSERT(entry != NULL);
-        g_variant_get(entry, "{sv}", &key, &value);
-        ASSERT_STR_EQ("urgency", key);
-        ASSERT_STR_EQ("s", g_variant_get_type_string(value));
-        ASSERT_STR_EQ("critical", g_variant_get_string(value, NULL));
-        g_free(key);
-        g_variant_unref(value);
-        g_variant_unref(entry);
+        ASSERT(g_variant_dict_lookup(&d, "urgency", "s", &str));
+        ASSERT_STR_EQ("critical", str);
+        g_free(str);
 
+        g_variant_dict_clear(&d);
         g_variant_unref(dict);
         g_variant_unref(array);
         g_variant_unref(result);
