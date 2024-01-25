@@ -112,7 +112,7 @@ struct setting {
 /*
  *   How to add/change a rule
  *   ------------------------
- * 
+ *
  * - Add variable to `struct rules` in `rules.h` (make sure to read the comment
  *   at the top of the struct)
  * - Add variable to to `struct notification` in `notification.h`
@@ -342,6 +342,20 @@ static const struct string_to_enum_def origin_enum_data[] = {
         { "left-center", ORIGIN_LEFT_CENTER },
         { "right-center", ORIGIN_RIGHT_CENTER },
         { "center", ORIGIN_CENTER },
+        ENUM_END,
+};
+
+static const struct string_to_enum_def corners_enum_data[] = {
+        { "top-left", C_TOP_LEFT },
+        { "top-right", C_TOP_RIGHT },
+        { "bottom-left", C_BOT_LEFT },
+        { "bottom-right", C_BOT_RIGHT },
+        { "left", C_LEFT },
+        { "right", C_RIGHT },
+        { "bottom", C_BOT },
+        { "top", C_TOP },
+        { "all", C_ALL },
+        { "none", C_NONE },
         ENUM_END,
 };
 
@@ -753,6 +767,36 @@ static const struct setting allowed_settings[] = {
                 .parser = string_parse_bool,
                 .parser_data = boolean_enum_data,
                 .rule_offset = offsetof(struct rule, enabled),
+        },
+        {
+                .name = "corners",
+                .section = "global",
+                .description = "Select the corners to round",
+                .type = TYPE_CUSTOM,
+                .default_value = "all",
+                .value = &settings.corners,
+                .parser = string_parse_corners,
+                .parser_data = corners_enum_data,
+        },
+        {
+                .name = "progress_bar_corners",
+                .section = "global",
+                .description = "Select the corners to round for the progress bar",
+                .type = TYPE_CUSTOM,
+                .default_value = "all",
+                .value = &settings.progress_bar_corners,
+                .parser = string_parse_corners,
+                .parser_data = corners_enum_data,
+        },
+        {
+                .name = "icon_corners",
+                .section = "global",
+                .description = "Select the corners to round for the icon image",
+                .type = TYPE_CUSTOM,
+                .default_value = "all",
+                .value = &settings.icon_corners,
+                .parser = string_parse_corners,
+                .parser_data = corners_enum_data,
         },
         {
                 .name = "progress_bar_horizontal_alignment",
