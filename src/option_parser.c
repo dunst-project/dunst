@@ -93,7 +93,9 @@ int string_parse_enum_list_to_single(const void *data, char **s, int *ret)
 int string_parse_corners(const void *data, const char *s, void *ret)
 {
         char **s_arr = string_to_array(s, ",");
-        return string_parse_enum_list_to_single(data, s_arr, ret);
+        int success = string_parse_enum_list_to_single(data, s_arr, ret);
+        g_strfreev(s_arr);
+        return success;
 }
 
 // When allow empty is true, empty strings are interpreted as -1
