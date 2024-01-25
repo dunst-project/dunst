@@ -23,21 +23,7 @@ client_protocols = [
 	'wlr-foreign-toplevel-management-unstable-v1.xml',
 ]
 
-client_protos_src = []
-client_protos_headers = []
-
 foreach p : client_protocols
-	client_protos_src += wayland_scanner_code.process(p)
-	client_protos_headers += wayland_scanner_client.process(p)
+	wayland_scanner_code.process(p)
+	wayland_scanner_client.process(p)
 endforeach
-
-lib_client_protos = static_library(
-	'client_protos',
-	client_protos_src + client_protos_headers,
-	dependencies: [wayland_client]
-) # for the include directory
-
-client_protos = declare_dependency(
-	link_with: lib_client_protos,
-	sources: client_protos_headers,
-)
