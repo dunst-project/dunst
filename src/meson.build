@@ -43,7 +43,7 @@ if wayland_client.found() and wayland_cursor.found() and wayland_protos.found()
 	subdir('wayland/protocols')
 
 	dunst_depends += [
-		client_protos, wayland_client, wayland_cursor,
+		wayland_client, wayland_cursor,
 	]
 	dunst_src_files += files(
 		'wayland/foreign_toplevel.c', 
