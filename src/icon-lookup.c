@@ -166,8 +166,9 @@ void get_theme_path() {
         add_paths_from_env(theme_path, "XDG_DATA_HOME", "icons", data_home_default);
         g_free(data_home_default);
 
-        add_paths_from_env(theme_path, "XDG_DATA_DIRS", "icons", "/usr/local/share/:/usr/share/");
+        add_paths_from_env(theme_path, "XDG_DATA_DIRS", "icons", "/usr/local/share/");
         g_ptr_array_add(theme_path, g_strdup("/usr/share/pixmaps"));
+        g_ptr_array_add(theme_path, g_strdup("/usr/share/icons"));
         for (int i = 0; i < theme_path->len; i++) {
                 LOG_D("Theme locations: %s\n", (char*)theme_path->pdata[i]);
         }
