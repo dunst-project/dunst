@@ -208,7 +208,7 @@ void dbus_signal_unsubscribe_closed(struct signal_closed *closed)
         closed->subscription_id = -1;
 }
 
-GVariant *dbus_invoke(const char *method, GVariant *params)
+static GVariant *dbus_invoke_ifac(const char *method, GVariant *params, const char *ifac)
 {
         GDBusConnection *connection_client;
         GVariant *retdata;
@@ -219,7 +219,7 @@ GVariant *dbus_invoke(const char *method, GVariant *params)
                                 connection_client,
                                 FDN_NAME,
                                 FDN_PATH,
-                                FDN_IFAC,
+                                ifac,
                                 method,
                                 params,
                                 NULL,
@@ -235,6 +235,11 @@ GVariant *dbus_invoke(const char *method, GVariant *params)
         g_object_unref(connection_client);
 
         return retdata;
+}
+
+GVariant *dbus_invoke(const char *method, GVariant *params)
+{
+        return dbus_invoke_ifac(method, params, FDN_IFAC);
 }
 
 struct dbus_notification {
@@ -514,6 +519,73 @@ TEST test_dbus_cb_dunst_Properties_Set_pause_level(void)
         g_variant_unref(sig.array_s_data);
         dbus_signal_unsubscribe_propertieschanged(&sig);
         g_object_unref(connection_client);
+        PASS();
+}
+
+TEST test_dbus_cb_dunst_NotificationListHistory(void)
+{
+        struct notification *n = notification_create();
+        gint64 timestamp1 = n->timestamp;
+        n->appname = g_strdup("dunstify");
+        n->summary = g_strdup("Testing");
+        queues_history_push(n);
+
+        n = notification_create();
+        gint64 timestamp2 = n->timestamp;
+        n->appname = g_strdup("notify-send");
+        n->summary = g_strdup("More testing");
+        queues_history_push(n);
+
+        GVariant *result = dbus_invoke_ifac("NotificationListHistory", NULL, DUNST_IFAC);
+        ASSERT(result != NULL);
+        ASSERT_STR_EQ("(aa{sv})", g_variant_get_type_string(result));
+
+        GVariantIter tuple_iter;
+        g_variant_iter_init(&tuple_iter, result);
+        GVariant *array = g_variant_iter_next_value(&tuple_iter);
+
+        GVariantIter array_iter;
+        g_variant_iter_init(&array_iter, array);
+        GVariant *dict = g_variant_iter_next_value(&array_iter);
+
+        GVariantDict d;
+        g_variant_dict_init(&d, dict);
+
+        char *str;
+        gint64 int64;
+
+        ASSERT(g_variant_dict_lookup(&d, "appname", "s", &str));
+        ASSERT_STR_EQ("notify-send", str);
+        g_free(str);
+
+        ASSERT(g_variant_dict_lookup(&d, "summary", "s", &str));
+        ASSERT_STR_EQ("More testing", str);
+        g_free(str);
+
+        ASSERT(g_variant_dict_lookup(&d, "timestamp", "x", &int64));
+        ASSERT_EQ(timestamp2, int64);
+
+        g_variant_unref(dict);
+        dict = g_variant_iter_next_value(&array_iter);
+        g_variant_dict_clear(&d);
+        g_variant_dict_init(&d, dict);
+
+        ASSERT(g_variant_dict_lookup(&d, "appname", "s", &str));
+        ASSERT_STR_EQ("dunstify", str);
+        g_free(str);
+
+        ASSERT(g_variant_dict_lookup(&d, "summary", "s", &str));
+        ASSERT_STR_EQ("Testing", str);
+        g_free(str);
+
+        ASSERT(g_variant_dict_lookup(&d, "timestamp", "x", &int64));
+        ASSERT_EQ(timestamp1, int64);
+
+        g_variant_dict_clear(&d);
+        g_variant_unref(dict);
+        g_variant_unref(array);
+        g_variant_unref(result);
+        queues_history_clear();
         PASS();
 }
 
@@ -1198,6 +1270,7 @@ gpointer run_threaded_tests(gpointer data)
         RUN_TEST(test_override_dbus_timeout);
         RUN_TEST(test_match_dbus_timeout);
         RUN_TEST(test_timeout);
+        RUN_TEST(test_dbus_cb_dunst_NotificationListHistory);
 
         RUN_TEST(assert_methodlists_sorted);
 
