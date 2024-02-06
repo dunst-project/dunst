@@ -122,7 +122,8 @@ struct settings {
         int frame_width;
         char *frame_color;
         int startup_notification;
-        int monitor;
+        char *monitor;
+        int monitor_num;
         double scale;
         char *dmenu;
         char **dmenu_cmd;

@@ -816,6 +816,45 @@ TEST test_string_to_corners_invalid(void)
         PASS();
 }
 
+TEST test_string_to_maybe_int(void)
+{
+        char *val = NULL;
+        int intval;
+        struct setting s;
+        s.type = TYPE_CUSTOM;
+        s.value = &val;
+        s.name = "test_maybe_int";
+        s.parser = string_parse_maybe_int;
+        s.parser_data = &intval;
+
+        const char* inputs[] = {
+                "0",
+                "1",
+                "HDMI-0",
+                "0TEST",
+        };
+
+        const struct { const char *s; int i; } results[] = {
+                { "0", 0 },
+                { "1", 1 },
+                { "HDMI-0", INT_MIN },
+                { "0TEST", INT_MIN },
+        char buf[500];
+
+        for (int i = 0; i < G_N_ELEMENTS(inputs); i++) {
+                sprintf(buf, "Failed in round %i.", i);
+                ASSERTm(buf, set_from_string(&val, s, inputs[i]));
+                sprintf(buf, "Failed in round %i. Expected val to be %s, got %s", i, results[i].s, val);
+                ASSERTm(buf, STR_EQ(val, results[i].s));
+                sprintf(buf, "Failed in round %i. Expected intval to be %i, got %i", i, results[i].i, intval);
+                ASSERT_EQm(buf, results[i].i, intval);
+        }
+
+        g_free(val);
+
+        PASS();
+}
+
 #define TEST_ENUM(t) { \
 ASSERT_EQ(sizeof(t), sizeof(int)); \
 }
@@ -883,6 +922,7 @@ SUITE(suite_option_parser)
         RUN_TEST(test_enum_size);
         RUN_TEST(test_string_to_length);
         RUN_TEST(test_string_to_length_invalid);
+        RUN_TEST(test_string_to_maybe_int);
 
         g_strfreev(argv);
 }

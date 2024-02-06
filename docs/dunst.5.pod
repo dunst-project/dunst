@@ -28,8 +28,8 @@ All experimental settings are marked with I<Experimental>
 
 =item B<monitor> (default: 0)
 
-Specifies on which monitor the notifications should be displayed in, count
-starts at 0. See the B<follow> setting.
+Specifies on which monitor the notifications should be displayed in, either by
+name or by number, starting from 0. See the B<follow> setting.
 
 =item B<follow> (values: [none/mouse/keyboard] default: none)
 

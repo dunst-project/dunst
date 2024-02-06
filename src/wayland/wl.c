@@ -28,6 +28,16 @@
 #include "protocols/idle.h"
 #include "pool-buffer.h"
 
+#ifdef HAVE_WL_CURSOR_SHAPE
+#include "protocols/cursor-shape-v1-client-header.h"
+#include "protocols/cursor-shape-v1.h"
+#include "protocols/tablet-unstable-v2.h"
+#endif
+
+#ifdef HAVE_WL_EXT_IDLE_NOTIFY
+#include "protocols/ext-idle-notify-v1-client-header.h"
+#include "protocols/ext-idle-notify-v1.h"
+#endif
 
 #include "../log.h"
 #include "../settings.h"
@@ -44,30 +54,16 @@ struct window_wl {
         cairo_t * c_ctx;
 };
 
-struct wl_ctx {
-        GWaterWaylandSource *esrc;
-        struct wl_display *display; // owned by esrc
-        struct wl_registry *registry;
-        struct wl_compositor *compositor;
-        struct wl_shm *shm;
-        struct zwlr_layer_shell_v1 *layer_shell;
-        struct wl_seat *seat;
-
-        struct wl_list outputs;
-
-        struct wl_surface *surface;
-        struct dunst_output *surface_output;
-        struct zwlr_layer_surface_v1 *layer_surface;
-        struct dunst_output *layer_surface_output;
-        struct wl_callback *frame_callback;
-        struct org_kde_kwin_idle *idle_handler;
+struct dunst_seat {
+        struct wl_list link;
+        uint32_t global_name;
+        char *name;
+        struct wl_seat *wl_seat;
         struct org_kde_kwin_idle_timeout *idle_timeout;
-        uint32_t toplevel_manager_name;
-        struct zwlr_foreign_toplevel_manager_v1 *toplevel_manager;
-        bool configured;
-        bool dirty;
+#ifdef HAVE_WL_EXT_IDLE_NOTIFY
+        struct ext_idle_notification_v1 *ext_idle_notification;
+#endif
         bool is_idle;
-        bool has_idle_monitor;
 
         struct {
                 struct wl_pointer *wl_pointer;
@@ -80,6 +76,35 @@ struct wl_ctx {
                         int32_t x, y;
                 } pts[MAX_TOUCHPOINTS];
         } touch;
+};
+
+struct wl_ctx {
+        GWaterWaylandSource *esrc;
+        struct wl_display *display; // owned by esrc
+        struct wl_registry *registry;
+        struct wl_compositor *compositor;
+        struct wl_shm *shm;
+        struct zwlr_layer_shell_v1 *layer_shell;
+
+        struct wl_list outputs;
+        struct wl_list seats;
+
+        struct wl_surface *surface;
+        struct dunst_output *surface_output;
+        struct zwlr_layer_surface_v1 *layer_surface;
+        struct dunst_output *layer_surface_output;
+        struct wl_callback *frame_callback;
+        struct org_kde_kwin_idle *idle_handler;
+#ifdef HAVE_WL_CURSOR_SHAPE
+        struct wp_cursor_shape_manager_v1 *cursor_shape_manager;
+#endif
+#ifdef HAVE_WL_EXT_IDLE_NOTIFY
+        struct ext_idle_notifier_v1 *ext_idle_notifier;
+#endif
+        uint32_t toplevel_manager_name;
+        struct zwlr_foreign_toplevel_manager_v1 *toplevel_manager;
+        bool configured;
+        bool dirty;
 
         struct dimensions cur_dim;
 
@@ -122,25 +147,43 @@ static void output_handle_scale(void *data, struct wl_output *wl_output,
         wake_up();
 }
 
+#ifdef WL_OUTPUT_NAME_SINCE_VERSION
+static void output_handle_name(void *data, struct wl_output *wl_output,
+                const char *name) {
+        struct dunst_output *output = data;
+        output->name = g_strdup(name);
+        LOG_D("Output global %" PRIu32 " name %s", output->global_name, name);
+}
+#endif
+
 static const struct wl_output_listener output_listener = {
         .geometry = output_handle_geometry,
         .mode = output_handle_mode,
         .done = noop,
         .scale = output_handle_scale,
+#ifdef WL_OUTPUT_NAME_SINCE_VERSION
+        .name = output_handle_name,
+        .description = noop,
+#endif
 };
 
-static void create_output( struct wl_output *wl_output, uint32_t global_name) {
+static void create_output(struct wl_registry *registry, uint32_t global_name, uint32_t version) {
         struct dunst_output *output = g_malloc0(sizeof(struct dunst_output));
         if (output == NULL) {
                 LOG_E("allocation failed");
                 return;
         }
 
+        uint32_t max_version = 3;
+#ifdef WL_OUTPUT_NAME_SINCE_VERSION
+        max_version = WL_OUTPUT_NAME_SINCE_VERSION;
+#endif
         bool recreate_surface = false;
         static int number = 0;
         LOG_I("New output found - id %i", number);
         output->global_name = global_name;
-        output->wl_output = wl_output;
+        output->wl_output = wl_registry_bind(registry, global_name, &wl_output_interface,
+                        CLAMP(version, 3, max_version));
         output->scale = 1;
         output->fullscreen = false;
 
@@ -148,8 +191,8 @@ static void create_output( struct wl_output *wl_output, uint32_t global_name) {
 
         wl_list_insert(&ctx.outputs, &output->link);
 
-        wl_output_set_user_data(wl_output, output);
-        wl_output_add_listener(wl_output, &output_listener, output);
+        wl_output_set_user_data(output->wl_output, output);
+        wl_output_add_listener(output->wl_output, &output_listener, output);
         number++;
 
         if (recreate_surface) {
@@ -167,42 +210,58 @@ static void destroy_output(struct dunst_output *output) {
         }
         wl_list_remove(&output->link);
         wl_output_destroy(output->wl_output);
-        free(output->name);
-        free(output);
+        g_free(output->name);
+        g_free(output);
 }
 
 static void touch_handle_motion(void *data, struct wl_touch *wl_touch,
                 uint32_t time, int32_t id,
                 wl_fixed_t surface_x, wl_fixed_t surface_y) {
+        struct dunst_seat *seat = data;
+
         if (id >= MAX_TOUCHPOINTS) {
                 return;
         }
-        ctx.touch.pts[id].x = wl_fixed_to_int(surface_x);
-        ctx.touch.pts[id].y = wl_fixed_to_int(surface_y);
+        seat->touch.pts[id].x = wl_fixed_to_int(surface_x);
+        seat->touch.pts[id].y = wl_fixed_to_int(surface_y);
 }
 
 static void touch_handle_down(void *data, struct wl_touch *wl_touch,
                 uint32_t serial, uint32_t time, struct wl_surface *sfc, int32_t id,
                 wl_fixed_t surface_x, wl_fixed_t surface_y) {
+        struct dunst_seat *seat = data;
+
         if (id >= MAX_TOUCHPOINTS) {
                 return;
         }
-        ctx.touch.pts[id].x = wl_fixed_to_int(surface_x);
-        ctx.touch.pts[id].y = wl_fixed_to_int(surface_y);
+        seat->touch.pts[id].x = wl_fixed_to_int(surface_x);
+        seat->touch.pts[id].y = wl_fixed_to_int(surface_y);
 }
 
 static void touch_handle_up(void *data, struct wl_touch *wl_touch,
                 uint32_t serial, uint32_t time, int32_t id) {
+        struct dunst_seat *seat = data;
+
         if (id >= MAX_TOUCHPOINTS) {
                 return;
         }
         input_handle_click(BTN_TOUCH, false,
-                        ctx.touch.pts[id].x, ctx.touch.pts[id].y);
+                        seat->touch.pts[id].x, seat->touch.pts[id].y);
 
 }
 
 static void pointer_handle_enter(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface, wl_fixed_t x, wl_fixed_t y) {
         // Change the mouse cursor to "left_ptr"
+#ifdef HAVE_WL_CURSOR_SHAPE
+        if (ctx.cursor_shape_manager != NULL) {
+                struct wp_cursor_shape_device_v1 *device =
+                        wp_cursor_shape_manager_v1_get_pointer(ctx.cursor_shape_manager, wl_pointer);
+                wp_cursor_shape_device_v1_set_shape(device, serial,
+                                WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_DEFAULT);
+                wp_cursor_shape_device_v1_destroy(device);
+                return;
+        }
+#endif
         if (ctx.cursor_theme != NULL) {
                 wl_pointer_set_cursor(wl_pointer, serial, ctx.cursor_surface, ctx.cursor_image->hotspot_x, ctx.cursor_image->hotspot_y);
         }
@@ -210,14 +269,18 @@ static void pointer_handle_enter(void *data, struct wl_pointer *wl_pointer, uint
 
 static void pointer_handle_motion(void *data, struct wl_pointer *wl_pointer,
                 uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y) {
-        ctx.pointer.x = wl_fixed_to_int(surface_x);
-        ctx.pointer.y = wl_fixed_to_int(surface_y);
+        struct dunst_seat *seat = data;
+
+        seat->pointer.x = wl_fixed_to_int(surface_x);
+        seat->pointer.y = wl_fixed_to_int(surface_y);
 }
 
 static void pointer_handle_button(void *data, struct wl_pointer *wl_pointer,
                 uint32_t serial, uint32_t time, uint32_t button,
                 uint32_t button_state) {
-        input_handle_click(button, button_state, ctx.pointer.x, ctx.pointer.y);
+        struct dunst_seat *seat = data;
+
+        input_handle_click(button, button_state, seat->pointer.x, seat->pointer.y);
 }
 
 static const struct wl_pointer_listener pointer_listener = {
@@ -236,34 +299,93 @@ static const struct wl_touch_listener touch_listener = {
         .cancel = noop,
 };
 
+static void destroy_seat_pointer(struct dunst_seat *seat) {
+        wl_pointer_release(seat->pointer.wl_pointer);
+        seat->pointer.wl_pointer = NULL;
+}
+
+static void destroy_seat_touch(struct dunst_seat *seat) {
+        wl_touch_release(seat->touch.wl_touch);
+        seat->touch.wl_touch = NULL;
+}
+
+static void destroy_seat(struct dunst_seat *seat) {
+        if (seat == NULL) {
+                return;
+        }
+
+        if (seat->pointer.wl_pointer != NULL) {
+                destroy_seat_pointer(seat);
+        }
+
+        if (seat->touch.wl_touch != NULL) {
+                destroy_seat_touch(seat);
+        }
+
+        if (seat->idle_timeout != NULL) {
+                org_kde_kwin_idle_timeout_release(seat->idle_timeout);
+                seat->idle_timeout = NULL;
+        }
+
+#ifdef HAVE_WL_EXT_IDLE_NOTIFY
+        if (seat->ext_idle_notification != NULL) {
+                ext_idle_notification_v1_destroy(seat->ext_idle_notification);
+                seat->ext_idle_notification = NULL;
+        }
+#endif
+
+        wl_list_remove(&seat->link);
+
+#ifdef WL_SEAT_RELEASE_SINCE_VERSION
+        if (wl_seat_get_version(seat->wl_seat) >= WL_SEAT_RELEASE_SINCE_VERSION) {
+                wl_seat_release(seat->wl_seat);
+        } else
+#endif
+        wl_seat_destroy(seat->wl_seat);
+        seat->wl_seat = NULL;
+
+        g_free(seat->name);
+        seat->name = NULL;
+
+        g_free(seat);
+}
+
 static void seat_handle_capabilities(void *data, struct wl_seat *wl_seat,
                 uint32_t capabilities) {
+        struct dunst_seat *seat = data;
 
-        if (ctx.pointer.wl_pointer != NULL) {
-                wl_pointer_release(ctx.pointer.wl_pointer);
-                ctx.pointer.wl_pointer = NULL;
-        }
         if (capabilities & WL_SEAT_CAPABILITY_POINTER) {
-                ctx.pointer.wl_pointer = wl_seat_get_pointer(wl_seat);
-                wl_pointer_add_listener(ctx.pointer.wl_pointer,
-                        &pointer_listener, ctx.seat);
+                if (seat->pointer.wl_pointer == NULL) {
+                        seat->pointer.wl_pointer = wl_seat_get_pointer(wl_seat);
+                        wl_pointer_add_listener(seat->pointer.wl_pointer,
+                                &pointer_listener, seat);
+                }
+        } else if (seat->pointer.wl_pointer != NULL) {
+                destroy_seat_pointer(seat);
         }
-        if (ctx.touch.wl_touch != NULL) {
-                wl_touch_release(ctx.touch.wl_touch);
-                ctx.touch.wl_touch = NULL;
-        }
+
         if (capabilities & WL_SEAT_CAPABILITY_TOUCH) {
-                ctx.touch.wl_touch = wl_seat_get_touch(wl_seat);
-                wl_touch_add_listener(ctx.touch.wl_touch,
-                        &touch_listener, ctx.seat);
+                if (seat->touch.wl_touch == NULL) {
+                        seat->touch.wl_touch = wl_seat_get_touch(wl_seat);
+                        wl_touch_add_listener(seat->touch.wl_touch,
+                                &touch_listener, seat);
+                }
+        } else if (seat->touch.wl_touch != NULL) {
+                destroy_seat_touch(seat);
         }
+}
+
+static void seat_handle_name(void *data, struct wl_seat *wl_seat, const char *name) {
+        struct dunst_seat *seat = data;
+
+        seat->name = g_strdup(name);
+        LOG_I("New seat found - id %" PRIu32 " name %s", seat->global_name, seat->name);
 }
 
 static const struct wl_seat_listener seat_listener = {
         .capabilities = seat_handle_capabilities,
-        .name = noop,
+        .name = seat_handle_name,
 };
-
 
 static void surface_handle_enter(void *data, struct wl_surface *surface,
                 struct wl_output *wl_output) {
@@ -341,12 +463,16 @@ static const struct zwlr_layer_surface_v1_listener layer_surface_listener = {
 
 
 static void idle_start (void *data, struct org_kde_kwin_idle_timeout *org_kde_kwin_idle_timeout) {
-        ctx.is_idle = true;
-        LOG_D("User went idle");
+        struct dunst_seat *seat = data;
+
+        seat->is_idle = true;
+        LOG_D("User went idle on seat \"%s\"", seat->name);
 }
 static void idle_stop (void *data, struct org_kde_kwin_idle_timeout *org_kde_kwin_idle_timeout) {
-        ctx.is_idle = false;
-        LOG_D("User isn't idle anymore");
+        struct dunst_seat *seat = data;
+
+        seat->is_idle = false;
+        LOG_D("User isn't idle anymore on seat \"%s\"", seat->name);
 }
 
 static const struct org_kde_kwin_idle_timeout_listener idle_timeout_listener = {
@@ -354,22 +480,74 @@ static const struct org_kde_kwin_idle_timeout_listener idle_timeout_listener = {
         .resumed = idle_stop,
 };
 
-static void add_seat_to_idle_handler(struct wl_seat *seat) {
-        if (!ctx.idle_handler) {
+#ifdef HAVE_WL_EXT_IDLE_NOTIFY
+static void ext_idle_notification_handle_idled(void *data, struct ext_idle_notification_v1 *notification) {
+        struct dunst_seat *seat = data;
+
+        seat->is_idle = true;
+        LOG_D("User went idle on seat \"%s\"", seat->name);
+}
+
+static void ext_idle_notification_handle_resumed(void *data, struct ext_idle_notification_v1 *notification) {
+        struct dunst_seat *seat = data;
+
+        seat->is_idle = false;
+        LOG_D("User isn't idle anymore on seat \"%s\"", seat->name);
+}
+
+static const struct ext_idle_notification_v1_listener ext_idle_notification_listener = {
+        .idled = ext_idle_notification_handle_idled,
+        .resumed = ext_idle_notification_handle_resumed,
+};
+#endif
+
+static void add_seat_to_idle_handler(struct dunst_seat *seat) {
+        if (settings.idle_threshold <= 0) {
                 return;
         }
-        if (settings.idle_threshold > 0) {
-                uint32_t timeout_ms = settings.idle_threshold/1000;
-                ctx.idle_timeout = org_kde_kwin_idle_get_idle_timeout(ctx.idle_handler, seat, timeout_ms);
-                org_kde_kwin_idle_timeout_add_listener(ctx.idle_timeout, &idle_timeout_listener, 0);
-                ctx.has_idle_monitor = true;
+        uint32_t timeout_ms = settings.idle_threshold/1000;
+
+#ifdef HAVE_WL_EXT_IDLE_NOTIFY
+        if (ctx.ext_idle_notifier != NULL) {
+                if (seat->ext_idle_notification == NULL) {
+                        seat->ext_idle_notification =
+                                ext_idle_notifier_v1_get_idle_notification(ctx.ext_idle_notifier,
+                                                timeout_ms, seat->wl_seat);
+                        ext_idle_notification_v1_add_listener(seat->ext_idle_notification,
+                                        &ext_idle_notification_listener, seat);
+                }
+                // In the unlikely case where we already set up org_kde_kwin_idle_timeout, destroy it
+                if (seat->idle_timeout != NULL) {
+                        org_kde_kwin_idle_timeout_release(seat->idle_timeout);
+                        seat->idle_timeout = NULL;
+                }
+                return;
         }
+#endif
+        if (ctx.idle_handler != NULL && seat->idle_timeout == NULL) {
+                seat->idle_timeout = org_kde_kwin_idle_get_idle_timeout(ctx.idle_handler, seat->wl_seat, timeout_ms);
+                org_kde_kwin_idle_timeout_add_listener(seat->idle_timeout, &idle_timeout_listener, seat);
+        }
+}
+
+static void create_seat(struct wl_registry *registry, uint32_t global_name, uint32_t version) {
+        struct dunst_seat *seat = g_malloc0(sizeof(struct dunst_seat));
+        if (seat == NULL) {
+                LOG_E("allocation failed");
+                return;
+        }
+        seat->global_name = global_name;
+        seat->wl_seat = wl_registry_bind(registry, global_name, &wl_seat_interface, 3);
+        wl_seat_add_listener(seat->wl_seat, &seat_listener, seat);
+        add_seat_to_idle_handler(seat);
+        wl_list_insert(&ctx.seats, &seat->link);
 }
 
 // Warning, can return NULL
 static struct dunst_output *get_configured_output() {
         int n = 0;
-        int target_monitor = settings.monitor;
+        int target_monitor = settings.monitor_num;
+        const char *name = settings.monitor;
 
         struct dunst_output *first_output = NULL, *configured_output = NULL,
                             *tmp_output = NULL;
@@ -377,6 +555,8 @@ static struct dunst_output *get_configured_output() {
                 if (n == 0)
                         first_output = tmp_output;
                 if (n == target_monitor)
+                        configured_output = tmp_output;
+                if (g_strcmp0(name, tmp_output->name) == 0)
                         configured_output = tmp_output;
                 n++;
         }
@@ -388,7 +568,7 @@ static struct dunst_output *get_configured_output() {
         switch (settings.f_mode){
                 case FOLLOW_NONE: ; // this semicolon is neccesary
                         if (!configured_output) {
-                                LOG_W("Monitor %i doesn't exist, using focused monitor", settings.monitor);
+                                LOG_W("Monitor %s doesn't exist, using focused monitor", settings.monitor);
                         }
                         return configured_output;
                 case FOLLOW_MOUSE:
@@ -412,17 +592,29 @@ static void handle_global(void *data, struct wl_registry *registry,
                 ctx.layer_shell = wl_registry_bind(registry, name,
                                 &zwlr_layer_shell_v1_interface, 1);
         } else if (strcmp(interface, wl_seat_interface.name) == 0) {
-                ctx.seat = wl_registry_bind(registry, name, &wl_seat_interface, 3);
-                wl_seat_add_listener(ctx.seat, &seat_listener, ctx.seat);
-                add_seat_to_idle_handler(ctx.seat);
+                create_seat(registry, name, version);
+                LOG_D("Binding to seat %i", name);
         } else if (strcmp(interface, wl_output_interface.name) == 0) {
-                struct wl_output *output =
-                        wl_registry_bind(registry, name, &wl_output_interface, 3);
-                create_output(output, name);
+                create_output(registry, name, version);
                 LOG_D("Binding to output %i", name);
         } else if (strcmp(interface, org_kde_kwin_idle_interface.name) == 0 &&
                         version >= ORG_KDE_KWIN_IDLE_TIMEOUT_IDLE_SINCE_VERSION) {
+#ifdef HAVE_WL_EXT_IDLE_NOTIFY
+                if (ctx.ext_idle_notifier)
+                        return;
+#endif
                 ctx.idle_handler = wl_registry_bind(registry, name, &org_kde_kwin_idle_interface, 1);
+                LOG_D("Found org_kde_kwin_idle");
+#ifdef HAVE_WL_EXT_IDLE_NOTIFY
+        } else if (strcmp(interface, ext_idle_notifier_v1_interface.name) == 0) {
+                ctx.ext_idle_notifier = wl_registry_bind(registry, name, &ext_idle_notifier_v1_interface, 1);
+                LOG_D("Found ext-idle-notify-v1");
+#endif
+#ifdef HAVE_WL_CURSOR_SHAPE
+        } else if (strcmp(interface, wp_cursor_shape_manager_v1_interface.name) == 0) {
+                ctx.cursor_shape_manager = wl_registry_bind(registry, name,
+                                &wp_cursor_shape_manager_v1_interface, 1);
+#endif
         } else if (strcmp(interface, zwlr_foreign_toplevel_manager_v1_interface.name) == 0 &&
                         version >= ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_STATE_FULLSCREEN_SINCE_VERSION) {
                 LOG_D("Found toplevel manager %i", name);
@@ -436,7 +628,15 @@ static void handle_global_remove(void *data, struct wl_registry *registry,
         wl_list_for_each_safe(output, tmp, &ctx.outputs, link) {
                 if (output->global_name == name) {
                         destroy_output(output);
-                        break;
+                        return;
+                }
+        }
+
+        struct dunst_seat *seat, *tmp_seat;
+        wl_list_for_each_safe(seat, tmp_seat, &ctx.seats, link) {
+                if (seat->global_name == name) {
+                        destroy_seat(seat);
+                        return;
                 }
         }
 }
@@ -448,8 +648,8 @@ static const struct wl_registry_listener registry_listener = {
 
 bool wl_init() {
         wl_list_init(&ctx.outputs);
+        wl_list_init(&ctx.seats);
         wl_list_init(&toplevel_list);
-        //wl_list_init(&ctx.seats); // TODO multi-seat support
 
         ctx.esrc = g_water_wayland_source_new(NULL, NULL);
         ctx.display = g_water_wayland_source_get_display(ctx.esrc);
@@ -492,15 +692,19 @@ bool wl_init() {
                 LOG_W("compositor doesn't support zwlr_layer_shell_v1");
                 return false;
         }
-        if (ctx.seat == NULL) {
+        if (wl_list_empty(&ctx.seats)) {
                 LOG_W("no seat was found, so dunst cannot see input");
+        } else if (ctx.idle_handler == NULL
+#ifdef HAVE_WL_EXT_IDLE_NOTIFY
+                && ctx.ext_idle_notifier == NULL
+#endif
+        ) {
+                LOG_I("compositor doesn't support org_kde_kwin_idle or ext-idle-notify-v1");
         } else {
-                if (ctx.idle_handler == NULL) {
-                        LOG_I("compositor doesn't support org_kde_kwin_idle_interface");
-                }
-                else if (ctx.idle_timeout == NULL && settings.idle_threshold > 0) {
-                        // something went wrong in setting the timeout
-                        LOG_W("couldn't set idle timeout");
+                // Set up idle monitoring for any seats that we received before the idle protocols
+                struct dunst_seat *seat = NULL;
+                wl_list_for_each(seat, &ctx.seats, link) {
+                        add_seat_to_idle_handler(seat);
                 }
         }
 
@@ -565,18 +769,23 @@ void wl_deinit() {
                 destroy_output(output);
         }
 
-        if (ctx.seat) {
-                if (ctx.pointer.wl_pointer)
-                        wl_pointer_release(ctx.pointer.wl_pointer);
-                wl_seat_release(ctx.seat);
-                ctx.seat = NULL;
+        struct dunst_seat *seat, *seat_tmp;
+        wl_list_for_each_safe(seat, seat_tmp, &ctx.seats, link) {
+                destroy_seat(seat);
         }
+
+#ifdef HAVE_WL_CURSOR_SHAPE
+        if (ctx.cursor_shape_manager)
+                wp_cursor_shape_manager_v1_destroy(ctx.cursor_shape_manager);
+#endif
+
+#ifdef HAVE_WL_EXT_IDLE_NOTIFY
+        if (ctx.ext_idle_notifier)
+                ext_idle_notifier_v1_destroy(ctx.ext_idle_notifier);
+#endif
 
         if (ctx.idle_handler)
                 org_kde_kwin_idle_destroy(ctx.idle_handler);
-
-        if (ctx.idle_timeout)
-                org_kde_kwin_idle_timeout_release(ctx.idle_timeout);
 
         if (ctx.layer_shell)
                 zwlr_layer_shell_v1_destroy(ctx.layer_shell);
@@ -856,14 +1065,20 @@ const struct screen_info* wl_get_active_screen(void) {
 }
 
 bool wl_is_idle(void) {
-        LOG_I("Idle status queried: %i", ctx.is_idle);
+        struct dunst_seat *seat = NULL;
+        bool is_idle = true;
         // When the user doesn't have a seat, or their compositor doesn't support the idle
         // protocol, we'll assume that they are not idle.
-        if (settings.idle_threshold == 0 || ctx.has_idle_monitor == false) {
-                return false;
+        if (settings.idle_threshold == 0 || wl_list_empty(&ctx.seats)) {
+                is_idle = false;
         } else {
-                return ctx.is_idle;
+                wl_list_for_each(seat, &ctx.seats, link) {
+                        // seat.is_idle cannot be set without an idle protocol
+                        is_idle &= seat->is_idle;
+                }
         }
+        LOG_I("Idle status queried: %i", is_idle);
+        return is_idle;
 }
 
 bool wl_have_fullscreen_window(void) {

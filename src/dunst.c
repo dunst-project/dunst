@@ -101,6 +101,8 @@ static gboolean run(void *data)
         draw();
         output->win_show(win);
 
+        bool timeout_set = true;
+
         gint64 timeout_at = queues_get_next_datachange(now);
         if (timeout_at != -1) {
                 // Previous computations may have taken time, update `now`
@@ -117,10 +119,17 @@ static gboolean run(void *data)
                                 if (next_timeout != 0) {
                                         g_source_remove(next_timeout_id);
                                 }
+                                timeout_set = true;
                                 next_timeout_id = g_timeout_add(sleep/1000, run, NULL);
                                 next_timeout = timeout_at;
                         }
                 }
+        }
+
+        if(!timeout_set) {
+                // If no new timeout was set this time, clear up te timer id
+                next_timeout = 0;
+                next_timeout_id = 0;
         }
 
         /* If the execution got triggered by g_timeout_add,

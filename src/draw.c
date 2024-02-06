@@ -76,7 +76,9 @@ void draw_setup(void)
 
         win = out->win_create();
 
+        LOG_D("Trying to load font: '%s'", settings.font);
         pango_fdesc = pango_font_description_from_string(settings.font);
+        LOG_D("Loaded closest matching font: '%s'", pango_font_description_get_family(pango_fdesc));
 
         if (settings.enable_recursive_icon_lookup)
                 load_icon_themes();
@@ -387,12 +389,14 @@ static struct colored_layout *layout_from_notification(cairo_t *c, struct notifi
 
         if (!err) {
                 pango_layout_set_text(cl->l, cl->text, -1);
+                pango_attr_list_insert(cl->attr, pango_attr_fallback_new(true));
                 pango_layout_set_attributes(cl->l, cl->attr);
         } else {
                 /* remove markup and display plain message instead */
                 n->text_to_render = markup_strip(n->text_to_render);
                 cl->text = NULL;
-                cl->attr = NULL;
+                cl->attr = pango_attr_list_new();
+                pango_attr_list_insert(cl->attr, pango_attr_fallback_new(true));
                 pango_layout_set_text(cl->l, n->text_to_render, -1);
                 if (n->first_render) {
                         LOG_W("Unable to parse markup: %s", err->message);
