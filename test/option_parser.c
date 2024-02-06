@@ -839,6 +839,7 @@ TEST test_string_to_maybe_int(void)
                 { "1", 1 },
                 { "HDMI-0", INT_MIN },
                 { "0TEST", INT_MIN },
+        };
         char buf[500];
 
         for (int i = 0; i < G_N_ELEMENTS(inputs); i++) {
