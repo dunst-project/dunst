@@ -462,8 +462,8 @@ static void dbus_cb_dunst_RuleList(GDBusConnection *connection,
 {
         LOG_D("CMD: Listing all configured rules");
 
-        GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE("aa{sv}"));
-        GVariantDict dict;
+        GVariantBuilder builder;
+        g_variant_builder_init(&builder, G_VARIANT_TYPE("aa{sv}"));
 
         for (GSList *iter = rules; iter; iter = iter->next) {
                 struct rule *r = iter->data;
@@ -472,6 +472,7 @@ static void dbus_cb_dunst_RuleList(GDBusConnection *connection,
                         continue;
                 }
 
+                GVariantDict dict;
                 g_variant_dict_init(&dict, NULL);
                 g_variant_dict_insert(&dict, "name", "s", r->name);
 
@@ -574,13 +575,10 @@ static void dbus_cb_dunst_RuleList(GDBusConnection *connection,
                 if (r->override_pause_level != -1)
                         g_variant_dict_insert(&dict, "override_pause_level", "i", r->override_pause_level);
 
-                g_variant_builder_add_value(builder, g_variant_dict_end(&dict));
+                g_variant_builder_add_value(&builder, g_variant_dict_end(&dict));
         }
 
-        GVariant *answer = g_variant_new("(aa{sv})", builder);
-
-        g_clear_pointer(&builder, g_variant_builder_unref);
-        g_dbus_method_invocation_return_value(invocation, answer);
+        g_dbus_method_invocation_return_value(invocation, g_variant_new("(aa{sv})", &builder));
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
 }
 
