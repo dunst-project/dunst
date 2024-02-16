@@ -150,13 +150,13 @@ static void output_handle_name(void *data, struct wl_output *wl_output,
         output->name = g_strdup(name);
         LOG_D("Output global %" PRIu32 " name %s", output->global_name, name);
 }
+
+static void output_handle_description(void *data, struct wl_output *output, const char* description) {
+        // do nothing
+}
 #endif
 
 static void output_listener_done_handler(void *data, struct wl_output *output) {
-        // do nothing
-}
-
-static void output_handle_description(void *data, struct wl_output *output, const char* description) {
         // do nothing
 }
 
