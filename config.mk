@@ -42,7 +42,7 @@ endif
 
 # flags
 DEFAULT_CPPFLAGS = -Wno-gnu-zero-variadic-macro-arguments -D_DEFAULT_SOURCE -DVERSION=\"${VERSION}\" -DSYSCONFDIR=\"${SYSCONFDIR}\"
-DEFAULT_CFLAGS   = -g -std=gnu99 -pedantic -Wall -Wno-overlength-strings -Os ${ENABLE_WAYLAND} ${EXTRA_CFLAGS}
+DEFAULT_CFLAGS   = -g -std=gnu11 -pedantic -Wall -Wno-overlength-strings -Os ${ENABLE_WAYLAND} ${EXTRA_CFLAGS}
 DEFAULT_LDFLAGS  = -lm -lrt
 
 CPPFLAGS_DEBUG := -DDEBUG_BUILD
