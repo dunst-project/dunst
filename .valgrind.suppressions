@@ -19,6 +19,16 @@
    obj:*
 }
 
+# Ignore yet another musls' weird error
+{
+   musl_alpine_libc
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:realloc
+   fun:getdelim
+   ...
+}
+
 # rsvg_error_handle_close got fixed in
 # - GNOME/librsvg@7bf1014
 # (2018-11-12, first tags: v2.45.0, v2.44.9)
