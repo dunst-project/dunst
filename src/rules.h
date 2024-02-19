@@ -49,7 +49,7 @@ struct rule {
         char *new_icon;
         char *fg;
         char *bg;
-        char *highlight;
+        char **highlight;
         char *default_icon;
         char *fc;
         char *set_category;

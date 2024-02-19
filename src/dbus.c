@@ -686,8 +686,15 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
                 g_variant_unref(dict_value);
         }
 
-        if ((dict_value = g_variant_lookup_value(hints, "hlcolor", G_VARIANT_TYPE_STRING))) {
-                n->colors.highlight = g_variant_dup_string(dict_value, NULL);
+        if ((dict_value = g_variant_lookup_value(hints, "hlcolor", G_VARIANT_TYPE_STRING_ARRAY))) {
+                n->colors.highlight = g_variant_dup_strv(dict_value, NULL);
+                g_variant_unref(dict_value);
+        } else if ((dict_value = g_variant_lookup_value(hints, "hlcolor", G_VARIANT_TYPE_STRING))) {
+                char *str = g_variant_dup_string(dict_value, NULL);
+                if (str != NULL) {
+                        n->colors.highlight = g_malloc0(sizeof(gchar **) * 2);
+                        n->colors.highlight[0] = str;
+                }
                 g_variant_unref(dict_value);
         }
 

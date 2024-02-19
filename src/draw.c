@@ -29,11 +29,16 @@ struct color {
         double a;
 };
 
+struct gradient {
+        struct color *cs;
+        gsize length;
+};
+
 struct colored_layout {
         PangoLayout *l;
         struct color fg;
         struct color bg;
-        struct color highlight;
+        struct gradient highlight;
         struct color frame;
         char *text;
         PangoAttrList *attr;
@@ -118,6 +123,41 @@ static struct color string_to_color(const char *str)
         /* return black on error */
         LOG_W("Invalid color string: '%s'", str);
         return hex_to_color(0xF, 1);
+}
+
+static struct gradient string_to_gradient(char **strv)
+{
+        struct gradient g;
+        if (strv == NULL) {
+                LOG_W("Invalid empty color gradient string");
+                /* return black on error */
+                g.length = 1;
+                g.cs = g_malloc(sizeof(struct color));
+                g.cs[0] = hex_to_color(0xF, 1);
+        } else {
+                g.length = 0;
+                g.cs = g_malloc0(g_strv_length(strv) * sizeof(struct color));
+
+                for (int i = 0; strv[i] != NULL; i++) {
+                        char *end, *str = strv[i];
+                        if (STR_EMPTY(str)) continue;
+
+                        uint_fast32_t val = strtoul(str+1, &end, 16);
+                        if (end[0] != '\0' && end[1] != '\0') {
+                                LOG_W("Invalid color string: '%s'", str);
+                                continue;
+                        }
+
+                        switch (end - (str+1)) {
+                                case 3:  g.cs[g.length++] = hex_to_color((val << 4) | 0xF, 1); break;
+                                case 6:  g.cs[g.length++] = hex_to_color((val << 8) | 0xFF, 2); break;
+                                case 4:  g.cs[g.length++] = hex_to_color(val, 1); break;
+                                case 8:  g.cs[g.length++] = hex_to_color(val, 2); break;
+                        }
+                }
+        }
+
+        return g;
 }
 
 static inline double color_apply_delta(double base, double delta)
@@ -248,6 +288,7 @@ static void free_colored_layout(void *data)
         struct colored_layout *cl = data;
         g_object_unref(cl->l);
         pango_attr_list_unref(cl->attr);
+        g_free(cl->highlight.cs);
         g_free(cl->text);
         g_free(cl);
 }
@@ -353,7 +394,7 @@ static struct colored_layout *layout_init_shared(cairo_t *c, struct notification
 
         cl->fg = string_to_color(n->colors.fg);
         cl->bg = string_to_color(n->colors.bg);
-        cl->highlight = string_to_color(n->colors.highlight);
+        cl->highlight = string_to_gradient(n->colors.highlight);
         cl->frame = string_to_color(n->colors.frame);
         cl->is_xmore = false;
 
@@ -857,10 +898,25 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, dou
                 cairo_fill(c);
 
                 // top layer (fill)
-                cairo_set_source_rgba(c, cl->highlight.r, cl->highlight.g, cl->highlight.b, cl->highlight.a);
+                cairo_pattern_t *pattern;
+                if (cl->highlight.length == 1) {
+                        pattern = cairo_pattern_create_rgba(cl->highlight.cs[0].r, cl->highlight.cs[0].g,
+                                                            cl->highlight.cs[0].b, cl->highlight.cs[0].a);
+                } else {
+                        pattern = cairo_pattern_create_linear(x_bar_1, 0, progress_width_without_frame, 0);
+                        const double step = 1.0 / (cl->highlight.length - 1);
+
+                        for (int i = 0; i < cl->highlight.length; i++)
+                                cairo_pattern_add_color_stop_rgba(pattern, i * step,
+                                                          cl->highlight.cs[i].r, cl->highlight.cs[i].g,
+                                                          cl->highlight.cs[i].b, cl->highlight.cs[i].a);
+                }
+
+                cairo_set_source(c, pattern);
                 draw_rounded_rect(c, x_bar_1, frame_y, progress_width_1, progress_height,
                         settings.progress_bar_corner_radius, scale, C_ALL);
                 cairo_fill(c);
+                cairo_pattern_destroy(pattern);
 
                 // border
                 cairo_set_source_rgba(c, cl->frame.r, cl->frame.g, cl->frame.b, cl->frame.a);
