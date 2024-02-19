@@ -128,16 +128,15 @@ static struct color string_to_color(const char *str)
 static struct gradient string_to_gradient(char **strv)
 {
         struct gradient g;
+        g.length = 0;
+
         if (strv == NULL) {
                 LOG_W("Invalid empty color gradient string");
-                /* return black on error */
-                g.length = 1;
                 g.cs = g_malloc(sizeof(struct color));
-                g.cs[0] = hex_to_color(0xF, 1);
+                g.cs[g.length++] = hex_to_color(0xF, 1);
+                /* return black (only one color) on error */
         } else {
-                g.length = 0;
                 g.cs = g_malloc0(g_strv_length(strv) * sizeof(struct color));
-
                 for (int i = 0; strv[i] != NULL; i++) {
                         char *end, *str = strv[i];
                         if (STR_EMPTY(str)) continue;
