@@ -1,5 +1,28 @@
 # Dunst changelog
 
+## 1.10.0 -- 2024-02-19
+
+### Added
+- Unofficial fish and bash completions (#1205, 1209)
+- Multiple pause levels to allow selective pausing of notifications (#1193)
+- `--startup_notification` option as an alternative to `-startup_notification` (#1208)
+- Expand variables, like `$HOME` in path in your dunstrc. See `man 3 wordexp` for the details (#1215)
+- Support for stable output names for the `monitor` (eDP-1, HDMI-1, etc). This is more relyable than the order of monitors. (#1250)
+- Wayland multiseat and touchscreen support (#1250)
+
+### Changed
+- The cursor is now being drawn by the compositor, making sure the right cursor theme and scaling is being used (#1250)
+
+### Fixed
+- Various documentation issues
+- Icon path not being interpreted as a path (#1210)
+- Handling of some commandline options (#1208)
+- Improved handling of fallback fonts (#1222)
+- Progress bar not rendering correctly for big corner radiusses compared to width (#1227)
+- Whitespace and brackets in dunstctl usage output (#1230, #1233)
+- Errors about Glib source ID spamming the log (#1257)
+- Idle idle_threshold not working anymore in Wayland due to Wayland protocol changes (#1250)
+
 ## 1.9.2 -- 2023-04-20
 
 ### Fixed
