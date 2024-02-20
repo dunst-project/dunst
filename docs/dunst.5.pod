@@ -24,7 +24,7 @@ All experimental settings are marked with I<Experimental>
 
 To Reload C<.dunstrc>, run this command in your terminal :
  
-        $ killall dunst;notify-send foo
+        $ killall dunst
 
 =head2 Global section
 
