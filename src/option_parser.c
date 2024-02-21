@@ -9,7 +9,6 @@
 #include <string.h>
 #include <errno.h>
 
-#include "x11/x.h"
 #include "dunst.h"
 #include "log.h"
 #include "utils.h"
