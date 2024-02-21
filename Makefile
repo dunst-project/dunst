@@ -35,7 +35,7 @@ LDFLAGS := ${DEFAULT_LDFLAGS} ${LDFLAGS} ${LIBS}
 
 ifeq (0,${WAYLAND})
 # without wayland support
-SRC := $(sort $(shell ${FIND} src/ -not \( -path src/wayland -prune \) -name '*.c'))
+SRC := $(sort $(shell ${FIND} src/ ! \( -path src/wayland -prune \) -name '*.c'))
 else
 # with Wayland support
 CFLAGS += -DHAVE_WL_CURSOR_SHAPE -DHAVE_WL_EXT_IDLE_NOTIFY
