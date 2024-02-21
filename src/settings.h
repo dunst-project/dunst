@@ -12,7 +12,7 @@
 #include "x11/x.h"
 #endif
 
-// TODO: Make keyboard_shortcut work also for wayland
+// Note: Wayland doesn't support hotkeys
 struct keyboard_shortcut {
         const char *str;
 #ifdef ENABLE_X11
