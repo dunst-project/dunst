@@ -489,6 +489,13 @@ static void XRM_update_db(void)
                         XrmDestroyDatabase(db);
                 }
 
+                // Despite what the XrmSetDatabase docs say, it may try to free
+                // the database, resulting in memory corruption. Prevent that
+                // by making sure it has no db to act on. If it's past the
+                // first run, we will have done XrmDestroyDatabase above
+                // anyway.
+                xctx.dpy->db = NULL;
+
                 db = XrmGetStringDatabase((const char*)prop.value);
                 XrmSetDatabase(xctx.dpy, db);
         }
