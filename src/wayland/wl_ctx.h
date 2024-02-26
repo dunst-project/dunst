@@ -53,5 +53,7 @@ struct wl_ctx {
 
 extern struct wl_ctx ctx;
 
+void set_dirty(void);
+
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */
