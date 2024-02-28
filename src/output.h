@@ -53,12 +53,11 @@ struct output {
 
 #ifndef ENABLE_X11
 #define WAYLAND_ONLY 1
+#ifndef ENABLE_WAYLAND
+#error "You have to compile at least one output (X11, Wayland)"
+#endif
 #else
 #define WAYLAND_ONLY 0
-#endif
-
-#if !defined(ENABLE_X11) && !defined(ENABLE_WAYLAND)
-#error "You have to compile at least one output (X11, Wayland)"
 #endif
 
 /**
