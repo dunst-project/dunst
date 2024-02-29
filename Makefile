@@ -32,15 +32,18 @@ SYSCONF_FORCE_NEW ?= $(shell [ -f ${DESTDIR}${SYSCONFFILE} ] || echo 1)
 CFLAGS  := ${DEFAULT_CPPFLAGS} ${CPPFLAGS} ${DEFAULT_CFLAGS} ${CFLAGS} ${INCS} -MMD -MP
 LDFLAGS := ${DEFAULT_LDFLAGS} ${LDFLAGS} ${LIBS}
 
+SRC := $(sort $(shell ${FIND} src/ -not \( -path src/wayland -prune -o -path src/x11 -prune \) -name '*.c'))
 
-ifeq (0,${WAYLAND})
-# without wayland support
-SRC := $(sort $(shell ${FIND} src/ -not \( -path src/wayland -prune \) -name '*.c'))
-else
+ifneq (0,${WAYLAND})
 # with Wayland support
 CFLAGS += -DHAVE_WL_CURSOR_SHAPE -DHAVE_WL_EXT_IDLE_NOTIFY
-SRC := $(sort $(shell ${FIND} src/ -name '*.c'))
+SRC += $(sort $(shell ${FIND} src/wayland -name '*.c'))
 endif
+
+ifneq (0,${X11})
+SRC += $(sort $(shell ${FIND} src/x11 -name '*.c'))
+endif
+
 OBJ := ${SRC:.c=.o}
 TEST_SRC := $(sort $(shell ${FIND} test/ -name '*.c'))
 TEST_OBJ := $(TEST_SRC:.c=.o)

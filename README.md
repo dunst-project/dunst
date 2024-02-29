@@ -118,12 +118,15 @@ sudo make install
 - `MANDIR=<PATH>`: Set the prefix of the manpage. (Default: `${DATADIR}/man`)
 - `SYSTEMD=(0|1)`: Disable/Enable the systemd unit. (Default: autodetect systemd)
 - `WAYLAND=(0|1)`: Disable/Enable wayland support. (Default: 1 (enabled))
+- `X11=(0|1)`: Disable/Enable X11 support. (Default: 1 (enabled))
 - `DUNSTIFY=(0|1)`: Disable/Enable the libnotify dunstctl utility. (Default: 1 (enabled))
 - `SERVICEDIR_SYSTEMD=<PATH>`: The path to put the systemd user service file. Unused, if `SYSTEMD=0`. (Default: `${PREFIX}/lib/systemd/user`)
 - `SERVICEDIR_DBUS=<PATH>`: The path to put the dbus service file. (Default: `${DATADIR}/dbus-1/services`)
 - `EXTRA_CFLAGS=<FLAGS>`: Additional flags for the compiler.
 
 **Make sure to run all make calls with the same parameter set. So when building with `make PREFIX=/usr`, you have to install it with `make PREFIX=/usr install`, too.**
+
+**Either X11 or WAYLAND should be set, otherwise dunst will not compile.**
 
 **Notes on default of XDG_CONFIG_DIRS**
 

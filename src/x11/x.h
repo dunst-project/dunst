@@ -15,17 +15,6 @@
 
 #include "screen.h"
 
-struct keyboard_shortcut {
-        const char *str;
-        KeyCode code;
-        KeySym sym;
-        KeySym mask;
-        bool is_valid;
-};
-
-// Cyclical dependency
-#include "../settings.h"
-
 struct x_context {
         Display *dpy;
         XScreenSaverInfo *screensaver_info;
