@@ -28,11 +28,11 @@ glib = dependency('glib-2.0')
 gio = dependency('gio-2.0')
 gdk_pixbuf = dependency('gdk-pixbuf-2.0')
 pangocairo = dependency('pangocairo')
-x11 = dependency('x11')
-xinerama = dependency('xinerama')
-xext = dependency('xext')
-xrandr = dependency('xrandr', version: '>=1.5')
-xscrnsaver = dependency('xscrnsaver')
+x11 = dependency('x11', required: get_option('x11'))
+xinerama = dependency('xinerama', required: get_option('x11'))
+xext = dependency('xext', required: get_option('x11'))
+xrandr = dependency('xrandr', required: get_option('x11'), version: '>=1.5')
+xscrnsaver = dependency('xscrnsaver', required: get_option('x11'))
 systemd = dependency('systemd', required: get_option('systemd'))
 libnotify = dependency('libnotify', required: get_option('dunstify'))
 realtime = cc.find_library('rt')
@@ -40,6 +40,13 @@ math = cc.find_library('m')
 wayland_client = dependency('wayland-client', required: get_option('wayland'))
 wayland_protos = dependency('wayland-protocols', version: '>=1.12', required: get_option('wayland'))
 wayland_cursor = dependency('wayland-cursor', required: get_option('wayland'))
+
+x11_support = x11.found() and xinerama.found() and xext.found() and xrandr.found() and xscrnsaver.found()
+wayland_support = wayland_client.found() and wayland_cursor.found() and wayland_protos.found()
+
+if not x11_support and not wayland_support
+	error('either wayland or x11 support is required')
+endif
 
 c_version_arg = '-DVERSION="@0@"'.format(meson.project_version())
 sysconfdir = get_option('sysconfdir') / 'xdg'
@@ -90,3 +97,11 @@ pod2man = find_program('pod2man', native: true, required: get_option('docs'))
 if pod2man.found()
 	subdir('docs')
 endif
+
+summary({
+	'X11 support': x11_support,
+	'Wayland support': wayland_support,
+	'Man pages': pod2man.found(),
+	'Dunstify': libnotify.found(),
+	'Install systemd service units': systemd.found(),
+}, bool_yn: true)
