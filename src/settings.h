@@ -8,8 +8,22 @@
 #include "wayland/protocols/wlr-layer-shell-unstable-v1-client-header.h"
 #endif
 
-#include "notification.h"
+#ifdef ENABLE_X11
 #include "x11/x.h"
+#endif
+
+// Note: Wayland doesn't support hotkeys
+struct keyboard_shortcut {
+        const char *str;
+#ifdef ENABLE_X11
+        KeyCode code;
+        KeySym sym;
+        KeySym mask;
+        bool is_valid;
+#endif
+};
+
+#include "notification.h"
 #include "draw.h"
 
 #define LIST_END (-1)

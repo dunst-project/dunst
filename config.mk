@@ -40,9 +40,13 @@ ifneq (0, ${WAYLAND})
 ENABLE_WAYLAND= -DENABLE_WAYLAND
 endif
 
+ifneq (0, ${X11})
+ENABLE_X11= -DENABLE_X11
+endif
+
 # flags
 DEFAULT_CPPFLAGS = -Wno-gnu-zero-variadic-macro-arguments -D_DEFAULT_SOURCE -DVERSION=\"${VERSION}\" -DSYSCONFDIR=\"${SYSCONFDIR}\"
-DEFAULT_CFLAGS   = -g -std=gnu99 -pedantic -Wall -Wno-overlength-strings -Os ${ENABLE_WAYLAND} ${EXTRA_CFLAGS}
+DEFAULT_CFLAGS   = -g -std=gnu11 -pedantic -Wall -Wno-overlength-strings -Os ${ENABLE_WAYLAND} ${ENABLE_X11} ${EXTRA_CFLAGS}
 DEFAULT_LDFLAGS  = -lm -lrt
 
 CPPFLAGS_DEBUG := -DDEBUG_BUILD
@@ -53,11 +57,6 @@ pkg_config_packs := gio-2.0 \
                     gdk-pixbuf-2.0 \
                     "glib-2.0 >= 2.44" \
                     pangocairo \
-                    x11 \
-                    xinerama \
-                    xext \
-                    "xrandr >= 1.5" \
-                    xscrnsaver \
 
 
 ifneq (0,${DUNSTIFY})
@@ -68,4 +67,12 @@ endif
 ifneq (0,${WAYLAND})
 pkg_config_packs += wayland-client
 pkg_config_packs += wayland-cursor
+endif
+
+ifneq (0,${X11})
+pkg_config_packs += x11
+pkg_config_packs += xinerama
+pkg_config_packs += xext
+pkg_config_packs += "xrandr >= 1.5"
+pkg_config_packs += xscrnsaver
 endif

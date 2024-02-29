@@ -1,8 +1,10 @@
 #include "output.h"
-
 #include "log.h"
+
+#ifdef ENABLE_X11
 #include "x11/x.h"
 #include "x11/screen.h"
+#endif
 
 #ifdef ENABLE_WAYLAND
 #include "wayland/wl.h"
@@ -13,6 +15,7 @@ bool is_running_wayland(void) {
         return !(wayland_display == NULL);
 }
 
+#ifdef ENABLE_X11
 const struct output output_x11 = {
         x_setup,
         x_free,
@@ -33,6 +36,7 @@ const struct output output_x11 = {
 
         x_get_scale,
 };
+#endif
 
 #ifdef ENABLE_WAYLAND
 const struct output output_wl = {
@@ -57,7 +61,8 @@ const struct output output_wl = {
 };
 #endif
 
-const struct output* get_x11_output() {
+#ifdef ENABLE_X11
+const struct output* get_x11_output(void) {
         const struct output* output = &output_x11;
         if (output->init()) {
                 return output;
@@ -65,16 +70,21 @@ const struct output* get_x11_output() {
                 LOG_E("Couldn't initialize X11 output. Aborting...");
         }
 }
+#endif
 
 #ifdef ENABLE_WAYLAND
-const struct output* get_wl_output() {
+const struct output* get_wl_output(void) {
         const struct output* output = &output_wl;
         if (output->init()) {
                 return output;
         } else {
+#ifdef ENABLE_X11
                 LOG_W("Couldn't initialize wayland output. Falling back to X11 output.");
                 output->deinit();
                 return get_x11_output();
+#else
+                DIE("Couldn't initialize wayland output");
+#endif
         }
 }
 #endif
@@ -82,15 +92,19 @@ const struct output* get_wl_output() {
 const struct output* output_create(bool force_xwayland)
 {
 #ifdef ENABLE_WAYLAND
-        if (!force_xwayland && is_running_wayland()) {
+        if ((!force_xwayland || WAYLAND_ONLY) && is_running_wayland()) {
                 LOG_I("Using Wayland output");
+                if (force_xwayland)
+                        LOG_W("Ignoring force_xwayland setting because X11 output was not compiled");
                 return get_wl_output();
-        } else {
-                LOG_I("Using X11 output");
-                return get_x11_output();
         }
-#else
+#endif
+
+#ifdef ENABLE_X11
+        LOG_I("Using X11 output");
         return get_x11_output();
 #endif
+
+        DIE("No applicable ouput was found (X11, Wayland)");
 }
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

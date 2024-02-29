@@ -9,7 +9,6 @@
 #include <string.h>
 #include <errno.h>
 
-#include "x11/x.h"
 #include "dunst.h"
 #include "log.h"
 #include "utils.h"
@@ -424,7 +423,7 @@ bool set_rule(struct setting setting, char* value, char* section) {
         return set_rule_value(r, setting, value);
 }
 
-void set_defaults() {
+void set_defaults(void) {
         for (int i = 0; i < G_N_ELEMENTS(allowed_settings); i++) {
                 // FIXME Rule settings can only have a default if they have an
                 // working entry in the settings struct as well. Make an

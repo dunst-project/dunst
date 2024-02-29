@@ -178,7 +178,7 @@ static inline bool rule_field_matches_string(const char *value, const char *patt
                         return false;
                 }
 
-                for (int i = 0; ; i++) {
+                while (true) {
                         if (regexec(&regex, value, 0, NULL, 0))
                                 break;
                         regfree(&regex);

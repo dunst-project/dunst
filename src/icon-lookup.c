@@ -157,7 +157,7 @@ int load_icon_theme_from_dir(const char *icon_dir, const char *subdir_theme) {
 // a list of directories where icon themes might be located
 GPtrArray *theme_path = NULL;
 
-void get_theme_path() {
+void get_theme_path(void) {
         theme_path = g_ptr_array_new_full(5, g_free);
         const char *home = g_get_home_dir();
         g_ptr_array_add(theme_path, g_build_filename(home, ".icons", NULL));
@@ -208,7 +208,7 @@ void finish_icon_theme(struct icon_theme *theme) {
         g_free(theme->dirs);
 }
 
-void free_all_themes() {
+void free_all_themes(void) {
         g_free(default_themes_index);
         default_themes_index = NULL;
         default_themes_count = 0;

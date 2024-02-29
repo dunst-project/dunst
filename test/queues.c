@@ -1061,7 +1061,7 @@ TEST test_queue_get_history(void)
 }
 
 
-void print_queues() {
+void print_queues(void) {
         printf("\nQueues:\n");
         for (GList *iter = g_queue_peek_head_link(QUEUE_WAIT); iter;
                         iter = iter->next) {

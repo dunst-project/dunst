@@ -4,7 +4,14 @@
 #include "settings.h"
 #include "queues.h"
 #include <stddef.h>
+#if defined(__linux__) || defined(__FreeBSD__)
 #include <linux/input-event-codes.h>
+#else
+#define BTN_LEFT	(0x110)
+#define BTN_RIGHT	(0x111)
+#define BTN_MIDDLE	(0x112)
+#define BTN_TOUCH	(0x14a)
+#endif
 
 int get_notification_clickable_height(struct notification *n, bool first, bool last)
 {
