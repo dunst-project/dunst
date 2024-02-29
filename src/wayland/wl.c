@@ -750,9 +750,14 @@ bool wl_init(void) {
                 LOG_W("couldn't find a cursor theme");
                 return true;
         }
-        struct wl_cursor *cursor = wl_cursor_theme_get_cursor(ctx.cursor_theme, "left_ptr");
+        // Try cursor spec (CSS) name first
+        struct wl_cursor *cursor = wl_cursor_theme_get_cursor(ctx.cursor_theme, "default");
         if (cursor == NULL) {
-                LOG_W("couldn't find cursor icon \"left_ptr\"");
+                // Try legacy Xcursor name
+                cursor = wl_cursor_theme_get_cursor(ctx.cursor_theme, "left_ptr");
+        }
+        if (cursor == NULL) {
+                LOG_W("couldn't find cursor icons \"default\" or \"left_ptr\"");
                 wl_cursor_theme_destroy(ctx.cursor_theme);
                 // Set to NULL so it doesn't get free'd again
                 ctx.cursor_theme = NULL;
