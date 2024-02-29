@@ -38,7 +38,7 @@ libnotify = dependency('libnotify', required: get_option('dunstify'))
 realtime = cc.find_library('rt')
 math = cc.find_library('m')
 wayland_client = dependency('wayland-client', required: get_option('wayland'))
-wayland_protos = dependency('wayland-protocols', version: '>=1.32', required: get_option('wayland'))
+wayland_protos = dependency('wayland-protocols', version: '>=1.12', required: get_option('wayland'))
 wayland_cursor = dependency('wayland-cursor', required: get_option('wayland'))
 
 c_version_arg = '-DVERSION="@0@"'.format(meson.project_version())
