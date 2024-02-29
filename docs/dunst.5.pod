@@ -332,6 +332,8 @@ Default: overlay
 Force the use of X11 output, even on a wayland compositor. This setting
 has no effect when not using a Wayland compositor.
 
+This setting will be ignored if dunst was compiled without X11 support.
+
 =item B<font> (default: "Monospace 8")
 
 Defines the font or font set used. Optionally set the size as a decimal number
@@ -826,7 +828,7 @@ Matches only messages that were send via notify-send. If multiple filter
 expressions are present, all of them have to match for the rule to be applied
 (logical AND).
 
-Shell-like globing is supported.
+Shell-like globbing is supported.
 
 =item B<modifying>
 

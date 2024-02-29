@@ -20,7 +20,6 @@
 #include "ini.h"
 #include "rules.h"
 #include "utils.h"
-#include "x11/x.h"
 #include "output.h"
 
 #ifndef SYSCONFDIR

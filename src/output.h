@@ -51,6 +51,15 @@ struct output {
         double (*get_scale)(void);
 };
 
+#ifndef ENABLE_X11
+#define WAYLAND_ONLY 1
+#ifndef ENABLE_WAYLAND
+#error "You have to compile at least one output (X11, Wayland)"
+#endif
+#else
+#define WAYLAND_ONLY 0
+#endif
+
 /**
  * return an initialized output, selecting the correct output type from either
  * wayland or X11 according to the settings and environment.
