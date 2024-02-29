@@ -19,7 +19,14 @@
 #include <X11/Xlib.h>
 #include <X11/Xresource.h>
 #include <X11/Xutil.h>
+#if defined(__linux__) || defined(__FreeBSD__)
 #include <linux/input-event-codes.h>
+#else
+#define BTN_LEFT    (0x110)
+#define BTN_RIGHT   (0x111)
+#define BTN_MIDDLE  (0x112)
+#define BTN_TOUCH   (0x14a)
+#endif
 
 #include "../dbus.h"
 #include "../draw.h"

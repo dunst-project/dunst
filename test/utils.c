@@ -1,4 +1,6 @@
+#if defined(__linux__)
 #include <features.h>
+#endif
 
 #include "../src/utils.c"
 #include "greatest.h"

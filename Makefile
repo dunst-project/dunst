@@ -32,7 +32,7 @@ SYSCONF_FORCE_NEW ?= $(shell [ -f ${DESTDIR}${SYSCONFFILE} ] || echo 1)
 CFLAGS  := ${DEFAULT_CPPFLAGS} ${CPPFLAGS} ${DEFAULT_CFLAGS} ${CFLAGS} ${INCS} -MMD -MP
 LDFLAGS := ${DEFAULT_LDFLAGS} ${LDFLAGS} ${LIBS}
 
-SRC := $(sort $(shell ${FIND} src/ -not \( -path src/wayland -prune -o -path src/x11 -prune \) -name '*.c'))
+SRC := $(sort $(shell ${FIND} src/ ! \( -path src/wayland -prune -o -path src/x11 -prune \) -name '*.c'))
 
 ifneq (0,${WAYLAND})
 # with Wayland support
