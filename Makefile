@@ -44,6 +44,12 @@ ifneq (0,${X11})
 SRC += $(sort $(shell ${FIND} src/x11 -name '*.c'))
 endif
 
+ifeq (0,${X11})
+ifeq (0,${WAYLAND})
+$(error You have to compile at least one output (X11, Wayland))
+endif
+endif
+
 OBJ := ${SRC:.c=.o}
 TEST_SRC := $(sort $(shell ${FIND} test/ -name '*.c'))
 TEST_OBJ := $(TEST_SRC:.c=.o)
@@ -198,7 +204,7 @@ clean-wayland-protocols:
         uninstall uninstall-dunstctl uninstall-dunstrc \
         uninstall-service uninstall-service-dbus uninstall-service-systemd \
 	uninstall-keepconf uninstall-purge
-install: install-dunst install-dunstctl install-dunstrc install-service 
+install: install-dunst install-dunstctl install-dunstrc install-service
 
 install-dunst: dunst doc
 	install -Dm755 dunst ${DESTDIR}${BINDIR}/dunst

@@ -3,6 +3,12 @@
 #include "helpers.h"
 #include <cairo.h>
 
+#if WAYLAND_ONLY
+#include "../src/wayland/wl.h"
+#else
+#include "../src/x11/x.h"
+#endif
+
 cairo_t *c;
 
 double get_dummy_scale(void) { return 1; }
@@ -13,6 +19,24 @@ const struct screen_info* noop_screen(void) {
 }
 
 const struct output dummy_output = {
+#if WAYLAND_ONLY
+        wl_init,
+        wl_deinit,
+
+        wl_win_create,
+        wl_win_destroy,
+
+        wl_win_show,
+        wl_win_hide,
+
+        wl_display_surface,
+        wl_win_get_context,
+
+        noop_screen,
+
+        wl_is_idle,
+        wl_have_fullscreen_window,
+#else
         x_setup,
         x_free,
 
@@ -29,6 +53,7 @@ const struct output dummy_output = {
 
         x_is_idle,
         have_fullscreen_window,
+#endif
 
         get_dummy_scale,
 };
