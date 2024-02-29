@@ -828,7 +828,7 @@ Matches only messages that were send via notify-send. If multiple filter
 expressions are present, all of them have to match for the rule to be applied
 (logical AND).
 
-Shell-like globing is supported.
+Shell-like globbing is supported.
 
 =item B<modifying>
 
