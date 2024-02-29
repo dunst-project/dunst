@@ -5,7 +5,7 @@ include config.mk
 
 VERSION := "1.10.0-non-git"
 ifneq ($(wildcard ./.git/),)
-VERSION := $(shell ${GIT} describe --tags)
+VERSION := $(shell ${GIT} describe --tags 2>/dev/null || echo ${VERSION})
 endif
 
 SYSTEMD ?= $(shell $(PKG_CONFIG) --silence-errors ${SYSTEMDAEMON} || echo 0)
