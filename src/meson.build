@@ -4,11 +4,6 @@ dunst_depends = [
 	gio,
 	gdk_pixbuf,
 	pangocairo,
-	x11,
-	xinerama,
-	xext,
-	xrandr,
-	xscrnsaver,
 	systemd,
 	libnotify,
 	realtime,
@@ -33,11 +28,25 @@ dunst_src_files = files(
 	'rules.c', 
 	'settings.c', 
 	'utils.c', 
-	'x11/screen.c', 
-	'x11/x.c', 
 )
 
-if wayland_client.found() and wayland_cursor.found() and wayland_protos.found()
+if x11_support
+	add_global_arguments('-DENABLE_X11', language: 'c')
+
+	dunst_depends += [
+		x11,
+		xinerama,
+		xext,
+		xrandr,
+		xscrnsaver,
+	]
+	dunst_src_files += files(
+		'x11/screen.c', 
+		'x11/x.c', 
+	)
+endif
+
+if wayland_support
 	add_global_arguments('-DENABLE_WAYLAND', language: 'c')
 
 	subdir('wayland/protocols')
