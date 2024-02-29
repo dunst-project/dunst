@@ -188,10 +188,24 @@ than half of the progress bar height.
 The corner radius of the progress bar in pixels. Gives the progress bar
 rounded corners. Set to 0 to disable.
 
+=item B<progress_bar_corners> (default: all)
+
+Define which corners to round when drawing the progress bar. If progress_bar_corner_radius
+is set to 0 this option will be ignored.
+
+See the B<corners> setting for the value format.
+
 =item B<icon_corner_radius> (default: 0)
 
 The corner radius of the icon image in pixels. Gives the icon
 rounded corners. Set to 0 to disable.
+
+=item B<icon_corners> (default: all)
+
+Define which corners to round when drawing the icon image. If icon_corner_radius
+is set to 0 this option will be ignored.
+
+See the B<corners> setting for the value format.
 
 =item B<indicate_hidden> (values: [true/false], default: true)
 
@@ -295,11 +309,11 @@ critical first, then normal, then low.
 
 If set to false or id, sort notifications by id.
 
-If set to urgency_ascending, notifications are sorted by urgency, 
+If set to urgency_ascending, notifications are sorted by urgency,
 low first, then normal, then critical.
 
-If set to update, notifications are sorted by their update_time. 
-So the most recent is always at the top. This means that if you set sort to update, 
+If set to update, notifications are sorted by their update_time.
+So the most recent is always at the top. This means that if you set sort to update,
 and stack_duplicates to true, the duplicate will always be at the top.
 
 When the notification window is at the bottom of the screen, this order is automatically reversed.
@@ -433,8 +447,8 @@ replace this and will need new settings.
 
 =item B<icon_theme> (default: "Adwaita", example: "Adwaita, breeze")
 
-Comma-separated of names of the the themes to use for looking up icons. This has
-to be the name of the directory in which the theme is located, not the
+Comma-separated list of names of the the themes to use for looking up icons. This
+as to be the name of the directory in which the theme is located, not the
 human-friendly name of the theme. So for example, the theme B<Breeze Dark> is
 located in F</usr/share/icons/breeze-dark>. In this case you have to set the
 theme to B<breeze-dark>.
@@ -521,6 +535,14 @@ single notification.
 To avoid the corners clipping the icon or text the corner radius will be
 automatically lowered to half of the notification height if it exceeds it.
 
+=item B<corners> (default: all)
+
+Define which corners to round when drawing the window. If the corner radius
+is set to 0 this option will be ignored.
+
+Comma-separated list of the corners. The accepted corner values are bottom-right,
+bottom-left, top-right, top-left, top, bottom, left, right or all.
+
 =item B<mouse_left/middle/right_click> (values: [none/do_action/close_current/close_all/context/context_all])
 
 Defines action of mouse click. A touch input in Wayland acts as a mouse left
@@ -568,7 +590,7 @@ the notification sent before the user defined timeout.
 
 =item B<override_pause_level> (values: [0-100], default: 0)
 
-A Notification will appear whenever notification's 
+A Notification will appear whenever notification's
 override_pause_level >= dunst's paused level. Setting this to values other than 0
 allows you to create partial pause modes, where more urgent notifications get through,
 but less urgent stay paused. For example, when you can set a low battery noficiation's

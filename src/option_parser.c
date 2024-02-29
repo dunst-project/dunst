@@ -80,13 +80,21 @@ int string_parse_enum_list_to_single(const void *data, char **s, int *ret)
         int len = string_array_length(s);
         for (int i = 0; i < len; i++) {
                 if (!string_parse_enum(data, s[i], &tmp)) {
-                        LOG_W("Unknown mouse action value: '%s'", s[i]);
+                        LOG_W("Unknown value: '%s'", s[i]);
                         return false;
                 }
                 tmp_ret |= tmp;
         }
         *ret = tmp_ret;
         return true;
+}
+
+int string_parse_corners(const void *data, const char *s, void *ret)
+{
+        char **s_arr = string_to_array(s, ",");
+        int success = string_parse_enum_list_to_single(data, s_arr, ret);
+        g_strfreev(s_arr);
+        return success;
 }
 
 // When allow empty is true, empty strings are interpreted as -1

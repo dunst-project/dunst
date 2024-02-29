@@ -737,6 +737,85 @@ TEST test_string_to_length_invalid(void)
         PASS();
 }
 
+TEST test_string_to_corners(void)
+{
+        enum corner_pos corners = C_NONE;
+
+        struct setting s;
+        s.type = TYPE_CUSTOM;
+        s.value = &corners;
+        s.parser = string_parse_corners;
+        s.parser_data = corners_enum_data;
+
+        char buf[50];
+
+        // do not go until last element, since it's ENUM_END (all 0)
+        for (int i = 0; i < G_N_ELEMENTS(ellipsize_enum_data)-1; i++) {
+                sprintf(buf, "Failed in round %i", i);
+                ASSERTm(buf, set_from_string(&corners, s, corners_enum_data[i].string));
+                ASSERT_EQm(buf, corners, corners_enum_data[i].enum_value);
+        }
+
+        const char* inputs[] = {
+                "bottom,right",
+                "top-left, top-right",
+                "all",
+                "right,left,top,bottom",
+                "bottom-left,top-right",
+                "all,all", // still accepted
+                "all,top-right",
+        };
+        const enum corner_pos results[] = {
+                C_BOT | C_RIGHT,
+                C_TOP_LEFT | C_TOP_RIGHT,
+                C_ALL,
+                C_ALL,
+                C_BOT_LEFT | C_TOP_RIGHT,
+                C_ALL,
+                C_ALL,
+        };
+
+        ARRAY_SAME_LENGTH(inputs, results);
+
+        for (int i = 0; i < G_N_ELEMENTS(inputs); i++) {
+                sprintf(buf, "Failed in round %i", i);
+                ASSERTm(buf, set_from_string(&corners, s, inputs[i]));
+                ASSERT_EQm(buf, corners, results[i]);
+        }
+        PASS();
+}
+
+TEST test_string_to_corners_invalid(void)
+{
+        enum corner_pos corners = C_ALL + 1;
+
+        struct setting s = {0};
+        s.type = TYPE_CUSTOM;
+        s.parser = string_parse_corners;
+        s.parser_data = corners_enum_data;
+        s.value = &corners;
+        s.name = "test_corners";
+
+        const char* invalid_inputs[] = {
+                "123",
+                "something",
+                "else",
+                "al l",
+                "right;right",
+                "bot-left",
+                "top right, bottom left"
+        };
+
+        char buf[50];
+        for (int i = 0; i < G_N_ELEMENTS(invalid_inputs); i++) {
+                sprintf(buf, "Failed in round %i", i);
+                bool success = set_from_string(&corners, s, invalid_inputs[i]);
+                ASSERT_FALSEm(buf, success);
+        }
+        ASSERT_EQm("Enum should not change from invalid values", corners, C_ALL + 1);
+        PASS();
+}
+
 TEST test_string_to_maybe_int(void)
 {
         char *val = NULL;
@@ -761,10 +840,8 @@ TEST test_string_to_maybe_int(void)
                 { "HDMI-0", INT_MIN },
                 { "0TEST", INT_MIN },
         };
-
-        ARRAY_SAME_LENGTH(inputs, results);
-
         char buf[500];
+
         for (int i = 0; i < G_N_ELEMENTS(inputs); i++) {
                 sprintf(buf, "Failed in round %i.", i);
                 ASSERTm(buf, set_from_string(&val, s, inputs[i]));
@@ -777,7 +854,6 @@ TEST test_string_to_maybe_int(void)
         g_free(val);
 
         PASS();
-
 }
 
 #define TEST_ENUM(t) { \
@@ -796,6 +872,7 @@ TEST test_enum_size(void)
         TEST_ENUM(enum follow_mode);
         TEST_ENUM(enum mouse_action );
         TEST_ENUM(enum zwlr_layer_shell_v1_layer);
+        TEST_ENUM(enum corner_pos);
         PASS();
 }
 
@@ -838,6 +915,8 @@ SUITE(suite_option_parser)
         RUN_TEST(test_string_to_time);
         RUN_TEST(test_string_to_time_invalid);
         RUN_TEST(test_string_to_path);
+        RUN_TEST(test_string_to_corners);
+        RUN_TEST(test_string_to_corners_invalid);
         // Paths are now almost always considered valid
         RUN_TEST(test_string_to_sepcolor);
         RUN_TEST(test_string_to_sepcolor_invalid);

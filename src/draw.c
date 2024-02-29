@@ -812,7 +812,7 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, dou
                 } // else ICON_RIGHT
 
                 cairo_set_source_surface(c, cl->icon, round(image_x * scale), round(image_y * scale));
-                draw_rounded_rect(c, image_x, image_y, image_width, image_height, settings.icon_corner_radius, scale, C_ALL);
+                draw_rounded_rect(c, image_x, image_y, image_width, image_height, settings.icon_corner_radius, scale, settings.icon_corners);
                 cairo_fill(c);
         }
 
@@ -853,13 +853,13 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, dou
                 // back layer (background)
                 cairo_set_source_rgba(c, cl->bg.r, cl->bg.g, cl->bg.b, cl->bg.a);
                 draw_rounded_rect(c, x_bar_2, frame_y, progress_width_2, progress_height,
-                        settings.progress_bar_corner_radius, scale, C_ALL);
+                        settings.progress_bar_corner_radius, scale, settings.progress_bar_corners);
                 cairo_fill(c);
 
                 // top layer (fill)
                 cairo_set_source_rgba(c, cl->highlight.r, cl->highlight.g, cl->highlight.b, cl->highlight.a);
                 draw_rounded_rect(c, x_bar_1, frame_y, progress_width_1, progress_height,
-                        settings.progress_bar_corner_radius, scale, C_ALL);
+                        settings.progress_bar_corner_radius, scale, settings.progress_bar_corners);
                 cairo_fill(c);
 
                 // border
@@ -871,7 +871,7 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, dou
                                 progress_width - frame_width - 2,
                                 progress_height,
                                 settings.progress_bar_corner_radius,
-                                scale, C_ALL);
+                                scale, settings.progress_bar_corners);
                 cairo_stroke(c);
         }
 }
@@ -974,7 +974,7 @@ void draw(void)
 
         cairo_t *c = output->win_get_context(win);
 
-        if(c == NULL) {
+        if (c == NULL) {
                 return;
         }
 
@@ -988,16 +988,16 @@ void draw(void)
                                                                     round(dim.w * scale),
                                                                     round(dim.h * scale));
 
-        enum corner_pos corners = C_TOP | _C_FIRST;
+        enum corner_pos corners = (settings.corners & C_TOP) | _C_FIRST;
         for (GSList *iter = layouts; iter; iter = iter->next) {
 
                 struct colored_layout *cl_this = iter->data;
                 struct colored_layout *cl_next = iter->next ? iter->next->data : NULL;
 
                 if (settings.gap_size)
-                        corners = C_ALL;
+                        corners = settings.corners;
                 else if (!cl_next)
-                        corners |= C_BOT | _C_LAST;
+                        corners |= (settings.corners & C_BOT) | _C_LAST;
 
                 dim = layout_render(image_surface, cl_this, cl_next, dim, corners);
                 corners &= ~(C_TOP | _C_FIRST);
