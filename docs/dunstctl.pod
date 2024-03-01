@@ -35,6 +35,10 @@ currently open notifications.
 Returns the number of displayed, shown and waiting notifications. If no argument
 is provided, everything will be printed.
 
+=item B<history>
+
+Exports the history as JSON.
+
 =item B<history-pop> [ID]
 
 Redisplay the notification that was most recently closed. This can be called
