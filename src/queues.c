@@ -375,7 +375,7 @@ void queues_history_pop_by_id(unsigned int id)
         if (g_queue_is_empty(history))
                 return;
 
-        // search through the history buffer 
+        // search through the history buffer
         for (GList *iter = g_queue_peek_head_link(history); iter;
                 iter = iter->next) {
                 struct notification *cur = iter->data;

@@ -178,6 +178,8 @@ int dunst_main(int argc, char *argv[])
         dunst_status_int(S_PAUSE_LEVEL, 0);
         dunst_status(S_IDLE, false);
 
+        settings_init();
+
         queues_init();
 
         cmdline_load(argc, argv);
@@ -197,9 +199,7 @@ int dunst_main(int argc, char *argv[])
             cmdline_get_string("-conf/-config", NULL,
                                "Path to configuration file");
 
-        if (cmdline_get_bool("-print/--print", false, "Print notifications to stdout")) {
-                settings.print_notifications = true;
-        }
+        settings.print_notifications = cmdline_get_bool("-print/--print", false, "Print notifications to stdout");
 
         settings.startup_notification = cmdline_get_bool("-startup_notification/--startup_notification",
                         false, "Display a notification on startup.");
