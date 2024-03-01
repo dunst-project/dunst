@@ -72,6 +72,11 @@ Set the pause level, where 0 is not paused and 100 is maximally paused.
 This can be combined with notification's override_pause_level to selectively
 display specific notifications while paused.
 
+=item B<rule> rule_name enable/disable/toggle
+
+Enables, disables or toggles the rule identified by its name. This can be used
+to temporarily activate or deactivate specific rules.
+
 =item B<debug>
 
 Tries to contact dunst and checks for common faults between dunstctl and dunst.
