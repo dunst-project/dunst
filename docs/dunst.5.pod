@@ -188,6 +188,8 @@ than half of the progress bar height.
 The corner radius of the progress bar in pixels. Gives the progress bar
 rounded corners. Set to 0 to disable.
 
+This setting will be ignored if B<progress_bar_corners> is set to none.
+
 =item B<progress_bar_corners> (default: all)
 
 Define which corners to round when drawing the progress bar. If progress_bar_corner_radius
@@ -199,6 +201,8 @@ See the B<corners> setting for the value format.
 
 The corner radius of the icon image in pixels. Gives the icon
 rounded corners. Set to 0 to disable.
+
+This setting will be ignored if B<icon_corners> is set to none.
 
 =item B<icon_corners> (default: all)
 
@@ -222,7 +226,10 @@ taken by the hidden count.
 A 0-100 range on how transparent the notification window should be, with 0
 being fully opaque and 100 invisible.
 
-To make windows transparent on wayland, set the transparency part of a color,
+This will affect the whole window. To make only parts of a window transparent
+set the alpha channel in a color, see COLORS.
+
+To make windows transparent on wayland, set the transparent part of a color,
 see COLORS.
 
 This setting will only work if a compositor is running.
@@ -530,10 +537,12 @@ rectangular shaped notifications.
 
 By enabling this setting the outer border and the frame will be shaped.
 If you have multiple notifications, the whole window is shaped, not every
-single notification.
+single notification, unless if gaps are enabled (see B<gaps_size>).
 
 To avoid the corners clipping the icon or text the corner radius will be
 automatically lowered to half of the notification height if it exceeds it.
+
+This setting will be ignored if B<corners> is set to none.
 
 =item B<corners> (default: all)
 
