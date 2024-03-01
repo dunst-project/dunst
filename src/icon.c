@@ -214,13 +214,14 @@ GdkPixbuf *get_pixbuf_from_file(const char *filename, int min_size, int max_size
 
 char *get_path_from_icon_name(const char *iconname, int size)
 {
+        if (STR_EMPTY(iconname))
+                return NULL;
+
         if (settings.enable_recursive_icon_lookup) {
                 char *path = find_icon_path(iconname, size);
                 LOG_I("Found icon at %s", path);
                 return path;
         }
-        if (STR_EMPTY(iconname))
-                return NULL;
 
         const char *suffixes[] = { ".svg", ".svgz", ".png", ".xpm", NULL };
         gchar *uri_path = NULL;
