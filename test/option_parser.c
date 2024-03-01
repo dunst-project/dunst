@@ -747,7 +747,7 @@ TEST test_string_to_corners(void)
         s.parser = string_parse_corners;
         s.parser_data = corners_enum_data;
 
-        char buf[50];
+        static char buf[50];
 
         // do not go until last element, since it's ENUM_END (all 0)
         for (int i = 0; i < G_N_ELEMENTS(ellipsize_enum_data)-1; i++) {
@@ -806,7 +806,7 @@ TEST test_string_to_corners_invalid(void)
                 "top right, bottom left"
         };
 
-        char buf[50];
+        static char buf[50];
         for (int i = 0; i < G_N_ELEMENTS(invalid_inputs); i++) {
                 sprintf(buf, "Failed in round %i", i);
                 bool success = set_from_string(&corners, s, invalid_inputs[i]);
@@ -840,7 +840,7 @@ TEST test_string_to_maybe_int(void)
                 { "HDMI-0", INT_MIN },
                 { "0TEST", INT_MIN },
         };
-        char buf[500];
+        static char buf[500];
 
         for (int i = 0; i < G_N_ELEMENTS(inputs); i++) {
                 sprintf(buf, "Failed in round %i.", i);
