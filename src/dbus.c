@@ -331,10 +331,8 @@ static void dbus_cb_dunst_NotificationListHistory(GDBusConnection *connection,
 {
         LOG_D("CMD: Listing all notifications from history");
 
-        GVariant *answer = NULL;
-        GVariantBuilder *builder;
-
-        builder = g_variant_builder_new(G_VARIANT_TYPE("aa{sv}"));
+        GVariantBuilder builder;
+        g_variant_builder_init(&builder, G_VARIANT_TYPE("aa{sv}"));
 
         GList *notification_list = queues_get_history();
 
@@ -344,8 +342,7 @@ static void dbus_cb_dunst_NotificationListHistory(GDBusConnection *connection,
                 n = g_list_nth_data(notification_list, i-1);
 
                 GVariantBuilder n_builder;
-
-                g_variant_builder_init(&n_builder, g_variant_type_new("a{sv}"));
+                g_variant_builder_init(&n_builder, G_VARIANT_TYPE("a{sv}"));
 
                 char *body, *msg, *summary, *appname, *category;
                 char *default_action_name, *icon_path;
@@ -359,49 +356,23 @@ static void dbus_cb_dunst_NotificationListHistory(GDBusConnection *connection,
                         "" : n->default_action_name;
                 icon_path = (n->icon_path == NULL) ? "" : n->icon_path;
 
-                g_variant_builder_add(&n_builder, "{sv}", "body",
-                        g_variant_new_from_bytes(G_VARIANT_TYPE("s"),
-                        g_bytes_new(body, strlen(body)+1), TRUE));
-                g_variant_builder_add(&n_builder, "{sv}", "message",
-                        g_variant_new_from_bytes(G_VARIANT_TYPE("s"),
-                        g_bytes_new(msg, strlen(msg)+1), TRUE));
-                g_variant_builder_add(&n_builder, "{sv}", "summary",
-                        g_variant_new_from_bytes(G_VARIANT_TYPE("s"),
-                        g_bytes_new(summary, strlen(summary)+1), TRUE));
-                g_variant_builder_add(&n_builder, "{sv}", "appname",
-                        g_variant_new_from_bytes(G_VARIANT_TYPE("s"),
-                        g_bytes_new(appname, strlen(appname)+1), TRUE));
-                g_variant_builder_add(&n_builder, "{sv}", "category",
-                        g_variant_new_from_bytes(G_VARIANT_TYPE("s"),
-                        g_bytes_new(category, strlen(category)+1), TRUE));
+                g_variant_builder_add(&n_builder, "{sv}", "body", g_variant_new_string(body));
+                g_variant_builder_add(&n_builder, "{sv}", "message", g_variant_new_string(msg));
+                g_variant_builder_add(&n_builder, "{sv}", "summary", g_variant_new_string(summary));
+                g_variant_builder_add(&n_builder, "{sv}", "appname", g_variant_new_string(appname));
+                g_variant_builder_add(&n_builder, "{sv}", "category", g_variant_new_string(category));
                 g_variant_builder_add(&n_builder, "{sv}", "default_action_name",
-                        g_variant_new_from_bytes(G_VARIANT_TYPE("s"),
-                        g_bytes_new(default_action_name,
-                        strlen(default_action_name)+1), TRUE));
-                g_variant_builder_add(&n_builder, "{sv}", "icon_path",
-                        g_variant_new_from_bytes(G_VARIANT_TYPE("s"),
-                        g_bytes_new(icon_path, strlen(icon_path)+1), TRUE));
-                g_variant_builder_add(&n_builder, "{sv}", "id",
-                        g_variant_new_from_bytes(G_VARIANT_TYPE("i"),
-                        g_bytes_new(&n->id, sizeof(int)), TRUE));
-                g_variant_builder_add(&n_builder, "{sv}", "timestamp",
-                        g_variant_new_from_bytes(G_VARIANT_TYPE("x"),
-                        g_bytes_new(&n->timestamp, sizeof(gint64)), TRUE));
-                g_variant_builder_add(&n_builder, "{sv}", "timeout",
-                        g_variant_new_from_bytes(G_VARIANT_TYPE("x"),
-                        g_bytes_new(&n->timeout, sizeof(gint64)), TRUE));
-                g_variant_builder_add(&n_builder, "{sv}", "progress",
-                        g_variant_new_from_bytes(G_VARIANT_TYPE("i"),
-                        g_bytes_new(&n->progress, sizeof(int)), TRUE));
+                        g_variant_new_string(default_action_name));
+                g_variant_builder_add(&n_builder, "{sv}", "icon_path", g_variant_new_string(icon_path));
+                g_variant_builder_add(&n_builder, "{sv}", "id", g_variant_new_int32(n->id));
+                g_variant_builder_add(&n_builder, "{sv}", "timestamp", g_variant_new_int64(n->timestamp));
+                g_variant_builder_add(&n_builder, "{sv}", "timeout", g_variant_new_int64(n->timeout));
+                g_variant_builder_add(&n_builder, "{sv}", "progress", g_variant_new_int32(n->progress));
 
-                g_variant_builder_add(builder, "a{sv}", &n_builder);
-
+                g_variant_builder_add(&builder, "a{sv}", &n_builder);
         }
 
-        answer = g_variant_new("(aa{sv})", builder);
-
-        g_clear_pointer(&builder, g_variant_builder_unref);
-        g_dbus_method_invocation_return_value(invocation, answer);
+        g_dbus_method_invocation_return_value(invocation, g_variant_new("(aa{sv})", &builder));
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
 }
 
