@@ -39,6 +39,10 @@ is provided, everything will be printed.
 
 Exports the history as JSON.
 
+=item B<history-clear>
+
+Deletes all notifications from the history.
+
 =item B<history-pop> [ID]
 
 Redisplay the notification that was most recently closed. This can be called
