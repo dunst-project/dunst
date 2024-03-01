@@ -42,6 +42,10 @@ multiple times to show older notifications, up to the history limit configured
 in dunst. You can optionally pass an ID to history-pop, in which case the
 notification with the given ID will be shown.
 
+=item B<history-rm> ID
+
+Removes the notification with the given ID from the history.
+
 =item B<is-paused>
 
 Check if dunst is currently running or paused. If dunst is paused notifications
