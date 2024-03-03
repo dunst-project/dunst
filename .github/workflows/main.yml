@@ -11,7 +11,7 @@ jobs:
   enforce-g_malloc:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         # Clone the whole branch, we have to fetch tags later
         fetch-depth: 0
@@ -39,7 +39,7 @@ jobs:
       CC: ${{ matrix.CC }}
       EXTRA_CFLAGS: "-Werror"
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         # Clone the whole branch, we have to fetch tags later
         fetch-depth: 0
@@ -81,7 +81,7 @@ jobs:
       if: "matrix.CC == 'gcc'"
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1
+      uses: codecov/codecov-action@v4.1.0
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         flags: unittests
@@ -100,7 +100,7 @@ jobs:
           - misc-doxygen
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         # Clone the whole branch, we have to fetch tags later
         fetch-depth: 0
