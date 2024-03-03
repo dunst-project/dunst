@@ -253,7 +253,7 @@ char *find_icon_in_theme(const char *name, int theme_index, int size) {
                                 break;
 
                         case THEME_DIR_SCALABLE:
-                                match_size = dir.min_size <= size && dir.max_size >= size;
+                                match_size = (size == 0 || dir.min_size <= size) && dir.max_size >= size;
                                 break;
 
                         case THEME_DIR_THRESHOLD:
