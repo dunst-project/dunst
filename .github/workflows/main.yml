@@ -28,12 +28,12 @@ jobs:
         distro:
           - alpine
           - archlinux
-          - debian-stretch
+          - debian-bookworm
+          - debian-bullseye
           - debian-buster
           - fedora
-          - ubuntu-xenial
-          - ubuntu-bionic
           - ubuntu-focal
+          - ubuntu-jammy
 
     env:
       CC: ${{ matrix.CC }}
@@ -91,7 +91,7 @@ jobs:
 
     runs-on: ubuntu-latest
     container:
-      image: dunst/ci:${{ matrix.distro }}
+      image: ghcr.io/dunst-project/docker-images:${{ matrix.distro }}
 
   doxygen:
     strategy:
@@ -110,4 +110,4 @@ jobs:
 
     runs-on: ubuntu-latest
     container:
-      image: dunst/ci:${{ matrix.distro }}
+      image: ghcr.io/dunst-project/docker-images:${{ matrix.distro }}
