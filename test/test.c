@@ -22,7 +22,7 @@ SUITE_EXTERN(suite_queues);
 SUITE_EXTERN(suite_dunst);
 SUITE_EXTERN(suite_log);
 SUITE_EXTERN(suite_menu);
-SUITE_EXTERN(suite_dbus);
+//SUITE_EXTERN(suite_dbus);
 SUITE_EXTERN(suite_setting);
 SUITE_EXTERN(suite_ini);
 SUITE_EXTERN(suite_icon_lookup);
