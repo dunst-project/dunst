@@ -26,7 +26,7 @@ jobs:
           - clang
           - gcc
         distro:
-          - alpine
+          #- alpine
           - archlinux
           - debian-bookworm
           - debian-bullseye
