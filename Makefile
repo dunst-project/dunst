@@ -235,9 +235,26 @@ install-dunstify: dunstify
 	install -Dm755 dunstify ${DESTDIR}${BINDIR}/dunstify
 endif
 
+ifneq (0,${COMPLETIONS})
+install: install-completions
+install-completions:
+	install -Dm644 completions/dunst.bashcomp ${DESTDIR}${BASHCOMPLETIONDIR}/dunst
+	install -Dm644 completions/dunstctl.bashcomp ${DESTDIR}${BASHCOMPLETIONDIR}/dunstctl
+	install -Dm644 completions/_dunst.zshcomp ${DESTDIR}${ZSHCOMPLETIONDIR}/_dunst
+	install -Dm644 completions/_dunstctl.zshcomp ${DESTDIR}${ZSHCOMPLETIONDIR}/_dunstctl
+	install -Dm644 completions/dunst.fishcomp ${DESTDIR}${FISHCOMPLETIONDIR}/dunst
+	install -Dm644 completions/dunstctl.fishcomp ${DESTDIR}${FISHCOMPLETIONDIR}/dunstctl
+
+ifneq (0,${DUNSTIFY})
+install: install-completions-dunstify
+install-completions-dunstify:
+	install -Dm644 completions/dunstify.fishcomp ${DESTDIR}${FISHCOMPLETIONDIR}/dunstify
+endif
+endif
+
 uninstall: uninstall-keepconf
 uninstall-purge: uninstall-keepconf uninstall-dunstrc
-uninstall-keepconf: uninstall-service uninstall-dunstctl
+uninstall-keepconf: uninstall-service uninstall-dunstctl uninstall-completions
 	rm -f ${DESTDIR}${BINDIR}/dunst
 	rm -f ${DESTDIR}${BINDIR}/dunstify
 	rm -f ${DESTDIR}${MANPREFIX}/man1/dunst.1
@@ -260,3 +277,12 @@ uninstall-service: uninstall-service-systemd
 uninstall-service-systemd:
 	rm -f ${DESTDIR}${SERVICEDIR_SYSTEMD}/dunst.service
 endif
+
+uninstall-completions:
+	rm -f ${DESTDIR}${BASHCOMPLETIONDIR}/dunst
+	rm -f ${DESTDIR}${BASHCOMPLETIONDIR}/dunstctl
+	rm -f ${DESTDIR}${ZSHCOMPLETIONDIR}/_dunst
+	rm -f ${DESTDIR}${ZSHCOMPLETIONDIR}/_dunstctl
+	rm -f ${DESTDIR}${FISHCOMPLETIONDIR}/dunst
+	rm -f ${DESTDIR}${FISHCOMPLETIONDIR}/dunstctl
+	rm -f ${DESTDIR}${FISHCOMPLETIONDIR}/dunstify
