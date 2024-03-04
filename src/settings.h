@@ -88,7 +88,7 @@ enum setting_type { TYPE_MIN = 0, TYPE_INT, TYPE_DOUBLE, TYPE_STRING,
 
 struct separator_color_data {
         enum separator_color type;
-        char *sep_color;
+        struct color color;
 };
 
 struct length {
@@ -134,7 +134,7 @@ struct settings {
         int text_icon_padding;
         struct separator_color_data sep_color;
         int frame_width;
-        char *frame_color;
+        struct color frame_color;
         int startup_notification;
         char *monitor;
         int monitor_num;

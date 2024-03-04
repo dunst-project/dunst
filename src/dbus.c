@@ -14,6 +14,7 @@
 #include "settings.h"
 #include "utils.h"
 #include "rules.h"
+#include "option_parser.h"
 
 #define FDN_PATH "/org/freedesktop/Notifications"
 #define FDN_IFAC "org.freedesktop.Notifications"
@@ -640,25 +641,30 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
 
         // Modify these values after the notification is initialized and all rules are applied.
         if ((dict_value = g_variant_lookup_value(hints, "fgcolor", G_VARIANT_TYPE_STRING))) {
-                g_free(n->colors.fg);
-                n->colors.fg = g_variant_dup_string(dict_value, NULL);
+                struct color c;
+                if (string_parse_color(NULL, g_variant_get_string(dict_value, NULL), &c))
+                        n->colors.fg = c;
                 g_variant_unref(dict_value);
         }
 
         if ((dict_value = g_variant_lookup_value(hints, "bgcolor", G_VARIANT_TYPE_STRING))) {
-                g_free(n->colors.bg);
-                n->colors.bg = g_variant_dup_string(dict_value, NULL);
+                struct color c;
+                if (string_parse_color(NULL, g_variant_get_string(dict_value, NULL), &c))
+                        n->colors.bg = c;
                 g_variant_unref(dict_value);
         }
 
         if ((dict_value = g_variant_lookup_value(hints, "frcolor", G_VARIANT_TYPE_STRING))) {
-                g_free(n->colors.frame);
-                n->colors.frame = g_variant_dup_string(dict_value, NULL);
+                struct color c;
+                if (string_parse_color(NULL, g_variant_get_string(dict_value, NULL), &c))
+                        n->colors.frame = c;
                 g_variant_unref(dict_value);
         }
 
         if ((dict_value = g_variant_lookup_value(hints, "hlcolor", G_VARIANT_TYPE_STRING))) {
-                n->colors.highlight = g_variant_dup_string(dict_value, NULL);
+                struct color c;
+                if (string_parse_color(NULL, g_variant_get_string(dict_value, NULL), &c))
+                        n->colors.highlight = c;
                 g_variant_unref(dict_value);
         }
 

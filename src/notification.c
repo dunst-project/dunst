@@ -66,10 +66,10 @@ void notification_print(const struct notification *n)
         printf("\turgency: %s\n", notification_urgency_to_string(n->urgency));
         printf("\ttransient: %d\n", n->transient);
         printf("\tformatted: '%s'\n", n->msg);
-        printf("\tfg: %s\n", n->colors.fg);
-        printf("\tbg: %s\n", n->colors.bg);
-        printf("\thighlight: %s\n", n->colors.highlight);
-        printf("\tframe: %s\n", n->colors.frame);
+        //printf("\tfg: %s\n", n->colors.fg);
+        //printf("\tbg: %s\n", n->colors.bg);
+        //printf("\thighlight: %s\n", n->colors.highlight);
+        //printf("\tframe: %s\n", n->colors.frame);
         printf("\tfullscreen: %s\n", enum_to_string_fullscreen(n->fullscreen));
         printf("\tformat: %s\n", n->format);
         printf("\tprogress: %d\n", n->progress);
@@ -303,10 +303,6 @@ void notification_unref(struct notification *n)
         g_free(n->category);
         g_free(n->text_to_render);
         g_free(n->urls);
-        g_free(n->colors.fg);
-        g_free(n->colors.bg);
-        g_free(n->colors.highlight);
-        g_free(n->colors.frame);
         g_free(n->stack_tag);
         g_free(n->desktop_entry);
 
@@ -495,14 +491,11 @@ void notification_init(struct notification *n)
                 default:
                         g_error("Unhandled urgency type: %d", n->urgency);
         }
-        if (!n->colors.fg)
-                n->colors.fg = g_strdup(defcolors.fg);
-        if (!n->colors.bg)
-                n->colors.bg = g_strdup(defcolors.bg);
-        if (!n->colors.highlight)
-                n->colors.highlight = g_strdup(defcolors.highlight);
-        if (!n->colors.frame)
-                n->colors.frame = g_strdup(defcolors.frame);
+        n->colors = defcolors;
+        //if (!n->colors.fg) n->colors.fg = defcolors.fg;
+        //if (!n->colors.bg) n->colors.bg = defcolors.bg;
+        //if (!n->colors.highlight) n->colors.highlight = defcolors.highlight;
+        //if (!n->colors.frame) n->colors.frame = defcolors.frame;
 
         /* Sanitize misc hints */
         if (n->progress < 0)

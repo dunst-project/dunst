@@ -175,31 +175,66 @@ int string_parse_sepcolor(const void *data, const char *s, void *ret)
         bool is_enum = string_parse_enum(data, s, &type);
         if (is_enum) {
                 sep_color->type = type;
-                g_free(sep_color->sep_color);
-                sep_color->sep_color = NULL;
                 return true;
         } else {
                 if (STR_EMPTY(s)) {
                         LOG_W("Sep color is empty, make sure to quote the value if it's a color.");
                         return false;
                 }
-                if (s[0] != '#') {
-                        LOG_W("Sep color should start with a '#'");
-                        return false;
-                }
-                if (strlen(s) < 4) {
-                        LOG_W("Make sure the sep color is formatted correctly");
-                        return false;
-                }
-                // TODO add more checks for if the color is valid
 
                 sep_color->type = SEP_CUSTOM;
-                g_free(sep_color->sep_color);
-                sep_color->sep_color = g_strdup(s);
-                return true;
+                return string_parse_color(NULL, s, &sep_color->color);
         }
 }
 
+#define UINT_MAX_N(bits) ((1 << bits) - 1)
+
+// Parse a #RRGGBB[AA] string
+int string_parse_color(const void *data, const char *s, void *ret)
+{
+        if (STR_EMPTY(s) || *s != '#') {
+                LOG_W("A color string should start with '#' and contain at least 3 hex characters");
+                return false;
+        }
+
+        struct color *c = ret;
+        char *end = NULL;
+        unsigned long val = strtoul(s + 1, &end, 16);
+
+        if (end[0] != '\0' && end[1] != '\0') {
+                LOG_W("Invalid color string: '%s'", s);
+        }
+
+        int bpc = 0;
+        switch (end - (s + 1)) {
+                case 3:
+                        bpc = 4;
+                        val = (val << 4) | 0xF;
+                        break;
+                case 6:
+                        bpc = 8;
+                        val = (val << 8) | 0xFF;
+                        break;
+                case 4:
+                        bpc = 4;
+                        break;
+                case 8:
+                        bpc = 8;
+                        break;
+                default:
+                        LOG_W("Invalid color string: '%s'", s);
+                        return false;
+        }
+
+        const unsigned single_max = UINT_MAX_N(bpc);
+
+        c->r = ((val >> 3 * bpc) & single_max) / (double)single_max;
+        c->g = ((val >> 2 * bpc) & single_max) / (double)single_max;
+        c->b = ((val >> 1 * bpc) & single_max) / (double)single_max;
+        c->a = ((val)            & single_max) / (double)single_max;
+
+        return true;
+}
 
 int string_parse_bool(const void *data, const char *s, void *ret)
 {

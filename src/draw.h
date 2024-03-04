@@ -8,10 +8,6 @@
 extern window win; // Temporary
 extern const struct output *output;
 
-void draw_setup(void);
-
-void draw(void);
-
 /**
  * Specify which corner to draw in draw_rouned_rect
  *
@@ -39,6 +35,20 @@ enum corner_pos {
         _C_FIRST = 1 << 4,
         _C_LAST = 1 << 5,
 };
+
+struct color {
+        double r;
+        double g;
+        double b;
+        double a;
+};
+
+#define COLOR_UNINIT { -1, -1, -1, -1 }
+#define COLOR_VALID(c) ((c).r >= 0)
+
+void draw_setup(void);
+
+void draw(void);
 
 void draw_rounded_rect(cairo_t *c, float x, float y, int width, int height, int corner_radius, double scale, enum corner_pos corners);
 
