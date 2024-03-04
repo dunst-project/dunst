@@ -445,6 +445,12 @@ struct notification *notification_create(void)
         n->max_icon_size = 32;
         n->receiving_raw_icon = false;
 
+        struct color invalid = COLOR_UNINIT;
+        n->colors.fg = invalid;
+        n->colors.bg = invalid;
+        n->colors.highlight = invalid;
+        n->colors.frame = invalid;
+
         n->script_run = false;
         n->dbus_valid = false;
 
@@ -491,11 +497,10 @@ void notification_init(struct notification *n)
                 default:
                         g_error("Unhandled urgency type: %d", n->urgency);
         }
-        n->colors = defcolors;
-        //if (!n->colors.fg) n->colors.fg = defcolors.fg;
-        //if (!n->colors.bg) n->colors.bg = defcolors.bg;
-        //if (!n->colors.highlight) n->colors.highlight = defcolors.highlight;
-        //if (!n->colors.frame) n->colors.frame = defcolors.frame;
+        if (!COLOR_VALID(n->colors.fg)) n->colors.fg = defcolors.fg;
+        if (!COLOR_VALID(n->colors.bg)) n->colors.bg = defcolors.bg;
+        if (!COLOR_VALID(n->colors.highlight)) n->colors.highlight = defcolors.highlight;
+        if (!COLOR_VALID(n->colors.frame)) n->colors.frame = defcolors.frame;
 
         /* Sanitize misc hints */
         if (n->progress < 0)
