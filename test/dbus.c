@@ -629,9 +629,13 @@ TEST test_basic_notification(void)
 
 TEST test_dbus_notify_colors(void)
 {
-        const char *color_frame = "I allow all string values for frame!";
-        const char *color_bg = "I allow all string values for background!";
-        const char *color_fg = "I allow all string values for foreground!";
+        // Valid
+        const char *color_frame = "#ffaaccbb";
+        const char *color_fg = "#fab";
+        // Junk
+        const char *color_bg = "#ff00axaldjnkfs";
+        const char *color_highlight = "Whatever  this is ";
+
         struct notification *n;
         struct dbus_notification *n_dbus;
 
@@ -651,6 +655,9 @@ TEST test_dbus_notify_colors(void)
         g_hash_table_insert(n_dbus->hints,
                             g_strdup("fgcolor"),
                             g_variant_ref_sink(g_variant_new_string(color_fg)));
+        g_hash_table_insert(n_dbus->hints,
+                            g_strdup("hlcolor"),
+                            g_variant_ref_sink(g_variant_new_string(color_highlight)));
 
         guint id;
         ASSERT(dbus_notification_fire(n_dbus, &id));
@@ -660,9 +667,16 @@ TEST test_dbus_notify_colors(void)
 
         n = queues_debug_find_notification_by_id(id);
 
-        ASSERT_STR_EQ(n->colors.frame, color_frame);
-        ASSERT_STR_EQ(n->colors.fg, color_fg);
-        ASSERT_STR_EQ(n->colors.bg, color_bg);
+        // Valid color strings get converted
+        struct color frame = { 1.0, (double)0xaa/0xff, (double)0xcc/0xff, (double)0xbb/0xff };
+        struct color fg = { 1.0, (double)0xaa/0xff, (double)0xbb/0xff, 1.0 };
+
+        ASSERTm("Valid color strings should change the notification color", COLOR_SAME(n->colors.frame, frame));
+        ASSERTm("Valid color strings should change the notification color", COLOR_SAME(n->colors.fg, fg));
+
+        // Invalid color strings are ignored
+        ASSERTm("Invalid color strings should not change the color struct", COLOR_SAME(n->colors.bg, settings.colors_norm.bg));
+        ASSERTm("Invalid color strings should not change the color struct", COLOR_SAME(n->colors.highlight, settings.colors_norm.highlight));
 
         dbus_notification_free(n_dbus);
 
