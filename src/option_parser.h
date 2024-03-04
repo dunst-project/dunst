@@ -12,6 +12,7 @@
 
 int string_parse_enum(const void* data, const char *s, void * ret);
 int string_parse_sepcolor(const void *data, const char *s, void *ret);
+int string_parse_color(const void *data, const char *s, void *ret);
 int string_parse_bool(const void *data, const char *s, void *ret);
 int string_parse_corners(const void *data, const char *s, void *ret);
 int string_parse_maybe_int(const void *data, const char *s, void *ret);
