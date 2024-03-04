@@ -59,6 +59,16 @@ void load_icon_themes(void)
 
 }
 
+char *color_to_string(struct color c, char buf[10])
+{
+        if (!COLOR_VALID(c) || c.r > 1 || c.g > 1 || c.b > 1)
+                return NULL;
+
+        g_snprintf(buf, 10, "#%2x%2x%2x%2x",
+                        (int)(c.r * 255), (int)(c.g * 255), (int)(c.b * 255), (int)(c.a * 255));
+        return buf;
+}
+
 void draw_setup(void)
 {
         const struct output *out = output_create(settings.force_xwayland);

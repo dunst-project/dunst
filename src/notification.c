@@ -66,10 +66,11 @@ void notification_print(const struct notification *n)
         printf("\turgency: %s\n", notification_urgency_to_string(n->urgency));
         printf("\ttransient: %d\n", n->transient);
         printf("\tformatted: '%s'\n", n->msg);
-        //printf("\tfg: %s\n", n->colors.fg);
-        //printf("\tbg: %s\n", n->colors.bg);
-        //printf("\thighlight: %s\n", n->colors.highlight);
-        //printf("\tframe: %s\n", n->colors.frame);
+        char buf[10];
+        printf("\tfg: %s\n", color_to_string(n->colors.fg, buf));
+        printf("\tbg: %s\n", color_to_string(n->colors.bg, buf));
+        printf("\thighlight: %s\n", color_to_string(n->colors.highlight, buf));
+        printf("\tframe: %s\n", color_to_string(n->colors.frame, buf));
         printf("\tfullscreen: %s\n", enum_to_string_fullscreen(n->fullscreen));
         printf("\tformat: %s\n", n->format);
         printf("\tprogress: %d\n", n->progress);
