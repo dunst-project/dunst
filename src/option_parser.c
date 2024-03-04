@@ -208,6 +208,7 @@ int string_parse_color(const void *data, const char *s, void *ret)
 
         if (end[0] != '\0' && end[1] != '\0') {
                 LOG_W("Invalid color string: '%s'", s);
+                return false;
         }
 
         int bpc = 0;
