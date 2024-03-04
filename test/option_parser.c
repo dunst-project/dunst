@@ -634,7 +634,6 @@ TEST test_string_to_sepcolor_invalid(void)
                 "fraame",
                 "123456",
                 "#ab",
-                "#12456",
                 "#gg123c",
                 "#AB123C123212",
         };
@@ -647,6 +646,84 @@ TEST test_string_to_sepcolor_invalid(void)
 
         ASSERT_EQm("Sep color shouldn't changed from invalid inputs", 123, (int) val.type);
         ASSERTm("Sep color shouldn't changed from invalid inputs", !COLOR_VALID(val.color));
+        PASS();
+}
+
+TEST test_string_to_color(void)
+{
+        struct color val = COLOR_UNINIT;
+        struct setting s;
+        s.type = TYPE_COLOR;
+        s.value = &val;
+        s.name = "test_color";
+
+        const char* inputs[] = {
+                "#123456",
+                "#ab123c",
+                "#AB123C",
+                "#abc",
+                "#faf",
+                "#AABBCC10",
+        };
+
+        const struct color results[] = {
+                { (double)0x12 / 0xff, (double)0x34 / 0xff, (double)0x56 / 0xff, 1.0},
+                { (double)0xab / 0xff, (double)0x12 / 0xff, (double)0x3c / 0xff, 1.0},
+                { (double)0xab / 0xff, (double)0x12 / 0xff, (double)0x3c / 0xff, 1.0},
+                { (double)0xaa / 0xff, (double)0xbb / 0xff, (double)0xcc / 0xff, 1.0},
+                { 1.0, (double)0xaa / 0xff, 1.0, 1.0},
+                { (double)0xaa / 0xff, (double)0xbb / 0xff, (double)0xcc / 0xff, (double)0x10 / 0xff},
+        };
+
+        ARRAY_SAME_LENGTH(inputs, results);
+
+        static char buf[100];
+        char buf1[10], buf2[10];
+
+        for (int i = 0; i < G_N_ELEMENTS(inputs); i++) {
+                sprintf(buf, "Failed in round %i. Expected %s, got %s", i,
+                                color_to_string(results[i], buf1), color_to_string(val, buf2));
+                ASSERTm(buf, set_from_string(&val, s, inputs[i]));
+                ASSERTm(buf, COLOR_SAME(results[i], val));
+        }
+
+        PASS();
+}
+
+TEST test_string_to_color_invalid(void)
+{
+        struct color val = COLOR_UNINIT;
+        struct setting s;
+        s.type = TYPE_COLOR;
+        s.value = &val;
+        s.name = "test_color";
+
+        const char* inputs[] = {
+                "",
+                "not color",
+                "####",
+                "@#4x",
+                "#abx",
+                "#gg123c",
+                "#AB123C123212",
+                "#sjdsnc",
+                "#00#",
+                "#ab+cd",
+                "#fffffffffffffffff",
+                "   ##   ",
+                "#xzky",
+                "#abacgg",
+                "0xfaf",
+                "#fcb+fa",
+        };
+
+        static char buf[50];
+        for (int i = 0; i < G_N_ELEMENTS(inputs); i++) {
+                sprintf(buf, "Failed in round %i.", i);
+                ASSERT_FALSEm(buf, set_from_string(&val, s, inputs[i]));
+        }
+
+        ASSERTm("Color shouldn't changed from invalid inputs", !COLOR_VALID(val));
         PASS();
 }
 
@@ -921,6 +998,8 @@ SUITE(suite_option_parser)
         // Paths are now almost always considered valid
         RUN_TEST(test_string_to_sepcolor);
         RUN_TEST(test_string_to_sepcolor_invalid);
+        RUN_TEST(test_string_to_color);
+        RUN_TEST(test_string_to_color_invalid);
         RUN_TEST(test_enum_size);
         RUN_TEST(test_string_to_length);
         RUN_TEST(test_string_to_length_invalid);
