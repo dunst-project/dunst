@@ -170,6 +170,8 @@ int string_parse_sepcolor(const void *data, const char *s, void *ret)
 {
         LOG_D("parsing sep_color");
         struct separator_color_data *sep_color = (struct separator_color_data*) ret;
+        struct color invalid = COLOR_UNINIT;
+        sep_color->color = invalid;
 
         enum separator_color type;
         bool is_enum = string_parse_enum(data, s, &type);
@@ -424,6 +426,8 @@ bool set_from_string(void *target, struct setting setting, const char *value) {
                         return string_parse_list(setting.parser_data, value, target);
                 case TYPE_LENGTH:
                         return string_parse_length(target, value);
+                case TYPE_COLOR:
+                        return string_parse_color(NULL, value, target);
                 default:
                         LOG_W("Setting type of '%s' is not known (type %i)", setting.name, setting.type);
                         return false;
