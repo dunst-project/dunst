@@ -171,12 +171,12 @@ int string_parse_sepcolor(const void *data, const char *s, void *ret)
         LOG_D("parsing sep_color");
         struct separator_color_data *sep_color = (struct separator_color_data*) ret;
         struct color invalid = COLOR_UNINIT;
-        sep_color->color = invalid;
 
         enum separator_color type;
         bool is_enum = string_parse_enum(data, s, &type);
         if (is_enum) {
                 sep_color->type = type;
+                sep_color->color = invalid;
                 return true;
         } else {
                 if (STR_EMPTY(s)) {
@@ -184,9 +184,12 @@ int string_parse_sepcolor(const void *data, const char *s, void *ret)
                         return false;
                 }
 
-                sep_color->type = SEP_CUSTOM;
-                return string_parse_color(NULL, s, &sep_color->color);
+                if (string_parse_color(NULL, s, &sep_color->color)) {
+                        sep_color->type = SEP_CUSTOM;
+                        return true;
+                }
         }
+        return false;
 }
 
 #define UINT_MAX_N(bits) ((1 << bits) - 1)
