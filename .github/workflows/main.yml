@@ -81,7 +81,7 @@ jobs:
       if: "matrix.CC == 'gcc'"
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4.1.0
+      uses: codecov/codecov-action@v3
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         flags: unittests
