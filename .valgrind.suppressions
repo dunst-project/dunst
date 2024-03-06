@@ -149,8 +149,8 @@
    fun:notification_load_icon_with_scaling
    ...
 }
+# Basically the same as above, but just for Debian
 {
-   # Basically the same as above, but just for Debian
    rsvg_conditional_jump-debian
    Memcheck:Cond
    obj:/usr/lib/*/librsvg-2.so.2.48.0
@@ -163,8 +163,8 @@
    fun:notification_load_icon_with_scaling
    ...
 }
+# Basically the same as above, but just for Ubuntu Focal
 {
-   # Basically the same as above, but just for Ubuntu Focal
    lib-rsvg-2.47
    rsvg_conditional_jump-ubuntu_focal
    Memcheck:Cond
