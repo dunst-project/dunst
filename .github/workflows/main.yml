@@ -38,7 +38,6 @@ jobs:
     env:
       CC: ${{ matrix.CC }}
       EXTRA_CFLAGS: "-Werror ${{ (matrix.distro == 'debian-bookworm' || matrix.distro == 'ubuntu-jammy') && '-gdwarf-4' || ' '}}"
-      IS_DWARF
     steps:
     - uses: actions/checkout@v4
       with:
