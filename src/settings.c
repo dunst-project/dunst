@@ -260,7 +260,10 @@ static void process_conf_file(const gpointer conf_fname, gpointer n_success) {
         ++(*(int *) n_success);
 }
 
-void load_settings(const char * const path) {
+void load_settings(const char *const path) {
+        // NOTE: settings_init should be called before if some settings are changed
+        //       But having it here is useful for tests
+        //       Potentially, we could update the settings code and move this somewhere else
         settings_init();
         LOG_D("Setting defaults");
         set_defaults();
