@@ -65,6 +65,29 @@ struct dunst_status dunst_status_get(void)
 /* misc functions */
 static gboolean run(void *data);
 
+/**
+ * The reason for which the run function was invoked.
+ * - DUNST_TIMER: the timer until the next event in queue has expired (routine
+ *   wakeup)
+ * - DUNST_WAKEUP: an external event (eg. new notification) triggered a call to
+ *   wake_up (unscheduled wakeup)
+ */
+enum dunst_run_reason {
+        DUNST_TIMER,
+        DUNST_WAKEUP,
+};
+
+const char* dunst_run_reason_str(enum dunst_run_reason reason) {
+        switch(reason) {
+                case DUNST_TIMER:
+                        return "DUNST_TIMER";
+                case DUNST_WAKEUP:
+                        return "DUNST_WAKEUP";
+                default:
+                        return "BAD VALUE";
+        }
+}
+
 void wake_up(void)
 {
         // If wake_up is being called before the output has been setup we should
@@ -75,22 +98,51 @@ void wake_up(void)
         }
 
         LOG_D("Waking up");
-        run(GINT_TO_POINTER(1));
+        run(GINT_TO_POINTER(DUNST_WAKEUP));
 }
 
 static gboolean run(void *data)
 {
-        static gint64 next_timeout = 0;
-        static guint next_timeout_id = 0;
-        int reason = GPOINTER_TO_INT(data);
+        /* Timer gestion
+         * =============
+         *
+         * - At any time (except transiently during the execution of `run`), at
+         *   most one glib timeout source (or "timer" here) exists. If `run`
+         *   was invoked by a timer, it will be deleted upon return, as the
+         *   function always returns G_SOURCE_REMOVE.
+         * - Furthermore, if next_timeout_id is not null, a timer with this
+         *   glib source id exists and is running. As a consequence,
+         *   - if reason is DUNST_TIMER, it is the timer that triggered the
+         *     current call to run;
+         *   - if reason is DUNST_WAKEUP, this timer was scheduled some time in
+         *     the future (or in the past, but not yet executed my the main loop,
+         *     which is equivalent for our purpose).
+         *
+         * Thus, in each call to run,
+         * - if reason is DUNST_WAKEUP and next_timeout_id != 0, we delete this
+         *   timer -- we now have more recent information on which we can
+         *   decide of a (maybe) better timeout.
+         * - in any case, we reset next_timeout_id to 0.
+         * - if there is any event to be run in the future, we set a new timer
+         *   to this time, and update next_timeout_id accordingly.
+         */
 
-        LOG_D("RUN, reason %i", reason);
+        static guint next_timeout_id = 0;
+        enum dunst_run_reason reason = GPOINTER_TO_INT(data);
+
+        LOG_D("RUN, reason %i: %s", reason, dunst_run_reason_str(reason));
         gint64 now = time_monotonic_now();
 
         dunst_status(S_FULLSCREEN, output->have_fullscreen_window());
         dunst_status(S_IDLE, output->is_idle());
 
         queues_update(status, now);
+
+        if(reason == DUNST_WAKEUP && next_timeout_id != 0) {
+                // Delete the upcoming timer
+                g_source_remove(next_timeout_id);
+        }
+        next_timeout_id = 0;
 
         if (!queues_length_displayed()) {
                 output->win_hide(win);
@@ -100,8 +152,6 @@ static gboolean run(void *data)
         // Call draw before showing the window to avoid flickering
         draw();
         output->win_show(win);
-
-        bool timeout_set = true;
 
         gint64 timeout_at = queues_get_next_datachange(now);
         if (timeout_at != -1) {
@@ -114,22 +164,7 @@ static gboolean run(void *data)
 
                 LOG_D("Sleeping for %li ms", sleep/1000);
 
-                if (sleep >= 0) {
-                        if (reason == 0 || next_timeout < now || timeout_at < next_timeout) {
-                                if (next_timeout != 0) {
-                                        g_source_remove(next_timeout_id);
-                                }
-                                timeout_set = true;
-                                next_timeout_id = g_timeout_add(sleep/1000, run, NULL);
-                                next_timeout = timeout_at;
-                        }
-                }
-        }
-
-        if(!timeout_set) {
-                // If no new timeout was set this time, clear up te timer id
-                next_timeout = 0;
-                next_timeout_id = 0;
+                next_timeout_id = g_timeout_add(sleep/1000, run, NULL);
         }
 
         /* If the execution got triggered by g_timeout_add,
@@ -240,7 +275,7 @@ int dunst_main(int argc, char *argv[])
         }
 
         setup_done = true;
-        run(NULL);
+        run(GINT_TO_POINTER(DUNST_TIMER)); // The first run() is a scheduled one
         g_main_loop_run(mainloop);
         g_clear_pointer(&mainloop, g_main_loop_unref);
 
