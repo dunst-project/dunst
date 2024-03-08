@@ -68,8 +68,8 @@ void rule_apply(struct rule *r, struct notification *n)
                 n->colors.bg = g_strdup(r->bg);
         }
         if (r->highlight) {
-                g_free(n->colors.highlight);
-                n->colors.highlight = g_strdup(r->highlight);
+                g_strfreev(n->colors.highlight);
+                n->colors.highlight = g_strdupv(r->highlight);
         }
         if (r->fc) {
                 g_free(n->colors.frame);
