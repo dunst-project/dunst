@@ -43,6 +43,7 @@ jobs:
       with:
         # Clone the whole branch, we have to fetch tags later
         fetch-depth: 0
+        fetch-tags: true
 
     - name: build
       run: make -j all dunstify test/test
