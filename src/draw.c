@@ -61,11 +61,13 @@ void load_icon_themes(void)
 
 char *color_to_string(struct color c, char buf[10])
 {
-        if (!COLOR_VALID(c) || c.r > 1 || c.g > 1 || c.b > 1)
-                return NULL;
+        if (!COLOR_VALID(c)) return NULL;
 
         g_snprintf(buf, 10, "#%02x%02x%02x%02x",
-                        (int)(c.r * 255), (int)(c.g * 255), (int)(c.b * 255), (int)(c.a * 255));
+                        (int)(c.r * 255),
+                        (int)(c.g * 255),
+                        (int)(c.b * 255),
+                        (int)(c.a * 255));
         return buf;
 }
 
@@ -313,6 +315,12 @@ static struct colored_layout *layout_init_shared(cairo_t *c, struct notification
         cl->l = layout_create(c);
         cl->is_xmore = false;
         cl->n = n;
+
+        // Invalid colors should never reach this point!
+        assert(settings.frame_width == 0 || COLOR_VALID(COLOR(cl, frame)));
+        assert(!have_progress_bar(cl) || COLOR_VALID(COLOR(cl, highlight)));
+        assert(COLOR_VALID(COLOR(cl, fg)));
+        assert(COLOR_VALID(COLOR(cl, bg)));
         return cl;
 }
 

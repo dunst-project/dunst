@@ -642,28 +642,28 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
         // Modify these values after the notification is initialized and all rules are applied.
         if ((dict_value = g_variant_lookup_value(hints, "fgcolor", G_VARIANT_TYPE_STRING))) {
                 struct color c;
-                if (string_parse_color(NULL, g_variant_get_string(dict_value, NULL), &c))
+                if (string_parse_color(g_variant_get_string(dict_value, NULL), &c))
                         n->colors.fg = c;
                 g_variant_unref(dict_value);
         }
 
         if ((dict_value = g_variant_lookup_value(hints, "bgcolor", G_VARIANT_TYPE_STRING))) {
                 struct color c;
-                if (string_parse_color(NULL, g_variant_get_string(dict_value, NULL), &c))
+                if (string_parse_color(g_variant_get_string(dict_value, NULL), &c))
                         n->colors.bg = c;
                 g_variant_unref(dict_value);
         }
 
         if ((dict_value = g_variant_lookup_value(hints, "frcolor", G_VARIANT_TYPE_STRING))) {
                 struct color c;
-                if (string_parse_color(NULL, g_variant_get_string(dict_value, NULL), &c))
+                if (string_parse_color(g_variant_get_string(dict_value, NULL), &c))
                         n->colors.frame = c;
                 g_variant_unref(dict_value);
         }
 
         if ((dict_value = g_variant_lookup_value(hints, "hlcolor", G_VARIANT_TYPE_STRING))) {
                 struct color c;
-                if (string_parse_color(NULL, g_variant_get_string(dict_value, NULL), &c))
+                if (string_parse_color(g_variant_get_string(dict_value, NULL), &c))
                         n->colors.highlight = c;
                 g_variant_unref(dict_value);
         }
@@ -731,7 +731,7 @@ void signal_length_propertieschanged(void)
                                               "PropertiesChanged",
                                               body,
                                               &err);
-                                
+
                 if (err) {
                         LOG_W("Unable to emit signal: %s", err->message);
                         g_error_free(err);

@@ -44,11 +44,11 @@ struct color {
 };
 
 #define COLOR_UNINIT { -1, -1, -1, -1 }
-#define COLOR_VALID(c) ((c).r >= 0 && (c).g >= 0 && (c).b >= 0 && (c).a >= 0)
+#define COLOR_VALID(c) ((c).r >= 0 && (c).g >= 0 && (c).b >= 0 && (c).a >= 0 && (c).r <= 1 && (c).g <= 1 && (c).b <= 1 && (c).a <= 1)
 #define COLOR_SAME(c1, c2) ((c1).r == (c2).r && (c1).g == (c2).g && (c1).b == (c2).b && (c1).a == (c2).a)
 
 /**
- * Stringify a color struct to a #RRGGBBAA string.
+ * Stringify a color struct to a RRGGBBAA string.
  * Returns the buffer on success and NULL if the struct is invalid.
  */
 char *color_to_string(struct color c, char buf[10]);

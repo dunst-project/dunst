@@ -184,7 +184,7 @@ int string_parse_sepcolor(const void *data, const char *s, void *ret)
                         return false;
                 }
 
-                if (string_parse_color(NULL, s, &sep_color->color)) {
+                if (string_parse_color(s, &sep_color->color)) {
                         sep_color->type = SEP_CUSTOM;
                         return true;
                 }
@@ -195,14 +195,13 @@ int string_parse_sepcolor(const void *data, const char *s, void *ret)
 #define UINT_MAX_N(bits) ((1 << bits) - 1)
 
 // Parse a #RRGGBB[AA] string
-int string_parse_color(const void *data, const char *s, void *ret)
+int string_parse_color(const char *s, struct color *ret)
 {
         if (STR_EMPTY(s) || *s != '#') {
                 LOG_W("A color string should start with '#' and contain at least 3 hex characters");
                 return false;
         }
 
-        struct color *c = ret;
         char *end = NULL;
         unsigned long val = strtoul(s + 1, &end, 16);
 
@@ -234,10 +233,10 @@ int string_parse_color(const void *data, const char *s, void *ret)
 
         const unsigned single_max = UINT_MAX_N(bpc);
 
-        c->r = ((val >> 3 * bpc) & single_max) / (double)single_max;
-        c->g = ((val >> 2 * bpc) & single_max) / (double)single_max;
-        c->b = ((val >> 1 * bpc) & single_max) / (double)single_max;
-        c->a = ((val)            & single_max) / (double)single_max;
+        ret->r = ((val >> 3 * bpc) & single_max) / (double)single_max;
+        ret->g = ((val >> 2 * bpc) & single_max) / (double)single_max;
+        ret->b = ((val >> 1 * bpc) & single_max) / (double)single_max;
+        ret->a = ((val)            & single_max) / (double)single_max;
 
         return true;
 }
@@ -431,7 +430,7 @@ bool set_from_string(void *target, struct setting setting, const char *value) {
                 case TYPE_LENGTH:
                         return string_parse_length(target, value);
                 case TYPE_COLOR:
-                        return string_parse_color(NULL, value, target);
+                        return string_parse_color(value, target);
                 default:
                         LOG_W("Setting type of '%s' is not known (type %i)", setting.name, setting.type);
                         return false;
