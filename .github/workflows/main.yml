@@ -11,16 +11,14 @@ jobs:
   enforce-g_malloc:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-      with:
-        # Clone the whole branch, we have to fetch tags later
-        fetch-depth: 0
+      - uses: actions/checkout@v4
 
-    - name: enforce-g_malloc
-      run: "! git grep -P '(?<!g_)malloc' ':!.valgrind.suppressions' ':!.github/workflows/main.yml'"
+      - name: enforce-g_malloc
+        run: "! git grep -P '(?<!g_)malloc' ':!.valgrind.suppressions' ':!.github/workflows/main.yml'"
 
   build:
     strategy:
+      fail-fast: false
       matrix:
         CC:
           - clang
@@ -28,86 +26,88 @@ jobs:
         distro:
           - alpine
           - archlinux
-          - debian-stretch
+          - debian-bookworm
+          - debian-bullseye
           - debian-buster
           - fedora
-          - ubuntu-xenial
-          - ubuntu-bionic
           - ubuntu-focal
+          - ubuntu-jammy
 
     env:
       CC: ${{ matrix.CC }}
-      EXTRA_CFLAGS: "-Werror"
+      EXTRA_CFLAGS: "-Werror ${{ (matrix.distro == 'debian-bookworm' || matrix.distro == 'ubuntu-jammy') && matrix.CC == 'clang' && '-gdwarf-4' || ' '}}"
+
     steps:
-    - uses: actions/checkout@v2
-      with:
-        # Clone the whole branch, we have to fetch tags later
-        fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          # Clone the whole history including tags.
+          fetch-depth: 0
 
-    # Fetch tags to determine proper version number inside git
-    - name: fetch tags
-      run: git fetch --tags
-      # We cannot pull tags with old distros, since there is no `.git`. See below.
-      if: "! (matrix.distro == 'ubuntu-bionic' || matrix.distro == 'ubuntu-xenial' || matrix.distro == 'debian-stretch')"
+      - name: setup $HOME for git
+        run: echo "HOME=${RUNNER_TEMP}" >> ${GITHUB_ENV}
 
-    # The Github checkout Action doesn't support distros with git older than 2.18
-    # With git<2.18 it downloads the code via API and does not clone it via git :facepalm:
-    # To succeed the tests, we have to manually replace the VERSION macro
-    - name: fix version number for old distros
-      run: 'sed -i "s/-non-git/-ci-oldgit-$GITHUB_SHA/" Makefile'
-      if: "  (matrix.distro == 'ubuntu-bionic' || matrix.distro == 'ubuntu-xenial' || matrix.distro == 'debian-stretch')"
+      - name: configure safe directory for git
+        run: git config --global --add safe.directory ${GITHUB_WORKSPACE}
 
-    - name: build
-      run: make -j all dunstify test/test
+      - name: build
+        run: make -j all dunstify test/test
 
-    - name: test
-      run: make -j test
+      - name: test
+        run: make -j test
 
-    - name: installation
-      run: ./test/test-install.sh
+      - name: installation
+        run: ./test/test-install.sh
 
-    - name: valgrind memleaks
-      run: |
-        make clean
-        make -j test-valgrind
-
-    - name: coverage
-      run: |
-        make clean
-        make -j test-coverage
-
-    - name: Generate coverage report
-      run: lcov -c -d . -o lcov.info
-      if: "matrix.CC == 'gcc'"
-
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        flags: unittests
-        name: ${{ matrix.distro }}-${{ matrix.CC }}
-        fail_ci_if_error: true
-      if: "matrix.CC == 'gcc'"
+      - name: valgrind memleaks
+        run: make -j clean test-valgrind
 
     runs-on: ubuntu-latest
     container:
-      image: dunst/ci:${{ matrix.distro }}
+      image: ghcr.io/dunst-project/docker-images:${{ matrix.distro }}
+
+  coverage:
+    needs: build
+    if: github.repository == 'dunst-project/dunst'
+    env:
+      CC: gcc
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Clone the whole history including tags.
+          fetch-depth: 0
+
+      - name: setup $HOME for git
+        run: echo "HOME=${RUNNER_TEMP}" >> ${GITHUB_ENV}
+
+      - name: configure safe directory for git
+        run: git config --global --add safe.directory ${GITHUB_WORKSPACE}
+
+      - name: coverage
+        run: make clean test-coverage
+
+      - name: Generate coverage report
+        run: lcov -c -d . -o lcov.info
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: unittests
+          name: fedora-gcc
+          fail_ci_if_error: true
+
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/dunst-project/docker-images:fedora
 
   doxygen:
-    strategy:
-      matrix:
-        distro:
-          - misc-doxygen
-
     steps:
-    - uses: actions/checkout@v2
-      with:
-        # Clone the whole branch, we have to fetch tags later
-        fetch-depth: 0
+      - uses: actions/checkout@v4
 
-    - name: doxygen
-      run: make -j doc-doxygen
+      - name: doxygen
+        run: make -j doc-doxygen
 
     runs-on: ubuntu-latest
     container:
-      image: dunst/ci:${{ matrix.distro }}
+      image: ghcr.io/dunst-project/docker-images:misc-doxygen
