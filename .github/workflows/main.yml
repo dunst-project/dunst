@@ -39,17 +39,10 @@ jobs:
       CC: ${{ matrix.CC }}
       EXTRA_CFLAGS: "-Werror ${{ (matrix.distro == 'debian-bookworm' || matrix.distro == 'ubuntu-jammy') && '-gdwarf-4' || ' '}}"
     steps:
-    - name: fix warning
-      run: |
-        git config --global --add safe.directory /__w/{repo_name}/{repo_name}
     - uses: actions/checkout@v4
       with:
         # Clone the whole branch, we have to fetch tags later
         fetch-depth: 0
-
-    # Fetch tags to determine proper version number inside git
-    - name: fetch tags
-      run: git fetch --tags
 
     - name: build
       run: make -j all dunstify test/test
