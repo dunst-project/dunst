@@ -11,7 +11,7 @@ jobs:
   enforce-g_malloc:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         # Clone the whole branch, we have to fetch tags later
         fetch-depth: 0
@@ -28,18 +28,18 @@ jobs:
         distro:
           - alpine
           - archlinux
-          - debian-stretch
+          - debian-bookworm
+          - debian-bullseye
           - debian-buster
           - fedora
-          - ubuntu-xenial
-          - ubuntu-bionic
           - ubuntu-focal
+          - ubuntu-jammy
 
     env:
       CC: ${{ matrix.CC }}
-      EXTRA_CFLAGS: "-Werror"
+      EXTRA_CFLAGS: "-Werror ${{ (matrix.distro == 'debian-bookworm' || matrix.distro == 'ubuntu-jammy') && '-gdwarf-4' || ' '}}"
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         # Clone the whole branch, we have to fetch tags later
         fetch-depth: 0
@@ -47,15 +47,6 @@ jobs:
     # Fetch tags to determine proper version number inside git
     - name: fetch tags
       run: git fetch --tags
-      # We cannot pull tags with old distros, since there is no `.git`. See below.
-      if: "! (matrix.distro == 'ubuntu-bionic' || matrix.distro == 'ubuntu-xenial' || matrix.distro == 'debian-stretch')"
-
-    # The Github checkout Action doesn't support distros with git older than 2.18
-    # With git<2.18 it downloads the code via API and does not clone it via git :facepalm:
-    # To succeed the tests, we have to manually replace the VERSION macro
-    - name: fix version number for old distros
-      run: 'sed -i "s/-non-git/-ci-oldgit-$GITHUB_SHA/" Makefile'
-      if: "  (matrix.distro == 'ubuntu-bionic' || matrix.distro == 'ubuntu-xenial' || matrix.distro == 'debian-stretch')"
 
     - name: build
       run: make -j all dunstify test/test
@@ -81,7 +72,7 @@ jobs:
       if: "matrix.CC == 'gcc'"
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1
+      uses: codecov/codecov-action@v3
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         flags: unittests
@@ -91,7 +82,8 @@ jobs:
 
     runs-on: ubuntu-latest
     container:
-      image: dunst/ci:${{ matrix.distro }}
+      image: ghcr.io/dunst-project/docker-images:${{ matrix.distro }}
+      options: --user 1001
 
   doxygen:
     strategy:
@@ -100,7 +92,7 @@ jobs:
           - misc-doxygen
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         # Clone the whole branch, we have to fetch tags later
         fetch-depth: 0
@@ -110,4 +102,4 @@ jobs:
 
     runs-on: ubuntu-latest
     container:
-      image: dunst/ci:${{ matrix.distro }}
+      image: ghcr.io/dunst-project/docker-images:${{ matrix.distro }}
