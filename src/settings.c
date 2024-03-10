@@ -160,12 +160,16 @@ void settings_init(void) {
         }
 }
 
+// NOTE: This function is probably outdated and no longer relevant
+//       Since it does not even fully display rule information we
+//       may want to remove it or change it
 void print_rule(struct rule* r) {
         LOG_D("Rule %s", r->name);
         LOG_D("summary %s", r->summary);
         LOG_D("appname %s", r->appname);
         LOG_D("script %s", r->script);
-        LOG_D("frame %s", r->fc);
+        char buf[10];
+        LOG_D("frame %s", color_to_string(r->fc, buf));
 }
 
 void check_and_correct_settings(struct settings *s) {

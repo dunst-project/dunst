@@ -66,10 +66,11 @@ void notification_print(const struct notification *n)
         printf("\turgency: %s\n", notification_urgency_to_string(n->urgency));
         printf("\ttransient: %d\n", n->transient);
         printf("\tformatted: '%s'\n", n->msg);
-        printf("\tfg: %s\n", n->colors.fg);
-        printf("\tbg: %s\n", n->colors.bg);
-        printf("\thighlight: %s\n", n->colors.highlight);
-        printf("\tframe: %s\n", n->colors.frame);
+        char buf[10];
+        printf("\tfg: %s\n", color_to_string(n->colors.fg, buf));
+        printf("\tbg: %s\n", color_to_string(n->colors.bg, buf));
+        printf("\thighlight: %s\n", color_to_string(n->colors.highlight, buf));
+        printf("\tframe: %s\n", color_to_string(n->colors.frame, buf));
         printf("\tfullscreen: %s\n", enum_to_string_fullscreen(n->fullscreen));
         printf("\tformat: %s\n", n->format);
         printf("\tprogress: %d\n", n->progress);
@@ -303,10 +304,6 @@ void notification_unref(struct notification *n)
         g_free(n->category);
         g_free(n->text_to_render);
         g_free(n->urls);
-        g_free(n->colors.fg);
-        g_free(n->colors.bg);
-        g_free(n->colors.highlight);
-        g_free(n->colors.frame);
         g_free(n->stack_tag);
         g_free(n->desktop_entry);
 
@@ -449,6 +446,12 @@ struct notification *notification_create(void)
         n->max_icon_size = 32;
         n->receiving_raw_icon = false;
 
+        struct color invalid = COLOR_UNINIT;
+        n->colors.fg = invalid;
+        n->colors.bg = invalid;
+        n->colors.highlight = invalid;
+        n->colors.frame = invalid;
+
         n->script_run = false;
         n->dbus_valid = false;
 
@@ -495,14 +498,10 @@ void notification_init(struct notification *n)
                 default:
                         g_error("Unhandled urgency type: %d", n->urgency);
         }
-        if (!n->colors.fg)
-                n->colors.fg = g_strdup(defcolors.fg);
-        if (!n->colors.bg)
-                n->colors.bg = g_strdup(defcolors.bg);
-        if (!n->colors.highlight)
-                n->colors.highlight = g_strdup(defcolors.highlight);
-        if (!n->colors.frame)
-                n->colors.frame = g_strdup(defcolors.frame);
+        if (!COLOR_VALID(n->colors.fg)) n->colors.fg = defcolors.fg;
+        if (!COLOR_VALID(n->colors.bg)) n->colors.bg = defcolors.bg;
+        if (!COLOR_VALID(n->colors.highlight)) n->colors.highlight = defcolors.highlight;
+        if (!COLOR_VALID(n->colors.frame)) n->colors.frame = defcolors.frame;
 
         /* Sanitize misc hints */
         if (n->progress < 0)

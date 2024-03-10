@@ -8,6 +8,7 @@
 #include <cairo.h>
 
 #include "markup.h"
+#include "draw.h"
 
 #define DUNST_NOTIF_MAX_CHARS 50000
 
@@ -38,10 +39,10 @@ enum urgency {
 typedef struct _notification_private NotificationPrivate;
 
 struct notification_colors {
-        char *frame;
-        char *bg;
-        char *fg;
-        char *highlight;
+        struct color frame;
+        struct color bg;
+        struct color fg;
+        struct color highlight;
 };
 
 struct notification {

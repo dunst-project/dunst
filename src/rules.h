@@ -47,11 +47,11 @@ struct rule {
         int max_icon_size;
         int override_pause_level;
         char *new_icon;
-        char *fg;
-        char *bg;
-        char *highlight;
         char *default_icon;
-        char *fc;
+        struct color fg;
+        struct color bg;
+        struct color highlight;
+        struct color fc;
         char *set_category;
         const char *format;
         const char *script;

@@ -22,19 +22,8 @@
 #include "utils.h"
 #include "icon-lookup.h"
 
-struct color {
-        double r;
-        double g;
-        double b;
-        double a;
-};
-
 struct colored_layout {
         PangoLayout *l;
-        struct color fg;
-        struct color bg;
-        struct color highlight;
-        struct color frame;
         char *text;
         PangoAttrList *attr;
         cairo_surface_t *icon;
@@ -47,7 +36,8 @@ window win;
 
 PangoFontDescription *pango_fdesc;
 
-#define UINT_MAX_N(bits) ((1 << bits) - 1)
+// NOTE: Saves some characters
+#define COLOR(cl, field) (cl)->n->colors.field
 
 void load_icon_themes(void)
 {
@@ -69,6 +59,18 @@ void load_icon_themes(void)
 
 }
 
+char *color_to_string(struct color c, char buf[10])
+{
+        if (!COLOR_VALID(c)) return NULL;
+
+        g_snprintf(buf, 10, "#%02x%02x%02x%02x",
+                        (int)(c.r * 255),
+                        (int)(c.g * 255),
+                        (int)(c.b * 255),
+                        (int)(c.a * 255));
+        return buf;
+}
+
 void draw_setup(void)
 {
         const struct output *out = output_create(settings.force_xwayland);
@@ -82,42 +84,6 @@ void draw_setup(void)
 
         if (settings.enable_recursive_icon_lookup)
                 load_icon_themes();
-}
-
-static struct color hex_to_color(uint32_t hexValue, int dpc)
-{
-        const int bpc = 4 * dpc;
-        const unsigned single_max = UINT_MAX_N(bpc);
-
-        struct color ret;
-        ret.r = ((hexValue >> 3 * bpc) & single_max) / (double)single_max;
-        ret.g = ((hexValue >> 2 * bpc) & single_max) / (double)single_max;
-        ret.b = ((hexValue >> 1 * bpc) & single_max) / (double)single_max;
-        ret.a = ((hexValue)            & single_max) / (double)single_max;
-
-        return ret;
-}
-
-static struct color string_to_color(const char *str)
-{
-        if (STR_FULL(str)) {
-                char *end;
-                uint_fast32_t val = strtoul(str+1, &end, 16);
-                if (end[0] != '\0' && end[1] != '\0') {
-                        LOG_W("Invalid color string: '%s'", str);
-                }
-
-                switch (end - (str+1)) {
-                        case 3:  return hex_to_color((val << 4) | 0xF, 1);
-                        case 6:  return hex_to_color((val << 8) | 0xFF, 2);
-                        case 4:  return hex_to_color(val, 1);
-                        case 8:  return hex_to_color(val, 2);
-                }
-        }
-
-        /* return black on error */
-        LOG_W("Invalid color string: '%s'", str);
-        return hex_to_color(0xF, 1);
 }
 
 static inline double color_apply_delta(double base, double delta)
@@ -152,20 +118,17 @@ static struct color layout_get_sepcolor(struct colored_layout *cl,
                                         struct colored_layout *cl_next)
 {
         switch (settings.sep_color.type) {
-        case SEP_FRAME:
-                if (cl_next->n->urgency > cl->n->urgency)
-                        return cl_next->frame;
-                else
-                        return cl->frame;
-        case SEP_CUSTOM:
-                return string_to_color(settings.sep_color.sep_color);
-        case SEP_FOREGROUND:
-                return cl->fg;
-        case SEP_AUTO:
-                return calculate_foreground_color(cl->bg);
-        default:
-                LOG_E("Invalid %s enum value in %s:%d", "sep_color", __FILE__, __LINE__);
-                break;
+                case SEP_FRAME:
+                        return COLOR(cl_next->n->urgency > cl->n->urgency ? cl_next : cl, frame);
+                case SEP_CUSTOM:
+                        return settings.sep_color.color;
+                case SEP_FOREGROUND:
+                        return COLOR(cl, fg);
+                case SEP_AUTO:
+                        return calculate_foreground_color(COLOR(cl, bg));
+                default:
+                        LOG_E("Invalid %s enum value in %s:%d", "sep_color", __FILE__, __LINE__);
+                        break;
         }
 }
 
@@ -350,14 +313,14 @@ static struct colored_layout *layout_init_shared(cairo_t *c, struct notification
 {
         struct colored_layout *cl = g_malloc(sizeof(struct colored_layout));
         cl->l = layout_create(c);
-
-        cl->fg = string_to_color(n->colors.fg);
-        cl->bg = string_to_color(n->colors.bg);
-        cl->highlight = string_to_color(n->colors.highlight);
-        cl->frame = string_to_color(n->colors.frame);
         cl->is_xmore = false;
-
         cl->n = n;
+
+        // Invalid colors should never reach this point!
+        assert(settings.frame_width == 0 || COLOR_VALID(COLOR(cl, frame)));
+        assert(!have_progress_bar(cl) || COLOR_VALID(COLOR(cl, highlight)));
+        assert(COLOR_VALID(COLOR(cl, fg)));
+        assert(COLOR_VALID(COLOR(cl, bg)));
         return cl;
 }
 
@@ -712,11 +675,11 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
         radius_int = frame_internal_radius(corner_radius, settings.frame_width, height);
 
         draw_rounded_rect(c, x, y, width, height, radius_int, scale, corners);
-        cairo_set_source_rgba(c, cl->frame.r, cl->frame.g, cl->frame.b, cl->frame.a);
+        cairo_set_source_rgba(c, COLOR(cl, frame.r), COLOR(cl, frame.g), COLOR(cl, frame.b), COLOR(cl, frame.a));
         cairo_fill(c);
 
         draw_rounded_rect(c, x, y, width, height, radius_int, scale, corners);
-        cairo_set_source_rgba(c, cl->bg.r, cl->bg.g, cl->bg.b, cl->bg.a);
+        cairo_set_source_rgba(c, COLOR(cl, bg.r), COLOR(cl, bg.g), COLOR(cl, bg.b), COLOR(cl, bg.a));
         cairo_fill(c);
 
         cairo_set_operator(c, CAIRO_OPERATOR_SOURCE);
@@ -782,7 +745,7 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, dou
                 }
                 cairo_move_to(c, round(text_x * scale), round(text_y * scale));
 
-                cairo_set_source_rgba(c, cl->fg.r, cl->fg.g, cl->fg.b, cl->fg.a);
+                cairo_set_source_rgba(c, COLOR(cl, fg.r), COLOR(cl, fg.g), COLOR(cl, fg.b), COLOR(cl, fg.a));
                 pango_cairo_update_layout(c, cl->l);
                 pango_cairo_show_layout(c, cl->l);
         }
@@ -851,19 +814,19 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, dou
                 */
 
                 // back layer (background)
-                cairo_set_source_rgba(c, cl->bg.r, cl->bg.g, cl->bg.b, cl->bg.a);
+                cairo_set_source_rgba(c, COLOR(cl, bg.r), COLOR(cl, bg.g), COLOR(cl, bg.b), COLOR(cl, bg.a));
                 draw_rounded_rect(c, x_bar_2, frame_y, progress_width_2, progress_height,
                         settings.progress_bar_corner_radius, scale, settings.progress_bar_corners);
                 cairo_fill(c);
 
                 // top layer (fill)
-                cairo_set_source_rgba(c, cl->highlight.r, cl->highlight.g, cl->highlight.b, cl->highlight.a);
+                cairo_set_source_rgba(c, COLOR(cl, highlight.r), COLOR(cl, highlight.g), COLOR(cl, highlight.b), COLOR(cl, highlight.a));
                 draw_rounded_rect(c, x_bar_1, frame_y, progress_width_1, progress_height,
                         settings.progress_bar_corner_radius, scale, settings.progress_bar_corners);
                 cairo_fill(c);
 
                 // border
-                cairo_set_source_rgba(c, cl->frame.r, cl->frame.g, cl->frame.b, cl->frame.a);
+                cairo_set_source_rgba(c, COLOR(cl, frame.r), COLOR(cl, frame.g), COLOR(cl, frame.b), COLOR(cl, frame.a));
                 cairo_set_line_width(c, frame_width * scale);
                 draw_rounded_rect(c,
                                 frame_x + half_frame_width + 1,

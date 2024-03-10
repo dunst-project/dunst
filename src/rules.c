@@ -59,22 +59,14 @@ void rule_apply(struct rule *r, struct notification *n)
                 n->markup = r->markup;
         if (r->icon_position != -1)
                 n->icon_position = r->icon_position;
-        if (r->fg) {
-                g_free(n->colors.fg);
-                n->colors.fg = g_strdup(r->fg);
-        }
-        if (r->bg) {
-                g_free(n->colors.bg);
-                n->colors.bg = g_strdup(r->bg);
-        }
-        if (r->highlight) {
-                g_free(n->colors.highlight);
-                n->colors.highlight = g_strdup(r->highlight);
-        }
-        if (r->fc) {
-                g_free(n->colors.frame);
-                n->colors.frame = g_strdup(r->fc);
-        }
+        if (COLOR_VALID(r->fg))
+                n->colors.fg = r->fg;
+        if (COLOR_VALID(r->bg))
+                n->colors.bg = r->bg;
+        if (COLOR_VALID(r->highlight))
+                n->colors.highlight = r->highlight;
+        if (COLOR_VALID(r->fc))
+                n->colors.frame = r->fc;
         if (r->format)
                 n->format = r->format;
         if (r->default_icon) {
