@@ -203,8 +203,9 @@ int queues_notification_insert(struct notification *n)
         if (!inserted)
                 g_queue_insert_sorted(waiting, n, notification_cmp_data, NULL);
 
-        if (!n->icon)
+        if (!n->icon) {
                 notification_icon_replace_path(n, n->iconname);
+        }
 
         if (settings.print_notifications)
                 notification_print(n);

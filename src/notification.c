@@ -340,9 +340,8 @@ void notification_transfer_icon(struct notification *from, struct notification *
 
 void notification_icon_replace_path(struct notification *n, const char *new_icon)
 {
-        ASSERT_OR_RET(n,);
+        ASSERT_OR_RET(n && n->icon_position != ICON_OFF,);
         ASSERT_OR_RET(new_icon,);
-        ASSERT_OR_RET(n->icon_position != ICON_OFF,);
 
         if (n->iconname && n->icon && STR_EQ(n->iconname, new_icon))
                 return;
@@ -374,9 +373,8 @@ void notification_icon_replace_path(struct notification *n, const char *new_icon
 
 void notification_icon_replace_data(struct notification *n, GVariant *new_icon)
 {
-        ASSERT_OR_RET(n,);
+        ASSERT_OR_RET(n && n->icon_position != ICON_OFF,);
         ASSERT_OR_RET(new_icon,);
-        ASSERT_OR_RET(n->icon_position != ICON_OFF,);
 
         cairo_surface_destroy(n->icon);
         n->icon = NULL;
