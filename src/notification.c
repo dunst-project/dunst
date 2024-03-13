@@ -340,11 +340,11 @@ void notification_transfer_icon(struct notification *from, struct notification *
 
 void notification_icon_replace_path(struct notification *n, const char *new_icon)
 {
-        ASSERT_OR_RET(n,);
+        ASSERT_OR_RET(n && n->icon_position != ICON_OFF,);
         ASSERT_OR_RET(new_icon,);
-        if(n->iconname && n->icon && strcmp(n->iconname, new_icon) == 0) {
+
+        if (n->iconname && n->icon && STR_EQ(n->iconname, new_icon))
                 return;
-        }
 
         // make sure it works, even if n->iconname is passed as new_icon
         if (n->iconname != new_icon) {
@@ -366,14 +366,14 @@ void notification_icon_replace_path(struct notification *n, const char *new_icon
                         n->icon = gdk_pixbuf_to_cairo_surface(pixbuf);
                         g_object_unref(pixbuf);
                 } else {
-                        LOG_W("No icon found in path: '%s'", n->icon_path);
+                        LOG_W("Failed to load icon from path: '%s'", n->icon_path);
                 }
         }
 }
 
 void notification_icon_replace_data(struct notification *n, GVariant *new_icon)
 {
-        ASSERT_OR_RET(n,);
+        ASSERT_OR_RET(n && n->icon_position != ICON_OFF,);
         ASSERT_OR_RET(new_icon,);
 
         cairo_surface_destroy(n->icon);
@@ -727,7 +727,7 @@ void notification_update_text_to_render(struct notification *n)
 void notification_do_action(struct notification *n)
 {
         assert(n->default_action_name);
-        
+
         if (g_hash_table_size(n->actions)) {
                 if (g_hash_table_contains(n->actions, n->default_action_name)) {
                         signal_action_invoked(n, n->default_action_name);
