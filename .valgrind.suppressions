@@ -135,3 +135,47 @@
    obj:*pango*
    ...
 }
+
+{
+   rsvg_conditional_jump
+   Memcheck:Cond
+   obj:/usr/lib*/librsvg-2.so.2.48.0
+   ...
+   fun:rsvg_handle_get_pixbuf
+   obj:/usr/lib*/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-svg.so
+   obj:/usr/lib*/libgdk_pixbuf-2.0.so.0.4200.10
+   fun:gdk_pixbuf_new_from_file
+   fun:notification_setup_raw_image
+   fun:notification_load_icon_with_scaling
+   ...
+}
+
+{
+   # Basically the same as above, but just for Debian
+   rsvg_conditional_jump-debian
+   Memcheck:Cond
+   obj:/usr/lib/*/librsvg-2.so.2.48.0
+   ...
+   fun:rsvg_handle_get_pixbuf
+   obj:/usr/lib/*/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-svg.so
+   obj:/usr/lib/*/libgdk_pixbuf-2.0.so.0.4200.8
+   fun:gdk_pixbuf_new_from_file
+   fun:notification_setup_raw_image
+   fun:notification_load_icon_with_scaling
+   ...
+}
+
+{
+   # Basically the same as above, but just for Ubuntu Focal
+   rsvg_conditional_jump-ubuntu_focal
+   Memcheck:Cond
+   obj:/usr/lib/*/librsvg-2.so.2.47.0
+   ...
+   fun:rsvg_rust_handle_close
+   obj:/usr/lib/*/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-svg.so
+   obj:/usr/lib/*/libgdk_pixbuf-2.0.so.0.4000.0
+   fun:gdk_pixbuf_new_from_file
+   fun:notification_setup_raw_image
+   fun:notification_load_icon_with_scaling
+   ...
+}
