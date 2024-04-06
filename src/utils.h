@@ -17,6 +17,8 @@
 #define STRN_EQ(a, b, n) (strncmp(a, b, n) == 0)
 //! Test if string a and b are the same case-insensitively
 #define STR_CASEQ(a, b) (strcasecmp(a, b) == 0)
+//! Get a non null string from a possibly null one
+#define STR_NN(s) (s == NULL ? "(null)" : s)
 
 //! Assert that expr evaluates to true, if not return with val
 #define ASSERT_OR_RET(expr, val) if (!(expr)) return val;

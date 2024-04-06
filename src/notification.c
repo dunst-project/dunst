@@ -52,27 +52,27 @@ void notification_print(const struct notification *n)
 {
         //TODO: use logging info for this
         printf("{\n");
-        printf("\tappname: '%s'\n", n->appname);
-        printf("\tsummary: '%s'\n", n->summary);
-        printf("\tbody: '%s'\n", n->body);
-        printf("\ticon: '%s'\n", n->iconname);
+        printf("\tappname: '%s'\n", STR_NN(n->appname));
+        printf("\tsummary: '%s'\n", STR_NN(n->summary));
+        printf("\tbody: '%s'\n", STR_NN(n->body));
+        printf("\ticon: '%s'\n", STR_NN(n->iconname));
         printf("\traw_icon set: %s\n", (n->icon_id && !STR_EQ(n->iconname, n->icon_id)) ? "true" : "false");
-        printf("\ticon_id: '%s'\n", n->icon_id);
+        printf("\ticon_id: '%s'\n", STR_NN(n->icon_id));
         printf("\tdesktop_entry: '%s'\n", n->desktop_entry ? n->desktop_entry : "");
-        printf("\tcategory: %s\n", n->category);
+        printf("\tcategory: %s\n", STR_NN(n->category));
         printf("\ttimeout: %ld\n", n->timeout/1000);
         printf("\tstart: %ld\n", n->start);
         printf("\ttimestamp: %ld\n", n->timestamp);
         printf("\turgency: %s\n", notification_urgency_to_string(n->urgency));
         printf("\ttransient: %d\n", n->transient);
-        printf("\tformatted: '%s'\n", n->msg);
+        printf("\tformatted: '%s'\n", STR_NN(n->msg));
         char buf[10];
-        printf("\tfg: %s\n", color_to_string(n->colors.fg, buf));
-        printf("\tbg: %s\n", color_to_string(n->colors.bg, buf));
-        printf("\thighlight: %s\n", color_to_string(n->colors.highlight, buf));
-        printf("\tframe: %s\n", color_to_string(n->colors.frame, buf));
+        printf("\tfg: %s\n", STR_NN(color_to_string(n->colors.fg, buf)));
+        printf("\tbg: %s\n", STR_NN(color_to_string(n->colors.bg, buf)));
+        printf("\thighlight: %s\n", STR_NN(color_to_string(n->colors.highlight, buf)));
+        printf("\tframe: %s\n", STR_NN(color_to_string(n->colors.frame, buf)));
         printf("\tfullscreen: %s\n", enum_to_string_fullscreen(n->fullscreen));
-        printf("\tformat: %s\n", n->format);
+        printf("\tformat: %s\n", STR_NN(n->format));
         printf("\tprogress: %d\n", n->progress);
         printf("\tstack_tag: %s\n", (n->stack_tag ? n->stack_tag : ""));
         printf("\tid: %d\n", n->id);
@@ -80,7 +80,7 @@ void notification_print(const struct notification *n)
                 char *urls = string_replace_all("\n", "\t\t\n", g_strdup(n->urls));
                 printf("\turls:\n");
                 printf("\t{\n");
-                printf("\t\t%s\n", urls);
+                printf("\t\t%s\n", STR_NN(urls));
                 printf("\t}\n");
                 g_free(urls);
         }
@@ -92,14 +92,14 @@ void notification_print(const struct notification *n)
                 g_hash_table_iter_init(&iter, n->actions);
                 printf("\tactions: {\n");
                 while (g_hash_table_iter_next(&iter, &p_key, &p_value))
-                        printf("\t\t\"%s\": \"%s\"\n", (char*)p_key, (char*)p_value);
+                        printf("\t\t\"%s\": \"%s\"\n", (char*)p_key, STR_NN((char*)p_value));
                 printf("\t}\n");
         }
         printf("\tscript_count: %d\n", n->script_count);
         if (n->script_count > 0) {
                 printf("\tscripts: ");
                 for (int i = 0; i < n->script_count; i++) {
-                        printf("'%s' ",n->scripts[i]);
+                        printf("'%s' ", STR_NN(n->scripts[i]));
                 }
                 printf("\n");
         }
