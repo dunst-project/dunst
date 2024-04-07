@@ -592,32 +592,35 @@ TEST test_string_to_sepcolor(void)
         };
 
         const struct separator_color_data results[] = {
-                {SEP_AUTO, NULL},
-                {SEP_FOREGROUND, NULL},
-                {SEP_FRAME, NULL},
-                {SEP_CUSTOM, "#123456"},
-                {SEP_CUSTOM, "#ab123c"},
-                {SEP_CUSTOM, "#AB123C"},
+                {SEP_AUTO, COLOR_UNINIT},
+                {SEP_FOREGROUND, COLOR_UNINIT},
+                {SEP_FRAME, COLOR_UNINIT},
+                {SEP_CUSTOM, { (double)0x12 / 0xff, (double)0x34 / 0xff, (double)0x56 / 0xff, 1.0}},
+                {SEP_CUSTOM, { (double)0xab / 0xff, (double)0x12 / 0xff, (double)0x3c / 0xff, 1.0}},
+                {SEP_CUSTOM, { (double)0xab / 0xff, (double)0x12 / 0xff, (double)0x3c / 0xff, 1.0}},
         };
 
         ARRAY_SAME_LENGTH(inputs, results);
 
-        static char buf[50];
+        static char buf[100];
+        char buf1[10], buf2[10];
+
         for (int i = 0; i < G_N_ELEMENTS(inputs); i++) {
                 sprintf(buf, "Failed in round %i. Expected %i, got %i", i, results[i].type, val.type);
                 ASSERTm(buf, set_from_string(&val, s, inputs[i]));
                 ASSERT_EQm(buf, results[i].type, val.type);
-                sprintf(buf, "Failed in round %i. Expected %s, got %s", i, results[i].sep_color, val.sep_color);
-                ASSERTm(buf, STR_EQ(results[i].sep_color, val.sep_color));
+
+                sprintf(buf, "Failed in round %i. Expected %s, got %s", i,
+                                color_to_string(results[i].color, buf1), color_to_string(val.color, buf2));
+                ASSERTm(buf, (!COLOR_VALID(val.color) && !COLOR_VALID(results[i].color)) || COLOR_SAME(results[i].color, val.color));
         }
 
-        g_free(val.sep_color);
         PASS();
 }
 
 TEST test_string_to_sepcolor_invalid(void)
 {
-        struct separator_color_data val = {123, "test123"};
+        struct separator_color_data val = {123, COLOR_UNINIT};
         struct setting s;
         s.type = TYPE_CUSTOM;
         s.value = &val;
@@ -631,11 +634,8 @@ TEST test_string_to_sepcolor_invalid(void)
                 "fraame",
                 "123456",
                 "#ab",
-
-                // TODO detect these mistakes as well
-                /* "#12456", */
-                /* "#gg123c", */
-                /* "#AB123C123212", */
+                "#gg123c",
+                "#AB123C123212",
         };
 
         static char buf[50];
@@ -645,7 +645,85 @@ TEST test_string_to_sepcolor_invalid(void)
         }
 
         ASSERT_EQm("Sep color shouldn't changed from invalid inputs", 123, (int) val.type);
-        ASSERT_STR_EQm("Sep color shouldn't changed from invalid inputs", "test123", val.sep_color);
+        ASSERTm("Sep color shouldn't changed from invalid inputs", !COLOR_VALID(val.color));
+        PASS();
+}
+
+TEST test_string_to_color(void)
+{
+        struct color val = COLOR_UNINIT;
+        struct setting s;
+        s.type = TYPE_COLOR;
+        s.value = &val;
+        s.name = "test_color";
+
+        const char* inputs[] = {
+                "#123456",
+                "#ab123c",
+                "#AB123C",
+                "#abc",
+                "#faf",
+                "#AABBCC10",
+        };
+
+        const struct color results[] = {
+                { (double)0x12 / 0xff, (double)0x34 / 0xff, (double)0x56 / 0xff, 1.0},
+                { (double)0xab / 0xff, (double)0x12 / 0xff, (double)0x3c / 0xff, 1.0},
+                { (double)0xab / 0xff, (double)0x12 / 0xff, (double)0x3c / 0xff, 1.0},
+                { (double)0xaa / 0xff, (double)0xbb / 0xff, (double)0xcc / 0xff, 1.0},
+                { 1.0, (double)0xaa / 0xff, 1.0, 1.0},
+                { (double)0xaa / 0xff, (double)0xbb / 0xff, (double)0xcc / 0xff, (double)0x10 / 0xff},
+        };
+
+        ARRAY_SAME_LENGTH(inputs, results);
+
+        static char buf[100];
+        char buf1[10], buf2[10];
+
+        for (int i = 0; i < G_N_ELEMENTS(inputs); i++) {
+                sprintf(buf, "Failed in round %i. Expected %s, got %s", i,
+                                color_to_string(results[i], buf1), color_to_string(val, buf2));
+                ASSERTm(buf, set_from_string(&val, s, inputs[i]));
+                ASSERTm(buf, COLOR_SAME(results[i], val));
+        }
+
+        PASS();
+}
+
+TEST test_string_to_color_invalid(void)
+{
+        struct color val = COLOR_UNINIT;
+        struct setting s;
+        s.type = TYPE_COLOR;
+        s.value = &val;
+        s.name = "test_color";
+
+        const char* inputs[] = {
+                "",
+                "not color",
+                "####",
+                "@#4x",
+                "#abx",
+                "#gg123c",
+                "#AB123C123212",
+                "#sjdsnc",
+                "#00#",
+                "#ab+cd",
+                "#fffffffffffffffff",
+                "   ##   ",
+                "#xzky",
+                "#abacgg",
+                "0xfaf",
+                "#fcb+fa",
+        };
+
+        static char buf[50];
+        for (int i = 0; i < G_N_ELEMENTS(inputs); i++) {
+                sprintf(buf, "Failed in round %i.", i);
+                ASSERT_FALSEm(buf, set_from_string(&val, s, inputs[i]));
+        }
+
+        ASSERTm("Color shouldn't changed from invalid inputs", !COLOR_VALID(val));
         PASS();
 }
 
@@ -920,6 +998,8 @@ SUITE(suite_option_parser)
         // Paths are now almost always considered valid
         RUN_TEST(test_string_to_sepcolor);
         RUN_TEST(test_string_to_sepcolor_invalid);
+        RUN_TEST(test_string_to_color);
+        RUN_TEST(test_string_to_color_invalid);
         RUN_TEST(test_enum_size);
         RUN_TEST(test_string_to_length);
         RUN_TEST(test_string_to_length_invalid);
