@@ -190,7 +190,7 @@ GdkPixbuf *get_pixbuf_from_file(const char *filename, int min_size, int max_size
         gint w, h;
 
         if (!gdk_pixbuf_get_file_info (path, &w, &h)) {
-                LOG_W("Failed to load image info for %s", filename);
+                LOG_W("Failed to load image info for %s", STR_NN(filename));
                 g_free(path);
                 return NULL;
         }
@@ -219,7 +219,7 @@ char *get_path_from_icon_name(const char *iconname, int size)
 
         if (settings.enable_recursive_icon_lookup) {
                 char *path = find_icon_path(iconname, size);
-                LOG_I("Found icon at %s", path);
+                LOG_I("Found icon at %s", STR_NN(path));
                 return path;
         }
 
@@ -266,7 +266,7 @@ char *get_path_from_icon_name(const char *iconname, int size)
                         start = end + 1;
                 } while (STR_FULL(end));
                 if (!new_name)
-                        LOG_W("No icon found in path: '%s'", iconname);
+                        LOG_W("No icon found in path: '%s'", STR_NN(iconname));
         }
 
         g_free(uri_path);

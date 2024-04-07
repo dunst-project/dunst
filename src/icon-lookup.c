@@ -38,7 +38,7 @@ int get_icon_theme(char *name) {
  * @retval -1 means no index was found
  */
 int load_icon_theme_from_dir(const char *icon_dir, const char *subdir_theme) {
-        LOG_D("Loading theme %s/%s", icon_dir, subdir_theme);
+        LOG_D("Loading theme %s/%s", STR_NN(icon_dir), STR_NN(subdir_theme));
         char *theme_index_dir = g_build_filename(icon_dir, subdir_theme, "index.theme", NULL);
         FILE *theme_index = fopen(theme_index_dir, "r");
         g_free(theme_index_dir);
@@ -185,7 +185,7 @@ int load_icon_theme(char *name) {
                         return theme_index;
         }
 
-        LOG_W("Could not find theme %s", name);
+        LOG_W("Could not find theme %s", STR_NN(name));
         return -1;
 }
 
@@ -243,7 +243,7 @@ void add_default_theme(int theme_index) {
 // see icon-lookup.h
 char *find_icon_in_theme(const char *name, int theme_index, int size) {
         struct icon_theme *theme = &icon_themes[theme_index];
-        LOG_D("Finding icon %s in theme %s", name, theme->name);
+        LOG_D("Finding icon %s in theme %s", STR_NN(name), STR_NN(theme->name));
         for (int i = 0; i < theme->dirs_count; i++) {
                 bool match_size = false;
                 struct icon_theme_dir dir = theme->dirs[i];
