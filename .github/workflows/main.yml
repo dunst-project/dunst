@@ -67,7 +67,7 @@ jobs:
 
   coverage:
     needs: build
-    if: github.repository == 'dunst-project/dunst'
+    if: github.event_name == 'pull_request'
     env:
       CC: gcc
 
