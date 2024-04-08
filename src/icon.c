@@ -185,19 +185,17 @@ static GdkPixbuf *icon_pixbuf_scale_to_size(GdkPixbuf *pixbuf, double dpi_scale,
 
 GdkPixbuf *get_pixbuf_from_file(const char *filename, int min_size, int max_size, double scale)
 {
-        char *path = string_to_path(g_strdup(filename));
         GError *error = NULL;
         gint w, h;
 
-        if (!gdk_pixbuf_get_file_info (path, &w, &h)) {
+        if (!gdk_pixbuf_get_file_info (filename, &w, &h)) {
                 LOG_W("Failed to load image info for %s", STR_NN(filename));
-                g_free(path);
                 return NULL;
         }
         GdkPixbuf *pixbuf = NULL;
         // TODO immediately rescale icon upon scale changes
         icon_size_clamp(&w, &h, min_size, max_size);
-        pixbuf = gdk_pixbuf_new_from_file_at_scale(path,
+        pixbuf = gdk_pixbuf_new_from_file_at_scale(filename,
                         round(w * scale),
                         round(h * scale),
                         TRUE,
@@ -208,7 +206,6 @@ GdkPixbuf *get_pixbuf_from_file(const char *filename, int min_size, int max_size
                 g_error_free(error);
         }
 
-        g_free(path);
         return pixbuf;
 }
 
