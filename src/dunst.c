@@ -51,7 +51,7 @@ void dunst_status_int(const enum dunst_status_field field,
                 status.pause_level = value;
                 break;
         default:
-                LOG_E("Invalid %s enum value in %s:%d fot int type", "dunst_status", __FILE__, __LINE__);
+                LOG_E("Invalid %s enum value in %s:%d for int type", "dunst_status", __FILE__, __LINE__);
                 break;
         }
 }
