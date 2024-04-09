@@ -70,15 +70,15 @@ GSList *get_dummy_layouts(GSList *notifications)
         return layouts;
 }
 
-int get_small_max_height(void)
+struct length get_small_max_height(void)
 {
         // to keep test calculations simpler, set max height small to
         // only test cases where height is not dynamically determined
         // by notification content
         // future tests targeting dynamic sizing logic could be added
         // to address this limitation
-        int small_max_height = 10;
-        return small_max_height;
+		struct length height = { 0, 10 };
+		return height;
 }
 
 int get_expected_dimension_height(int layout_count)
@@ -86,7 +86,7 @@ int get_expected_dimension_height(int layout_count)
         // assumes settings.height == notification height, see get_small_max_height
         int separator_height = (layout_count - 1) * settings.separator_height;
         int total_gap_size = (layout_count - 1) * settings.gap_size;
-        int height = settings.height * layout_count;
+        int height = settings.height.max * layout_count;
         int frame_width_total_height;
         int expected_height;
         if(settings.gap_size) {
@@ -102,7 +102,7 @@ int get_expected_dimension_height(int layout_count)
 int get_expected_dimension_y_offset(int layout_count)
 {
         // assumes settings.height == notification height, see get_small_max_height
-        int expected_y = layout_count * settings.height;
+        int expected_y = layout_count * settings.height.max;
         if(settings.gap_size) {
                 expected_y += (layout_count * (2 * settings.frame_width));
                 expected_y += (layout_count * settings.gap_size);
@@ -155,7 +155,7 @@ TEST test_layout_from_notification_no_icon(void)
 
 TEST test_calculate_dimensions_height_no_gaps(void)
 {
-        int original_height = settings.height;
+        struct length original_height = settings.height;
         bool orginal_gap_size = settings.gap_size;
         settings.height = get_small_max_height();
         settings.gap_size = 10;
@@ -201,7 +201,7 @@ TEST test_calculate_dimensions_height_no_gaps(void)
 
 TEST test_calculate_dimensions_height_gaps(void)
 {
-        int original_height = settings.height;
+        struct length original_height = settings.height;
         bool orginal_gap_size = settings.gap_size;
         settings.height = get_small_max_height();
         settings.gap_size = 10;
@@ -247,7 +247,7 @@ TEST test_calculate_dimensions_height_gaps(void)
 
 TEST test_layout_render_no_gaps(void)
 {
-        int original_height = settings.height;
+        struct length original_height = settings.height;
         bool orginal_gap_size = settings.gap_size;
         settings.height = get_small_max_height();
         settings.gap_size = 0;
@@ -291,7 +291,7 @@ TEST test_layout_render_no_gaps(void)
 
 TEST test_layout_render_gaps(void)
 {
-        int original_height = settings.height;
+        struct length original_height = settings.height;
         bool orginal_gap_size = settings.gap_size;
         settings.height = get_small_max_height();
         settings.gap_size = 10;
