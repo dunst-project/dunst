@@ -141,7 +141,9 @@ notification being off screen.
 
 Examples:
         origin = top-right
-        offset = 10x300 # a margin of 10 pixels from the right and 300 pixels from the top
+        offset = (10, 300) # a margin of 10 pixels from the right and 300 pixels from the top
+
+For backwards compatibility the syntax NxN is also accepted.
 
 =item B<scale> (default: 0, X11 only)
 
