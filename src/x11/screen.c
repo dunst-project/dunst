@@ -169,6 +169,7 @@ void randr_update(void)
                 screens[i].h = m[i].height;
                 screens[i].mmh = m[i].mheight;
                 screens[i].dpi = screen_dpi_get(&screens[i]);
+                LOG_I("Detected screen %d (%s)", screens[i].id, screens[i].name);
         }
 
         XRRFreeMonitors(m);
@@ -205,6 +206,7 @@ void xinerama_update(void)
                 screens[i].y = info[i].y_org;
                 screens[i].h = info[i].height;
                 screens[i].w = info[i].width;
+                LOG_I("Detected screen %d", screens[i].id);
         }
         XFree(info);
 }
@@ -216,8 +218,10 @@ void screen_update_fallback(void)
         int screen;
         if (settings.monitor_num >= 0)
                 screen = settings.monitor_num;
-        else
+        else {
+                LOG_D("Ignoring settings.monitor '%s' in fallback mode", settings.monitor);
                 screen = DefaultScreen(xctx.dpy);
+        }
 
         screens[0].w = DisplayWidth(xctx.dpy, screen);
         screens[0].h = DisplayHeight(xctx.dpy, screen);
@@ -316,6 +320,7 @@ static int get_screen_by_name(const char *name, int defval)
                         return i;
                 }
         }
+        LOG_D("Screen '%s' not found", name);
         return defval;
 }
 

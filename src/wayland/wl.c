@@ -139,9 +139,9 @@ static struct dunst_output *get_configured_output(void) {
                 return first_output;
 
         switch (settings.f_mode){
-                case FOLLOW_NONE: ; // this semicolon is neccesary
+                case FOLLOW_NONE:
                         if (!configured_output) {
-                                LOG_W("Monitor %s doesn't exist, using focused monitor", settings.monitor);
+                                LOG_W("Screen '%s' not found, using focused monitor", settings.monitor);
                         }
                         return configured_output;
                 case FOLLOW_MOUSE:
