@@ -434,6 +434,7 @@ static void dbus_cb_dunst_RuleEnable(GDBusConnection *connection,
         }
 
         struct rule *target_rule = get_rule(name);
+        g_free(name);
 
         if (target_rule == NULL) {
                 g_dbus_method_invocation_return_error(invocation,

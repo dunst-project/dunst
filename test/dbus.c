@@ -589,6 +589,29 @@ TEST test_dbus_cb_dunst_NotificationListHistory(void)
         PASS();
 }
 
+TEST test_dbus_cb_dunst_RuleEnable(void)
+{
+        struct rule *rule = rule_new("test_rule_enable");
+        ASSERT(rule->enabled);
+
+        GVariant *result = dbus_invoke_ifac("RuleEnable", g_variant_new("(si)", "test_rule_enable", 0), DUNST_IFAC);
+        ASSERT(result != NULL);
+        ASSERT(!rule->enabled);
+        g_variant_unref(result);
+
+        result = dbus_invoke_ifac("RuleEnable", g_variant_new("(si)", "test_rule_enable", 1), DUNST_IFAC);
+        ASSERT(result != NULL);
+        ASSERT(rule->enabled);
+        g_variant_unref(result);
+
+        result = dbus_invoke_ifac("RuleEnable", g_variant_new("(si)", "test_rule_enable", 2), DUNST_IFAC);
+        ASSERT(result != NULL);
+        ASSERT(!rule->enabled);
+        g_variant_unref(result);
+
+        PASS();
+}
+
 TEST test_empty_notification(void)
 {
         struct dbus_notification *n = dbus_notification_new();
@@ -1285,6 +1308,7 @@ gpointer run_threaded_tests(gpointer data)
         RUN_TEST(test_match_dbus_timeout);
         RUN_TEST(test_timeout);
         RUN_TEST(test_dbus_cb_dunst_NotificationListHistory);
+        RUN_TEST(test_dbus_cb_dunst_RuleEnable);
 
         RUN_TEST(assert_methodlists_sorted);
 
