@@ -67,7 +67,6 @@ jobs:
 
   coverage:
     needs: build
-    if: github.event_name == 'pull_request'
     env:
       CC: gcc
 
