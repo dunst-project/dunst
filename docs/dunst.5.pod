@@ -324,6 +324,7 @@ So the most recent is always at the top. This means that if you set sort to upda
 and stack_duplicates to true, the duplicate will always be at the top.
 
 When the notification window is at the bottom of the screen, this order is automatically reversed.
+
 =item B<idle_threshold> (default: 0)
 
 Don't timeout notifications if user is idle longer than this time.
@@ -510,12 +511,12 @@ appended to the end of the value of this setting.
 Always run rule-defined scripts, even if the notification is suppressed with
 format = "". See SCRIPTING.
 
-=item B<title> (default: "Dunst")
+=item B<title> (default: "Dunst") (X11 only)
 
 Defines the title of notification windows spawned by dunst. (_NET_WM_NAME
 property). There should be no need to modify this setting for regular use.
 
-=item B<class> (default: "Dunst")
+=item B<class> (default: "Dunst") (X11 only)
 
 Defines the class of notification windows spawned by dunst. (First part of
 WM_CLASS). There should be no need to modify this setting for regular use.
@@ -757,6 +758,10 @@ lower than on X11. This is because the notification cannot be placed on top of
 your status bar. The notifications are placed relative to your status bar,
 making them appear higher or lower by the height of your status bar. We cannot
 do anything about that behavior.
+
+Note that dunst creates a "desktop layer" using the layer shell protocol and not
+a regular Wayland window. This has some limitations like stated above.
+For example you can't set a window title/class.
 
 =head1 RULES
 
