@@ -1,5 +1,34 @@
 # Dunst changelog
 
+## 1.11.0 -- 2024-04-15
+
+### Added
+- Add `corners`, `progress_bar_corners` and `icon_corners` options to control which corners to round (#1268)
+- Support GTK/CSS cursor names on Wayland (#1276)
+- Make dunst more portable (#1288)
+- Print detected monitors names (X11) (#1332)
+
+### Changed
+- Make X11 optional in build (this allows wayland-only dunst) (#1290)
+- Shell completions are now official and can be installed from the Makefile (#1262, #1263)
+- Don't search for icon path if icons are disabled (#1301)
+- Eagerly parse and cache colors (#1306)
+- Update dunstctl manpage (#1298)
+- Update documentation (#1315, #1334)
+
+### Fixed
+- Fix settings initialization (this prevented --print and --startup\_notification from working) (#1299)
+- Rework timer logic and fix error about Glib source ID for good (#1308, #1196)
+- Prevent memory corruption in XrmSetDatabase (#1256, #1291)
+- Don't try to print NULL strings (#1323)
+- Do not resolve icon paths twice (#1307, #1314)
+- Don't crash the test suite if librsvg is not present (#1329)
+- Fix memory leak in DBus RuleEnable (#1328)
+- Fix dunstctl rule (#1281)
+- Remove newlines from icon logging (#1296)
+- Prevent make from failing if git tags are not found (#1287)
+- Fix some typos (#1324, #1325, #1279)
+
 ## 1.10.0 -- 2024-02-19
 
 ### Added

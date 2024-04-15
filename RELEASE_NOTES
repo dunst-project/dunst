@@ -1,9 +1,39 @@
 ===================================================================================
+Release Notes For v1.11.0
+===================================================================================
+
+This release hopefully marks the start of a new period of active development and
+contributions and a shift away from the previous lower maintenance mode.
+
+For users:
+
+This is the perfect time to engage with the project and other dunst users.
+Some of the features and changes to include in the v2 release are starting to
+be proposed or implemented. Everyone's opinion is important, so feel free
+to participate in the issues proposing new features (or redesigns of the old ones).
+
+This version mainly contains bug fixes and QoL improvements, and can be considered
+a preparatory release for the various things that will come in the future
+(overhaul of the rule syntax, multiple windows support, aesthetic and customization
+options, refactor of the drawing system, etc).
+
+For maintainers:
+
+X11 support is now optional and can be disabled in build by setting the `X11` make
+flag to 0. This means that you can offer Wayland-only builds.
+
+Shell completions are now considered official and can be installed/uninstalled from
+the Makefile. By default they are installed and can be disabled by setting the
+`COMPLETIONS` flag to 0.
+
+Take a look at the changelog for all the bug fixes and improvements.
+
+===================================================================================
 Release Notes For v1.10.0
 ===================================================================================
 
 It's been a while since the last release. That does not mean that the
-development has been stagnent. There are some long requested features have been
+development has been stagnant. There are some long requested features have been
 implemented, like a do not disturb mode in the form of multiple pause levels.
 You can specify the priority of notification and selectively pause them. The
 progress bar rendering for low progress values has been fixed, with preparation
