@@ -154,7 +154,6 @@ static bool icon_size_clamp(int *w, int *h, int min_size, int max_size) {
  *
  * @param pixbuf (nullable) The pixbuf, which may be too big.
  *                          Takes ownership of the reference.
- * @param dpi_scale A double for the dpi scaling.
  * @param min_size The minimum allowed icon size.
  * @param max_size The maximum allowed icon size.
  * @return the scaled version of the pixbuf. If scaling wasn't

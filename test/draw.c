@@ -31,6 +31,7 @@ const struct output dummy_output = {
 
         wl_display_surface,
         wl_win_get_context,
+        wl_win_get_surface,
 
         noop_screen,
 
@@ -48,6 +49,7 @@ const struct output dummy_output = {
 
         x_display_surface,
         x_win_get_context,
+        x_win_get_surface,
 
         noop_screen,
 
