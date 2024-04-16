@@ -13,7 +13,6 @@ cairo_surface_t *gdk_pixbuf_to_cairo_surface(GdkPixbuf *pixbuf);
  * @param filename A string representing a readable file path
  * @param min_size An iteger representing the desired minimum unscaled icon size.
  * @param max_size An iteger representing the desired maximum unscaled icon size.
- * @param scale An integer representing the output dpi scaling.
  *
  * @return an instance of `GdkPixbuf`
  * @retval NULL: file does not exist, not readable, etc..
@@ -56,7 +55,6 @@ char *get_path_from_icon_name(const char *iconname, int size);
  *             like described in the notification spec.
  * @param id   (necessary) A unique identifier of the returned pixbuf.
  *             Only filled, if the return value is non-NULL.
- * @param dpi_scale An integer representing the output dpi scaling.
  * @param min_size An integer representing the desired minimum unscaled icon size.
  * @param max_size An integer representing the desired maximum unscaled icon size.
  * @return an instance of `GdkPixbuf` derived from the GVariant
