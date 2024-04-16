@@ -29,6 +29,7 @@ struct screen_info {
         int dpi;
 };
 
+// NOTE: Refactor the output struct
 struct output {
         bool (*init)(void);
         void (*deinit)(void);
@@ -42,6 +43,7 @@ struct output {
         void (*display_surface)(cairo_surface_t *srf, window win, const struct dimensions*);
 
         cairo_t* (*win_get_context)(window);
+        cairo_surface_t* (*win_get_surface)(window);
 
         const struct screen_info* (*get_active_screen)(void);
 

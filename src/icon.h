@@ -18,7 +18,7 @@ cairo_surface_t *gdk_pixbuf_to_cairo_surface(GdkPixbuf *pixbuf);
  * @return an instance of `GdkPixbuf`
  * @retval NULL: file does not exist, not readable, etc..
  */
-GdkPixbuf *get_pixbuf_from_file(const char *filename, int min_size, int max_size, double scale);
+GdkPixbuf *get_pixbuf_from_file(const char *filename, int min_size, int max_size);
 
 
 /**
@@ -27,12 +27,12 @@ GdkPixbuf *get_pixbuf_from_file(const char *filename, int min_size, int max_size
  * If scale is 2 for example, the icon will render in twice the size, but
  * get_icon_width still returns the same size as when scale is 1.
  */
-int get_icon_width(cairo_surface_t *icon, double scale);
+int get_icon_width(cairo_surface_t *icon);
 
 /**
  * Get the unscaled icon height, see get_icon_width.
  */
-int get_icon_height(cairo_surface_t *icon, double scale);
+int get_icon_height(cairo_surface_t *icon);
 
 /** Retrieve a path from an icon name.
  *
@@ -62,7 +62,7 @@ char *get_path_from_icon_name(const char *iconname, int size);
  * @return an instance of `GdkPixbuf` derived from the GVariant
  * @retval NULL: GVariant parameter nulled, invalid or in wrong format
  */
-GdkPixbuf *icon_get_for_data(GVariant *data, char **id, double dpi_scale, int min_size, int max_size);
+GdkPixbuf *icon_get_for_data(GVariant *data, char **id, int min_size, int max_size);
 
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

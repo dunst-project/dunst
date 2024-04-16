@@ -118,10 +118,7 @@ static void x_win_corners_shape(struct window_x11 *win, const int rad)
         cairo_paint(cr);
         cairo_set_source_rgba(cr, 1, 1, 1, 1);
 
-        draw_rounded_rect(cr, 0, 0,
-                          width, height,
-                          rad, 1,
-                          settings.corners);
+        draw_rounded_rect(cr, 0, 0, width, height, rad, settings.corners);
         cairo_fill(cr);
 
         cairo_show_page(cr);
@@ -195,6 +192,11 @@ void x_display_surface(cairo_surface_t *srf, window winptr, const struct dimensi
 cairo_t* x_win_get_context(window winptr)
 {
         return ((struct window_x11*)win)->c_ctx;
+}
+
+cairo_surface_t* x_win_get_surface(window win)
+{
+        return ((struct window_x11*)win)->root_surface;
 }
 
 static void setopacity(Window win, unsigned long opacity)

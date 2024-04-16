@@ -83,12 +83,12 @@ static void pixbuf_data_to_cairo_data(
         }
 }
 
-int get_icon_width(cairo_surface_t *icon, double scale) {
-        return round(cairo_image_surface_get_width(icon) / scale);
+int get_icon_width(cairo_surface_t *icon) {
+        return cairo_image_surface_get_width(icon);
 }
 
-int get_icon_height(cairo_surface_t *icon, double scale) {
-        return round(cairo_image_surface_get_height(icon) / scale);
+int get_icon_height(cairo_surface_t *icon) {
+        return cairo_image_surface_get_height(icon);
 }
 
 cairo_surface_t *gdk_pixbuf_to_cairo_surface(GdkPixbuf *pixbuf)
@@ -161,7 +161,7 @@ static bool icon_size_clamp(int *w, int *h, int min_size, int max_size) {
  *         necessary, it returns the same pixbuf. Transfers full
  *         ownership of the reference.
  */
-static GdkPixbuf *icon_pixbuf_scale_to_size(GdkPixbuf *pixbuf, double dpi_scale, int min_size, int max_size)
+static GdkPixbuf *icon_pixbuf_scale_to_size(GdkPixbuf *pixbuf, int min_size, int max_size)
 {
         ASSERT_OR_RET(pixbuf, NULL);
 
@@ -170,8 +170,8 @@ static GdkPixbuf *icon_pixbuf_scale_to_size(GdkPixbuf *pixbuf, double dpi_scale,
 
         // TODO immediately rescale icon upon scale changes
         if(icon_size_clamp(&w, &h, min_size, max_size)) {
-                w = round(w * dpi_scale);
-                h = round(h * dpi_scale);
+                //w = round(w * dpi_scale);
+                //h = round(h * dpi_scale);
         }
         GdkPixbuf *scaled = gdk_pixbuf_scale_simple(
                         pixbuf,
@@ -183,7 +183,7 @@ static GdkPixbuf *icon_pixbuf_scale_to_size(GdkPixbuf *pixbuf, double dpi_scale,
         return pixbuf;
 }
 
-GdkPixbuf *get_pixbuf_from_file(const char *filename, int min_size, int max_size, double scale)
+GdkPixbuf *get_pixbuf_from_file(const char *filename, int min_size, int max_size)
 {
         GError *error = NULL;
         gint w, h;
@@ -196,8 +196,8 @@ GdkPixbuf *get_pixbuf_from_file(const char *filename, int min_size, int max_size
         // TODO immediately rescale icon upon scale changes
         icon_size_clamp(&w, &h, min_size, max_size);
         pixbuf = gdk_pixbuf_new_from_file_at_scale(filename,
-                        round(w * scale),
-                        round(h * scale),
+                        w,
+                        h,
                         TRUE,
                         &error);
 
@@ -270,7 +270,7 @@ char *get_path_from_icon_name(const char *iconname, int size)
         return new_name;
 }
 
-GdkPixbuf *icon_get_for_data(GVariant *data, char **id, double dpi_scale, int min_size, int max_size)
+GdkPixbuf *icon_get_for_data(GVariant *data, char **id, int min_size, int max_size)
 {
         ASSERT_OR_RET(data, NULL);
         ASSERT_OR_RET(id, NULL);
@@ -380,7 +380,7 @@ GdkPixbuf *icon_get_for_data(GVariant *data, char **id, double dpi_scale, int mi
         g_free(data_chk);
         g_variant_unref(data_variant);
 
-        pixbuf = icon_pixbuf_scale_to_size(pixbuf, dpi_scale, min_size, max_size);
+        pixbuf = icon_pixbuf_scale_to_size(pixbuf, min_size, max_size);
 
         return pixbuf;
 }

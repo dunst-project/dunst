@@ -583,10 +583,10 @@ void wl_win_hide(window win) {
 
 void wl_display_surface(cairo_surface_t *srf, window winptr, const struct dimensions* dim) {
         /* struct window_wl *win = (struct window_wl*)winptr; */
-        int scale = wl_get_scale();
-        LOG_D("Buffer size (scaled) %ix%i", dim->w * scale, dim->h * scale);
-        ctx.current_buffer = get_next_buffer(ctx.shm, ctx.buffers,
-                        dim->w * scale, dim->h * scale);
+        double scale = wl_get_scale();
+        int w = round(dim->w * scale), h = round(dim->h * scale);
+        LOG_D("Buffer size (scaled) %ix%i", w, h);
+        ctx.current_buffer = get_next_buffer(ctx.shm, ctx.buffers, w, h);
 
         if(ctx.current_buffer == NULL) {
                 return;
@@ -595,7 +595,7 @@ void wl_display_surface(cairo_surface_t *srf, window winptr, const struct dimens
         cairo_t *c = ctx.current_buffer->cairo;
         cairo_save(c);
         cairo_set_source_surface(c, srf, 0, 0);
-        cairo_rectangle(c, 0, 0, dim->w * scale, dim->h * scale);
+        cairo_rectangle(c, 0, 0, w, h);
         cairo_fill(c);
         cairo_restore(c);
 
@@ -616,6 +616,18 @@ cairo_t* wl_win_get_context(window winptr) {
         win->c_surface = ctx.current_buffer->surface;
         win->c_ctx = ctx.current_buffer->cairo;
         return win->c_ctx;
+}
+
+cairo_surface_t* wl_win_get_surface(window winptr) {
+        struct window_wl *win = (struct window_wl*)winptr;
+        ctx.current_buffer = get_next_buffer(ctx.shm, ctx.buffers, 500, 500);
+
+        if(ctx.current_buffer == NULL) {
+                return NULL;
+        }
+
+        win->c_surface = ctx.current_buffer->surface;
+        return win->c_surface;
 }
 
 const struct screen_info* wl_get_active_screen(void) {
@@ -685,6 +697,9 @@ bool wl_have_fullscreen_window(void) {
 }
 
 double wl_get_scale(void) {
+        if (settings.scale > 0)
+                return settings.scale;
+
         int scale = 0;
         struct dunst_output *output = get_configured_output();
         if (output) {
