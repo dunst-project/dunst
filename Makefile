@@ -29,14 +29,15 @@ endif
 
 SYSCONF_FORCE_NEW ?= $(shell [ -f ${DESTDIR}${SYSCONFFILE} ] || echo 1)
 
-CFLAGS  := ${DEFAULT_CPPFLAGS} ${CPPFLAGS} ${DEFAULT_CFLAGS} ${CFLAGS} ${INCS} -MMD -MP
-LDFLAGS := ${DEFAULT_LDFLAGS} ${LDFLAGS} ${LIBS}
+CPPFLAGS := ${DEFAULT_CPPFLAGS} ${CPPFLAGS}
+CFLAGS   := ${DEFAULT_CFLAGS} ${CFLAGS} ${INCS} -MMD -MP
+LDFLAGS  := ${DEFAULT_LDFLAGS} ${LDFLAGS} ${LIBS}
 
 SRC := $(sort $(shell ${FIND} src/ ! \( -path src/wayland -prune -o -path src/x11 -prune \) -name '*.c'))
 
 ifneq (0,${WAYLAND})
 # with Wayland support
-CFLAGS += -DHAVE_WL_CURSOR_SHAPE -DHAVE_WL_EXT_IDLE_NOTIFY
+CPPFLAGS += -DHAVE_WL_CURSOR_SHAPE -DHAVE_WL_EXT_IDLE_NOTIFY
 SRC += $(sort $(shell ${FIND} src/wayland -name '*.c'))
 endif
 
@@ -59,17 +60,20 @@ DEPS := ${SRC:.c=.d} ${TEST_SRC:.c=.d}
 .PHONY: all debug
 all: doc dunst service
 
-debug: CFLAGS   += ${CPPFLAGS_DEBUG} ${CFLAGS_DEBUG}
-debug: LDFLAGS  += ${LDFLAGS_DEBUG}
 debug: CPPFLAGS += ${CPPFLAGS_DEBUG}
+debug: CFLAGS   += ${CFLAGS_DEBUG}
+debug: LDFLAGS  += ${LDFLAGS_DEBUG}
 debug: all
 
 -include $(DEPS)
 
 ${OBJ} ${TEST_OBJ}: Makefile config.mk
 
+src/dunst.o: src/dunst.c
+	${CC} -o $@ -c $< ${CPPFLAGS} ${CFLAGS} -D_CFLAGS="$(filter-out $(filter -I%,${INCS}),${CFLAGS})" -D_LDFLAGS="${LDFLAGS}"
+
 %.o: %.c
-	${CC} -o $@ -c $< ${CFLAGS}
+	${CC} -o $@ -c $< ${CPPFLAGS} ${CFLAGS}
 
 dunst: ${OBJ} main.o
 	${CC} -o ${@} ${OBJ} main.o ${CFLAGS} ${LDFLAGS}
@@ -77,7 +81,7 @@ dunst: ${OBJ} main.o
 ifneq (0,${DUNSTIFY})
 all: dunstify
 dunstify: dunstify.o
-	${CC} -o ${@} dunstify.o ${CFLAGS} ${LDFLAGS}
+	${CC} -o ${@} dunstify.o ${CPPFLAGS} ${CFLAGS} ${LDFLAGS}
 endif
 
 .PHONY: test test-valgrind test-coverage
@@ -109,7 +113,7 @@ test-coverage-report: test-coverage
 		-o docs/internal/coverage/index.html
 
 test/%.o: test/%.c src/%.c
-	${CC} -o $@ -c $< ${CFLAGS}
+	${CC} -o $@ -c $< ${CFLAGS} ${CPPFLAGS}
 
 test/test: ${OBJ} ${TEST_OBJ}
 	${CC} -o ${@} ${TEST_OBJ} $(filter-out ${TEST_OBJ:test/%=src/%},${OBJ}) ${CFLAGS} ${LDFLAGS}

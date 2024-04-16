@@ -20,6 +20,11 @@
 //! Get a non null string from a possibly null one
 #define STR_NN(s) (s == NULL ? "(null)" : s)
 
+//! Stringify the given expression or macro
+#define STR_TO(...) _STR_TO(__VA_ARGS__)
+#define _STR_TO(...) "" # __VA_ARGS__
+
+
 //! Assert that expr evaluates to true, if not return with val
 #define ASSERT_OR_RET(expr, val) if (!(expr)) return val;
 

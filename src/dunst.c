@@ -302,9 +302,25 @@ void usage(int exit_status)
 
 void print_version(void)
 {
-        printf
-            ("Dunst - A customizable and lightweight notification-daemon %s\n",
-             VERSION);
+        printf("Dunst - A customizable and lightweight notification-daemon %s\n", VERSION);
+        printf("Compiled on %s with the following options:\n", STR_TO(_CCDATE));
+
+        printf("X11 support %s\nWayland support %s\n",
+#ifdef ENABLE_X11
+                        "enabled",
+#else
+                        "disabled",
+#endif
+#ifdef ENABLE_WAYLAND
+                        "enabled"
+#else
+                        "disabled"
+#endif
+              );
+
+        printf("SYSCONFDIR set to %s\n", SYSCONFDIR);
+        printf("Compile flags: %s\n", STR_TO(_CFLAGS));
+        printf("Linker flags: %s\n", STR_TO(_LDFLAGS));
         exit(EXIT_SUCCESS);
 }
 
