@@ -64,12 +64,6 @@ pkg_config_packs := gio-2.0 \
                     "glib-2.0 >= 2.44" \
                     pangocairo \
 
-
-ifneq (0,${DUNSTIFY})
-# dunstify also needs libnotify
-pkg_config_packs += libnotify
-endif
-
 ifneq (0,${WAYLAND})
 pkg_config_packs += wayland-client
 pkg_config_packs += wayland-cursor

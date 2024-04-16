@@ -29,6 +29,11 @@ endif
 
 SYSCONF_FORCE_NEW ?= $(shell [ -f ${DESTDIR}${SYSCONFFILE} ] || echo 1)
 
+ifneq (0,${DUNSTIFY})
+DUNSTIFY_CFLAGS  := ${DEFAULT_CFLAGS} ${CFLAGS} ${CPPFLAGS} $(shell $(PKG_CONFIG) --cflags libnotify)
+DUNSTIFY_LDFLAGS := ${DEFAULT_LDFLAGS} ${LDFLAGS} $(shell $(PKG_CONFIG) --libs libnotify)
+endif
+
 CPPFLAGS := ${DEFAULT_CPPFLAGS} ${CPPFLAGS}
 CFLAGS   := ${DEFAULT_CFLAGS} ${CFLAGS} ${INCS} -MMD -MP
 LDFLAGS  := ${DEFAULT_LDFLAGS} ${LDFLAGS} ${LIBS}
@@ -81,7 +86,7 @@ dunst: ${OBJ} main.o
 ifneq (0,${DUNSTIFY})
 all: dunstify
 dunstify: dunstify.o
-	${CC} -o ${@} dunstify.o ${CPPFLAGS} ${CFLAGS} ${LDFLAGS}
+	${CC} -o ${@} dunstify.o ${DUNSTIFY_CFLAGS} ${DUNSTIFY_LDFLAGS}
 endif
 
 .PHONY: test test-valgrind test-coverage
