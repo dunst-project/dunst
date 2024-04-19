@@ -89,6 +89,7 @@ test: test/test clean-coverage-run
 test-valgrind: test/test
 	${VALGRIND} \
 		--suppressions=.valgrind.suppressions \
+		--track-origins=yes \
 		--leak-check=full \
 		--show-leak-kinds=definite \
 		--errors-for-leak-kinds=definite \

@@ -168,10 +168,7 @@ static GdkPixbuf *icon_pixbuf_scale_to_size(GdkPixbuf *pixbuf, int min_size, int
         int h = gdk_pixbuf_get_height(pixbuf);
 
         // TODO immediately rescale icon upon scale changes
-        if(icon_size_clamp(&w, &h, min_size, max_size)) {
-                //w = round(w * dpi_scale);
-                //h = round(h * dpi_scale);
-        }
+        icon_size_clamp(&w, &h, min_size, max_size);
         GdkPixbuf *scaled = gdk_pixbuf_scale_simple(
                         pixbuf,
                         w,
