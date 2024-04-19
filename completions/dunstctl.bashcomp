@@ -1,9 +1,8 @@
 _dunstctl() {
     local opts cur prev split=false
-    local DUNSTRC=${XDG_CONFIG_HOME:-$HOME/.config}/dunst/dunstrc
     _get_comp_words_by_ref cur prev
     COMPREPLY=()
-    opts='action close close-all context count debug help history history-clear history-pop history-rm is-paused rule set-paused'
+    opts='action close close-all context count debug help history history-clear history-pop history-rm is-paused rule rules set-paused'
 
     case "$prev" in
         count) COMPREPLY=('displayed' 'history' 'waiting')
@@ -15,8 +14,10 @@ _dunstctl() {
                           awk '/"data" :/{print $3}' | sort -u) )
             return ;;
         rule)
-            COMPREPLY=( $(awk \
-                '/^\[.*\]/{ if ( match($0, /^\[global|experimental/) == 0 ) print substr($0, 2, length($0)-2) }' "$DUNSTRC" ) )
+            COMPREPLY=( $( compgen -W "$(dunstctl rules --json | jq -r '.data[][].name.data')" -- $cur ) )
+            return ;;
+        rules)
+            COMPREPLY=( $( compgen -W "--json" ) )
             return ;;
     esac
 

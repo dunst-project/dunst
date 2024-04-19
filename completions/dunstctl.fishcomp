@@ -1,11 +1,5 @@
-if command -q jq
-    function __fish_dunstctl_info
-        dunstctl (string split ' ' $argv[1]) | jq -r ".data[][] | \"\(.$argv[2].data)\t\(.$argv[3].data)\""
-    end
-else
-    function __fish_dunstctl_info
-        dunstctl (string split ' ' $argv[1]) | awk -vpattern="\"$argv[2]\" :" '$0 ~ pattern {getline; getline; gsub("\"", "", $3); print $3}'
-    end
+function __fish_dunstctl_info
+    dunstctl (string split ' ' $argv[1]) | jq -r ".data[][] | \"\(.$argv[2].data)\t\(.$argv[3].data)\""
 end
 
 function __fish_dunstctl_rule_complete
