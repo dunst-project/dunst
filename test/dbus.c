@@ -609,6 +609,67 @@ TEST test_dbus_cb_dunst_RuleEnable(void)
         ASSERT(!rule->enabled);
         g_variant_unref(result);
 
+        rules = g_slist_remove(rules, rule);
+        g_free(rule->name);
+        g_free(rule);
+
+        PASS();
+}
+
+TEST test_dbus_cb_dunst_RuleList(void)
+{
+        struct rule *rule = rule_new("testing RuleList");
+        rule->appname = "dunstify";
+        rule->urgency = URG_CRIT;
+        rule->fg = (struct color){.r = 0.1, .g = 0.1, .b = 0.1, .a = 1.0};
+
+        GVariant *result = dbus_invoke_ifac("RuleList", NULL, DUNST_IFAC);
+        ASSERT(result != NULL);
+        ASSERT_STR_EQ("(aa{sv})", g_variant_get_type_string(result));
+
+        GVariantIter tuple_iter;
+        g_variant_iter_init(&tuple_iter, result);
+        GVariant *array = g_variant_iter_next_value(&tuple_iter);
+
+        GVariantIter array_iter;
+        g_variant_iter_init(&array_iter, array);
+        GVariant *dict = g_variant_iter_next_value(&array_iter);
+
+        GVariantDict d;
+        g_variant_dict_init(&d, dict);
+
+        char *str;
+        bool boolean;
+
+        ASSERT(g_variant_dict_lookup(&d, "name", "s", &str));
+        ASSERT_STR_EQ("testing RuleList", str);
+        g_free(str);
+
+        ASSERT(g_variant_dict_lookup(&d, "enabled", "b", &boolean));
+        ASSERT(boolean);
+
+        ASSERT(g_variant_dict_lookup(&d, "appname", "s", &str));
+        ASSERT_STR_EQ("dunstify", str);
+        g_free(str);
+
+        ASSERT(g_variant_dict_lookup(&d, "urgency", "s", &str));
+        ASSERT_STR_EQ("critical", str);
+        g_free(str);
+
+        ASSERT(g_variant_dict_lookup(&d, "fg", "s", &str));
+        ASSERT_STR_EQ("#191919ff", str);
+        g_free(str);
+
+        ASSERT_FALSE(g_variant_dict_lookup(&d, "bg", "s", &str));
+
+        g_variant_dict_clear(&d);
+        g_variant_unref(dict);
+        g_variant_unref(array);
+        g_variant_unref(result);
+        rules = g_slist_remove(rules, rule);
+        g_free(rule->name);
+        g_free(rule);
+
         PASS();
 }
 
@@ -1210,7 +1271,9 @@ TEST test_override_dbus_timeout(void)
         ASSERT_EQ_FMT(expected_timeout, n->timeout, "%" G_GINT64_FORMAT);
 
         dbus_notification_free(n_dbus);
-        rule->enabled = false;
+        rules = g_slist_remove(rules, rule);
+        g_free(rule->name);
+        g_free(rule);
 
         PASS();
 }
@@ -1239,7 +1302,9 @@ TEST test_match_dbus_timeout(void)
         ASSERT_EQ_FMT(expected_timeout, n->timeout, "%" G_GINT64_FORMAT);
 
         dbus_notification_free(n_dbus);
-        rule->enabled = false;
+        rules = g_slist_remove(rules, rule);
+        g_free(rule->name);
+        g_free(rule);
 
         PASS();
 }
@@ -1267,7 +1332,9 @@ TEST test_timeout(void)
         ASSERT_EQ_FMT(expected_timeout, n->timeout, "%" G_GINT64_FORMAT);
 
         dbus_notification_free(n_dbus);
-        rule->enabled = false;
+        rules = g_slist_remove(rules, rule);
+        g_free(rule->name);
+        g_free(rule);
 
         PASS();
 }
@@ -1309,6 +1376,7 @@ gpointer run_threaded_tests(gpointer data)
         RUN_TEST(test_timeout);
         RUN_TEST(test_dbus_cb_dunst_NotificationListHistory);
         RUN_TEST(test_dbus_cb_dunst_RuleEnable);
+        RUN_TEST(test_dbus_cb_dunst_RuleList);
 
         RUN_TEST(assert_methodlists_sorted);
 

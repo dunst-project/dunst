@@ -85,6 +85,10 @@ display specific notifications while paused.
 Enables, disables or toggles the rule identified by its name. This can be used
 to temporarily activate or deactivate specific rules.
 
+=item B<rules> [--json]
+
+Exports all currently configured rules (optionally JSON formatted).
+
 =item B<debug>
 
 Tries to contact dunst and checks for common faults between dunstctl and dunst.

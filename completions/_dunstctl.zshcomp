@@ -6,8 +6,6 @@
 local curcontext="$curcontext" ret=1
 local -a state line subs
 
-local DUNSTRC="${XDG_CONFIG_HOME:-$HOME/.config}/dunst/dunstrc"
-
 _arguments -C \
   '1:cmd:->cmds' \
   '2:opt:->opts' \
@@ -30,6 +28,7 @@ case $state in
       'get-pause-level:Get current dunst's pause level'
       'set-pause-level:Set current dunst's pause level'
       'rule:Enable or disable a rule by its name'
+      'rules:Displays configured rules'
       'debug:Print debugging information'
       'help:Show this help'
     )
@@ -63,7 +62,7 @@ case $state in
       rule)
         local -a rules;
         rules=(
-          `awk '/^\[.*\]/{ if ( match($0, /^\[global|urgency|experimental/) == 0 ) { print substr($0, 2, length($0)-2) }   }' < "$DUNSTRC"`
+          `dunstctl rules --json | jq -r '.data[][].name.data'`
         )
         _describe rules_opts rules && ret=0
         ;;
