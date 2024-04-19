@@ -75,7 +75,8 @@ debug: all
 ${OBJ} ${TEST_OBJ}: Makefile config.mk
 
 src/dunst.o: src/dunst.c
-	${CC} -o $@ -c $< ${CPPFLAGS} ${CFLAGS} -D_CFLAGS="$(filter-out $(filter -I%,${INCS}),${CFLAGS})" -D_LDFLAGS="${LDFLAGS}"
+	${CC} -o $@ -c $< ${CPPFLAGS} ${CFLAGS} \
+		-D_CCDATE="$(shell date '+%Y-%m-%d')" -D_CFLAGS="$(filter-out $(filter -I%,${INCS}),${CFLAGS})" -D_LDFLAGS="${LDFLAGS}"
 
 %.o: %.c
 	${CC} -o $@ -c $< ${CPPFLAGS} ${CFLAGS}

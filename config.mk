@@ -51,7 +51,7 @@ ENABLE_X11= -DENABLE_X11
 endif
 
 # flags
-DEFAULT_CPPFLAGS = -Wno-gnu-zero-variadic-macro-arguments -D_DEFAULT_SOURCE -DVERSION=\"${VERSION}\" -D_CCDATE="$(shell date '+%h %d %Y')" -DSYSCONFDIR=\"${SYSCONFDIR}\" ${ENABLE_WAYLAND} ${ENABLE_X11}
+DEFAULT_CPPFLAGS = -Wno-gnu-zero-variadic-macro-arguments -D_DEFAULT_SOURCE -DVERSION=\"${VERSION}\" -DSYSCONFDIR=\"${SYSCONFDIR}\" ${ENABLE_WAYLAND} ${ENABLE_X11}
 DEFAULT_CFLAGS   = -g -std=gnu11 -pedantic -Wall -Wno-overlength-strings -Os ${EXTRA_CFLAGS}
 DEFAULT_LDFLAGS  = -lm -lrt
 
