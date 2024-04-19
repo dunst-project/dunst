@@ -242,13 +242,13 @@ install-completions:
 	install -Dm644 completions/dunstctl.bashcomp ${DESTDIR}${BASHCOMPLETIONDIR}/dunstctl
 	install -Dm644 completions/_dunst.zshcomp ${DESTDIR}${ZSHCOMPLETIONDIR}/_dunst
 	install -Dm644 completions/_dunstctl.zshcomp ${DESTDIR}${ZSHCOMPLETIONDIR}/_dunstctl
-	install -Dm644 completions/dunst.fishcomp ${DESTDIR}${FISHCOMPLETIONDIR}/dunst
-	install -Dm644 completions/dunstctl.fishcomp ${DESTDIR}${FISHCOMPLETIONDIR}/dunstctl
+	install -Dm644 completions/dunst.fishcomp ${DESTDIR}${FISHCOMPLETIONDIR}/dunst.fish
+	install -Dm644 completions/dunstctl.fishcomp ${DESTDIR}${FISHCOMPLETIONDIR}/dunstctl.fish
 
 ifneq (0,${DUNSTIFY})
 install: install-completions-dunstify
 install-completions-dunstify:
-	install -Dm644 completions/dunstify.fishcomp ${DESTDIR}${FISHCOMPLETIONDIR}/dunstify
+	install -Dm644 completions/dunstify.fishcomp ${DESTDIR}${FISHCOMPLETIONDIR}/dunstify.fish
 endif
 endif
 
@@ -283,6 +283,6 @@ uninstall-completions:
 	rm -f ${DESTDIR}${BASHCOMPLETIONDIR}/dunstctl
 	rm -f ${DESTDIR}${ZSHCOMPLETIONDIR}/_dunst
 	rm -f ${DESTDIR}${ZSHCOMPLETIONDIR}/_dunstctl
-	rm -f ${DESTDIR}${FISHCOMPLETIONDIR}/dunst
-	rm -f ${DESTDIR}${FISHCOMPLETIONDIR}/dunstctl
-	rm -f ${DESTDIR}${FISHCOMPLETIONDIR}/dunstify
+	rm -f ${DESTDIR}${FISHCOMPLETIONDIR}/dunst.fish
+	rm -f ${DESTDIR}${FISHCOMPLETIONDIR}/dunstctl.fish
+	rm -f ${DESTDIR}${FISHCOMPLETIONDIR}/dunstify.fish
