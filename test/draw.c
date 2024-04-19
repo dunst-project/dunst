@@ -19,7 +19,7 @@ const struct screen_info* noop_screen(void) {
 }
 
 const struct output dummy_output = {
-#if WAYLAND_ONLY
+#if !X11_SUPPORT
         wl_init,
         wl_deinit,
 
