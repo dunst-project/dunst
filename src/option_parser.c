@@ -131,15 +131,13 @@ int string_parse_list(const void *data, const char *s, void *ret) {
         switch (type) {
                 case MOUSE_LIST:
                         arr = string_to_array(s, ",");
-                        success = string_parse_enum_list(&mouse_action_enum_data,
-                                        arr, ret);
+                        success = string_parse_enum_list(&mouse_action_enum_data, arr, ret);
                         break;
                 case OFFSET_LIST:
                         arr = string_to_array(s, "x");
                         int len = string_array_length(arr);
                         if (len != 2) {
                                 success = false;
-                                //LOG_W("Offset has two values, separated by an 'x'");
                                 break;
                         }
                         int *int_arr = NULL;
@@ -311,7 +309,7 @@ int string_parse_length(void *ret_in, const char *s) {
                 int val = 0;
                 bool success = safe_string_to_int(&val, s);
                 if (!success) {
-                        LOG_W("Specify either a single value or a two values between brackets");
+                        LOG_W("Specify either a single value or two comma-separated values between parentheses");
                         return false;
                 }
 
@@ -326,7 +324,7 @@ int string_parse_length(void *ret_in, const char *s) {
         int len = string_array_length(s_arr);
         if (len != 2) {
                 g_strfreev(s_arr);
-                LOG_W("Specify either a single value or a two values between brackets");
+                LOG_W("Specify either a single value or two comma-separated values between parentheses");
                 return false;
         }
 
@@ -404,7 +402,7 @@ bool set_from_string(void *target, struct setting setting, const char *value) {
                 case TYPE_LENGTH:
                         // Keep compatibility with old offset syntax
                         if (STR_EQ(setting.name, "offset") && string_parse_list(GINT_TO_POINTER(OFFSET_LIST), value, target)) {
-                                LOG_I("Using legacy offset syntax nxn, you could use length syntax (n,n)");
+                                LOG_I("Using legacy offset syntax NxN, you should switch to the new syntax (N, N)");
                                 return true;
                         }
                         return string_parse_length(target, value);
