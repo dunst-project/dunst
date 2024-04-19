@@ -32,6 +32,7 @@ void x_win_hide(window);
 void x_display_surface(cairo_surface_t *srf, window, const struct dimensions *dim);
 
 cairo_t* x_win_get_context(window);
+cairo_surface_t* x_win_get_surface(window);
 
 /* X misc */
 bool x_is_idle(void);
