@@ -106,7 +106,15 @@ screens exceed (e.g. 10000).
 
 =item B<height>
 
-The maximum height of a single notification.
+The height of each notification in pixels. This can be a single number to
+specify a constant height or two numbers for the minimum and maximum width. The
+notification will expand from the minimum height as neccesary.
+
+Examples:
+        height = 300      # constant height of 300
+        height = (0, 300) # height between 0 and 300
+
+Note that unlike width, different notifications can have diffrent height values.
 
 =item B<notification_limit> (default: 20)
 
@@ -416,7 +424,7 @@ removed from the format.
 =item B<vertical_alignment> (values: [top/center/bottom], default: center)
 
 Defines how the text and icon should be aligned vertically within the
-notification. If icons are disabled, this option has no effect.
+notification.
 
 =item B<show_age_threshold> (default: 60)
 
