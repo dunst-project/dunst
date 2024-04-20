@@ -226,8 +226,8 @@ void check_and_correct_settings(struct settings *s) {
         if (s->height.min < 0 || s->height.max < 0) {
                 DIE("setting height does not support negative values");
         }
-        if (s->height.min != s->height.max) {
-                LOG_W("Dynamic height is not yet supported");
+        if (s->height.min > s->height.max) {
+                DIE("setting height min (%i) is always greather than max (%i)", s->height.min, s->height.max);
         }
 
         if (s->offset.x == INT_MIN || s->offset.y == INT_MAX) {
