@@ -1,5 +1,8 @@
 #!/bin/bash
 
+DUNST="${DUNST:-../../dunst}"
+DUNSTIFY="${DUNSTIFY:-../../dunstify}"
+
 function keypress {
     echo "press enter to continue..."
     read key
@@ -11,19 +14,19 @@ function tmp_dunstrc {
 }
 
 function start_dunst {
-        killall dunst
-        ../../dunst -config $1 &
-        sleep 0.1
+        killall dunst 2>/dev/null
+        $DUNST -config $1 &
+        sleep 0.05
 }
 
 function basic_notifications {
-    ../../dunstify -a "dunst tester"         "normal"    "<i>italic body</i>"
-    ../../dunstify -a "dunst tester"  -u c   "critical"   "<b>bold body</b>"
-    ../../dunstify -a "dunst tester"         "long body"  "This is a notification with a very long body"
-    ../../dunstify -a "dunst tester"         "duplucate"
-    ../../dunstify -a "dunst tester"         "duplucate"
-    ../../dunstify -a "dunst tester"         "duplucate"
-    ../../dunstify -a "dunst tester"         "url"        "www.google.de"
+    $DUNSTIFY -a "dunst tester"         "normal"    "<i>italic body</i>"
+    $DUNSTIFY -a "dunst tester"  -u c   "critical"   "<b>bold body</b>"
+    $DUNSTIFY -a "dunst tester"         "long body"  "This is a notification with a very long body"
+    $DUNSTIFY -a "dunst tester"         "duplucate"
+    $DUNSTIFY -a "dunst tester"         "duplucate"
+    $DUNSTIFY -a "dunst tester"         "duplucate"
+    $DUNSTIFY -a "dunst tester"         "url"        "www.google.de"
 
 }
 
@@ -32,8 +35,8 @@ function show_age {
     echo "show age"
     echo "###################################"
     killall dunst
-    ../../dunst -config dunstrc.show_age &
-    ../../dunstify -a "dunst tester"  -u c "Show Age" "These should print their age after 2 seconds"
+    $DUNST -config dunstrc.show_age &
+    $DUNSTIFY -a "dunst tester"  -u c "Show Age" "These should print their age after 2 seconds"
     basic_notifications
     keypress
 }
@@ -43,11 +46,11 @@ function run_script {
     echo "run script"
     echo "###################################"
     killall dunst
-    PATH=".:$PATH" ../../dunst -config dunstrc.run_script &
-    ../../dunstify -a "dunst tester" -u c \
+    PATH=".:$PATH" $DUNST -config dunstrc.run_script &
+    $DUNSTIFY -a "dunst tester" -u c \
         "Run Script" "After Keypress, 2 other notification should pop up."
     keypress
-    ../../dunstify -a "dunst tester" -u c "trigger" "this should trigger a notification"
+    $DUNSTIFY -a "dunst tester" -u c "trigger" "this should trigger a notification"
     keypress
 }
 
@@ -56,10 +59,10 @@ function replace {
     echo "replace"
     echo "###################################"
     killall dunst
-    ../../dunst -config dunstrc.default &
-    id=$(../../dunstify -a "dunst tester" -p "Replace" "this should get replaces after keypress")
+    $DUNST -config dunstrc.default &
+    id=$($DUNSTIFY -a "dunst tester" -p "Replace" "this should get replaces after keypress")
     keypress
-    ../../dunstify -a "dunst tester" -r $id "Success?" "I hope this is not a new notification"
+    $DUNSTIFY -a "dunst tester" -r $id "Success?" "I hope this is not a new notification"
     keypress
 
 }
@@ -70,14 +73,14 @@ function limit {
     echo "###################################"
     tmp_dunstrc dunstrc.default "notification_limit=4"
     start_dunst dunstrc.tmp
-    ../../dunstify -a "dunst tester" -u c "notification limit = 4"
+    $DUNSTIFY -a "dunst tester" -u c "notification limit = 4"
     basic_notifications
     rm dunstrc.tmp
     keypress
 
     tmp_dunstrc dunstrc.default "notification_limit=0"
     start_dunst dunstrc.tmp
-    ../../dunstify -a "dunst tester" -u c "notification limit = 0 (unlimited notifications)"
+    $DUNSTIFY -a "dunst tester" -u c "notification limit = 0 (unlimited notifications)"
     basic_notifications
     rm dunstrc.tmp
     keypress
@@ -88,18 +91,18 @@ function markup {
     echo "markup"
     echo "###################################"
     killall dunst
-    ../../dunst -config dunstrc.default &
-    ../../dunstify -a "dunst tester"  "Markup Tests" -u "c"
-    ../../dunstify -a "dunst tester"  "Title" "<b>bold</b> <i>italic</i>"
-    ../../dunstify -a "dunst tester"  "Title" '<a href="github.com"> Github link </a>'
-    ../../dunstify -a "dunst tester"  "Title" "<b>broken markup</i>"
+    $DUNST -config dunstrc.default &
+    $DUNSTIFY -a "dunst tester"  "Markup Tests" -u "c"
+    $DUNSTIFY -a "dunst tester"  "Title" "<b>bold</b> <i>italic</i>"
+    $DUNSTIFY -a "dunst tester"  "Title" '<a href="github.com"> Github link </a>'
+    $DUNSTIFY -a "dunst tester"  "Title" "<b>broken markup</i>"
     keypress
 
     killall dunst
-    ../../dunst -config dunstrc.nomarkup &
-    ../../dunstify -a "dunst tester" -u c "No markup Tests" "Titles shoud still be in bold and body in italics"
-    ../../dunstify -a "dunst tester" "Title" "<b>bold</b><i>italic</i>"
-    ../../dunstify -a "dunst tester" "Title" "<b>broken markup</i>"
+    $DUNST -config dunstrc.nomarkup &
+    $DUNSTIFY -a "dunst tester" -u c "No markup Tests" "Titles shoud still be in bold and body in italics"
+    $DUNSTIFY -a "dunst tester" "Title" "<b>bold</b><i>italic</i>"
+    $DUNSTIFY -a "dunst tester" "Title" "<b>broken markup</i>"
     keypress
 
 }
@@ -107,7 +110,7 @@ function markup {
 function test_origin {
     tmp_dunstrc dunstrc.default "origin = $1\n offset = 10x10"
     start_dunst dunstrc.tmp
-    ../../dunstify -a "dunst tester" -u c "$1"
+    $DUNSTIFY -a "dunst tester" -u c "$1"
     basic_notifications
     rm dunstrc.tmp
     keypress
@@ -131,7 +134,7 @@ function origin {
 function test_width {
     tmp_dunstrc dunstrc.default "width = $1"
     start_dunst dunstrc.tmp
-    ../../dunstify -a "dunst tester" -u c "width = $1"
+    $DUNSTIFY -a "dunst tester" -u c "width = $1"
     basic_notifications
     rm dunstrc.tmp
     keypress
@@ -150,8 +153,8 @@ function width {
 function test_height {
     tmp_dunstrc dunstrc.default "height = $1"
     start_dunst dunstrc.tmp
-    ../../dunstify -a "dunst tester" -u c "height = $1"
-    ../../dunstify -a "dunst tester" -u c "Temporibus accusantium libero sequi at nostrum dolor sequi sed. Cum minus reprehenderit voluptatibus laboriosam et et ut. Laudantium blanditiis omnis ipsa rerum quas velit ut. Quae voluptate soluta enim consequatur libero eum similique ad. Veritatis neque consequatur et aperiam quisquam id nostrum. Consequatur voluptas aut ut omnis atque cum perferendis. Possimus laudantium tempore iste qui nemo voluptate quod. Labore totam debitis consectetur amet. Maxime quibusdam ipsum voluptates quod ex nam sunt. Officiis repellat quod maxime cumque tenetur. Veritatis labore aperiam repellendus. Provident dignissimos ducimus voluptates."
+    $DUNSTIFY -a "dunst tester" -u c "height = $1"
+    $DUNSTIFY -a "dunst tester" -u c "Temporibus accusantium libero sequi at nostrum dolor sequi sed. Cum minus reprehenderit voluptatibus laboriosam et et ut. Laudantium blanditiis omnis ipsa rerum quas velit ut. Quae voluptate soluta enim consequatur libero eum similique ad. Veritatis neque consequatur et aperiam quisquam id nostrum. Consequatur voluptas aut ut omnis atque cum perferendis. Possimus laudantium tempore iste qui nemo voluptate quod. Labore totam debitis consectetur amet. Maxime quibusdam ipsum voluptates quod ex nam sunt. Officiis repellat quod maxime cumque tenetur. Veritatis labore aperiam repellendus. Provident dignissimos ducimus voluptates."
     basic_notifications
     rm dunstrc.tmp
     keypress
@@ -160,9 +163,9 @@ function test_height {
 function test_progress_bar_alignment {
     tmp_dunstrc dunstrc.default "progress_bar_horizontal_alignment = $1\n progress_bar_max_width = 200"
     start_dunst dunstrc.tmp
-    ../../dunstify -a "dunst tester" -u c "alignment = $1"
-    ../../dunstify -h int:value:33 -a "dunst tester" -u n "The progress bar should not be the entire width"
-    ../../dunstify -h int:value:33 -a "dunst tester" -u c "Short"
+    $DUNSTIFY -a "dunst tester" -u c "alignment = $1"
+    $DUNSTIFY -h int:value:33 -a "dunst tester" -u n "The progress bar should not be the entire width"
+    $DUNSTIFY -h int:value:33 -a "dunst tester" -u c "Short"
     rm dunstrc.tmp
     keypress
 }
@@ -177,24 +180,27 @@ function height {
 }
 
 function progress_bar {
+    echo "###################################"
+    echo "progress_bar"
+    echo "###################################"
     killall dunst
-    ../../dunst -config dunstrc.default &
-    ../../dunstify -h int:value:0 -a "dunst tester" -u c "Progress bar 0%: "
-    ../../dunstify -h int:value:33 -a "dunst tester" -u c "Progress bar 33%: "
-    ../../dunstify -h int:value:66 -a "dunst tester" -u c "Progress bar 66%: "
-    ../../dunstify -h int:value:100 -a "dunst tester" -u c "Progress bar 100%: "
+    $DUNST -config dunstrc.default &
+    $DUNSTIFY -h int:value:0 -a "dunst tester" -u c "Progress bar 0%: "
+    $DUNSTIFY -h int:value:33 -a "dunst tester" -u c "Progress bar 33%: "
+    $DUNSTIFY -h int:value:66 -a "dunst tester" -u c "Progress bar 66%: "
+    $DUNSTIFY -h int:value:100 -a "dunst tester" -u c "Progress bar 100%: "
     keypress
     killall dunst
-    ../../dunst -config dunstrc.default &
-    ../../dunstify -h int:value:33 -a "dunst tester" -u l "Low priority: "
-    ../../dunstify -h int:value:33 -a "dunst tester" -u n "Normal priority: "
-    ../../dunstify -h int:value:33 -a "dunst tester" -u c "Critical priority: "
+    $DUNST -config dunstrc.default &
+    $DUNSTIFY -h int:value:33 -a "dunst tester" -u l "Low priority: "
+    $DUNSTIFY -h int:value:33 -a "dunst tester" -u n "Normal priority: "
+    $DUNSTIFY -h int:value:33 -a "dunst tester" -u c "Critical priority: "
     keypress
     killall dunst
-    ../../dunst -config dunstrc.progress_bar &
-    ../../dunstify -h int:value:33 -a "dunst tester" -u n "The progress bar should not be the entire width"
-    ../../dunstify -h int:value:33 -a "dunst tester" -u n "You might also notice height and frame size are changed"
-    ../../dunstify -h int:value:33 -a "dunst tester" -u c "Short"
+    $DUNST -config dunstrc.progress_bar &
+    $DUNSTIFY -h int:value:33 -a "dunst tester" -u n "The progress bar should not be the entire width"
+    $DUNSTIFY -h int:value:33 -a "dunst tester" -u n "You might also notice height and frame size are changed"
+    $DUNSTIFY -h int:value:33 -a "dunst tester" -u c "Short"
     keypress
     test_progress_bar_alignment "left"
     test_progress_bar_alignment "center"
@@ -202,6 +208,9 @@ function progress_bar {
 }
 
 function icon_position {
+    echo "###################################"
+    echo "icon_position"
+    echo "###################################"
     padding_cases=(
         '0 0 0 no padding'
         '15 1 1 vertical'
@@ -224,7 +233,7 @@ function icon_position {
         for position in left top right off; do
             for alignment in left center right; do
                 category="icon-$position-alignment-$alignment"
-                ../../dunstify -a "dunst tester" --hints string:category:$category -u n "$category"$'\n'"padding emphasis: $label"
+                $DUNSTIFY -a "dunst tester" --hints string:category:$category -u n "$category"$'\n'"padding emphasis: $label"
             done
         done
         rm dunstrc.tmp
@@ -233,13 +242,16 @@ function icon_position {
 }
 
 function hide_text {
+    echo "###################################"
+    echo "hide_text"
+    echo "###################################"
     start_dunst dunstrc.hide_text
-    ../../dunstify -a "dunst tester" -u c "text not hidden" "You should be able to read me!\nThe next notifications should not have any text."
+    $DUNSTIFY -a "dunst tester" -u c "text not hidden" "You should be able to read me!\nThe next notifications should not have any text."
     local hidden_body="If you can read me then hide_text is not working."
-    ../../dunstify -a "dunst tester" -u l "text hidden" "$hidden_body"
-    ../../dunstify -a "dunst tester" -h int:value:$((RANDOM%100)) -u l "text hidden + progress bar" "$hidden_body"
-    ../../dunstify -a "dunst tester" -u n "text hidden + icon" "$hidden_body"
-    ../../dunstify -a "dunst tester" -h int:value:$((RANDOM%100)) -u n "text hidden + icon + progress bar" "$hidden_body"
+    $DUNSTIFY -a "dunst tester" -u l "text hidden" "$hidden_body"
+    $DUNSTIFY -a "dunst tester" -h int:value:$((RANDOM%100)) -u l "text hidden + progress bar" "$hidden_body"
+    $DUNSTIFY -a "dunst tester" -u n "text hidden + icon" "$hidden_body"
+    $DUNSTIFY -a "dunst tester" -h int:value:$((RANDOM%100)) -u n "text hidden + icon + progress bar" "$hidden_body"
     keypress
 }
 
@@ -248,17 +260,17 @@ function gaps {
     echo "gaps"
     echo "###################################"
     start_dunst dunstrc.gaps
-    CHOICE=$(../../dunstify -a "dunst tester" -A "default,Default" -A "optional,Optional" "Click #1" -u l) \
+    CHOICE=$($DUNSTIFY -a "dunst tester" -A "default,Default" -A "optional,Optional" "Click #1" -u l) \
         && echo Clicked $CHOICE for \#1 &
-    CHOICE=$(../../dunstify -a "dunst tester" -A "default,Default" -A "optional,Optional" "Click #2" -u n) \
+    CHOICE=$($DUNSTIFY -a "dunst tester" -A "default,Default" -A "optional,Optional" "Click #2" -u n) \
         && echo Clicked $CHOICE for \#2 &
-    CHOICE=$(../../dunstify -a "dunst tester" -A "default,Default" -A "optional,Optional" "Click #3" -u c) \
+    CHOICE=$($DUNSTIFY -a "dunst tester" -A "default,Default" -A "optional,Optional" "Click #3" -u c) \
         && echo Clicked $CHOICE for \#3 &
-    CHOICE=$(../../dunstify -a "dunst tester" -A "default,Default" -A "optional,Optional" "Click #4" -u l) \
+    CHOICE=$($DUNSTIFY -a "dunst tester" -A "default,Default" -A "optional,Optional" "Click #4" -u l) \
         && echo Clicked $CHOICE for \#4 &
-    CHOICE=$(../../dunstify -a "dunst tester" -A "default,Default" -A "optional,Optional" "Click #5" -u n) \
+    CHOICE=$($DUNSTIFY -a "dunst tester" -A "default,Default" -A "optional,Optional" "Click #5" -u n) \
         && echo Clicked $CHOICE for \#5 &
-    CHOICE=$(../../dunstify -a "dunst tester" -A "default,Default" -A "optional,Optional" "Click #6" -u c) \
+    CHOICE=$($DUNSTIFY -a "dunst tester" -A "default,Default" -A "optional,Optional" "Click #6" -u c) \
         && echo Clicked $CHOICE for \#6 &
     keypress
 }
@@ -268,13 +280,91 @@ function separator_click {
     echo "separator_click"
     echo "###################################"
     start_dunst dunstrc.separator_click
-    CHOICE=$(../../dunstify -a "dunst tester" -A "default,Default" -A "optional,Optional" "Click #1" -u l) \
+    CHOICE=$($DUNSTIFY -a "dunst tester" -A "default,Default" -A "optional,Optional" "Click #1" -u l) \
         && echo Clicked $CHOICE for \#1 &
-    CHOICE=$(../../dunstify -a "dunst tester" -A "default,Default" -A "optional,Optional" "Click #2" -u c) \
+    CHOICE=$($DUNSTIFY -a "dunst tester" -A "default,Default" -A "optional,Optional" "Click #2" -u c) \
         && echo Clicked $CHOICE for \#2 &
-    CHOICE=$(../../dunstify -a "dunst tester" -A "default,Default" -A "optional,Optional" "Click #3" -u n) \
+    CHOICE=$($DUNSTIFY -a "dunst tester" -A "default,Default" -A "optional,Optional" "Click #3" -u n) \
         && echo Clicked $CHOICE for \#3 &
     keypress
+}
+
+function dynamic_height {
+    echo "###################################"
+    echo "dynamic_height"
+    echo "###################################"
+
+    for max in 50 100 200 ""; do
+        for min in 50 100 200 ""; do
+            [[ $min -gt $max ]] && continue
+
+            tmp_dunstrc dunstrc.dynamic_height "height = ($min, $max)"
+            start_dunst dunstrc.tmp
+
+            $DUNSTIFY -a "dunst tester" -u l "text" "height min = $min"$'\n'"height max = $max"
+            $DUNSTIFY -a "dunst tester" -h int:value:$((RANDOM%100)) -u l "text+ progress bar" "height min = $min"$'\n'"height max = $max"
+            $DUNSTIFY -a "dunst tester" -u n "text + icon" "height min = $min"$'\n'"height max = $max"
+            $DUNSTIFY -a "dunst tester" -h int:value:$((RANDOM%100)) -u n "text + icon + progress bar" "height min = $min"$'\n'"height max = $max"
+
+            $DUNSTIFY -a "dunst tester" -h string:category:hide_text -u l "text hidden" "SHOULD BE NOT VISIBLE"
+            $DUNSTIFY -a "dunst tester" -h string:category:hide_text -h int:value:$((RANDOM%100)) -u l "text hidden + progress bar" "SHOULD BE NOT VISIBLE"
+            $DUNSTIFY -a "dunst tester" -h string:category:hide_text -u n "text hidden + icon" "SHOULD BE NOT VISIBLE"
+            $DUNSTIFY -a "dunst tester" -h string:category:hide_text -h int:value:$((RANDOM%100)) -u n "text hidden + icon + progress bar" "SHOULD BE NOT VISIBLE"
+
+            rm dunstrc.tmp
+            keypress
+        done
+    done
+}
+
+function vertical_align {
+    echo "###################################"
+    echo "vertical_align"
+    echo "###################################"
+
+    padding_cases=(
+        '0 0 0 0 none'
+        '15 1 1 50 less'
+        '1 50 1 100 slight'
+        '1 1 25 200 more'
+    )
+
+    for valign in top center bottom; do
+        for padding_case in "${padding_cases[@]}"; do
+            read vertical horizontal icon height label <<<"$padding_case"
+
+            padding_settings="
+                padding = $vertical
+                horizontal_padding = $horizontal
+                text_icon_padding = $icon
+                vertical_alignment = $valign
+                height = ($height, )
+            "
+
+            tmp_dunstrc dunstrc.vertical_align "$padding_settings"
+            start_dunst dunstrc.tmp
+
+            for position in left top right off; do
+                for alignment in left center right; do
+                    category="icon-$position-alignment-$alignment"
+                    $DUNSTIFY -a "dunst tester" --hints string:category:$category -u n "$category"$'\n'"emphasis: $label"$'\n'"vertical alignment: $valign"
+                done
+            done
+
+            keypress
+            start_dunst dunstrc.tmp
+
+            for position in left top right; do
+                for alignment in left center right; do
+                    category="icon-$position-alignment-$alignment-hide"
+                    $DUNSTIFY -a "dunst tester" --hints string:category:$category -u n "$category"$'\n'"emphasis: $label"$'\n'"vertical alignment: $valign"
+                done
+            done
+
+            rm dunstrc.tmp
+            keypress
+        done
+    done
 }
 
 if [ -n "$1" ]; then
@@ -297,6 +387,8 @@ else
     hide_text
     gaps
     separator_click
+    dynamic_height
+    vertical_align
 fi
 
 killall dunst

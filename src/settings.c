@@ -223,6 +223,9 @@ void check_and_correct_settings(struct settings *s) {
                 DIE("setting width min (%i) is always greather than max (%i)", s->width.min, s->width.max);
         }
 
+        if (s->height.min == INT_MIN) {
+                s->height.min = 0;
+        }
         if (s->height.min < 0 || s->height.max < 0) {
                 DIE("setting height does not support negative values");
         }
