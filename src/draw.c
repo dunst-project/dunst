@@ -202,7 +202,7 @@ static void layout_setup(struct colored_layout *cl, int width, int height, doubl
         int icon_width = cl->icon ? get_icon_width(cl->icon, scale) + horizontal_padding : 0;
         int text_width = width - 2 * settings.h_padding - (cl->n->icon_position == ICON_TOP ? 0 : icon_width);
         int progress_bar_height = have_progress_bar(cl) ? settings.progress_bar_height + settings.padding : 0;
-        int max_text_height = MAX(0, settings.height - progress_bar_height - 2 * settings.padding);
+        int max_text_height = MAX(0, settings.height.max - progress_bar_height - 2 * settings.padding);
         layout_setup_pango(cl->l, text_width, max_text_height, cl->n->word_wrap, cl->n->ellipsize, cl->n->alignment);
 }
 
@@ -219,7 +219,7 @@ static void free_colored_layout(void *data)
 static struct dimensions calculate_notification_dimensions(struct colored_layout *cl, double scale)
 {
         struct dimensions dim = { 0 };
-        layout_setup(cl, settings.width.max, settings.height, scale);
+        layout_setup(cl, settings.width.max, settings.height.max, scale);
 
         int horizontal_padding = get_horizontal_text_icon_padding(cl->n);
         int icon_width = cl->icon? get_icon_width(cl->icon, scale) + horizontal_padding : 0;
@@ -245,7 +245,7 @@ static struct dimensions calculate_notification_dimensions(struct colored_layout
         dim.h += progress_bar_height;
         dim.w = dim.text_width + icon_width + 2 * settings.h_padding;
 
-        dim.h = MIN(settings.height, dim.h + settings.padding * 2);
+        dim.h = MIN(settings.height.max, dim.h + settings.padding * 2);
         dim.w = MAX(settings.width.min, dim.w);
         if (have_progress_bar(cl))
                 dim.w = MAX(settings.progress_bar_min_width, dim.w);
@@ -709,7 +709,7 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, dou
 {
         // Redo layout setup, while knowing the width. This is to make
         // alignment work correctly
-        layout_setup(cl, width, settings.height, scale);
+        layout_setup(cl, width, settings.height.max, scale);
 
         const int h = layout_get_height(cl, scale);
         LOG_D("Layout height %i", h);
@@ -852,7 +852,7 @@ static struct dimensions layout_render(cairo_surface_t *srf,
         get_text_size(cl->l, NULL, &h_text, scale);
 
         int bg_width = 0;
-        int bg_height = MIN(settings.height, (2 * settings.padding) + cl_h);
+        int bg_height = MIN(settings.height.max, (2 * settings.padding) + cl_h);
 
         cairo_surface_t *content = render_background(srf, cl, cl_next, dim.y, dim.w, bg_height, dim.corner_radius, corners, &bg_width, scale);
         cairo_t *c = cairo_create(content);
@@ -866,10 +866,10 @@ static struct dimensions layout_render(cairo_surface_t *srf,
         if (corners & (C_BOT | _C_LAST))
                 dim.y += settings.frame_width;
 
-        if ((2 * settings.padding + cl_h) < settings.height)
+        if ((2 * settings.padding + cl_h) < settings.height.max)
                 dim.y += cl_h + 2 * settings.padding;
         else
-                dim.y += settings.height;
+                dim.y += settings.height.max;
 
         if (settings.gap_size)
                 dim.y += settings.gap_size;

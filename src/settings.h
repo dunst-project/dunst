@@ -173,8 +173,8 @@ struct settings {
         enum zwlr_layer_shell_v1_layer layer;
         enum origin_values origin;
         struct length width;
-        int height;
-        struct position offset;
+        struct length height;
+        struct position offset; // NOTE: we rely on the fact that lenght and position are similar
         int notification_limit;
         int gap_size;
 };

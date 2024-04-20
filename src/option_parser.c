@@ -131,15 +131,13 @@ int string_parse_list(const void *data, const char *s, void *ret) {
         switch (type) {
                 case MOUSE_LIST:
                         arr = string_to_array(s, ",");
-                        success = string_parse_enum_list(&mouse_action_enum_data,
-                                        arr, ret);
+                        success = string_parse_enum_list(&mouse_action_enum_data, arr, ret);
                         break;
                 case OFFSET_LIST:
                         arr = string_to_array(s, "x");
                         int len = string_array_length(arr);
                         if (len != 2) {
                                 success = false;
-                                LOG_W("Offset has two values, separated by an 'x'");
                                 break;
                         }
                         int *int_arr = NULL;
@@ -301,72 +299,46 @@ int get_setting_id(const char *key, const char *section) {
         return -1;
 }
 
-// TODO simplify this function
+// NOTE: We do minimal checks in this function so the values should be sanitized somewhere else
 int string_parse_length(void *ret_in, const char *s) {
         struct length *ret = (struct length*) ret_in;
-        int val = 0;
         char *s_stripped = string_strip_brackets(s);
-        if (!s_stripped) {
-                // single int without brackets
-                bool success = safe_string_to_int(&val, s);
-                if (success && val > 0) {
-                        // single int
-                        ret->min = val;
-                        ret->max = val;
-                        return true;
-                }
-                if (val <= 0) {
-                        LOG_W("A length should be a positive value");
-                }
-                return false;
-        }
 
+        // single int without brackets
+        if (!s_stripped) {
+                int val = 0;
+                bool success = safe_string_to_int(&val, s);
+                if (!success) {
+                        LOG_W("Specify either a single value or two comma-separated values between parentheses");
+                        return false;
+                }
+
+                ret->min = val;
+                ret->max = val;
+                return true;
+        }
 
         char **s_arr = string_to_array(s_stripped, ",");
-        int len = string_array_length(s_arr);
+        g_free(s_stripped);
 
-        if (len <= 1) {
-                LOG_W("Please specify a minimum and maximum value or a single value without brackets");
+        int len = string_array_length(s_arr);
+        if (len != 2) {
                 g_strfreev(s_arr);
-                g_free(s_stripped);
-                return false;
-        }
-        if (len > 2) {
-                g_strfreev(s_arr);
-                g_free(s_stripped);
-                LOG_W("Too many values in array. A length should be only one or two values");
+                LOG_W("Specify either a single value or two comma-separated values between parentheses");
                 return false;
         }
 
         int *int_arr = NULL;
         bool success = string_parse_int_list(s_arr, &int_arr, true);
-        if (!success) {
-                g_strfreev(s_arr);
-                g_free(s_stripped);
+        g_strfreev(s_arr);
+
+        if (!success)
                 return false;
-        }
 
-        if (int_arr[0] == -1)
-                int_arr[0] = 0;
-
-        if (int_arr[1] == -1)
-                int_arr[1] = INT_MAX;
-
-        if (int_arr[0] < 0 || int_arr[1] < 0) {
-                LOG_W("A lengths should be positive");
-                success = false;
-        } else if (int_arr[0] > int_arr[1]) {
-                LOG_W("The minimum value should be less than the maximum value. (%i > %i)",
-                                int_arr[0], int_arr[1]);
-                success = false;
-        } else {
-                ret->min = int_arr[0];
-                ret->max = int_arr[1];
-        }
+        ret->min = int_arr[0] == -1 ? INT_MIN : int_arr[0];
+        ret->max = int_arr[1] == -1 ? INT_MAX : int_arr[1];
 
         g_free(int_arr);
-        g_strfreev(s_arr);
-        g_free(s_stripped);
         return success;
 }
 
@@ -428,6 +400,11 @@ bool set_from_string(void *target, struct setting setting, const char *value) {
                         LOG_D("list type %i", GPOINTER_TO_INT(setting.parser_data));
                         return string_parse_list(setting.parser_data, value, target);
                 case TYPE_LENGTH:
+                        // Keep compatibility with old offset syntax
+                        if (STR_EQ(setting.name, "offset") && string_parse_list(GINT_TO_POINTER(OFFSET_LIST), value, target)) {
+                                LOG_I("Using legacy offset syntax NxN, you should switch to the new syntax (N, N)");
+                                return true;
+                        }
                         return string_parse_length(target, value);
                 case TYPE_COLOR:
                         return string_parse_color(value, target);

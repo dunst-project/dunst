@@ -202,14 +202,36 @@ void check_and_correct_settings(struct settings *s) {
                         DIE("setting progress_bar_max_width is smaller than progress_bar_min_width");
                 }
                 if (s->progress_bar_min_width > s->width.max) {
-                        LOG_W("Progress bar min width is greater than the max width of the notification.");
+                        LOG_W("Progress bar min width is greater than the max width of the notification");
                 }
                 int progress_bar_max_corner_radius = (s->progress_bar_height / 2);
                 if (s->progress_bar_corner_radius > progress_bar_max_corner_radius) {
                         settings.progress_bar_corner_radius = progress_bar_max_corner_radius;
-                        LOG_W("Progress bar corner radius clamped to half of progress bar height (%i).",
+                        LOG_W("Progress bar corner radius clamped to half of progress bar height (%i)",
                                 progress_bar_max_corner_radius);
                 }
+        }
+
+        // check lengths
+        if (s->width.min == INT_MIN) {
+                s->width.min = 0;
+        }
+        if (s->width.min < 0 || s->width.max < 0) {
+                DIE("setting width does not support negative values");
+        }
+        if (s->width.min > s->width.max) {
+                DIE("setting width min (%i) is always greather than max (%i)", s->width.min, s->width.max);
+        }
+
+        if (s->height.min < 0 || s->height.max < 0) {
+                DIE("setting height does not support negative values");
+        }
+        if (s->height.min != s->height.max) {
+                LOG_W("Dynamic height is not yet supported");
+        }
+
+        if (s->offset.x == INT_MIN || s->offset.y == INT_MAX) {
+                DIE("setting offset needs both horizontal and vertical values");
         }
 
         // TODO Implement this with icon sizes as rules
