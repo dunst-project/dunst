@@ -718,21 +718,22 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, int
         }
 
         int text_h = 0;
-        if (!cl->n->hide_text)
+        if (!cl->n->hide_text) {
                 get_text_size(cl->l, NULL, &text_h, scale);
+        }
 
         // text vertical alignment
         int text_x = settings.h_padding,
             text_y = settings.padding;
 
         if (settings.vertical_alignment == VERTICAL_CENTER) {
-                text_y = h_without_progress_bar / 2 - text_h / 2;
+                text_y += h_without_progress_bar / 2 - text_h / 2;
         } else if (settings.vertical_alignment == VERTICAL_BOTTOM) {
                 text_y = h_without_progress_bar - settings.padding - text_h;
         } // else VERTICAL_TOP
 
         // icon positioning
-        if (cl->icon) {
+        if (cl->icon && cl->n->icon_position != ICON_OFF) {
                 int image_width = get_icon_width(cl->icon, scale),
                     image_height = get_icon_height(cl->icon, scale),
                     image_x = width - settings.h_padding - image_width,
@@ -740,21 +741,28 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, int
                     v_padding = get_vertical_text_icon_padding(cl->n);
 
                 // vertical alignment
-                if (cl->n->hide_text || cl->n->icon_position == ICON_TOP) {
-                        switch (settings.vertical_alignment) {
-                                case VERTICAL_TOP:
+                switch (settings.vertical_alignment) {
+                        case VERTICAL_TOP:
+                                if (cl->n->hide_text || cl->n->icon_position == ICON_TOP) {
                                         text_y += image_height + v_padding;
-                                        break;
-                                case VERTICAL_CENTER:
+                                }
+                                break;
+                        case VERTICAL_CENTER:
+                                if (cl->n->hide_text || cl->n->icon_position == ICON_TOP) {
+                                        // Shift text downward
                                         image_y -= (image_height + v_padding) / 2;
                                         text_y += (image_height + v_padding) / 2;
-                                        break;
-                                case VERTICAL_BOTTOM:
+                                } else {
+                                        image_y += text_h / 2 - image_height / 2;
+                                }
+                                break;
+                        case VERTICAL_BOTTOM:
+                                if (cl->n->hide_text || cl->n->icon_position == ICON_TOP) {
                                         image_y -= image_height + v_padding;
-                                        if (image_y < settings.padding || image_y > h_without_progress_bar)
-                                                image_y = settings.padding;
-                                        break;
-                        }
+                                } else {
+                                        image_y -= image_height - text_h;
+                                }
+                                break;
                 }
 
                 // icon position

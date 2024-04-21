@@ -324,9 +324,9 @@ function vertical_align {
 
     padding_cases=(
         '0 0 0 0 none'
-        '15 1 1 50 less'
-        '1 50 1 100 slight'
-        '1 1 25 200 more'
+        '1 1 1 50 less'
+        '1 1 1 100 slight'
+        '1 1 1 200 more'
     )
 
     for valign in top center bottom; do
