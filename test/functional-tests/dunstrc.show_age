@@ -19,8 +19,6 @@
     horizontal_padding = 8
     separator_color = frame
     startup_notification = false
-    dmenu = /usr/bin/dmenu -p dunst
-    browser = /usr/bin/firefox -new-tab
 
 [frame]
     width = 3

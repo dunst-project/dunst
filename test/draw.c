@@ -81,12 +81,12 @@ struct length get_small_max_height(void)
 		return height;
 }
 
-int get_expected_dimension_height(int layout_count)
+int get_expected_dimension_height(int layout_count, int height)
 {
-        // assumes settings.height == notification height, see get_small_max_height
+        // assumes height == notification height, see get_small_max_height
         int separator_height = (layout_count - 1) * settings.separator_height;
         int total_gap_size = (layout_count - 1) * settings.gap_size;
-        int height = settings.height.max * layout_count;
+        height *= layout_count;
         int frame_width_total_height;
         int expected_height;
         if(settings.gap_size) {
@@ -170,7 +170,7 @@ TEST test_calculate_dimensions_height_no_gaps(void)
         notifications = get_dummy_notifications(layout_count);
         layouts = get_dummy_layouts(notifications);
         dim = calculate_dimensions(layouts);
-        expected_height = get_expected_dimension_height(layout_count);
+        expected_height = get_expected_dimension_height(layout_count, settings.height.max);
         ASSERT(dim.h == expected_height);
         g_slist_free_full(layouts, free_colored_layout);
         g_slist_free_full(notifications, free_dummy_notification);
@@ -179,7 +179,7 @@ TEST test_calculate_dimensions_height_no_gaps(void)
         notifications = get_dummy_notifications(layout_count);
         layouts = get_dummy_layouts(notifications);
         dim = calculate_dimensions(layouts);
-        expected_height = get_expected_dimension_height(layout_count);
+        expected_height = get_expected_dimension_height(layout_count, settings.height.max);
         ASSERT(dim.h == expected_height);
         g_slist_free_full(layouts, free_colored_layout);
         g_slist_free_full(notifications, free_dummy_notification);
@@ -188,7 +188,7 @@ TEST test_calculate_dimensions_height_no_gaps(void)
         notifications = get_dummy_notifications(layout_count);
         layouts = get_dummy_layouts(notifications);
         dim = calculate_dimensions(layouts);
-        expected_height = get_expected_dimension_height(layout_count);
+        expected_height = get_expected_dimension_height(layout_count, settings.height.max);
         ASSERT(dim.h == expected_height);
         g_slist_free_full(layouts, free_colored_layout);
         g_slist_free_full(notifications, free_dummy_notification);
@@ -216,7 +216,7 @@ TEST test_calculate_dimensions_height_gaps(void)
         notifications = get_dummy_notifications(layout_count);
         layouts = get_dummy_layouts(notifications);
         dim = calculate_dimensions(layouts);
-        expected_height = get_expected_dimension_height(layout_count);
+        expected_height = get_expected_dimension_height(layout_count, settings.height.max);
         ASSERT(dim.h == expected_height);
         g_slist_free_full(layouts, free_colored_layout);
         g_slist_free_full(notifications, free_dummy_notification);
@@ -225,7 +225,7 @@ TEST test_calculate_dimensions_height_gaps(void)
         notifications = get_dummy_notifications(layout_count);
         layouts = get_dummy_layouts(notifications);
         dim = calculate_dimensions(layouts);
-        expected_height = get_expected_dimension_height(layout_count);
+        expected_height = get_expected_dimension_height(layout_count, settings.height.max);
         ASSERT(dim.h == expected_height);
         g_slist_free_full(layouts, free_colored_layout);
         g_slist_free_full(notifications, free_dummy_notification);
@@ -234,7 +234,7 @@ TEST test_calculate_dimensions_height_gaps(void)
         notifications = get_dummy_notifications(layout_count);
         layouts = get_dummy_layouts(notifications);
         dim = calculate_dimensions(layouts);
-        expected_height = get_expected_dimension_height(layout_count);
+        expected_height = get_expected_dimension_height(layout_count, settings.height.max);
         ASSERT(dim.h == expected_height);
 
         g_slist_free_full(layouts, free_colored_layout);
@@ -283,6 +283,54 @@ TEST test_layout_render_no_gaps(void)
         g_slist_free_full(layouts, free_colored_layout);
         g_slist_free_full(notifications, free_dummy_notification);
         cairo_surface_destroy(image_surface);
+        settings.gap_size = orginal_gap_size;
+        settings.height = original_height;
+
+        PASS();
+}
+
+TEST test_calculate_dimensions_height_min(void)
+{
+        struct length original_height = settings.height;
+        bool orginal_gap_size = settings.gap_size;
+		// NOTE: Should be big enough to fit the notification nicely
+        settings.height.min = 100;
+        settings.height.max = 200;
+        settings.gap_size = 0;
+
+        int layout_count;
+        GSList *notifications;
+        GSList *layouts;
+        struct dimensions dim;
+        int expected_height;
+
+        layout_count = 1;
+        notifications = get_dummy_notifications(layout_count);
+        layouts = get_dummy_layouts(notifications);
+        dim = calculate_dimensions(layouts);
+        expected_height = get_expected_dimension_height(layout_count, settings.height.min);
+        ASSERT(dim.h == expected_height);
+        g_slist_free_full(layouts, free_colored_layout);
+        g_slist_free_full(notifications, free_dummy_notification);
+
+        layout_count = 2;
+        notifications = get_dummy_notifications(layout_count);
+        layouts = get_dummy_layouts(notifications);
+        dim = calculate_dimensions(layouts);
+        expected_height = get_expected_dimension_height(layout_count, settings.height.min);
+        ASSERT(dim.h == expected_height);
+        g_slist_free_full(layouts, free_colored_layout);
+        g_slist_free_full(notifications, free_dummy_notification);
+
+        layout_count = 3;
+        notifications = get_dummy_notifications(layout_count);
+        layouts = get_dummy_layouts(notifications);
+        dim = calculate_dimensions(layouts);
+        expected_height = get_expected_dimension_height(layout_count, settings.height.min);
+        ASSERT(dim.h == expected_height);
+
+        g_slist_free_full(layouts, free_colored_layout);
+        g_slist_free_full(notifications, free_dummy_notification);
         settings.gap_size = orginal_gap_size;
         settings.height = original_height;
 
@@ -340,6 +388,7 @@ SUITE(suite_draw)
                         RUN_TEST(test_layout_from_notification_no_icon);
                         RUN_TEST(test_calculate_dimensions_height_no_gaps);
                         RUN_TEST(test_calculate_dimensions_height_gaps);
+                        RUN_TEST(test_calculate_dimensions_height_min);
                         RUN_TEST(test_layout_render_no_gaps);
                         RUN_TEST(test_layout_render_gaps);
         });

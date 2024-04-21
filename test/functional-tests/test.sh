@@ -23,9 +23,9 @@ function basic_notifications {
     $DUNSTIFY -a "dunst tester"         "normal"    "<i>italic body</i>"
     $DUNSTIFY -a "dunst tester"  -u c   "critical"   "<b>bold body</b>"
     $DUNSTIFY -a "dunst tester"         "long body"  "This is a notification with a very long body"
-    $DUNSTIFY -a "dunst tester"         "duplucate"
-    $DUNSTIFY -a "dunst tester"         "duplucate"
-    $DUNSTIFY -a "dunst tester"         "duplucate"
+    $DUNSTIFY -a "dunst tester"         "duplicate"
+    $DUNSTIFY -a "dunst tester"         "duplicate"
+    $DUNSTIFY -a "dunst tester"         "duplicate"
     $DUNSTIFY -a "dunst tester"         "url"        "www.google.de"
 
 }
