@@ -90,7 +90,7 @@ dunstify: dunstify.o
 	${CC} -o ${@} dunstify.o ${DUNSTIFY_CFLAGS} ${DUNSTIFY_LDFLAGS}
 endif
 
-.PHONY: test test-valgrind test-coverage
+.PHONY: test test-valgrind test-coverage functional-tests
 test: test/test clean-coverage-run
 	# Make sure an error code is returned when the test fails
 	/usr/bin/env bash -c 'set -euo pipefail;\
@@ -123,6 +123,9 @@ test/%.o: test/%.c src/%.c
 
 test/test: ${OBJ} ${TEST_OBJ}
 	${CC} -o ${@} ${TEST_OBJ} $(filter-out ${TEST_OBJ:test/%=src/%},${OBJ}) ${CFLAGS} ${LDFLAGS}
+
+functional-tests: dunst dunstify
+	DUNST=./dunst DUNSTIFY=./dunstify ./test/functional-tests/test.sh
 
 .PHONY: doc doc-doxygen
 doc: docs/dunst.1 docs/dunst.5 docs/dunstctl.1
@@ -213,7 +216,7 @@ clean-wayland-protocols:
         install-service install-service-dbus install-service-systemd \
         uninstall uninstall-dunstctl uninstall-dunstrc \
         uninstall-service uninstall-service-dbus uninstall-service-systemd \
-	uninstall-keepconf uninstall-purge
+        uninstall-keepconf uninstall-purge
 install: install-dunst install-dunstctl install-dunstrc install-service
 
 install-dunst: dunst doc
