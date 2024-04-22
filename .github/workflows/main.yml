@@ -59,7 +59,7 @@ jobs:
         run: ./test/test-install.sh
 
       - name: valgrind memleaks
-        run: make -j clean test-valgrind
+        run: make clean && make -j test-valgrind
 
     runs-on: ubuntu-latest
     container:
@@ -83,7 +83,7 @@ jobs:
         run: git config --global --add safe.directory ${GITHUB_WORKSPACE}
 
       - name: coverage
-        run: make clean test-coverage
+        run: make clean && make -j test-coverage
 
       - name: Generate coverage report
         run: lcov -c -d . -o lcov.info
