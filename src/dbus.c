@@ -83,6 +83,9 @@ static const char *introspection_xml =
     "        <method name=\"NotificationClearHistory\"/>"
     "        <method name=\"NotificationCloseLast\" />"
     "        <method name=\"NotificationCloseAll\"  />"
+    "        <method name=\"NotificationListDisplayed\">"
+    "            <arg direction=\"out\" name=\"notifications\"   type=\"aa{sv}\"/>"
+    "        </method>"
     "        <method name=\"NotificationListHistory\">"
     "            <arg direction=\"out\" name=\"notifications\"   type=\"aa{sv}\"/>"
     "        </method>"
@@ -187,6 +190,7 @@ DBUS_METHOD(dunst_NotificationAction);
 DBUS_METHOD(dunst_NotificationClearHistory);
 DBUS_METHOD(dunst_NotificationCloseAll);
 DBUS_METHOD(dunst_NotificationCloseLast);
+DBUS_METHOD(dunst_NotificationListDisplayed);
 DBUS_METHOD(dunst_NotificationListHistory);
 DBUS_METHOD(dunst_NotificationPopHistory);
 DBUS_METHOD(dunst_NotificationRemoveFromHistory);
@@ -200,6 +204,7 @@ static struct dbus_method methods_dunst[] = {
         {"NotificationClearHistory",            dbus_cb_dunst_NotificationClearHistory},
         {"NotificationCloseAll",                dbus_cb_dunst_NotificationCloseAll},
         {"NotificationCloseLast",               dbus_cb_dunst_NotificationCloseLast},
+        {"NotificationListDisplayed",           dbus_cb_dunst_NotificationListDisplayed},
         {"NotificationListHistory",             dbus_cb_dunst_NotificationListHistory},
         {"NotificationPopHistory",              dbus_cb_dunst_NotificationPopHistory},
         {"NotificationRemoveFromHistory",       dbus_cb_dunst_NotificationRemoveFromHistory},
@@ -379,6 +384,15 @@ static void dbus_answer_queue_entries(GDBusConnection *connection,
 
         g_dbus_method_invocation_return_value(invocation, g_variant_new("(aa{sv})", &builder));
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
+}
+
+static void dbus_cb_dunst_NotificationListDisplayed(GDBusConnection *connection,
+                                           const gchar *sender,
+                                           GVariant *parameters,
+                                           GDBusMethodInvocation *invocation)
+{
+        LOG_D("CMD: Listing all currently displayed notifications");
+        dbus_answer_queue_entries(connection, invocation, queues_length_displayed(), queues_get_displayed());
 }
 
 static void dbus_cb_dunst_NotificationListHistory(GDBusConnection *connection,
