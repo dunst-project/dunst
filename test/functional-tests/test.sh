@@ -296,10 +296,10 @@ function dynamic_height {
             tmp_dunstrc dunstrc.vertical_align "height = ($min, $max)"
             start_dunst dunstrc.tmp
 
-            $DUNSTIFY -a "dunst tester" -u l "text" "height min = $min"$'\n'"height max = $max"
-            $DUNSTIFY -a "dunst tester" -h int:value:$((RANDOM%100)) -u l "text+ progress bar" "height min = $min"$'\n'"height max = $max"
-            $DUNSTIFY -a "dunst tester" -u n "text + icon" "height min = $min"$'\n'"height max = $max"
-            $DUNSTIFY -a "dunst tester" -h int:value:$((RANDOM%100)) -u n "text + icon + progress bar" "height min = $min"$'\n'"height max = $max"
+            $DUNSTIFY -a "dunst tester" -u l "text" "height min = $min, max = $max"
+            $DUNSTIFY -a "dunst tester" -h int:value:$((RANDOM%100)) -u l "text + progress bar" "height min = $min, max = $max"
+            $DUNSTIFY -a "dunst tester" -u n "text + icon" "height min = $min, max = $max"
+            $DUNSTIFY -a "dunst tester" -h int:value:$((RANDOM%100)) -u n "text + icon + progress bar" "height min = $min, max = $max"
 
             $DUNSTIFY -a "dunst tester" -h string:category:hide -u l "text hidden" "SHOULD BE NOT VISIBLE"
             $DUNSTIFY -a "dunst tester" -h string:category:hide -h int:value:$((RANDOM%100)) -u l "text hidden + progress bar" "SHOULD BE NOT VISIBLE"

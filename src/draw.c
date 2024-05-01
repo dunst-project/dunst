@@ -245,14 +245,14 @@ static struct dimensions calculate_notification_dimensions(struct colored_layout
         dim.h += progress_bar_height;
         dim.w = dim.text_width + icon_width + 2 * settings.h_padding;
 
+        if (have_progress_bar(cl))
+                dim.w = MAX(settings.progress_bar_min_width, dim.w);
+
         dim.h = MIN(settings.height.max, dim.h + settings.padding * 2);
         dim.h = MAX(settings.height.min, dim.h);
 
         dim.w = MAX(settings.width.min, dim.w);
         dim.w = MIN(settings.width.max, dim.w);
-
-        if (have_progress_bar(cl))
-                dim.w = MAX(settings.progress_bar_min_width, dim.w);
 
         cl->n->displayed_height = dim.h;
         return dim;
@@ -711,7 +711,7 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, int
         // alignment work correctly
         layout_setup(cl, width, height, scale);
 
-        // NOTE: Includes the last padding
+        // NOTE: Includes paddings!
         int h_without_progress_bar = height;
         if (have_progress_bar(cl)) {
                 h_without_progress_bar -= settings.progress_bar_height + settings.padding;
@@ -727,7 +727,7 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, int
             text_y = settings.padding;
 
         if (settings.vertical_alignment == VERTICAL_CENTER) {
-                text_y += h_without_progress_bar / 2 - text_h / 2;
+                text_y = h_without_progress_bar / 2 - text_h / 2;
         } else if (settings.vertical_alignment == VERTICAL_BOTTOM) {
                 text_y = h_without_progress_bar - settings.padding - text_h;
         } // else VERTICAL_TOP
@@ -743,13 +743,14 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, int
                 // vertical alignment
                 switch (settings.vertical_alignment) {
                         case VERTICAL_TOP:
-                                if (cl->n->hide_text || cl->n->icon_position == ICON_TOP) {
+                                if (cl->n->icon_position == ICON_TOP) {
+                                        // Shift text downward
                                         text_y += image_height + v_padding;
                                 }
                                 break;
                         case VERTICAL_CENTER:
-                                if (cl->n->hide_text || cl->n->icon_position == ICON_TOP) {
-                                        // Shift text downward
+                                if (cl->n->icon_position == ICON_TOP) {
+                                        // Adjust text and image by half
                                         image_y -= (image_height + v_padding) / 2;
                                         text_y += (image_height + v_padding) / 2;
                                 } else {
@@ -757,7 +758,7 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, int
                                 }
                                 break;
                         case VERTICAL_BOTTOM:
-                                if (cl->n->hide_text || cl->n->icon_position == ICON_TOP) {
+                                if (cl->n->icon_position == ICON_TOP) {
                                         image_y -= image_height + v_padding;
                                 } else {
                                         image_y -= image_height - text_h;

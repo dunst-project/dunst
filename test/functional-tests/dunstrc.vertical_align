@@ -33,6 +33,18 @@
 	category = .*icon-top.*
 	icon_position = top
 
+[alignment-left]
+	category = .*alignment-left.*
+	alignment = left
+
+[alignment-right]
+	category = .*alignment-right.*
+	alignment = right
+
+[alignment-center]
+	category = .*alignment-center.*
+	alignment = center
+
 [global]
     icon_path = /usr/share/icons/Papirus/24x24/status/:/usr/share/icons/Papirus/24x24/devices/:/usr/share/icons/gnome/16x16/status/:/usr/share/icons/gnome/16x16/devices/
 	enable_posix_regex = yes
