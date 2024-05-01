@@ -332,20 +332,17 @@ static void dbus_cb_dunst_NotificationShow(GDBusConnection *connection,
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
 }
 
-static void dbus_cb_dunst_NotificationListHistory(GDBusConnection *connection,
-                                           const gchar *sender,
-                                           GVariant *parameters,
-                                           GDBusMethodInvocation *invocation)
+static void dbus_answer_queue_entries(GDBusConnection *connection,
+                                      GDBusMethodInvocation *invocation,
+                                      int list_length,
+                                      GList *notification_list
+)
 {
-        LOG_D("CMD: Listing all notifications from history");
-
         GVariantBuilder builder;
         g_variant_builder_init(&builder, G_VARIANT_TYPE("aa{sv}"));
 
-        GList *notification_list = queues_get_history();
-
         // reverse chronological list
-        for(int i = queues_length_history(); i > 0; i--) {
+        for(int i = list_length; i > 0; i--) {
                 struct notification *n;
                 n = g_list_nth_data(notification_list, i-1);
 
@@ -382,6 +379,15 @@ static void dbus_cb_dunst_NotificationListHistory(GDBusConnection *connection,
 
         g_dbus_method_invocation_return_value(invocation, g_variant_new("(aa{sv})", &builder));
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
+}
+
+static void dbus_cb_dunst_NotificationListHistory(GDBusConnection *connection,
+                                           const gchar *sender,
+                                           GVariant *parameters,
+                                           GDBusMethodInvocation *invocation)
+{
+        LOG_D("CMD: Listing all notifications from history");
+        dbus_answer_queue_entries(connection, invocation, queues_length_history(), queues_get_history());
 }
 
 static void dbus_cb_dunst_NotificationPopHistory(GDBusConnection *connection,
