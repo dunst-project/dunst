@@ -34,8 +34,7 @@ function show_age {
     echo "###################################"
     echo "show age"
     echo "###################################"
-    killall dunst
-    $DUNST -config dunstrc.show_age &
+    start_dunst dunstrc.show_age &
     $DUNSTIFY -a "dunst tester"  -u c "Show Age" "These should print their age after 2 seconds"
     basic_notifications
     keypress
@@ -58,8 +57,7 @@ function replace {
     echo "###################################"
     echo "replace"
     echo "###################################"
-    killall dunst
-    $DUNST -config dunstrc.default &
+    start_dunst dunstrc.default
     id=$($DUNSTIFY -a "dunst tester" -p "Replace" "this should get replaces after keypress")
     keypress
     $DUNSTIFY -a "dunst tester" -r $id "Success?" "I hope this is not a new notification"
@@ -90,16 +88,14 @@ function markup {
     echo "###################################"
     echo "markup"
     echo "###################################"
-    killall dunst
-    $DUNST -config dunstrc.default &
+    start_dunst dunstrc.default
     $DUNSTIFY -a "dunst tester"  "Markup Tests" -u "c"
     $DUNSTIFY -a "dunst tester"  "Title" "<b>bold</b> <i>italic</i>"
     $DUNSTIFY -a "dunst tester"  "Title" '<a href="github.com"> Github link </a>'
     $DUNSTIFY -a "dunst tester"  "Title" "<b>broken markup</i>"
     keypress
 
-    killall dunst
-    $DUNST -config dunstrc.nomarkup &
+    start_dunst dunstrc.nomarkup
     $DUNSTIFY -a "dunst tester" -u c "No markup Tests" "Titles shoud still be in bold and body in italics"
     $DUNSTIFY -a "dunst tester" "Title" "<b>bold</b><i>italic</i>"
     $DUNSTIFY -a "dunst tester" "Title" "<b>broken markup</i>"
@@ -183,21 +179,20 @@ function progress_bar {
     echo "###################################"
     echo "progress_bar"
     echo "###################################"
-    killall dunst
-    $DUNST -config dunstrc.default &
+    start_dunst dunstrc.default
     $DUNSTIFY -h int:value:0 -a "dunst tester" -u c "Progress bar 0%: "
     $DUNSTIFY -h int:value:33 -a "dunst tester" -u c "Progress bar 33%: "
     $DUNSTIFY -h int:value:66 -a "dunst tester" -u c "Progress bar 66%: "
     $DUNSTIFY -h int:value:100 -a "dunst tester" -u c "Progress bar 100%: "
     keypress
-    killall dunst
-    $DUNST -config dunstrc.default &
+
+    start_dunst dunstrc.default
     $DUNSTIFY -h int:value:33 -a "dunst tester" -u l "Low priority: "
     $DUNSTIFY -h int:value:33 -a "dunst tester" -u n "Normal priority: "
     $DUNSTIFY -h int:value:33 -a "dunst tester" -u c "Critical priority: "
     keypress
-    killall dunst
-    $DUNST -config dunstrc.progress_bar &
+
+    start_dunst dunstrc.progress_bar
     $DUNSTIFY -h int:value:33 -a "dunst tester" -u n "The progress bar should not be the entire width"
     $DUNSTIFY -h int:value:33 -a "dunst tester" -u n "You might also notice height and frame size are changed"
     $DUNSTIFY -h int:value:33 -a "dunst tester" -u c "Short"
@@ -298,7 +293,7 @@ function dynamic_height {
         for min in 50 100 200 ""; do
             [[ $min -gt $max ]] && continue
 
-            tmp_dunstrc dunstrc.dynamic_height "height = ($min, $max)"
+            tmp_dunstrc dunstrc.vertical_align "height = ($min, $max)"
             start_dunst dunstrc.tmp
 
             $DUNSTIFY -a "dunst tester" -u l "text" "height min = $min"$'\n'"height max = $max"
@@ -306,10 +301,10 @@ function dynamic_height {
             $DUNSTIFY -a "dunst tester" -u n "text + icon" "height min = $min"$'\n'"height max = $max"
             $DUNSTIFY -a "dunst tester" -h int:value:$((RANDOM%100)) -u n "text + icon + progress bar" "height min = $min"$'\n'"height max = $max"
 
-            $DUNSTIFY -a "dunst tester" -h string:category:hide_text -u l "text hidden" "SHOULD BE NOT VISIBLE"
-            $DUNSTIFY -a "dunst tester" -h string:category:hide_text -h int:value:$((RANDOM%100)) -u l "text hidden + progress bar" "SHOULD BE NOT VISIBLE"
-            $DUNSTIFY -a "dunst tester" -h string:category:hide_text -u n "text hidden + icon" "SHOULD BE NOT VISIBLE"
-            $DUNSTIFY -a "dunst tester" -h string:category:hide_text -h int:value:$((RANDOM%100)) -u n "text hidden + icon + progress bar" "SHOULD BE NOT VISIBLE"
+            $DUNSTIFY -a "dunst tester" -h string:category:hide -u l "text hidden" "SHOULD BE NOT VISIBLE"
+            $DUNSTIFY -a "dunst tester" -h string:category:hide -h int:value:$((RANDOM%100)) -u l "text hidden + progress bar" "SHOULD BE NOT VISIBLE"
+            $DUNSTIFY -a "dunst tester" -h string:category:hide -u n "text hidden + icon" "SHOULD BE NOT VISIBLE"
+            $DUNSTIFY -a "dunst tester" -h string:category:hide -h int:value:$((RANDOM%100)) -u n "text hidden + icon + progress bar" "SHOULD BE NOT VISIBLE"
 
             rm dunstrc.tmp
             keypress

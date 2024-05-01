@@ -125,7 +125,7 @@ test/test: ${OBJ} ${TEST_OBJ}
 	${CC} -o ${@} ${TEST_OBJ} $(filter-out ${TEST_OBJ:test/%=src/%},${OBJ}) ${CFLAGS} ${LDFLAGS}
 
 functional-tests: dunst dunstify
-	DUNST=./dunst DUNSTIFY=./dunstify ./test/functional-tests/test.sh
+	cd ./test/functional-tests ; ./test.sh
 
 .PHONY: doc doc-doxygen
 doc: docs/dunst.1 docs/dunst.5 docs/dunstctl.1
