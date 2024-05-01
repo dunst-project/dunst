@@ -340,8 +340,7 @@ static void dbus_cb_dunst_NotificationShow(GDBusConnection *connection,
 static void dbus_answer_queue_entries(GDBusConnection *connection,
                                       GDBusMethodInvocation *invocation,
                                       int list_length,
-                                      GList *notification_list
-)
+                                      GList *notification_list)
 {
         GVariantBuilder builder;
         g_variant_builder_init(&builder, G_VARIANT_TYPE("aa{sv}"));
