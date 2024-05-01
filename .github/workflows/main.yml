@@ -32,6 +32,7 @@ jobs:
           - fedora
           - ubuntu-focal
           - ubuntu-jammy
+          - ubuntu-noble
 
     env:
       CC: ${{ matrix.CC }}
