@@ -15,11 +15,12 @@ dunstctl COMMAND [PARAMETER]
 
 Performs the default action or, if not available, opens the context menu of the
 notification at the given position (starting count at the top, first
-notification being 0). 
+notification being 0).
 
-=item B<close>
+=item B<close> [ID]
 
 Close the topmost notification currently being displayed.
+You can optionally pass an ID to close the matching notification (if present).
 
 =item B<close-all>
 
