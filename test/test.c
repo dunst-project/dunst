@@ -48,8 +48,9 @@ int main(int argc, char *argv[]) {
 
 
         // initialize settings
-        char *config_path = g_strconcat(base, "/data/dunstrc.default", NULL);
-        load_settings(config_path);
+        char **configs = g_malloc0(2 * sizeof(char *));
+        configs[0] = g_strconcat(base, "/data/dunstrc.default", NULL);
+        load_settings(configs);
 
         GREATEST_MAIN_BEGIN();
         RUN_SUITE(suite_utils);
@@ -71,7 +72,7 @@ int main(int argc, char *argv[]) {
         RUN_SUITE(suite_input);
 
         base = NULL;
-        g_free(config_path);
+        g_strfreev(configs);
         free(prog);
 
         // this returns the error code

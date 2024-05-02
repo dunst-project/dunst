@@ -965,7 +965,7 @@ SUITE(suite_option_parser)
         int argc;
         char **argv;
         g_shell_parse_argv(&cmdline[0], &argc, &argv, NULL);
-        cmdline_load(argc, argv);
+        cmdline_load(argc, (const char **)argv);
         RUN_TEST(test_cmdline_get_string);
         RUN_TEST(test_cmdline_get_list);
         RUN_TEST(test_cmdline_get_path);
