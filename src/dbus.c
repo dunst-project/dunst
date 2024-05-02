@@ -617,8 +617,6 @@ static void dbus_cb_dunst_ReloadConfig(GDBusConnection *connection,
 {
         gchar **configs = NULL;
         g_variant_get(parameters, "(^as)", &configs);
-
-        LOG_M("Reloading settings (with the %s files)", configs ? "new" : "old");
         reload(configs);
 
         g_dbus_method_invocation_return_value(invocation, NULL);

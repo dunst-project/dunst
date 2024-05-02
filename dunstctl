@@ -201,7 +201,7 @@ case "${1:-}" in
 		;;
 	"reload")
 		shift
-		method_call "${DBUS_IFAC_DUNST}.ReloadConfig" "array:string:$(for f in "$@"; do printf ",\"%s\"" "$f"; done | cut -c 2-)" >/dev/null
+		method_call "${DBUS_IFAC_DUNST}.ReloadConfig" "array:string:$(IFS=','; echo "$*")" >/dev/null
 		;;
 	"")
 		die "dunstctl: No command specified. Please consult the usage."

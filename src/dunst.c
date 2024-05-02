@@ -212,7 +212,10 @@ static void teardown(void)
 
 void reload(char **const configs)
 {
-        if (configs) {
+        guint length = g_strv_length(configs);
+        LOG_M("Reloading settings (with the %s files)", length != 0 ? "new" : "old");
+
+        if (length != 0) {
                 g_strfreev(config_paths);
                 config_paths = configs;
         }
@@ -233,7 +236,6 @@ void reload(char **const configs)
 
 int dunst_main(int argc, const char *argv[])
 {
-
         dunst_status_int(S_PAUSE_LEVEL, 0);
         dunst_status(S_IDLE, false);
 
@@ -253,16 +255,16 @@ int dunst_main(int argc, const char *argv[])
         log_set_level_from_string(verbosity);
         g_free(verbosity);
 
-        GStrvBuilder *builder = g_strv_builder_new();
-        char *path = NULL;
-        int start = 1;
+        cmdline_usage_append("-conf/-config", "string", "Path to configuration file");
 
-        while ((path = cmdline_get_string_offset("-conf/-config", NULL,
-                                                 "Path to configuration file", start, &start)))
-                g_strv_builder_add(builder, path);
+        int start = 1, count = 1;
+        while (cmdline_get_string_offset("-conf/-config", NULL, start, &start))
+                count++;
 
-        config_paths = g_strv_builder_end(builder);
-        g_strv_builder_unref(builder);
+        config_paths = g_malloc0(sizeof(char *) * count);
+        start = 1, count = 0;
+
+        while ((config_paths[count++] = cmdline_get_string_offset("-conf/-config", NULL, start, &start)));
 
         settings.print_notifications = cmdline_get_bool("-print/--print", false, "Print notifications to stdout");
 

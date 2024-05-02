@@ -22,8 +22,7 @@ void save_settings(struct ini *ini);
 
 void cmdline_load(int argc, const char *argv[]);
 /* for all cmdline_get_* key can be either "-key" or "-key/-longkey" */
-char *cmdline_get_string_offset(const char *key, const char *def, const char *description,
-                                int start, int *found);
+char *cmdline_get_string_offset(const char *key, const char *def, int start, int *found);
 char *cmdline_get_string(const char *key, const char *def, const char *description);
 char *cmdline_get_path(const char *key, const char *def, const char *description);
 char **cmdline_get_list(const char *key, const char *def, const char *description);
@@ -31,6 +30,7 @@ int cmdline_get_int(const char *key, int def, const char *description);
 double cmdline_get_double(const char *key, double def, const char *description);
 int cmdline_get_bool(const char *key, int def, const char *description);
 bool cmdline_is_set(const char *key);
+void cmdline_usage_append(const char *key, const char *type, const char *description);
 const char *cmdline_create_usage(void);
 
 #endif

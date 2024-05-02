@@ -18,9 +18,7 @@
 
 static int cmdline_argc;
 static const char **cmdline_argv;
-
 static char *usage_str = NULL;
-static void cmdline_usage_append(const char *key, const char *type, const char *description);
 
 #define STRING_PARSE_RET(string, value) if (STR_EQ(s, string)) { *ret = value; return true; }
 
@@ -552,10 +550,8 @@ static const char *cmdline_get_value(const char *key, int start, int *found)
         return cmdline_argv[idx + 1];
 }
 
-char *cmdline_get_string_offset(const char *key, const char *def, const char *description,
-                                int start, int *found)
+char *cmdline_get_string_offset(const char *key, const char *def, int start, int *found)
 {
-        cmdline_usage_append(key, "string", description);
         const char *str = cmdline_get_value(key, start, found);
 
         if (str)
@@ -568,7 +564,8 @@ char *cmdline_get_string_offset(const char *key, const char *def, const char *de
 
 char *cmdline_get_string(const char *key, const char *def, const char *description)
 {
-        return cmdline_get_string_offset(key, def, description, 1, NULL);
+        cmdline_usage_append(key, "string", description);
+        return cmdline_get_string_offset(key, def, 1, NULL);
 }
 
 char *cmdline_get_path(const char *key, const char *def, const char *description)

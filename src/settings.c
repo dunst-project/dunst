@@ -106,9 +106,6 @@ static void config_files_add_drop_ins(GPtrArray *config_files, const char *path)
  * drop-ins and puts their locations in a GPtrArray, @e most important last.
  *
  * The returned GPtrArray and it's elements are owned by the caller.
- *
- * @param path The config path that overrides the default config path. No
- * drop-in files or other configs are searched.
  */
 static GPtrArray* get_conf_files(void) {
         GPtrArray *config_locations = get_xdg_conf_basedirs();
@@ -298,7 +295,7 @@ void load_settings(char **const config_paths)
                 for (int i = 0; config_paths[i]; i++)
                         g_ptr_array_add(conf_files, g_strdup(config_paths[i]));
         } else {
-                // Use default locations
+                // Use default locations (and search drop-ins)
                 conf_files = get_conf_files();
         }
 
