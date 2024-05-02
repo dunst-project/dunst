@@ -25,6 +25,7 @@ GMainLoop *mainloop = NULL;
 
 static struct dunst_status status;
 static bool setup_done = false;
+static char **config_paths = NULL;
 
 /* see dunst.h */
 void dunst_status(const enum dunst_status_field field,
@@ -207,7 +208,7 @@ static void teardown(void)
         draw_deinit();
 }
 
-int dunst_main(int argc, char *argv[])
+int dunst_main(int argc, const char *argv[])
 {
 
         dunst_status_int(S_PAUSE_LEVEL, 0);
@@ -229,10 +230,16 @@ int dunst_main(int argc, char *argv[])
         log_set_level_from_string(verbosity);
         g_free(verbosity);
 
-        char *cmdline_config_path;
-        cmdline_config_path =
-            cmdline_get_string("-conf/-config", NULL,
-                               "Path to configuration file");
+        GStrvBuilder *builder = g_strv_builder_new();
+        char *path = NULL;
+        int start = 1;
+
+        while ((path = cmdline_get_string_offset("-conf/-config", NULL,
+                                                 "Path to configuration file", start, &start)))
+                g_strv_builder_add(builder, path);
+
+        config_paths = g_strv_builder_end(builder);
+        g_strv_builder_unref(builder);
 
         settings.print_notifications = cmdline_get_bool("-print/--print", false, "Print notifications to stdout");
 
@@ -244,7 +251,7 @@ int dunst_main(int argc, char *argv[])
                 usage(EXIT_SUCCESS);
         }
 
-        load_settings(cmdline_config_path);
+        load_settings(config_paths);
         int dbus_owner_id = dbus_init();
 
         mainloop = g_main_loop_new(NULL, FALSE);
@@ -278,6 +285,7 @@ int dunst_main(int argc, char *argv[])
         run(GINT_TO_POINTER(DUNST_TIMER)); // The first run() is a scheduled one
         g_main_loop_run(mainloop);
         g_clear_pointer(&mainloop, g_main_loop_unref);
+        g_strfreev(config_paths);
 
         /* remove signal handler watches */
         g_source_remove(pause_src);

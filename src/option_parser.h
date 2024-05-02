@@ -20,8 +20,10 @@ int string_parse_maybe_int(const void *data, const char *s, void *ret);
 void set_defaults(void);
 void save_settings(struct ini *ini);
 
-void cmdline_load(int argc, char *argv[]);
+void cmdline_load(int argc, const char *argv[]);
 /* for all cmdline_get_* key can be either "-key" or "-key/-longkey" */
+char *cmdline_get_string_offset(const char *key, const char *def, const char *description,
+                                int start, int *found);
 char *cmdline_get_string(const char *key, const char *def, const char *description);
 char *cmdline_get_path(const char *key, const char *def, const char *description);
 char **cmdline_get_list(const char *key, const char *def, const char *description);

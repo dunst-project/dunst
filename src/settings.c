@@ -110,13 +110,7 @@ static void config_files_add_drop_ins(GPtrArray *config_files, const char *path)
  * @param path The config path that overrides the default config path. No
  * drop-in files or other configs are searched.
  */
-static GPtrArray* get_conf_files(const char *path) {
-        if (path) {
-                GPtrArray *result = g_ptr_array_new_full(1, g_free);
-                g_ptr_array_add(result, g_strdup(path));
-                return result;
-        }
-
+static GPtrArray* get_conf_files(void) {
         GPtrArray *config_locations = get_xdg_conf_basedirs();
         GPtrArray *config_files = g_ptr_array_new_full(3, g_free);
         char *dunstrc_location = NULL;
@@ -286,15 +280,27 @@ static void process_conf_file(const gpointer conf_fname, gpointer n_success) {
         ++(*(int *) n_success);
 }
 
-void load_settings(const char *const path) {
-        // NOTE: settings_init should be called before if some settings are changed
-        //       But having it here is useful for tests
-        //       Potentially, we could update the settings code and move this somewhere else
+void load_settings(char **const config_paths)
+{
+        // NOTE: settings_init should be called at the start of dunst_main, otherwise
+        //       the cmdline settings would be reset
         settings_init();
+
         LOG_D("Setting defaults");
         set_defaults();
 
-        GPtrArray *conf_files = get_conf_files(path);
+        guint length = g_strv_length(config_paths);
+
+        GPtrArray *conf_files;
+
+        if (length != 0) {
+                conf_files = g_ptr_array_new_full(length, g_free);
+                for (int i = 0; config_paths[i]; i++)
+                        g_ptr_array_add(conf_files, g_strdup(config_paths[i]));
+        } else {
+                // Use default locations
+                conf_files = get_conf_files();
+        }
 
         /* Load all conf files and drop-ins, least important first. */
         int n_loaded_confs = 0;
@@ -309,4 +315,5 @@ void load_settings(const char *const path) {
         }
         g_ptr_array_unref(conf_files);
 }
+
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */
