@@ -20,17 +20,17 @@ show_help() {
 	                                    given position
 	  close [ID]                        Close the last notification or the
 	                                    notification with given ID.
-	  close-all                         Close the all notifications
+	  close-all                         Close all the notifications
 	  context                           Open context menu
 	  count [displayed|history|waiting] Show the number of notifications
 	  history                           Display notification history (in JSON)
 	  history-clear                     Delete all notifications from history
 	  history-pop [ID]                  Pop the latest notification from
 	                                    history or optionally the
-	                                    notification with given ID.
+	                                    notification with given ID
 	  history-rm ID                     Remove the notification from
 	                                    history with given ID.
-	  is-paused                         Check if pause level is > 0
+	  is-paused                         Check if pause level is greater than 0
 	  set-paused true|false|toggle      Set the pause status
 	  get-pause-level                   Get the current pause level
 	  set-pause-level level             Set the pause level
@@ -38,7 +38,7 @@ show_help() {
 	  rules [--json]                    Displays configured rules (optionally
 	                                    in JSON)
 	  debug                             Print debugging information
-	  help                              Show this help
+	  help                              Show help
 	EOH
 }
 dbus_send_checked() {

@@ -24,7 +24,7 @@ You can optionally pass an ID to close the matching notification (if present).
 
 =item B<close-all>
 
-Close all notifications currently being displayed
+Close all notifications currently being displayed.
 
 =item B<context>
 
