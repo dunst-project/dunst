@@ -307,7 +307,7 @@ void load_settings(char **const config_paths)
         g_ptr_array_foreach(conf_files, process_conf_file, &n_loaded_confs);
 
         if (0 == n_loaded_confs)
-                LOG_I("No configuration file found, using defaults");
+                LOG_M("No configuration file found, using defaults");
 
         for (GSList *iter = rules; iter; iter = iter->next) {
                 struct rule *r = iter->data;

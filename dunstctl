@@ -40,6 +40,7 @@ show_help() {
 	  help                              Show this help
 	EOH
 }
+
 dbus_send_checked() {
 	dbus-send "$@" \
 		|| die "Failed to communicate with dunst, is it running? Or maybe the version is outdated. You can try 'dunstctl debug' as a next debugging step."
@@ -59,7 +60,6 @@ property_set() {
 
 command -v dbus-send >/dev/null 2>/dev/null || \
 	die "Command dbus-send not found"
-
 
 case "${1:-}" in
 	"action")
@@ -199,6 +199,10 @@ case "${1:-}" in
 		busctl --user --json=pretty --no-pager call org.freedesktop.Notifications /org/freedesktop/Notifications org.dunstproject.cmd0 NotificationListHistory 2>/dev/null \
 			|| die "Dunst is not running."
 		;;
+	"reload")
+		shift
+		method_call "${DBUS_IFAC_DUNST}.ReloadConfig" "array:string:$(for f in "$@"; do printf ",\"%s\"" "$f"; done | cut -c 2-)" >/dev/null
+		;;
 	"")
 		die "dunstctl: No command specified. Please consult the usage."
 		;;
@@ -206,5 +210,5 @@ case "${1:-}" in
 		die "dunstctl: unrecognized command '${1:-}'. Please consult the usage."
 		;;
 esac
-# vim: noexpandtab
 
+# vim: noexpandtab

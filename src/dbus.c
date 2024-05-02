@@ -100,6 +100,9 @@ static const char *introspection_xml =
     "        <method name=\"RuleList\">"
     "            <arg direction=\"out\" name=\"rules\"           type=\"aa{sv}\"/>"
     "        </method>"
+    "        <method name=\"ReloadConfig\">"
+    "            <arg direction=\"in\" name=\"configs\"  type=\"as\"/>"
+    "        </method>"
     "        <method name=\"Ping\"                  />"
 
     "        <property name=\"paused\" type=\"b\" access=\"readwrite\">"
@@ -193,7 +196,10 @@ DBUS_METHOD(dunst_NotificationRemoveFromHistory);
 DBUS_METHOD(dunst_NotificationShow);
 DBUS_METHOD(dunst_RuleEnable);
 DBUS_METHOD(dunst_RuleList);
+DBUS_METHOD(dunst_ReloadConfig);
 DBUS_METHOD(dunst_Ping);
+
+// NOTE: Keep the names sorted alphabetically
 static struct dbus_method methods_dunst[] = {
         {"ContextMenuCall",                     dbus_cb_dunst_ContextMenuCall},
         {"NotificationAction",                  dbus_cb_dunst_NotificationAction},
@@ -205,6 +211,7 @@ static struct dbus_method methods_dunst[] = {
         {"NotificationRemoveFromHistory",       dbus_cb_dunst_NotificationRemoveFromHistory},
         {"NotificationShow",                    dbus_cb_dunst_NotificationShow},
         {"Ping",                                dbus_cb_dunst_Ping},
+        {"ReloadConfig",                        dbus_cb_dunst_ReloadConfig},
         {"RuleEnable",                          dbus_cb_dunst_RuleEnable},
         {"RuleList",                            dbus_cb_dunst_RuleList},
 };
@@ -598,6 +605,21 @@ static void dbus_cb_dunst_RuleEnable(GDBusConnection *connection,
                 target_rule->enabled = true;
         else if (state == 2)
                 target_rule->enabled = !target_rule->enabled;
+
+        g_dbus_method_invocation_return_value(invocation, NULL);
+        g_dbus_connection_flush(connection, NULL, NULL, NULL);
+}
+
+static void dbus_cb_dunst_ReloadConfig(GDBusConnection *connection,
+                                       const gchar *sender,
+                                       GVariant *parameters,
+                                       GDBusMethodInvocation *invocation)
+{
+        gchar **configs = NULL;
+        g_variant_get(parameters, "(^as)", &configs);
+
+        LOG_M("Reloading settings (with the %s files)", configs ? "new" : "old");
+        reload(configs);
 
         g_dbus_method_invocation_return_value(invocation, NULL);
         g_dbus_connection_flush(connection, NULL, NULL, NULL);

@@ -206,6 +206,29 @@ static void teardown(void)
         queues_teardown();
 
         draw_deinit();
+
+        g_strfreev(config_paths);
+}
+
+void reload(char **const configs)
+{
+        if (configs) {
+                g_strfreev(config_paths);
+                config_paths = configs;
+        }
+
+        pause_signal(NULL);
+
+        setup_done = false;
+        draw_deinit();
+
+        load_settings(config_paths);
+        draw_setup();
+        setup_done = true;
+
+        queues_reapply_all_rules();
+
+        unpause_signal(NULL);
 }
 
 int dunst_main(int argc, const char *argv[])
@@ -285,7 +308,6 @@ int dunst_main(int argc, const char *argv[])
         run(GINT_TO_POINTER(DUNST_TIMER)); // The first run() is a scheduled one
         g_main_loop_run(mainloop);
         g_clear_pointer(&mainloop, g_main_loop_unref);
-        g_strfreev(config_paths);
 
         /* remove signal handler watches */
         g_source_remove(pause_src);

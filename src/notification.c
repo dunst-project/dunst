@@ -317,6 +317,8 @@ void notification_unref(struct notification *n)
         notification_private_free(n->priv);
 
         if (n->script_count > 0) {
+                for (int i = 0; i < n->script_count; i++)
+                        g_free(n->scripts[i]);
                 g_free(n->scripts);
         }
 

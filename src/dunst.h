@@ -38,6 +38,7 @@ void dunst_status_int(const enum dunst_status_field field,
 struct dunst_status dunst_status_get(void);
 
 void wake_up(void);
+void reload(char **const configs);
 
 int dunst_main(int argc, const char *argv[]);
 
