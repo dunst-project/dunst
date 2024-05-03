@@ -2,7 +2,7 @@ _dunstctl() {
     local opts cur prev
     _get_comp_words_by_ref cur prev
     COMPREPLY=()
-    opts='action close close-all context count debug help history history-clear history-pop history-rm is-paused rule rules set-paused'
+    opts='action close close-all context count debug help history history-clear history-pop history-rm is-paused rule rules set-paused get-pause-level set-pause-level reload'
 
     case "$prev" in
         count) COMPREPLY=( $( compgen -W 'displayed history waiting' -- "$cur" ) )

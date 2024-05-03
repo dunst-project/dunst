@@ -100,7 +100,7 @@ static const char *introspection_xml =
     "        <method name=\"RuleList\">"
     "            <arg direction=\"out\" name=\"rules\"           type=\"aa{sv}\"/>"
     "        </method>"
-    "        <method name=\"ReloadConfig\">"
+    "        <method name=\"ConfigReload\">"
     "            <arg direction=\"in\" name=\"configs\"  type=\"as\"/>"
     "        </method>"
     "        <method name=\"Ping\"                  />"
@@ -196,11 +196,12 @@ DBUS_METHOD(dunst_NotificationRemoveFromHistory);
 DBUS_METHOD(dunst_NotificationShow);
 DBUS_METHOD(dunst_RuleEnable);
 DBUS_METHOD(dunst_RuleList);
-DBUS_METHOD(dunst_ReloadConfig);
+DBUS_METHOD(dunst_ConfigReload);
 DBUS_METHOD(dunst_Ping);
 
 // NOTE: Keep the names sorted alphabetically
 static struct dbus_method methods_dunst[] = {
+        {"ConfigReload",                        dbus_cb_dunst_ConfigReload},
         {"ContextMenuCall",                     dbus_cb_dunst_ContextMenuCall},
         {"NotificationAction",                  dbus_cb_dunst_NotificationAction},
         {"NotificationClearHistory",            dbus_cb_dunst_NotificationClearHistory},
@@ -211,7 +212,6 @@ static struct dbus_method methods_dunst[] = {
         {"NotificationRemoveFromHistory",       dbus_cb_dunst_NotificationRemoveFromHistory},
         {"NotificationShow",                    dbus_cb_dunst_NotificationShow},
         {"Ping",                                dbus_cb_dunst_Ping},
-        {"ReloadConfig",                        dbus_cb_dunst_ReloadConfig},
         {"RuleEnable",                          dbus_cb_dunst_RuleEnable},
         {"RuleList",                            dbus_cb_dunst_RuleList},
 };
@@ -610,7 +610,7 @@ static void dbus_cb_dunst_RuleEnable(GDBusConnection *connection,
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
 }
 
-static void dbus_cb_dunst_ReloadConfig(GDBusConnection *connection,
+static void dbus_cb_dunst_ConfigReload(GDBusConnection *connection,
                                        const gchar *sender,
                                        GVariant *parameters,
                                        GDBusMethodInvocation *invocation)
@@ -1103,7 +1103,7 @@ gboolean dbus_cb_dunst_Properties_Set(GDBusConnection *connection,
         int targetPauseLevel = -1;
         if (STR_EQ(property_name, "paused")) {
                 if (g_variant_get_boolean(value)) {
-                        targetPauseLevel = MAX_PAUSE_LEVEL;                 
+                        targetPauseLevel = MAX_PAUSE_LEVEL;
                 } else {
                         targetPauseLevel = 0;
                 }
