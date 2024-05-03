@@ -1,7 +1,13 @@
 #!/bin/bash
 
-DUNST="${DUNST:-../../dunst}"
-DUNSTIFY="${DUNSTIFY:-../../dunstify}"
+# prefix should be the root of the repository
+PREFIX="${PREFIX:-../..}"
+TESTDIR="$PREFIX/test/functional-tests"
+
+# for run_script
+export PATH="$TESTDIR:$PATH"
+export DUNST="${DUNST:-$PREFIX/dunst}"
+export DUNSTIFY="${DUNSTIFY:-$PREFIX/dunstify}"
 
 function keypress {
     echo "press enter to continue..."
@@ -9,13 +15,17 @@ function keypress {
 }
 
 function tmp_dunstrc {
-        cp "$1" dunstrc.tmp
-        echo -e "\n$2" >> dunstrc.tmp
+        cp "$TESTDIR/$1" "$TESTDIR/dunstrc.tmp"
+        echo -e "\n$2" >> "$TESTDIR/dunstrc.tmp"
+}
+
+function tmp_clean {
+	rm "$TESTDIR/dunstrc.tmp"
 }
 
 function start_dunst {
         killall dunst 2>/dev/null
-        $DUNST -config $1 &
+        $DUNST -config "$TESTDIR/$1" &
         sleep 0.05
 }
 
@@ -34,7 +44,7 @@ function show_age {
     echo "###################################"
     echo "show age"
     echo "###################################"
-    start_dunst dunstrc.show_age &
+    start_dunst dunstrc.show_age
     $DUNSTIFY -a "dunst tester"  -u c "Show Age" "These should print their age after 2 seconds"
     basic_notifications
     keypress
@@ -44,8 +54,7 @@ function run_script {
     echo "###################################"
     echo "run script"
     echo "###################################"
-    killall dunst
-    PATH=".:$PATH" $DUNST -config dunstrc.run_script &
+    start_dunst dunstrc.run_script
     $DUNSTIFY -a "dunst tester" -u c \
         "Run Script" "After Keypress, 2 other notification should pop up."
     keypress
@@ -73,14 +82,14 @@ function limit {
     start_dunst dunstrc.tmp
     $DUNSTIFY -a "dunst tester" -u c "notification limit = 4"
     basic_notifications
-    rm dunstrc.tmp
+    tmp_clean
     keypress
 
     tmp_dunstrc dunstrc.default "notification_limit=0"
     start_dunst dunstrc.tmp
     $DUNSTIFY -a "dunst tester" -u c "notification limit = 0 (unlimited notifications)"
     basic_notifications
-    rm dunstrc.tmp
+    tmp_clean
     keypress
 }
 
@@ -108,7 +117,7 @@ function test_origin {
     start_dunst dunstrc.tmp
     $DUNSTIFY -a "dunst tester" -u c "$1"
     basic_notifications
-    rm dunstrc.tmp
+    tmp_clean
     keypress
 }
 
@@ -132,7 +141,7 @@ function test_width {
     start_dunst dunstrc.tmp
     $DUNSTIFY -a "dunst tester" -u c "width = $1"
     basic_notifications
-    rm dunstrc.tmp
+    tmp_clean
     keypress
 }
 
@@ -152,7 +161,7 @@ function test_height {
     $DUNSTIFY -a "dunst tester" -u c "height = $1"
     $DUNSTIFY -a "dunst tester" -u c "Temporibus accusantium libero sequi at nostrum dolor sequi sed. Cum minus reprehenderit voluptatibus laboriosam et et ut. Laudantium blanditiis omnis ipsa rerum quas velit ut. Quae voluptate soluta enim consequatur libero eum similique ad. Veritatis neque consequatur et aperiam quisquam id nostrum. Consequatur voluptas aut ut omnis atque cum perferendis. Possimus laudantium tempore iste qui nemo voluptate quod. Labore totam debitis consectetur amet. Maxime quibusdam ipsum voluptates quod ex nam sunt. Officiis repellat quod maxime cumque tenetur. Veritatis labore aperiam repellendus. Provident dignissimos ducimus voluptates."
     basic_notifications
-    rm dunstrc.tmp
+    tmp_clean
     keypress
 }
 
@@ -162,7 +171,7 @@ function test_progress_bar_alignment {
     $DUNSTIFY -a "dunst tester" -u c "alignment = $1"
     $DUNSTIFY -h int:value:33 -a "dunst tester" -u n "The progress bar should not be the entire width"
     $DUNSTIFY -h int:value:33 -a "dunst tester" -u c "Short"
-    rm dunstrc.tmp
+    tmp_clean
     keypress
 }
 
@@ -231,7 +240,7 @@ function icon_position {
                 $DUNSTIFY -a "dunst tester" --hints string:category:$category -u n "$category"$'\n'"padding emphasis: $label"
             done
         done
-        rm dunstrc.tmp
+        tmp_clean
         keypress
     done
 }
@@ -306,7 +315,7 @@ function dynamic_height {
             $DUNSTIFY -a "dunst tester" -h string:category:hide -u n "text hidden + icon" "SHOULD BE NOT VISIBLE"
             $DUNSTIFY -a "dunst tester" -h string:category:hide -h int:value:$((RANDOM%100)) -u n "text hidden + icon + progress bar" "SHOULD BE NOT VISIBLE"
 
-            rm dunstrc.tmp
+            tmp_clean
             keypress
         done
     done
@@ -356,7 +365,7 @@ function vertical_align {
                 done
             done
 
-            rm dunstrc.tmp
+            tmp_clean
             keypress
         done
     done
