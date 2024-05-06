@@ -19,18 +19,10 @@
     horizontal_padding = 8
     separator_color = frame
     startup_notification = false
-    dmenu = /usr/bin/dmenu -p dunst
-    browser = /usr/bin/firefox -new-tab
 
 [frame]
     width = 3
     color = "#aaaaaa"
-
-[shortcuts]
-    close = ctrl+space
-    close_all = ctrl+shift+space
-    history = ctrl+grave
-    context = ctrl+shift+period
 
 [urgency_low]
     background = "#222222"
