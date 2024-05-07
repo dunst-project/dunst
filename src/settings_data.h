@@ -1528,9 +1528,9 @@ static const struct setting allowed_settings[] = {
         {
                 .name = "height",
                 .section = "global",
-                .description = "The maximum height of a single notification, excluding the frame.",
+                .description = "The height of a notification, excluding the frame.",
                 .type = TYPE_LENGTH,
-                .default_value = "300",
+                .default_value = "(0, 300)",
                 .value = &settings.height,
                 .parser = NULL,
                 .parser_data = NULL,

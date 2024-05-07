@@ -84,10 +84,11 @@ old geometry config as follows:
 
 In the new config you can then set the following variables (make sure to remove
 any negative signs)
-        width = <width>
-        height = <height>
-        offset = <offset>
-        origin = top-right # or top-left, or any other direction you prefer
+
+    width = <width>
+    height = <height>
+    offset = <offset>
+    origin = top-right # or top-left, or any other direction you prefer
 
 =item B<width>
 
@@ -96,8 +97,9 @@ specify a constant width or two numbers for the minimum and maximum width. The
 notification will expand from the minimum width as neccesary.
 
 Examples:
-        width = 300      # constant width of 300
-        width = (0, 300) # width between 0 and 300
+
+    width = 300      # constant width of 300
+    width = (0, 300) # width between 0 and 300
 
 When setting a width bigger than the screen, dunst will clamp the width to the
 screen width. So if you want the notifcation to stretch the entire screen
@@ -106,7 +108,16 @@ screens exceed (e.g. 10000).
 
 =item B<height>
 
-The maximum height of a single notification.
+The height of each notification in pixels. This can be a single number to
+specify a constant height or two numbers for the minimum and maximum width. The
+notification will expand from the minimum height as neccesary.
+
+Examples:
+
+    height = 300      # constant height of 300
+    height = (0, 300) # height between 0 and 300
+
+Note that unlike width, different notifications can have diffrent height values.
 
 =item B<notification_limit> (default: 20)
 
@@ -123,15 +134,16 @@ more information.
 The origin of the notification window on the screen. It can then be moved with
 offset.
 Origin can be one of:
-        top-left
-        top-center
-        top-right
-        bottom-left
-        bottom-center
-        bottom-right
-        left-center
-        center
-        right-center
+
+    top-left
+    top-center
+    top-right
+    bottom-left
+    bottom-center
+    bottom-right
+    left-center
+    center
+    right-center
 
 =item B<offset> format: (horizontal, vertical)
 
@@ -140,8 +152,9 @@ of the screen specified by B<origin>. A negative offset will lead to the
 notification being off screen.
 
 Examples:
-        origin = top-right
-        offset = (10, 300) # a margin of 10 pixels from the right and 300 pixels from the top
+
+    origin = top-right
+    offset = (10, 300) # a margin of 10 pixels from the right and 300 pixels from the top
 
 For backwards compatibility the syntax NxN is also accepted.
 
@@ -416,7 +429,7 @@ removed from the format.
 =item B<vertical_alignment> (values: [top/center/bottom], default: center)
 
 Defines how the text and icon should be aligned vertically within the
-notification. If icons are disabled, this option has no effect.
+notification.
 
 =item B<show_age_threshold> (default: 60)
 
@@ -563,13 +576,13 @@ actions to be executed in sequence.
 
 B<Defaults:>
 
-=over 12
+=over 8
 
-=item * C<mouse_left_click="close_current">
+=item * C<mouse_left_click=close_current>
 
-=item * C<mouse_middle_click="do_action, close_current">
+=item * C<mouse_middle_click=do_action, close_current>
 
-=item * C<mouse_right_click="close_all">
+=item * C<mouse_right_click=close_all>
 
 =back
 
