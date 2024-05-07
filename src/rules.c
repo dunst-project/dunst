@@ -82,8 +82,9 @@ void rule_apply(struct rule *r, struct notification *n)
                 n->receiving_raw_icon = false;
         }
         if (r->script) {
-                n->scripts = g_renew(char *, n->scripts, n->script_count + 1);
+                n->scripts = g_renew(char *, n->scripts, n->script_count + 2);
                 n->scripts[n->script_count] = g_strdup(r->script);
+                n->scripts[n->script_count + 1] = NULL;
                 n->script_count++;
         }
         if (r->set_stack_tag) {

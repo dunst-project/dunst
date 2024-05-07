@@ -40,7 +40,7 @@ struct dunst_status dunst_status_get(void);
 void wake_up(void);
 void reload(char **const configs);
 
-int dunst_main(int argc, const char *argv[]);
+int dunst_main(int argc, char *argv[]);
 
 void usage(int exit_status);
 void print_version(void);

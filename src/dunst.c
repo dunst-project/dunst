@@ -234,7 +234,7 @@ void reload(char **const configs)
         unpause_signal(NULL);
 }
 
-int dunst_main(int argc, const char *argv[])
+int dunst_main(int argc, char *argv[])
 {
         dunst_status_int(S_PAUSE_LEVEL, 0);
         dunst_status(S_IDLE, false);
@@ -261,10 +261,15 @@ int dunst_main(int argc, const char *argv[])
         while (cmdline_get_string_offset("-conf/-config", NULL, start, &start))
                 count++;
 
+        // Leaves an extra space for the NULL
         config_paths = g_malloc0(sizeof(char *) * count);
         start = 1, count = 0;
+        char *path = NULL;
 
-        while ((config_paths[count++] = cmdline_get_string_offset("-conf/-config", NULL, start, &start)));
+        do {
+                path = cmdline_get_string_offset("-conf/-config", NULL, start, &start);
+                config_paths[count++] = path;
+        } while (path != NULL);
 
         settings.print_notifications = cmdline_get_bool("-print/--print", false, "Print notifications to stdout");
 

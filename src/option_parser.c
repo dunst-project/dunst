@@ -17,7 +17,7 @@
 #include "settings_data.h"
 
 static int cmdline_argc;
-static const char **cmdline_argv;
+static char **cmdline_argv;
 static char *usage_str = NULL;
 
 #define STRING_PARSE_RET(string, value) if (STR_EQ(s, string)) { *ret = value; return true; }
@@ -507,7 +507,7 @@ void save_settings(struct ini *ini) {
         }
 }
 
-void cmdline_load(int argc, const char *argv[])
+void cmdline_load(int argc, char *argv[])
 {
         cmdline_argc = argc;
         cmdline_argv = argv;
