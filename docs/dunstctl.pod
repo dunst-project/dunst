@@ -63,7 +63,7 @@ will be kept but not shown until it is unpaused.
 =item B<set-paused> true/false/toggle
 
 Set the paused status of dunst. If false, dunst is running normally, if true,
-dunst is paused (with maximum pause level of 100). 
+dunst is paused (with maximum pause level of 100).
 See the is-paused command and the dunst man page for more information.
 
 =item B<get-pause-level>
