@@ -752,7 +752,7 @@ Dunst has Wayland support since version 1.6.0. Because the Wayland protocol
 is more focused on security, some things that are possible in X11 are not
 possible in Wayland. Those differences are reflected in the configuration.
 The main things that change are that dunst on Wayland cannot use global
-hotkeys (they are deprecated anyways, use dunstctl).
+hotkeys, use dunstctl instead.
 
 Some dunst features on wayland might need your compositor to support a certain
 protocol. Dunst will warn you if an optional feature isn't supported and will
