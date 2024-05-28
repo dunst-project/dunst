@@ -297,10 +297,11 @@ void load_settings(char **const config_paths)
         if (0 == n_loaded_confs)
                 LOG_M("No configuration file found, using defaults");
 
-        for (GSList *iter = rules; iter; iter = iter->next) {
-                struct rule *r = iter->data;
-                rule_print(r);
-        }
+        // Maybe add an option to display the rules
+        //for (GSList *iter = rules; iter; iter = iter->next) {
+        //        struct rule *r = iter->data;
+        //        rule_print(r);
+        //}
         g_ptr_array_unref(conf_files);
 }
 
