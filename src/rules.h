@@ -76,7 +76,7 @@ extern GSList *rules;
 struct rule *rule_new(const char *name);
 
 void rule_print(const struct rule *r);
-void rule_apply(struct rule *r, struct notification *n);
+void rule_apply(struct rule *r, struct notification *n, bool save);
 void rule_apply_all(struct notification *n);
 bool rule_matches_notification(struct rule *r, struct notification *n);
 

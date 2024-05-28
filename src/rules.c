@@ -16,16 +16,17 @@ GSList *rules = NULL;
 
 #define APPLY(nprop, rprop, defval) \
         do { \
-                if (n->original->rprop == (defval)) n->original->rprop = n->nprop; \
+                if (save && n->original->rprop == (defval)) n->original->rprop = n->nprop; \
                 n->nprop = r->rprop; \
         } while (0)
 
 /*
  * Apply rule to notification.
+ * If save is true the original value will be saved in the notification.
  */
-void rule_apply(struct rule *r, struct notification *n)
+void rule_apply(struct rule *r, struct notification *n, bool save)
 {
-        notification_keep_original(n);
+        if (save) notification_keep_original(n);
 
         if (r->timeout != -1)
                 APPLY(timeout, timeout, -1);
@@ -60,57 +61,57 @@ void rule_apply(struct rule *r, struct notification *n)
         if (r->icon_position != -1)
                 APPLY(icon_position, icon_position, -1);
         if (COLOR_VALID(r->fg)) {
-                if (!COLOR_VALID(n->original->fg)) n->original->fg = n->colors.fg;
+                if (save && !COLOR_VALID(n->original->fg)) n->original->fg = n->colors.fg;
                 n->colors.fg = r->fg;
         }
         if (COLOR_VALID(r->bg)) {
-                if (!COLOR_VALID(n->original->bg)) n->original->bg = n->colors.bg;
+                if (save && !COLOR_VALID(n->original->bg)) n->original->bg = n->colors.bg;
                 n->colors.bg = r->bg;
         }
         if (COLOR_VALID(r->highlight)) {
-                if (!COLOR_VALID(n->original->highlight)) n->original->highlight = n->colors.highlight;
+                if (save && !COLOR_VALID(n->original->highlight)) n->original->highlight = n->colors.highlight;
                 n->colors.highlight = r->highlight;
         }
         if (COLOR_VALID(r->fc)) {
-                if (!COLOR_VALID(n->original->fc)) n->original->fc = n->colors.frame;
+                if (save && !COLOR_VALID(n->original->fc)) n->original->fc = n->colors.frame;
                 n->colors.frame = r->fc;
         }
         if (r->format)
                 APPLY(format, format, NULL);
         if (r->action_name) {
-                if (n->original->action_name)
-                        g_free(n->default_action_name);
-                else
+                if (save && n->original->action_name)
                         n->original->action_name = n->default_action_name;
+                else
+                        g_free(n->default_action_name);
 
                 n->default_action_name = g_strdup(r->action_name);
         }
         if (r->set_category) {
-                if (n->original->set_category)
-                        g_free(n->category);
-                else
+                if (save && n->original->set_category)
                         n->original->set_category = n->category;
+                else
+                        g_free(n->category);
 
                 n->category = g_strdup(r->set_category);
         }
         if (r->default_icon) {
-                if (n->original->default_icon)
-                        g_free(n->default_icon_name);
-                else
+                if (save && n->original->default_icon)
                         n->original->default_icon = n->default_icon_name;
+                else
+                        g_free(n->default_icon_name);
 
                 n->default_icon_name = g_strdup(r->default_icon);
         }
         if (r->set_stack_tag) {
-                if (n->original->set_stack_tag)
-                        g_free(n->stack_tag);
-                else
+                if (save && !n->original->set_stack_tag)
                         n->original->set_stack_tag = n->stack_tag;
+                else
+                        g_free(n->stack_tag);
 
                 n->stack_tag = g_strdup(r->set_stack_tag);
         }
         if (r->new_icon) {
-                if (!n->original->new_icon)
+                if (save && !n->original->new_icon)
                         n->original->new_icon = g_strdup(n->iconname);
 
                 // FIXME This is not efficient when the icon is replaced
@@ -190,7 +191,7 @@ void rule_apply_all(struct notification *n)
         for (GSList *iter = rules; iter; iter = iter->next) {
                 struct rule *r = iter->data;
                 if (rule_matches_notification(r, n)) {
-                        rule_apply(r, n);
+                        rule_apply(r, n, true);
                 }
         }
 }

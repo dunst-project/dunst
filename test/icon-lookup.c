@@ -80,7 +80,7 @@ TEST test_new_icon_overrides_raw_icon(void) {
 
         ASSERT(n->icon);
         int old_width = cairo_image_surface_get_width(n->icon);
-        rule_apply(rule, n);
+        rule_apply(rule, n, true);
 
         ASSERT(n->icon);
         ASSERT(old_width != cairo_image_surface_get_width(n->icon));
