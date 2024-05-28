@@ -151,18 +151,6 @@ void settings_init(void) {
         }
 }
 
-// NOTE: This function is probably outdated and no longer relevant
-//       Since it does not even fully display rule information we
-//       may want to remove it or change it
-void print_rule(struct rule* r) {
-        LOG_D("Rule %s", STR_NN(r->name));
-        LOG_D("summary %s", STR_NN(r->summary));
-        LOG_D("appname %s", STR_NN(r->appname));
-        LOG_D("script %s", STR_NN(r->script));
-        char buf[10];
-        LOG_D("frame %s", STR_NN(color_to_string(r->fc, buf)));
-}
-
 void check_and_correct_settings(struct settings *s) {
 
 #ifndef ENABLE_WAYLAND
@@ -311,7 +299,7 @@ void load_settings(char **const config_paths)
 
         for (GSList *iter = rules; iter; iter = iter->next) {
                 struct rule *r = iter->data;
-                print_rule(r);
+                rule_print(r);
         }
         g_ptr_array_unref(conf_files);
 }

@@ -14,66 +14,105 @@
 
 GSList *rules = NULL;
 
+#define APPLY(nprop, rprop, defval) \
+        do { \
+                if (n->original->rprop == (defval)) n->original->rprop = n->nprop; \
+                n->nprop = r->rprop; \
+        } while (0)
+
 /*
  * Apply rule to notification.
  */
 void rule_apply(struct rule *r, struct notification *n)
 {
+        notification_keep_original(n);
+
         if (r->timeout != -1)
-                n->timeout = r->timeout;
+                APPLY(timeout, timeout, -1);
         if (r->override_dbus_timeout != -1)
-                n->dbus_timeout = r->override_dbus_timeout;
+                APPLY(dbus_timeout, override_dbus_timeout, -1);
         if (r->urgency != URG_NONE)
-                n->urgency = r->urgency;
+                APPLY(urgency, urgency, URG_NONE);
         if (r->fullscreen != FS_NULL)
-                n->fullscreen = r->fullscreen;
+                APPLY(fullscreen, fullscreen, FS_NULL);
         if (r->history_ignore != -1)
-                n->history_ignore = r->history_ignore;
+                APPLY(history_ignore, history_ignore, -1);
         if (r->set_transient != -1)
-                n->transient = r->set_transient;
+                APPLY(transient, set_transient, -1);
         if (r->skip_display != -1)
-                n->skip_display = r->skip_display;
+                APPLY(skip_display, skip_display, -1);
         if (r->word_wrap != -1)
-                n->word_wrap = r->word_wrap;
+                APPLY(word_wrap, word_wrap, -1);
         if (r->ellipsize != -1)
-                n->ellipsize = r->ellipsize;
+                APPLY(ellipsize, ellipsize, -1);
         if (r->alignment != -1)
-                n->alignment = r->alignment;
+                APPLY(alignment, alignment, -1);
         if (r->hide_text != -1)
-                n->hide_text = r->hide_text;
+                APPLY(hide_text, hide_text, -1);
         if (r->progress_bar_alignment != -1)
-                n->progress_bar_alignment = r->progress_bar_alignment;
+                APPLY(progress_bar_alignment, progress_bar_alignment, -1);
         if (r->min_icon_size != -1)
-                n->min_icon_size = r->min_icon_size;
+                APPLY(min_icon_size, min_icon_size, -1);
         if (r->max_icon_size != -1)
-                n->max_icon_size = r->max_icon_size;
+                APPLY(max_icon_size, max_icon_size, -1);
+        if (r->markup != MARKUP_NULL)
+                APPLY(markup, markup, MARKUP_NULL);
+        if (r->icon_position != -1)
+                APPLY(icon_position, icon_position, -1);
+        if (COLOR_VALID(r->fg)) {
+                if (!COLOR_VALID(n->original->fg)) n->original->fg = n->colors.fg;
+                n->colors.fg = r->fg;
+        }
+        if (COLOR_VALID(r->bg)) {
+                if (!COLOR_VALID(n->original->bg)) n->original->bg = n->colors.bg;
+                n->colors.bg = r->bg;
+        }
+        if (COLOR_VALID(r->highlight)) {
+                if (!COLOR_VALID(n->original->highlight)) n->original->highlight = n->colors.highlight;
+                n->colors.highlight = r->highlight;
+        }
+        if (COLOR_VALID(r->fc)) {
+                if (!COLOR_VALID(n->original->fc)) n->original->fc = n->colors.frame;
+                n->colors.frame = r->fc;
+        }
+        if (r->format)
+                APPLY(format, format, NULL);
         if (r->action_name) {
-                g_free(n->default_action_name);
+                if (n->original->action_name)
+                        g_free(n->default_action_name);
+                else
+                        n->original->action_name = n->default_action_name;
+
                 n->default_action_name = g_strdup(r->action_name);
         }
         if (r->set_category) {
-                g_free(n->category);
+                if (n->original->set_category)
+                        g_free(n->category);
+                else
+                        n->original->set_category = n->category;
+
                 n->category = g_strdup(r->set_category);
         }
-        if (r->markup != MARKUP_NULL)
-                n->markup = r->markup;
-        if (r->icon_position != -1)
-                n->icon_position = r->icon_position;
-        if (COLOR_VALID(r->fg))
-                n->colors.fg = r->fg;
-        if (COLOR_VALID(r->bg))
-                n->colors.bg = r->bg;
-        if (COLOR_VALID(r->highlight))
-                n->colors.highlight = r->highlight;
-        if (COLOR_VALID(r->fc))
-                n->colors.frame = r->fc;
-        if (r->format)
-                n->format = r->format;
         if (r->default_icon) {
-                g_free(n->default_icon_name);
+                if (n->original->default_icon)
+                        g_free(n->default_icon_name);
+                else
+                        n->original->default_icon = n->default_icon_name;
+
                 n->default_icon_name = g_strdup(r->default_icon);
         }
+        if (r->set_stack_tag) {
+                if (n->original->set_stack_tag)
+                        g_free(n->stack_tag);
+                else
+                        n->original->set_stack_tag = n->stack_tag;
+
+                n->stack_tag = g_strdup(r->set_stack_tag);
+        }
         if (r->new_icon) {
+                if (!n->original->new_icon)
+                        n->original->new_icon = g_strdup(n->iconname);
+
                 // FIXME This is not efficient when the icon is replaced
                 // multiple times for the same notification. To fix this, a
                 // separate variable is needed to track if the icon is
@@ -87,13 +126,60 @@ void rule_apply(struct rule *r, struct notification *n)
                 n->scripts[n->script_count + 1] = NULL;
                 n->script_count++;
         }
-        if (r->set_stack_tag) {
-                g_free(n->stack_tag);
-                n->stack_tag = g_strdup(r->set_stack_tag);
-        }
-        if (r->override_pause_level != -1) {
-                n->override_pause_level = r->override_pause_level;
-        }
+        if (r->override_pause_level != -1)
+                APPLY(override_pause_level, override_pause_level, -1);
+}
+
+void rule_print(const struct rule *r)
+{
+        printf("{\n");
+        printf("\tname: '%s'\n", STR_NN(r->name));
+        printf("\tenabled: %d\n", r->enabled);
+
+        // filters
+        if (r->appname != NULL) printf("\tappname: '%s'\n", r->appname);
+        if (r->summary != NULL) printf("\tsummary: '%s'\n", r->summary);
+        if (r->body != NULL) printf("\tbody: '%s'\n", r->body);
+        if (r->icon != NULL) printf("\ticon: '%s'\n", r->icon);
+        if (r->category != NULL) printf("\tcategory: '%s'\n", r->category);
+        if (r->msg_urgency != URG_NONE) printf("\tmsg_urgency: '%s'\n", notification_urgency_to_string(r->msg_urgency));
+        if (r->stack_tag != NULL) printf("\tstack_tag: '%s'\n", r->stack_tag);
+        if (r->desktop_entry != NULL) printf("\tdesktop_entry: '%s'\n", r->desktop_entry);
+        if (r->match_dbus_timeout != -1) printf("\tmatch_dbus_timeout: %ld\n", r->match_dbus_timeout);
+        if (r->match_transient != -1) printf("\tmatch_transient: %d\n", r->match_transient);
+
+        // modifiers
+        if (r->timeout != -1) printf("\ttimeout: %ld\n", r->timeout);
+        if (r->override_dbus_timeout != -1) printf("\toverride_dbus_timeout: %ld\n", r->override_dbus_timeout);
+        if (r->markup != -1) printf("\tmarkup: %d\n", r->markup);
+        if (r->action_name != NULL) printf("\taction_name: '%s'\n", r->action_name);
+        if (r->urgency != URG_NONE) printf("\turgency: '%s'\n", notification_urgency_to_string(r->urgency));
+        if (r->history_ignore != -1) printf("\thistory_ignore: %d\n", r->history_ignore);
+        if (r->set_transient != -1) printf("\tset_transient: %d\n", r->set_transient);
+        if (r->skip_display != -1) printf("\tskip_display: %d\n", r->skip_display);
+        if (r->word_wrap != -1) printf("\tword_wrap: %d\n", r->word_wrap);
+        if (r->ellipsize != -1) printf("\tellipsize: %d\n", r->ellipsize);
+        if (r->alignment != -1) printf("\talignment: %d\n", r->alignment);
+        if (r->hide_text != -1) printf("\thide_text: %d\n", r->hide_text);
+        if (r->icon_position != -1) printf("\ticon_position: %d\n", r->icon_position);
+        if (r->min_icon_size != -1) printf("\tmin_icon_size: %d\n", r->min_icon_size);
+        if (r->max_icon_size != -1) printf("\tmax_icon_size: %d\n", r->max_icon_size);
+        if (r->override_pause_level != -1) printf("\toverride_pause_level: %d\n", r->override_pause_level);
+        if (r->new_icon != NULL) printf("\tnew_icon: '%s'\n", r->new_icon);
+        if (r->default_icon != NULL) printf("\tdefault_icon: '%s'\n", r->default_icon);
+
+        char buf[10];
+        if (COLOR_VALID(r->fg)) printf("\tfg: %s\n", color_to_string(r->fg, buf));
+        if (COLOR_VALID(r->bg)) printf("\tbg: %s\n", color_to_string(r->bg, buf));
+        if (COLOR_VALID(r->highlight)) printf("\thighlight: %s\n", color_to_string(r->highlight, buf));
+        if (COLOR_VALID(r->fc)) printf("\tframe: %s\n", color_to_string(r->fc, buf));
+        if (r->set_category != NULL) printf("\tset_category: '%s'\n", r->set_category);
+        if (r->format != NULL) printf("\tformat: '%s'\n", r->format);
+        if (r->script != NULL) printf("\tscript: '%s'\n", r->script);
+        if (r->fullscreen != FS_NULL) printf("\tfullscreen: %s\n", enum_to_string_fullscreen(r->fullscreen));
+        if (r->progress_bar_alignment != -1) printf("\tprogress_bar_alignment: %d\n", r->progress_bar_alignment);
+        if (r->set_stack_tag != NULL) printf("\tset_stack_tag: %s\n", r->set_stack_tag);
+        printf("}\n");
 }
 
 /*

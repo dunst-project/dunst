@@ -51,6 +51,9 @@ struct notification {
         char *dbus_client;
         bool dbus_valid;
 
+        // We keep the original notification properties here when it is modified
+        struct rule *original;
+
         char *appname;
         char *summary;
         char *body;
@@ -242,7 +245,7 @@ void notification_open_url(struct notification *n);
 
 /**
  * Open the context menu for the notification.
- * 
+ *
  * Convenience function that creates the GList and passes it to context_menu_for().
  */
 void notification_open_context_menu(struct notification *n);
@@ -265,6 +268,8 @@ const char *notification_urgency_to_string(const enum urgency urgency);
  * @return the string representation for `in`
  */
 const char *enum_to_string_fullscreen(enum behavior_fullscreen in);
+
+void notification_keep_original(struct notification *n);
 
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

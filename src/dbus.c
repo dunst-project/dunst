@@ -810,29 +810,41 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
         // Modify these values after the notification is initialized and all rules are applied.
         if ((dict_value = g_variant_lookup_value(hints, "fgcolor", G_VARIANT_TYPE_STRING))) {
                 struct color c;
-                if (string_parse_color(g_variant_get_string(dict_value, NULL), &c))
+                if (string_parse_color(g_variant_get_string(dict_value, NULL), &c)) {
+                        notification_keep_original(n);
+                        if (!COLOR_VALID(n->original->fg)) n->original->fg = n->colors.fg;
                         n->colors.fg = c;
+                }
                 g_variant_unref(dict_value);
         }
 
         if ((dict_value = g_variant_lookup_value(hints, "bgcolor", G_VARIANT_TYPE_STRING))) {
                 struct color c;
-                if (string_parse_color(g_variant_get_string(dict_value, NULL), &c))
+                if (string_parse_color(g_variant_get_string(dict_value, NULL), &c)) {
+                        notification_keep_original(n);
+                        if (!COLOR_VALID(n->original->bg)) n->original->bg = n->colors.bg;
                         n->colors.bg = c;
+                }
                 g_variant_unref(dict_value);
         }
 
         if ((dict_value = g_variant_lookup_value(hints, "frcolor", G_VARIANT_TYPE_STRING))) {
                 struct color c;
-                if (string_parse_color(g_variant_get_string(dict_value, NULL), &c))
+                if (string_parse_color(g_variant_get_string(dict_value, NULL), &c)) {
+                        notification_keep_original(n);
+                        if (!COLOR_VALID(n->original->fc)) n->original->fc = n->colors.frame;
                         n->colors.frame = c;
+                }
                 g_variant_unref(dict_value);
         }
 
         if ((dict_value = g_variant_lookup_value(hints, "hlcolor", G_VARIANT_TYPE_STRING))) {
                 struct color c;
-                if (string_parse_color(g_variant_get_string(dict_value, NULL), &c))
+                if (string_parse_color(g_variant_get_string(dict_value, NULL), &c)) {
+                        notification_keep_original(n);
+                        if (!COLOR_VALID(n->original->highlight)) n->original->highlight = n->colors.highlight;
                         n->colors.highlight = c;
+                }
                 g_variant_unref(dict_value);
         }
 

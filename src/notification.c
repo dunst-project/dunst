@@ -25,6 +25,7 @@
 #include "utils.h"
 #include "draw.h"
 #include "icon-lookup.h"
+#include "settings_data.h"
 
 static void notification_extract_urls(struct notification *n);
 static void notification_format_message(struct notification *n);
@@ -292,6 +293,8 @@ void notification_unref(struct notification *n)
         assert(n->priv->refcount > 0);
         if (!g_atomic_int_dec_and_test(&n->priv->refcount))
                 return;
+
+        g_free(n->original);
 
         g_free(n->appname);
         g_free(n->summary);
@@ -766,6 +769,13 @@ void notification_open_context_menu(struct notification *n)
 
 void notification_invalidate_actions(struct notification *n) {
         g_hash_table_remove_all(n->actions);
+}
+
+void notification_keep_original(struct notification *n)
+{
+        if (n->original) return;
+        n->original = g_malloc0(sizeof(struct rule));
+        *n->original = empty_rule;
 }
 
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */
