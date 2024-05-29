@@ -380,8 +380,8 @@ function hot_reload {
     tmp_dunstrc dunstrc.default "background = \"#313131\""
     start_dunst dunstrc.tmp
 
-    $DUNSTIFY -a "dunst tester" "Nice notification" "Will not change style after keypress"
-    $DUNSTIFY -a "dunst tester" --hints string:category:change "Change" "Will change only after the first keypress"
+    $DUNSTIFY -a "dunst tester" "Nice notification" "This will change once"
+    $DUNSTIFY -a "dunst tester" --hints string:category:change "Change" "And this too"
     keypress
 
     tmp_dunstrc dunstrc.default "
