@@ -302,28 +302,11 @@ char *find_icon_path(const char *name, int size) {
         if (STR_EMPTY(name))
                 return NULL;
 
-        gchar *uri_path = NULL;
-
-        if (g_str_has_prefix(name, "file://")) {
-                uri_path = g_filename_from_uri(name, NULL, NULL);
-                if (is_readable_file(uri_path))
-                        return uri_path;
-                else
-                        return NULL;
-        }
-
-        /* absolute path? */
-        if (name[0] == '/' || name[0] == '~') {
-                if (is_readable_file(name))
-                        return g_strdup(name);
-                else
-                        return NULL;
-        }
-
         if (!default_themes_index) {
-                LOG_W("No icon theme has been set.");
+                LOG_W("No icon theme has been set");
                 return NULL;
         }
+
         for (int i = 0; i < default_themes_count; i++) {
                 char *icon = find_icon_in_theme_with_inherit(name,
                                 default_themes_index[i], size);

@@ -24,15 +24,6 @@ int setup_test_theme(void) {
         g_free(icon); \
 }
 
-#define find_path_test(path, ...) { \
-        char *icon = find_icon_path(path, 42); /* size doesn't matter */ \
-        char *expected = g_build_filename(base, ICONPREFIX, "theme", __VA_ARGS__, NULL); \
-        ASSERTm("Could not find icon", icon); \
-        ASSERT_STR_EQ(expected, icon); \
-        g_free(expected); \
-        g_free(icon); \
-}
-
 TEST test_load_theme_from_dir(void)
 {
         setup_test_theme();
@@ -54,20 +45,6 @@ TEST test_find_icon(void)
         free_all_themes();
         PASS();
 }
-
-TEST test_find_path(void)
-{
-        setup_test_theme();
-        char *path = g_build_filename(base, ICONPREFIX, "theme", "16x16", "actions", "edit.png", NULL);
-        find_path_test(path, "16x16", "actions", "edit.png");
-        char *path2 = g_strconcat("file://", path, NULL);
-        find_path_test(path2, "16x16", "actions", "edit.png");
-        g_free(path2);
-        g_free(path);
-        free_all_themes();
-        PASS();
-}
-
 
 TEST test_new_icon_overrides_raw_icon(void) {
         setup_test_theme();
@@ -168,7 +145,6 @@ SUITE (suite_icon_lookup)
 {
         RUN_TEST(test_load_theme_from_dir);
         RUN_TEST(test_find_icon);
-        RUN_TEST(test_find_path);
         RUN_TEST(test_new_icon_overrides_raw_icon);
         bool bench = false;
         if (bench) {
