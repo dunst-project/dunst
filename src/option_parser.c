@@ -402,7 +402,7 @@ bool set_from_string(void *target, struct setting setting, const char *value) {
                 case TYPE_LENGTH:
                         // Keep compatibility with old offset syntax
                         if (STR_EQ(setting.name, "offset") && string_parse_list(GINT_TO_POINTER(OFFSET_LIST), value, target)) {
-                                LOG_I("Using legacy offset syntax NxN, you should switch to the new syntax (N, N)");
+                                LOG_M("Using legacy offset syntax NxN, you should switch to the new syntax (N, N)");
                                 return true;
                         }
                         return string_parse_length(target, value);

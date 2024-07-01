@@ -141,7 +141,7 @@ FILE *fopen_conf(char * const path)
         FILE *f = NULL;
         char *real_path = string_to_path(g_strdup(path));
 
-        if (is_readable_file(real_path) && (f = fopen(real_path, "r")))
+        if (is_readable_file(real_path) && NULL != (f = fopen(real_path, "r")))
                 LOG_I(MSG_FOPEN_SUCCESS(path, f));
         else
                 LOG_W(MSG_FOPEN_FAILURE(path));

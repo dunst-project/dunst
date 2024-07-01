@@ -216,7 +216,10 @@ char *get_path_from_icon_name(const char *iconname, int size)
 
         if (settings.enable_recursive_icon_lookup) {
                 char *path = find_icon_path(iconname, size);
-                LOG_I("Found icon at %s", STR_NN(path));
+                if (STR_EMPTY(path))
+                        LOG_W("Icon %s not found", iconname);
+                else
+                        LOG_I("Found icon %s at %s", iconname, STR_NN(path));
                 return path;
         }
 
@@ -263,7 +266,7 @@ char *get_path_from_icon_name(const char *iconname, int size)
                         start = end + 1;
                 } while (STR_FULL(end));
                 if (!new_name)
-                        LOG_W("No icon found in path: '%s'", STR_NN(iconname));
+                        LOG_W("Icon %s not found (in icon_path)", iconname);
         }
 
         g_free(uri_path);
