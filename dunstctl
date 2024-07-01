@@ -39,7 +39,7 @@ show_help() {
 	                                    in JSON)
 	  reload [dunstrc ...]              Reload the settings of the running
 	                                    instance, optionally with specific
-	                                    configuration files
+	                                    config files (space,comma-separated)
 	  debug                             Print debugging information
 	  help                              Show help
 	EOH
@@ -214,7 +214,7 @@ case "${1:-}" in
 		method_call "${DBUS_IFAC_DUNST}.ConfigReload" "array:string:$(IFS=','; echo "$*")" >/dev/null
 		;;
 	"")
-		die "dunstctl: No command specified. Please consult the usage."
+		die "dunstctl: No command specified. Use dunstctl help"
 		;;
 	*)
 		die "dunstctl: unrecognized command '${1:-}'. Please consult the usage."

@@ -33,11 +33,12 @@ complete -c dunstctl -f -n __fish_use_subcommand -a debug -d 'Print debugging in
 complete -c dunstctl -f -n __fish_use_subcommand -a help -d 'Show help'
 
 # command specific arguments
-complete -c dunstctl -x -n '__fish_seen_subcommand_from action close close-all context history history-clear is-paused get-pause-level set-pause-level reload debug help'
+complete -c dunstctl -x -n '__fish_seen_subcommand_from action close close-all context history history-clear is-paused get-pause-level set-pause-level debug help'
 complete -c dunstctl -x -n '__fish_seen_subcommand_from count' -a 'displayed history waiting'
 complete -c dunstctl -x -n '__fish_seen_subcommand_from history-pop history-rm' -a '(__fish_dunstctl_info history id appname)'
 complete -c dunstctl -x -n '__fish_seen_subcommand_from set-paused' -a 'true false toggle'
 complete -c dunstctl -x -n '__fish_seen_subcommand_from rule' -a '(__fish_dunstctl_rule_complete (commandline -c))'
 complete -c dunstctl -x -n '__fish_seen_subcommand_from rules' -a --json
+complete -c dunstctl -n '__fish_seen_subcommand_from reload'
 
 # ex: filetype=fish

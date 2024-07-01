@@ -14,11 +14,16 @@
 
 GSList *rules = NULL;
 
-#define APPLY(nprop, rprop, defval) \
-        do { \
-                if (save && n->original->rprop == (defval)) n->original->rprop = n->nprop; \
+// NOTE: Internal, only for rule_apply(...)
+
+#define RULE_APPLY2(nprop, rprop, defval) \
+        if (r->rprop != (defval)) { \
+                if (save && n->original->rprop == (defval)) \
+                        n->original->rprop = n->nprop; \
                 n->nprop = r->rprop; \
-        } while (0)
+        }
+
+#define RULE_APPLY(prop, defval) RULE_APPLY2(prop, prop, defval)
 
 /*
  * Apply rule to notification.
@@ -28,38 +33,25 @@ void rule_apply(struct rule *r, struct notification *n, bool save)
 {
         if (save) notification_keep_original(n);
 
-        if (r->timeout != -1)
-                APPLY(timeout, timeout, -1);
-        if (r->override_dbus_timeout != -1)
-                APPLY(dbus_timeout, override_dbus_timeout, -1);
-        if (r->urgency != URG_NONE)
-                APPLY(urgency, urgency, URG_NONE);
-        if (r->fullscreen != FS_NULL)
-                APPLY(fullscreen, fullscreen, FS_NULL);
-        if (r->history_ignore != -1)
-                APPLY(history_ignore, history_ignore, -1);
-        if (r->set_transient != -1)
-                APPLY(transient, set_transient, -1);
-        if (r->skip_display != -1)
-                APPLY(skip_display, skip_display, -1);
-        if (r->word_wrap != -1)
-                APPLY(word_wrap, word_wrap, -1);
-        if (r->ellipsize != -1)
-                APPLY(ellipsize, ellipsize, -1);
-        if (r->alignment != -1)
-                APPLY(alignment, alignment, -1);
-        if (r->hide_text != -1)
-                APPLY(hide_text, hide_text, -1);
-        if (r->progress_bar_alignment != -1)
-                APPLY(progress_bar_alignment, progress_bar_alignment, -1);
-        if (r->min_icon_size != -1)
-                APPLY(min_icon_size, min_icon_size, -1);
-        if (r->max_icon_size != -1)
-                APPLY(max_icon_size, max_icon_size, -1);
-        if (r->markup != MARKUP_NULL)
-                APPLY(markup, markup, MARKUP_NULL);
-        if (r->icon_position != -1)
-                APPLY(icon_position, icon_position, -1);
+        RULE_APPLY2(dbus_timeout, override_dbus_timeout, -1);
+        RULE_APPLY2(transient, set_transient, -1);
+
+        RULE_APPLY(timeout, -1);
+        RULE_APPLY(urgency, URG_NONE);
+        RULE_APPLY(fullscreen, FS_NULL);
+        RULE_APPLY(history_ignore, -1);
+        RULE_APPLY(skip_display, -1);
+        RULE_APPLY(word_wrap, -1);
+        RULE_APPLY(ellipsize, -1);
+        RULE_APPLY(alignment, -1);
+        RULE_APPLY(hide_text, -1);
+        RULE_APPLY(progress_bar_alignment, -1);
+        RULE_APPLY(min_icon_size, -1);
+        RULE_APPLY(max_icon_size, -1);
+        RULE_APPLY(markup, MARKUP_NULL);
+        RULE_APPLY(icon_position, -1);
+        RULE_APPLY(override_pause_level, -1);
+
         if (COLOR_VALID(r->fg)) {
                 if (save && !COLOR_VALID(n->original->fg)) n->original->fg = n->colors.fg;
                 n->colors.fg = r->fg;
@@ -77,7 +69,7 @@ void rule_apply(struct rule *r, struct notification *n, bool save)
                 n->colors.frame = r->fc;
         }
         if (r->format)
-                APPLY(format, format, NULL);
+                RULE_APPLY(format, NULL);
         if (r->action_name) {
                 if (save && n->original->action_name)
                         n->original->action_name = n->default_action_name;
@@ -130,8 +122,6 @@ void rule_apply(struct rule *r, struct notification *n, bool save)
                 n->scripts[n->script_count + 1] = NULL;
                 n->script_count++;
         }
-        if (r->override_pause_level != -1)
-                APPLY(override_pause_level, override_pause_level, -1);
 }
 
 void rule_print(const struct rule *r)

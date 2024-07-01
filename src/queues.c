@@ -625,7 +625,6 @@ void queues_reapply_all_rules(void)
                      iter = iter->next) {
                         struct notification *cur = iter->data;
                         if (cur->original) {
-                                //rule_print(cur->original);
                                 rule_apply(cur->original, cur, false);
                         }
                         rule_apply_all(cur);
