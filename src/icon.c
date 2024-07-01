@@ -214,63 +214,58 @@ char *get_path_from_icon_name(const char *iconname, int size)
         if (STR_EMPTY(iconname))
                 return NULL;
 
-        if (settings.enable_recursive_icon_lookup) {
+        char *uri_path = NULL;
+        if (g_str_has_prefix(iconname, "file://")) {
+                char *uri_path = g_filename_from_uri(iconname, NULL, NULL);
+                if (STR_EMPTY(uri_path)) {
+                        LOG_W("Invalid file uri '%s'", iconname);
+                        return NULL;
+                }
+                iconname = uri_path;
+        } else if (iconname[0] == '/' || iconname[0] == '~') {
+                // Return absolute path
+                return g_strdup(iconname);
+        } else if (settings.enable_recursive_icon_lookup) {
                 char *path = find_icon_path(iconname, size);
                 if (STR_EMPTY(path))
-                        LOG_W("Icon %s not found", iconname);
+                        LOG_W("Icon '%s' not found", iconname);
                 else
-                        LOG_I("Found icon %s at %s", iconname, STR_NN(path));
+                        LOG_I("Found icon '%s' at %s", iconname, STR_NN(path));
                 return path;
         }
 
+        // Search icon_path
         const char *suffixes[] = { ".svg", ".svgz", ".png", ".xpm", NULL };
-        gchar *uri_path = NULL;
-        char *new_name = NULL;
+        char *start = settings.icon_path, *end, *current_folder, *maybe_icon_path, *path = NULL;
 
-        if (g_str_has_prefix(iconname, "file://")) {
-                uri_path = g_filename_from_uri(iconname, NULL, NULL);
-                if (uri_path)
-                        iconname = uri_path;
-        }
+        do {
+                end = strchr(start, ':');
+                if (!end) end = strchr(settings.icon_path, '\0'); /* end = end of string */
 
-        /* absolute path? */
-        if (iconname[0] == '/' || iconname[0] == '~') {
-                new_name = g_strdup(iconname);
-        } else {
-        /* search in icon_path */
-                char *start = settings.icon_path,
-                     *end, *current_folder, *maybe_icon_path;
-                do {
-                        end = strchr(start, ':');
-                        if (!end) end = strchr(settings.icon_path, '\0'); /* end = end of string */
+                current_folder = g_strndup(start, end - start);
 
-                        current_folder = g_strndup(start, end - start);
-
-                        for (const char **suf = suffixes; *suf; suf++) {
-                                gchar *name_with_extension = g_strconcat(iconname, *suf, NULL);
-                                maybe_icon_path = g_build_filename(current_folder, name_with_extension, NULL);
-                                if (is_readable_file(maybe_icon_path)) {
-                                        new_name = g_strdup(maybe_icon_path);
-                                }
-                                g_free(name_with_extension);
-                                g_free(maybe_icon_path);
-
-                                if (new_name)
-                                        break;
+                for (const char **suf = suffixes; *suf; suf++) {
+                        gchar *name_with_extension = g_strconcat(iconname, *suf, NULL);
+                        maybe_icon_path = g_build_filename(current_folder, name_with_extension, NULL);
+                        if (is_readable_file(maybe_icon_path)) {
+                                path = g_strdup(maybe_icon_path);
                         }
+                        g_free(name_with_extension);
+                        g_free(maybe_icon_path);
 
-                        g_free(current_folder);
-                        if (new_name)
-                                break;
+                        if (path) break;
+                }
+                g_free(current_folder);
 
-                        start = end + 1;
-                } while (STR_FULL(end));
-                if (!new_name)
-                        LOG_W("Icon %s not found (in icon_path)", iconname);
-        }
+                if (path) break;
+                start = end + 1;
+        } while (STR_FULL(end));
+
+        if (!path)
+                LOG_W("Icon %s not found in icon_path", iconname);
 
         g_free(uri_path);
-        return new_name;
+        return path;
 }
 
 GdkPixbuf *icon_get_for_data(GVariant *data, char **id, double dpi_scale, int min_size, int max_size)
