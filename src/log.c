@@ -11,7 +11,8 @@
 
 #include "utils.h"
 
-static GLogLevelFlags log_level = G_LOG_LEVEL_WARNING;
+// NOTE: Keep updated with the dunst manual
+static GLogLevelFlags log_level = G_LOG_LEVEL_MESSAGE;
 
 /* see log.h */
 static const char *log_level_to_string(GLogLevelFlags level)

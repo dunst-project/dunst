@@ -106,17 +106,8 @@ static void config_files_add_drop_ins(GPtrArray *config_files, const char *path)
  * drop-ins and puts their locations in a GPtrArray, @e most important last.
  *
  * The returned GPtrArray and it's elements are owned by the caller.
- *
- * @param path The config path that overrides the default config path. No
- * drop-in files or other configs are searched.
  */
-static GPtrArray* get_conf_files(const char *path) {
-        if (path) {
-                GPtrArray *result = g_ptr_array_new_full(1, g_free);
-                g_ptr_array_add(result, g_strdup(path));
-                return result;
-        }
-
+static GPtrArray* get_conf_files(void) {
         GPtrArray *config_locations = get_xdg_conf_basedirs();
         GPtrArray *config_files = g_ptr_array_new_full(3, g_free);
         char *dunstrc_location = NULL;
@@ -158,18 +149,6 @@ void settings_init(void) {
 
                 init_done = true;
         }
-}
-
-// NOTE: This function is probably outdated and no longer relevant
-//       Since it does not even fully display rule information we
-//       may want to remove it or change it
-void print_rule(struct rule* r) {
-        LOG_D("Rule %s", STR_NN(r->name));
-        LOG_D("summary %s", STR_NN(r->summary));
-        LOG_D("appname %s", STR_NN(r->appname));
-        LOG_D("script %s", STR_NN(r->script));
-        char buf[10];
-        LOG_D("frame %s", STR_NN(color_to_string(r->fc, buf)));
 }
 
 void check_and_correct_settings(struct settings *s) {
@@ -289,27 +268,36 @@ static void process_conf_file(const gpointer conf_fname, gpointer n_success) {
         ++(*(int *) n_success);
 }
 
-void load_settings(const char *const path) {
-        // NOTE: settings_init should be called before if some settings are changed
-        //       But having it here is useful for tests
-        //       Potentially, we could update the settings code and move this somewhere else
+void load_settings(char **const config_paths)
+{
+        // NOTE: settings_init should be called at the start of dunst_main, otherwise
+        //       the cmdline settings would be reset
         settings_init();
+
         LOG_D("Setting defaults");
         set_defaults();
 
-        GPtrArray *conf_files = get_conf_files(path);
+        guint length = g_strv_length(config_paths);
+
+        GPtrArray *conf_files;
+
+        if (length != 0) {
+                conf_files = g_ptr_array_new_full(length, g_free);
+                for (int i = 0; config_paths[i]; i++)
+                        g_ptr_array_add(conf_files, g_strdup(config_paths[i]));
+        } else {
+                // Use default locations (and search drop-ins)
+                conf_files = get_conf_files();
+        }
 
         /* Load all conf files and drop-ins, least important first. */
         int n_loaded_confs = 0;
         g_ptr_array_foreach(conf_files, process_conf_file, &n_loaded_confs);
 
         if (0 == n_loaded_confs)
-                LOG_I("No configuration file found, using defaults");
+                LOG_M("No configuration file found, using defaults");
 
-        for (GSList *iter = rules; iter; iter = iter->next) {
-                struct rule *r = iter->data;
-                print_rule(r);
-        }
         g_ptr_array_unref(conf_files);
 }
+
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

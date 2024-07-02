@@ -28,6 +28,7 @@ complete -c dunstctl -f -n __fish_use_subcommand -a get-pause-level -d 'Get the 
 complete -c dunstctl -f -n __fish_use_subcommand -a set-pause-level -d 'Set the pause level'
 complete -c dunstctl -f -n __fish_use_subcommand -a rules -d 'Displays configured rules (optionally in JSON)'
 complete -c dunstctl -f -n __fish_use_subcommand -a rule -d 'Enable or disable a rule by its name'
+complete -c dunstctl -f -n __fish_use_subcommand -a reload -d 'Reload the settings of the running instance, optionally with specific configuration files'
 complete -c dunstctl -f -n __fish_use_subcommand -a debug -d 'Print debugging information'
 complete -c dunstctl -f -n __fish_use_subcommand -a help -d 'Show help'
 
@@ -38,5 +39,6 @@ complete -c dunstctl -x -n '__fish_seen_subcommand_from history-pop history-rm' 
 complete -c dunstctl -x -n '__fish_seen_subcommand_from set-paused' -a 'true false toggle'
 complete -c dunstctl -x -n '__fish_seen_subcommand_from rule' -a '(__fish_dunstctl_rule_complete (commandline -c))'
 complete -c dunstctl -x -n '__fish_seen_subcommand_from rules' -a --json
+complete -c dunstctl -n '__fish_seen_subcommand_from reload'
 
 # ex: filetype=fish

@@ -179,6 +179,10 @@ gint64 queues_get_next_datachange(gint64 time);
  */
 struct notification* queues_get_by_id(int id);
 
+/**
+ * Reapply all rules to the queue (used when reloading configs)
+ */
+void queues_reapply_all_rules(void);
 
 /**
  * Remove all notifications from all list and free the notifications

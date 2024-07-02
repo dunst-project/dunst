@@ -168,6 +168,7 @@ static const struct rule empty_rule = {
         .progress_bar_alignment   = -1,
         .min_icon_size   = -1,
         .max_icon_size   = -1,
+        .fullscreen      = FS_NULL,
         .override_pause_level = -1
 };
 

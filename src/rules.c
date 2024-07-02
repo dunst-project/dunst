@@ -14,66 +14,98 @@
 
 GSList *rules = NULL;
 
+// NOTE: Internal, only for rule_apply(...)
+
+#define RULE_APPLY2(nprop, rprop, defval) \
+        if (r->rprop != (defval)) { \
+                if (save && n->original->rprop == (defval)) \
+                        n->original->rprop = n->nprop; \
+                n->nprop = r->rprop; \
+        }
+
+#define RULE_APPLY(prop, defval) RULE_APPLY2(prop, prop, defval)
+
 /*
  * Apply rule to notification.
+ * If save is true the original value will be saved in the notification.
  */
-void rule_apply(struct rule *r, struct notification *n)
+void rule_apply(struct rule *r, struct notification *n, bool save)
 {
-        if (r->timeout != -1)
-                n->timeout = r->timeout;
-        if (r->override_dbus_timeout != -1)
-                n->dbus_timeout = r->override_dbus_timeout;
-        if (r->urgency != URG_NONE)
-                n->urgency = r->urgency;
-        if (r->fullscreen != FS_NULL)
-                n->fullscreen = r->fullscreen;
-        if (r->history_ignore != -1)
-                n->history_ignore = r->history_ignore;
-        if (r->set_transient != -1)
-                n->transient = r->set_transient;
-        if (r->skip_display != -1)
-                n->skip_display = r->skip_display;
-        if (r->word_wrap != -1)
-                n->word_wrap = r->word_wrap;
-        if (r->ellipsize != -1)
-                n->ellipsize = r->ellipsize;
-        if (r->alignment != -1)
-                n->alignment = r->alignment;
-        if (r->hide_text != -1)
-                n->hide_text = r->hide_text;
-        if (r->progress_bar_alignment != -1)
-                n->progress_bar_alignment = r->progress_bar_alignment;
-        if (r->min_icon_size != -1)
-                n->min_icon_size = r->min_icon_size;
-        if (r->max_icon_size != -1)
-                n->max_icon_size = r->max_icon_size;
+        if (save) notification_keep_original(n);
+
+        RULE_APPLY2(dbus_timeout, override_dbus_timeout, -1);
+        RULE_APPLY2(transient, set_transient, -1);
+
+        RULE_APPLY(timeout, -1);
+        RULE_APPLY(urgency, URG_NONE);
+        RULE_APPLY(fullscreen, FS_NULL);
+        RULE_APPLY(history_ignore, -1);
+        RULE_APPLY(skip_display, -1);
+        RULE_APPLY(word_wrap, -1);
+        RULE_APPLY(ellipsize, -1);
+        RULE_APPLY(alignment, -1);
+        RULE_APPLY(hide_text, -1);
+        RULE_APPLY(progress_bar_alignment, -1);
+        RULE_APPLY(min_icon_size, -1);
+        RULE_APPLY(max_icon_size, -1);
+        RULE_APPLY(markup, MARKUP_NULL);
+        RULE_APPLY(icon_position, -1);
+        RULE_APPLY(override_pause_level, -1);
+
+        if (COLOR_VALID(r->fg)) {
+                if (save && !COLOR_VALID(n->original->fg)) n->original->fg = n->colors.fg;
+                n->colors.fg = r->fg;
+        }
+        if (COLOR_VALID(r->bg)) {
+                if (save && !COLOR_VALID(n->original->bg)) n->original->bg = n->colors.bg;
+                n->colors.bg = r->bg;
+        }
+        if (COLOR_VALID(r->highlight)) {
+                if (save && !COLOR_VALID(n->original->highlight)) n->original->highlight = n->colors.highlight;
+                n->colors.highlight = r->highlight;
+        }
+        if (COLOR_VALID(r->fc)) {
+                if (save && !COLOR_VALID(n->original->fc)) n->original->fc = n->colors.frame;
+                n->colors.frame = r->fc;
+        }
+        if (r->format)
+                RULE_APPLY(format, NULL);
         if (r->action_name) {
-                g_free(n->default_action_name);
+                if (save && n->original->action_name)
+                        n->original->action_name = n->default_action_name;
+                else
+                        g_free(n->default_action_name);
+
                 n->default_action_name = g_strdup(r->action_name);
         }
         if (r->set_category) {
-                g_free(n->category);
+                if (save && n->original->set_category)
+                        n->original->set_category = n->category;
+                else
+                        g_free(n->category);
+
                 n->category = g_strdup(r->set_category);
         }
-        if (r->markup != MARKUP_NULL)
-                n->markup = r->markup;
-        if (r->icon_position != -1)
-                n->icon_position = r->icon_position;
-        if (COLOR_VALID(r->fg))
-                n->colors.fg = r->fg;
-        if (COLOR_VALID(r->bg))
-                n->colors.bg = r->bg;
-        if (COLOR_VALID(r->highlight))
-                n->colors.highlight = r->highlight;
-        if (COLOR_VALID(r->fc))
-                n->colors.frame = r->fc;
-        if (r->format)
-                n->format = r->format;
         if (r->default_icon) {
-                g_free(n->default_icon_name);
+                if (save && n->original->default_icon)
+                        n->original->default_icon = n->default_icon_name;
+                else
+                        g_free(n->default_icon_name);
+
                 n->default_icon_name = g_strdup(r->default_icon);
         }
+        if (r->set_stack_tag) {
+                if (save && !n->original->set_stack_tag)
+                        n->original->set_stack_tag = n->stack_tag;
+                else
+                        g_free(n->stack_tag);
+
+                n->stack_tag = g_strdup(r->set_stack_tag);
+        }
         if (r->new_icon) {
+                if (save && !n->original->new_icon)
+                        n->original->new_icon = g_strdup(n->iconname);
+
                 // FIXME This is not efficient when the icon is replaced
                 // multiple times for the same notification. To fix this, a
                 // separate variable is needed to track if the icon is
@@ -82,18 +114,66 @@ void rule_apply(struct rule *r, struct notification *n)
                 n->receiving_raw_icon = false;
         }
         if (r->script) {
-                n->scripts = g_renew(const char*,n->scripts,n->script_count + 1);
-                n->scripts[n->script_count] = r->script;
+                if (save && !n->original->script && n->script_count > 0)
+                        n->original->script = n->scripts[0];
 
+                n->scripts = g_renew(char *, n->scripts, n->script_count + 2);
+                n->scripts[n->script_count] = g_strdup(r->script);
+                n->scripts[n->script_count + 1] = NULL;
                 n->script_count++;
         }
-        if (r->set_stack_tag) {
-                g_free(n->stack_tag);
-                n->stack_tag = g_strdup(r->set_stack_tag);
-        }
-        if (r->override_pause_level != -1) {
-                n->override_pause_level = r->override_pause_level;
-        }
+}
+
+void rule_print(const struct rule *r)
+{
+        printf("{\n");
+        printf("\tname: '%s'\n", STR_NN(r->name));
+        printf("\tenabled: %d\n", r->enabled);
+
+        // filters
+        if (r->appname != NULL) printf("\tappname: '%s'\n", r->appname);
+        if (r->summary != NULL) printf("\tsummary: '%s'\n", r->summary);
+        if (r->body != NULL) printf("\tbody: '%s'\n", r->body);
+        if (r->icon != NULL) printf("\ticon: '%s'\n", r->icon);
+        if (r->category != NULL) printf("\tcategory: '%s'\n", r->category);
+        if (r->msg_urgency != URG_NONE) printf("\tmsg_urgency: '%s'\n", notification_urgency_to_string(r->msg_urgency));
+        if (r->stack_tag != NULL) printf("\tstack_tag: '%s'\n", r->stack_tag);
+        if (r->desktop_entry != NULL) printf("\tdesktop_entry: '%s'\n", r->desktop_entry);
+        if (r->match_dbus_timeout != -1) printf("\tmatch_dbus_timeout: %ld\n", r->match_dbus_timeout);
+        if (r->match_transient != -1) printf("\tmatch_transient: %d\n", r->match_transient);
+
+        // modifiers
+        if (r->timeout != -1) printf("\ttimeout: %ld\n", r->timeout);
+        if (r->override_dbus_timeout != -1) printf("\toverride_dbus_timeout: %ld\n", r->override_dbus_timeout);
+        if (r->markup != -1) printf("\tmarkup: %d\n", r->markup);
+        if (r->action_name != NULL) printf("\taction_name: '%s'\n", r->action_name);
+        if (r->urgency != URG_NONE) printf("\turgency: '%s'\n", notification_urgency_to_string(r->urgency));
+        if (r->history_ignore != -1) printf("\thistory_ignore: %d\n", r->history_ignore);
+        if (r->set_transient != -1) printf("\tset_transient: %d\n", r->set_transient);
+        if (r->skip_display != -1) printf("\tskip_display: %d\n", r->skip_display);
+        if (r->word_wrap != -1) printf("\tword_wrap: %d\n", r->word_wrap);
+        if (r->ellipsize != -1) printf("\tellipsize: %d\n", r->ellipsize);
+        if (r->alignment != -1) printf("\talignment: %d\n", r->alignment);
+        if (r->hide_text != -1) printf("\thide_text: %d\n", r->hide_text);
+        if (r->icon_position != -1) printf("\ticon_position: %d\n", r->icon_position);
+        if (r->min_icon_size != -1) printf("\tmin_icon_size: %d\n", r->min_icon_size);
+        if (r->max_icon_size != -1) printf("\tmax_icon_size: %d\n", r->max_icon_size);
+        if (r->override_pause_level != -1) printf("\toverride_pause_level: %d\n", r->override_pause_level);
+        if (r->new_icon != NULL) printf("\tnew_icon: '%s'\n", r->new_icon);
+        if (r->default_icon != NULL) printf("\tdefault_icon: '%s'\n", r->default_icon);
+
+        char buf[10];
+        if (COLOR_VALID(r->fg)) printf("\tfg: %s\n", color_to_string(r->fg, buf));
+        if (COLOR_VALID(r->bg)) printf("\tbg: %s\n", color_to_string(r->bg, buf));
+        if (COLOR_VALID(r->highlight)) printf("\thighlight: %s\n", color_to_string(r->highlight, buf));
+        if (COLOR_VALID(r->fc)) printf("\tframe: %s\n", color_to_string(r->fc, buf));
+        if (r->set_category != NULL) printf("\tset_category: '%s'\n", r->set_category);
+        if (r->format != NULL) printf("\tformat: '%s'\n", r->format);
+        if (r->script != NULL) printf("\tscript: '%s'\n", r->script);
+        if (r->fullscreen != FS_NULL) printf("\tfullscreen: %s\n", enum_to_string_fullscreen(r->fullscreen));
+        if (r->progress_bar_alignment != -1) printf("\tprogress_bar_alignment: %d\n", r->progress_bar_alignment);
+        if (r->set_stack_tag != NULL) printf("\tset_stack_tag: %s\n", r->set_stack_tag);
+        printf("}\n");
 }
 
 /*
@@ -104,7 +184,7 @@ void rule_apply_all(struct notification *n)
         for (GSList *iter = rules; iter; iter = iter->next) {
                 struct rule *r = iter->data;
                 if (rule_matches_notification(r, n)) {
-                        rule_apply(r, n);
+                        rule_apply(r, n, true);
                 }
         }
 }
