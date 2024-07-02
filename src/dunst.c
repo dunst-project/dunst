@@ -215,17 +215,12 @@ void reload(char **const configs)
         guint length = g_strv_length(configs);
         LOG_M("Reloading settings (with the %s files)", length != 0 ? "new" : "old");
 
-        if (length != 0) {
-                g_strfreev(config_paths);
-                config_paths = configs;
-        }
-
         pause_signal(NULL);
 
         setup_done = false;
         draw_deinit();
 
-        load_settings(config_paths);
+        load_settings(configs);
         draw_setup();
         setup_done = true;
 
