@@ -93,7 +93,8 @@ Exports all currently configured rules (optionally JSON formatted).
 =item B<reload> [dunstrc ...]
 
 Reload the settings of the running dunst instance. You can optionally specify
-which configuration files to use. Otherwise, the previous one will be used.
+which configuration files to use. Otherwise, the files specified by the first invocation
+of dunst will be reloaded.
 When dunst is reloaded all the rules are reapplied to the original notification,
 so modifications made by previous rules are not taken into account.
 
