@@ -39,7 +39,7 @@ show_help() {
 	                                    in JSON)
 	  reload [dunstrc ...]              Reload the settings of the running
 	                                    instance, optionally with specific
-	                                    config files (space,comma-separated)
+	                                    config files (space/comma-separated)
 	  debug                             Print debugging information
 	  help                              Show help
 	EOH
