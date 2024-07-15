@@ -19,7 +19,7 @@ show_help() {
 	                                    context menu of the notification at the
 	                                    given position
 	  close [ID]                        Close the last notification or the
-	                                    notification with given ID.
+	                                    notification with given ID
 	  close-all                         Close all the notifications
 	  context                           Open context menu
 	  count [displayed|history|waiting] Show the number of notifications
@@ -37,6 +37,9 @@ show_help() {
 	  rule name enable|disable|toggle   Enable or disable a rule by its name
 	  rules [--json]                    Displays configured rules (optionally
 	                                    in JSON)
+	  reload [dunstrc ...]              Reload the settings of the running
+	                                    instance, optionally with specific
+	                                    config files (space/comma-separated)
 	  debug                             Print debugging information
 	  help                              Show help
 	EOH
@@ -206,8 +209,12 @@ case "${1:-}" in
 		busctl --user --json=pretty --no-pager call org.freedesktop.Notifications /org/freedesktop/Notifications org.dunstproject.cmd0 NotificationListHistory 2>/dev/null \
 			|| die "Dunst is not running."
 		;;
+	"reload")
+		shift
+		method_call "${DBUS_IFAC_DUNST}.ConfigReload" "array:string:$(IFS=','; echo "$*")" >/dev/null
+		;;
 	"")
-		die "dunstctl: No command specified. Please consult the usage."
+		die "dunstctl: No command specified. Use dunstctl help"
 		;;
 	*)
 		die "dunstctl: unrecognized command '${1:-}'. Please consult the usage."

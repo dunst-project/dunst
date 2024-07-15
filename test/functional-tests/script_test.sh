@@ -1,4 +1,4 @@
 #!/bin/bash
 
 echo "triggered script!"
-$DUNSTIFY "Success" "ooooh yeah"
+dunstify "Success" "ooooh yeah"

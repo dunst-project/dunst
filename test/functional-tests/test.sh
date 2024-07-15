@@ -3,11 +3,12 @@
 # prefix should be the root of the repository
 PREFIX="${PREFIX:-../..}"
 TESTDIR="$PREFIX/test/functional-tests"
+DUNST="${DUNST:-$PREFIX/dunst}"
+DUNSTIFY="${DUNSTIFY:-$PREFIX/dunstify}"
+DUNSTCTL="${DUSNTCTL:-$PREFIX/dunstctl}"
 
 # for run_script
 export PATH="$TESTDIR:$PATH"
-export DUNST="${DUNST:-$PREFIX/dunst}"
-export DUNSTIFY="${DUNSTIFY:-$PREFIX/dunstify}"
 
 function keypress {
     echo "press enter to continue..."
@@ -20,7 +21,7 @@ function tmp_dunstrc {
 }
 
 function tmp_clean {
-	rm "$TESTDIR/dunstrc.tmp"
+    rm "$TESTDIR/dunstrc.tmp"
 }
 
 function start_dunst {
@@ -371,6 +372,38 @@ function vertical_align {
     done
 }
 
+function hot_reload {
+    echo "###################################"
+    echo "hot_reload"
+    echo "###################################"
+
+    tmp_dunstrc dunstrc.default "background = \"#313131\""
+    start_dunst dunstrc.tmp
+
+    $DUNSTIFY -a "dunst tester" "Nice notification" "This will change once"
+    $DUNSTIFY -a "dunst tester" --hints string:category:change "Change" "And this too"
+    keypress
+
+    tmp_dunstrc dunstrc.default "
+        [change]
+        category = change
+        background = \"#525\"
+        set_category = notchange
+        urgency = critical
+    "
+    $DUNSTCTL reload
+    keypress
+
+    $DUNSTCTL reload
+    keypress
+
+    $DUNSTCTL reload "$TESTDIR/dunstrc.hot_reload"
+    $DUNSTIFY -a "dunst tester" "New notification" "Now we are using another config file"
+    keypress
+
+    tmp_clean
+}
+
 if [ -n "$1" ]; then
     while [ -n "$1" ]; do
         $1
@@ -393,6 +426,7 @@ else
     separator_click
     dynamic_height
     vertical_align
+    hot_reload
 fi
 
 killall dunst

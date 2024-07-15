@@ -100,6 +100,9 @@ static const char *introspection_xml =
     "        <method name=\"RuleList\">"
     "            <arg direction=\"out\" name=\"rules\"           type=\"aa{sv}\"/>"
     "        </method>"
+    "        <method name=\"ConfigReload\">"
+    "            <arg direction=\"in\" name=\"configs\"  type=\"as\"/>"
+    "        </method>"
     "        <method name=\"Ping\"                  />"
 
     "        <property name=\"paused\" type=\"b\" access=\"readwrite\">"
@@ -193,8 +196,12 @@ DBUS_METHOD(dunst_NotificationRemoveFromHistory);
 DBUS_METHOD(dunst_NotificationShow);
 DBUS_METHOD(dunst_RuleEnable);
 DBUS_METHOD(dunst_RuleList);
+DBUS_METHOD(dunst_ConfigReload);
 DBUS_METHOD(dunst_Ping);
+
+// NOTE: Keep the names sorted alphabetically
 static struct dbus_method methods_dunst[] = {
+        {"ConfigReload",                        dbus_cb_dunst_ConfigReload},
         {"ContextMenuCall",                     dbus_cb_dunst_ContextMenuCall},
         {"NotificationAction",                  dbus_cb_dunst_NotificationAction},
         {"NotificationClearHistory",            dbus_cb_dunst_NotificationClearHistory},
@@ -603,6 +610,19 @@ static void dbus_cb_dunst_RuleEnable(GDBusConnection *connection,
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
 }
 
+static void dbus_cb_dunst_ConfigReload(GDBusConnection *connection,
+                                       const gchar *sender,
+                                       GVariant *parameters,
+                                       GDBusMethodInvocation *invocation)
+{
+        gchar **configs = NULL;
+        g_variant_get(parameters, "(^as)", &configs);
+        reload(configs);
+
+        g_dbus_method_invocation_return_value(invocation, NULL);
+        g_dbus_connection_flush(connection, NULL, NULL, NULL);
+}
+
 /* Just a simple Ping command to give the ability to dunstctl to test for the existence of this interface
  * Any other way requires parsing the XML of the Introspection or other foo. Just calling the Ping on an old dunst version will fail. */
 static void dbus_cb_dunst_Ping(GDBusConnection *connection,
@@ -790,29 +810,41 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
         // Modify these values after the notification is initialized and all rules are applied.
         if ((dict_value = g_variant_lookup_value(hints, "fgcolor", G_VARIANT_TYPE_STRING))) {
                 struct color c;
-                if (string_parse_color(g_variant_get_string(dict_value, NULL), &c))
+                if (string_parse_color(g_variant_get_string(dict_value, NULL), &c)) {
+                        notification_keep_original(n);
+                        if (!COLOR_VALID(n->original->fg)) n->original->fg = n->colors.fg;
                         n->colors.fg = c;
+                }
                 g_variant_unref(dict_value);
         }
 
         if ((dict_value = g_variant_lookup_value(hints, "bgcolor", G_VARIANT_TYPE_STRING))) {
                 struct color c;
-                if (string_parse_color(g_variant_get_string(dict_value, NULL), &c))
+                if (string_parse_color(g_variant_get_string(dict_value, NULL), &c)) {
+                        notification_keep_original(n);
+                        if (!COLOR_VALID(n->original->bg)) n->original->bg = n->colors.bg;
                         n->colors.bg = c;
+                }
                 g_variant_unref(dict_value);
         }
 
         if ((dict_value = g_variant_lookup_value(hints, "frcolor", G_VARIANT_TYPE_STRING))) {
                 struct color c;
-                if (string_parse_color(g_variant_get_string(dict_value, NULL), &c))
+                if (string_parse_color(g_variant_get_string(dict_value, NULL), &c)) {
+                        notification_keep_original(n);
+                        if (!COLOR_VALID(n->original->fc)) n->original->fc = n->colors.frame;
                         n->colors.frame = c;
+                }
                 g_variant_unref(dict_value);
         }
 
         if ((dict_value = g_variant_lookup_value(hints, "hlcolor", G_VARIANT_TYPE_STRING))) {
                 struct color c;
-                if (string_parse_color(g_variant_get_string(dict_value, NULL), &c))
+                if (string_parse_color(g_variant_get_string(dict_value, NULL), &c)) {
+                        notification_keep_original(n);
+                        if (!COLOR_VALID(n->original->highlight)) n->original->highlight = n->colors.highlight;
                         n->colors.highlight = c;
+                }
                 g_variant_unref(dict_value);
         }
 
@@ -1083,7 +1115,7 @@ gboolean dbus_cb_dunst_Properties_Set(GDBusConnection *connection,
         int targetPauseLevel = -1;
         if (STR_EQ(property_name, "paused")) {
                 if (g_variant_get_boolean(value)) {
-                        targetPauseLevel = MAX_PAUSE_LEVEL;                 
+                        targetPauseLevel = MAX_PAUSE_LEVEL;
                 } else {
                         targetPauseLevel = 0;
                 }

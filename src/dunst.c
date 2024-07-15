@@ -25,6 +25,7 @@ GMainLoop *mainloop = NULL;
 
 static struct dunst_status status;
 static bool setup_done = false;
+static char **config_paths = NULL;
 
 /* see dunst.h */
 void dunst_status(const enum dunst_status_field field,
@@ -205,11 +206,31 @@ static void teardown(void)
         queues_teardown();
 
         draw_deinit();
+
+        g_strfreev(config_paths);
+}
+
+void reload(char **const configs)
+{
+        guint length = g_strv_length(configs);
+        LOG_M("Reloading settings (with the %s files)", length != 0 ? "new" : "old");
+
+        pause_signal(NULL);
+
+        setup_done = false;
+        draw_deinit();
+
+        load_settings(configs);
+        draw_setup();
+        setup_done = true;
+
+        queues_reapply_all_rules();
+
+        unpause_signal(NULL);
 }
 
 int dunst_main(int argc, char *argv[])
 {
-
         dunst_status_int(S_PAUSE_LEVEL, 0);
         dunst_status(S_IDLE, false);
 
@@ -229,10 +250,21 @@ int dunst_main(int argc, char *argv[])
         log_set_level_from_string(verbosity);
         g_free(verbosity);
 
-        char *cmdline_config_path;
-        cmdline_config_path =
-            cmdline_get_string("-conf/-config", NULL,
-                               "Path to configuration file");
+        cmdline_usage_append("-conf/-config", "string", "Path to configuration file");
+
+        int start = 1, count = 1;
+        while (cmdline_get_string_offset("-conf/-config", NULL, start, &start))
+                count++;
+
+        // Leaves an extra space for the NULL
+        config_paths = g_malloc0(sizeof(char *) * count);
+        start = 1, count = 0;
+        char *path = NULL;
+
+        do {
+                path = cmdline_get_string_offset("-conf/-config", NULL, start, &start);
+                config_paths[count++] = path;
+        } while (path != NULL);
 
         settings.print_notifications = cmdline_get_bool("-print/--print", false, "Print notifications to stdout");
 
@@ -244,7 +276,7 @@ int dunst_main(int argc, char *argv[])
                 usage(EXIT_SUCCESS);
         }
 
-        load_settings(cmdline_config_path);
+        load_settings(config_paths);
         int dbus_owner_id = dbus_init();
 
         mainloop = g_main_loop_new(NULL, FALSE);

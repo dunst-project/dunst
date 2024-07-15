@@ -29,6 +29,7 @@ case $state in
       'set-pause-level:Set the pause level'
       'rule:Enable or disable a rule by its name'
       'rules:Displays configured rules'
+      'reload:Reload the settings of the running instance, optionally with specific configuration files'
       'debug:Print debugging information'
       'help:Show help'
     )

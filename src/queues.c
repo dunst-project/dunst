@@ -25,7 +25,7 @@
 #include "notification.h"
 #include "settings.h"
 #include "utils.h"
-#include "output.h" // For checking if wayland is active.
+#include "rules.h"
 
 /* notification lists */
 static GQueue *waiting   = NULL; /**< all new notifications get into here */
@@ -615,6 +615,21 @@ struct notification* queues_get_by_id(int id)
         }
 
         return NULL;
+}
+
+void queues_reapply_all_rules(void)
+{
+        GQueue *recqueues[] = { displayed, waiting, history };
+        for (int i = 0; i < sizeof(recqueues)/sizeof(GQueue*); i++) {
+                for (GList *iter = g_queue_peek_head_link(recqueues[i]); iter;
+                     iter = iter->next) {
+                        struct notification *cur = iter->data;
+                        if (cur->original) {
+                                rule_apply(cur->original, cur, false);
+                        }
+                        rule_apply_all(cur);
+                }
+        }
 }
 
 /**

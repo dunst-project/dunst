@@ -18,11 +18,7 @@
 
 static int cmdline_argc;
 static char **cmdline_argv;
-
 static char *usage_str = NULL;
-static void cmdline_usage_append(const char *key, const char *type, const char *description);
-
-static int cmdline_find_option(const char *key);
 
 #define STRING_PARSE_RET(string, value) if (STR_EQ(s, string)) { *ret = value; return true; }
 
@@ -517,14 +513,14 @@ void cmdline_load(int argc, char *argv[])
         cmdline_argv = argv;
 }
 
-int cmdline_find_option(const char *key)
+static int cmdline_find_option(const char *key, int start)
 {
         ASSERT_OR_RET(key, -1);
 
         gchar **keys = g_strsplit(key, "/", -1);
 
         for (int i = 0; keys[i] != NULL; i++) {
-                for (int j = 0; j < cmdline_argc; j++) {
+                for (int j = start; j < cmdline_argc; j++) {
                         if (STR_EQ(keys[i], cmdline_argv[j])) {
                                 g_strfreev(keys);
                                 return j;
@@ -536,12 +532,15 @@ int cmdline_find_option(const char *key)
         return -1;
 }
 
-static const char *cmdline_get_value(const char *key)
+static const char *cmdline_get_value(const char *key, int start, int *found)
 {
-        int idx = cmdline_find_option(key);
+        int idx = cmdline_find_option(key, start);
         if (idx < 0) {
                 return NULL;
         }
+
+        if (found)
+                *found = idx + 1;
 
         if (idx + 1 >= cmdline_argc) {
                 /* the argument is missing */
@@ -551,10 +550,9 @@ static const char *cmdline_get_value(const char *key)
         return cmdline_argv[idx + 1];
 }
 
-char *cmdline_get_string(const char *key, const char *def, const char *description)
+char *cmdline_get_string_offset(const char *key, const char *def, int start, int *found)
 {
-        cmdline_usage_append(key, "string", description);
-        const char *str = cmdline_get_value(key);
+        const char *str = cmdline_get_value(key, start, found);
 
         if (str)
                 return g_strdup(str);
@@ -564,10 +562,16 @@ char *cmdline_get_string(const char *key, const char *def, const char *descripti
                 return NULL;
 }
 
+char *cmdline_get_string(const char *key, const char *def, const char *description)
+{
+        cmdline_usage_append(key, "string", description);
+        return cmdline_get_string_offset(key, def, 1, NULL);
+}
+
 char *cmdline_get_path(const char *key, const char *def, const char *description)
 {
         cmdline_usage_append(key, "string", description);
-        const char *str = cmdline_get_value(key);
+        const char *str = cmdline_get_value(key, 1, NULL);
 
         if (str)
                 return string_to_path(g_strdup(str));
@@ -578,7 +582,7 @@ char *cmdline_get_path(const char *key, const char *def, const char *description
 char **cmdline_get_list(const char *key, const char *def, const char *description)
 {
         cmdline_usage_append(key, "list", description);
-        const char *str = cmdline_get_value(key);
+        const char *str = cmdline_get_value(key, 1, NULL);
 
         if (str)
                 return string_to_array(str, ",");
@@ -589,7 +593,7 @@ char **cmdline_get_list(const char *key, const char *def, const char *descriptio
 gint64 cmdline_get_time(const char *key, gint64 def, const char *description)
 {
         cmdline_usage_append(key, "time", description);
-        const char *timestring = cmdline_get_value(key);
+        const char *timestring = cmdline_get_value(key, 1, NULL);
         gint64 val = def;
 
         if (timestring) {
@@ -602,7 +606,7 @@ gint64 cmdline_get_time(const char *key, gint64 def, const char *description)
 int cmdline_get_int(const char *key, int def, const char *description)
 {
         cmdline_usage_append(key, "int", description);
-        const char *str = cmdline_get_value(key);
+        const char *str = cmdline_get_value(key, 1, NULL);
 
         if (str)
                 return atoi(str);
@@ -613,7 +617,7 @@ int cmdline_get_int(const char *key, int def, const char *description)
 double cmdline_get_double(const char *key, double def, const char *description)
 {
         cmdline_usage_append(key, "double", description);
-        const char *str = cmdline_get_value(key);
+        const char *str = cmdline_get_value(key, 1, NULL);
 
         if (str)
                 return atof(str);
@@ -624,7 +628,7 @@ double cmdline_get_double(const char *key, double def, const char *description)
 int cmdline_get_bool(const char *key, int def, const char *description)
 {
         cmdline_usage_append(key, "", description);
-        int idx = cmdline_find_option(key);
+        int idx = cmdline_find_option(key, 1);
 
         if (idx > 0)
                 return true;
@@ -634,7 +638,7 @@ int cmdline_get_bool(const char *key, int def, const char *description)
 
 bool cmdline_is_set(const char *key)
 {
-        return cmdline_get_value(key) != NULL;
+        return cmdline_get_value(key, 1, NULL) != NULL;
 }
 
 void cmdline_usage_append(const char *key, const char *type, const char *description)
