@@ -444,10 +444,20 @@ static void color_entry(const struct color c, GVariantDict *dict, const char *fi
 
 static void gradient_entry(const struct gradient *grad, GVariantDict *dict, const char *field_name) {
         if (GRADIENT_VALID(grad)) {
-                if (grad->length == 1)
-                        return color_entry(grad->colors[0], dict, field_name);
+                if (grad->length == 1) {
+                        color_entry(grad->colors[0], dict, field_name);
+                        return;
+                }
 
-                //g_variant_dict_insert(dict, field_name, "s", buf);
+                GStrvBuilder *builder = g_strv_builder_new();
+                for (int i = 0; i < grad->length; i++) {
+                        char buf[10];
+                        if (color_to_string(grad->colors[i], buf)) {
+                                g_strv_builder_add(builder, g_strdup(buf));
+                        }
+                }
+
+                g_variant_dict_insert(dict, field_name, "^as", g_strv_builder_end(builder));
         }
 }
 
@@ -848,7 +858,7 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
         }
 
         if ((dict_value = g_variant_lookup_value(hints, "hlcolor", G_VARIANT_TYPE_STRING_ARRAY))) {
-                char **cols = g_variant_get_strv(dict_value, NULL);
+                char **cols = (char **)g_variant_get_strv(dict_value, NULL);
                 size_t length = g_strv_length(cols);
                 struct gradient *grad = gradient_alloc(length);
 
