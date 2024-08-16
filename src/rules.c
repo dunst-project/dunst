@@ -230,6 +230,18 @@ struct rule *rule_new(const char *name)
         return r;
 }
 
+void rule_free(struct rule *r)
+{
+        g_free(r->action_name);
+        g_free(r->set_category);
+        g_free(r->default_icon);
+        g_free(r->set_stack_tag);
+        g_free(r->new_icon);
+        g_free(r->name);
+        gradient_free(r->highlight);
+}
+
+
 static inline bool rule_field_matches_string(const char *value, const char *pattern)
 {
         if (settings.enable_regex) {

@@ -14,6 +14,7 @@
 #include "draw.h"
 #include "log.h"
 #include "menu.h"
+#include "rules.h"
 #include "notification.h"
 #include "option_parser.h"
 #include "queues.h"
@@ -208,6 +209,8 @@ static void teardown(void)
         draw_deinit();
 
         g_strfreev(config_paths);
+
+        g_slist_free_full(rules, (GDestroyNotify)rule_free);
 }
 
 void reload(char **const configs)

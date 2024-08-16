@@ -299,11 +299,7 @@ void notification_unref(struct notification *n)
                 return;
 
         if (n->original) {
-                g_free(n->original->action_name);
-                g_free(n->original->set_category);
-                g_free(n->original->default_icon);
-                g_free(n->original->set_stack_tag);
-                g_free(n->original->new_icon);
+                rule_free(n->original);
                 g_free(n->original);
         }
 

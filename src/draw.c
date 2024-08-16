@@ -84,6 +84,16 @@ struct gradient *gradient_alloc(size_t length)
         return grad;
 }
 
+void gradient_free(struct gradient *grad)
+{
+        if (grad == NULL) return;
+
+        if (grad->pattern)
+                cairo_pattern_destroy(grad->pattern);
+
+        g_free(grad);
+}
+
 void gradient_pattern(struct gradient *grad)
 {
         if (grad->length == 1) {
