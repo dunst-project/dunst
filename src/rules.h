@@ -50,7 +50,7 @@ struct rule {
         char *default_icon;
         struct color fg;
         struct color bg;
-        struct color highlight;
+        struct gradient *highlight;
         struct color fc;
         char *set_category;
         const char *format;

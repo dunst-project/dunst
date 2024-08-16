@@ -53,6 +53,12 @@ struct color {
  */
 char *color_to_string(struct color c, char buf[10]);
 
+struct gradient {
+        cairo_pattern_t *pattern;
+        size_t length;
+        struct color colors[];
+};
+
 void draw_setup(void);
 
 void draw(void);

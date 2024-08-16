@@ -235,6 +235,55 @@ int string_parse_color(const char *s, struct color *ret)
         return true;
 }
 
+int string_parse_gradient(const void *data, const char *s, void *ret)
+{
+        struct color colors[10];
+        size_t length = 0;
+
+        gchar **strs = g_strsplit(s, ",", -1);
+        for (int i = 0; strs[i] != NULL; i++) {
+                if (i > 10) {
+                        LOG_W("Do you really need so many colors? ;)");
+                        break;
+                }
+
+                if (!string_parse_color(g_strstrip(strs[i]), &colors[length++])) {
+                        g_strfreev(strs);
+                        return false;
+                }
+        }
+
+        g_strfreev(strs);
+        if (length == 0) {
+                DIE("Unreachable");
+        }
+
+        struct gradient **grad = ret;
+        *grad = g_malloc(sizeof(struct gradient) + length * sizeof(struct color));
+        (*grad)->length = length;
+        memcpy((*grad)->colors, colors, length * sizeof(struct color));
+
+        if (length == 1) {
+                (*grad)->pattern = cairo_pattern_create_rgba(colors[0].r,
+                                                             colors[0].g,
+                                                             colors[0].b,
+                                                             colors[0].a);
+        } else {
+                (*grad)->pattern = cairo_pattern_create_linear(0, 0, 1, 0);
+                for (int i = 0; i < length; i++) {
+                        double offset = i  / (double)(length - 1);
+                        cairo_pattern_add_color_stop_rgba((*grad)->pattern,
+                                                          offset,
+                                                          colors[i].r,
+                                                          colors[i].g,
+                                                          colors[i].b,
+                                                          colors[i].a);
+                }
+        }
+
+        return true;
+}
+
 int string_parse_bool(const void *data, const char *s, void *ret)
 {
         // this is needed, since string_parse_enum assumses a

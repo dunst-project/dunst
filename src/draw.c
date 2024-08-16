@@ -320,7 +320,7 @@ static struct colored_layout *layout_init_shared(cairo_t *c, struct notification
 
         // Invalid colors should never reach this point!
         assert(settings.frame_width == 0 || COLOR_VALID(COLOR(cl, frame)));
-        assert(!have_progress_bar(cl) || COLOR_VALID(COLOR(cl, highlight)));
+        assert(have_progress_bar(cl) && COLOR(cl, highlight) != NULL);
         assert(COLOR_VALID(COLOR(cl, fg)));
         assert(COLOR_VALID(COLOR(cl, bg)));
         return cl;
@@ -828,7 +828,11 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, int
                 cairo_fill(c);
 
                 // top layer (fill)
-                cairo_set_source_rgba(c, COLOR(cl, highlight.r), COLOR(cl, highlight.g), COLOR(cl, highlight.b), COLOR(cl, highlight.a));
+                cairo_matrix_t matrix;
+                cairo_matrix_init_scale(&matrix, 1.0 / width, 1.0);
+                cairo_pattern_set_matrix(COLOR(cl, highlight->pattern), &matrix);
+                cairo_set_source(c, COLOR(cl, highlight->pattern));
+
                 draw_rounded_rect(c, x_bar_1, frame_y, progress_width_1, progress_height,
                         settings.progress_bar_corner_radius, scale, settings.progress_bar_corners);
                 cairo_fill(c);

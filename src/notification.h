@@ -42,7 +42,7 @@ struct notification_colors {
         struct color frame;
         struct color bg;
         struct color fg;
-        struct color highlight;
+        struct gradient *highlight;
 };
 
 struct notification {

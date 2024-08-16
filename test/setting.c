@@ -83,14 +83,15 @@ TEST test_dunstrc_defaults(void) {
                                 } else if (allowed_settings[i].parser == string_parse_maybe_int) {
                                         // not a number
                                         break;
-                                } // else fall through
+                                }
+                                break;
                         case TYPE_TIME:
-                        case TYPE_INT:;
-                                        {
-                                                int a = *(int*) ((char*) &s_default + offset);
-                                                int b = *(int*) ((char*) &s_dunstrc + offset);
-                                                ASSERT_EQm(message, a, b);
-                                        }
+                        case TYPE_INT:
+                                    {
+                                            int a = *(int*) ((char*) &s_default + offset);
+                                            int b = *(int*) ((char*) &s_dunstrc + offset);
+                                            ASSERT_EQm(message, a, b);
+                                    }
                                       break;
                         case TYPE_DOUBLE:
                         case TYPE_STRING:
@@ -98,9 +99,9 @@ TEST test_dunstrc_defaults(void) {
                         case TYPE_LIST:
                         case TYPE_LENGTH:
                         case TYPE_COLOR:
-                                      break; // TODO implement these checks as well
+                                    break; // TODO implement these checks as well
                         default:
-                                      printf("Type unknown %s:%d\n", __FILE__, __LINE__);
+                                    printf("Type unknown %s:%d\n", __FILE__, __LINE__);
                 }
                 /* printf("%zu\n", offset); */
         }

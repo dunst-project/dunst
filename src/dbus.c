@@ -543,7 +543,7 @@ static void dbus_cb_dunst_RuleList(GDBusConnection *connection,
                                               enum_to_string(icon_position_enum_data, r->icon_position));
                 color_entry(r->fg, &dict, "fg");
                 color_entry(r->bg, &dict, "bg");
-                color_entry(r->highlight, &dict, "highlight");
+                //color_entry(r->highlight, &dict, "highlight");
                 color_entry(r->fc, &dict, "fc");
                 if (r->format)
                         g_variant_dict_insert(&dict, "format", "s", r->format);
@@ -838,15 +838,15 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
                 g_variant_unref(dict_value);
         }
 
-        if ((dict_value = g_variant_lookup_value(hints, "hlcolor", G_VARIANT_TYPE_STRING))) {
-                struct color c;
-                if (string_parse_color(g_variant_get_string(dict_value, NULL), &c)) {
-                        notification_keep_original(n);
-                        if (!COLOR_VALID(n->original->highlight)) n->original->highlight = n->colors.highlight;
-                        n->colors.highlight = c;
-                }
-                g_variant_unref(dict_value);
-        }
+        //if ((dict_value = g_variant_lookup_value(hints, "hlcolor", G_VARIANT_TYPE_STRING))) {
+        //        struct color c;
+        //        if (string_parse_color(g_variant_get_string(dict_value, NULL), &c)) {
+        //                notification_keep_original(n);
+        //                if (!COLOR_VALID(n->original->highlight)) n->original->highlight = n->colors.highlight;
+        //                n->colors.highlight = c;
+        //        }
+        //        g_variant_unref(dict_value);
+        //}
 
         g_variant_unref(hints);
         g_variant_type_free(required_type);
