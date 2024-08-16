@@ -373,7 +373,7 @@ static struct colored_layout *layout_init_shared(cairo_t *c, struct notification
 
         // Invalid colors should never reach this point!
         assert(settings.frame_width == 0 || COLOR_VALID(COLOR(cl, frame)));
-        assert(have_progress_bar(cl) && COLOR(cl, highlight) != NULL);
+        assert(!have_progress_bar(cl) || COLOR(cl, highlight) != NULL);
         assert(COLOR_VALID(COLOR(cl, fg)));
         assert(COLOR_VALID(COLOR(cl, bg)));
         return cl;
