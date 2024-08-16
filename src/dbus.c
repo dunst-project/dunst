@@ -449,15 +449,15 @@ static void gradient_entry(const struct gradient *grad, GVariantDict *dict, cons
                         return;
                 }
 
-                GStrvBuilder *builder = g_strv_builder_new();
+                char **strv = g_malloc((grad->length + 1) * sizeof(char *));
                 for (int i = 0; i < grad->length; i++) {
                         char buf[10];
-                        if (color_to_string(grad->colors[i], buf)) {
-                                g_strv_builder_add(builder, g_strdup(buf));
-                        }
+                        if (color_to_string(grad->colors[i], buf))
+                                strv[i] = g_strdup(buf);
                 }
+                strv[grad->length] = NULL;
 
-                g_variant_dict_insert(dict, field_name, "^as", g_strv_builder_end(builder));
+                g_variant_dict_insert(dict, field_name, "^as", strv);
         }
 }
 
