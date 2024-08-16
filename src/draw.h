@@ -59,6 +59,15 @@ struct gradient {
         struct color colors[];
 };
 
+#define GRADIENT_VALID(g) ((g) != NULL && (g)->length != 0)
+
+struct gradient *gradient_alloc(size_t length);
+
+void gradient_pattern(struct gradient *grad);
+
+char *gradient_to_string(struct gradient *grad);
+
+
 void draw_setup(void);
 
 void draw(void);

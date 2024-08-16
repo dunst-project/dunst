@@ -259,27 +259,9 @@ int string_parse_gradient(const void *data, const char *s, void *ret)
         }
 
         struct gradient **grad = ret;
-        *grad = g_malloc(sizeof(struct gradient) + length * sizeof(struct color));
-        (*grad)->length = length;
+        *grad = gradient_alloc(length);
         memcpy((*grad)->colors, colors, length * sizeof(struct color));
-
-        if (length == 1) {
-                (*grad)->pattern = cairo_pattern_create_rgba(colors[0].r,
-                                                             colors[0].g,
-                                                             colors[0].b,
-                                                             colors[0].a);
-        } else {
-                (*grad)->pattern = cairo_pattern_create_linear(0, 0, 1, 0);
-                for (int i = 0; i < length; i++) {
-                        double offset = i  / (double)(length - 1);
-                        cairo_pattern_add_color_stop_rgba((*grad)->pattern,
-                                                          offset,
-                                                          colors[i].r,
-                                                          colors[i].g,
-                                                          colors[i].b,
-                                                          colors[i].a);
-                }
-        }
+        gradient_pattern(*grad);
 
         return true;
 }

@@ -71,6 +71,59 @@ char *color_to_string(struct color c, char buf[10])
         return buf;
 }
 
+struct gradient *gradient_alloc(size_t length)
+{
+        if (length == 0)
+                return NULL;
+
+        struct gradient *grad = g_malloc(sizeof(struct gradient) + length * sizeof(struct color));
+
+        grad->length = length;
+        grad->pattern = NULL;
+
+        return grad;
+}
+
+void gradient_pattern(struct gradient *grad)
+{
+        if (grad->length == 1) {
+                grad->pattern = cairo_pattern_create_rgba(grad->colors[0].r,
+                                                          grad->colors[0].g,
+                                                          grad->colors[0].b,
+                                                          grad->colors[0].a);
+        } else {
+                grad->pattern = cairo_pattern_create_linear(0, 0, 1, 0);
+                for (int i = 0; i < grad->length; i++) {
+                        double offset = i  / (double)(grad->length - 1);
+                        cairo_pattern_add_color_stop_rgba(grad->pattern,
+                                                          offset,
+                                                          grad->colors[i].r,
+                                                          grad->colors[i].g,
+                                                          grad->colors[i].b,
+                                                          grad->colors[i].a);
+                }
+        }
+}
+
+char *gradient_to_string(struct gradient *grad)
+{
+        if (!GRADIENT_VALID(grad)) return NULL;
+
+        char *buf = g_malloc(grad->length * 11);
+        color_to_string(grad->colors[0], buf);
+        char *ptr = buf + 9;
+
+        for (int i = 1; i < grad->length; i++) {
+                ptr += g_snprintf(ptr, 11, ", #%02x%02x%02x%02x",
+                                  (int)(grad->colors[i].r * 255),
+                                  (int)(grad->colors[i].g * 255),
+                                  (int)(grad->colors[i].b * 255),
+                                  (int)(grad->colors[i].a * 255));
+        }
+
+        return buf;
+}
+
 void draw_setup(void)
 {
         const struct output *out = output_create(settings.force_xwayland);
