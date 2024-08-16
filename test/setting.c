@@ -99,6 +99,7 @@ TEST test_dunstrc_defaults(void) {
                         case TYPE_LIST:
                         case TYPE_LENGTH:
                         case TYPE_COLOR:
+                        case TYPE_GRADIENT:
                                     break; // TODO implement these checks as well
                         default:
                                     printf("Type unknown %s:%d\n", __FILE__, __LINE__);

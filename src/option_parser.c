@@ -235,7 +235,7 @@ int string_parse_color(const char *s, struct color *ret)
         return true;
 }
 
-int string_parse_gradient(const void *data, const char *s, void *ret)
+int string_parse_gradient(const char *s, struct gradient **ret)
 {
         struct color colors[10];
         size_t length = 0;
@@ -258,10 +258,9 @@ int string_parse_gradient(const void *data, const char *s, void *ret)
                 DIE("Unreachable");
         }
 
-        struct gradient **grad = ret;
-        *grad = gradient_alloc(length);
-        memcpy((*grad)->colors, colors, length * sizeof(struct color));
-        gradient_pattern(*grad);
+        *ret = gradient_alloc(length);
+        memcpy((*ret)->colors, colors, length * sizeof(struct color));
+        gradient_pattern(*ret);
 
         return true;
 }
@@ -435,6 +434,8 @@ bool set_from_string(void *target, struct setting setting, const char *value) {
                         return string_parse_length(target, value);
                 case TYPE_COLOR:
                         return string_parse_color(value, target);
+                case TYPE_GRADIENT:
+                        return string_parse_gradient(value, target);
                 default:
                         LOG_W("Setting type of '%s' is not known (type %i)", setting.name, setting.type);
                         return false;
