@@ -163,8 +163,12 @@ void rule_print(const struct rule *r)
         char buf[10];
         if (COLOR_VALID(r->fg)) printf("\tfg: %s\n", color_to_string(r->fg, buf));
         if (COLOR_VALID(r->bg)) printf("\tbg: %s\n", color_to_string(r->bg, buf));
-        //if (COLOR_VALID(r->highlight)) printf("\thighlight: %s\n", color_to_string(r->highlight, buf));
         if (COLOR_VALID(r->fc)) printf("\tframe: %s\n", color_to_string(r->fc, buf));
+
+        char *grad = gradient_to_string(r->highlight);
+        printf("\thighlight: %s\n", STR_NN(grad));
+        g_free(grad);
+
         if (r->set_category != NULL) printf("\tset_category: '%s'\n", r->set_category);
         if (r->format != NULL) printf("\tformat: '%s'\n", r->format);
         if (r->script != NULL) printf("\tscript: '%s'\n", r->script);
