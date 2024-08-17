@@ -92,12 +92,12 @@ TEST test_dunstrc_defaults(void) {
                                 break;
                         case TYPE_TIME:
                         case TYPE_INT:
-                                    {
+                                {
                                             int a = *(int*) ((char*) &s_default + offset);
                                             int b = *(int*) ((char*) &s_dunstrc + offset);
                                             ASSERT_EQm(message, a, b);
-                                    }
-                                      break;
+                                }
+                                break;
                         case TYPE_DOUBLE:
                         case TYPE_STRING:
                         case TYPE_PATH:
