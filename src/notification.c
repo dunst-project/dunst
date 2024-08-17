@@ -458,7 +458,6 @@ struct notification *notification_create(void)
         n->colors.fg = invalid;
         n->colors.bg = invalid;
         n->colors.frame = invalid;
-
         n->colors.highlight = NULL;
 
         n->script_run = false;
