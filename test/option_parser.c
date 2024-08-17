@@ -782,6 +782,9 @@ TEST test_string_to_gradient(void)
 
                 for (int k = 0; k < grad->length; k++)
                         ASSERTm(buf, COLOR_SAME(grad->colors[k], results[i]->colors[k]));
+
+                gradient_free(grad);
+                grad = NULL;
         }
 
         for (int i = 0; i < G_N_ELEMENTS(results); i++)
