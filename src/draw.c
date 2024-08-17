@@ -115,7 +115,7 @@ void gradient_pattern(struct gradient *grad)
         }
 }
 
-char *gradient_to_string(struct gradient *grad)
+char *gradient_to_string(const struct gradient *grad)
 {
         if (!GRADIENT_VALID(grad)) return NULL;
 

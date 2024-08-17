@@ -67,7 +67,7 @@ void gradient_free(struct gradient *grad);
 
 void gradient_pattern(struct gradient *grad);
 
-char *gradient_to_string(struct gradient *grad);
+char *gradient_to_string(const struct gradient *grad);
 
 
 void draw_setup(void);
