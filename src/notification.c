@@ -466,6 +466,8 @@ struct notification *notification_create(void)
 
         n->fullscreen = FS_SHOW;
 
+        n->original = NULL;
+
         n->actions = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
         n->default_action_name = g_strdup("default");
 
@@ -785,6 +787,7 @@ void notification_keep_original(struct notification *n)
         if (n->original) return;
         n->original = g_malloc0(sizeof(struct rule));
         *n->original = empty_rule;
+        n->original->name = g_strdup("original");
 }
 
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

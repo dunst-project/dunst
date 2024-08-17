@@ -232,6 +232,9 @@ struct rule *rule_new(const char *name)
 
 void rule_free(struct rule *r)
 {
+        if (r == NULL || r == &empty_rule)
+                return;
+
         g_free(r->action_name);
         g_free(r->set_category);
         g_free(r->default_icon);

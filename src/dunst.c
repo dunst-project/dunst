@@ -324,6 +324,8 @@ int dunst_main(int argc, char *argv[])
 
         teardown();
 
+        settings_free(&settings);
+
         return 0;
 }
 
