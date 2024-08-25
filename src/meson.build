@@ -60,6 +60,7 @@ if wayland_support
 		'wayland/pool-buffer.c', 
 		'wayland/wl.c', 
 		'wayland/wl_output.c',
+		'wayland/wl_seat.c', 
 	)
 endif
 
