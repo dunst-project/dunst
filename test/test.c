@@ -75,7 +75,6 @@ int main(int argc, char *argv[]) {
         RUN_SUITE(suite_rules);
         RUN_SUITE(suite_input);
 
-        base = NULL;
         g_strfreev(configs);
 
         // this returns the error code
