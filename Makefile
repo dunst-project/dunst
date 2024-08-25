@@ -104,7 +104,7 @@ test-valgrind: test/test
 		--errors-for-leak-kinds=definite \
 		--num-callers=40 \
 		--error-exitcode=123 \
-		./test/test -v
+		./test/test ./test
 
 test-coverage: CFLAGS += -fprofile-arcs -ftest-coverage -O0
 test-coverage: test
