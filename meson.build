@@ -12,9 +12,7 @@ project(
 )
 
 add_project_arguments([
-	'-pedantic',
-	'-Wno-gnu-zero-variadic-macro-arguments',
-	'-Wno-overlength-strings',
+	'-Wno-maybe-uninitialized',
 ], language: 'c')
 
 if get_option('buildtype').startswith('debug')
@@ -46,6 +44,10 @@ wayland_support = wayland_client.found() and wayland_cursor.found() and wayland_
 
 if not x11_support and not wayland_support
 	error('either wayland or x11 support is required')
+endif
+
+if wayland_support and not x11_support
+	add_project_arguments('-DWAYLAND_ONLY', language: 'c')
 endif
 
 c_version_arg = '-DVERSION="@0@"'.format(meson.project_version())
