@@ -94,7 +94,7 @@ endif
 test: test/test clean-coverage-run
 	# Make sure an error code is returned when the test fails
 	/usr/bin/env bash -c 'set -euo pipefail;\
-	./test/test -v | ./test/greenest.awk '
+	./test/test ./test | ./test/greenest.awk '
 
 test-valgrind: test/test
 	${VALGRIND} \
@@ -104,7 +104,7 @@ test-valgrind: test/test
 		--errors-for-leak-kinds=definite \
 		--num-callers=40 \
 		--error-exitcode=123 \
-		./test/test -v
+		./test/test ./test
 
 test-coverage: CFLAGS += -fprofile-arcs -ftest-coverage -O0
 test-coverage: test

@@ -33,12 +33,16 @@ SUITE_EXTERN(suite_input);
 GREATEST_MAIN_DEFS();
 
 int main(int argc, char *argv[]) {
-        char *prog = realpath(argv[0], NULL);
-        if (!prog) {
+        if (argc != 2) {
+                fprintf(stderr, "Usage: %s testdatadir", argv[0]);
+                exit(1);
+        }
+
+        base = realpath(argv[1], NULL);
+        if (!base) {
                 fprintf(stderr, "Cannot determine actual path of test executable: %s\n", strerror(errno));
                 exit(1);
         }
-        base = dirname(prog);
 
         /* By default do not print out warning messages, when executing tests.
          * But allow, if DUNST_TEST_LOG=1 is set in environment. */
@@ -71,9 +75,7 @@ int main(int argc, char *argv[]) {
         RUN_SUITE(suite_rules);
         RUN_SUITE(suite_input);
 
-        base = NULL;
         g_strfreev(configs);
-        free(prog);
 
         // this returns the error code
         GREATEST_MAIN_END();
