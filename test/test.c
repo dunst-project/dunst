@@ -33,16 +33,8 @@ SUITE_EXTERN(suite_input);
 GREATEST_MAIN_DEFS();
 
 int main(int argc, char *argv[]) {
-        if (argc != 2) {
-                fprintf(stderr, "Usage: %s testdatadir", argv[0]);
-                exit(1);
-        }
-
-        base = realpath(argv[1], NULL);
-        if (!base) {
-                fprintf(stderr, "Cannot determine actual path of test executable: %s\n", strerror(errno));
-                exit(1);
-        }
+        base = getenv("TESTDIR");
+        base = realpath(base ? base : "./test", NULL);
 
         /* By default do not print out warning messages, when executing tests.
          * But allow, if DUNST_TEST_LOG=1 is set in environment. */
