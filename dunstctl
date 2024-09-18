@@ -30,7 +30,7 @@ show_help() {
 	                                    notification with given ID
 	  history-rm ID                     Remove the notification from
 	                                    history with given ID.
-	  is-paused [-e]                    Check if pause level is greater than 0, optionally with exit code instead of text output
+	  is-paused [-e|--exit-code]        Check if pause level is greater than 0, optionally with exit code instead of text output
 	  set-paused true|false|toggle      Set the pause status
 	  get-pause-level                   Get the current pause level
 	  set-pause-level level             Set the pause level
@@ -118,17 +118,17 @@ case "${1:-}" in
 		;;
 	"is-paused")
 		exit=false
-		if [ "${2:-}" = "-e" ]; then
-			exit=true
-		fi
+		case "${2:-}" in
+			-e | --exit-code)
+					exit=true
+				;;
+		esac
 		property_get paused | {
 			read -r _ _ paused
 			if [ "$exit" = "false" ]; then
 				printf "%s\n" "${paused}"
-			else
-				if [ "${paused}" = "false" ]; then
-					exit 1
-				fi
+			elif [ "${paused}" = "false" ]; then
+				exit 1
 			fi
 		}
 		;;
