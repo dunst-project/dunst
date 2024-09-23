@@ -242,7 +242,7 @@ char *get_path_from_icon_name(const char *iconname, int size)
                 end = strchr(start, ':');
                 if (!end) end = strchr(settings.icon_path, '\0'); /* end = end of string */
 
-                current_folder = g_strndup(start, end - start);
+                current_folder = string_to_path(g_strndup(start, end - start));
 
                 for (const char **suf = suffixes; *suf; suf++) {
                         gchar *name_with_extension = g_strconcat(iconname, *suf, NULL);
