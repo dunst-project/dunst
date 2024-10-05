@@ -50,7 +50,7 @@ struct rule {
         char *default_icon;
         struct color fg;
         struct color bg;
-        struct color highlight;
+        struct gradient *highlight;
         struct color fc;
         char *set_category;
         const char *format;
@@ -74,6 +74,8 @@ extern GSList *rules;
  * @returns A new initialised rule.
  */
 struct rule *rule_new(const char *name);
+
+void rule_free(struct rule *r);
 
 void rule_print(const struct rule *r);
 void rule_apply(struct rule *r, struct notification *n, bool save);

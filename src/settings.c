@@ -300,4 +300,11 @@ void load_settings(char **const config_paths)
         g_ptr_array_unref(conf_files);
 }
 
+void settings_free(struct settings *s)
+{
+        gradient_free(s->colors_low.highlight);
+        gradient_free(s->colors_norm.highlight);
+        gradient_free(s->colors_crit.highlight);
+}
+
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

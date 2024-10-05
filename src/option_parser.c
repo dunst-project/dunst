@@ -235,6 +235,36 @@ int string_parse_color(const char *s, struct color *ret)
         return true;
 }
 
+int string_parse_gradient(const char *s, struct gradient **ret)
+{
+        struct color colors[10];
+        size_t length = 0;
+
+        gchar **strs = g_strsplit(s, ",", -1);
+        for (int i = 0; strs[i] != NULL; i++) {
+                if (i > 10) {
+                        LOG_W("Do you really need so many colors? ;)");
+                        break;
+                }
+
+                if (!string_parse_color(g_strstrip(strs[i]), &colors[length++])) {
+                        g_strfreev(strs);
+                        return false;
+                }
+        }
+
+        g_strfreev(strs);
+        if (length == 0) {
+                DIE("Unreachable");
+        }
+
+        *ret = gradient_alloc(length);
+        memcpy((*ret)->colors, colors, length * sizeof(struct color));
+        gradient_pattern(*ret);
+
+        return true;
+}
+
 int string_parse_bool(const void *data, const char *s, void *ret)
 {
         // this is needed, since string_parse_enum assumses a
@@ -404,6 +434,8 @@ bool set_from_string(void *target, struct setting setting, const char *value) {
                         return string_parse_length(target, value);
                 case TYPE_COLOR:
                         return string_parse_color(value, target);
+                case TYPE_GRADIENT:
+                        return string_parse_gradient(value, target);
                 default:
                         LOG_W("Setting type of '%s' is not known (type %i)", setting.name, setting.type);
                         return false;

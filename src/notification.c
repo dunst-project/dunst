@@ -70,8 +70,12 @@ void notification_print(const struct notification *n)
         char buf[10];
         printf("\tfg: %s\n", STR_NN(color_to_string(n->colors.fg, buf)));
         printf("\tbg: %s\n", STR_NN(color_to_string(n->colors.bg, buf)));
-        printf("\thighlight: %s\n", STR_NN(color_to_string(n->colors.highlight, buf)));
         printf("\tframe: %s\n", STR_NN(color_to_string(n->colors.frame, buf)));
+
+        char *grad = gradient_to_string(n->colors.highlight);
+        printf("\thighlight: %s\n", STR_NN(grad));
+        g_free(grad);
+
         printf("\tfullscreen: %s\n", enum_to_string_fullscreen(n->fullscreen));
         printf("\tformat: %s\n", STR_NN(n->format));
         printf("\tprogress: %d\n", n->progress);
@@ -295,11 +299,7 @@ void notification_unref(struct notification *n)
                 return;
 
         if (n->original) {
-                g_free(n->original->action_name);
-                g_free(n->original->set_category);
-                g_free(n->original->default_icon);
-                g_free(n->original->set_stack_tag);
-                g_free(n->original->new_icon);
+                rule_free(n->original);
                 g_free(n->original);
         }
 
@@ -457,13 +457,15 @@ struct notification *notification_create(void)
         struct color invalid = COLOR_UNINIT;
         n->colors.fg = invalid;
         n->colors.bg = invalid;
-        n->colors.highlight = invalid;
         n->colors.frame = invalid;
+        n->colors.highlight = NULL;
 
         n->script_run = false;
         n->dbus_valid = false;
 
         n->fullscreen = FS_SHOW;
+
+        n->original = NULL;
 
         n->actions = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
         n->default_action_name = g_strdup("default");
@@ -508,8 +510,9 @@ void notification_init(struct notification *n)
         }
         if (!COLOR_VALID(n->colors.fg)) n->colors.fg = defcolors.fg;
         if (!COLOR_VALID(n->colors.bg)) n->colors.bg = defcolors.bg;
-        if (!COLOR_VALID(n->colors.highlight)) n->colors.highlight = defcolors.highlight;
         if (!COLOR_VALID(n->colors.frame)) n->colors.frame = defcolors.frame;
+
+        if (!GRADIENT_VALID(n->colors.highlight)) n->colors.highlight = defcolors.highlight;
 
         /* Sanitize misc hints */
         if (n->progress < 0)
@@ -783,6 +786,7 @@ void notification_keep_original(struct notification *n)
         if (n->original) return;
         n->original = g_malloc0(sizeof(struct rule));
         *n->original = empty_rule;
+        n->original->name = g_strdup("original");
 }
 
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

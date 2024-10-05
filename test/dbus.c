@@ -760,7 +760,12 @@ TEST test_dbus_notify_colors(void)
 
         // Invalid color strings are ignored
         ASSERTm("Invalid color strings should not change the color struct", COLOR_SAME(n->colors.bg, settings.colors_norm.bg));
-        ASSERTm("Invalid color strings should not change the color struct", COLOR_SAME(n->colors.highlight, settings.colors_norm.highlight));
+
+        ASSERTm("Invalid color strings should not change the gradient struct", n->colors.highlight->length == settings.colors_norm.highlight->length);
+
+        for (int i = 0; i < settings.colors_norm.highlight->length; i++)
+                ASSERTm("Invalid color strings should not change the gradient struct",
+                        COLOR_SAME(n->colors.highlight->colors[i], settings.colors_norm.highlight->colors[i]));
 
         dbus_notification_free(n_dbus);
 

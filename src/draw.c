@@ -71,6 +71,69 @@ char *color_to_string(struct color c, char buf[10])
         return buf;
 }
 
+struct gradient *gradient_alloc(size_t length)
+{
+        if (length == 0)
+                return NULL;
+
+        struct gradient *grad = g_malloc(sizeof(struct gradient) + length * sizeof(struct color));
+
+        grad->length = length;
+        grad->pattern = NULL;
+
+        return grad;
+}
+
+void gradient_free(struct gradient *grad)
+{
+        if (grad == NULL) return;
+
+        if (grad->pattern)
+                cairo_pattern_destroy(grad->pattern);
+
+        g_free(grad);
+}
+
+void gradient_pattern(struct gradient *grad)
+{
+        if (grad->length == 1) {
+                grad->pattern = cairo_pattern_create_rgba(grad->colors[0].r,
+                                                          grad->colors[0].g,
+                                                          grad->colors[0].b,
+                                                          grad->colors[0].a);
+        } else {
+                grad->pattern = cairo_pattern_create_linear(0, 0, 1, 0);
+                for (int i = 0; i < grad->length; i++) {
+                        double offset = i  / (double)(grad->length - 1);
+                        cairo_pattern_add_color_stop_rgba(grad->pattern,
+                                                          offset,
+                                                          grad->colors[i].r,
+                                                          grad->colors[i].g,
+                                                          grad->colors[i].b,
+                                                          grad->colors[i].a);
+                }
+        }
+}
+
+char *gradient_to_string(const struct gradient *grad)
+{
+        if (!GRADIENT_VALID(grad)) return NULL;
+
+        char *buf = g_malloc(grad->length * 11);
+        color_to_string(grad->colors[0], buf);
+        char *ptr = buf + 9;
+
+        for (int i = 1; i < grad->length; i++) {
+                ptr += g_snprintf(ptr, 11, ", #%02x%02x%02x%02x",
+                                  (int)(grad->colors[i].r * 255),
+                                  (int)(grad->colors[i].g * 255),
+                                  (int)(grad->colors[i].b * 255),
+                                  (int)(grad->colors[i].a * 255));
+        }
+
+        return buf;
+}
+
 void draw_setup(void)
 {
         const struct output *out = output_create(settings.force_xwayland);
@@ -320,7 +383,7 @@ static struct colored_layout *layout_init_shared(cairo_t *c, struct notification
 
         // Invalid colors should never reach this point!
         assert(settings.frame_width == 0 || COLOR_VALID(COLOR(cl, frame)));
-        assert(!have_progress_bar(cl) || COLOR_VALID(COLOR(cl, highlight)));
+        assert(!have_progress_bar(cl) || COLOR(cl, highlight) != NULL);
         assert(COLOR_VALID(COLOR(cl, fg)));
         assert(COLOR_VALID(COLOR(cl, bg)));
         return cl;
@@ -828,7 +891,11 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, int
                 cairo_fill(c);
 
                 // top layer (fill)
-                cairo_set_source_rgba(c, COLOR(cl, highlight.r), COLOR(cl, highlight.g), COLOR(cl, highlight.b), COLOR(cl, highlight.a));
+                cairo_matrix_t matrix;
+                cairo_matrix_init_scale(&matrix, 1.0 / width, 1.0);
+                cairo_pattern_set_matrix(COLOR(cl, highlight->pattern), &matrix);
+                cairo_set_source(c, COLOR(cl, highlight->pattern));
+
                 draw_rounded_rect(c, x_bar_1, frame_y, progress_width_1, progress_height,
                         settings.progress_bar_corner_radius, scale, settings.progress_bar_corners);
                 cairo_fill(c);
