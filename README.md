@@ -95,6 +95,7 @@ distro's repositories, don't worry, it's not hard to build it yourself.
 - wayland-protocols (optional, for recompiling protocols)
 - xdg-utils (optional, xdg-open is the default 'browser' for opening URLs)
 - jq (optional, for installed completions and tools in contrib)
+- busctl (optional, for dunstctl rules and dunstctl history)
 
 The names will be different depending on your [distribution](https://github.com/dunst-project/dunst/wiki/Dependencies).
 

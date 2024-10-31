@@ -1379,6 +1379,11 @@ static void dbus_cb_name_lost(GDBusConnection *connection,
                         DIE("Cannot acquire '"FDN_NAME"'.");
                 }
         } else {
+                const char *env = getenv("DBUS_SESSION_BUS_ADDRESS");
+                if (STR_EMPTY(env)) {
+                        LOG_W("DBUS_SESSION_BUS_ADDRESS is blank. Is the dbus session configured correctly?");
+                }
+
                 DIE("Cannot connect to DBus.");
         }
         exit(1);
