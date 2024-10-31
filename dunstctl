@@ -8,7 +8,12 @@ DBUS_IFAC_DUNST="org.dunstproject.cmd0"
 DBUS_IFAC_PROP="org.freedesktop.DBus.Properties"
 DBUS_IFAC_FDN="org.freedesktop.Notifications"
 
-die(){ printf "%s\n" "${1}" >&2; exit 1; }
+die() {
+	printf "%s\n" "${1}" >&2
+	[ -z "$DBUS_SESSION_BUS_ADDRESS" ] \
+		&& echo "DBUS_SESSION_BUS_ADDRESS is blank. Is the dbus session configured correctly?"
+	exit 1
+}
 
 show_help() {
 	# Below, each line starts with a tab character
@@ -44,6 +49,12 @@ show_help() {
 	  help                              Show help
 	EOH
 }
+
+busctl_checked() {
+	command -v busctl >/dev/null 2>/dev/null || die "Command busctl not found"
+	busctl --user --json=pretty --no-pager call "${DBUS_NAME}" "${DBUS_PATH}" "${DBUS_IFAC_DUNST}" "$@"
+}
+
 dbus_send_checked() {
 	dbus-send "$@" \
 		|| die "Failed to communicate with dunst, is it running? Or maybe the version is outdated. You can try 'dunstctl debug' as a next debugging step."
@@ -61,9 +72,7 @@ property_set() {
 	dbus_send_checked --print-reply=literal --dest="${DBUS_NAME}" "${DBUS_PATH}" "${DBUS_IFAC_PROP}.Set" "string:${DBUS_IFAC_DUNST}" "string:${1}" "${2}"
 }
 
-command -v dbus-send >/dev/null 2>/dev/null || \
-	die "Command dbus-send not found"
-
+command -v dbus-send >/dev/null 2>/dev/null || die "Command dbus-send not found"
 
 case "${1:-}" in
 	"action")
@@ -151,16 +160,17 @@ case "${1:-}" in
 	"rules")
 		case "${2:-}" in
 			"" | --json)
-				busctl --user --json=pretty --no-pager call "${DBUS_NAME}" "${DBUS_PATH}" "${DBUS_IFAC_DUNST}" RuleList \
+				busctl_checked RuleList \
 				| {
 					if [ "${2:-}" = '--json' ]
 					then
 						cat
 					else
+						command -v jq >/dev/null 2>/dev/null || die "Command jq not found"
 						jq --raw-output '.data[][] | ["[\(.name.data)]"], [to_entries[] | select(.key != "name") | "    \(.key) = \(.value.data)"] | join("\n")'
 					fi
 				} \
-					|| die "Dunst is not running."
+					|| die "Dunst is not running or unreachable."
 			;;
 			*)
 				die "Unknown format \"${2}\". Please use either \"--json\" or no option at all."
@@ -205,7 +215,7 @@ case "${1:-}" in
 		;;
 	"debug")
 		dbus-send --print-reply=literal --dest="${DBUS_NAME}" "${DBUS_PATH}" "${DBUS_IFAC_FDN}.GetServerInformation" >/dev/null 2>/dev/null \
-			|| die "Dunst is not running."
+			|| die "No notification manager is running."
 
 		dbus-send --print-reply=literal --dest="${DBUS_NAME}" "${DBUS_PATH}" "${DBUS_IFAC_FDN}.GetServerInformation" \
 			| (
@@ -219,8 +229,8 @@ case "${1:-}" in
 			|| die "Dunst controlling interface not available. Is the version too old?"
 		;;
 	"history")
-		busctl --user --json=pretty --no-pager call org.freedesktop.Notifications /org/freedesktop/Notifications org.dunstproject.cmd0 NotificationListHistory 2>/dev/null \
-			|| die "Dunst is not running."
+		busctl_checked NotificationListHistory \
+			|| die "Dunst is not running or unreachable."
 		;;
 	"reload")
 		shift
@@ -234,4 +244,3 @@ case "${1:-}" in
 		;;
 esac
 # vim: noexpandtab
-
