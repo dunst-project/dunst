@@ -60,10 +60,8 @@ void rule_apply(struct rule *r, struct notification *n, bool save)
                 if (save && !COLOR_VALID(n->original->bg)) n->original->bg = n->colors.bg;
                 n->colors.bg = r->bg;
         }
-        if (COLOR_VALID(r->highlight)) {
-                if (save && !COLOR_VALID(n->original->highlight)) n->original->highlight = n->colors.highlight;
-                n->colors.highlight = r->highlight;
-        }
+        if (r->highlight)
+                RULE_APPLY2(colors.highlight, highlight, NULL);
         if (COLOR_VALID(r->fc)) {
                 if (save && !COLOR_VALID(n->original->fc)) n->original->fc = n->colors.frame;
                 n->colors.frame = r->fc;
@@ -165,8 +163,12 @@ void rule_print(const struct rule *r)
         char buf[10];
         if (COLOR_VALID(r->fg)) printf("\tfg: %s\n", color_to_string(r->fg, buf));
         if (COLOR_VALID(r->bg)) printf("\tbg: %s\n", color_to_string(r->bg, buf));
-        if (COLOR_VALID(r->highlight)) printf("\thighlight: %s\n", color_to_string(r->highlight, buf));
         if (COLOR_VALID(r->fc)) printf("\tframe: %s\n", color_to_string(r->fc, buf));
+
+        char *grad = gradient_to_string(r->highlight);
+        printf("\thighlight: %s\n", STR_NN(grad));
+        g_free(grad);
+
         if (r->set_category != NULL) printf("\tset_category: '%s'\n", r->set_category);
         if (r->format != NULL) printf("\tformat: '%s'\n", r->format);
         if (r->script != NULL) printf("\tscript: '%s'\n", r->script);
@@ -227,6 +229,26 @@ struct rule *rule_new(const char *name)
         }
         return r;
 }
+
+void rule_free(struct rule *r)
+{
+        if (r == NULL || r == &empty_rule)
+                return;
+
+        g_free(r->action_name);
+        g_free(r->set_category);
+        g_free(r->default_icon);
+        g_free(r->set_stack_tag);
+        g_free(r->new_icon);
+        g_free(r->name);
+
+        // Ugly but necessary
+        if (r->highlight != settings.colors_low.highlight &&
+            r->highlight != settings.colors_norm.highlight &&
+            r->highlight != settings.colors_crit.highlight)
+        gradient_free(r->highlight);
+}
+
 
 static inline bool rule_field_matches_string(const char *value, const char *pattern)
 {

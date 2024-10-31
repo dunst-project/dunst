@@ -696,7 +696,7 @@ TEST test_string_to_color_invalid(void)
         struct setting s;
         s.type = TYPE_COLOR;
         s.value = &val;
-        s.name = "test_color";
+        s.name = "test_color_invalid";
 
         const char* inputs[] = {
                 "",
@@ -724,6 +724,72 @@ TEST test_string_to_color_invalid(void)
         }
 
         ASSERTm("Color shouldn't changed from invalid inputs", !COLOR_VALID(val));
+        PASS();
+}
+
+TEST test_string_to_gradient(void)
+{
+        struct gradient *grad = NULL;
+        struct setting s;
+        s.type = TYPE_GRADIENT;
+        s.value = &grad;
+        s.name = "test_gradient";
+
+        const char* inputs[] = {
+                "#123456",
+                "#ab123c",
+                "#abc, #ebf, #aaafff",
+                "#abc123, #acaf8f",
+        };
+
+        // NOTE: Flexible array shenanigans
+        struct gradient *results[] = {
+                gradient_alloc(1),
+                gradient_alloc(1),
+                gradient_alloc(3),
+                gradient_alloc(2),
+        };
+
+        results[0]->colors[0] = (struct color) { (double)0x12 / 0xff, (double)0x34 / 0xff, (double)0x56 / 0xff, 1.0};
+
+        results[1]->colors[0] = (struct color) { (double)0xab / 0xff, (double)0x12 / 0xff, (double)0x3c / 0xff, 1.0};
+
+        results[2]->colors[0] = (struct color) { (double)0xaa / 0xff, (double)0xbb / 0xff, (double)0xcc / 0xff, 1.0};
+        results[2]->colors[1] = (struct color) { (double)0xee / 0xff, (double)0xbb / 0xff, (double)0xff / 0xff, 1.0};
+        results[2]->colors[2] = (struct color) { (double)0xaa / 0xff, (double)0xaf / 0xff, (double)0xff / 0xff, 1.0};
+
+        results[3]->colors[0] = (struct color) { (double)0xab / 0xff, (double)0xc1 / 0xff, (double)0x23 / 0xff, 1.0};
+        results[3]->colors[1] = (struct color) { (double)0xac / 0xff, (double)0xaf / 0xff, (double)0x8f / 0xff, 1.0};
+
+        ARRAY_SAME_LENGTH(inputs, results);
+
+        static char buf[100];
+
+        for (int i = 0; i < G_N_ELEMENTS(inputs); i++) {
+                sprintf(buf, "Failed in round %i", i);
+                ASSERTm(buf, set_from_string(&grad, s, inputs[i]));
+
+                char *t1 = gradient_to_string(results[i]);
+                char *t2 = gradient_to_string(grad);
+
+                sprintf(buf, "Failed in round %i. Expected %s, got %s", i, t1, t2);
+
+                g_free(t1);
+                g_free(t2);
+
+                ASSERTm(buf, grad != NULL);
+                ASSERTm(buf, grad->length == results[i]->length);
+
+                for (int k = 0; k < grad->length; k++)
+                        ASSERTm(buf, COLOR_SAME(grad->colors[k], results[i]->colors[k]));
+
+                gradient_free(grad);
+                grad = NULL;
+        }
+
+        for (int i = 0; i < G_N_ELEMENTS(results); i++)
+                gradient_free(results[i]);
+
         PASS();
 }
 
@@ -999,6 +1065,7 @@ SUITE(suite_option_parser)
         RUN_TEST(test_string_to_sepcolor_invalid);
         RUN_TEST(test_string_to_color);
         RUN_TEST(test_string_to_color_invalid);
+        RUN_TEST(test_string_to_gradient);
         RUN_TEST(test_enum_size);
         RUN_TEST(test_string_to_length);
         RUN_TEST(test_string_to_length_invalid);

@@ -67,6 +67,7 @@ int main(int argc, char *argv[]) {
         RUN_SUITE(suite_rules);
         RUN_SUITE(suite_input);
 
+        settings_free(&settings);
         g_strfreev(configs);
 
         // this returns the error code

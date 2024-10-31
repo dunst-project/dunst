@@ -12,6 +12,8 @@ extern const char *base;
 char *config_paths[2] = {0};
 
 TEST test_dunstrc_markup(void) {
+        settings_free(&settings);
+
         config_paths[0] = g_strconcat(base, "/data/dunstrc.markup", NULL);
         load_settings(config_paths);
 
@@ -29,6 +31,8 @@ TEST test_dunstrc_markup(void) {
 }
 
 TEST test_dunstrc_nomarkup(void) {
+        settings_free(&settings);
+
         config_paths[0] = g_strconcat(base, "/data/dunstrc.nomarkup", NULL);
         load_settings(config_paths);
 
@@ -47,6 +51,7 @@ TEST test_dunstrc_nomarkup(void) {
 
 // Test if the defaults in code and in dunstrc match
 TEST test_dunstrc_defaults(void) {
+        struct settings s_old = settings;
         struct settings s_default;
         struct settings s_dunstrc;
 
@@ -83,27 +88,33 @@ TEST test_dunstrc_defaults(void) {
                                 } else if (allowed_settings[i].parser == string_parse_maybe_int) {
                                         // not a number
                                         break;
-                                } // else fall through
+                                }
+                                break;
                         case TYPE_TIME:
-                        case TYPE_INT:;
-                                        {
-                                                int a = *(int*) ((char*) &s_default + offset);
-                                                int b = *(int*) ((char*) &s_dunstrc + offset);
-                                                ASSERT_EQm(message, a, b);
-                                        }
-                                      break;
+                        case TYPE_INT:
+                                {
+                                            int a = *(int*) ((char*) &s_default + offset);
+                                            int b = *(int*) ((char*) &s_dunstrc + offset);
+                                            ASSERT_EQm(message, a, b);
+                                }
+                                break;
                         case TYPE_DOUBLE:
                         case TYPE_STRING:
                         case TYPE_PATH:
                         case TYPE_LIST:
                         case TYPE_LENGTH:
                         case TYPE_COLOR:
-                                      break; // TODO implement these checks as well
+                        case TYPE_GRADIENT:
+                                    break; // TODO implement these checks as well
                         default:
-                                      printf("Type unknown %s:%d\n", __FILE__, __LINE__);
+                                    printf("Type unknown %s:%d\n", __FILE__, __LINE__);
                 }
                 /* printf("%zu\n", offset); */
         }
+
+        // NOTE: The last loaded settings should not be freed here
+        settings_free(&s_old);
+        settings_free(&s_default);
 
         g_clear_pointer(&config_paths[0], g_free);
         PASS();

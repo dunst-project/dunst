@@ -913,6 +913,9 @@ The foreground color of the notification. See COLORS for possible values.
 The highlight color of the notification. This color is used for coloring the
 progress bar. See COLORS for possible values.
 
+You can also set additional color values (as a comma-separated list)
+to define a linear gradient spanning all the length of the progress bar.
+
 =item C<format>
 
 Equivalent to the C<format> setting.
