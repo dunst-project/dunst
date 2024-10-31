@@ -170,7 +170,7 @@ case "${1:-}" in
 						jq --raw-output '.data[][] | ["[\(.name.data)]"], [to_entries[] | select(.key != "name") | "    \(.key) = \(.value.data)"] | join("\n")'
 					fi
 				} \
-					|| die "Dunst is not running or unreachable."
+					|| die "Dunst is unreachable or the version is too old."
 			;;
 			*)
 				die "Unknown format \"${2}\". Please use either \"--json\" or no option at all."
