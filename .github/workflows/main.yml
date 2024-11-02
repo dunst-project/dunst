@@ -111,3 +111,28 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/dunst-project/docker-images:misc-doxygen
+
+  appimage:
+    runs-on: ubuntu-22.04
+    container: alpine:latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: build appimage
+      if: always()
+      run: |
+        apk add wget git build-base patchelf libxscrnsaver-dev libxinerama-dev \
+          libxrandr-dev libnotify-dev dbus-dev wayland-dev perl pango-dev \
+          wayland-protocols dbus librsvg desktop-file-utils
+
+        chmod +x ./AppImage/make-appimage.sh
+        ./AppImage/make-appimage.sh
+
+        mkdir dist
+        mv *.AppImage dist/
+
+    - name: Upload appimage artifact
+      uses: actions/upload-artifact@v4.4.0
+      with:
+        name: AppImage
+        path: 'dist'
