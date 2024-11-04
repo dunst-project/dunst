@@ -751,6 +751,9 @@ void notification_do_action(struct notification *n)
                 }
                 notification_open_context_menu(n);
 
+        } else if (n->urls) {
+                // Try urls otherwise
+                notification_open_url(n);
         }
 }
 
