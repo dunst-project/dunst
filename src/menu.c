@@ -307,7 +307,7 @@ static GList *get_actionable_notifications(void)
                 }
         }
 
-        return locked_notifications;
+        return g_list_reverse(locked_notifications);
 }
 
 /* see menu.h */
