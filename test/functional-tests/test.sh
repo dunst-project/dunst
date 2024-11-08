@@ -404,6 +404,49 @@ function hot_reload {
     tmp_clean
 }
 
+function dmenu_order {
+    echo "###################################"
+    echo "dmenu_order"
+    echo "###################################"
+
+    tmp_dunstrc dunstrc.default "sort=urgency"
+    start_dunst dunstrc.tmp
+
+    for i in critical normal low
+    do
+        $DUNSTIFY -a "dunst tester" -u $i --action="replyAction,Reply" --action="forwardAction,Forward" "Message Received $i" "Sorted by urgency" &
+        sleep .5
+    done
+
+    $DUNSTCTL context
+    keypress
+
+    tmp_dunstrc dunstrc.default "sort=update"
+    start_dunst dunstrc.tmp
+
+    for i in critical normal low
+    do
+        $DUNSTIFY -a "dunst tester" -u $i --action="replyAction,Reply" --action="forwardAction,Forward" "Message Received $i" "Sorted by time" &
+        sleep .5
+    done
+
+    $DUNSTCTL context
+    keypress
+
+    tmp_dunstrc dunstrc.default "sort=false"
+    start_dunst dunstrc.tmp
+
+    for i in 69 98 34 1
+    do
+        $DUNSTIFY -a "dunst tester" -r $i --action="replyAction,Reply" --action="forwardAction,Forward" "Message Received $i" "Sorted by id" &
+        sleep .5
+    done
+
+    $DUNSTCTL context
+    keypress
+    tmp_clean
+}
+
 if [ -n "$1" ]; then
     while [ -n "$1" ]; do
         $1
@@ -427,6 +470,7 @@ else
     dynamic_height
     vertical_align
     hot_reload
+    dmenu_order
 fi
 
 killall dunst
