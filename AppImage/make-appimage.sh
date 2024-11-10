@@ -7,7 +7,7 @@
 set -e
 export ARCH="$(uname -m)"
 export APPIMAGE_EXTRACT_AND_RUN=1
-APPIMAGETOOL="https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage"
+APPIMAGETOOL="https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-$ARCH.AppImage"
 export COMPLETIONS=0
 
 # BUILD DUNST
@@ -21,6 +21,7 @@ echo "Creating AppRun..."
 cat >> ./AppRun << 'EOF'
 #!/bin/sh
 CURRENTDIR="$(dirname "$(readlink -f "$0")")"
+ARCH="$(uname -m)"
 export PATH="$CURRENTDIR/usr/bin:$PATH"
 [ -z "$APPIMAGE" ] && APPIMAGE="$0"
 BIN="${ARGV0#./}"
@@ -71,10 +72,10 @@ EOF
 echo "Deploying dependencies..."
 mkdir -p ./usr/lib
 ldd ./usr/bin/* | awk -F"[> ]" '{print $4}' | xargs -I {} cp -vf {} ./usr/lib
-if [ -f ./usr/lib/ld-musl-x86_64.so.1 ]; then
-	mv ./usr/lib/ld-musl-x86_64.so.1 ./
+if [ -f ./usr/lib/ld-musl-"$ARCH".so.1 ]; then
+	mv ./usr/lib/ld-musl-"$ARCH".so.1 ./
 else
-	cp /lib/ld-musl-x86_64.so.1 ./
+	cp /lib/ld-musl-"$ARCH".so.1 ./
 fi
 find ./usr/bin -type f -exec patchelf --set-rpath '$ORIGIN/../lib' {} ';'
 find ./usr/lib -type f -exec patchelf --set-rpath '$ORIGIN' {} ';'
