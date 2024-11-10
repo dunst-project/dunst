@@ -121,9 +121,23 @@ jobs:
     - name: build appimage
       if: always()
       run: |
-        apk add wget git build-base patchelf libxscrnsaver-dev libxinerama-dev \
-          libxrandr-dev libnotify-dev dbus-dev wayland-dev perl pango-dev \
-          wayland-protocols dbus librsvg desktop-file-utils
+        apk add \
+          build-base \
+          dbus \
+          dbus-dev \
+          desktop-file-utils \
+          git \
+          libnotify-dev \
+          librsvg \
+          libxinerama-dev \
+          libxrandr-dev \
+          libxscrnsaver-dev \
+          pango-dev \
+          patchelf \
+          perl \
+          wayland-dev \
+          wayland-protocols \
+          wget
 
         chmod +x ./AppImage/make-appimage.sh
         ./AppImage/make-appimage.sh
