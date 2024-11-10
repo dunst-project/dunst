@@ -10,8 +10,9 @@ DBUS_IFAC_FDN="org.freedesktop.Notifications"
 
 die() {
 	printf "%s\n" "${1}" >&2
-	[ -z "$DBUS_SESSION_BUS_ADDRESS" ] \
-		&& echo "DBUS_SESSION_BUS_ADDRESS is blank. Is the dbus session configured correctly?"
+	if [ -z "$DBUS_SESSION_BUS_ADDRESS" ]; then
+		echo "DBUS_SESSION_BUS_ADDRESS is blank. Is the D-Bus session configured correctly?" >&2
+	fi
 	exit 1
 }
 
