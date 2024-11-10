@@ -26,31 +26,36 @@ export PATH="$CURRENTDIR/usr/bin:$PATH"
 [ -z "$APPIMAGE" ] && APPIMAGE="$0"
 BIN="${ARGV0#./}"
 unset ARGV0
-case in "${BIN}" in
-    dunst|dunstify)
-        exec "$CURRENTDIR/ld-musl-${ARCH}.so.1" "$CURRENTDIR/usr/bin/$BIN" "$@"
-        ;;
-    dunstctl)
-        exec "$CURRENTDIR/usr/bin/$BIN" "$@"
-        ;;
-    "")
-        echo "AppImage commands:"
-        echo " \"$APPIMAGE dunst\"      runs dunst"
-        echo " \"$APPIMAGE dunstify\"   runs dunstify"
-        echo " \"$APPIMAGE dunstctl\"   runs dunstctl"
-        echo "You can also make and run symlinks to the AppImage with the names"
-        echo "dunstify and dunstctl to launch them automatically without extra args"
-        echo "running dunst..."
-        "${APPIMAGE}" dunst
-        ;;
-    *)
-        echo "AppImage commands:"
-        echo " \"$APPIMAGE dunst\"      runs dunst"
-        echo " \"$APPIMAGE dunstify\"   runs dunstify"
-        echo " \"$APPIMAGE dunstctl\"   runs dunstctl"
-        echo "You can also make and run symlinks to the AppImage with the names"
-        echo "dunstify and dunstctl to launch them automatically without extra args"
-        ;;
+
+case "${BIN}" in
+	dunst|dunstify)
+		exec "$CURRENTDIR/ld-musl-${ARCH}.so.1" "$CURRENTDIR/usr/bin/$BIN" "$@"
+		;;
+	dunstctl)
+		exec "$CURRENTDIR/usr/bin/$BIN" "$@"
+		;;
+	""|*)
+		BIN="$1"
+		case "${BIN}" in
+			dunst|dunstify)
+				shift
+				exec "$CURRENTDIR/ld-musl-${ARCH}.so.1" "$CURRENTDIR/usr/bin/$BIN" "$@"
+				;;
+			dunstctl)
+				shift
+				exec "$CURRENTDIR/usr/bin/$BIN" "$@"
+				;;
+			""|*)
+				echo "AppImage commands:"
+				echo " \"$APPIMAGE dunst\"      runs dunst"
+				echo " \"$APPIMAGE dunstify\"   runs dunstify"
+				echo " \"$APPIMAGE dunstctl\"   runs dunstctl"
+				echo "You can also make and run symlinks to the AppImage with the names"
+				echo "dunstify and dunstctl to launch them automatically without extra args"
+				echo "running dunst..."
+				exec "$CURRENTDIR/ld-musl-${ARCH}.so.1" "$CURRENTDIR/usr/bin/dunst" "$@"
+				;;
+		esac
 esac
 EOF
 chmod +x ./AppRun
