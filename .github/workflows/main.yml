@@ -113,7 +113,7 @@ jobs:
       image: ghcr.io/dunst-project/docker-images:misc-doxygen
 
   appimage:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     container: alpine:latest
     steps:
     - uses: actions/checkout@v4
