@@ -88,12 +88,12 @@ find ./usr/lib ./usr/bin -type f -exec strip -s -R .comment --strip-unneeded {} 
 
 # Do the thing!
 echo "Generating AppImage..."
-#export VERSION="$(./AppRun --version | awk '{print $(NF-1)}')" # This breaks for some reason?
+export VERSION="$(./AppRun dunst --version | awk 'FNR==1 {print $NF}')" 
 cd ..
 wget -q "$APPIMAGETOOL" -O appimagetool
 chmod +x ./appimagetool
 ./appimagetool --comp zstd \
 	--mksquashfs-opt -Xcompression-level --mksquashfs-opt 22 \
-	-n ./AppDir ./dunst-"$ARCH".AppImage
+	-n ./AppDir ./dunst-"$VERSION"-"$ARCH".AppImage
 ls
 echo "All Done!"
