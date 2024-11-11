@@ -7,3 +7,4 @@ PartOf=graphical-session.target
 Type=dbus
 BusName=org.freedesktop.Notifications
 ExecStart=##PREFIX##/bin/dunst
+Slice=session.slice
