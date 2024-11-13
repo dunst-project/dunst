@@ -90,6 +90,7 @@ distro's repositories, don't worry, it's not hard to build it yourself.
 - libxss
 - glib
 - pango/cairo
+- gdk-pixbuf
 - libnotify (can build without, for dunstify, see [make parameters](#make-parameters))
 - wayland-client (can build without, see [make parameters](#make-parameters))
 - wayland-protocols (optional, for recompiling protocols)
