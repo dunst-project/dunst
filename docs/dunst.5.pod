@@ -119,6 +119,9 @@ Examples:
 
 Note that unlike width, different notifications can have diffrent height values.
 
+Dunst v1.11 and older do not support a dynamic height and setting the B<height>
+value is equivalent to doing (0, value).
+
 =item B<notification_limit> (default: 20)
 
 The number of notifications that can appear at one time. When this
@@ -156,7 +159,10 @@ Examples:
     origin = top-right
     offset = (10, 300) # a margin of 10 pixels from the right and 300 pixels from the top
 
-For backwards compatibility the syntax NxN is also accepted.
+Dunst v1.11 and older use the syntax NxN instead (X offset x Y offset).
+For backwards compatibility this syntax is also accepted.
+
+    offset = 10x300
 
 =item B<scale> (default: 0, X11 only)
 
