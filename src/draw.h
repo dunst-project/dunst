@@ -74,10 +74,7 @@ void draw_setup(void);
 
 void draw(void);
 
-void draw_rounded_rect(cairo_t *c, float x, float y, int width, int height, int corner_radius, double scale, enum corner_pos corners);
-
-// TODO get rid of this function by passing scale to everything that needs it.
-double draw_get_scale(void);
+void draw_rounded_rect(cairo_t *c, int x, int y, int width, int height, int corner_radius, enum corner_pos corners);
 
 void draw_deinit(void);
 

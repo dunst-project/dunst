@@ -479,4 +479,9 @@ void add_paths_from_env(GPtrArray *arr, char *env_name, char *subdir, char *alte
         g_strfreev(xdg_data_dirs_arr);
 }
 
+double calc_steps(double value, int n)
+{
+    return floor(value * n) * (1.0 / n);
+}
+
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */
