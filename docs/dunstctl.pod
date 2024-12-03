@@ -1,7 +1,6 @@
 =head1 NAME
 
-dunstctl - Command line control utility for dunst, a customizable and
-lightweight notification-daemon
+dunstctl - command line control utility for dunst
 
 =head1 SYNOPSIS
 

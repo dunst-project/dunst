@@ -30,7 +30,7 @@ static GOptionEntry entries[] =
     { "hints",        'h', 0, G_OPTION_ARG_STRING_ARRAY, &hint_strs,      "User specified hints", "HINT" },
     { "action",       'A', 0, G_OPTION_ARG_STRING_ARRAY, &action_strs,    "Actions the user can invoke", "ACTION" },
     { "timeout",      't', 0, G_OPTION_ARG_INT,          &timeout,        "The time in milliseconds until the notification expires", "TIMEOUT" },
-    { "icon",         'i', 0, G_OPTION_ARG_STRING,       &icon,           "An Icon that should be displayed with the notification", "ICON" },
+    { "icon",         'i', 0, G_OPTION_ARG_STRING,       &icon,           "An icon that should be displayed with the notification", "ICON" },
     { "raw_icon",     'I', 0, G_OPTION_ARG_STRING,       &raw_icon_path,  "Path to the icon to be sent as raw image data", "RAW_ICON"},
     { "capabilities", 'c', 0, G_OPTION_ARG_NONE,         &capabilities,   "Print the server capabilities and exit", NULL},
     { "serverinfo",   's', 0, G_OPTION_ARG_NONE,         &serverinfo,     "Print server information and exit", NULL},
@@ -108,7 +108,7 @@ void parse_commandline(int argc, char *argv[])
     GError *error = NULL;
     GOptionContext *context;
 
-    context = g_option_context_new("SUMMARY BODY");
+    context = g_option_context_new("SUMMARY [BODY]");
     g_option_context_add_main_entries(context, entries, NULL);
     if (!g_option_context_parse(context, &argc, &argv, &error)){
         g_printerr("Invalid commandline: %s\n", error->message);

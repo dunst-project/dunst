@@ -1,6 +1,6 @@
 =head1 NAME
 
-dunst - A customizable and lightweight notification-daemon
+dunst - a customizable and lightweight notification-daemon
 
 =head1 SYNOPSIS
 
@@ -197,4 +197,4 @@ If you feel that copyrights are violated, please send me an email.
 
 =head1 SEE ALSO
 
-dunst(5), dunstctl(1), dmenu(1), notify-send(1)
+dunst(5), dunstctl(1), dmenu(1), notify-send(1), dunstify(1)

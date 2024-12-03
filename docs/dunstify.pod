@@ -1,0 +1,79 @@
+=head1 NAME
+
+dunstify - a program to send desktop notifications
+
+=head1 SYNOPSIS
+
+dunstify [OPTION...] SUMMARY [BODY]
+
+=head1 DESCRIPTION
+
+Dunstify is a notify-send alternative that can be used to
+send desktop notifications from the command line.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-?, --help>
+
+Show help options.
+
+=item B<-a, --appname=NAME>
+
+Set the app name of the notification.
+
+=item B<-u, --urgency=URG>
+
+Set the urgency level (low, normal, critical) of the notification.
+
+=item B<-h, --hints=HINT>
+
+Specifies hints to pass. Valid types are BOOLEAN, INT, DOUBLE, STRING, BYTE and VARIANT.
+
+=item B<-A, --action=ACTION>
+
+Specifies the actions to display to the user.
+
+=item B<-t, --timeout=TIMEOUT>
+
+The time in milliseconds until the notification expires.
+
+=item B<-i, --icon=ICON>
+
+Specifies an icon to display with the notification.
+
+=item B<-I, --raw_icon=PATH>
+
+Path to the icon to be sent as raw image data.
+
+=item B<-c, --capabilities>
+
+Print the server capabilities and exit.
+
+=item B<-s, --serverinfo>
+
+Print server information and exit.
+
+=item B<-p, --printid>
+
+Print id, which can be used to update/replace this notification.
+
+=item B<-r, --replace=ID>
+
+Set the id of this notification to The ID of the notification to replace.
+
+=item B<-C, --close=ID>
+
+Close the notification with the specified ID.
+
+=item B<-b, --block>
+
+Block until notification is closed and print close reason.
+
+=back
+
+=head1 SEE ALSO
+
+notify-send(1), dunst(5), dunstctl(1), dunst(1)
+

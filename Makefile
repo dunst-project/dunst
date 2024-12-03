@@ -128,7 +128,7 @@ functional-tests: dunst dunstify
 	PREFIX=. ./test/functional-tests/test.sh
 
 .PHONY: doc doc-doxygen
-doc: docs/dunst.1 docs/dunst.5 docs/dunstctl.1
+doc: docs/dunst.1 docs/dunst.5 docs/dunstctl.1 docs/dunstify.1
 
 # Can't dedup this as we need to explicitly provide the name and title text to
 # pod2man :(
@@ -138,6 +138,8 @@ docs/dunst.5: docs/dunst.5.pod
 	${POD2MAN} --name=dunst -c "Dunst Reference" --section=5 --release=${VERSION} $< > $@
 docs/dunstctl.1: docs/dunstctl.pod
 	${POD2MAN} --name=dunstctl -c "dunstctl reference" --section=1 --release=${VERSION} $< > $@
+docs/dunstify.1: docs/dunstify.pod
+	${POD2MAN} --name=dunstify -c "dunstify reference" --section=1 --release=${VERSION} $< > $@
 
 doc-doxygen:
 	${DOXYGEN} docs/internal/Doxyfile
@@ -195,6 +197,7 @@ clean-doc:
 	rm -f docs/dunst.1
 	rm -f docs/dunst.5
 	rm -f docs/dunstctl.1
+	rm -f docs/dunstify.1
 	rm -fr docs/internal/html
 	rm -fr docs/internal/coverage
 
@@ -224,6 +227,7 @@ install-dunst: dunst doc
 	install -Dm644 docs/dunst.1 ${DESTDIR}${MANPREFIX}/man1/dunst.1
 	install -Dm644 docs/dunst.5 ${DESTDIR}${MANPREFIX}/man5/dunst.5
 	install -Dm644 docs/dunstctl.1 ${DESTDIR}${MANPREFIX}/man1/dunstctl.1
+	install -Dm644 docs/dunstify.1 ${DESTDIR}${MANPREFIX}/man1/dunstify.1
 
 install-dunstctl: dunstctl
 	install -Dm755 dunstctl ${DESTDIR}${BINDIR}/dunstctl
@@ -273,6 +277,7 @@ uninstall-keepconf: uninstall-service uninstall-dunstctl uninstall-completions
 	rm -f ${DESTDIR}${MANPREFIX}/man1/dunst.1
 	rm -f ${DESTDIR}${MANPREFIX}/man5/dunst.5
 	rm -f ${DESTDIR}${MANPREFIX}/man1/dunstctl.1
+	rm -f ${DESTDIR}${MANPREFIX}/man1/dunstify.1
 
 uninstall-dunstrc:
 	rm -f ${DESTDIR}${SYSCONFFILE}
