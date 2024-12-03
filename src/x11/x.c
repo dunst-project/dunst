@@ -949,8 +949,9 @@ double x_get_scale(void) {
                 return settings.scale;
 
         const struct screen_info *scr_info = get_active_screen();
-        double scale = MAX(1, scr_info->dpi/96.);
         LOG_D("X11 dpi: %i", scr_info->dpi);
+
+        double scale = MAX(1, calc_steps(scr_info->dpi/96., 4));
         LOG_D("X11 scale: %f", scale);
         return scale;
 }

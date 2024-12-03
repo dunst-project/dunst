@@ -713,6 +713,7 @@ double wl_get_scale(void) {
         }
         if (scale <= 0)
                 scale = 1;
+
         return scale;
 }
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */
