@@ -122,6 +122,7 @@ struct setting {
  * - Add the default rule value in `settings_data.h` (usually -1 or NULL)
  * - Set default value in notification.c (`notification_create`). This is where
  *   the real default is set.
+ * - Add the rule to the output of `dbus_cb_dunst_RuleList` in `dbus.c`.
  * - Free the variable in `notification.c` if dynamically allocated.
  * - Free the variable in `rules.c` if dynamically allocated.
  * - Remove the setting from the global settings struct in `settings.h`.
@@ -159,7 +160,7 @@ static const struct rule empty_rule = {
         .default_icon    = NULL,
         .fg              = COLOR_UNINIT,
         .bg              = COLOR_UNINIT,
-        .highlight       = COLOR_UNINIT,
+        .highlight       = NULL,
         .fc              = COLOR_UNINIT,
         .format          = NULL,
         .script          = NULL,
@@ -167,6 +168,7 @@ static const struct rule empty_rule = {
         .progress_bar_alignment   = -1,
         .min_icon_size   = -1,
         .max_icon_size   = -1,
+        .fullscreen      = FS_NULL,
         .override_pause_level = -1
 };
 
@@ -368,7 +370,7 @@ static const struct setting allowed_settings[] = {
                 .section = "urgency_low",
                 .description = "Icon for notifications with low urgency",
                 .type = TYPE_STRING,
-                .default_value = "dialog-information",
+                .default_value = "",
                 .value = &settings.icons[URG_LOW],
                 .parser = NULL,
                 .parser_data = NULL,
@@ -378,7 +380,7 @@ static const struct setting allowed_settings[] = {
                 .section = "urgency_normal",
                 .description = "Icon for notifications with normal urgency",
                 .type = TYPE_STRING,
-                .default_value = "dialog-information",
+                .default_value = "",
                 .value = &settings.icons[URG_NORM],
                 .parser = NULL,
                 .parser_data = NULL,
@@ -388,7 +390,7 @@ static const struct setting allowed_settings[] = {
                 .section = "urgency_critical",
                 .description = "Icon for notifications with critical urgency",
                 .type = TYPE_STRING,
-                .default_value = "dialog-warning",
+                .default_value = "",
                 .value = &settings.icons[URG_CRIT],
                 .parser = NULL,
                 .parser_data = NULL,
@@ -554,7 +556,7 @@ static const struct setting allowed_settings[] = {
                 .name = "highlight",
                 .section = "*",
                 .description = "The highlight color of the notification.",
-                .type = TYPE_COLOR,
+                .type = TYPE_GRADIENT,
                 .default_value = "*",
                 .value = NULL,
                 .parser = NULL,
@@ -1378,7 +1380,7 @@ static const struct setting allowed_settings[] = {
                 .name = "highlight",
                 .section = "urgency_low",
                 .description = "Highlight color for notifications with low urgency",
-                .type = TYPE_COLOR,
+                .type = TYPE_GRADIENT,
                 .default_value = "#7f7fff",
                 .value = &settings.colors_low.highlight,
                 .parser = NULL,
@@ -1428,7 +1430,7 @@ static const struct setting allowed_settings[] = {
                 .name = "highlight",
                 .section = "urgency_normal",
                 .description = "Highlight color for notifications with normal urgency",
-                .type = TYPE_COLOR,
+                .type = TYPE_GRADIENT,
                 .default_value = "#1745d1",
                 .value = &settings.colors_norm.highlight,
                 .parser = NULL,
@@ -1478,7 +1480,7 @@ static const struct setting allowed_settings[] = {
                 .name = "highlight",
                 .section = "urgency_critical",
                 .description = "Highlight color for notifications with ciritical urgency",
-                .type = TYPE_COLOR,
+                .type = TYPE_GRADIENT,
                 .default_value = "#ff6666",
                 .value = &settings.colors_crit.highlight,
                 .parser = NULL,
@@ -1527,9 +1529,9 @@ static const struct setting allowed_settings[] = {
         {
                 .name = "height",
                 .section = "global",
-                .description = "The maximum height of a single notification, excluding the frame.",
-                .type = TYPE_INT,
-                .default_value = "300",
+                .description = "The height of a notification, excluding the frame.",
+                .type = TYPE_LENGTH,
+                .default_value = "(0, 300)",
                 .value = &settings.height,
                 .parser = NULL,
                 .parser_data = NULL,
@@ -1538,11 +1540,11 @@ static const struct setting allowed_settings[] = {
                 .name = "offset",
                 .section = "global",
                 .description = "The offset of the notification from the origin.",
-                .type = TYPE_LIST,
-                .default_value = "10x50",
+                .type = TYPE_LENGTH,
+                .default_value = "(10, 50)",
                 .value = &settings.offset,
                 .parser = NULL,
-                .parser_data = GINT_TO_POINTER(OFFSET_LIST),
+                .parser_data = NULL,
         },
         {
                 .name = "notification_limit",

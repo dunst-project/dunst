@@ -90,10 +90,13 @@ distro's repositories, don't worry, it's not hard to build it yourself.
 - libxss
 - glib
 - pango/cairo
+- gdk-pixbuf
 - libnotify (can build without, for dunstify, see [make parameters](#make-parameters))
 - wayland-client (can build without, see [make parameters](#make-parameters))
 - wayland-protocols (optional, for recompiling protocols)
 - xdg-utils (optional, xdg-open is the default 'browser' for opening URLs)
+- jq (optional, for installed completions and tools in contrib)
+- busctl (optional, for dunstctl rules and dunstctl history)
 
 The names will be different depending on your [distribution](https://github.com/dunst-project/dunst/wiki/Dependencies).
 

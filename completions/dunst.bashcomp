@@ -5,7 +5,7 @@ _dunst() {
     opts='-v -version --version -verbosity -conf -config -print --print -startup_notification --startup_notification -h -help --help' 
 
     case "$prev" in
-        -verbosity) COMPREPLY=("crit" "warn" "mesg" "info" "debug") 
+        -verbosity) COMPREPLY=( $( compgen -W 'crit warn mesg info debug' -- "$cur") ) 
             return ;;
         -conf|--config) _filedir
             return ;;

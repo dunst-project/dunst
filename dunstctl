@@ -8,7 +8,13 @@ DBUS_IFAC_DUNST="org.dunstproject.cmd0"
 DBUS_IFAC_PROP="org.freedesktop.DBus.Properties"
 DBUS_IFAC_FDN="org.freedesktop.Notifications"
 
-die(){ printf "%s\n" "${1}" >&2; exit 1; }
+die() {
+	printf "%s\n" "${1}" >&2
+	if [ -z "$DBUS_SESSION_BUS_ADDRESS" ]; then
+		echo "DBUS_SESSION_BUS_ADDRESS is blank. Is the D-Bus session configured correctly?" >&2
+	fi
+	exit 1
+}
 
 show_help() {
 	# Below, each line starts with a tab character
@@ -18,26 +24,38 @@ show_help() {
 	  action                            Perform the default action, or open the
 	                                    context menu of the notification at the
 	                                    given position
-	  close                             Close the last notification
-	  close-all                         Close the all notifications
+	  close [ID]                        Close the last notification or the
+	                                    notification with given ID
+	  close-all                         Close all the notifications
 	  context                           Open context menu
 	  count [displayed|history|waiting] Show the number of notifications
 	  history                           Display notification history (in JSON)
 	  history-clear                     Delete all notifications from history
 	  history-pop [ID]                  Pop the latest notification from
 	                                    history or optionally the
-	                                    notification with given ID.
+	                                    notification with given ID
 	  history-rm ID                     Remove the notification from
 	                                    history with given ID.
-	  is-paused                         Check if pause level is > 0
+	  is-paused [-e|--exit-code]        Check if pause level is greater than 0, optionally with exit code instead of text output
 	  set-paused true|false|toggle      Set the pause status
 	  get-pause-level                   Get the current pause level
 	  set-pause-level level             Set the pause level
 	  rule name enable|disable|toggle   Enable or disable a rule by its name
+	  rules [--json]                    Displays configured rules (optionally
+	                                    in JSON)
+	  reload [dunstrc ...]              Reload the settings of the running
+	                                    instance, optionally with specific
+	                                    config files (space/comma-separated)
 	  debug                             Print debugging information
-	  help                              Show this help
+	  help                              Show help
 	EOH
 }
+
+busctl_checked() {
+	command -v busctl >/dev/null 2>/dev/null || die "Command busctl not found"
+	busctl --user --json=pretty --no-pager call "${DBUS_NAME}" "${DBUS_PATH}" "${DBUS_IFAC_DUNST}" "$@"
+}
+
 dbus_send_checked() {
 	dbus-send "$@" \
 		|| die "Failed to communicate with dunst, is it running? Or maybe the version is outdated. You can try 'dunstctl debug' as a next debugging step."
@@ -55,16 +73,20 @@ property_set() {
 	dbus_send_checked --print-reply=literal --dest="${DBUS_NAME}" "${DBUS_PATH}" "${DBUS_IFAC_PROP}.Set" "string:${DBUS_IFAC_DUNST}" "string:${1}" "${2}"
 }
 
-command -v dbus-send >/dev/null 2>/dev/null || \
-	die "Command dbus-send not found"
-
+command -v dbus-send >/dev/null 2>/dev/null || die "Command dbus-send not found"
 
 case "${1:-}" in
 	"action")
 		method_call "${DBUS_IFAC_DUNST}.NotificationAction" "uint32:${2:-0}" >/dev/null
 		;;
 	"close")
-		method_call "${DBUS_IFAC_DUNST}.NotificationCloseLast" >/dev/null
+		if [ $# -eq 1 ]; then
+			method_call "${DBUS_IFAC_DUNST}.NotificationCloseLast" >/dev/null
+		elif [ $# -eq 2 ]; then
+			method_call "${DBUS_IFAC_FDN}.CloseNotification" "uint32:$2" >/dev/null
+		else
+			die "Please pass the right number of arguments. Close takes 0 or 1 arguments"
+		fi
 		;;
 	"close-all")
 		method_call "${DBUS_IFAC_DUNST}.NotificationCloseAll" >/dev/null
@@ -105,7 +127,20 @@ case "${1:-}" in
 		fi
 		;;
 	"is-paused")
-		property_get paused | ( read -r _ _ paused; printf "%s\n" "${paused}"; )
+		exit=false
+		case "${2:-}" in
+			-e | --exit-code)
+					exit=true
+				;;
+		esac
+		property_get paused | {
+			read -r _ _ paused
+			if [ "$exit" = "false" ]; then
+				printf "%s\n" "${paused}"
+			elif [ "${paused}" = "false" ]; then
+				exit 1
+			fi
+		}
 		;;
 	"set-paused")
 		[ "${2:-}" ] \
@@ -122,6 +157,26 @@ case "${1:-}" in
 		else
 			property_set paused variant:boolean:"$2"
 		fi
+		;;
+	"rules")
+		case "${2:-}" in
+			"" | --json)
+				busctl_checked RuleList \
+				| {
+					if [ "${2:-}" = '--json' ]
+					then
+						cat
+					else
+						command -v jq >/dev/null 2>/dev/null || die "Command jq not found"
+						jq --raw-output '.data[][] | ["[\(.name.data)]"], [to_entries[] | select(.key != "name") | "    \(.key) = \(.value.data)"] | join("\n")'
+					fi
+				} \
+					|| die "Dunst is unreachable or the version is too old."
+			;;
+			*)
+				die "Unknown format \"${2}\". Please use either \"--json\" or no option at all."
+			;;
+		esac
 		;;
 	"rule")
 		[ "${2:-}" ] \
@@ -161,7 +216,7 @@ case "${1:-}" in
 		;;
 	"debug")
 		dbus-send --print-reply=literal --dest="${DBUS_NAME}" "${DBUS_PATH}" "${DBUS_IFAC_FDN}.GetServerInformation" >/dev/null 2>/dev/null \
-			|| die "Dunst is not running."
+			|| die "No notification manager is running."
 
 		dbus-send --print-reply=literal --dest="${DBUS_NAME}" "${DBUS_PATH}" "${DBUS_IFAC_FDN}.GetServerInformation" \
 			| (
@@ -175,15 +230,18 @@ case "${1:-}" in
 			|| die "Dunst controlling interface not available. Is the version too old?"
 		;;
 	"history")
-		busctl --user --json=pretty --no-pager call org.freedesktop.Notifications /org/freedesktop/Notifications org.dunstproject.cmd0 NotificationListHistory 2>/dev/null \
-			|| die "Dunst is not running."
+		busctl_checked NotificationListHistory \
+			|| die "Dunst is not running or unreachable."
+		;;
+	"reload")
+		shift
+		method_call "${DBUS_IFAC_DUNST}.ConfigReload" "array:string:$(IFS=','; echo "$*")" >/dev/null
 		;;
 	"")
-		die "dunstctl: No command specified. Please consult the usage."
+		die "dunstctl: No command specified. Use dunstctl help"
 		;;
 	*)
 		die "dunstctl: unrecognized command '${1:-}'. Please consult the usage."
 		;;
 esac
 # vim: noexpandtab
-

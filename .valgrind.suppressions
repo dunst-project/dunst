@@ -179,3 +179,18 @@
    fun:notification_load_icon_with_scaling
    ...
 }
+
+{
+   # Something new on Ubuntu Noble Numbat
+   rsvg_conditional_jump-ubuntu_focal
+   Memcheck:Cond
+   obj:/usr/lib/*/librsvg-2.so.2.50.0
+   ...
+   fun:rsvg_handle_new
+   obj:/usr/lib/*/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-svg.so
+   obj:/usr/lib/*/libgdk_pixbuf-2.0.so.0.4200.10
+   fun:gdk_pixbuf_new_from_file
+   fun:notification_setup_raw_image
+   fun:notification_load_icon_with_scaling
+   ...
+}

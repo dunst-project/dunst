@@ -3,7 +3,7 @@
 
 include config.mk
 
-VERSION := "1.11.0-non-git"
+VERSION := "1.12.0-non-git"
 ifneq ($(wildcard ./.git/),)
 VERSION := $(shell ${GIT} describe --tags 2>/dev/null || echo ${VERSION})
 endif
@@ -29,14 +29,20 @@ endif
 
 SYSCONF_FORCE_NEW ?= $(shell [ -f ${DESTDIR}${SYSCONFFILE} ] || echo 1)
 
-CFLAGS  := ${DEFAULT_CPPFLAGS} ${CPPFLAGS} ${DEFAULT_CFLAGS} ${CFLAGS} ${INCS} -MMD -MP
-LDFLAGS := ${DEFAULT_LDFLAGS} ${LDFLAGS} ${LIBS}
+ifneq (0,${DUNSTIFY})
+DUNSTIFY_CFLAGS  := ${DEFAULT_CFLAGS} ${CFLAGS} ${CPPFLAGS} $(shell $(PKG_CONFIG) --cflags libnotify)
+DUNSTIFY_LDFLAGS := ${DEFAULT_LDFLAGS} ${LDFLAGS} $(shell $(PKG_CONFIG) --libs libnotify)
+endif
+
+CPPFLAGS := ${DEFAULT_CPPFLAGS} ${CPPFLAGS}
+CFLAGS   := ${DEFAULT_CFLAGS} ${CFLAGS} ${INCS} -MMD -MP
+LDFLAGS  := ${DEFAULT_LDFLAGS} ${LDFLAGS} ${LIBS}
 
 SRC := $(sort $(shell ${FIND} src/ ! \( -path src/wayland -prune -o -path src/x11 -prune \) -name '*.c'))
 
 ifneq (0,${WAYLAND})
 # with Wayland support
-CFLAGS += -DHAVE_WL_CURSOR_SHAPE -DHAVE_WL_EXT_IDLE_NOTIFY
+CPPFLAGS += -DHAVE_WL_CURSOR_SHAPE -DHAVE_WL_EXT_IDLE_NOTIFY
 SRC += $(sort $(shell ${FIND} src/wayland -name '*.c'))
 endif
 
@@ -59,17 +65,21 @@ DEPS := ${SRC:.c=.d} ${TEST_SRC:.c=.d}
 .PHONY: all debug
 all: doc dunst service
 
-debug: CFLAGS   += ${CPPFLAGS_DEBUG} ${CFLAGS_DEBUG}
-debug: LDFLAGS  += ${LDFLAGS_DEBUG}
 debug: CPPFLAGS += ${CPPFLAGS_DEBUG}
+debug: CFLAGS   += ${CFLAGS_DEBUG}
+debug: LDFLAGS  += ${LDFLAGS_DEBUG}
 debug: all
 
 -include $(DEPS)
 
 ${OBJ} ${TEST_OBJ}: Makefile config.mk
 
+src/dunst.o: src/dunst.c
+	${CC} -o $@ -c $< ${CPPFLAGS} ${CFLAGS} \
+		-D_CCDATE="$(shell date '+%Y-%m-%d')" -D_CFLAGS="$(filter-out $(filter -I%,${INCS}),${CFLAGS})" -D_LDFLAGS="${LDFLAGS}"
+
 %.o: %.c
-	${CC} -o $@ -c $< ${CFLAGS}
+	${CC} -o $@ -c $< ${CPPFLAGS} ${CFLAGS}
 
 dunst: ${OBJ} main.o
 	${CC} -o ${@} ${OBJ} main.o ${CFLAGS} ${LDFLAGS}
@@ -77,17 +87,17 @@ dunst: ${OBJ} main.o
 ifneq (0,${DUNSTIFY})
 all: dunstify
 dunstify: dunstify.o
-	${CC} -o ${@} dunstify.o ${CFLAGS} ${LDFLAGS}
+	${CC} -o ${@} dunstify.o ${DUNSTIFY_CFLAGS} ${DUNSTIFY_LDFLAGS}
 endif
 
-.PHONY: test test-valgrind test-coverage
+.PHONY: test test-valgrind test-coverage functional-tests
 test: test/test clean-coverage-run
 	# Make sure an error code is returned when the test fails
 	/usr/bin/env bash -c 'set -euo pipefail;\
-	./test/test -v | ./test/greenest.awk '
+	TESTDIR=./test ./test/test -v | ./test/greenest.awk '
 
 test-valgrind: test/test
-	${VALGRIND} \
+	TESTDIR=./test ${VALGRIND} \
 		--suppressions=.valgrind.suppressions \
 		--track-origins=yes \
 		--leak-check=full \
@@ -110,13 +120,16 @@ test-coverage-report: test-coverage
 		-o docs/internal/coverage/index.html
 
 test/%.o: test/%.c src/%.c
-	${CC} -o $@ -c $< ${CFLAGS}
+	${CC} -o $@ -c $< ${CFLAGS} ${CPPFLAGS}
 
 test/test: ${OBJ} ${TEST_OBJ}
 	${CC} -o ${@} ${TEST_OBJ} $(filter-out ${TEST_OBJ:test/%=src/%},${OBJ}) ${CFLAGS} ${LDFLAGS}
 
+functional-tests: dunst dunstify
+	PREFIX=. ./test/functional-tests/test.sh
+
 .PHONY: doc doc-doxygen
-doc: docs/dunst.1 docs/dunst.5 docs/dunstctl.1
+doc: docs/dunst.1 docs/dunst.5 docs/dunstctl.1 docs/dunstify.1
 
 # Can't dedup this as we need to explicitly provide the name and title text to
 # pod2man :(
@@ -126,6 +139,8 @@ docs/dunst.5: docs/dunst.5.pod
 	${POD2MAN} --name=dunst -c "Dunst Reference" --section=5 --release=${VERSION} $< > $@
 docs/dunstctl.1: docs/dunstctl.pod
 	${POD2MAN} --name=dunstctl -c "dunstctl reference" --section=1 --release=${VERSION} $< > $@
+docs/dunstify.1: docs/dunstify.pod
+	${POD2MAN} --name=dunstify -c "dunstify reference" --section=1 --release=${VERSION} $< > $@
 
 doc-doxygen:
 	${DOXYGEN} docs/internal/Doxyfile
@@ -183,6 +198,7 @@ clean-doc:
 	rm -f docs/dunst.1
 	rm -f docs/dunst.5
 	rm -f docs/dunstctl.1
+	rm -f docs/dunstify.1
 	rm -fr docs/internal/html
 	rm -fr docs/internal/coverage
 
@@ -204,7 +220,7 @@ clean-wayland-protocols:
         install-service install-service-dbus install-service-systemd \
         uninstall uninstall-dunstctl uninstall-dunstrc \
         uninstall-service uninstall-service-dbus uninstall-service-systemd \
-	uninstall-keepconf uninstall-purge
+        uninstall-keepconf uninstall-purge
 install: install-dunst install-dunstctl install-dunstrc install-service
 
 install-dunst: dunst doc
@@ -212,6 +228,7 @@ install-dunst: dunst doc
 	install -Dm644 docs/dunst.1 ${DESTDIR}${MANPREFIX}/man1/dunst.1
 	install -Dm644 docs/dunst.5 ${DESTDIR}${MANPREFIX}/man5/dunst.5
 	install -Dm644 docs/dunstctl.1 ${DESTDIR}${MANPREFIX}/man1/dunstctl.1
+	install -Dm644 docs/dunstify.1 ${DESTDIR}${MANPREFIX}/man1/dunstify.1
 
 install-dunstctl: dunstctl
 	install -Dm755 dunstctl ${DESTDIR}${BINDIR}/dunstctl
@@ -243,13 +260,13 @@ install-completions:
 	install -Dm644 completions/dunstctl.bashcomp ${DESTDIR}${BASHCOMPLETIONDIR}/dunstctl
 	install -Dm644 completions/_dunst.zshcomp ${DESTDIR}${ZSHCOMPLETIONDIR}/_dunst
 	install -Dm644 completions/_dunstctl.zshcomp ${DESTDIR}${ZSHCOMPLETIONDIR}/_dunstctl
-	install -Dm644 completions/dunst.fishcomp ${DESTDIR}${FISHCOMPLETIONDIR}/dunst
-	install -Dm644 completions/dunstctl.fishcomp ${DESTDIR}${FISHCOMPLETIONDIR}/dunstctl
+	install -Dm644 completions/dunst.fishcomp ${DESTDIR}${FISHCOMPLETIONDIR}/dunst.fish
+	install -Dm644 completions/dunstctl.fishcomp ${DESTDIR}${FISHCOMPLETIONDIR}/dunstctl.fish
 
 ifneq (0,${DUNSTIFY})
 install: install-completions-dunstify
 install-completions-dunstify:
-	install -Dm644 completions/dunstify.fishcomp ${DESTDIR}${FISHCOMPLETIONDIR}/dunstify
+	install -Dm644 completions/dunstify.fishcomp ${DESTDIR}${FISHCOMPLETIONDIR}/dunstify.fish
 endif
 endif
 
@@ -261,6 +278,7 @@ uninstall-keepconf: uninstall-service uninstall-dunstctl uninstall-completions
 	rm -f ${DESTDIR}${MANPREFIX}/man1/dunst.1
 	rm -f ${DESTDIR}${MANPREFIX}/man5/dunst.5
 	rm -f ${DESTDIR}${MANPREFIX}/man1/dunstctl.1
+	rm -f ${DESTDIR}${MANPREFIX}/man1/dunstify.1
 
 uninstall-dunstrc:
 	rm -f ${DESTDIR}${SYSCONFFILE}
@@ -284,6 +302,6 @@ uninstall-completions:
 	rm -f ${DESTDIR}${BASHCOMPLETIONDIR}/dunstctl
 	rm -f ${DESTDIR}${ZSHCOMPLETIONDIR}/_dunst
 	rm -f ${DESTDIR}${ZSHCOMPLETIONDIR}/_dunstctl
-	rm -f ${DESTDIR}${FISHCOMPLETIONDIR}/dunst
-	rm -f ${DESTDIR}${FISHCOMPLETIONDIR}/dunstctl
-	rm -f ${DESTDIR}${FISHCOMPLETIONDIR}/dunstify
+	rm -f ${DESTDIR}${FISHCOMPLETIONDIR}/dunst.fish
+	rm -f ${DESTDIR}${FISHCOMPLETIONDIR}/dunstctl.fish
+	rm -f ${DESTDIR}${FISHCOMPLETIONDIR}/dunstify.fish

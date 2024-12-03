@@ -14,4 +14,6 @@
     timeout = 0
 
 [global]
-# can be appended by script
+    icon_path = /usr/share/icons/Papirus/24x24/status/:/usr/share/icons/Papirus/24x24/devices/:/usr/share/icons/gnome/16x16/status/:/usr/share/icons/gnome/16x16/devices/
+    # can be appended by script
+    dmenu = /usr/local/bin/dmenu -l 10 -p dunst:

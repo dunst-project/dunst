@@ -94,7 +94,7 @@ const struct output* get_wl_output(void) {
 const struct output* output_create(bool force_xwayland)
 {
 #ifdef ENABLE_WAYLAND
-        if ((!force_xwayland || WAYLAND_ONLY) && is_running_wayland()) {
+        if ((!force_xwayland || !X11_SUPPORT) && is_running_wayland()) {
                 LOG_I("Using Wayland output");
                 if (force_xwayland)
                         LOG_W("Ignoring force_xwayland setting because X11 output was not compiled");

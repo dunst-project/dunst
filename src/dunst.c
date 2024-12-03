@@ -14,6 +14,7 @@
 #include "draw.h"
 #include "log.h"
 #include "menu.h"
+#include "rules.h"
 #include "notification.h"
 #include "option_parser.h"
 #include "queues.h"
@@ -25,6 +26,7 @@ GMainLoop *mainloop = NULL;
 
 static struct dunst_status status;
 static bool setup_done = false;
+static char **config_paths = NULL;
 
 /* see dunst.h */
 void dunst_status(const enum dunst_status_field field,
@@ -205,11 +207,33 @@ static void teardown(void)
         queues_teardown();
 
         draw_deinit();
+
+        g_strfreev(config_paths);
+
+        g_slist_free_full(rules, (GDestroyNotify)rule_free);
+}
+
+void reload(char **const configs)
+{
+        guint length = g_strv_length(configs);
+        LOG_M("Reloading settings (with the %s files)", length != 0 ? "new" : "old");
+
+        pause_signal(NULL);
+
+        setup_done = false;
+        draw_deinit();
+
+        load_settings(configs);
+        draw_setup();
+        setup_done = true;
+
+        queues_reapply_all_rules();
+
+        unpause_signal(NULL);
 }
 
 int dunst_main(int argc, char *argv[])
 {
-
         dunst_status_int(S_PAUSE_LEVEL, 0);
         dunst_status(S_IDLE, false);
 
@@ -229,10 +253,21 @@ int dunst_main(int argc, char *argv[])
         log_set_level_from_string(verbosity);
         g_free(verbosity);
 
-        char *cmdline_config_path;
-        cmdline_config_path =
-            cmdline_get_string("-conf/-config", NULL,
-                               "Path to configuration file");
+        cmdline_usage_append("-conf/-config", "string", "Path to configuration file");
+
+        int start = 1, count = 1;
+        while (cmdline_get_string_offset("-conf/-config", NULL, start, &start))
+                count++;
+
+        // Leaves an extra space for the NULL
+        config_paths = g_malloc0(sizeof(char *) * count);
+        start = 1, count = 0;
+        char *path = NULL;
+
+        do {
+                path = cmdline_get_string_offset("-conf/-config", NULL, start, &start);
+                config_paths[count++] = path;
+        } while (path != NULL);
 
         settings.print_notifications = cmdline_get_bool("-print/--print", false, "Print notifications to stdout");
 
@@ -244,7 +279,7 @@ int dunst_main(int argc, char *argv[])
                 usage(EXIT_SUCCESS);
         }
 
-        load_settings(cmdline_config_path);
+        load_settings(config_paths);
         int dbus_owner_id = dbus_init();
 
         mainloop = g_main_loop_new(NULL, FALSE);
@@ -289,6 +324,8 @@ int dunst_main(int argc, char *argv[])
 
         teardown();
 
+        settings_free(&settings);
+
         return 0;
 }
 
@@ -302,9 +339,15 @@ void usage(int exit_status)
 
 void print_version(void)
 {
-        printf
-            ("Dunst - A customizable and lightweight notification-daemon %s\n",
-             VERSION);
+        printf("Dunst - A customizable and lightweight notification-daemon %s\n", VERSION);
+        printf("Compiled on %s with the following options:\n", STR_TO(_CCDATE));
+
+        printf("X11 support: %s\n", X11_SUPPORT ? "enabled" : "disabled");
+        printf("Wayland support: %s\n", WAYLAND_SUPPORT ? "enabled" : "disabled");
+        printf("SYSCONFDIR set to: %s\n", SYSCONFDIR);
+
+        printf("Compiler flags: %s\n", STR_TO(_CFLAGS));
+        printf("Linker flags: %s\n", STR_TO(_LDFLAGS));
         exit(EXIT_SUCCESS);
 }
 

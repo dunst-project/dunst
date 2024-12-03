@@ -1,5 +1,34 @@
 # Dunst changelog
 
+## 1.12.0 -- 2024-11-30
+
+### Added
+- Export rules via dbus with `dunstctl rules [--json]` (#1212)
+- Added checks and messages for missing DBUS\_SESSION\_BUS\_ADDRESS (#1389)
+- Add `-e/--exit` flag to `dunstctl is-paused` to exit with 1 when paused (#1378)
+- Add color gradients for the progress bar (by providing a list of colors instead of one) (#1370)
+- Use TESTDIR env var as the base for the test program (#1376)
+- Add `dunstctl reload` to hot reload the configuration (#1350)
+- Add an optional id to `dunstctl close` (#1351)
+- Print compile-time options in `dunst --version` (#1336)
+
+### Changed
+- BREAKING: Implement dynamic height (changes the the `height` setting, see manual) (#1342)
+- Change the preferred syntax of `offset` from `NxN` to `(N,N)` (#1330)
+- Install the systemd service file in the session.slice (#1397)
+- Open url with `dunstctl action` if no action is present (#1345,#1395)
+- Remove default icons (now no icons are hard-coded) (#1365,#1358)
+- Various updates to documentation and test suite
+
+### Fixed
+- Order of context menu was reversed (#1394,#1375)
+- Resolve ~ and $HOME in `icon_path` (#1383,#1371)
+- Fix broken link to freedesktop's notification specs in man page (#1381)
+- Remove the message about shortcuts deprecation (#1353)
+- Fix vertical padding behaviour (#1342)
+- Fix bash completion (#1347)
+- Fix file suffix for fish completions during installation (#1339)
+
 ## 1.11.0 -- 2024-04-15
 
 ### Added

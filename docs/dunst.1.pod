@@ -1,6 +1,6 @@
 =head1 NAME
 
-dunst - A customizable and lightweight notification-daemon
+dunst - a customizable and lightweight notification-daemon
 
 =head1 SYNOPSIS
 
@@ -57,6 +57,39 @@ Display a notification on startup.
 
 =back
 
+=head2 DEPRECATED OPTIONS
+
+Old version of dunst allowed changing the colors of different urgencies through
+command line options. This has been long removed in favour of RULES, see issue #328.
+
+=over 4
+
+=item B<-li/ni/ci icon>
+
+Set notification icon.
+
+=item B<-lf/nf/cf color>
+
+Set notification foreground color.
+
+=item B<-lb/nb/cb color>
+
+Set notification background color.
+
+=item B<-lh/nh/ch color>
+
+Set notification highlight color.
+
+=item B<-lfr/nfr/cfr color>
+
+Set notification frame color.
+
+=item B<-lto/nto/cto secs>
+
+Set notification timeout time.
+
+=back
+
 =head1 CONFIGURATION
 
 A default configuration file is included (usually ##SYSCONFDIR##/dunst/dunstrc)
@@ -68,21 +101,21 @@ configuration files and how settings get applied.
 
 See dunst(5) for all possible settings.
 
-=head2 NOTIFY-SEND
+=head2 NOTIFY-SEND HINTS
 
-dunst is able to get different colors for a message via notify-send.
+Dunst is able to get different colors for a message via notify-send.
 In order to do that you have to add a hint via the -h option.
 The progress value can be set with a hint, too.
 
-=over 4
+See dunst(5) for the list of accepted hints.
 
-=item notify-send -h string:fgcolor:#ff4444
+Some examples:
 
-=item notify-send -h string:bgcolor:#4444ff -h string:fgcolor:#ff4444 -h string:frcolor:#44ff44
+	notify-send -h string:fgcolor:#ff4444
 
-=item notify-send -h int:value:42 "Working ..."
+	notify-send -h string:bgcolor:#4444ff -h string:fgcolor:#ff4444 -h string:frcolor:#44ff44
 
-=back
+	notify-send -h int:value:42 "Working ..."
 
 =head1 MISCELLANEOUS
 
@@ -164,4 +197,4 @@ If you feel that copyrights are violated, please send me an email.
 
 =head1 SEE ALSO
 
-dunst(5), dunstctl(1), dmenu(1), notify-send(1)
+dunst(5), dunstctl(1), dmenu(1), notify-send(1), dunstify(1)

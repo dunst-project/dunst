@@ -9,11 +9,13 @@ extern const char *base;
 // In this suite a few dunstrc's are tested to see if the settings code works
 // This file is called setting.c, since the name settings.c caused issues.
 
-char *config_path;
+char *config_paths[2] = {0};
 
 TEST test_dunstrc_markup(void) {
-        config_path = g_strconcat(base, "/data/dunstrc.markup", NULL);
-        load_settings(config_path);
+        settings_free(&settings);
+
+        config_paths[0] = g_strconcat(base, "/data/dunstrc.markup", NULL);
+        load_settings(config_paths);
 
         ASSERT_STR_EQ(settings.font, "Monospace 8");
 
@@ -24,13 +26,15 @@ TEST test_dunstrc_markup(void) {
         ASSERT_STR_EQ(e_format, got_format);
         ASSERT(settings.indicate_hidden);
 
-        g_free(config_path);
+        g_clear_pointer(&config_paths[0], g_free);
         PASS();
 }
 
 TEST test_dunstrc_nomarkup(void) {
-        config_path = g_strconcat(base, "/data/dunstrc.nomarkup", NULL);
-        load_settings(config_path);
+        settings_free(&settings);
+
+        config_paths[0] = g_strconcat(base, "/data/dunstrc.nomarkup", NULL);
+        load_settings(config_paths);
 
         ASSERT_STR_EQ(settings.font, "Monospace 8");
 
@@ -41,20 +45,21 @@ TEST test_dunstrc_nomarkup(void) {
         ASSERT_STR_EQ(e_format, got_format);
         ASSERT(settings.indicate_hidden);
 
-        g_free(config_path);
+        g_clear_pointer(&config_paths[0], g_free);
         PASS();
 }
 
 // Test if the defaults in code and in dunstrc match
 TEST test_dunstrc_defaults(void) {
+        struct settings s_old = settings;
         struct settings s_default;
         struct settings s_dunstrc;
 
-        config_path = g_strconcat(base, "/data/dunstrc.default", NULL);
+        config_paths[0] = g_strconcat(base, "/data/dunstrc.default", NULL);
         set_defaults();
         s_default = settings;
 
-        load_settings(config_path);
+        load_settings(config_paths);
         s_dunstrc = settings;
 
         ASSERT_EQ(s_default.corner_radius, s_dunstrc.corner_radius);
@@ -83,29 +88,35 @@ TEST test_dunstrc_defaults(void) {
                                 } else if (allowed_settings[i].parser == string_parse_maybe_int) {
                                         // not a number
                                         break;
-                                } // else fall through
+                                }
+                                break;
                         case TYPE_TIME:
-                        case TYPE_INT:;
-                                        {
-                                                int a = *(int*) ((char*) &s_default + offset);
-                                                int b = *(int*) ((char*) &s_dunstrc + offset);
-                                                ASSERT_EQm(message, a, b);
-                                        }
-                                      break;
+                        case TYPE_INT:
+                                {
+                                            int a = *(int*) ((char*) &s_default + offset);
+                                            int b = *(int*) ((char*) &s_dunstrc + offset);
+                                            ASSERT_EQm(message, a, b);
+                                }
+                                break;
                         case TYPE_DOUBLE:
                         case TYPE_STRING:
                         case TYPE_PATH:
                         case TYPE_LIST:
                         case TYPE_LENGTH:
                         case TYPE_COLOR:
-                                      break; // TODO implement these checks as well
+                        case TYPE_GRADIENT:
+                                    break; // TODO implement these checks as well
                         default:
-                                      printf("Type unknown %s:%d\n", __FILE__, __LINE__);
+                                    printf("Type unknown %s:%d\n", __FILE__, __LINE__);
                 }
                 /* printf("%zu\n", offset); */
         }
 
-        g_free(config_path);
+        // NOTE: The last loaded settings should not be freed here
+        settings_free(&s_old);
+        settings_free(&s_default);
+
+        g_clear_pointer(&config_paths[0], g_free);
         PASS();
 }
 

@@ -21,19 +21,27 @@
 
     ### Geometry ###
 
+    # The width of the window, excluding the frame.
     # dynamic width from 0 to 300
     # width = (0, 300)
     # constant width of 300
     width = 300
 
-    # The maximum height of a single notification, excluding the frame.
-    height = 300
+    # The height of a single notification, excluding the frame.
+    # dynamic height from 0 to 300
+    height = (0, 300)
+    # constant height of 300
+    # height = 300
+    # NOTE: Dunst from version 1.11 and older don't support dynamic height
+    #       and the given value is treated as the maximum height
 
     # Position the notification in the top right corner
     origin = top-right
 
     # Offset from the origin
-    offset = 10x50
+    # NOTE: Dunst from version 1.11 and older use this alternative notation
+    # offset = 10x50
+    offset = (10, 50)
 
     # Scale factor. It is auto-detected if value is 0.
     scale = 0
@@ -336,16 +344,16 @@
     background = "#222222"
     foreground = "#888888"
     timeout = 10
-    # Icon for notifications with low urgency, uncomment to enable
-    #default_icon = /path/to/icon
+    # Icon for notifications with low urgency
+    default_icon = dialog-information
 
 [urgency_normal]
     background = "#285577"
     foreground = "#ffffff"
     timeout = 10
     override_pause_level = 30
-    # Icon for notifications with normal urgency, uncomment to enable
-    #default_icon = /path/to/icon
+    # Icon for notifications with normal urgency
+    default_icon = dialog-information
 
 [urgency_critical]
     background = "#900000"
@@ -353,8 +361,8 @@
     frame_color = "#ff0000"
     timeout = 0
     override_pause_level = 60
-    # Icon for notifications with critical urgency, uncomment to enable
-    #default_icon = /path/to/icon
+    # Icon for notifications with critical urgency
+    default_icon = dialog-warning
 
 # Every section that isn't one of the above is interpreted as a rules to
 # override settings for certain messages.

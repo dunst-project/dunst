@@ -1,6 +1,6 @@
 =head1 NAME
 
-dunst - configuration file
+dunstrc - dunst configuration file
 
 =head1 DESCRIPTION
 
@@ -9,7 +9,7 @@ starts with the section's name in square brackets. After that is a list of
 key-value pairs that specify the settings. Whitespace is purely cosmetic and
 doesn't change the result.
 
-The 'global' section contains the general settings applying to all of dunst. The
+The "global" section contains the general settings applying to all of dunst. The
 rest of the settings can be specified via rules and can be located in any
 section. These rules can change a notification based on its properties. There
 are filtering rules and modifying rules. Filtering rules specify what
@@ -20,7 +20,7 @@ filters: it applies to all notifications.
 
 See RULES for more details.
 
-All experimental settings are marked with I<Experimental>
+All experimental settings are marked with I<Experimental>.
 
 =head2 Global section
 
@@ -64,7 +64,7 @@ When set to true (recommended), you can use POSIX regular expressions for
 filtering rules. It uses the POSIX Extended Regular Expression syntax:
 https://en.m.wikibooks.org/wiki/Regular_Expressions/POSIX-Extended_Regular_Expressions.
 
-If this is set to false (not recommended), dunst will us fnmatch(3) for matching
+If this is set to false (not recommended), dunst will use fnmatch(3) for matching
 strings. Dunst doesn't pass any flags to fnmatch, so you cannot make use of
 extended patterns.
 
@@ -84,10 +84,11 @@ old geometry config as follows:
 
 In the new config you can then set the following variables (make sure to remove
 any negative signs)
-        width = <width>
-        height = <height>
-        offset = <offset>
-        origin = top-right # or top-left, or any other direction you prefer
+
+    width = <width>
+    height = <height>
+    offset = <offset>
+    origin = top-right # or top-left, or any other direction you prefer
 
 =item B<width>
 
@@ -96,8 +97,9 @@ specify a constant width or two numbers for the minimum and maximum width. The
 notification will expand from the minimum width as neccesary.
 
 Examples:
-        width = 300      # constant width of 300
-        width = (0, 300) # width between 0 and 300
+
+    width = 300      # constant width of 300
+    width = (0, 300) # width between 0 and 300
 
 When setting a width bigger than the screen, dunst will clamp the width to the
 screen width. So if you want the notifcation to stretch the entire screen
@@ -106,7 +108,19 @@ screens exceed (e.g. 10000).
 
 =item B<height>
 
-The maximum height of a single notification.
+The height of each notification in pixels. This can be a single number to
+specify a constant height or two numbers for the minimum and maximum width. The
+notification will expand from the minimum height as neccesary.
+
+Examples:
+
+    height = 300      # constant height of 300
+    height = (0, 300) # height between 0 and 300
+
+Note that unlike width, different notifications can have diffrent height values.
+
+Dunst v1.11 and older do not support a dynamic height and B<height> accepts a
+single value whose behaviour is equivalent to (0, value).
 
 =item B<notification_limit> (default: 20)
 
@@ -123,15 +137,16 @@ more information.
 The origin of the notification window on the screen. It can then be moved with
 offset.
 Origin can be one of:
-        top-left
-        top-center
-        top-right
-        bottom-left
-        bottom-center
-        bottom-right
-        left-center
-        center
-        right-center
+
+    top-left
+    top-center
+    top-right
+    bottom-left
+    bottom-center
+    bottom-right
+    left-center
+    center
+    right-center
 
 =item B<offset> format: (horizontal, vertical)
 
@@ -140,8 +155,14 @@ of the screen specified by B<origin>. A negative offset will lead to the
 notification being off screen.
 
 Examples:
-        origin = top-right
-        offset = 10x300 # a margin of 10 pixels from the right and 300 pixels from the top
+
+    origin = top-right
+    offset = (10, 300) # a margin of 10 pixels from the right and 300 pixels from the top
+
+Dunst v1.11 and older use the syntax NxN instead (X offset x Y offset).
+For backwards compatibility this syntax is also accepted.
+
+    offset = 10x300
 
 =item B<scale> (default: 0, X11 only)
 
@@ -154,7 +175,7 @@ needed. If 0 is specified, the scale factor is auto-detected.
 
 =item B<progress_bar> (values: [true/false], default: true)
 
-When an integer value is passed to dunst as a hint (see B<NOTIFY-SEND>), a
+When an integer value is passed to dunst as a hint (see NOTIFY-SEND), a
 progress bar will be drawn at the bottom of the notification. This
 behavior can be turned off by setting this setting to false.
 
@@ -243,19 +264,20 @@ if B<gap_size> is greater than 0.
 =item B<padding> (default: 8)
 
 The distance in pixels from the content to the separator/border of the window
-in the vertical axis
+in the vertical axis.
 
 =item B<horizontal_padding> (default: 8)
 
 The distance in pixels from the content to the border of the window
-in the horizontal axis
+in the horizontal axis.
 
 =item B<text_icon_padding> (default: 0)
 
 The distance in pixels from the text to the icon (or vice versa)
 in the horizontal axis.
 
-Setting this to a non-zero value overwrites any padding that horizontal_padding was adding between the notification text and icon.
+Setting this to a non-zero value overwrites any padding that horizontal_padding was
+adding between the notification text and icon.
 
 So for example setting
 
@@ -305,7 +327,7 @@ urgency between the 2 notifications that are being separated.
 
 =item B<anything else>
 
-Any other value is interpreted as a color, see COLORS
+Any other value is interpreted as a color, see COLORS.
 
 =back
 
@@ -337,17 +359,13 @@ anyway. Use a rule with 'set_transient = no' to disable this behavior.
 
 Note: this doesn't work on xwayland.
 
-=item B<layer> (Wayland only)
-
-One of bottom, top or overlay.
+=item B<layer> (values: [bottom/top/overlay], default: overlay) (Wayland only)
 
 Place dunst notifications on the selected layer. Using overlay
 will cause notifications to be displayed above fullscreen windows, though
 this may also occur at top depending on your compositor.
 
 The bottom layer is below all windows and above the background.
-
-Default: overlay
 
 =item B<force_xwayland> (values: [true/false], default: false) (Wayland only)
 
@@ -362,7 +380,8 @@ Defines the font or font set used. Optionally set the size as a decimal number
 after the font name and space.
 Multiple font options can be separated with commas.
 
-This options is parsed as a Pango font description.
+This options is parsed as a Pango font description. More information on the string
+format can be found here https://docs.gtk.org/Pango/type_func.FontDescription.from_string.html.
 
 =item B<line_height> (default: 0)
 
@@ -414,7 +433,7 @@ removed from the format.
 =item B<vertical_alignment> (values: [top/center/bottom], default: center)
 
 Defines how the text and icon should be aligned vertically within the
-notification. If icons are disabled, this option has no effect.
+notification.
 
 =item B<show_age_threshold> (default: 60)
 
@@ -451,7 +470,7 @@ notifications.
 
 Dunst doens't search outside of these direcories. For a recursive icon lookup
 system, see B<enable_recursive_icon_lookup>. This new system will eventually
-replace this and will need new settings.
+replace icon_path search.
 
 =item B<icon_theme> (default: "Adwaita", example: "Adwaita, breeze")
 
@@ -509,23 +528,25 @@ appended to the end of the value of this setting.
 =item B<always_run_script> (values: [true/false] default: true]
 
 Always run rule-defined scripts, even if the notification is suppressed with
-format = "". See SCRIPTING.
+C<format = "">. See SCRIPTING.
 
 =item B<title> (default: "Dunst") (X11 only)
 
-Defines the title of notification windows spawned by dunst. (_NET_WM_NAME
-property). There should be no need to modify this setting for regular use.
+Defines the title (I<_NET_WM_NAME> property) of notification windows spawned by dunst.
+
+There should be no need to modify this setting for regular use.
 
 =item B<class> (default: "Dunst") (X11 only)
 
-Defines the class of notification windows spawned by dunst. (First part of
-WM_CLASS). There should be no need to modify this setting for regular use.
+Defines the class (I<WM_CLASS> first part) of notification windows spawned by dunst.
+
+There should be no need to modify this setting for regular use.
 
 =item B<force_xinerama> (values: [true/false], default: false) (X11 only)
 
 Use the Xinerama extension instead of RandR for multi-monitor support. This
-setting is provided for compatibility with older nVidia drivers that do not
-support RandR and using it on systems that support RandR is highly discouraged.
+setting is I<provided for compatibility> with older nVidia drivers that do not
+support RandR and using it on systems that support RandR is I<highly discouraged>.
 
 By enabling this setting dunst will not be able to detect when a monitor is
 connected or disconnected which might break follow mode if the screen layout
@@ -545,13 +566,11 @@ automatically lowered to half of the notification height if it exceeds it.
 
 This setting will be ignored if B<corners> is set to none.
 
-=item B<corners> (default: all)
+=item B<corners> (values: [none/all/bottom-right/bottom-left/top-right/top-left/top/bottom/left/right], default: all)
 
-Define which corners to round when drawing the window. If the corner radius
-is set to 0 this option will be ignored.
+Comma-separated list of the corners to round when drawing the window.
 
-Comma-separated list of the corners. The accepted corner values are bottom-right,
-bottom-left, top-right, top-left, top, bottom, left, right or all.
+If the corner radius is set to 0 this option will be ignored.
 
 =item B<mouse_[left/middle/right]_click> (values: [none/do_action/close_current/close_all/context/context_all])
 
@@ -561,13 +580,13 @@ actions to be executed in sequence.
 
 B<Defaults:>
 
-=over 12
+=over 8
 
-=item * C<mouse_left_click="close_current">
+=item * C<mouse_left_click=close_current>
 
-=item * C<mouse_middle_click="do_action, close_current">
+=item * C<mouse_middle_click=do_action, close_current>
 
-=item * C<mouse_right_click="close_all">
+=item * C<mouse_right_click=close_all>
 
 =back
 
@@ -607,19 +626,19 @@ Open context menu for all notifications.
 
 =item B<ignore_dbusclose> (default: false)
 
-Ignore the dbus closeNotification message. This is useful to enforce the timeout
+Ignore the dbus I<CloseNotification> message. This is useful to enforce the timeout
 set by dunst configuration. Without this parameter, an application may close
 the notification sent before the user defined timeout.
 
 =item B<override_pause_level> (values: [0-100], default: 0)
 
-A Notification will appear whenever notification's
-override_pause_level >= dunst's paused level. Setting this to values other than 0
-allows you to create partial pause modes, where more urgent notifications get through,
-but less urgent stay paused. For example, when you can set a low battery noficiation's
-override_pause_level to 60 and then set dunst's pause level to 60. This will cause dunst to
-only show battery level notification (and other notifications with override_pause_level >= 60),
-while suspending others.
+A notification will appear whenever notification's I<override_pause_level> is greater than the paused level.
+Setting this to values other than 0 allows you to create partial pause modes, where more urgent notifications get through,
+but less urgent stay paused.
+
+For example, when you can set a low battery noficiation's override_pause_level to 60 and then
+set dunst's pause level to 60. This will cause dunst to only show battery level notification
+(and other notifications with override_pause_level >= 60), while suspending others.
 
 =back
 
@@ -633,6 +652,9 @@ config for consistency with other settings.
 
 Alternatively you can also define shortcuts inside your window manager and bind
 them to dunstctl(1) commands.
+
+Wayland does not allow applications to listen to global keyboard events, so
+this feature can be implemented only for X.
 
 =over 4
 
@@ -666,50 +688,8 @@ normal and critical urgency respectively.
 
 See the example configuration file for examples.
 
-The flags for setting the colors notifications of different urgencies have been
-removed. See issue #328 in the bug tracker for discussions (See REPORTING BUGS).
-
-=over 4
-
-=item B<-li/ni/ci icon> DEPRECATED
-
-Defines the icon for low, normal and critical notifications respectively. This
-setting will be replaced by the B<default_icon> setting, so it's
-recommended to replace it as soon as possible.
-
-Where I<icon> is a path to an image file containing the icon.
-
-=item B<-lf/nf/cf color> REMOVED
-
-Defines the foreground color for low, normal and critical notifications respectively.
-
-See COLORS for the value format.
-
-=item B<-lb/nb/cb color> REMOVED
-
-Defines the background color for low, normal and critical notifications respectively.
-
-See COLORS for the value format.
-
-=item B<-lh/nh/ch color> REMOVED
-
-Defines the highlight color for low, normal and critical notifications respectively.
-
-See COLORS for the value format.
-
-=item B<-lfr/nfr/cfr color> REMOVED
-
-Defines the frame color for low, normal and critical notifications respectively.
-
-See COLORS for more information
-
-=item B<-lto/nto/cto secs> REMOVED
-
-Defines the timeout time for low, normal and critical notifications
-respectively.
-See TIME FORMAT for valid times.
-
-=back
+Old version of dunst allowed changing the colors of different urgencies through
+command line options. This has been long removed in favour of RULES, see issue #328.
 
 =head1 DUNSTCTL
 
@@ -737,9 +717,9 @@ Dunst has Wayland support since version 1.6.0. Because the Wayland protocol
 is more focused on security, some things that are possible in X11 are not
 possible in Wayland. Those differences are reflected in the configuration.
 The main things that change are that dunst on Wayland cannot use global
-hotkeys (they are deprecated anyways, use dunstctl).
+hotkeys, use dunstctl instead.
 
-Some dunst features on wayland might need your compositor to support a certain
+Some dunst features on Wayland might need your compositor to support a certain
 protocol. Dunst will warn you if an optional feature isn't supported and will
 disable the corresponding functionality.
 
@@ -747,7 +727,8 @@ Fullscreen detection works on wayland with some limitations (see B<fullscreen>).
 If you want notifications to appear over fullscreen windows, set
 B<layer = overlay> in the global options.
 
-Note that the same limitations exist when using xwayland.
+Note that the same limitations exist when using XWayland.
+
 If something doesn't quite work in Wayland, please file a bug report. In the
 mean time, you can try if the X11 output does work on wayland. Use
 B<force_xwayland = true> for that.
@@ -801,7 +782,17 @@ expressions. It's recommended to set B<enable_posix_regex> to true. You can then
 use the POSIX Extended Regular Expression syntax:
 https://en.m.wikibooks.org/wiki/Regular_Expressions/POSIX-Extended_Regular_Expressions.
 
-Notifications can be matched for any of the following attributes.
+A matching rule is made by assigning a filter attribute to the value you want to match.
+Shell-like globbing is supported when matching values.
+
+If multiple filter expressions are present, all of them have to match for the rule to be applied
+(logical AND).
+
+An example of rule that only operates on messages sent by notify-send is:
+
+    appname="notify-send"
+
+The allowed attributes are listed below.
 
 =over 4
 
@@ -810,6 +801,8 @@ Notifications can be matched for any of the following attributes.
 The name of the application as reported by the client. Be aware that the name
 can often differ depending on the locale used.
 
+It's recommended to use the C<desktop_entry> filter instead.
+
 =item C<body>
 
 The body of the notification
@@ -817,7 +810,7 @@ The body of the notification
 =item C<category>
 
 The category of the notification as defined by the notification spec. See
-https://specifications.freedesktop.org/notification-spec/latest/ar01s06.html.
+https://specifications.freedesktop.org/notification-spec/latest/categories.html.
 
 =item C<desktop_entry>
 
@@ -849,6 +842,8 @@ See C<override_dbus_timeout> for more details about this attribute.
 Matches the urgency of the notification as set by the client or by some other
 rule.
 
+It is named so to not conflict with trying to modify the urgency.
+
 =item C<stack_tag>
 
 Matches the stack tag of the notification as set by the client or by some other
@@ -862,24 +857,10 @@ Matches the summary, 'title', of the notification.
 
 =back
 
-C<msg_urgency> is the urgency of the notification, it is named so to not conflict
-with trying to modify the urgency.
-
-Instead of the appname filter, it's recommended to use the desktop_entry filter.
-
-
-To define a matching rule simply assign the specified value to the value that
-should be matched, for example:
-
-    appname="notify-send"
-
-Matches only messages that were send via notify-send. If multiple filter
-expressions are present, all of them have to match for the rule to be applied
-(logical AND).
-
-Shell-like globbing is supported.
-
 =item B<modifying>
+
+A modifying rule, similarly to a filtering one, is made by assigning a value
+to a notification attribute in the rule definition.
 
 The following attributes can be overridden:
 
@@ -898,6 +879,9 @@ The foreground color of the notification. See COLORS for possible values.
 The highlight color of the notification. This color is used for coloring the
 progress bar. See COLORS for possible values.
 
+You can also set additional color values (as a comma-separated list)
+to define a linear gradient spanning all the length of the progress bar.
+
 =item C<format>
 
 Equivalent to the C<format> setting.
@@ -906,9 +890,7 @@ Equivalent to the C<format> setting.
 
 The frame color color of the notification. See COLORS for possible values.
 
-=item C<fullscreen>
-
-One of show, delay, or pushback.
+=item C<fullscreen> (values: [delay/show/pushback], default: show)
 
 This attribute specifies how notifications are handled if a fullscreen window
 is focused. By default it's set to show so notifications are being shown.
@@ -921,7 +903,7 @@ Or pushback which is equivalent to delay with the difference that already
 existing notifications are paused and hidden until the focus to the fullscreen
 window is lost.
 
-On wayland, if B<follow> is set to mouse or keyboard, the output where the
+On Wayland, if B<follow> is set to mouse or keyboard, the output where the
 notification is located cannot be determined. So dunst will delay or pushback if
 any of the outputs is fullscreen. Since the fullscreen protocol is fairly new,
 you will need a recent version of a compositor that supports it. At the time of
@@ -929,9 +911,7 @@ writing, you will need the git version of sway.
 See also B<layer> to change if notifications appear above fullscreen windows in
 Wayland.
 
-Default: show
-
-=item B<min_icon_size> (default: 32)
+=item C<min_icon_size> (default: 32)
 
 Defines the minimum size in pixels for the icons.
 If the icon is larger than or equal to the specified value it won't be affected.
@@ -943,7 +923,7 @@ icons from a theme will be this size.
 
 If B<icon_position> is set to off, this setting is ignored.
 
-=item B<max_icon_size> (default: 128)
+=item C<max_icon_size> (default: 128)
 
 Defines the maximum size in pixels for the icons.
 If the icon is smaller than or equal to the specified value it won't be affected.
@@ -956,7 +936,6 @@ If both B<min_icon_size> and B<max_icon_size> are enabled, the latter
 gets the last say.
 
 If B<icon_position> is set to off, this setting is ignored.
-
 
 =item C<new_icon>
 
@@ -998,9 +977,9 @@ value of this by specifying the 'transient' hint when sending notifications.
 
 =item C<set_category>
 
-Sets the category of the notification. See
-https://specifications.freedesktop.org/notification-spec/latest/ar01s06.html
-for a list of standard categories.
+Sets the category of the notification.
+For a list of standard categories see
+https://specifications.freedesktop.org/notification-spec/latest/categories.html.
 
 =item C<timeout>
 
@@ -1029,36 +1008,34 @@ initially but will be saved in history for later viewing.
 Setting this to true will display the notification initially, but stop it
 from being recalled via the history.
 
-=item C<action_name>
+=item C<action_name> (default: "default")
 
 Sets the name of the action to be invoked on do_action. If not specified, the
 action set as default action or the only available action will be invoked.
 
-Default: "default"
-
-=item B<word_wrap> (values: [true/false], default: true)
+=item C<word_wrap> (values: [true/false], default: true)
 
 Specifies whether to wrap the text if the lines get longer than the maximum
 notification width. If it's set to true, long lines will be broken into multiple
 lines expanding the notification window height as necessary for them to fit. If
 the text doesn't fit in the window, it will be ellipsize according to ellipsize.
 
-=item B<ellipsize> (values: [start/middle/end], default: middle)
+=item C<ellipsize> (values: [start/middle/end], default: middle)
 
 Specifies where truncated lines should be ellipsized.
 
-=item B<alignment> (values: [left/center/right], default: left)
+=item C<alignment> (values: [left/center/right], default: left)
 
 Defines how the text should be aligned within the notification.
 
-=item B<hide_text> (values: [true/false], default: false)
+=item C<hide_text> (values: [true/false], default: false)
 
 Setting this to true will skip displaying any text related to the notification.
 The notification icon and progress bar will still be displayed. This option may
 be useful for notifications where an icon or progress bar may be sufficient
 information for the notification, such as audio volume or brightness level.
 
-=item B<markup> (values: [full/strip/no], default: no)
+=item C<markup> (values: [full/strip/no], default: no)
 
 Defines how markup in notifications is handled.
 
@@ -1079,7 +1056,7 @@ Allow a small subset of html markup in notifications
     <u>underline</u>
 
 For a complete reference see
-<https://docs.gtk.org/Pango/pango_markup.html>
+https://docs.gtk.org/Pango/pango_markup.html.
 
 =item B<strip>
 
@@ -1091,7 +1068,7 @@ Dunst will try to strip the markup but the parsing is simplistic so using this
 option outside of matching rules for specific applications B<IS GREATLY
 DISCOURAGED>.
 
-See RULES
+See RULES for matching specific broken clients.
 
 =item B<no>
 
@@ -1102,15 +1079,6 @@ a global setting.
 =back
 
 =back
-
-As with the filtering attributes, each one corresponds to
-the respective notification attribute to be modified.
-
-As with filtering, to make a rule modify an attribute simply assign it in the
-rule definition.
-
-If the format is set to an empty string, the notification will not be
-suppressed.
 
 =back
 
@@ -1147,70 +1115,79 @@ name.
 
 =head1 COLORS
 
-Colors are interpreted as X11 color values. This includes both verbatim
-color names such as "Yellow", "Blue", "White", etc as well as #RGB and #RRGGBB
-values.
+Colors are values with the format #RGB or #RRGGBB.
 
-You may also specify a transparency component in #RGBA or #RRGGBBAA format.
+You may also specify a transparency component by using the format #RGBA or #RRGGBBAA.
 
-B<NOTE>: '#' is interpreted as a comment, to use it the entire value needs to
-be in quotes like so: separator_color="#123456"
+B<NOTE>: '#' is interpreted as a comment, to use it the entire value needs to be quoted.
+For example:
 
-=head2 NOTIFY-SEND
+	separator_color="#123456"
 
-dunst is able to get different colors for a message via notify-send.
+=head1 NOTIFY-SEND HINTS
+
+Dunst is able to get different colors for a message via notify-send.
 In order to do that you have to add a hint via the -h option.
 The progress value can be set with a hint, too.
 
-B<All hints>
+Note: Dunstify is compatible with notify-send and all of these
+settings work the same way.
+
+All the accepted hints are listed below.
 
 See RULES for more detailed explanations for some options.
 
 =over 4
 
-=item B<fgcolor>:
+=item B<fgcolor>
+
 Foreground color.
 
-=item B<bgcolor>:
+=item B<bgcolor>
+
 Background color.
 
-=item B<frcolor>:
+=item B<frcolor>
+
 Frame color.
 
-=item B<hlcolor>:
+=item B<hlcolor>
+
 Highlight color.
 
-=item B<value>:
+=item B<value>
+
 Progress value.
 
-=item B<image-path>:
+=item B<image-path>
+
 Icon name. This may be a path or just the icon name.
 
-=item B<image-data>:
+=item B<image-data>
+
 A stream of raw image data.
 
-=item B<category>:
+=item B<category>
+
 The category.
 
-=item B<desktop-entry>:
+=item B<desktop-entry>
+
 The desktop entry.
 
-=item B<transient>:
+=item B<transient>
+
 The transient value.
 
 =back
 
-B<Examples>
+Some examples:
 
-=over 4
+	notify-send -h string:fgcolor:#ff4444
 
-=item notify-send -h string:fgcolor:#ff4444
+	notify-send -h string:bgcolor:#4444ff -h string:fgcolor:#ff4444 -h string:frcolor:#44ff44
 
-=item notify-send -h string:bgcolor:#4444ff -h string:fgcolor:#ff4444 -h string:frcolor:#44ff44
-
-=item notify-send -h int:value:42 "Working ..."
-
-=back
+	notify-send -h int:value:42 "Working ..."
 
 =head1 ACTIONS
 
@@ -1240,22 +1217,22 @@ given, seconds ("s") is taken as default.
 
 Time units understood by dunst are "ms", "s", "m", "h" and "d".
 
-Example time: "1000ms" "10m"
+Example time: "1000ms", "10m".
 
 =head1 AUTHORS
 
-Written by Sascha Kruse <knopwob@googlemail.com>
+Written by Sascha Kruse <knopwob@googlemail.com>.
 
 =head1 REPORTING BUGS
 
-Bugs and suggestions should be reported on GitHub at https://github.com/dunst-project/dunst/issues
+Bugs and suggestions should be reported on GitHub at https://github.com/dunst-project/dunst/issues.
 
 =head1 COPYRIGHT
 
-Copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information)
+Copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information).
 
 If you feel that copyrights are violated, please send me an email.
 
 =head1 SEE ALSO
 
-dunst(1), dunstctl(1), dmenu(1), notify-send(1)
+dunst(1), dunstctl(1), dmenu(1), notify-send(1), dunstify(1)

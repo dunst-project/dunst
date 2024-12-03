@@ -18,11 +18,7 @@
 
 static int cmdline_argc;
 static char **cmdline_argv;
-
 static char *usage_str = NULL;
-static void cmdline_usage_append(const char *key, const char *type, const char *description);
-
-static int cmdline_find_option(const char *key);
 
 #define STRING_PARSE_RET(string, value) if (STR_EQ(s, string)) { *ret = value; return true; }
 
@@ -131,15 +127,13 @@ int string_parse_list(const void *data, const char *s, void *ret) {
         switch (type) {
                 case MOUSE_LIST:
                         arr = string_to_array(s, ",");
-                        success = string_parse_enum_list(&mouse_action_enum_data,
-                                        arr, ret);
+                        success = string_parse_enum_list(&mouse_action_enum_data, arr, ret);
                         break;
                 case OFFSET_LIST:
                         arr = string_to_array(s, "x");
                         int len = string_array_length(arr);
                         if (len != 2) {
                                 success = false;
-                                LOG_W("Offset has two values, separated by an 'x'");
                                 break;
                         }
                         int *int_arr = NULL;
@@ -241,6 +235,36 @@ int string_parse_color(const char *s, struct color *ret)
         return true;
 }
 
+int string_parse_gradient(const char *s, struct gradient **ret)
+{
+        struct color colors[10];
+        size_t length = 0;
+
+        gchar **strs = g_strsplit(s, ",", -1);
+        for (int i = 0; strs[i] != NULL; i++) {
+                if (i > 10) {
+                        LOG_W("Do you really need so many colors? ;)");
+                        break;
+                }
+
+                if (!string_parse_color(g_strstrip(strs[i]), &colors[length++])) {
+                        g_strfreev(strs);
+                        return false;
+                }
+        }
+
+        g_strfreev(strs);
+        if (length == 0) {
+                DIE("Unreachable");
+        }
+
+        *ret = gradient_alloc(length);
+        memcpy((*ret)->colors, colors, length * sizeof(struct color));
+        gradient_pattern(*ret);
+
+        return true;
+}
+
 int string_parse_bool(const void *data, const char *s, void *ret)
 {
         // this is needed, since string_parse_enum assumses a
@@ -301,72 +325,46 @@ int get_setting_id(const char *key, const char *section) {
         return -1;
 }
 
-// TODO simplify this function
+// NOTE: We do minimal checks in this function so the values should be sanitized somewhere else
 int string_parse_length(void *ret_in, const char *s) {
         struct length *ret = (struct length*) ret_in;
-        int val = 0;
         char *s_stripped = string_strip_brackets(s);
-        if (!s_stripped) {
-                // single int without brackets
-                bool success = safe_string_to_int(&val, s);
-                if (success && val > 0) {
-                        // single int
-                        ret->min = val;
-                        ret->max = val;
-                        return true;
-                }
-                if (val <= 0) {
-                        LOG_W("A length should be a positive value");
-                }
-                return false;
-        }
 
+        // single int without brackets
+        if (!s_stripped) {
+                int val = 0;
+                bool success = safe_string_to_int(&val, s);
+                if (!success) {
+                        LOG_W("Specify either a single value or two comma-separated values between parentheses");
+                        return false;
+                }
+
+                ret->min = val;
+                ret->max = val;
+                return true;
+        }
 
         char **s_arr = string_to_array(s_stripped, ",");
-        int len = string_array_length(s_arr);
+        g_free(s_stripped);
 
-        if (len <= 1) {
-                LOG_W("Please specify a minimum and maximum value or a single value without brackets");
+        int len = string_array_length(s_arr);
+        if (len != 2) {
                 g_strfreev(s_arr);
-                g_free(s_stripped);
-                return false;
-        }
-        if (len > 2) {
-                g_strfreev(s_arr);
-                g_free(s_stripped);
-                LOG_W("Too many values in array. A length should be only one or two values");
+                LOG_W("Specify either a single value or two comma-separated values between parentheses");
                 return false;
         }
 
         int *int_arr = NULL;
         bool success = string_parse_int_list(s_arr, &int_arr, true);
-        if (!success) {
-                g_strfreev(s_arr);
-                g_free(s_stripped);
+        g_strfreev(s_arr);
+
+        if (!success)
                 return false;
-        }
 
-        if (int_arr[0] == -1)
-                int_arr[0] = 0;
-
-        if (int_arr[1] == -1)
-                int_arr[1] = INT_MAX;
-
-        if (int_arr[0] < 0 || int_arr[1] < 0) {
-                LOG_W("A lengths should be positive");
-                success = false;
-        } else if (int_arr[0] > int_arr[1]) {
-                LOG_W("The minimum value should be less than the maximum value. (%i > %i)",
-                                int_arr[0], int_arr[1]);
-                success = false;
-        } else {
-                ret->min = int_arr[0];
-                ret->max = int_arr[1];
-        }
+        ret->min = int_arr[0] == -1 ? INT_MIN : int_arr[0];
+        ret->max = int_arr[1] == -1 ? INT_MAX : int_arr[1];
 
         g_free(int_arr);
-        g_strfreev(s_arr);
-        g_free(s_stripped);
         return success;
 }
 
@@ -428,9 +426,16 @@ bool set_from_string(void *target, struct setting setting, const char *value) {
                         LOG_D("list type %i", GPOINTER_TO_INT(setting.parser_data));
                         return string_parse_list(setting.parser_data, value, target);
                 case TYPE_LENGTH:
+                        // Keep compatibility with old offset syntax
+                        if (STR_EQ(setting.name, "offset") && string_parse_list(GINT_TO_POINTER(OFFSET_LIST), value, target)) {
+                                LOG_M("Using legacy offset syntax NxN, you should switch to the new syntax (N, N)");
+                                return true;
+                        }
                         return string_parse_length(target, value);
                 case TYPE_COLOR:
                         return string_parse_color(value, target);
+                case TYPE_GRADIENT:
+                        return string_parse_gradient(value, target);
                 default:
                         LOG_W("Setting type of '%s' is not known (type %i)", setting.name, setting.type);
                         return false;
@@ -540,14 +545,14 @@ void cmdline_load(int argc, char *argv[])
         cmdline_argv = argv;
 }
 
-int cmdline_find_option(const char *key)
+static int cmdline_find_option(const char *key, int start)
 {
         ASSERT_OR_RET(key, -1);
 
         gchar **keys = g_strsplit(key, "/", -1);
 
         for (int i = 0; keys[i] != NULL; i++) {
-                for (int j = 0; j < cmdline_argc; j++) {
+                for (int j = start; j < cmdline_argc; j++) {
                         if (STR_EQ(keys[i], cmdline_argv[j])) {
                                 g_strfreev(keys);
                                 return j;
@@ -559,12 +564,15 @@ int cmdline_find_option(const char *key)
         return -1;
 }
 
-static const char *cmdline_get_value(const char *key)
+static const char *cmdline_get_value(const char *key, int start, int *found)
 {
-        int idx = cmdline_find_option(key);
+        int idx = cmdline_find_option(key, start);
         if (idx < 0) {
                 return NULL;
         }
+
+        if (found)
+                *found = idx + 1;
 
         if (idx + 1 >= cmdline_argc) {
                 /* the argument is missing */
@@ -574,10 +582,9 @@ static const char *cmdline_get_value(const char *key)
         return cmdline_argv[idx + 1];
 }
 
-char *cmdline_get_string(const char *key, const char *def, const char *description)
+char *cmdline_get_string_offset(const char *key, const char *def, int start, int *found)
 {
-        cmdline_usage_append(key, "string", description);
-        const char *str = cmdline_get_value(key);
+        const char *str = cmdline_get_value(key, start, found);
 
         if (str)
                 return g_strdup(str);
@@ -587,10 +594,16 @@ char *cmdline_get_string(const char *key, const char *def, const char *descripti
                 return NULL;
 }
 
+char *cmdline_get_string(const char *key, const char *def, const char *description)
+{
+        cmdline_usage_append(key, "string", description);
+        return cmdline_get_string_offset(key, def, 1, NULL);
+}
+
 char *cmdline_get_path(const char *key, const char *def, const char *description)
 {
         cmdline_usage_append(key, "string", description);
-        const char *str = cmdline_get_value(key);
+        const char *str = cmdline_get_value(key, 1, NULL);
 
         if (str)
                 return string_to_path(g_strdup(str));
@@ -601,7 +614,7 @@ char *cmdline_get_path(const char *key, const char *def, const char *description
 char **cmdline_get_list(const char *key, const char *def, const char *description)
 {
         cmdline_usage_append(key, "list", description);
-        const char *str = cmdline_get_value(key);
+        const char *str = cmdline_get_value(key, 1, NULL);
 
         if (str)
                 return string_to_array(str, ",");
@@ -612,7 +625,7 @@ char **cmdline_get_list(const char *key, const char *def, const char *descriptio
 gint64 cmdline_get_time(const char *key, gint64 def, const char *description)
 {
         cmdline_usage_append(key, "time", description);
-        const char *timestring = cmdline_get_value(key);
+        const char *timestring = cmdline_get_value(key, 1, NULL);
         gint64 val = def;
 
         if (timestring) {
@@ -625,7 +638,7 @@ gint64 cmdline_get_time(const char *key, gint64 def, const char *description)
 int cmdline_get_int(const char *key, int def, const char *description)
 {
         cmdline_usage_append(key, "int", description);
-        const char *str = cmdline_get_value(key);
+        const char *str = cmdline_get_value(key, 1, NULL);
 
         if (str)
                 return atoi(str);
@@ -636,7 +649,7 @@ int cmdline_get_int(const char *key, int def, const char *description)
 double cmdline_get_double(const char *key, double def, const char *description)
 {
         cmdline_usage_append(key, "double", description);
-        const char *str = cmdline_get_value(key);
+        const char *str = cmdline_get_value(key, 1, NULL);
 
         if (str)
                 return atof(str);
@@ -647,7 +660,7 @@ double cmdline_get_double(const char *key, double def, const char *description)
 int cmdline_get_bool(const char *key, int def, const char *description)
 {
         cmdline_usage_append(key, "", description);
-        int idx = cmdline_find_option(key);
+        int idx = cmdline_find_option(key, 1);
 
         if (idx > 0)
                 return true;
@@ -657,7 +670,7 @@ int cmdline_get_bool(const char *key, int def, const char *description)
 
 bool cmdline_is_set(const char *key)
 {
-        return cmdline_get_value(key) != NULL;
+        return cmdline_get_value(key, 1, NULL) != NULL;
 }
 
 void cmdline_usage_append(const char *key, const char *type, const char *description)
