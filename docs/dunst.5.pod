@@ -175,7 +175,7 @@ needed. If 0 is specified, the scale factor is auto-detected.
 
 =item B<progress_bar> (values: [true/false], default: true)
 
-When an integer value is passed to dunst as a hint (see B<NOTIFY-SEND>), a
+When an integer value is passed to dunst as a hint (see NOTIFY-SEND), a
 progress bar will be drawn at the bottom of the notification. This
 behavior can be turned off by setting this setting to false.
 
@@ -327,7 +327,7 @@ urgency between the 2 notifications that are being separated.
 
 =item B<anything else>
 
-Any other value is interpreted as a color, see B<COLORS>.
+Any other value is interpreted as a color, see COLORS.
 
 =back
 
@@ -350,7 +350,7 @@ When the notification window is at the bottom of the screen, this order is autom
 =item B<idle_threshold> (default: 0)
 
 Don't timeout notifications if user is idle longer than this time.
-See B<TIME FORMAT> for valid times.
+See TIME FORMAT for valid times.
 
 Set to 0 to disable.
 
@@ -513,7 +513,7 @@ time out automatically.
 
 Maximum number of notifications that will be kept in history. After that limit
 is reached, older notifications will be deleted once a new one arrives. See
-B<HISTORY>.
+HISTORY.
 
 =item B<dmenu> (default: "/usr/bin/dmenu -p dunst")
 
@@ -688,50 +688,8 @@ normal and critical urgency respectively.
 
 See the example configuration file for examples.
 
-The flags for setting the colors notifications of different urgencies have been
-removed. See issue #328 in the bug tracker for discussions (See REPORTING BUGS).
-
-=over 4
-
-=item B<-li/ni/ci icon> DEPRECATED
-
-Defines the icon for low, normal and critical notifications respectively. This
-setting will be replaced by the B<default_icon> setting, so it's
-recommended to replace it as soon as possible.
-
-Where I<icon> is a path to an image file containing the icon.
-
-=item B<-lf/nf/cf color> REMOVED
-
-Defines the foreground color for low, normal and critical notifications respectively.
-
-See COLORS for the value format.
-
-=item B<-lb/nb/cb color> REMOVED
-
-Defines the background color for low, normal and critical notifications respectively.
-
-See COLORS for the value format.
-
-=item B<-lh/nh/ch color> REMOVED
-
-Defines the highlight color for low, normal and critical notifications respectively.
-
-See COLORS for the value format.
-
-=item B<-lfr/nfr/cfr color> REMOVED
-
-Defines the frame color for low, normal and critical notifications respectively.
-
-See COLORS for more information
-
-=item B<-lto/nto/cto secs> REMOVED
-
-Defines the timeout time for low, normal and critical notifications
-respectively.
-See TIME FORMAT for valid times.
-
-=back
+Old version of dunst allowed changing the colors of different urgencies through
+command line options. This has been long removed in favour of RULES, see issue #328.
 
 =head1 DUNSTCTL
 
@@ -1110,7 +1068,7 @@ Dunst will try to strip the markup but the parsing is simplistic so using this
 option outside of matching rules for specific applications B<IS GREATLY
 DISCOURAGED>.
 
-See B<RULES> for matching specific broken clients.
+See RULES for matching specific broken clients.
 
 =item B<no>
 
@@ -1157,72 +1115,79 @@ name.
 
 =head1 COLORS
 
-Colors are interpreted as X11 color values. This includes both verbatim
-color names such as "Yellow", "Blue", "White", etc as well as #RGB and #RRGGBB
-values.
+Colors are values with the format #RGB or #RRGGBB.
 
-You may also specify a transparency component in #RGBA or #RRGGBBAA format.
+You may also specify a transparency component by using the format #RGBA or #RRGGBBAA.
 
-B<NOTE>: '#' is interpreted as a comment, to use it the entire value needs to
-be in quotes like so: separator_color="#123456"
+B<NOTE>: '#' is interpreted as a comment, to use it the entire value needs to be quoted.
+For example:
 
-=head2 NOTIFY-SEND
+	separator_color="#123456"
+
+=head1 NOTIFY-SEND HINTS
 
 Dunst is able to get different colors for a message via notify-send.
 In order to do that you have to add a hint via the -h option.
 The progress value can be set with a hint, too.
 
-Note: Dunstify is a notify-send alternative compatible with all of these settings.
+Note: Dunstify is compatible with notify-send and all of these
+settings work the same way.
 
-B<All hints>
+All the accepted hints are listed below.
 
 See RULES for more detailed explanations for some options.
 
 =over 4
 
-=item B<fgcolor>:
+=item B<fgcolor>
+
 Foreground color.
 
-=item B<bgcolor>:
+=item B<bgcolor>
+
 Background color.
 
-=item B<frcolor>:
+=item B<frcolor>
+
 Frame color.
 
-=item B<hlcolor>:
+=item B<hlcolor>
+
 Highlight color.
 
-=item B<value>:
+=item B<value>
+
 Progress value.
 
-=item B<image-path>:
+=item B<image-path>
+
 Icon name. This may be a path or just the icon name.
 
-=item B<image-data>:
+=item B<image-data>
+
 A stream of raw image data.
 
-=item B<category>:
+=item B<category>
+
 The category.
 
-=item B<desktop-entry>:
+=item B<desktop-entry>
+
 The desktop entry.
 
-=item B<transient>:
+=item B<transient>
+
 The transient value.
 
 =back
 
-B<Examples>
+Some examples:
 
-=over 4
+	notify-send -h string:fgcolor:#ff4444
 
-=item notify-send -h string:fgcolor:#ff4444
+	notify-send -h string:bgcolor:#4444ff -h string:fgcolor:#ff4444 -h string:frcolor:#44ff44
 
-=item notify-send -h string:bgcolor:#4444ff -h string:fgcolor:#ff4444 -h string:frcolor:#44ff44
-
-=item notify-send -h int:value:42 "Working ..."
-
-=back
+	notify-send -h int:value:42 "Working ..."
 
 =head1 ACTIONS
 
@@ -1252,19 +1217,19 @@ given, seconds ("s") is taken as default.
 
 Time units understood by dunst are "ms", "s", "m", "h" and "d".
 
-Example time: "1000ms" "10m"
+Example time: "1000ms", "10m".
 
 =head1 AUTHORS
 
-Written by Sascha Kruse <knopwob@googlemail.com>
+Written by Sascha Kruse <knopwob@googlemail.com>.
 
 =head1 REPORTING BUGS
 
-Bugs and suggestions should be reported on GitHub at https://github.com/dunst-project/dunst/issues
+Bugs and suggestions should be reported on GitHub at https://github.com/dunst-project/dunst/issues.
 
 =head1 COPYRIGHT
 
-Copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information)
+Copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information).
 
 If you feel that copyrights are violated, please send me an email.
 
