@@ -21,6 +21,9 @@ void dbus_teardown(int id);
 void signal_notification_closed(struct notification *n, enum reason reason);
 void signal_action_invoked(const struct notification *n, const char *identifier);
 void signal_length_propertieschanged(void);
+void signal_history_removed(guint id);
+void signal_history_cleared(guint n);
+void signal_config_reloaded(char **const configs);
 
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */
