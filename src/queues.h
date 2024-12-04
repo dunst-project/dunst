@@ -109,8 +109,9 @@ void queues_notification_close(struct notification *n, enum reason reason);
 
 /**
  * Removes all notifications from history
+ * Returns the number of removed notifications
  */
-void queues_history_clear(void);
+guint queues_history_clear(void);
 
 /**
  * Pushes the latest notification of history to the displayed queue
@@ -138,7 +139,7 @@ void queues_history_push(struct notification *n);
 void queues_history_push_all(void);
 
 /**
- * Removes an notification identified by the given id from the history 
+ * Removes an notification identified by the given id from the history
  */
 void queues_history_remove_by_id(unsigned int id);
 
