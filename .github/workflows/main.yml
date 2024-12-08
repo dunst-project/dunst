@@ -25,6 +25,7 @@ jobs:
           - gcc
         distro:
           - alpine
+          - alpine-edge
           - archlinux
           - debian-bookworm
           - debian-bullseye
