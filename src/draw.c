@@ -305,14 +305,14 @@ static struct dimensions calculate_notification_dimensions(struct colored_layout
                 dim.h = MAX(icon_height, dim.text_height);
         }
 
-        dim.h += progress_bar_height;
+        dim.h += progress_bar_height + settings.padding * 2;
         dim.w = dim.text_width + icon_width + 2 * settings.h_padding;
 
         if (have_progress_bar(cl))
                 dim.w = MAX(settings.progress_bar_min_width, dim.w);
 
-        dim.h = MIN(settings.height.max, dim.h + settings.padding * 2);
         dim.h = MAX(settings.height.min, dim.h);
+        dim.h = MIN(settings.height.max, dim.h);
 
         dim.w = MAX(settings.width.min, dim.w);
         dim.w = MIN(settings.width.max, dim.w);
@@ -792,7 +792,8 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, int
         if (settings.vertical_alignment == VERTICAL_CENTER) {
                 text_y = h_without_progress_bar / 2 - text_h / 2;
         } else if (settings.vertical_alignment == VERTICAL_BOTTOM) {
-                text_y = h_without_progress_bar - settings.padding - text_h;
+                text_y = h_without_progress_bar + settings.padding - text_h;
+                if (text_y < 0) text_y = settings.padding;
         } // else VERTICAL_TOP
 
         // icon positioning
@@ -927,8 +928,8 @@ static struct dimensions layout_render(cairo_surface_t *srf,
         get_text_size(cl->l, NULL, &h_text, scale);
 
         int bg_width = 0;
-        int bg_height = MIN(settings.height.max, (2 * settings.padding) + cl_h);
-        bg_height = MAX(settings.height.min, bg_height);
+        int bg_height = MAX(settings.height.min, 2 * settings.padding + cl_h);
+        bg_height = MIN(settings.height.max, bg_height);
 
         cairo_surface_t *content = render_background(srf, cl, cl_next, dim.y, dim.w, bg_height, dim.corner_radius, corners, &bg_width, scale);
         cairo_t *c = cairo_create(content);
