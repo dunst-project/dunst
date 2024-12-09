@@ -189,13 +189,10 @@
 - Not being able to override anymore raw icons with `new_icon` (#1009)
 - High cpu usage when selecting an action in dmenu or similar. This was caused
   by dunst not going to sleep when waiting for a response. (#898)
-- Updated default values documentation (with help from @profpatch) (#1004 and
-  more)
-
+- Updated default values documentation (with help from @profpatch) (#1004 and more)
 
 ## 1.7.3 -- 2021-12-08
 
-### Added
 ### Changed
 - `follow` is now `none` again by default. This was the case before v1.7.0 as well. (#990).
 
@@ -219,7 +216,7 @@
   ID to `dunstctl history-pop`. (#970)
 - `default_icon` setting for setting the icon when no icons are given (#984)
 - Implemented display size detection in Wayland. (#973)
-### Changed
+
 ### Fixed
 - Text being cut off on X11 when using fractional scaling. (#975)
 - Incorrect hitbox for notification on X11 with scaling. (#980)
@@ -309,12 +306,12 @@
 - Setting settings via command line arguments. (#803)
 - Setting settings via `config.h`. (#803)
 
-## 1.6.1 - 2021-02-21:
+## 1.6.1 -- 2021-02-21:
 
 ### Fixed
 - Incorrect version in Makefile
 
-## 1.6.0 - 2021-02-21:
+## 1.6.0 -- 2021-02-21:
 
 ### Added
 - Wayland support. Dunst now runs natively on wayland. This fixes several bugs
@@ -339,11 +336,11 @@
 - `dunstify` can pass empty appname to libnotify (#768)
 - Incorrect handling of 'do_action, close' mouse action (#778)
 
-# Removed
+### Removed
 
 - `DUNST_COMMAND_{PAUSE,RESUME,TOGGLE}` (#830)
 
-## 1.5.0 - 2020-07-23
+## 1.5.0 -- 2020-07-23
 
 ### Added
 - `min_icon_size` option to automatically scale up icons to a desired value (#674)
@@ -364,7 +361,7 @@
 - Crash when `$HOME` environment variable is unset (#693)
 - Lack of antialiasing with round corners enabled (#713)
 
-## 1.4.1 - 2019-07-03
+## 1.4.1 -- 2019-07-03
 
 ### Fixed
 
@@ -375,7 +372,7 @@
 - Crash when changing DPI while no notifications are displayed (#630)
 - Fullscreen status change not being detected in some cases (#613)
 
-## 1.4.0 - 2019-03-30
+## 1.4.0 -- 2019-03-30
 
 ### Added
 
@@ -415,19 +412,19 @@
 
 - Dependency on libxdg-basedir (#550)
 
-## 1.3.2 - 2018-05-06
+## 1.3.2 -- 2018-05-06
 
 ### Fixed
 
 - Crash when trying to load an invalid or corrupt icon (#512)
 
-## 1.3.1 - 2018-01-30
+## 1.3.1 -- 2018-01-30
 
 ### Fixed
 
 - Race condition resulting in the service files being empty (#488)
 
-## 1.3.0 - 2018-01-05
+## 1.3.0 -- 2018-01-05
 
 ### Added
 - `ellipsize` option to control how long lines should be ellipsized when `word_wrap` is set to `false` (#374)
@@ -463,7 +460,7 @@
 - Dunst does now install the systemd and dbus service files into their proper location given
   by pkg-config. Use `SERVICEDIR_(DBUS|SYSTEMD)` params to overwrite them. (#463)
 
-## 1.2.0 - 2017-07-12
+## 1.2.0 -- 2017-07-12
 
 ### Added
 - `always_run_script` option to run script even if a notification is suppressed
@@ -505,19 +502,19 @@
 - dmenu process being left as a zombie if no option was selected
 - Crash when opening urls parsed from `<a href="">` tags
 
-## 1.1.0 - 2014-07-29
+## 1.1.0 -- 2014-07-29
 - fix nasty memory leak
 - icon support (still work in progress)
 - fix issue where keybindings aren't working when numlock is activated
 
-## 1.0.0 - 2013-04-15
+## 1.0.0 -- 2013-04-15
 - use pango/cairo as drawing backend
 - make use of pangos ability to parse markup
 - support for actions via context menu
 - indicator for actions/urls found
 - use blocking I/O. No more waking up the CPU multiple times per second to check for new dbus messages
 
-## 0.5.0 - 2013-01-26
+## 0.5.0 -- 2013-01-26
 - new default dunstrc
 - frames for window
 - trigger scripts on matching notifications
@@ -526,7 +523,7 @@
 - use own code for ini parsing (this removes inih)
 - progress hints
 
-## 0.4.0 - 2012-09-27
+## 0.4.0 -- 2012-09-27
 - separator between notifications
 - word wrap long lines
 - real transparance
@@ -537,10 +534,10 @@
 - bugfix: forgetting geometry
 - (optional) static configuration
 
-## 0.3.1 - 2012-08-02
+## 0.3.1 -- 2012-08-02
 - fix -mon option
 
-## 0.3.0 - 2012-07-30
+## 0.3.0 -- 2012-07-30
 - full support for Desktop Notification Specification (mandatory parts)
 - option to select monitor on which notifications are shown
 - follow focus
@@ -554,7 +551,7 @@
 - cleanup / bugfixes etc.
 - added dunst.service
 
-## 0.2.0 - 2012-06-26
+## 0.2.0 -- 2012-06-26
 - introduction of dunstrc
 - removed static configuration via config.h
 - don't timeout when user is idle
