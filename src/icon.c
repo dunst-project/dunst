@@ -214,15 +214,15 @@ char *get_path_from_icon_name(const char *iconname, int size)
         if (STR_EMPTY(iconname))
                 return NULL;
 
-        char *uri_path = NULL;
         if (g_str_has_prefix(iconname, "file://")) {
                 char *uri_path = g_filename_from_uri(iconname, NULL, NULL);
                 if (STR_EMPTY(uri_path)) {
                         LOG_W("Invalid file uri '%s'", iconname);
                         return NULL;
                 }
-                iconname = uri_path;
-        } else if (iconname[0] == '/' || iconname[0] == '~') {
+                return uri_path;
+        } else if (iconname[0] == '/') {
+                // NOTE: Paths starting with ~ should have already been handled
                 // Return absolute path
                 return g_strdup(iconname);
         } else if (settings.enable_recursive_icon_lookup) {
@@ -266,7 +266,6 @@ char *get_path_from_icon_name(const char *iconname, int size)
         else
                 LOG_I("Found icon '%s' at %s", iconname, path);
 
-        g_free(uri_path);
         return path;
 }
 
