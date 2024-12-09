@@ -420,7 +420,7 @@ PACKAGE MAINTAINERS:
     or close existing notifications.
 
     example:
-   id=$(dunstify -p "Replace" "this should get replaced after the sleep")
+    id=$(dunstify -p "Replace" "this should get replaced after the sleep")
     sleep 5
     dunstify -r $id "replacement"
 
