@@ -125,6 +125,9 @@ struct settings {
         int sticky_history;
         int history_length;
         int show_indicators;
+        int show_action_count;
+        char *action_indicator;
+        char *url_indicator;
         int ignore_dbusclose;
         int ignore_newline;
         int line_height;

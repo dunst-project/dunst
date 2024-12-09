@@ -180,6 +180,10 @@
     #   %b  body
     #   %i  iconname (including its path)
     #   %I  iconname (without its path)
+    #   %D  Duplicate notification count
+    #   %A  Action indicator
+    #   %C  Action count
+    #   %U  URL indicator
     #   %p  progress value if set ([  0%] to [100%]) or nothing
     #   %n  progress value if set without any extra characters
     #   %%  Literal %
@@ -212,8 +216,15 @@
     # Hide the count of stacked notifications with the same content
     hide_duplicate_count = false
 
-    # Display indicators for URLs (U) and actions (A).
+    # (DEPRECATED) Display default indicators for URLs (U) and actions (A)
     show_indicators = yes
+
+    # Prefix default action indicator with action count (for custom indicators use %C)
+    show_action_count = yes
+
+    # Custom indicators
+    action_indicator = "A"
+    url_indicator = "U"
 
     ### Icons ###
 
