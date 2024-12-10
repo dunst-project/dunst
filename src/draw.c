@@ -265,7 +265,7 @@ static void layout_setup(struct colored_layout *cl, int width, int height, doubl
         int icon_width = cl->icon ? get_icon_width(cl->icon, scale) + horizontal_padding : 0;
         int text_width = width - 2 * settings.h_padding - (cl->n->icon_position == ICON_TOP ? 0 : icon_width);
         int progress_bar_height = have_progress_bar(cl) ? settings.progress_bar_height + settings.padding : 0;
-        int max_text_height = MAX(0, height - progress_bar_height - 2 * settings.padding);
+        int max_text_height = MAX(0, settings.height.max - progress_bar_height - 2 * settings.padding);
         layout_setup_pango(cl->l, text_width, max_text_height, cl->n->word_wrap, cl->n->ellipsize, cl->n->alignment);
 }
 
@@ -489,7 +489,6 @@ static int layout_get_height(struct colored_layout *cl, double scale)
         if (have_progress_bar(cl)) {
                 h_progress_bar = settings.progress_bar_height + settings.padding;
         }
-
 
         return (cl->n->icon_position == ICON_TOP && cl->n->icon)
                 ? h_icon + h_text + h_progress_bar + vertical_padding
@@ -923,9 +922,6 @@ static struct dimensions layout_render(cairo_surface_t *srf,
 {
         double scale = output->get_scale();
         const int cl_h = layout_get_height(cl, scale);
-
-        int h_text = 0;
-        get_text_size(cl->l, NULL, &h_text, scale);
 
         int bg_width = 0;
         int bg_height = MAX(settings.height.min, 2 * settings.padding + cl_h);
