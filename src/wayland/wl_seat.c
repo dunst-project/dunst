@@ -18,6 +18,7 @@
 #include "../log.h"
 #include "../settings.h"
 #include "wl_ctx.h"
+#include "wl.h"
 
 static void touch_handle_motion(void *data, struct wl_touch *wl_touch,
                 uint32_t time, int32_t id,
@@ -50,8 +51,10 @@ static void touch_handle_up(void *data, struct wl_touch *wl_touch,
         if (id >= MAX_TOUCHPOINTS) {
                 return;
         }
+
+        double scale = wl_get_scale();
         input_handle_click(BTN_TOUCH, false,
-                        seat->touch.pts[id].x, seat->touch.pts[id].y);
+                        seat->touch.pts[id].x/scale, seat->touch.pts[id].y/scale);
 
 }
 
@@ -100,7 +103,8 @@ static void pointer_handle_button(void *data, struct wl_pointer *wl_pointer,
                 uint32_t button_state) {
         struct dunst_seat *seat = data;
 
-        input_handle_click(button, button_state, seat->pointer.x, seat->pointer.y);
+        double scale = wl_get_scale();
+        input_handle_click(button, button_state, seat->pointer.x/scale, seat->pointer.y/scale);
 }
 
 static void pointer_handle_leave(void *data, struct wl_pointer *wl_pointer,

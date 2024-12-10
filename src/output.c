@@ -28,6 +28,7 @@ const struct output output_x11 = {
 
         x_display_surface,
         x_win_get_context,
+        x_win_get_surface,
 
         get_active_screen,
 
@@ -51,6 +52,7 @@ const struct output output_wl = {
 
         wl_display_surface,
         wl_win_get_context,
+        wl_win_get_surface,
 
         wl_get_active_screen,
 

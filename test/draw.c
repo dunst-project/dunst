@@ -14,7 +14,7 @@ cairo_t *c;
 double get_dummy_scale(void) { return 1; }
 
 const struct screen_info* noop_screen(void) {
-        static struct screen_info i;
+        static struct screen_info i = {0};
         return &i;
 }
 
@@ -31,6 +31,7 @@ const struct output dummy_output = {
 
         wl_display_surface,
         wl_win_get_context,
+        wl_win_get_surface,
 
         noop_screen,
 
@@ -48,6 +49,7 @@ const struct output dummy_output = {
 
         x_display_surface,
         x_win_get_context,
+        x_win_get_surface,
 
         noop_screen,
 
@@ -265,15 +267,18 @@ TEST test_layout_render_no_gaps(void)
         dim = calculate_dimensions(layouts);
         image_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 1, 1);
 
-        enum corner_pos corners = C_TOP | _C_FIRST;
+        enum corner_pos corners = (settings.corners & C_TOP) | _C_FIRST;
         for (GSList *iter = layouts; iter; iter = iter->next) {
+
                 struct colored_layout *cl_this = iter->data;
                 struct colored_layout *cl_next = iter->next ? iter->next->data : NULL;
 
-                if (!cl_next)
-                        corners |= C_BOT | _C_LAST;
-                dim = layout_render(image_surface, cl_this, cl_next, dim, corners);
+                if (settings.gap_size)
+                        corners = settings.corners;
+                else if (!cl_next)
+                        corners |= (settings.corners & C_BOT) | _C_LAST;
 
+                dim = layout_render(image_surface, cl_this, cl_next, dim, corners);
                 corners &= ~(C_TOP | _C_FIRST);
         }
 
@@ -357,11 +362,19 @@ TEST test_layout_render_gaps(void)
         dim = calculate_dimensions(layouts);
         image_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 1, 1);
 
+        enum corner_pos corners = (settings.corners & C_TOP) | _C_FIRST;
         for (GSList *iter = layouts; iter; iter = iter->next) {
+
                 struct colored_layout *cl_this = iter->data;
                 struct colored_layout *cl_next = iter->next ? iter->next->data : NULL;
 
-                dim = layout_render(image_surface, cl_this, cl_next, dim, C_ALL);
+                if (settings.gap_size)
+                        corners = settings.corners;
+                else if (!cl_next)
+                        corners |= (settings.corners & C_BOT) | _C_LAST;
+
+                dim = layout_render(image_surface, cl_this, cl_next, dim, corners);
+                corners &= ~(C_TOP | _C_FIRST);
         }
 
         expected_y = get_expected_dimension_y_offset(layout_count);
@@ -382,6 +395,10 @@ SUITE(suite_draw)
         cairo_surface_t *s = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 1, 1);
         c = cairo_create(s);
 
+        // XXX: This variable should not be accessed like this
+        extern PangoContext *pango_ctx;
+        pango_ctx = pango_cairo_create_context(c);
+
         SHUFFLE_TESTS(time(NULL), {
                         RUN_TEST(test_layout_from_notification);
                         RUN_TEST(test_layout_from_notification_icon_off);
@@ -392,4 +409,8 @@ SUITE(suite_draw)
                         RUN_TEST(test_layout_render_no_gaps);
                         RUN_TEST(test_layout_render_gaps);
         });
+
+        g_object_unref(pango_ctx);
+        cairo_destroy(c);
+        cairo_surface_destroy(s);
 }

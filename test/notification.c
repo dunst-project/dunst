@@ -168,8 +168,8 @@ TEST test_notification_icon_scaling_toosmall(void)
         struct notification *n = notification_load_icon_with_scaling(20, 100);
 
         ASSERT(n->icon);
-        ASSERT_EQ(get_icon_width(n->icon, 1), 20);
-        ASSERT_EQ(get_icon_height(n->icon, 1), 20);
+        ASSERT_EQ(get_icon_width(n->icon), 20);
+        ASSERT_EQ(get_icon_height(n->icon), 20);
 
         notification_unref(n);
 
@@ -182,8 +182,8 @@ TEST test_notification_icon_scaling_toolarge(void)
         struct notification *n = notification_load_icon_with_scaling(5, 10);
 
         ASSERT(n->icon);
-        ASSERT_EQ(get_icon_width(n->icon, 1), 10);
-        ASSERT_EQ(get_icon_height(n->icon, 1), 10);
+        ASSERT_EQ(get_icon_width(n->icon), 10);
+        ASSERT_EQ(get_icon_height(n->icon), 10);
 
         notification_unref(n);
 
@@ -195,8 +195,8 @@ TEST test_notification_icon_scaling_notconfigured(void)
         struct notification *n = notification_load_icon_with_scaling(0, 0);
 
         ASSERT(n->icon);
-        ASSERT_EQ(get_icon_width(n->icon, 1), 16);
-        ASSERT_EQ(get_icon_height(n->icon, 1), 16);
+        ASSERT_EQ(get_icon_width(n->icon), 16);
+        ASSERT_EQ(get_icon_height(n->icon), 16);
 
         notification_unref(n);
 
@@ -208,8 +208,8 @@ TEST test_notification_icon_scaling_notneeded(void)
         struct notification *n = notification_load_icon_with_scaling(10, 20);
 
         ASSERT(n->icon);
-        ASSERT_EQ(get_icon_width(n->icon, 1), 16);
-        ASSERT_EQ(get_icon_height(n->icon, 1), 16);
+        ASSERT_EQ(get_icon_width(n->icon), 16);
+        ASSERT_EQ(get_icon_height(n->icon), 16);
 
         notification_unref(n);
 
