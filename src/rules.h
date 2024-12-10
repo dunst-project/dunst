@@ -51,11 +51,10 @@ struct rule {
         struct color fg;
         struct color bg;
         struct gradient *highlight;
-        bool highlight_owned;
         struct color fc;
         char *set_category;
-        const char *format;
-        const char *script;
+        char *format;
+        char *script;
         enum behavior_fullscreen fullscreen;
         bool enabled;
         int progress_bar_alignment;

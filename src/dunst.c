@@ -225,6 +225,7 @@ void reload(char **const configs)
 
         settings_free(&settings);
         load_settings(configs);
+
         draw_setup();
         setup_done = true;
 
@@ -237,8 +238,6 @@ int dunst_main(int argc, char *argv[])
 {
         dunst_status_int(S_PAUSE_LEVEL, 0);
         dunst_status(S_IDLE, false);
-
-        settings_init();
 
         queues_init();
 
@@ -270,9 +269,9 @@ int dunst_main(int argc, char *argv[])
                 config_paths[count++] = path;
         } while (path != NULL);
 
-        settings.print_notifications = cmdline_get_bool("-print/--print", false, "Print notifications to stdout");
+        print_notifications = cmdline_get_bool("-print/--print", false, "Print notifications to stdout");
 
-        settings.startup_notification = cmdline_get_bool("-startup_notification/--startup_notification",
+        bool startup_notification = cmdline_get_bool("-startup_notification/--startup_notification",
                         false, "Display a notification on startup.");
 
         /* Help should always be the last to set up as calls to cmdline_get_* (as a side effect) add entries to the usage list. */
@@ -295,7 +294,7 @@ int dunst_main(int argc, char *argv[])
         guint term_src = g_unix_signal_add(SIGTERM, quit_signal, NULL);
         guint int_src = g_unix_signal_add(SIGINT, quit_signal, NULL);
 
-        if (settings.startup_notification) {
+        if (startup_notification) {
                 struct notification *n = notification_create();
                 n->id = 0;
                 n->appname = g_strdup("dunst");

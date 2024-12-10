@@ -457,17 +457,7 @@ int set_rule_value(struct rule* r, struct setting setting, char* value) {
         // guaranteed to be 1 byte
         void *target = (char*)r + setting.rule_offset;
 
-        if (!set_from_string(target, setting, value))
-                return false;
-
-        if (STR_EQ(setting.name, "highlight")) {
-                // Check ownership for freeing it later
-                r->highlight_owned = r->highlight != settings.colors_low.highlight
-                                  && r->highlight != settings.colors_norm.highlight
-                                  && r->highlight != settings.colors_crit.highlight;
-        }
-
-        return true;
+        return set_from_string(target, setting, value);
 }
 
 bool set_rule(struct setting setting, char* value, char* section) {
@@ -480,6 +470,9 @@ bool set_rule(struct setting setting, char* value, char* section) {
 }
 
 void set_defaults(void) {
+        LOG_D("Initializing settings");
+        settings = (struct settings) {0};
+
         for (int i = 0; i < G_N_ELEMENTS(allowed_settings); i++) {
                 // FIXME Rule settings can only have a default if they have an
                 // working entry in the settings struct as well. Make an
@@ -698,8 +691,7 @@ void cmdline_usage_append(const char *key, const char *type, const char *descrip
         }
 
         char *tmp;
-        tmp =
-            g_strdup_printf("%s%-50s - %s\n", usage_str, key_type, description);
+        tmp = g_strdup_printf("%s%-50s - %s\n", usage_str, key_type, description);
         g_free(key_type);
 
         g_free(usage_str);

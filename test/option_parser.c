@@ -383,7 +383,7 @@ TEST test_string_to_list(void)
                 {MOUSE_CLOSE_ALL, MOUSE_CLOSE_CURRENT, MOUSE_CLOSE_ALL, MOUSE_ACTION_END},
         };
 
-        static char buf[50];
+        static char buf[100];
         for (int i = 0; i < G_N_ELEMENTS(inputs); i++) {
                 sprintf(buf, "Failed in round %i", i);
                 ASSERTm(buf, set_from_string(s.value, s, inputs[i]));
@@ -783,12 +783,12 @@ TEST test_string_to_gradient(void)
                 for (int k = 0; k < grad->length; k++)
                         ASSERTm(buf, COLOR_SAME(grad->colors[k], results[i]->colors[k]));
 
-                gradient_free(grad);
+                gradient_release(grad);
                 grad = NULL;
         }
 
         for (int i = 0; i < G_N_ELEMENTS(results); i++)
-                gradient_free(results[i]);
+                gradient_release(results[i]);
 
         PASS();
 }

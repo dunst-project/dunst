@@ -162,7 +162,6 @@ void notification_run_script(struct notification *n)
                                 safe_setenv("DUNST_URLS",      n->urls);
                                 safe_setenv("DUNST_TIMEOUT",   n_timeout_str);
                                 safe_setenv("DUNST_TIMESTAMP", n_timestamp_str);
-                                safe_setenv("DUNST_STACK_TAG", n->stack_tag);
                                 safe_setenv("DUNST_DESKTOP_ENTRY", n->desktop_entry);
 
                                 execlp(script,
@@ -303,30 +302,35 @@ void notification_unref(struct notification *n)
                 g_free(n->original);
         }
 
+        g_free(n->dbus_client);
         g_free(n->appname);
         g_free(n->summary);
         g_free(n->body);
-        g_free(n->iconname);
-        g_free(n->default_icon_name);
-        g_free(n->icon_path);
-        g_free(n->msg);
-        g_free(n->dbus_client);
         g_free(n->category);
-        g_free(n->text_to_render);
-        g_free(n->urls);
-        g_free(n->stack_tag);
         g_free(n->desktop_entry);
+
+        g_free(n->icon_id);
+        g_free(n->iconname);
+        g_free(n->icon_path);
+        g_free(n->default_icon_name);
 
         g_hash_table_unref(n->actions);
         g_free(n->default_action_name);
 
         if (n->icon)
                 cairo_surface_destroy(n->icon);
-        g_free(n->icon_id);
 
         notification_private_free(n->priv);
 
+        gradient_release(n->colors.highlight);
+
+        g_free(n->format);
         g_strfreev(n->scripts);
+        g_free(n->stack_tag);
+
+        g_free(n->msg);
+        g_free(n->text_to_render);
+        g_free(n->urls);
 
         g_free(n);
 }
@@ -392,6 +396,12 @@ void notification_icon_replace_data(struct notification *n, GVariant *new_icon)
                 g_object_unref(icon);
 }
 
+void notification_replace_format(struct notification *n, const char *format)
+{
+        g_free(n->format);
+        n->format = g_strdup(format);
+}
+
 /* see notification.h */
 void notification_replace_single_field(char **haystack,
                                        char **needle,
@@ -434,7 +444,7 @@ struct notification *notification_create(void)
         /* Unparameterized default values */
         n->first_render = true;
         n->markup = MARKUP_FULL;
-        n->format = settings.format;
+        n->format = g_strdup(settings.format);
 
         n->timestamp = time_monotonic_now();
 
@@ -512,7 +522,10 @@ void notification_init(struct notification *n)
         if (!COLOR_VALID(n->colors.bg)) n->colors.bg = defcolors.bg;
         if (!COLOR_VALID(n->colors.frame)) n->colors.frame = defcolors.frame;
 
-        if (!GRADIENT_VALID(n->colors.highlight)) n->colors.highlight = defcolors.highlight;
+        if (!GRADIENT_VALID(n->colors.highlight)) {
+                gradient_release(n->colors.highlight);
+                n->colors.highlight = gradient_acquire(defcolors.highlight);
+        }
 
         /* Sanitize misc hints */
         if (n->progress < 0)
@@ -524,7 +537,7 @@ void notification_init(struct notification *n)
         rule_apply_all(n);
 
         if (g_str_has_prefix(n->summary, "DUNST_COMMAND_")) {
-                char *msg = "DUNST_COMMAND_* has been removed, please switch to dunstctl. See #830 for more details. https://github.com/dunst-project/dunst/pull/830";
+                const char *msg = "DUNST_COMMAND_* has been removed, please switch to dunstctl. See #830 for more details. https://github.com/dunst-project/dunst/pull/830";
                 LOG_W("%s", msg);
                 n->body = string_append(n->body, msg, "\n");
         }
@@ -537,7 +550,6 @@ void notification_init(struct notification *n)
         }
         if (!n->icon && !n->iconname)
                 n->iconname = g_strdup(settings.icons[n->urgency]);
-
 
         /* UPDATE derived fields */
         notification_extract_urls(n);
