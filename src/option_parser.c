@@ -457,7 +457,17 @@ int set_rule_value(struct rule* r, struct setting setting, char* value) {
         // guaranteed to be 1 byte
         void *target = (char*)r + setting.rule_offset;
 
-        return set_from_string(target, setting, value);
+        if (!set_from_string(target, setting, value))
+                return false;
+
+        if (STR_EQ(setting.name, "highlight")) {
+                // Check ownership for freeing it later
+                r->highlight_owned = r->highlight != settings.colors_low.highlight
+                                  && r->highlight != settings.colors_norm.highlight
+                                  && r->highlight != settings.colors_crit.highlight;
+        }
+
+        return true;
 }
 
 bool set_rule(struct setting setting, char* value, char* section) {
@@ -466,7 +476,6 @@ bool set_rule(struct setting setting, char* value, char* section) {
                 r = rule_new(section);
                 LOG_D("Creating new rule '%s'", section);
         }
-
         return set_rule_value(r, setting, value);
 }
 

@@ -51,6 +51,7 @@ struct rule {
         struct color fg;
         struct color bg;
         struct gradient *highlight;
+        bool highlight_owned;
         struct color fc;
         char *set_category;
         const char *format;

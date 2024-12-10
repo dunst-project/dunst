@@ -223,6 +223,7 @@ void reload(char **const configs)
         setup_done = false;
         draw_deinit();
 
+        settings_free(&settings);
         load_settings(configs);
         draw_setup();
         setup_done = true;

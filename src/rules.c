@@ -242,11 +242,8 @@ void rule_free(struct rule *r)
         g_free(r->new_icon);
         g_free(r->name);
 
-        // Ugly but necessary
-        if (r->highlight != settings.colors_low.highlight &&
-            r->highlight != settings.colors_norm.highlight &&
-            r->highlight != settings.colors_crit.highlight)
-        gradient_free(r->highlight);
+        if (r->highlight_owned)
+                gradient_free(r->highlight);
 }
 
 
