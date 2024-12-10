@@ -53,8 +53,8 @@ struct rule {
         struct gradient *highlight;
         struct color fc;
         char *set_category;
-        const char *format;
-        const char *script;
+        char *format;
+        char *script;
         enum behavior_fullscreen fullscreen;
         bool enabled;
         int progress_bar_alignment;

@@ -14,7 +14,7 @@
 
 // Note: Wayland doesn't support hotkeys
 struct keyboard_shortcut {
-        const char *str;
+        char *str;
 #ifdef ENABLE_X11
         KeyCode code;
         KeySym sym;
@@ -180,8 +180,7 @@ struct settings {
 };
 
 extern struct settings settings;
-
-void settings_init(void);
+extern bool print_notifications;
 
 void load_settings(char **const config_paths);
 

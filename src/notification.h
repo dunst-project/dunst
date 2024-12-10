@@ -85,7 +85,7 @@ struct notification {
         char *default_action_name; /**< The name of the action to be invoked on do_action */
 
         enum markup_mode markup;
-        const char *format;
+        char *format;
         char **scripts;
         int script_count;
         struct notification_colors colors;
@@ -201,6 +201,8 @@ void notification_icon_replace_path(struct notification *n, const char *new_icon
  * @param new_icon The icon's data. Has to be in the format of the notification spec.
  */
 void notification_icon_replace_data(struct notification *n, GVariant *new_icon);
+
+void notification_replace_format(struct notification *n, const char *format);
 
 /**
  * Run the script associated with the

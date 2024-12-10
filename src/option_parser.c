@@ -482,11 +482,13 @@ bool set_rule(struct setting setting, char* value, char* section) {
                 r = rule_new(section);
                 LOG_D("Creating new rule '%s'", section);
         }
-
         return set_rule_value(r, setting, value);
 }
 
 void set_defaults(void) {
+        LOG_D("Initializing settings");
+        settings = (struct settings) {0};
+
         for (int i = 0; i < G_N_ELEMENTS(allowed_settings); i++) {
                 // FIXME Rule settings can only have a default if they have an
                 // working entry in the settings struct as well. Make an
@@ -706,8 +708,7 @@ void cmdline_usage_append(const char *key, const char *type, const char *descrip
         }
 
         char *tmp;
-        tmp =
-            g_strdup_printf("%s%-50s - %s\n", usage_str, key_type, description);
+        tmp = g_strdup_printf("%s%-50s - %s\n", usage_str, key_type, description);
         g_free(key_type);
 
         g_free(usage_str);
