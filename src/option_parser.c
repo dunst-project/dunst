@@ -237,12 +237,12 @@ int string_parse_color(const char *s, struct color *ret)
 
 int string_parse_gradient(const char *s, struct gradient **ret)
 {
-        struct color colors[10];
+        struct color colors[16];
         size_t length = 0;
 
         gchar **strs = g_strsplit(s, ",", -1);
         for (int i = 0; strs[i] != NULL; i++) {
-                if (i > 10) {
+                if (i > 16) {
                         LOG_W("Do you really need so many colors? ;)");
                         break;
                 }
@@ -255,7 +255,8 @@ int string_parse_gradient(const char *s, struct gradient **ret)
 
         g_strfreev(strs);
         if (length == 0) {
-                DIE("Unreachable");
+                LOG_W("Provide at least one color");
+                return false;
         }
 
         *ret = gradient_alloc(length);
@@ -431,6 +432,21 @@ bool set_from_string(void *target, struct setting setting, const char *value) {
                                 LOG_M("Using legacy offset syntax NxN, you should switch to the new syntax (N, N)");
                                 return true;
                         }
+
+                        // Keep compatibility with old height semantics
+                        if (STR_EQ(setting.name, "height") && string_is_int(value)) {
+                                LOG_M("Setting 'height' has changed behaviour after dunst 1.12.0, see https://dunst-project.org/release/#v1.12.0.");
+                                LOG_M("Legacy height support may be dropped in the future. If you want to hide this message transition to");
+                                LOG_M("'height = (0, X)' for dynamic height (old behaviour equivalent) or to 'height = (X, X)' for a fixed height.");
+
+                                int height;
+                                if (!safe_string_to_int(&height, value))
+                                        return false;
+
+                                ((struct length *)target)->min = 0;
+                                ((struct length *)target)->max = height;
+                                return true;
+                        }
                         return string_parse_length(target, value);
                 case TYPE_COLOR:
                         return string_parse_color(value, target);
@@ -525,7 +541,8 @@ void save_settings(struct ini *ini) {
                                         }
                                 } else {
                                         // set as a regular setting
-                                        set_setting(curr_setting, curr_entry.value);
+                                        char *value = g_strstrip(curr_entry.value);
+                                        set_setting(curr_setting, value);
                                 }
                         } else {
                                 // interpret this section as a rule
