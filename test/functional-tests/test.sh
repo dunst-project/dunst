@@ -157,7 +157,7 @@ function width {
 }
 
 function test_height {
-    tmp_dunstrc dunstrc.default "height = $1"
+    tmp_dunstrc dunstrc.default "height = (0, $1)"
     start_dunst dunstrc.tmp
     $DUNSTIFY -a "dunst tester" -u c "height = $1"
     $DUNSTIFY -a "dunst tester" -u c "Temporibus accusantium libero sequi at nostrum dolor sequi sed. Cum minus reprehenderit voluptatibus laboriosam et et ut. Laudantium blanditiis omnis ipsa rerum quas velit ut. Quae voluptate soluta enim consequatur libero eum similique ad. Veritatis neque consequatur et aperiam quisquam id nostrum. Consequatur voluptas aut ut omnis atque cum perferendis. Possimus laudantium tempore iste qui nemo voluptate quod. Labore totam debitis consectetur amet. Maxime quibusdam ipsum voluptates quod ex nam sunt. Officiis repellat quod maxime cumque tenetur. Veritatis labore aperiam repellendus. Provident dignissimos ducimus voluptates."
@@ -299,7 +299,7 @@ function dynamic_height {
     echo "dynamic_height"
     echo "###################################"
 
-    for max in 50 100 200 ""; do
+    for max in 50 100 200 300 ""; do
         for min in 50 100 200 ""; do
             [[ $min -gt $max ]] && continue
 
@@ -336,14 +336,14 @@ function vertical_align {
 
     for valign in top center bottom; do
         for padding_case in "${padding_cases[@]}"; do
-            read vertical horizontal icon height label <<<"$padding_case"
+            read vertical horizontal icon height_min label <<<"$padding_case"
 
             padding_settings="
                 padding = $vertical
                 horizontal_padding = $horizontal
                 text_icon_padding = $icon
                 vertical_alignment = $valign
-                height = ($height, )
+                height = ($height_min, )
             "
 
             tmp_dunstrc dunstrc.vertical_align "$padding_settings"
@@ -353,6 +353,7 @@ function vertical_align {
                 for alignment in left center right; do
                     category="icon-$position-alignment-$alignment"
                     $DUNSTIFY -a "dunst tester" --hints string:category:$category -u n "$category"$'\n'"emphasis: $label"$'\n'"vertical alignment: $valign"
+                    echo $category
                 done
             done
 
@@ -363,6 +364,7 @@ function vertical_align {
                 for alignment in left center right; do
                     category="icon-$position-alignment-$alignment-hide"
                     $DUNSTIFY -a "dunst tester" --hints string:category:$category -u n "$category"$'\n'"emphasis: $label"$'\n'"vertical alignment: $valign"
+                    echo $category
                 done
             done
 
