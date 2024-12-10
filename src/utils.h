@@ -253,5 +253,8 @@ FILE * fopen_verbose(const char * const path);
  * when the environment variable doesn't exits.
  */
 void add_paths_from_env(GPtrArray *arr, char *env_name, char *subdir, char *alternative);
+
+bool string_is_int(const char *str);
+
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */
