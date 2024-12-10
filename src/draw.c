@@ -791,7 +791,7 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, int
         if (settings.vertical_alignment == VERTICAL_CENTER) {
                 text_y = h_without_progress_bar / 2 - text_h / 2;
         } else if (settings.vertical_alignment == VERTICAL_BOTTOM) {
-                text_y = h_without_progress_bar + settings.padding - text_h;
+                text_y = h_without_progress_bar - settings.padding - text_h;
                 if (text_y < 0) text_y = settings.padding;
         } // else VERTICAL_TOP
 
