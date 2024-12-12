@@ -37,5 +37,5 @@ test_prog = executable('test-runner',
 
 test('Run tests',
 	test_prog,
-	args: meson.current_source_dir(),
+	env: environment({'TESTDIR': meson.current_source_dir()}),
 )
