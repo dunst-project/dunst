@@ -474,8 +474,8 @@ replace icon_path search.
 
 =item B<icon_theme> (default: "Adwaita", example: "Adwaita, breeze")
 
-Comma-separated list of names of the the themes to use for looking up icons. This
-as to be the name of the directory in which the theme is located, not the
+Comma-separated list of names of the themes to use for looking up icons. This
+has to be the name of the directory in which the theme is located, not the
 human-friendly name of the theme. So for example, the theme B<Breeze Dark> is
 located in F</usr/share/icons/breeze-dark>. In this case you have to set the
 theme to B<breeze-dark>.
