@@ -223,6 +223,9 @@ void reload(char **const configs)
         setup_done = false;
         draw_deinit();
 
+        g_slist_free_full(rules, (GDestroyNotify)rule_free);
+        rules = NULL;
+
         settings_free(&settings);
         load_settings(configs);
 

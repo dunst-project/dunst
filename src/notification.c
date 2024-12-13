@@ -297,10 +297,8 @@ void notification_unref(struct notification *n)
         if (!g_atomic_int_dec_and_test(&n->priv->refcount))
                 return;
 
-        if (n->original) {
+        if (n->original)
                 rule_free(n->original);
-                g_free(n->original);
-        }
 
         g_free(n->dbus_client);
         g_free(n->appname);
