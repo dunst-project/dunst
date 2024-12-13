@@ -88,6 +88,7 @@ static void config_files_add_drop_ins(GPtrArray *config_files, const char *path)
 
         if (n == -1) {
                 // Scandir error. Most likely the directory doesn't exist.
+                g_free(drop_in_dir);
                 return;
         }
 
@@ -98,6 +99,8 @@ static void config_files_add_drop_ins(GPtrArray *config_files, const char *path)
                 g_ptr_array_insert(config_files, insert_index, drop_in);
                 g_free(drop_ins[n]);
         }
+
+        g_free(drop_in_dir);
         g_free(drop_ins);
 }
 
