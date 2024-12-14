@@ -63,7 +63,9 @@ struct gradient {
 
 struct gradient *gradient_alloc(size_t length);
 
-void gradient_free(struct gradient *grad);
+struct gradient *gradient_acquire(struct gradient *grad);
+
+void gradient_release(struct gradient *grad);
 
 void gradient_pattern(struct gradient *grad);
 

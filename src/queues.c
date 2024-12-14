@@ -207,7 +207,7 @@ int queues_notification_insert(struct notification *n)
                 notification_icon_replace_path(n, n->iconname);
         }
 
-        if (settings.print_notifications)
+        if (print_notifications)
                 notification_print(n);
 
         return n->id;

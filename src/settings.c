@@ -32,6 +32,7 @@
 #endif
 
 struct settings settings;
+bool print_notifications = false;
 
 /** @brief Filter for scandir().
  *
@@ -87,6 +88,7 @@ static void config_files_add_drop_ins(GPtrArray *config_files, const char *path)
 
         if (n == -1) {
                 // Scandir error. Most likely the directory doesn't exist.
+                g_free(drop_in_dir);
                 return;
         }
 
@@ -97,6 +99,8 @@ static void config_files_add_drop_ins(GPtrArray *config_files, const char *path)
                 g_ptr_array_insert(config_files, insert_index, drop_in);
                 g_free(drop_ins[n]);
         }
+
+        g_free(drop_in_dir);
         g_free(drop_ins);
 }
 
@@ -139,16 +143,6 @@ FILE *fopen_conf(char * const path)
 
         g_free(real_path);
         return f;
-}
-
-void settings_init(void) {
-        static bool init_done = false;
-        if (!init_done) {
-                LOG_D("Initializing settings");
-                settings = (struct settings) {0};
-
-                init_done = true;
-        }
 }
 
 void check_and_correct_settings(struct settings *s) {
@@ -270,10 +264,6 @@ static void process_conf_file(const gpointer conf_fname, gpointer n_success) {
 
 void load_settings(char **const config_paths)
 {
-        // NOTE: settings_init should be called at the start of dunst_main, otherwise
-        //       the cmdline settings would be reset
-        settings_init();
-
         LOG_D("Setting defaults");
         set_defaults();
 
@@ -302,9 +292,33 @@ void load_settings(char **const config_paths)
 
 void settings_free(struct settings *s)
 {
-        gradient_free(s->colors_low.highlight);
-        gradient_free(s->colors_norm.highlight);
-        gradient_free(s->colors_crit.highlight);
+        gradient_release(s->colors_low.highlight);
+        gradient_release(s->colors_norm.highlight);
+        gradient_release(s->colors_crit.highlight);
+
+        g_free(s->font);
+        g_free(s->format);
+        g_free(s->icons[0]);
+        g_free(s->icons[1]);
+        g_free(s->icons[2]);
+        g_free(s->title);
+        g_free(s->class);
+        g_free(s->monitor);
+        g_free(s->dmenu);
+        g_strfreev(s->dmenu_cmd);
+        g_free(s->browser);
+        g_strfreev(s->browser_cmd);
+        g_strfreev(s->icon_theme);
+        g_free(s->icon_path);
+
+        g_free(s->mouse_left_click);
+        g_free(s->mouse_middle_click);
+        g_free(s->mouse_right_click);
+
+        g_free(s->close_ks.str);
+        g_free(s->close_all_ks.str);
+        g_free(s->history_ks.str);
+        g_free(s->context_ks.str);
 }
 
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

@@ -873,8 +873,9 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
                 gradient_pattern(grad);
 
                 notification_keep_original(n);
-                if (!GRADIENT_VALID(n->original->highlight)) n->original->highlight = n->colors.highlight;
-                n->colors.highlight = grad;
+                if (!GRADIENT_VALID(n->original->highlight)) n->original->highlight = gradient_acquire(n->colors.highlight);
+                gradient_release(n->colors.highlight);
+                n->colors.highlight = gradient_acquire(grad);
 
 end:
                 g_variant_unref(dict_value);
@@ -886,8 +887,9 @@ end:
                         gradient_pattern(grad);
 
                         notification_keep_original(n);
-                        if (!GRADIENT_VALID(n->original->highlight)) n->original->highlight = n->colors.highlight;
-                        n->colors.highlight = grad;
+                        if (!GRADIENT_VALID(n->original->highlight)) n->original->highlight = gradient_acquire(n->colors.highlight);
+                        gradient_release(n->colors.highlight);
+                        n->colors.highlight = gradient_acquire(grad);
                 }
                 g_variant_unref(dict_value);
         }

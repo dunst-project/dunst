@@ -76,7 +76,7 @@ struct gradient *gradient_alloc(size_t length)
         if (length == 0)
                 return NULL;
 
-        struct gradient *grad = g_malloc(sizeof(struct gradient) + length * sizeof(struct color));
+        struct gradient *grad = g_rc_box_alloc(sizeof(struct gradient) + length * sizeof(struct color));
 
         grad->length = length;
         grad->pattern = NULL;
@@ -84,14 +84,21 @@ struct gradient *gradient_alloc(size_t length)
         return grad;
 }
 
-void gradient_free(struct gradient *grad)
+struct gradient *gradient_acquire(struct gradient *grad)
 {
-        if (grad == NULL) return;
+        return grad != NULL ? g_rc_box_acquire(grad) : NULL;
+}
 
+static void gradient_free(struct gradient *grad)
+{
         if (grad->pattern)
                 cairo_pattern_destroy(grad->pattern);
+}
 
-        g_free(grad);
+void gradient_release(struct gradient *grad)
+{
+        if (grad != NULL)
+                g_rc_box_release_full(grad, (GDestroyNotify)gradient_free);
 }
 
 void gradient_pattern(struct gradient *grad)
@@ -119,16 +126,19 @@ char *gradient_to_string(const struct gradient *grad)
 {
         if (!GRADIENT_VALID(grad)) return NULL;
 
-        char *buf = g_malloc(grad->length * 11);
-        color_to_string(grad->colors[0], buf);
-        char *ptr = buf + 9;
+        int max = grad->length * 11 + 1;
+        char *buf = g_malloc(max);
 
-        for (int i = 1; i < grad->length; i++) {
-                ptr += g_snprintf(ptr, 11, ", #%02x%02x%02x%02x",
+        for (int i = 0, j = 0; i < grad->length; i++) {
+                j += g_snprintf(buf + j, max - j, "#%02x%02x%02x%02x",
                                   (int)(grad->colors[i].r * 255),
                                   (int)(grad->colors[i].g * 255),
                                   (int)(grad->colors[i].b * 255),
                                   (int)(grad->colors[i].a * 255));
+
+                if (i != grad->length - 1) {
+                        j += g_snprintf(buf + j, max - j, ", ");
+                }
         }
 
         return buf;
