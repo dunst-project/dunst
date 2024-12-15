@@ -24,6 +24,7 @@ case $state in
       'history:Display notification history (in JSON)'
       'history-clear:Delete all notifications from history'
       'history-pop:Pop the latest notification from history or optionally the notification with given ID'
+      'history-remove:Remove the notification from'
       'is-paused:Check if pause level is greater than 0'
       'set-paused:Set the pause status'
       'get-pause-level:Get the current pause level'
