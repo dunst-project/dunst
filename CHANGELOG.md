@@ -1,5 +1,18 @@
 # Dunst changelog
 
+## 1.12.1 -- 2024-12-17
+
+### Changed
+- Improve man pages and add `dunstify(1)`
+- Accept old `height` syntax again (with notice) (#1412)
+- Add `history-clear` and `history-rm` zsh completions (#1418)
+
+### Fixed
+- Memory corruption when reloading (#1413)
+- Fix height calculation regression (#1411)
+- Handle correctly file uri icons (#1409)
+- Fix typos in docs (#1415)
+
 ## 1.12.0 -- 2024-11-30
 
 ### Added
