@@ -639,7 +639,7 @@ TEST test_dbus_cb_dunst_RuleList(void)
         g_variant_dict_init(&d, dict);
 
         char *str;
-        bool boolean;
+        gboolean boolean;
 
         ASSERT(g_variant_dict_lookup(&d, "name", "s", &str));
         ASSERT_STR_EQ("testing RuleList", str);

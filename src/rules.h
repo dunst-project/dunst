@@ -56,7 +56,7 @@ struct rule {
         char *format;
         char *script;
         enum behavior_fullscreen fullscreen;
-        bool enabled;
+        gboolean enabled;
         int progress_bar_alignment;
         char *set_stack_tag; // this has to be the last modifying rule
 };
