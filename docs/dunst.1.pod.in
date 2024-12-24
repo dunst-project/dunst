@@ -92,7 +92,7 @@ Set notification timeout time.
 
 =head1 CONFIGURATION
 
-A default configuration file is included (usually ##SYSCONFDIR##/dunst/dunstrc)
+A default configuration file is included (usually @sysconfdir@/dunst/dunstrc)
 and serves as the least important configuration file. Note: this was previously
 /usr/share/dunst/dunstrc. You can edit this file to change the system-wide
 defaults or copy it to a more important location to override its settings. See
@@ -145,7 +145,7 @@ This is the most important directory. (C<$HOME/.config> if unset or empty)
 
 This, like C<$PATH> for instance, is a :-separated list of base directories
 in I<descending order of importance>.
-(F<##SYSCONFDIR##> if unset or empty)
+(F<@sysconfdir@> if unset or empty)
 
 =back
 
