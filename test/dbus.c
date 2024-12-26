@@ -621,6 +621,7 @@ TEST test_dbus_cb_dunst_RuleList(void)
         struct rule *rule = rule_new("testing RuleList");
         rule->appname = "dunstify";
         rule->urgency = URG_CRIT;
+        rule->match_transient = true;
         rule->fg = (struct color){.r = 0.1, .g = 0.1, .b = 0.1, .a = 1.0};
 
         GVariant *result = dbus_invoke_ifac("RuleList", NULL, DUNST_IFAC);
@@ -646,6 +647,12 @@ TEST test_dbus_cb_dunst_RuleList(void)
         g_free(str);
 
         ASSERT(g_variant_dict_lookup(&d, "enabled", "b", &boolean));
+        ASSERT(boolean);
+
+        ASSERT(!g_variant_dict_lookup(&d, "hide_text", "b", &boolean));
+        ASSERT(!g_variant_dict_lookup(&d, "history_ignore", "b", &boolean));
+
+        ASSERT(g_variant_dict_lookup(&d, "match_transient", "b", &boolean));
         ASSERT(boolean);
 
         ASSERT(g_variant_dict_lookup(&d, "appname", "s", &str));

@@ -483,7 +483,7 @@ static void dbus_cb_dunst_RuleList(GDBusConnection *connection,
                 g_variant_dict_insert(&dict, "name", "s", r->name);
 
                 // filters - order according to rule_matches_notification
-                g_variant_dict_insert(&dict, "enabled", "b", r->enabled);
+                g_variant_dict_insert(&dict, "enabled", "b", BOOL2G(r->enabled));
                 // undocumented filter?
                 if (r->match_dbus_timeout > -1)
                         g_variant_dict_insert(&dict, "match_dbus_timeout", "i", r->match_dbus_timeout);
@@ -493,7 +493,7 @@ static void dbus_cb_dunst_RuleList(GDBusConnection *connection,
                                               "s",
                                               enum_to_string(urgency_enum_data, r->msg_urgency));
                 if (r->match_transient > -1)
-                        g_variant_dict_insert(&dict, "match_transient", "b", r->match_transient);
+                        g_variant_dict_insert(&dict, "match_transient", "b", BOOL2G(r->match_transient));
                 if (r->appname)
                         g_variant_dict_insert(&dict, "appname", "s", r->appname);
                 if (r->desktop_entry)
@@ -520,13 +520,13 @@ static void dbus_cb_dunst_RuleList(GDBusConnection *connection,
                                               "s",
                                               enum_to_string(fullscreen_enum_data, r->fullscreen));
                 if (r->history_ignore != -1)
-                        g_variant_dict_insert(&dict, "history_ignore", "b", r->history_ignore);
+                        g_variant_dict_insert(&dict, "history_ignore", "b", BOOL2G(r->history_ignore));
                 if (r->set_transient != -1)
-                        g_variant_dict_insert(&dict, "set_transient", "b", r->set_transient);
+                        g_variant_dict_insert(&dict, "set_transient", "b", BOOL2G(r->set_transient));
                 if (r->skip_display != -1)
-                        g_variant_dict_insert(&dict, "skip_display", "b", r->skip_display);
+                        g_variant_dict_insert(&dict, "skip_display", "b", BOOL2G(r->skip_display));
                 if (r->word_wrap != -1)
-                        g_variant_dict_insert(&dict, "word_wrap", "b", r->word_wrap);
+                        g_variant_dict_insert(&dict, "word_wrap", "b", BOOL2G(r->word_wrap));
                 if (r->ellipsize != -1)
                         g_variant_dict_insert(&dict,
                                               "ellipsize",
@@ -538,7 +538,7 @@ static void dbus_cb_dunst_RuleList(GDBusConnection *connection,
                                               "s",
                                               enum_to_string(horizontal_alignment_enum_data, r->alignment));
                 if (r->hide_text != -1)
-                        g_variant_dict_insert(&dict, "hide_text", "b", r->hide_text);
+                        g_variant_dict_insert(&dict, "hide_text", "b", BOOL2G(r->hide_text));
                 if (r->progress_bar_alignment != -1)
                         g_variant_dict_insert(&dict,
                                               "progress_bar_alignment",
