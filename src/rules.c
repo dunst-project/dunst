@@ -150,12 +150,12 @@ void rule_print(const struct rule *r)
         if (r->msg_urgency != URG_NONE) printf("\tmsg_urgency: '%s'\n", notification_urgency_to_string(r->msg_urgency));
         if (r->stack_tag != NULL) printf("\tstack_tag: '%s'\n", r->stack_tag);
         if (r->desktop_entry != NULL) printf("\tdesktop_entry: '%s'\n", r->desktop_entry);
-        if (r->match_dbus_timeout != -1) printf("\tmatch_dbus_timeout: %ld\n", r->match_dbus_timeout);
+        if (r->match_dbus_timeout != -1) printf("\tmatch_dbus_timeout: %"G_GINT64_FORMAT"\n", r->match_dbus_timeout);
         if (r->match_transient != -1) printf("\tmatch_transient: %d\n", r->match_transient);
 
         // modifiers
-        if (r->timeout != -1) printf("\ttimeout: %ld\n", r->timeout);
-        if (r->override_dbus_timeout != -1) printf("\toverride_dbus_timeout: %ld\n", r->override_dbus_timeout);
+        if (r->timeout != -1) printf("\ttimeout: %"G_GINT64_FORMAT"\n", r->timeout);
+        if (r->override_dbus_timeout != -1) printf("\toverride_dbus_timeout: %"G_GINT64_FORMAT"\n", r->override_dbus_timeout);
         if (r->markup != -1) printf("\tmarkup: %d\n", r->markup);
         if (r->action_name != NULL) printf("\taction_name: '%s'\n", r->action_name);
         if (r->urgency != URG_NONE) printf("\turgency: '%s'\n", notification_urgency_to_string(r->urgency));

@@ -164,7 +164,7 @@ static gboolean run(void *data)
                 gint64 sleep = timeout_at - now;
                 sleep = MAX(sleep, 1000); // Sleep at least 1ms
 
-                LOG_D("Sleeping for %li ms", sleep/1000);
+                LOG_D("Sleeping for %"G_GINT64_FORMAT" ms", sleep/1000);
 
                 next_timeout_id = g_timeout_add(sleep/1000, run, NULL);
         }

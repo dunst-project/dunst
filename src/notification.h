@@ -47,7 +47,7 @@ struct notification_colors {
 
 struct notification {
         NotificationPrivate *priv;
-        int id;
+        gint id;
         char *dbus_client;
         bool dbus_valid;
 
