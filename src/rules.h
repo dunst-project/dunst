@@ -34,14 +34,14 @@ struct rule {
         enum urgency urgency;
         char *action_name;
         enum markup_mode markup;
-        int history_ignore;
-        int match_transient;
-        int set_transient;
-        int skip_display;
-        int word_wrap;
+        gint history_ignore;
+        gint match_transient;
+        gint set_transient;
+        gint skip_display;
+        gint word_wrap;
         int ellipsize;
         int alignment;
-        int hide_text;
+        gint hide_text;
         int icon_position;
         int min_icon_size;
         int max_icon_size;
@@ -56,7 +56,7 @@ struct rule {
         char *format;
         char *script;
         enum behavior_fullscreen fullscreen;
-        gboolean enabled;
+        bool enabled;
         int progress_bar_alignment;
         char *set_stack_tag; // this has to be the last modifying rule
 };

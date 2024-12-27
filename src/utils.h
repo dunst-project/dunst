@@ -24,6 +24,9 @@
 #define STR_TO(...) _STR_TO(__VA_ARGS__)
 #define _STR_TO(...) "" # __VA_ARGS__
 
+//! Make a gboolean from a boolean value
+// See https://github.com/dunst-project/dunst/issues/1421
+#define BOOL2G(x) ((x) ? TRUE : FALSE)
 
 //! Assert that expr evaluates to true, if not return with val
 #define ASSERT_OR_RET(expr, val) if (!(expr)) return val;
