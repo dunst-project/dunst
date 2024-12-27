@@ -7,12 +7,12 @@
 #include "queues.h"
 #include "helpers.h"
 
-struct notification *queues_debug_find_notification_by_id(int id)
+struct notification *queues_debug_find_notification_by_id(gint id)
 {
         assert(id > 0);
 
         GQueue *allqueues[] = { displayed, waiting, history };
-        for (int i = 0; i < sizeof(allqueues)/sizeof(GQueue*); i++) {
+        for (size_t i = 0; i < sizeof(allqueues)/sizeof(GQueue*); i++) {
                 for (GList *iter = g_queue_peek_head_link(allqueues[i]); iter;
                      iter = iter->next) {
                         struct notification *cur = iter->data;
@@ -326,7 +326,7 @@ TEST test_queue_history_overfull(void)
 
         struct notification *n;
 
-        for (int i = 0; i < 10; i++) {
+        for (size_t i = 0; i < 10; i++) {
                 char name[] = { 'n', '0'+i, '\0' }; // n<i>
                 n = test_notification(name, -1);
                 queues_notification_insert(n);
@@ -357,14 +357,14 @@ TEST test_queue_history_pushall(void)
 
         struct notification *n;
 
-        for (int i = 0; i < 10; i++) {
+        for (size_t i = 0; i < 10; i++) {
                 char name[] = { 'n', '0'+i, '\0' }; // n<i>
                 n = test_notification(name, -1);
                 queues_notification_insert(n);
         }
         queues_update(STATUS_NORMAL, time_monotonic_now());
 
-        for (int i = 0; i < 10; i++) {
+        for (size_t i = 0; i < 10; i++) {
                 char name[] = { '2', 'n', '0'+i, '\0' }; // 2n<i>
                 n = test_notification(name, -1);
                 queues_notification_insert(n);
@@ -393,7 +393,7 @@ TEST test_queue_history_remove_by_id(void)
         struct notification *n1 = NULL;
 
 
-        for (int i = 0; i < 5; i++) {
+        for (size_t i = 0; i < 5; i++) {
                 char name[] = { 'n', '0'+i, '\0' }; // n<i>
                 n = test_notification(name, -1);
                 queues_notification_insert(n);
@@ -408,8 +408,8 @@ TEST test_queue_history_remove_by_id(void)
         queues_history_remove_by_id(n->id);
         queues_history_remove_by_id(n1->id);
 
-        QUEUE_LEN_ALL(0, 0, 3);   
-        
+        QUEUE_LEN_ALL(0, 0, 3);
+
         QUEUE_NOT_CONTAINS(HIST, n);
         QUEUE_NOT_CONTAINS(HIST, n1);
 
@@ -1014,7 +1014,7 @@ TEST test_queues_timeout_before_paused(void)
 TEST test_queue_find_by_id(void)
 {
         struct notification *n;
-        int id;
+        gint id;
         queues_init();
 
         n = test_notification("n", 0);
@@ -1112,7 +1112,7 @@ TEST test_queue_no_sort_and_pause(void)
                 "n4",
         };
 
-        for (int i = 0; i < g_queue_get_length(QUEUE_DISP); i++) {
+        for (size_t i = 0; i < g_queue_get_length(QUEUE_DISP); i++) {
                 struct notification *notif = g_queue_peek_nth(QUEUE_DISP, i);
                 ASSERTm("Notifications are not in the right order",
                                 STR_EQ(notif->summary, order[i]));
@@ -1142,7 +1142,7 @@ SUITE(suite_queues)
         RUN_TEST(test_queue_insert_id_replacement);
         RUN_TEST(test_queue_insert_id_valid_newid);
         RUN_TEST(test_queue_length);
-        
+
         RUN_TEST(test_queue_notification_close);
         RUN_TEST(test_queue_notification_close_histignore);
         RUN_TEST(test_queue_notification_skip_display);

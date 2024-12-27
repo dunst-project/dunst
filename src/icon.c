@@ -268,6 +268,12 @@ char *get_path_from_icon_name(const char *iconname, int size)
         return path;
 }
 
+static void icon_destroy(guchar *pixels, gpointer data)
+{
+        (void)data;
+        g_free(pixels);
+}
+
 GdkPixbuf *icon_get_for_data(GVariant *data, char **id, double dpi_scale, int min_size, int max_size)
 {
         ASSERT_OR_RET(data, NULL);
@@ -351,7 +357,7 @@ GdkPixbuf *icon_get_for_data(GVariant *data, char **id, double dpi_scale, int mi
                                           width,
                                           height,
                                           rowstride,
-                                          (GdkPixbufDestroyNotify) g_free,
+                                          icon_destroy,
                                           data_pb);
         if (!pixbuf) {
                 /* Dear user, I'm sorry, I'd like to give you a more specific

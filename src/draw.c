@@ -110,7 +110,7 @@ void gradient_pattern(struct gradient *grad)
                                                           grad->colors[0].a);
         } else {
                 grad->pattern = cairo_pattern_create_linear(0, 0, 1, 0);
-                for (int i = 0; i < grad->length; i++) {
+                for (size_t i = 0; i < grad->length; i++) {
                         double offset = i  / (double)(grad->length - 1);
                         cairo_pattern_add_color_stop_rgba(grad->pattern,
                                                           offset,
@@ -129,7 +129,7 @@ char *gradient_to_string(const struct gradient *grad)
         int max = grad->length * 11 + 1;
         char *buf = g_malloc(max);
 
-        for (int i = 0, j = 0; i < grad->length; i++) {
+        for (size_t i = 0, j = 0; i < grad->length; i++) {
                 j += g_snprintf(buf + j, max - j, "#%02x%02x%02x%02x",
                                   (int)(grad->colors[i].r * 255),
                                   (int)(grad->colors[i].g * 255),

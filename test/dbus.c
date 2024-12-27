@@ -770,7 +770,7 @@ TEST test_dbus_notify_colors(void)
 
         ASSERTm("Invalid color strings should not change the gradient struct", n->colors.highlight->length == settings.colors_norm.highlight->length);
 
-        for (int i = 0; i < settings.colors_norm.highlight->length; i++)
+        for (size_t i = 0; i < settings.colors_norm.highlight->length; i++)
                 ASSERTm("Invalid color strings should not change the gradient struct",
                         COLOR_SAME(n->colors.highlight->colors[i], settings.colors_norm.highlight->colors[i]));
 
@@ -1221,7 +1221,7 @@ TEST test_close_and_signal(void)
 
 TEST test_get_fdn_daemon_info(void)
 {
-        unsigned int pid_is;
+        guint pid_is;
         pid_t pid_should;
         char *name, *vendor;
         GDBusConnection *conn;
@@ -1231,7 +1231,7 @@ TEST test_get_fdn_daemon_info(void)
 
         ASSERT(dbus_get_fdn_daemon_info(conn, &pid_is, &name, &vendor));
 
-        ASSERT_EQ_FMT(pid_should, pid_is, "%d");
+        ASSERT_EQ_FMT(pid_should, (pid_t)pid_is, "%d");
         ASSERT_STR_EQ("dunst", name);
         ASSERT_STR_EQ("knopwob", vendor);
 

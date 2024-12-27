@@ -239,7 +239,7 @@ TEST test_notification_maxlength(void)
                             " 0123456789"
                             "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                             "abcdefghijklmnopqrstuvwxyz";
-        for (int i = 0; i < len; ++i)
+        for (size_t i = 0; i < len; ++i)
                 n->appname[i] = sigma[rand() % (sizeof(sigma) - 1)];
 
         notification_format_message(n);

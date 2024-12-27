@@ -230,6 +230,8 @@ int notification_cmp(const struct notification *a, const struct notification *b)
 /* see notification.h */
 int notification_cmp_data(const void *va, const void *vb, void *data)
 {
+        (void)data;
+
         struct notification *a = (struct notification *) va;
         struct notification *b = (struct notification *) vb;
 

@@ -290,7 +290,7 @@ bool window_is_fullscreen(Window window)
         XSetErrorHandler(NULL);
 
         if (result == Success) {
-                for(int i = 0; i < n_items; i++) {
+                for(size_t i = 0; i < n_items; i++) {
                         Atom atom = ((Atom*) prop_to_return)[i];
                         if (!atom)
                                 continue;
