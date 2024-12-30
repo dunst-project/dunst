@@ -361,6 +361,8 @@ static void dbus_cb_dunst_NotificationListHistory(GDBusConnection *connection,
 
                 char *body, *msg, *summary, *appname, *category;
                 char *default_action_name, *icon_path;
+                char  *urls, *stack_tag;
+                const char *urgency;
 
                 body      = (n->body      == NULL) ? "" : n->body;
                 msg       = (n->msg       == NULL) ? "" : n->msg;
@@ -370,6 +372,9 @@ static void dbus_cb_dunst_NotificationListHistory(GDBusConnection *connection,
                 default_action_name= (n->default_action_name == NULL) ?
                         "" : n->default_action_name;
                 icon_path = (n->icon_path == NULL) ? "" : n->icon_path;
+                urgency   = notification_urgency_to_string(n->urgency);
+                urls      = (n->urls      == NULL) ? "" : n->urls;
+                stack_tag = (n->stack_tag == NULL) ? "" : n->stack_tag;        
 
                 g_variant_builder_add(&n_builder, "{sv}", "body", g_variant_new_string(body));
                 g_variant_builder_add(&n_builder, "{sv}", "message", g_variant_new_string(msg));
@@ -383,6 +388,9 @@ static void dbus_cb_dunst_NotificationListHistory(GDBusConnection *connection,
                 g_variant_builder_add(&n_builder, "{sv}", "timestamp", g_variant_new_int64(n->timestamp));
                 g_variant_builder_add(&n_builder, "{sv}", "timeout", g_variant_new_int64(n->timeout));
                 g_variant_builder_add(&n_builder, "{sv}", "progress", g_variant_new_int32(n->progress));
+                g_variant_builder_add(&n_builder, "{sv}", "urgency", g_variant_new_string(urgency));
+                g_variant_builder_add(&n_builder, "{sv}", "stack_tag", g_variant_new_string(stack_tag));
+                g_variant_builder_add(&n_builder, "{sv}", "urls", g_variant_new_string(urls));
 
                 g_variant_builder_add(&builder, "a{sv}", &n_builder);
         }
