@@ -169,10 +169,6 @@ void dbus_cb_fdn_methods(GDBusConnection *connection,
                         GDBusMethodInvocation *invocation,
                         gpointer user_data)
 {
-        (void)object_path;
-        (void)interface_name;
-        (void)user_data;
-
         struct dbus_method *m = bsearch(method_name,
                                         methods_fdn,
                                         G_N_ELEMENTS(methods_fdn),
@@ -228,10 +224,6 @@ void dbus_cb_dunst_methods(GDBusConnection *connection,
                            GDBusMethodInvocation *invocation,
                            gpointer user_data)
 {
-        (void)object_path;
-        (void)interface_name;
-        (void)user_data;
-
         struct dbus_method *m = bsearch(method_name,
                                         methods_dunst,
                                         G_N_ELEMENTS(methods_dunst),
@@ -251,9 +243,6 @@ static void dbus_cb_dunst_ContextMenuCall(GDBusConnection *connection,
                                           GVariant *parameters,
                                           GDBusMethodInvocation *invocation)
 {
-        (void)sender;
-        (void)parameters;
-
         LOG_D("CMD: Calling context menu");
         context_menu();
 
@@ -266,8 +255,6 @@ static void dbus_cb_dunst_NotificationAction(GDBusConnection *connection,
                                              GVariant *parameters,
                                              GDBusMethodInvocation *invocation)
 {
-        (void)sender;
-
         guint32 notification_nr = 0;
         g_variant_get(parameters, "(u)", &notification_nr);
 
@@ -298,9 +285,6 @@ static void dbus_cb_dunst_NotificationClearHistory(GDBusConnection *connection,
                                                 GVariant *parameters,
                                                 GDBusMethodInvocation *invocation)
 {
-        (void)sender;
-        (void)parameters;
-
         LOG_D("CMD: Clearing the history");
         queues_history_clear();
         wake_up();
@@ -314,9 +298,6 @@ static void dbus_cb_dunst_NotificationCloseAll(GDBusConnection *connection,
                                               GVariant *parameters,
                                               GDBusMethodInvocation *invocation)
 {
-        (void)sender;
-        (void)parameters;
-
         LOG_D("CMD: Pushing all to history");
         queues_history_push_all();
         wake_up();
@@ -330,9 +311,6 @@ static void dbus_cb_dunst_NotificationCloseLast(GDBusConnection *connection,
                                                 GVariant *parameters,
                                                 GDBusMethodInvocation *invocation)
 {
-        (void)sender;
-        (void)parameters;
-
         LOG_D("CMD: Closing last notification");
         const GList *list = queues_get_displayed();
         if (list && list->data) {
@@ -350,9 +328,6 @@ static void dbus_cb_dunst_NotificationShow(GDBusConnection *connection,
                                            GVariant *parameters,
                                            GDBusMethodInvocation *invocation)
 {
-        (void)sender;
-        (void)parameters;
-
         LOG_D("CMD: Showing last notification from history");
         queues_history_pop();
         wake_up();
@@ -366,9 +341,6 @@ static void dbus_cb_dunst_NotificationListHistory(GDBusConnection *connection,
                                            GVariant *parameters,
                                            GDBusMethodInvocation *invocation)
 {
-        (void)sender;
-        (void)parameters;
-
         LOG_D("CMD: Listing all notifications from history");
 
         GVariantBuilder builder;
@@ -421,9 +393,6 @@ static void dbus_cb_dunst_NotificationPopHistory(GDBusConnection *connection,
                                            GVariant *parameters,
                                            GDBusMethodInvocation *invocation)
 {
-        (void)sender;
-        (void)parameters;
-
         LOG_D("CMD: Popping notification from history");
 
         guint32 id;
@@ -441,9 +410,6 @@ static void dbus_cb_dunst_NotificationRemoveFromHistory(GDBusConnection *connect
                                                         GVariant *parameters,
                                                         GDBusMethodInvocation *invocation)
 {
-        (void)sender;
-        (void)parameters;
-
         LOG_D("CMD: Removing notification from history");
 
         guint32 id;
@@ -497,9 +463,6 @@ static void dbus_cb_dunst_RuleList(GDBusConnection *connection,
                                    GVariant *parameters,
                                    GDBusMethodInvocation *invocation)
 {
-        (void)sender;
-        (void)parameters;
-
         LOG_D("CMD: Listing all configured rules");
 
         GVariantBuilder builder;
@@ -623,9 +586,6 @@ static void dbus_cb_dunst_RuleEnable(GDBusConnection *connection,
                                      GVariant *parameters,
                                      GDBusMethodInvocation *invocation)
 {
-        (void)sender;
-        (void)parameters;
-
         // dbus param state: 0 → disable, 1 → enable, 2 → toggle.
 
         int state = 0;
@@ -671,8 +631,6 @@ static void dbus_cb_dunst_ConfigReload(GDBusConnection *connection,
                                        GVariant *parameters,
                                        GDBusMethodInvocation *invocation)
 {
-        (void)sender;
-
         gchar **configs = NULL;
         g_variant_get(parameters, "(^as)", &configs);
         reload(configs);
@@ -688,9 +646,6 @@ static void dbus_cb_dunst_Ping(GDBusConnection *connection,
                                GVariant *parameters,
                                GDBusMethodInvocation *invocation)
 {
-        (void)sender;
-        (void)parameters;
-
         g_dbus_method_invocation_return_value(invocation, NULL);
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
 }
@@ -702,9 +657,6 @@ static void dbus_cb_GetCapabilities(
                 GVariant *parameters,
                 GDBusMethodInvocation *invocation)
 {
-        (void)sender;
-        (void)parameters;
-
         GVariantBuilder *builder;
         GVariant *value;
 
@@ -1049,8 +1001,6 @@ static void dbus_cb_CloseNotification(
                 GVariant *parameters,
                 GDBusMethodInvocation *invocation)
 {
-        (void)sender;
-
         guint32 id;
         g_variant_get(parameters, "(u)", &id);
         if (settings.ignore_dbusclose) {
@@ -1075,9 +1025,6 @@ static void dbus_cb_GetServerInformation(
                 GVariant *parameters,
                 GDBusMethodInvocation *invocation)
 {
-        (void)sender;
-        (void)parameters;
-
         GVariant *answer = g_variant_new("(ssss)", "dunst", "knopwob", VERSION, "1.2");
 
         g_dbus_method_invocation_return_value(invocation, answer);
@@ -1176,12 +1123,6 @@ GVariant *dbus_cb_dunst_Properties_Get(GDBusConnection *connection,
                                        GError **error,
                                        gpointer user_data)
 {
-        (void)connection;
-        (void)sender;
-        (void)object_path;
-        (void)interface_name;
-        (void)user_data;
-
         struct dunst_status status = dunst_status_get();
 
         if (STR_EQ(property_name, "paused")) {
@@ -1213,9 +1154,6 @@ gboolean dbus_cb_dunst_Properties_Set(GDBusConnection *connection,
                                       GError **error,
                                       gpointer user_data)
 {
-        (void)sender;
-        (void)user_data;
-
         int targetPauseLevel = -1;
         if (STR_EQ(property_name, "paused")) {
                 if (g_variant_get_boolean(value)) {
@@ -1278,9 +1216,6 @@ static void dbus_cb_bus_acquired(GDBusConnection *connection,
                                  const gchar *name,
                                  gpointer user_data)
 {
-        (void)name;
-        (void)user_data;
-
         GError *err = NULL;
         if(!g_dbus_connection_register_object(
                                 connection,
@@ -1309,8 +1244,6 @@ static void dbus_cb_name_acquired(GDBusConnection *connection,
                                   const gchar *name,
                                   gpointer user_data)
 {
-        (void)user_data;
-
         // If we're not able to get org.fd.N bus, we've still got a problem
         if (STR_EQ(name, FDN_NAME))
                 dbus_conn = connection;
@@ -1434,9 +1367,6 @@ static void dbus_cb_name_lost(GDBusConnection *connection,
                               const gchar *name,
                               gpointer user_data)
 {
-        (void)name;
-        (void)user_data;
-
         if (connection) {
                 char *name;
                 unsigned int pid;
