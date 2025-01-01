@@ -47,6 +47,10 @@ Specifies an icon to display with the notification.
 
 Path to the icon to be sent as raw image data.
 
+=item B<--category=TYPE>
+
+The category of this notification.
+
 =item B<-c, --capabilities>
 
 Print the server capabilities and exit.
