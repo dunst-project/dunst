@@ -264,23 +264,26 @@ SUITE(suite_notification)
 
         // TEST notification_format_message
         struct notification *a = notification_create();
-        a->appname = g_strdup("MyApp");
-        a->summary = g_strdup("I've got a summary!");
-        a->body =    g_strdup("Look at my shiny <notification>");
-        a->iconname =    g_strdup("/this/is/my/icoknpath.png");
+        a->appname  = g_strdup("MyApp");
+        a->summary  = g_strdup("I've got a summary!");
+        a->body     = g_strdup("Look at my shiny <notification>");
+        a->category = g_strdup("This category");
+        a->iconname = g_strdup("/this/is/my/icoknpath.png");
         a->progress = 95;
 
         const char *strings[] = {
                 "%a", "MyApp",
                 "%s", "I&apos;ve got a summary!",
                 "%b", "Look at my shiny <notification>",
+                "%c", "This category",
+                "%U", "NORMAL",
                 "%I", "icoknpath.png",
                 "%i", "/this/is/my/icoknpath.png",
                 "%p", "[ 95%]",
                 "%n", "95",
                 "%%", "%",
                 "%",  "%",
-                "%UNKNOWN", "%UNKNOWN",
+                "%WHATEVER", "%WHATEVER",
                 NULL
         };
 
