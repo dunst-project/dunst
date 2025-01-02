@@ -368,6 +368,7 @@ gboolean x_mainloop_fd_dispatch(GSource *source, GSourceFunc callback, gpointer 
                         }
                         /* Explicitly fallthrough. Other PropertyNotify events, e.g. catching
                          * _NET_WM get handled in the Focus(In|Out) section */
+                        /* fall through */
                 case ConfigureNotify:
                 case FocusIn:
                 case FocusOut:

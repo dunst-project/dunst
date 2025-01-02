@@ -696,7 +696,7 @@ double wl_get_scale(void) {
                 // return the largest scale
                 struct dunst_output *output;
                 wl_list_for_each(output, &ctx.outputs, link) {
-                        scale = MAX(output->scale, scale);
+                        scale = MAX((int)output->scale, scale);
                 }
         }
         if (scale <= 0)

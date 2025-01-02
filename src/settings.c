@@ -115,7 +115,7 @@ static GPtrArray* get_conf_files(void) {
         GPtrArray *config_locations = get_xdg_conf_basedirs();
         GPtrArray *config_files = g_ptr_array_new_full(3, g_free);
         char *dunstrc_location = NULL;
-        for (int i = 0; i < config_locations->len; i++) {
+        for (size_t i = 0; i < config_locations->len; i++) {
                 dunstrc_location = g_build_filename(config_locations->pdata[i],
                                 "dunstrc", NULL);
                 LOG_D("Trying config location: %s", dunstrc_location);

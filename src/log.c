@@ -74,6 +74,8 @@ static void dunst_log_handler(
                 const gchar    *message,
                 gpointer        testing)
 {
+        (void)log_domain;
+
         if (testing)
                 log_level = G_LOG_LEVEL_ERROR;
 

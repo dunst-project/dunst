@@ -770,7 +770,7 @@ TEST test_dbus_notify_colors(void)
 
         ASSERTm("Invalid color strings should not change the gradient struct", n->colors.highlight->length == settings.colors_norm.highlight->length);
 
-        for (int i = 0; i < settings.colors_norm.highlight->length; i++)
+        for (size_t i = 0; i < settings.colors_norm.highlight->length; i++)
                 ASSERTm("Invalid color strings should not change the gradient struct",
                         COLOR_SAME(n->colors.highlight->colors[i], settings.colors_norm.highlight->colors[i]));
 
@@ -812,7 +812,7 @@ TEST test_hint_transient(void)
                 ASSERT(dbus_notification_fire(n_dbus, &id));
                 ASSERT(id != 0);
 
-                snprintf(msg, sizeof(msg), "In round %ld", i);
+                snprintf(msg, sizeof(msg), "In round %zu", i);
                 ASSERT_EQm(msg, queues_length_waiting(), len+1);
 
                 n = queues_debug_find_notification_by_id(id);
@@ -857,12 +857,12 @@ TEST test_hint_progress(void)
                 ASSERT(dbus_notification_fire(n_dbus, &id));
                 ASSERT(id != 0);
 
-                snprintf(msg, sizeof(msg), "In round %ld", i);
+                snprintf(msg, sizeof(msg), "In round %zu", i);
                 ASSERT_EQm(msg, queues_length_waiting(), len+1);
 
                 n = queues_debug_find_notification_by_id(id);
 
-                snprintf(msg, sizeof(msg), "In round %ld progress should be %i, but is %i", i, n->progress, values[i]);
+                snprintf(msg, sizeof(msg), "In round %zu progress should be %i, but is %i", i, n->progress, values[i]);
                 ASSERT_EQm(msg, values[i], n->progress);
         }
 
@@ -1004,7 +1004,7 @@ TEST test_hint_urgency(void)
 
                 n = queues_debug_find_notification_by_id(id);
 
-                snprintf(msg, sizeof(msg), "In round %ld", i);
+                snprintf(msg, sizeof(msg), "In round %zu", i);
                 ASSERT_EQm(msg, values[i], n->urgency);
 
                 queues_notification_close_id(id, REASON_UNDEF);
@@ -1221,7 +1221,7 @@ TEST test_close_and_signal(void)
 
 TEST test_get_fdn_daemon_info(void)
 {
-        unsigned int pid_is;
+        guint pid_is;
         pid_t pid_should;
         char *name, *vendor;
         GDBusConnection *conn;
@@ -1231,7 +1231,7 @@ TEST test_get_fdn_daemon_info(void)
 
         ASSERT(dbus_get_fdn_daemon_info(conn, &pid_is, &name, &vendor));
 
-        ASSERT_EQ_FMT(pid_should, pid_is, "%d");
+        ASSERT_EQ_FMT(pid_should, (pid_t)pid_is, "%d");
         ASSERT_STR_EQ("dunst", name);
         ASSERT_STR_EQ("knopwob", vendor);
 

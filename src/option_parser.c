@@ -297,7 +297,7 @@ int get_setting_id(const char *key, const char *section) {
         if (!match_section) {
                 LOG_D("not matching section %s", section);
         }
-        for (int i = 0; i < G_N_ELEMENTS(allowed_settings); i++) {
+        for (size_t i = 0; i < G_N_ELEMENTS(allowed_settings); i++) {
                 if (strcmp(allowed_settings[i].name, key) == 0) {
                         bool is_rule = allowed_settings[i].rule_offset > 0;
 
@@ -489,7 +489,7 @@ void set_defaults(void) {
         LOG_D("Initializing settings");
         settings = (struct settings) {0};
 
-        for (int i = 0; i < G_N_ELEMENTS(allowed_settings); i++) {
+        for (size_t i = 0; i < G_N_ELEMENTS(allowed_settings); i++) {
                 // FIXME Rule settings can only have a default if they have an
                 // working entry in the settings struct as well. Make an
                 // alternative way of setting defaults for rules.

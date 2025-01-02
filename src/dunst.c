@@ -164,7 +164,7 @@ static gboolean run(void *data)
                 gint64 sleep = timeout_at - now;
                 sleep = MAX(sleep, 1000); // Sleep at least 1ms
 
-                LOG_D("Sleeping for %li ms", sleep/1000);
+                LOG_D("Sleeping for %"G_GINT64_FORMAT" ms", sleep/1000);
 
                 next_timeout_id = g_timeout_add(sleep/1000, run, NULL);
         }
@@ -179,6 +179,8 @@ static gboolean run(void *data)
 
 gboolean pause_signal(gpointer data)
 {
+        (void)data;
+
         dunst_status_int(S_PAUSE_LEVEL, MAX_PAUSE_LEVEL);
         wake_up();
 
@@ -187,6 +189,8 @@ gboolean pause_signal(gpointer data)
 
 gboolean unpause_signal(gpointer data)
 {
+        (void)data;
+
         dunst_status_int(S_PAUSE_LEVEL, 0);
         wake_up();
 
@@ -195,6 +199,7 @@ gboolean unpause_signal(gpointer data)
 
 gboolean quit_signal(gpointer data)
 {
+        (void)data;
         g_main_loop_quit(mainloop);
 
         return G_SOURCE_CONTINUE;

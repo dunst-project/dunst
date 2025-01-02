@@ -13,7 +13,8 @@
 struct wl_list toplevel_list;
 
 static void copy_state(struct toplevel_state *current,
-                struct toplevel_state *pending) {
+                struct toplevel_state *pending)
+{
         if (!(pending->state & TOPLEVEL_STATE_INVALID)) {
                 current->state = pending->state;
         }
@@ -25,7 +26,10 @@ static uint32_t global_id = 0;
 
 static void toplevel_handle_output_enter(void *data,
                 struct zwlr_foreign_toplevel_handle_v1 *zwlr_toplevel,
-                struct wl_output *wl_output) {
+                struct wl_output *wl_output)
+{
+        (void)zwlr_toplevel;
+
         struct toplevel_v1 *toplevel = data;
         struct toplevel_output *toplevel_output = calloc(1, sizeof(struct toplevel_output));
         struct dunst_output *dunst_output = wl_output_get_user_data(wl_output);
@@ -36,7 +40,10 @@ static void toplevel_handle_output_enter(void *data,
 
 static void toplevel_handle_output_leave(void *data,
                 struct zwlr_foreign_toplevel_handle_v1 *zwlr_toplevel,
-                struct wl_output *wl_output) {
+                struct wl_output *wl_output)
+{
+        (void)zwlr_toplevel;
+
         struct toplevel_v1 *toplevel = data;
 
         struct dunst_output *output = wl_output_get_user_data(wl_output);
@@ -63,13 +70,18 @@ static uint32_t array_to_state(struct wl_array *array) {
 
 static void toplevel_handle_state(void *data,
                 struct zwlr_foreign_toplevel_handle_v1 *zwlr_toplevel,
-                struct wl_array *state) {
+                struct wl_array *state)
+{
+        (void)zwlr_toplevel;
+
         struct toplevel_v1 *toplevel = data;
         toplevel->pending.state = array_to_state(state);
 }
 
 static void toplevel_handle_done(void *data,
-                struct zwlr_foreign_toplevel_handle_v1 *zwlr_toplevel) {
+                struct zwlr_foreign_toplevel_handle_v1 *zwlr_toplevel)
+{
+        (void)zwlr_toplevel;
         struct toplevel_v1 *toplevel = data;
 
         bool was_fullscreen = wl_have_fullscreen_window();
@@ -82,7 +94,8 @@ static void toplevel_handle_done(void *data,
 }
 
 static void toplevel_handle_closed(void *data,
-                struct zwlr_foreign_toplevel_handle_v1 *zwlr_toplevel) {
+                struct zwlr_foreign_toplevel_handle_v1 *zwlr_toplevel)
+{
         struct toplevel_v1 *toplevel = data;
 
         wl_list_remove(&toplevel->link);
@@ -95,13 +108,21 @@ static void toplevel_handle_closed(void *data,
 }
 
 static void toplevel_handle_title(void *data,
-                struct zwlr_foreign_toplevel_handle_v1 *zwlr_foreign_toplevel_handle_v1,
-                const char *title) {
+                struct zwlr_foreign_toplevel_handle_v1 *zwlr_foreign_toplevel,
+                const char *title)
+{
+        (void)data;
+        (void)zwlr_foreign_toplevel;
+        (void)title;
 }
 
 static void toplevel_handle_app_id(void *data,
-                struct zwlr_foreign_toplevel_handle_v1 *zwlr_foreign_toplevel_handle_v1,
-                const char *title) {
+                struct zwlr_foreign_toplevel_handle_v1 *zwlr_foreign_toplevel,
+                const char *title)
+{
+        (void)data;
+        (void)zwlr_foreign_toplevel;
+        (void)title;
 }
 
 static const struct zwlr_foreign_toplevel_handle_v1_listener toplevel_impl = {
@@ -116,7 +137,11 @@ static const struct zwlr_foreign_toplevel_handle_v1_listener toplevel_impl = {
 
 static void toplevel_manager_handle_toplevel(void *data,
                 struct zwlr_foreign_toplevel_manager_v1 *toplevel_manager,
-                struct zwlr_foreign_toplevel_handle_v1 *zwlr_toplevel) {
+                struct zwlr_foreign_toplevel_handle_v1 *zwlr_toplevel)
+{
+        (void)data;
+        (void)toplevel_manager;
+
         struct toplevel_v1 *toplevel = calloc(1, sizeof(struct toplevel_v1));
         if (!toplevel) {
                 fprintf(stderr, "Failed to allocate memory for toplevel\n");
@@ -133,7 +158,9 @@ static void toplevel_manager_handle_toplevel(void *data,
 }
 
 static void toplevel_manager_handle_finished(void *data,
-                struct zwlr_foreign_toplevel_manager_v1 *toplevel_manager) {
+                struct zwlr_foreign_toplevel_manager_v1 *toplevel_manager)
+{
+        (void)data;
         zwlr_foreign_toplevel_manager_v1_destroy(toplevel_manager);
 }
 

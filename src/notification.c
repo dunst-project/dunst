@@ -61,9 +61,9 @@ void notification_print(const struct notification *n)
         printf("\ticon_id: '%s'\n", STR_NN(n->icon_id));
         printf("\tdesktop_entry: '%s'\n", n->desktop_entry ? n->desktop_entry : "");
         printf("\tcategory: %s\n", STR_NN(n->category));
-        printf("\ttimeout: %ld\n", n->timeout/1000);
-        printf("\tstart: %ld\n", n->start);
-        printf("\ttimestamp: %ld\n", n->timestamp);
+        printf("\ttimeout: %"G_GINT64_FORMAT"\n", n->timeout/1000);
+        printf("\tstart: %"G_GINT64_FORMAT"\n", n->start);
+        printf("\ttimestamp: %"G_GINT64_FORMAT"\n", n->timestamp);
         printf("\turgency: %s\n", notification_urgency_to_string(n->urgency));
         printf("\ttransient: %d\n", n->transient);
         printf("\tformatted: '%s'\n", STR_NN(n->msg));
@@ -148,8 +148,8 @@ void notification_run_script(struct notification *n)
                                 // Set environment variables
                                 gchar *n_id_str = g_strdup_printf("%i", n->id);
                                 gchar *n_progress_str = g_strdup_printf("%i", n->progress);
-                                gchar *n_timeout_str = g_strdup_printf("%li", n->timeout/1000);
-                                gchar *n_timestamp_str = g_strdup_printf("%li", n->timestamp / 1000);
+                                gchar *n_timeout_str = g_strdup_printf("%"G_GINT64_FORMAT, n->timeout/1000);
+                                gchar *n_timestamp_str = g_strdup_printf("%"G_GINT64_FORMAT, n->timestamp / 1000);
                                 safe_setenv("DUNST_APP_NAME",  appname);
                                 safe_setenv("DUNST_SUMMARY",   summary);
                                 safe_setenv("DUNST_BODY",      body);
@@ -230,6 +230,8 @@ int notification_cmp(const struct notification *a, const struct notification *b)
 /* see notification.h */
 int notification_cmp_data(const void *va, const void *vb, void *data)
 {
+        (void)data;
+
         struct notification *a = (struct notification *) va;
         struct notification *b = (struct notification *) vb;
 
@@ -725,15 +727,14 @@ void notification_update_text_to_render(struct notification *n)
 
                 char *new_buf;
                 if (hours > 0) {
-                        new_buf =
-                            g_strdup_printf("%s (%ldh %ldm %lds old)", buf, hours,
-                                            minutes, seconds);
+                        new_buf = g_strdup_printf("%s (%"G_GINT64_FORMAT"h %"G_GINT64_FORMAT"m %"G_GINT64_FORMAT"s old)",
+                                                  buf, hours, minutes, seconds);
                 } else if (minutes > 0) {
-                        new_buf =
-                            g_strdup_printf("%s (%ldm %lds old)", buf, minutes,
-                                            seconds);
+                        new_buf = g_strdup_printf("%s (%"G_GINT64_FORMAT"m %"G_GINT64_FORMAT"s old)",
+                                                  buf, minutes, seconds);
                 } else {
-                        new_buf = g_strdup_printf("%s (%lds old)", buf, seconds);
+                        new_buf = g_strdup_printf("%s (%"G_GINT64_FORMAT"s old)",
+                                                  buf, seconds);
                 }
 
                 g_free(buf);

@@ -169,7 +169,6 @@ void dbus_cb_fdn_methods(GDBusConnection *connection,
                         GDBusMethodInvocation *invocation,
                         gpointer user_data)
 {
-
         struct dbus_method *m = bsearch(method_name,
                                         methods_fdn,
                                         G_N_ELEMENTS(methods_fdn),
@@ -225,7 +224,6 @@ void dbus_cb_dunst_methods(GDBusConnection *connection,
                            GDBusMethodInvocation *invocation,
                            gpointer user_data)
 {
-
         struct dbus_method *m = bsearch(method_name,
                                         methods_dunst,
                                         G_N_ELEMENTS(methods_dunst),
@@ -236,8 +234,7 @@ void dbus_cb_dunst_methods(GDBusConnection *connection,
                 m->method(connection, sender, parameters, invocation);
         } else {
                 LOG_M("Unknown method name: '%s' (sender: '%s').",
-                      method_name,
-                      sender);
+                      method_name, sender);
         }
 }
 
@@ -458,7 +455,7 @@ static void gradient_entry(const struct gradient *grad, GVariantDict *dict, cons
                 }
 
                 char **strv = g_malloc((grad->length + 1) * sizeof(char *));
-                for (int i = 0; i < grad->length; i++) {
+                for (size_t i = 0; i < grad->length; i++) {
                         char buf[10];
                         if (color_to_string(grad->colors[i], buf))
                                 strv[i] = g_strdup(buf);
@@ -677,7 +674,7 @@ static void dbus_cb_GetCapabilities(
         g_variant_builder_add(builder, "s", "body-hyperlinks");
         g_variant_builder_add(builder, "s", "icon-static");
 
-        for (int i = 0; i < sizeof(stack_tag_hints)/sizeof(*stack_tag_hints); ++i)
+        for (size_t i = 0; i < sizeof(stack_tag_hints)/sizeof(*stack_tag_hints); ++i)
                 g_variant_builder_add(builder, "s", stack_tag_hints[i]);
 
         // Since markup isn't a global variable anymore, look it up in the
@@ -769,7 +766,7 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
          *
          * Only accept to first one we find.
          */
-        for (int i = 0; i < sizeof(stack_tag_hints)/sizeof(*stack_tag_hints); ++i) {
+        for (size_t i = 0; i < sizeof(stack_tag_hints)/sizeof(*stack_tag_hints); ++i) {
                 if ((dict_value = g_variant_lookup_value(hints, stack_tag_hints[i], G_VARIANT_TYPE_STRING))) {
                         n->stack_tag = g_variant_dup_string(dict_value, NULL);
                         g_variant_unref(dict_value);
@@ -870,7 +867,7 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
                 size_t length = g_strv_length(cols);
                 struct gradient *grad = gradient_alloc(length);
 
-                for (int i = 0; i < length; i++) {
+                for (size_t i = 0; i < length; i++) {
                         if (!string_parse_color(cols[i], &grad->colors[i])) {
                                 g_free(grad);
                                 goto end;
@@ -911,7 +908,6 @@ end:
 
 void signal_length_propertieschanged(void)
 {
-
         static unsigned int last_displayed = 0;
         static unsigned int last_history = 0;
         static unsigned int last_waiting = 0;
@@ -1215,7 +1211,7 @@ gboolean dbus_cb_dunst_Properties_Set(GDBusConnection *connection,
 
 
 static const GDBusInterfaceVTable interface_vtable_fdn = {
-        dbus_cb_fdn_methods
+        dbus_cb_fdn_methods,
 };
 
 static const GDBusInterfaceVTable interface_vtable_dunst = {

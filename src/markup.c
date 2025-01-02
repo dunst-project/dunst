@@ -273,7 +273,7 @@ static bool markup_is_entity(const char *str)
                 return (cur == end);
         } else {
                 const char *supported_tags[] = {"&amp;", "&lt;", "&gt;", "&quot;", "&apos;"};
-                for (int i = 0; i < sizeof(supported_tags)/sizeof(*supported_tags); i++) {
+                for (size_t i = 0; i < sizeof(supported_tags)/sizeof(*supported_tags); i++) {
                         if (g_str_has_prefix(str, supported_tags[i]))
                                 return true;
                 }
