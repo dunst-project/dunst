@@ -6,10 +6,11 @@
 #include <stdlib.h>
 
 #include "../src/log.h"
+#include "../src/utils.h"
 #include "../src/settings.h"
 #include "helpers.h"
 
-const char *base;
+char *base;
 
 SUITE_EXTERN(suite_settings_data);
 SUITE_EXTERN(suite_utils);
@@ -42,6 +43,11 @@ int main(int argc, char *argv[]) {
         bool printlog = log && atoi(log) ? true : false;
         dunst_log_init(!printlog);
 
+        // Initialize fonts
+        // NOTE: This was added for a pango/fontconfig problem that
+        //       causes bogus values when no font is found
+        char *fontsconf = g_strconcat(base, "/data/fonts", NULL);
+        safe_setenv("FONTCONFIG_PATH", fontsconf);
 
         // initialize settings
         char **configs = g_malloc0(2 * sizeof(char *));
@@ -69,6 +75,9 @@ int main(int argc, char *argv[]) {
 
         settings_free(&settings);
         g_strfreev(configs);
+
+        g_free(fontsconf);
+        g_free(base);
 
         // this returns the error code
         GREATEST_MAIN_END();

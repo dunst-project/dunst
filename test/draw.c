@@ -77,8 +77,8 @@ struct length get_small_max_height(void)
         // by notification content
         // future tests targeting dynamic sizing logic could be added
         // to address this limitation
-		struct length height = { 0, 10 };
-		return height;
+        struct length height = { 0, 10 };
+        return height;
 }
 
 int get_expected_dimension_height(int layout_count, int height)
@@ -293,7 +293,7 @@ TEST test_calculate_dimensions_height_min(void)
 {
         struct length original_height = settings.height;
         bool orginal_gap_size = settings.gap_size;
-		// NOTE: Should be big enough to fit the notification nicely
+        // NOTE: Should be big enough to fit the notification nicely
         settings.height.min = 100;
         settings.height.max = 200;
         settings.gap_size = 0;
@@ -382,6 +382,9 @@ SUITE(suite_draw)
         cairo_surface_t *s = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 1, 1);
         c = cairo_create(s);
 
+        extern PangoFontDescription *pango_fdesc; // HACK
+        pango_fdesc = pango_font_description_from_string(settings.font);
+
         SHUFFLE_TESTS(time(NULL), {
                         RUN_TEST(test_layout_from_notification);
                         RUN_TEST(test_layout_from_notification_icon_off);
@@ -392,4 +395,8 @@ SUITE(suite_draw)
                         RUN_TEST(test_layout_render_no_gaps);
                         RUN_TEST(test_layout_render_gaps);
         });
+
+        pango_font_description_free(pango_fdesc);
+        cairo_destroy(c);
+        cairo_surface_destroy(s);
 }
