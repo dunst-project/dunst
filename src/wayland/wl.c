@@ -40,7 +40,7 @@ struct window_wl {
         cairo_t * c_ctx;
 };
 
-struct wl_ctx ctx;
+struct wl_ctx ctx = { 0 };
 
 static void surface_handle_enter(void *data, struct wl_surface *surface,
                 struct wl_output *wl_output) {
@@ -83,13 +83,32 @@ static void layer_surface_handle_configure(void *data,
         send_frame();
 }
 
-static void layer_surface_handle_closed(void *data,
-                struct zwlr_layer_surface_v1 *surface) {
-        LOG_I("Destroying layer");
-        if (ctx.layer_surface)
-                zwlr_layer_surface_v1_destroy(ctx.layer_surface);
-        ctx.layer_surface = NULL;
+static void xdg_surface_handle_configure(void *data,
+                struct xdg_surface *surface,
+                uint32_t serial) {
+        xdg_surface_ack_configure(ctx.xdg_surface, serial);
 
+        if (ctx.configured) {
+                wl_surface_commit(ctx.surface);
+                return;
+        }
+
+        ctx.configured = true;
+
+        send_frame();
+}
+
+static void xdg_toplevel_handle_configure(void *data,
+        struct xdg_toplevel *xdg_toplevel,
+        int32_t width,
+        int32_t height,
+        struct wl_array *states) {
+        // TODO We currently don't support the compositor
+        // providing us with a size different to our requested size.
+        // Therefore just ignore the suggested surface size.
+}
+
+static void surface_handle_closed(void) {
         if (ctx.surface)
                 wl_surface_destroy(ctx.surface);
         ctx.surface = NULL;
@@ -111,9 +130,51 @@ static void layer_surface_handle_closed(void *data,
         }
 }
 
+static void layer_surface_handle_closed(void *data,
+                struct zwlr_layer_surface_v1 *surface) {
+        LOG_I("Destroying layer");
+        if (ctx.layer_surface)
+                zwlr_layer_surface_v1_destroy(ctx.layer_surface);
+        ctx.layer_surface = NULL;
+
+        surface_handle_closed();
+}
+
+static void xdg_toplevel_handle_close(void *data,
+                struct xdg_toplevel *surface) {
+        LOG_I("Destroying layer");
+        if (ctx.xdg_toplevel)
+                xdg_toplevel_destroy(ctx.xdg_toplevel);
+        ctx.xdg_toplevel = NULL;
+        if (ctx.xdg_surface)
+                xdg_surface_destroy(ctx.xdg_surface);
+        ctx.xdg_surface = NULL;
+
+        surface_handle_closed();
+}
+
+static void xdg_wm_base_handle_ping(void *data,
+                struct xdg_wm_base *xdg_wm_base,
+                uint32_t serial) {
+        xdg_wm_base_pong(ctx.xdg_shell, serial);
+}
+
 static const struct zwlr_layer_surface_v1_listener layer_surface_listener = {
         .configure = layer_surface_handle_configure,
         .closed = layer_surface_handle_closed,
+};
+
+static const struct xdg_wm_base_listener xdg_wm_base_listener = {
+        .ping = xdg_wm_base_handle_ping,
+};
+
+static const struct xdg_surface_listener xdg_surface_listener = {
+        .configure = xdg_surface_handle_configure,
+};
+
+static const struct xdg_toplevel_listener xdg_toplevel_listener = {
+        .configure = xdg_toplevel_handle_configure,
+        .close = xdg_toplevel_handle_close,
 };
 
 // Warning, can return NULL
@@ -164,6 +225,10 @@ static void handle_global(void *data, struct wl_registry *registry,
         } else if (strcmp(interface, zwlr_layer_shell_v1_interface.name) == 0) {
                 ctx.layer_shell = wl_registry_bind(registry, name,
                                 &zwlr_layer_shell_v1_interface, 1);
+        } else if (strcmp(interface, xdg_wm_base_interface.name) == 0) {
+                ctx.xdg_shell = wl_registry_bind(registry, name,
+                                &xdg_wm_base_interface, 1);
+                xdg_wm_base_add_listener(ctx.xdg_shell, &xdg_wm_base_listener, NULL);
         } else if (strcmp(interface, wl_seat_interface.name) == 0) {
                 create_seat(registry, name, version);
                 LOG_D("Binding to seat %i", name);
@@ -263,8 +328,12 @@ bool wl_init(void) {
                 return false;
         }
         if (ctx.layer_shell == NULL) {
-                LOG_W("compositor doesn't support zwlr_layer_shell_v1");
-                return false;
+                if (ctx.xdg_shell == NULL) {
+                        LOG_W("compositor doesn't support zwlr_layer_shell_v1 or xdg_shell");
+                        return false;
+                } else {
+                        LOG_W("compositor doesn't support zwlr_layer_shell_v1, falling back to xdg_shell. Notification window position will be set by the compositor.");
+                }
         }
         if (wl_list_empty(&ctx.seats)) {
                 LOG_W("no seat was found, so dunst cannot see input");
@@ -335,6 +404,12 @@ void wl_deinit(void) {
         if (ctx.layer_surface != NULL) {
                 g_clear_pointer(&ctx.layer_surface, zwlr_layer_surface_v1_destroy);
         }
+        if (ctx.xdg_toplevel != NULL) {
+                g_clear_pointer(&ctx.xdg_toplevel, xdg_toplevel_destroy);
+        }
+        if (ctx.xdg_surface != NULL) {
+                g_clear_pointer(&ctx.xdg_surface, xdg_surface_destroy);
+        }
         if (ctx.frame_callback) {
                 g_clear_pointer(&ctx.frame_callback, wl_callback_destroy);
         }
@@ -375,6 +450,9 @@ void wl_deinit(void) {
 
         if (ctx.layer_shell)
                 g_clear_pointer(&ctx.layer_shell, zwlr_layer_shell_v1_destroy);
+
+        if (ctx.xdg_shell)
+                g_clear_pointer(&ctx.xdg_shell, xdg_wm_base_destroy);
 
         if (ctx.compositor)
                 g_clear_pointer(&ctx.compositor, wl_compositor_destroy);
@@ -426,6 +504,14 @@ static void send_frame(void) {
                         zwlr_layer_surface_v1_destroy(ctx.layer_surface);
                         ctx.layer_surface = NULL;
                 }
+                if (ctx.xdg_toplevel != NULL) {
+                        xdg_toplevel_destroy(ctx.xdg_toplevel);
+                        ctx.xdg_toplevel = NULL;
+                }
+                if (ctx.xdg_surface != NULL) {
+                        xdg_surface_destroy(ctx.xdg_surface);
+                        ctx.xdg_surface = NULL;
+                }
                 if (ctx.surface != NULL) {
                         wl_surface_destroy(ctx.surface);
                         ctx.surface = NULL;
@@ -458,20 +544,32 @@ static void send_frame(void) {
         // If we've made it here, there is something to draw. If the surface
         // doesn't exist (this is the first notification, or we moved to a
         // different output), we need to create it.
-        if (ctx.layer_surface == NULL) {
-                struct wl_output *wl_output = NULL;
-                if (output != NULL) {
-                        wl_output = output->wl_output;
-                }
+        if (ctx.layer_surface == NULL && ctx.xdg_surface == NULL) {
                 ctx.layer_surface_output = output;
                 ctx.surface = wl_compositor_create_surface(ctx.compositor);
                 wl_surface_add_listener(ctx.surface, &surface_listener, NULL);
 
-                ctx.layer_surface = zwlr_layer_shell_v1_get_layer_surface(
-                        ctx.layer_shell, ctx.surface, wl_output,
-                        settings.layer, "notifications");
-                zwlr_layer_surface_v1_add_listener(ctx.layer_surface,
-                        &layer_surface_listener, NULL);
+                if (ctx.layer_shell) {
+                        struct wl_output *wl_output = NULL;
+                        if (output != NULL) {
+                                wl_output = output->wl_output;
+                        }
+
+                        ctx.layer_surface = zwlr_layer_shell_v1_get_layer_surface(
+                                ctx.layer_shell, ctx.surface, wl_output,
+                                settings.layer, "notifications");
+                        zwlr_layer_surface_v1_add_listener(ctx.layer_surface,
+                                &layer_surface_listener, NULL);
+                } else {
+                        ctx.xdg_surface = xdg_wm_base_get_xdg_surface(
+                                ctx.xdg_shell, ctx.surface);
+                        xdg_surface_add_listener(ctx.xdg_surface, &xdg_surface_listener, NULL);
+
+                        ctx.xdg_toplevel = xdg_surface_get_toplevel(ctx.xdg_surface);
+                        xdg_toplevel_set_title(ctx.xdg_toplevel, "Dunst");
+                        xdg_toplevel_set_app_id(ctx.xdg_toplevel, "org.knopwob.dunst");
+                        xdg_toplevel_add_listener(ctx.xdg_toplevel, &xdg_toplevel_listener, NULL);
+                }
 
                 // Because we're creating a new surface, we aren't going to draw
                 // anything into it during this call. We don't know what size the
@@ -483,13 +581,22 @@ static void send_frame(void) {
                 // block to let it set the size for us.
         }
 
-        assert(ctx.layer_surface);
+        assert(ctx.layer_surface || ctx.xdg_surface);
 
         // We now want to resize the surface if it isn't the right size. If the
         // surface is brand new, it doesn't even have a size yet. If it already
         // exists, we might need to resize if the list of notifications has changed
         // since the last time we drew.
-        if (ctx.height != height || ctx.width != width) {
+        // We only do this for layer_surface, as xdg_surface only needs configuration
+        // using xdg_surface_set_window_geometry if it differs from the buffer dimension.
+        // Furthermore mutter intersects the buffer dimension and the window geometry.
+        // As we directly do a commit+roundtrip, mutter will complain, as the missing
+        // buffer causes a 0,0 intersection and also causes a size of 0,0 in the
+        // configure event.
+        if (ctx.layer_surface && (ctx.height != height || ctx.width != width)) {
+                // TODO If the surface is already configured we should rather
+                // adjust to the size the compositor requested instead of just trying
+                // to set our preferred size again.
                 struct dimensions dim = ctx.cur_dim;
                 // Set window size
                 zwlr_layer_surface_v1_set_size(ctx.layer_surface,
@@ -507,6 +614,14 @@ static void send_frame(void) {
                                 settings.offset.y, // bottom
                                 settings.offset.x);// left
 
+                // TODO Check if this is really necessary, as it causes an infinite
+                // loop if the compositor doesn't configure our desired surface size
+                // Without it wlroots 0.18.2 creates a wrong configure serial error
+                // which seems to be caused by an ack_configure without an commit.
+                ctx.configured = false;
+        }
+
+        if (!ctx.configured) {
                 wl_surface_commit(ctx.surface);
 
                 // Now we're going to bail without drawing anything. This gives the
@@ -518,9 +633,6 @@ static void send_frame(void) {
                 // layer surface will exist and the height will hopefully match what
                 // we asked for. That means we won't return here, and will actually
                 // draw into the surface down below.
-                // TODO: If the compositor doesn't send a configure with the size we
-                // requested, we'll enter an infinite loop. We need to keep track of
-                // the fact that a request was sent separately from what height we are.
                 wl_display_roundtrip(ctx.display);
                 return;
         }
@@ -556,6 +668,8 @@ static const struct wl_callback_listener frame_listener = {
 
 static void schedule_frame_and_commit(void) {
         if (ctx.frame_callback) {
+                // don't commit, as it probably won't make it to the display and
+                // therefore waste resources
                 return;
         }
         if (ctx.surface == NULL) {
