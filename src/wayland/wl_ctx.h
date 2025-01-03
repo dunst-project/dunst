@@ -20,6 +20,7 @@ struct wl_ctx {
         struct wl_compositor *compositor;
         struct wl_shm *shm;
         struct zwlr_layer_shell_v1 *layer_shell;
+        struct xdg_wm_base *xdg_shell;
 
         struct wl_list outputs; /* list of struct dunst_output */
         struct wl_list seats; /* list of struct dunst_seat */
@@ -27,6 +28,8 @@ struct wl_ctx {
         struct wl_surface *surface;
         struct dunst_output *surface_output;
         struct zwlr_layer_surface_v1 *layer_surface;
+        struct xdg_surface *xdg_surface;
+        struct xdg_toplevel *xdg_toplevel;
         struct dunst_output *layer_surface_output;
         struct wl_callback *frame_callback;
         struct org_kde_kwin_idle *idle_handler;
