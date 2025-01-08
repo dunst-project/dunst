@@ -530,6 +530,7 @@ TEST test_dbus_cb_dunst_NotificationListHistory(void)
         n->summary = g_strdup("Testing");
         n->urgency = 2;
         n->stack_tag = g_strdup("test-stack-tag");
+        n->urls = g_strdup("https://dunst-project.org/");
         const char *urgency1 = notification_urgency_to_string(n->urgency);
         queues_history_push(n);
 
@@ -539,6 +540,7 @@ TEST test_dbus_cb_dunst_NotificationListHistory(void)
         n->summary = g_strdup("More testing");
         n->urgency = 0;
         n->stack_tag = g_strdup("test-stack-tag");
+        n->urls = g_strdup("https://dunst-project.org/");
         const char *urgency2 = notification_urgency_to_string(n->urgency);
         queues_history_push(n);
 
@@ -579,6 +581,10 @@ TEST test_dbus_cb_dunst_NotificationListHistory(void)
         ASSERT_STR_EQ("test-stack-tag", str);
         g_free(str);
 
+        ASSERT(g_variant_dict_lookup(&d, "urls", "s", &str));
+        ASSERT_STR_EQ("https://dunst-project.org/", str);
+        g_free(str);
+
         g_variant_unref(dict);
         dict = g_variant_iter_next_value(&array_iter);
         g_variant_dict_clear(&d);
@@ -601,6 +607,10 @@ TEST test_dbus_cb_dunst_NotificationListHistory(void)
 
         ASSERT(g_variant_dict_lookup(&d, "stack_tag", "s", &str));
         ASSERT_STR_EQ("test-stack-tag", str);
+        g_free(str);
+
+        ASSERT(g_variant_dict_lookup(&d, "urls", "s", &str));
+        ASSERT_STR_EQ("https://dunst-project.org/", str);
         g_free(str);
 
         g_variant_dict_clear(&d);
