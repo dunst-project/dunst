@@ -529,6 +529,7 @@ TEST test_dbus_cb_dunst_NotificationListHistory(void)
         n->appname = g_strdup("dunstify");
         n->summary = g_strdup("Testing");
         n->urgency = 2;
+        n->stack_tag = g_strdup("test-stack-tag");
         const char *urgency1 = notification_urgency_to_string(n->urgency);
         queues_history_push(n);
 
@@ -537,6 +538,7 @@ TEST test_dbus_cb_dunst_NotificationListHistory(void)
         n->appname = g_strdup("notify-send");
         n->summary = g_strdup("More testing");
         n->urgency = 0;
+        n->stack_tag = g_strdup("test-stack-tag");
         const char *urgency2 = notification_urgency_to_string(n->urgency);
         queues_history_push(n);
 
@@ -573,6 +575,10 @@ TEST test_dbus_cb_dunst_NotificationListHistory(void)
         ASSERT_STR_EQ(urgency2, str);
         g_free(str);
 
+        ASSERT(g_variant_dict_lookup(&d, "stack_tag", "s", &str));
+        ASSERT_STR_EQ("test-stack-tag", str);
+        g_free(str);
+
         g_variant_unref(dict);
         dict = g_variant_iter_next_value(&array_iter);
         g_variant_dict_clear(&d);
@@ -591,6 +597,10 @@ TEST test_dbus_cb_dunst_NotificationListHistory(void)
 
         ASSERT(g_variant_dict_lookup(&d, "urgency", "s", &str));
         ASSERT_STR_EQ(urgency1, str);
+        g_free(str);
+
+        ASSERT(g_variant_dict_lookup(&d, "stack_tag", "s", &str));
+        ASSERT_STR_EQ("test-stack-tag", str);
         g_free(str);
 
         g_variant_dict_clear(&d);
