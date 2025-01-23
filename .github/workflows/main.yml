@@ -76,17 +76,22 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Test in FreeBSD
         uses: vmactions/freebsd-vm@v1
         with:
           envs: "CC EXTRA_CFLAGS"
           usesh: true
           sync: rsync
+          copyback: false
 
           prepare: |
             pkg install -y x11-toolkits/pango devel/glib20 graphics/gdk-pixbuf2 graphics/cairo graphics/wayland \
               devel/libnotify devel/dbus x11/libXScrnSaver x11/libXrandr x11/libXext x11/libX11 lang/perl5.36 \
-              devel/pkgconf devel/gmake devel/evdev-proto valgrind
+              devel/pkgconf devel/gmake devel/evdev-proto valgrind x11/libXinerama graphics/wayland-protocols \
+              devel/gettext-runtime x11-fonts/fontconfig x11-fonts/dejavu lang/gcc git librsvg2 bash
 
           run: |
             echo "* Run test suite"
