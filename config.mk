@@ -29,6 +29,7 @@ MAKE ?= make
 FIND ?= find
 SED ?= sed
 AWK ?= awk
+RMDIR ?= rmdir
 
 # Disable systemd service file installation,
 # if you don't want to use systemd albeit installed

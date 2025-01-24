@@ -281,7 +281,7 @@ uninstall-keepconf: uninstall-service uninstall-dunstctl uninstall-completions
 
 uninstall-dunstrc:
 	rm -f ${DESTDIR}${SYSCONFFILE}
-	rmdir --ignore-fail-on-non-empty ${DESTDIR}${SYSCONFDIR}/dunst
+	${RMDIR} --ignore-fail-on-non-empty ${DESTDIR}${SYSCONFDIR}/dunst
 
 uninstall-dunstctl:
 	rm -f ${DESTDIR}${BINDIR}/dunstctl

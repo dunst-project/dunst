@@ -78,6 +78,7 @@ jobs:
       FIND: gfind
       SED: gsed
       AWK: gawk
+      RMDIR: grmdir
 
     steps:
       - uses: actions/checkout@v4
@@ -87,7 +88,7 @@ jobs:
       - name: Test in FreeBSD
         uses: vmactions/freebsd-vm@v1
         with:
-          envs: "CC EXTRA_CFLAGS MAKE INSTALL FIND SED AWK"
+          envs: "CC EXTRA_CFLAGS MAKE INSTALL FIND SED AWK RMDIR"
           usesh: true
           sync: rsync
           copyback: false

@@ -110,7 +110,7 @@
 
 # a librsvg memoryleak that shows up in arch, but not in the CI environment
 {
-   <librsvg-arch>
+   librsvg-arch
    Memcheck:Leak
    match-leak-kinds: definite
    fun:malloc
@@ -215,20 +215,55 @@
 }
 
 {
-   # FreeBSD part1
-   glib_leak_freebsd1
-   Memchek:Leak
+   g_bus_own_name_supp
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:*alloc
    ...
-   fun:g_dbus_address_get_stream_sync
+   obj:/usr/local/lib/libgio-2.0.so.0.8000.5
+   ...
+   fun:g_bus_own_name
+   fun:dbus_init
+   fun:test_dbus_init
    ...
 }
 
 {
-   # FreeBSD part2
-   # XXX: Why isn't memory freed in  g_bus_unown_name?
-   glib_leak_freebsd2
-   Memchek:Leak
+   gdk_pixbuf_new_from_file_freebsd
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:calloc
    ...
-   fun:g_bus_own_name
+   obj:/usr/local/lib/librsvg-2.so.2.40.21
+   ...
+   obj:/usr/local/lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-svg.so
+   obj:/usr/local/lib/libgdk_pixbuf-2.0.so.0.4200.10
+   fun:gdk_pixbuf_new_from_file
+   fun:notification_setup_raw_image
+   ...
+}
+
+{
+   freebsd_dbus_leak
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:calloc
+   fun:g_malloc0
+   fun:g_type_create_instance
+   fun:g_param_spec_internal
+   ...
+   obj:/usr/local/lib/libgio-2.0.so.0.8000.5
+   obj:/usr/local/lib/libgobject-2.0.so.0.8000.5
+   ...
+   fun:g_object_new
+   ...
+}
+
+{
+   glib_freebsd
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:g_dbus_address_get_stream_sync
    ...
 }
