@@ -218,7 +218,6 @@
    # FreeBSD part1
    glib_leak_freebsd1
    Memchek:Leak
-   fun:*alloc
    ...
    fun:g_dbus_address_get_stream_sync
    ...
@@ -229,7 +228,6 @@
    # XXX: Why isn't memory freed in  g_bus_unown_name?
    glib_leak_freebsd2
    Memchek:Leak
-   fun:*alloc
    ...
    fun:g_bus_own_name
    ...
