@@ -136,6 +136,25 @@
    ...
 }
 
+# The same functions leak even without fontconfig :x
+{
+   other_pango_leaks
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:pango_layout_get_pixel_size
+   ...
+}
+
+{
+   other_pango_leaks2
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:pango_renderer_draw_layout
+   ...
+}
+
 {
    rsvg_conditional_jump
    Memcheck:Cond
@@ -192,5 +211,26 @@
    fun:gdk_pixbuf_new_from_file
    fun:notification_setup_raw_image
    fun:notification_load_icon_with_scaling
+   ...
+}
+
+{
+   # FreeBSD part1
+   glib_leak_freebsd1
+   Memchek:Leak
+   fun:*alloc
+   ...
+   fun:g_dbus_address_get_stream_sync
+   ...
+}
+
+{
+   # FreeBSD part2
+   # XXX: Why isn't memory freed in  g_bus_unown_name?
+   glib_leak_freebsd2
+   Memchek:Leak
+   fun:*alloc
+   ...
+   fun:g_bus_own_name
    ...
 }
