@@ -73,6 +73,7 @@ jobs:
     env:
       CC: gcc
       EXTRA_CFLAGS: "-Werror"
+      MAKE: gmake
 
     steps:
       - uses: actions/checkout@v4
@@ -82,7 +83,7 @@ jobs:
       - name: Test in FreeBSD
         uses: vmactions/freebsd-vm@v1
         with:
-          envs: "CC EXTRA_CFLAGS"
+          envs: "CC EXTRA_CFLAGS MAKE"
           usesh: true
           sync: rsync
           copyback: false
@@ -101,7 +102,7 @@ jobs:
             ./test/test-install.sh
 
             echo "* Run valgrind test"
-            gmake clean && gmake -j test-valgrind
+            gmake -j test-valgrind
 
   doxygen:
     steps:

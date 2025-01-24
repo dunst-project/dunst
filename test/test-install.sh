@@ -3,6 +3,8 @@
 # Throw error any time a command fails
 set -euo pipefail
 
+MAKE=${MAKE:-make}
+
 # Export parameters so they are useable by subshells and make
 export BASE="$(dirname "$(dirname "$(readlink -f "$0")")")"
 export DESTDIR="${BASE}/install"
@@ -14,7 +16,7 @@ export SERVICEDIR_SYSTEMD="/systemd"
 export SERVICEDIR_DBUS="/dbus"
 
 do_make() {  # for convenience/conciseness
-	make -C "${BASE}" "$@"
+	${MAKE} -C "${BASE}" "$@"
 }
 
 check_dest() {

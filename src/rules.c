@@ -282,6 +282,7 @@ static inline bool rule_field_matches_string(const char *value, const char *patt
                 }
                 regex_t     regex;
 
+                // TODO check if regex pattern is not empty
                 // TODO compile each regex only once
                 int err = regcomp(&regex, pattern, REG_NEWLINE | REG_EXTENDED | REG_NOSUB);
                 if (err) {
