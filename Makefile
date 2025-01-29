@@ -74,9 +74,15 @@ debug: all
 
 ${OBJ} ${TEST_OBJ}: Makefile config.mk
 
+DATE_FMT = +%Y-%m-%d
+ifdef SOURCE_DATE_EPOCH
+    BUILD_DATE ?= $(shell date -u -d "@$(SOURCE_DATE_EPOCH)" "$(DATE_FMT)" 2>/dev/null || date -u -r "$(SOURCE_DATE_EPOCH)" "$(DATE_FMT)" 2>/dev/null || date -u "$(DATE_FMT)")
+else
+    BUILD_DATE ?= $(shell date "$(DATE_FMT)")
+endif
 src/dunst.o: src/dunst.c
 	${CC} -o $@ -c $< ${CPPFLAGS} ${CFLAGS} \
-		-D_CCDATE="$(shell date '+%Y-%m-%d')" -D_CFLAGS="$(filter-out $(filter -I%,${INCS}),${CFLAGS})" -D_LDFLAGS="${LDFLAGS}"
+		-D_CCDATE="${BUILD_DATE}" -D_CFLAGS="$(filter-out $(filter -I%,${INCS}),${CFLAGS})" -D_LDFLAGS="${LDFLAGS}"
 
 %.o: %.c
 	${CC} -o $@ -c $< ${CPPFLAGS} ${CFLAGS}
