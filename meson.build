@@ -5,15 +5,11 @@ project(
 	license: 'MIT',
 	meson_version: '>=0.60.0',
 	default_options: [
-		'c_std=gnu99',
+		'c_std=gnu11',
 		'warning_level=1',
 		'b_ndebug=if-release',
 	],
 )
-
-add_project_arguments([
-	'-Wno-maybe-uninitialized',
-], language: 'c')
 
 if get_option('buildtype').startswith('debug')
 	add_project_arguments('-DDEBUG_BUILD', language: 'c')
