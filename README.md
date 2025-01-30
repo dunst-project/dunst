@@ -102,12 +102,24 @@ The names will be different depending on your [distribution](https://github.com/
 
 ### Building
 
+#### Makefile
+
 ```
 git clone https://github.com/dunst-project/dunst.git
 cd dunst
 make
 sudo make install
 ```
+
+#### Meson
+
+```
+meson setup build
+ninja -C build
+ninja -C build install
+```
+
+Custom Meson build parameters can be found in [meson_options.txt](meson_options.txt).
 
 ### Make parameters
 
