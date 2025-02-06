@@ -103,6 +103,7 @@ struct notification {
         bool first_render;      /**< markup has been rendered before? */
         int dup_count;          /**< amount of duplicate notifications stacked onto this */
         int displayed_height;
+        int displayed_top;
         enum behavior_fullscreen fullscreen; //!< The instruction what to do with it, when desktop enters fullscreen
         bool script_run;        /**< Has the script been executed already? */
         guint8 marked_for_closure;
@@ -115,6 +116,8 @@ struct notification {
         char *msg;            /**< formatted message */
         char *text_to_render; /**< formatted message (with age and action indicators) */
         char *urls;           /**< urllist delimited by '\\n' */
+
+        GArray *menus;
 };
 
 /**

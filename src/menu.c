@@ -392,4 +392,90 @@ static gpointer context_menu_thread(gpointer data)
 
         return NULL;
 }
+
+
+gboolean menu_init(struct notification *n)
+{
+        if (n->actions == NULL) {
+                return false;
+        }
+
+        gpointer p_key;
+        gpointer p_value;
+        GHashTableIter iter;
+        n->menus = g_array_sized_new(FALSE, FALSE, sizeof(struct menu),
+                                     g_hash_table_size(n->actions));
+
+        g_hash_table_iter_init(&iter, n->actions);
+        while (g_hash_table_iter_next(&iter, &p_key, &p_value)) {
+                char *key = (char *)p_key;
+                char *value = (char *)p_value;
+                struct menu button = {.value = g_strdup(value),
+                                      .key = g_strdup(key),
+                                      .x = 0,
+                                      .y = 0,
+                                      .width = 0,
+                                      .height = 0};
+
+                g_array_append_val(n->menus, button);
+        }
+        return true;
+}
+
+int menu_get_count(struct notification *n)
+{
+        if (!n->menus) {
+                return 0;
+        }
+        return n->menus->len;
+}
+
+char *menu_get_label(struct notification *n, int index)
+{
+        if (index < 0 || index >= n->menus->len || !n->menus)
+                return NULL;
+        struct menu *button = &g_array_index(n->menus, struct menu, index);
+        return button->value;
+}
+
+void menu_set_position(struct notification *n, int index, int x, int y,
+                       int width, int height)
+{
+        if (index < 0 || index >= n->menus->len || !n->menus)
+                return;
+        struct menu *button = &g_array_index(n->menus, struct menu, index);
+        button->x = x;
+        button->y = y;
+        button->width = width;
+        button->height = height;
+}
+
+void menu_free_array(struct notification *n)
+{
+        if (!n->menus)
+                return;
+        for (guint i = 0; i < n->menus->len; i++) {
+                struct menu *button = &g_array_index(n->menus, struct menu, i);
+                g_free(button->value);
+                g_free(button->key);
+        }
+        g_array_free(n->menus, TRUE);
+        n->menus = NULL;
+}
+
+struct menu *menu_get_at(struct notification *n, int x, int y)
+{
+        if (!n->menus)
+                return NULL;
+        for (guint i = 0; i < n->menus->len; i++) {
+                struct menu *button = &g_array_index(n->menus, struct menu, i);
+                if (x >= button->x && x <= button->x + button->width &&
+                    y >= button->y + n->displayed_top &&
+                    y <= button->y + n->displayed_top + button->height) {
+                        return button;
+                }
+        }
+        return NULL;
+}
+
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */
