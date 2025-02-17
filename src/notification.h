@@ -115,6 +115,8 @@ struct notification {
         char *msg;            /**< formatted message */
         char *text_to_render; /**< formatted message (with age and action indicators) */
         char *urls;           /**< urllist delimited by '\\n' */
+
+        GArray *menus;
 };
 
 /**
