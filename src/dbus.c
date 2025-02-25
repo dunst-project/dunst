@@ -385,7 +385,7 @@ static void dbus_cb_dunst_NotificationListHistory(GDBusConnection *connection,
                 icon_path = (n->icon_path == NULL) ? "" : n->icon_path;
                 urgency   = notification_urgency_to_string(n->urgency);
                 urls      = (n->urls      == NULL) ? "" : n->urls;
-                stack_tag = (n->stack_tag == NULL) ? "" : n->stack_tag;        
+                stack_tag = (n->stack_tag == NULL) ? "" : n->stack_tag;
 
                 g_variant_builder_add(&n_builder, "{sv}", "body", g_variant_new_string(body));
                 g_variant_builder_add(&n_builder, "{sv}", "message", g_variant_new_string(msg));
@@ -1489,7 +1489,7 @@ void signal_config_reloaded(char **const configs)
                 LOG_E("Unable to send signal: No DBus connection.");
         }
 
-        GVariant *body = g_variant_new("(as)", configs);
+        GVariant *body = g_variant_new("(^as)", configs);
         GError *err = NULL;
 
         g_dbus_connection_emit_signal(dbus_conn,

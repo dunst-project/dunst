@@ -44,7 +44,7 @@
 
 // unified fopen() result messages
 #define MSG_FOPEN_SUCCESS(path, fp) "Opened '%s' (fd: '%d')", path, fileno(fp)
-#define MSG_FOPEN_FAILURE(path) "Cannot open '%s': '%s'", path, strerror(errno)
+#define MSG_FOPEN_FAILURE(path) "Cannot open '%s': %s", path, strerror(errno)
 
 /**
  * Set the current loglevel to `level`
