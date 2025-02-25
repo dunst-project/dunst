@@ -262,19 +262,19 @@ static void process_conf_file(const gpointer conf_fname, gpointer n_success) {
         ++(*(int *) n_success);
 }
 
-void load_settings(char **const config_paths)
+void load_settings(char **const paths)
 {
         LOG_D("Setting defaults");
         set_defaults();
 
-        guint length = g_strv_length(config_paths);
+        guint length = g_strv_length(paths);
 
         GPtrArray *conf_files;
 
         if (length != 0) {
                 conf_files = g_ptr_array_new_full(length, g_free);
-                for (int i = 0; config_paths[i]; i++)
-                        g_ptr_array_add(conf_files, g_strdup(config_paths[i]));
+                for (int i = 0; paths[i]; i++)
+                        g_ptr_array_add(conf_files, g_strdup(paths[i]));
         } else {
                 // Use default locations (and search drop-ins)
                 conf_files = get_conf_files();

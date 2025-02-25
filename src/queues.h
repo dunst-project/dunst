@@ -141,7 +141,7 @@ void queues_history_push_all(void);
 /**
  * Removes an notification identified by the given id from the history
  */
-void queues_history_remove_by_id(gint id);
+bool queues_history_remove_by_id(gint id);
 
 /**
  * Move inserted notifications from waiting queue to displayed queue

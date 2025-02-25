@@ -432,11 +432,11 @@ void queues_history_push_all(void)
 }
 
 /* see queues.h */
-void queues_history_remove_by_id(gint id) {
+bool queues_history_remove_by_id(gint id) {
         struct notification *n = NULL;
 
         if (g_queue_is_empty(history))
-                return;
+                return false;
 
         for (GList *iter = g_queue_peek_head_link(history); iter;
                 iter = iter->next) {
@@ -448,10 +448,11 @@ void queues_history_remove_by_id(gint id) {
         }
 
         if (n == NULL)
-                return;
+                return false;
 
         g_queue_remove(history, n);
         notification_unref(n);
+        return true;
 }
 
 /* see queues.h */
