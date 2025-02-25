@@ -181,7 +181,6 @@ void dbus_cb_fdn_methods(GDBusConnection *connection,
                         GDBusMethodInvocation *invocation,
                         gpointer user_data)
 {
-
         struct dbus_method *m = bsearch(method_name,
                                         methods_fdn,
                                         G_N_ELEMENTS(methods_fdn),
@@ -237,7 +236,6 @@ void dbus_cb_dunst_methods(GDBusConnection *connection,
                            GDBusMethodInvocation *invocation,
                            gpointer user_data)
 {
-
         struct dbus_method *m = bsearch(method_name,
                                         methods_dunst,
                                         G_N_ELEMENTS(methods_dunst),
@@ -248,8 +246,7 @@ void dbus_cb_dunst_methods(GDBusConnection *connection,
                 m->method(connection, sender, parameters, invocation);
         } else {
                 LOG_M("Unknown method name: '%s' (sender: '%s').",
-                      method_name,
-                      sender);
+                      method_name, sender);
         }
 }
 
@@ -375,6 +372,8 @@ static void dbus_cb_dunst_NotificationListHistory(GDBusConnection *connection,
 
                 char *body, *msg, *summary, *appname, *category;
                 char *default_action_name, *icon_path;
+                char  *urls, *stack_tag;
+                const char *urgency;
 
                 body      = (n->body      == NULL) ? "" : n->body;
                 msg       = (n->msg       == NULL) ? "" : n->msg;
@@ -384,6 +383,9 @@ static void dbus_cb_dunst_NotificationListHistory(GDBusConnection *connection,
                 default_action_name= (n->default_action_name == NULL) ?
                         "" : n->default_action_name;
                 icon_path = (n->icon_path == NULL) ? "" : n->icon_path;
+                urgency   = notification_urgency_to_string(n->urgency);
+                urls      = (n->urls      == NULL) ? "" : n->urls;
+                stack_tag = (n->stack_tag == NULL) ? "" : n->stack_tag;        
 
                 g_variant_builder_add(&n_builder, "{sv}", "body", g_variant_new_string(body));
                 g_variant_builder_add(&n_builder, "{sv}", "message", g_variant_new_string(msg));
@@ -397,6 +399,9 @@ static void dbus_cb_dunst_NotificationListHistory(GDBusConnection *connection,
                 g_variant_builder_add(&n_builder, "{sv}", "timestamp", g_variant_new_int64(n->timestamp));
                 g_variant_builder_add(&n_builder, "{sv}", "timeout", g_variant_new_int64(n->timeout));
                 g_variant_builder_add(&n_builder, "{sv}", "progress", g_variant_new_int32(n->progress));
+                g_variant_builder_add(&n_builder, "{sv}", "urgency", g_variant_new_string(urgency));
+                g_variant_builder_add(&n_builder, "{sv}", "stack_tag", g_variant_new_string(stack_tag));
+                g_variant_builder_add(&n_builder, "{sv}", "urls", g_variant_new_string(urls));
 
                 g_variant_builder_add(&builder, "a{sv}", &n_builder);
         }
@@ -465,7 +470,7 @@ static void gradient_entry(const struct gradient *grad, GVariantDict *dict, cons
                 }
 
                 char **strv = g_malloc((grad->length + 1) * sizeof(char *));
-                for (int i = 0; i < grad->length; i++) {
+                for (size_t i = 0; i < grad->length; i++) {
                         char buf[10];
                         if (color_to_string(grad->colors[i], buf))
                                 strv[i] = g_strdup(buf);
@@ -498,7 +503,7 @@ static void dbus_cb_dunst_RuleList(GDBusConnection *connection,
                 g_variant_dict_insert(&dict, "name", "s", r->name);
 
                 // filters - order according to rule_matches_notification
-                g_variant_dict_insert(&dict, "enabled", "b", r->enabled);
+                g_variant_dict_insert(&dict, "enabled", "b", BOOL2G(r->enabled));
                 // undocumented filter?
                 if (r->match_dbus_timeout > -1)
                         g_variant_dict_insert(&dict, "match_dbus_timeout", "i", r->match_dbus_timeout);
@@ -508,7 +513,7 @@ static void dbus_cb_dunst_RuleList(GDBusConnection *connection,
                                               "s",
                                               enum_to_string(urgency_enum_data, r->msg_urgency));
                 if (r->match_transient > -1)
-                        g_variant_dict_insert(&dict, "match_transient", "b", r->match_transient);
+                        g_variant_dict_insert(&dict, "match_transient", "b", BOOL2G(r->match_transient));
                 if (r->appname)
                         g_variant_dict_insert(&dict, "appname", "s", r->appname);
                 if (r->desktop_entry)
@@ -535,13 +540,13 @@ static void dbus_cb_dunst_RuleList(GDBusConnection *connection,
                                               "s",
                                               enum_to_string(fullscreen_enum_data, r->fullscreen));
                 if (r->history_ignore != -1)
-                        g_variant_dict_insert(&dict, "history_ignore", "b", r->history_ignore);
+                        g_variant_dict_insert(&dict, "history_ignore", "b", BOOL2G(r->history_ignore));
                 if (r->set_transient != -1)
-                        g_variant_dict_insert(&dict, "set_transient", "b", r->set_transient);
+                        g_variant_dict_insert(&dict, "set_transient", "b", BOOL2G(r->set_transient));
                 if (r->skip_display != -1)
-                        g_variant_dict_insert(&dict, "skip_display", "b", r->skip_display);
+                        g_variant_dict_insert(&dict, "skip_display", "b", BOOL2G(r->skip_display));
                 if (r->word_wrap != -1)
-                        g_variant_dict_insert(&dict, "word_wrap", "b", r->word_wrap);
+                        g_variant_dict_insert(&dict, "word_wrap", "b", BOOL2G(r->word_wrap));
                 if (r->ellipsize != -1)
                         g_variant_dict_insert(&dict,
                                               "ellipsize",
@@ -553,7 +558,7 @@ static void dbus_cb_dunst_RuleList(GDBusConnection *connection,
                                               "s",
                                               enum_to_string(horizontal_alignment_enum_data, r->alignment));
                 if (r->hide_text != -1)
-                        g_variant_dict_insert(&dict, "hide_text", "b", r->hide_text);
+                        g_variant_dict_insert(&dict, "hide_text", "b", BOOL2G(r->hide_text));
                 if (r->progress_bar_alignment != -1)
                         g_variant_dict_insert(&dict,
                                               "progress_bar_alignment",
@@ -686,7 +691,7 @@ static void dbus_cb_GetCapabilities(
         g_variant_builder_add(builder, "s", "body-hyperlinks");
         g_variant_builder_add(builder, "s", "icon-static");
 
-        for (int i = 0; i < sizeof(stack_tag_hints)/sizeof(*stack_tag_hints); ++i)
+        for (size_t i = 0; i < sizeof(stack_tag_hints)/sizeof(*stack_tag_hints); ++i)
                 g_variant_builder_add(builder, "s", stack_tag_hints[i]);
 
         // Since markup isn't a global variable anymore, look it up in the
@@ -778,7 +783,7 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
          *
          * Only accept to first one we find.
          */
-        for (int i = 0; i < sizeof(stack_tag_hints)/sizeof(*stack_tag_hints); ++i) {
+        for (size_t i = 0; i < sizeof(stack_tag_hints)/sizeof(*stack_tag_hints); ++i) {
                 if ((dict_value = g_variant_lookup_value(hints, stack_tag_hints[i], G_VARIANT_TYPE_STRING))) {
                         n->stack_tag = g_variant_dup_string(dict_value, NULL);
                         g_variant_unref(dict_value);
@@ -879,7 +884,7 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
                 size_t length = g_strv_length(cols);
                 struct gradient *grad = gradient_alloc(length);
 
-                for (int i = 0; i < length; i++) {
+                for (size_t i = 0; i < length; i++) {
                         if (!string_parse_color(cols[i], &grad->colors[i])) {
                                 g_free(grad);
                                 goto end;
@@ -890,8 +895,9 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
                 gradient_pattern(grad);
 
                 notification_keep_original(n);
-                if (!GRADIENT_VALID(n->original->highlight)) n->original->highlight = n->colors.highlight;
-                n->colors.highlight = grad;
+                if (!GRADIENT_VALID(n->original->highlight)) n->original->highlight = gradient_acquire(n->colors.highlight);
+                gradient_release(n->colors.highlight);
+                n->colors.highlight = gradient_acquire(grad);
 
 end:
                 g_variant_unref(dict_value);
@@ -903,8 +909,9 @@ end:
                         gradient_pattern(grad);
 
                         notification_keep_original(n);
-                        if (!GRADIENT_VALID(n->original->highlight)) n->original->highlight = n->colors.highlight;
-                        n->colors.highlight = grad;
+                        if (!GRADIENT_VALID(n->original->highlight)) n->original->highlight = gradient_acquire(n->colors.highlight);
+                        gradient_release(n->colors.highlight);
+                        n->colors.highlight = gradient_acquire(grad);
                 }
                 g_variant_unref(dict_value);
         }
@@ -918,7 +925,6 @@ end:
 
 void signal_length_propertieschanged(void)
 {
-
         static unsigned int last_displayed = 0;
         static unsigned int last_history = 0;
         static unsigned int last_waiting = 0;
@@ -1228,7 +1234,7 @@ gboolean dbus_cb_dunst_Properties_Set(GDBusConnection *connection,
 
 
 static const GDBusInterfaceVTable interface_vtable_fdn = {
-        dbus_cb_fdn_methods
+        dbus_cb_fdn_methods,
 };
 
 static const GDBusInterfaceVTable interface_vtable_dunst = {

@@ -24,6 +24,9 @@
 #define STR_TO(...) _STR_TO(__VA_ARGS__)
 #define _STR_TO(...) "" # __VA_ARGS__
 
+//! Make a gboolean from a boolean value
+// See https://github.com/dunst-project/dunst/issues/1421
+#define BOOL2G(x) ((x) ? TRUE : FALSE)
 
 //! Assert that expr evaluates to true, if not return with val
 #define ASSERT_OR_RET(expr, val) if (!(expr)) return val;
@@ -253,5 +256,8 @@ FILE * fopen_verbose(const char * const path);
  * when the environment variable doesn't exits.
  */
 void add_paths_from_env(GPtrArray *arr, char *env_name, char *subdir, char *alternative);
+
+bool string_is_int(const char *str);
+
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

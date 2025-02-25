@@ -76,7 +76,7 @@ struct gradient *gradient_alloc(size_t length)
         if (length == 0)
                 return NULL;
 
-        struct gradient *grad = g_malloc(sizeof(struct gradient) + length * sizeof(struct color));
+        struct gradient *grad = g_rc_box_alloc(sizeof(struct gradient) + length * sizeof(struct color));
 
         grad->length = length;
         grad->pattern = NULL;
@@ -84,14 +84,21 @@ struct gradient *gradient_alloc(size_t length)
         return grad;
 }
 
-void gradient_free(struct gradient *grad)
+struct gradient *gradient_acquire(struct gradient *grad)
 {
-        if (grad == NULL) return;
+        return grad != NULL ? g_rc_box_acquire(grad) : NULL;
+}
 
+static void gradient_free(struct gradient *grad)
+{
         if (grad->pattern)
                 cairo_pattern_destroy(grad->pattern);
+}
 
-        g_free(grad);
+void gradient_release(struct gradient *grad)
+{
+        if (grad != NULL)
+                g_rc_box_release_full(grad, (GDestroyNotify)gradient_free);
 }
 
 void gradient_pattern(struct gradient *grad)
@@ -103,7 +110,7 @@ void gradient_pattern(struct gradient *grad)
                                                           grad->colors[0].a);
         } else {
                 grad->pattern = cairo_pattern_create_linear(0, 0, 1, 0);
-                for (int i = 0; i < grad->length; i++) {
+                for (size_t i = 0; i < grad->length; i++) {
                         double offset = i  / (double)(grad->length - 1);
                         cairo_pattern_add_color_stop_rgba(grad->pattern,
                                                           offset,
@@ -119,16 +126,19 @@ char *gradient_to_string(const struct gradient *grad)
 {
         if (!GRADIENT_VALID(grad)) return NULL;
 
-        char *buf = g_malloc(grad->length * 11);
-        color_to_string(grad->colors[0], buf);
-        char *ptr = buf + 9;
+        int max = grad->length * 11 + 1;
+        char *buf = g_malloc(max);
 
-        for (int i = 1; i < grad->length; i++) {
-                ptr += g_snprintf(ptr, 11, ", #%02x%02x%02x%02x",
+        for (size_t i = 0, j = 0; i < grad->length; i++) {
+                j += g_snprintf(buf + j, max - j, "#%02x%02x%02x%02x",
                                   (int)(grad->colors[i].r * 255),
                                   (int)(grad->colors[i].g * 255),
                                   (int)(grad->colors[i].b * 255),
                                   (int)(grad->colors[i].a * 255));
+
+                if (i != grad->length - 1) {
+                        j += g_snprintf(buf + j, max - j, ", ");
+                }
         }
 
         return buf;
@@ -265,7 +275,7 @@ static void layout_setup(struct colored_layout *cl, int width, int height, doubl
         int icon_width = cl->icon ? get_icon_width(cl->icon, scale) + horizontal_padding : 0;
         int text_width = width - 2 * settings.h_padding - (cl->n->icon_position == ICON_TOP ? 0 : icon_width);
         int progress_bar_height = have_progress_bar(cl) ? settings.progress_bar_height + settings.padding : 0;
-        int max_text_height = MAX(0, height - progress_bar_height - 2 * settings.padding);
+        int max_text_height = MAX(0, settings.height.max - progress_bar_height - 2 * settings.padding);
         layout_setup_pango(cl->l, text_width, max_text_height, cl->n->word_wrap, cl->n->ellipsize, cl->n->alignment);
 }
 
@@ -305,14 +315,14 @@ static struct dimensions calculate_notification_dimensions(struct colored_layout
                 dim.h = MAX(icon_height, dim.text_height);
         }
 
-        dim.h += progress_bar_height;
+        dim.h += progress_bar_height + settings.padding * 2;
         dim.w = dim.text_width + icon_width + 2 * settings.h_padding;
 
         if (have_progress_bar(cl))
                 dim.w = MAX(settings.progress_bar_min_width, dim.w);
 
-        dim.h = MIN(settings.height.max, dim.h + settings.padding * 2);
         dim.h = MAX(settings.height.min, dim.h);
+        dim.h = MIN(settings.height.max, dim.h);
 
         dim.w = MAX(settings.width.min, dim.w);
         dim.w = MIN(settings.width.max, dim.w);
@@ -489,7 +499,6 @@ static int layout_get_height(struct colored_layout *cl, double scale)
         if (have_progress_bar(cl)) {
                 h_progress_bar = settings.progress_bar_height + settings.padding;
         }
-
 
         return (cl->n->icon_position == ICON_TOP && cl->n->icon)
                 ? h_icon + h_text + h_progress_bar + vertical_padding
@@ -793,6 +802,7 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, int
                 text_y = h_without_progress_bar / 2 - text_h / 2;
         } else if (settings.vertical_alignment == VERTICAL_BOTTOM) {
                 text_y = h_without_progress_bar - settings.padding - text_h;
+                if (text_y < 0) text_y = settings.padding;
         } // else VERTICAL_TOP
 
         // icon positioning
@@ -923,12 +933,9 @@ static struct dimensions layout_render(cairo_surface_t *srf,
         double scale = output->get_scale();
         const int cl_h = layout_get_height(cl, scale);
 
-        int h_text = 0;
-        get_text_size(cl->l, NULL, &h_text, scale);
-
         int bg_width = 0;
-        int bg_height = MIN(settings.height.max, (2 * settings.padding) + cl_h);
-        bg_height = MAX(settings.height.min, bg_height);
+        int bg_height = MAX(settings.height.min, 2 * settings.padding + cl_h);
+        bg_height = MIN(settings.height.max, bg_height);
 
         cairo_surface_t *content = render_background(srf, cl, cl_next, dim.y, dim.w, bg_height, dim.corner_radius, corners, &bg_width, scale);
         cairo_t *c = cairo_create(content);

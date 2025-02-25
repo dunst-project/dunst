@@ -61,9 +61,9 @@ void notification_print(const struct notification *n)
         printf("\ticon_id: '%s'\n", STR_NN(n->icon_id));
         printf("\tdesktop_entry: '%s'\n", n->desktop_entry ? n->desktop_entry : "");
         printf("\tcategory: %s\n", STR_NN(n->category));
-        printf("\ttimeout: %ld\n", n->timeout/1000);
-        printf("\tstart: %ld\n", n->start);
-        printf("\ttimestamp: %ld\n", n->timestamp);
+        printf("\ttimeout: %"G_GINT64_FORMAT"\n", n->timeout/1000);
+        printf("\tstart: %"G_GINT64_FORMAT"\n", n->start);
+        printf("\ttimestamp: %"G_GINT64_FORMAT"\n", n->timestamp);
         printf("\turgency: %s\n", notification_urgency_to_string(n->urgency));
         printf("\ttransient: %d\n", n->transient);
         printf("\tformatted: '%s'\n", STR_NN(n->msg));
@@ -148,8 +148,8 @@ void notification_run_script(struct notification *n)
                                 // Set environment variables
                                 gchar *n_id_str = g_strdup_printf("%i", n->id);
                                 gchar *n_progress_str = g_strdup_printf("%i", n->progress);
-                                gchar *n_timeout_str = g_strdup_printf("%li", n->timeout/1000);
-                                gchar *n_timestamp_str = g_strdup_printf("%li", n->timestamp / 1000);
+                                gchar *n_timeout_str = g_strdup_printf("%"G_GINT64_FORMAT, n->timeout/1000);
+                                gchar *n_timestamp_str = g_strdup_printf("%"G_GINT64_FORMAT, n->timestamp / 1000);
                                 safe_setenv("DUNST_APP_NAME",  appname);
                                 safe_setenv("DUNST_SUMMARY",   summary);
                                 safe_setenv("DUNST_BODY",      body);
@@ -162,7 +162,6 @@ void notification_run_script(struct notification *n)
                                 safe_setenv("DUNST_URLS",      n->urls);
                                 safe_setenv("DUNST_TIMEOUT",   n_timeout_str);
                                 safe_setenv("DUNST_TIMESTAMP", n_timestamp_str);
-                                safe_setenv("DUNST_STACK_TAG", n->stack_tag);
                                 safe_setenv("DUNST_DESKTOP_ENTRY", n->desktop_entry);
 
                                 execlp(script,
@@ -231,6 +230,8 @@ int notification_cmp(const struct notification *a, const struct notification *b)
 /* see notification.h */
 int notification_cmp_data(const void *va, const void *vb, void *data)
 {
+        (void)data;
+
         struct notification *a = (struct notification *) va;
         struct notification *b = (struct notification *) vb;
 
@@ -298,35 +299,38 @@ void notification_unref(struct notification *n)
         if (!g_atomic_int_dec_and_test(&n->priv->refcount))
                 return;
 
-        if (n->original) {
+        if (n->original)
                 rule_free(n->original);
-                g_free(n->original);
-        }
 
+        g_free(n->dbus_client);
         g_free(n->appname);
         g_free(n->summary);
         g_free(n->body);
-        g_free(n->iconname);
-        g_free(n->default_icon_name);
-        g_free(n->icon_path);
-        g_free(n->msg);
-        g_free(n->dbus_client);
         g_free(n->category);
-        g_free(n->text_to_render);
-        g_free(n->urls);
-        g_free(n->stack_tag);
         g_free(n->desktop_entry);
+
+        g_free(n->icon_id);
+        g_free(n->iconname);
+        g_free(n->icon_path);
+        g_free(n->default_icon_name);
 
         g_hash_table_unref(n->actions);
         g_free(n->default_action_name);
 
         if (n->icon)
                 cairo_surface_destroy(n->icon);
-        g_free(n->icon_id);
 
         notification_private_free(n->priv);
 
+        gradient_release(n->colors.highlight);
+
+        g_free(n->format);
         g_strfreev(n->scripts);
+        g_free(n->stack_tag);
+
+        g_free(n->msg);
+        g_free(n->text_to_render);
+        g_free(n->urls);
 
         g_free(n);
 }
@@ -392,6 +396,12 @@ void notification_icon_replace_data(struct notification *n, GVariant *new_icon)
                 g_object_unref(icon);
 }
 
+void notification_replace_format(struct notification *n, const char *format)
+{
+        g_free(n->format);
+        n->format = g_strdup(format);
+}
+
 /* see notification.h */
 void notification_replace_single_field(char **haystack,
                                        char **needle,
@@ -434,7 +444,7 @@ struct notification *notification_create(void)
         /* Unparameterized default values */
         n->first_render = true;
         n->markup = MARKUP_FULL;
-        n->format = settings.format;
+        n->format = g_strdup(settings.format);
 
         n->timestamp = time_monotonic_now();
 
@@ -512,7 +522,10 @@ void notification_init(struct notification *n)
         if (!COLOR_VALID(n->colors.bg)) n->colors.bg = defcolors.bg;
         if (!COLOR_VALID(n->colors.frame)) n->colors.frame = defcolors.frame;
 
-        if (!GRADIENT_VALID(n->colors.highlight)) n->colors.highlight = defcolors.highlight;
+        if (!GRADIENT_VALID(n->colors.highlight)) {
+                gradient_release(n->colors.highlight);
+                n->colors.highlight = gradient_acquire(defcolors.highlight);
+        }
 
         /* Sanitize misc hints */
         if (n->progress < 0)
@@ -524,7 +537,7 @@ void notification_init(struct notification *n)
         rule_apply_all(n);
 
         if (g_str_has_prefix(n->summary, "DUNST_COMMAND_")) {
-                char *msg = "DUNST_COMMAND_* has been removed, please switch to dunstctl. See #830 for more details. https://github.com/dunst-project/dunst/pull/830";
+                const char *msg = "DUNST_COMMAND_* has been removed, please switch to dunstctl. See #830 for more details. https://github.com/dunst-project/dunst/pull/830";
                 LOG_W("%s", msg);
                 n->body = string_append(n->body, msg, "\n");
         }
@@ -537,7 +550,6 @@ void notification_init(struct notification *n)
         }
         if (!n->icon && !n->iconname)
                 n->iconname = g_strdup(settings.icons[n->urgency]);
-
 
         /* UPDATE derived fields */
         notification_extract_urls(n);
@@ -715,15 +727,14 @@ void notification_update_text_to_render(struct notification *n)
 
                 char *new_buf;
                 if (hours > 0) {
-                        new_buf =
-                            g_strdup_printf("%s (%ldh %ldm %lds old)", buf, hours,
-                                            minutes, seconds);
+                        new_buf = g_strdup_printf("%s (%"G_GINT64_FORMAT"h %"G_GINT64_FORMAT"m %"G_GINT64_FORMAT"s old)",
+                                                  buf, hours, minutes, seconds);
                 } else if (minutes > 0) {
-                        new_buf =
-                            g_strdup_printf("%s (%ldm %lds old)", buf, minutes,
-                                            seconds);
+                        new_buf = g_strdup_printf("%s (%"G_GINT64_FORMAT"m %"G_GINT64_FORMAT"s old)",
+                                                  buf, minutes, seconds);
                 } else {
-                        new_buf = g_strdup_printf("%s (%lds old)", buf, seconds);
+                        new_buf = g_strdup_printf("%s (%"G_GINT64_FORMAT"s old)",
+                                                  buf, seconds);
                 }
 
                 g_free(buf);

@@ -7,11 +7,13 @@
     background = "#285577"
     foreground = "#ffffff"
     timeout = 10
+	default_icon = dialog-information
 
 [urgency_critical]
     background = "#900000"
     foreground = "#ffffff"
     timeout = 0
+	default_icon = dialog-information
 
 [hide]
 	category = .*hide.*

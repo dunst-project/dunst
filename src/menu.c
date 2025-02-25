@@ -169,7 +169,7 @@ char *notification_dmenu_string(struct notification *n)
 void invoke_action(const char *action)
 {
         struct notification *invoked = NULL;
-        uint id;
+        gint id;
 
         char *data_start, *data_comma, *data_end;
 
@@ -273,7 +273,8 @@ char *invoke_dmenu(const char *dmenu_input)
                 g_error_free(err);
         } else {
                 size_t wlen = strlen(dmenu_input);
-                if (write(dunst_to_dmenu, dmenu_input, wlen) != wlen) {
+                ssize_t n = write(dunst_to_dmenu, dmenu_input, wlen);
+                if (n < 0 || (size_t)n != wlen) {
                         LOG_W("Cannot feed dmenu with input: %s", strerror(errno));
                 }
                 close(dunst_to_dmenu);
@@ -368,6 +369,8 @@ static gboolean context_menu_result_dispatch(gpointer user_data)
 
 static gpointer context_menu_thread(gpointer data)
 {
+        (void)data;
+
         char *dmenu_input = NULL;
         char *dmenu_output;
 

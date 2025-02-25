@@ -218,7 +218,7 @@ TEST test_notification_icon_scaling_notneeded(void)
 
 TEST test_notification_format_message(struct notification *n, const char *format, const char *exp)
 {
-        n->format = format;
+        notification_replace_format(n, format);
         notification_format_message(n);
 
         ASSERT_STR_EQ(exp, n->msg);
@@ -230,7 +230,7 @@ TEST test_notification_maxlength(void)
 {
         unsigned int len = 5005;
         struct notification *n = notification_create();
-        n->format = "%a";
+        notification_replace_format(n, "%a");
 
         n->appname = g_malloc(len + 1);
         n->appname[len] = '\0';
@@ -239,7 +239,7 @@ TEST test_notification_maxlength(void)
                             " 0123456789"
                             "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                             "abcdefghijklmnopqrstuvwxyz";
-        for (int i = 0; i < len; ++i)
+        for (size_t i = 0; i < len; ++i)
                 n->appname[i] = sigma[rand() % (sizeof(sigma) - 1)];
 
         notification_format_message(n);

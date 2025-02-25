@@ -60,16 +60,19 @@ void rule_apply(struct rule *r, struct notification *n, bool save)
                 if (save && !COLOR_VALID(n->original->bg)) n->original->bg = n->colors.bg;
                 n->colors.bg = r->bg;
         }
-        if (r->highlight)
-                RULE_APPLY2(colors.highlight, highlight, NULL);
+        if (r->highlight != NULL) {
+                if (save && n->original->highlight == NULL) {
+                        n->original->highlight = gradient_acquire(n->colors.highlight);
+                }
+                gradient_release(n->colors.highlight);
+                n->colors.highlight = gradient_acquire(r->highlight);
+        }
         if (COLOR_VALID(r->fc)) {
                 if (save && !COLOR_VALID(n->original->fc)) n->original->fc = n->colors.frame;
                 n->colors.frame = r->fc;
         }
-        if (r->format)
-                RULE_APPLY(format, NULL);
         if (r->action_name) {
-                if (save && n->original->action_name)
+                if (save && n->original->action_name == NULL)
                         n->original->action_name = n->default_action_name;
                 else
                         g_free(n->default_action_name);
@@ -77,7 +80,7 @@ void rule_apply(struct rule *r, struct notification *n, bool save)
                 n->default_action_name = g_strdup(r->action_name);
         }
         if (r->set_category) {
-                if (save && n->original->set_category)
+                if (save && n->original->set_category == NULL)
                         n->original->set_category = n->category;
                 else
                         g_free(n->category);
@@ -85,7 +88,7 @@ void rule_apply(struct rule *r, struct notification *n, bool save)
                 n->category = g_strdup(r->set_category);
         }
         if (r->default_icon) {
-                if (save && n->original->default_icon)
+                if (save && n->original->default_icon == NULL)
                         n->original->default_icon = n->default_icon_name;
                 else
                         g_free(n->default_icon_name);
@@ -93,7 +96,7 @@ void rule_apply(struct rule *r, struct notification *n, bool save)
                 n->default_icon_name = g_strdup(r->default_icon);
         }
         if (r->set_stack_tag) {
-                if (save && !n->original->set_stack_tag)
+                if (save && n->original->set_stack_tag == NULL)
                         n->original->set_stack_tag = n->stack_tag;
                 else
                         g_free(n->stack_tag);
@@ -101,7 +104,7 @@ void rule_apply(struct rule *r, struct notification *n, bool save)
                 n->stack_tag = g_strdup(r->set_stack_tag);
         }
         if (r->new_icon) {
-                if (save && !n->original->new_icon)
+                if (save && n->original->new_icon == NULL)
                         n->original->new_icon = g_strdup(n->iconname);
 
                 // FIXME This is not efficient when the icon is replaced
@@ -111,9 +114,19 @@ void rule_apply(struct rule *r, struct notification *n, bool save)
                 notification_icon_replace_path(n, r->new_icon);
                 n->receiving_raw_icon = false;
         }
+        if (r->format != NULL) {
+                if (save && n->original->format == NULL)
+                        n->original->format = n->format;
+                else
+                        g_free(n->format);
+
+                n->format = g_strdup(r->format);
+        }
         if (r->script) {
-                if (save && !n->original->script && n->script_count > 0)
-                        n->original->script = n->scripts[0];
+                if (save && n->original->script == NULL)
+                        n->original->script = n->script_count > 0
+                                            ? g_strdup(n->scripts[0])
+                                            : g_strdup(r->script);
 
                 n->scripts = g_renew(char *, n->scripts, n->script_count + 2);
                 n->scripts[n->script_count] = g_strdup(r->script);
@@ -137,12 +150,12 @@ void rule_print(const struct rule *r)
         if (r->msg_urgency != URG_NONE) printf("\tmsg_urgency: '%s'\n", notification_urgency_to_string(r->msg_urgency));
         if (r->stack_tag != NULL) printf("\tstack_tag: '%s'\n", r->stack_tag);
         if (r->desktop_entry != NULL) printf("\tdesktop_entry: '%s'\n", r->desktop_entry);
-        if (r->match_dbus_timeout != -1) printf("\tmatch_dbus_timeout: %ld\n", r->match_dbus_timeout);
+        if (r->match_dbus_timeout != -1) printf("\tmatch_dbus_timeout: %"G_GINT64_FORMAT"\n", r->match_dbus_timeout);
         if (r->match_transient != -1) printf("\tmatch_transient: %d\n", r->match_transient);
 
         // modifiers
-        if (r->timeout != -1) printf("\ttimeout: %ld\n", r->timeout);
-        if (r->override_dbus_timeout != -1) printf("\toverride_dbus_timeout: %ld\n", r->override_dbus_timeout);
+        if (r->timeout != -1) printf("\ttimeout: %"G_GINT64_FORMAT"\n", r->timeout);
+        if (r->override_dbus_timeout != -1) printf("\toverride_dbus_timeout: %"G_GINT64_FORMAT"\n", r->override_dbus_timeout);
         if (r->markup != -1) printf("\tmarkup: %d\n", r->markup);
         if (r->action_name != NULL) printf("\taction_name: '%s'\n", r->action_name);
         if (r->urgency != URG_NONE) printf("\turgency: '%s'\n", notification_urgency_to_string(r->urgency));
@@ -235,18 +248,26 @@ void rule_free(struct rule *r)
         if (r == NULL || r == &empty_rule)
                 return;
 
-        g_free(r->action_name);
-        g_free(r->set_category);
-        g_free(r->default_icon);
-        g_free(r->set_stack_tag);
-        g_free(r->new_icon);
         g_free(r->name);
+        g_free(r->appname);
+        g_free(r->summary);
+        g_free(r->body);
+        g_free(r->icon);
+        g_free(r->category);
+        g_free(r->stack_tag);
+        g_free(r->desktop_entry);
 
-        // Ugly but necessary
-        if (r->highlight != settings.colors_low.highlight &&
-            r->highlight != settings.colors_norm.highlight &&
-            r->highlight != settings.colors_crit.highlight)
-        gradient_free(r->highlight);
+        g_free(r->action_name);
+        g_free(r->new_icon);
+        g_free(r->default_icon);
+        gradient_release(r->highlight);
+
+        g_free(r->set_category);
+        g_free(r->format);
+        g_free(r->script);
+        g_free(r->set_stack_tag);
+
+        g_free(r);
 }
 
 

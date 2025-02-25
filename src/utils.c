@@ -479,4 +479,14 @@ void add_paths_from_env(GPtrArray *arr, char *env_name, char *subdir, char *alte
         g_strfreev(xdg_data_dirs_arr);
 }
 
+bool string_is_int(const char *str) {
+        if (str != NULL) {
+                while (isspace(*str)) str++;
+                while (isdigit(*str)) str++;
+                while (isspace(*str)) str++;
+                return *str == '\0';
+        }
+        return true;
+}
+
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

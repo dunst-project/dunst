@@ -97,7 +97,7 @@ bool queues_notification_replace_id(struct notification *new);
  * @post Call wake_up() to synchronize the queues with the UI
  *       (which closes the notification on screen)
  */
-void queues_notification_close_id(int id, enum reason reason);
+void queues_notification_close_id(gint id, enum reason reason);
 
 /**
  * Close the given notification. \see queues_notification_close_id().
@@ -123,7 +123,7 @@ void queues_history_pop(void);
  * Pushes the latest notification found in the history buffer identified by
  * it's assigned id
  */
-void queues_history_pop_by_id(unsigned int id);
+void queues_history_pop_by_id(gint id);
 
 /**
  * Push a single notification to history
@@ -141,7 +141,7 @@ void queues_history_push_all(void);
 /**
  * Removes an notification identified by the given id from the history
  */
-void queues_history_remove_by_id(unsigned int id);
+void queues_history_remove_by_id(gint id);
 
 /**
  * Move inserted notifications from waiting queue to displayed queue
@@ -178,7 +178,7 @@ gint64 queues_get_next_datachange(gint64 time);
  *
  * @return the `id` notification  or NULL
  */
-struct notification* queues_get_by_id(int id);
+struct notification* queues_get_by_id(gint id);
 
 /**
  * Reapply all rules to the queue (used when reloading configs)

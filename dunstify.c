@@ -11,6 +11,7 @@ static gchar *summary = NULL;
 static gchar *body = NULL;
 static NotifyUrgency urgency = NOTIFY_URGENCY_NORMAL;
 static gchar *urgency_str = NULL;
+static gchar *category = NULL;
 static gchar **hint_strs = NULL;
 static gchar **action_strs = NULL;
 static gint timeout = NOTIFY_EXPIRES_DEFAULT;
@@ -32,7 +33,8 @@ static GOptionEntry entries[] =
     { "timeout",      't', 0, G_OPTION_ARG_INT,          &timeout,        "The time in milliseconds until the notification expires", "TIMEOUT" },
     { "icon",         'i', 0, G_OPTION_ARG_STRING,       &icon,           "An icon that should be displayed with the notification", "ICON" },
     { "raw_icon",     'I', 0, G_OPTION_ARG_STRING,       &raw_icon_path,  "Path to the icon to be sent as raw image data", "RAW_ICON"},
-    { "capabilities", 'c', 0, G_OPTION_ARG_NONE,         &capabilities,   "Print the server capabilities and exit", NULL},
+    { "category",     'c', 0, G_OPTION_ARG_STRING,       &category,       "The category of this notification", "TYPE" },
+    { "capabilities", 0,   0, G_OPTION_ARG_NONE,         &capabilities,   "Print the server capabilities and exit", NULL},
     { "serverinfo",   's', 0, G_OPTION_ARG_NONE,         &serverinfo,     "Print server information and exit", NULL},
     { "printid",      'p', 0, G_OPTION_ARG_NONE,         &printid,        "Print id, which can be used to update/replace this notification", NULL},
     { "replace",      'r', 0, G_OPTION_ARG_INT,          &replace_id,     "Set id of this notification.", "ID"},
@@ -171,53 +173,20 @@ void parse_commandline(int argc, char *argv[])
     }
 }
 
-typedef struct _NotifyNotificationPrivate
-{
-        guint32         id;
-        char           *app_name;
-        char           *summary;
-        char           *body;
-
-        /* NULL to use icon data. Anything else to have server lookup icon */
-        char           *icon_name;
-
-        /*
-         * -1   = use server default
-         *  0   = never timeout
-         *  > 0 = Number of milliseconds before we timeout
-         */
-        gint            timeout;
-
-        GSList         *actions;
-        GHashTable     *action_map;
-        GHashTable     *hints;
-
-        gboolean        has_nondefault_actions;
-        gboolean        updates_pending;
-
-        gulong          proxy_signal_handler;
-
-        gint            closed_reason;
-} knickers;
-
 int get_id(NotifyNotification *n)
 {
-    knickers *kn = n->priv;
-
-    /* I'm sorry for taking a peek */
-    return kn->id;
+    GValue value = G_VALUE_INIT;
+    g_value_init(&value, G_TYPE_UINT);
+    g_object_get_property(G_OBJECT(n), "id", &value);
+    return g_value_get_int(&value);
 }
 
 void put_id(NotifyNotification *n, guint32 id)
 {
-    knickers *kn = n->priv;
-
-    /* And know I'm putting stuff into
-     * your knickers. I'm sorry.
-     * I'm so sorry.
-     * */
-
-    kn->id = id;
+    GValue value = G_VALUE_INIT;
+    g_value_init(&value, G_TYPE_UINT);
+    g_value_set_uint(&value, id);
+    g_object_set_property(G_OBJECT(n), "id", &value);
 }
 
 void actioned(NotifyNotification *n, char *a, gpointer foo)
@@ -301,6 +270,9 @@ int main(int argc, char *argv[])
     n = notify_notification_new(summary, body, icon);
     notify_notification_set_timeout(n, timeout);
     notify_notification_set_urgency(n, urgency);
+
+    if (category != NULL)
+        notify_notification_set_category(n, category);
 
     GError *err = NULL;
 
