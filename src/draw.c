@@ -870,7 +870,8 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, int
                              frame_y = h_without_progress_bar,
                              progress_width_without_frame = progress_width - 2 * frame_width,
                              progress_width_1 = progress_width_without_frame * progress / 100,
-                             progress_width_2 = progress_width_without_frame - 1;
+                             progress_width_2 = progress_width_without_frame - 1,
+                             progress_width_scaled = (progress_width + 1) * scale;
 
                 switch (cl->n->progress_bar_alignment) {
                         case PANGO_ALIGN_LEFT:
@@ -902,7 +903,7 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, int
 
                 // top layer (fill)
                 cairo_matrix_t matrix;
-                cairo_matrix_init_scale(&matrix, 1.0 / width, 1.0);
+                cairo_matrix_init_scale(&matrix, 1.0 / progress_width_scaled, 1.0);
                 cairo_pattern_set_matrix(COLOR(cl, highlight->pattern), &matrix);
                 cairo_set_source(c, COLOR(cl, highlight->pattern));
 
