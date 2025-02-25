@@ -76,13 +76,13 @@ static const char *introspection_xml =
     "    </interface>"
     "    <interface name=\""DUNST_IFAC"\">"
 
-    "        <method name=\"ContextMenuCall\"       />"
+    "        <method name=\"ContextMenuCall\"/>"
     "        <method name=\"NotificationAction\">"
     "            <arg name=\"number\"     type=\"u\"/>"
     "        </method>"
     "        <method name=\"NotificationClearHistory\"/>"
-    "        <method name=\"NotificationCloseLast\" />"
-    "        <method name=\"NotificationCloseAll\"  />"
+    "        <method name=\"NotificationCloseLast\"/>"
+    "        <method name=\"NotificationCloseAll\"/>"
     "        <method name=\"NotificationListHistory\">"
     "            <arg direction=\"out\" name=\"notifications\"   type=\"aa{sv}\"/>"
     "        </method>"
@@ -92,7 +92,7 @@ static const char *introspection_xml =
     "        <method name=\"NotificationRemoveFromHistory\">"
     "            <arg direction=\"in\"  name=\"id\"              type=\"u\"/>"
     "        </method>"
-    "        <method name=\"NotificationShow\"      />"
+    "        <method name=\"NotificationShow\"/>"
     "        <method name=\"RuleEnable\">"
     "            <arg name=\"name\"     type=\"s\"/>"
     "            <arg name=\"state\"    type=\"i\"/>"
@@ -103,7 +103,7 @@ static const char *introspection_xml =
     "        <method name=\"ConfigReload\">"
     "            <arg direction=\"in\" name=\"configs\"  type=\"as\"/>"
     "        </method>"
-    "        <method name=\"Ping\"                  />"
+    "        <method name=\"Ping\"/>"
 
     "        <property name=\"paused\" type=\"b\" access=\"readwrite\">"
     "            <annotation name=\"org.freedesktop.DBus.Property.EmitsChangedSignal\" value=\"true\"/>"
@@ -116,6 +116,18 @@ static const char *introspection_xml =
     "        <property name=\"displayedLength\" type=\"u\" access=\"read\" />"
     "        <property name=\"historyLength\" type=\"u\" access=\"read\" />"
     "        <property name=\"waitingLength\" type=\"u\" access=\"read\" />"
+
+    "        <signal name=\"NotificationHistoryRemoved\">"
+    "            <arg name=\"id\"         type=\"u\"/>"
+    "        </signal>"
+
+    "        <signal name=\"NotificationHistoryCleared\">"
+    "            <arg name=\"count\"      type=\"u\"/>"
+    "        </signal>"
+
+    "        <signal name=\"ConfigReloaded\">"
+    "            <arg name=\"configs\"    type=\"as\"/>"
+    "        </signal>"
 
     "    </interface>"
     "</node>";
@@ -286,8 +298,10 @@ static void dbus_cb_dunst_NotificationClearHistory(GDBusConnection *connection,
                                                 GDBusMethodInvocation *invocation)
 {
         LOG_D("CMD: Clearing the history");
-        queues_history_clear();
+        guint n = queues_history_clear();
         wake_up();
+
+        signal_history_cleared(n);
 
         g_dbus_method_invocation_return_value(invocation, NULL);
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
@@ -424,6 +438,7 @@ static void dbus_cb_dunst_NotificationRemoveFromHistory(GDBusConnection *connect
         g_variant_get(parameters, "(u)", &id);
 
         queues_history_remove_by_id(id);
+        signal_history_removed(id);
         wake_up();
 
         g_dbus_method_invocation_return_value(invocation, NULL);
@@ -642,6 +657,8 @@ static void dbus_cb_dunst_ConfigReload(GDBusConnection *connection,
         gchar **configs = NULL;
         g_variant_get(parameters, "(^as)", &configs);
         reload(configs);
+
+        signal_config_reloaded(configs);
 
         g_dbus_method_invocation_return_value(invocation, NULL);
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
@@ -1059,6 +1076,14 @@ void signal_notification_closed(struct notification *n, enum reason reason)
         GError *err = NULL;
 
         g_dbus_connection_emit_signal(dbus_conn,
+                                      NULL,
+                                      FDN_PATH,
+                                      DUNST_IFAC,
+                                      "PropertiesChanged",
+                                      body,
+                                      &err);
+
+        g_dbus_connection_emit_signal(dbus_conn,
                                       n->dbus_client,
                                       FDN_PATH,
                                       FDN_IFAC,
@@ -1086,16 +1111,14 @@ void signal_notification_closed(struct notification *n, enum reason reason)
                                 reason_string="signal";
                                 break;
                         case REASON_UNDEF:
-                                reason_string="undfined";
+                                reason_string="undefined";
                                 break;
                         default:
                                 reason_string="unknown";
                 }
 
                 LOG_D("Queues: Closing notification for reason: %s", reason_string);
-
         }
-
 }
 
 void signal_action_invoked(const struct notification *n, const char *identifier)
@@ -1412,6 +1435,75 @@ int dbus_init(void)
                                   NULL);
 
         return owner_id;
+}
+
+void signal_history_removed(guint id)
+{
+        if (!dbus_conn) {
+                LOG_E("Unable to send signal: No DBus connection.");
+        }
+
+        GVariant *body = g_variant_new("(u)", id);
+        GError *err = NULL;
+
+        g_dbus_connection_emit_signal(dbus_conn,
+                                      NULL,
+                                      FDN_PATH,
+                                      DUNST_IFAC,
+                                      "NotificationHistoryRemoved",
+                                      body,
+                                      &err);
+
+        if (err) {
+                LOG_W("Unable to send NotificationHistoryRemoved signal: %s", err->message);
+                g_error_free(err);
+        }
+}
+
+void signal_history_cleared(guint n)
+{
+        if (!dbus_conn) {
+                LOG_E("Unable to send signal: No DBus connection.");
+        }
+
+        GVariant *body = g_variant_new("(u)", n);
+        GError *err = NULL;
+
+        g_dbus_connection_emit_signal(dbus_conn,
+                                      NULL,
+                                      FDN_PATH,
+                                      DUNST_IFAC,
+                                      "NotificationHistoryCleared",
+                                      body,
+                                      &err);
+
+        if (err) {
+                LOG_W("Unable to send NotificationHistoryCleared signal: %s", err->message);
+                g_error_free(err);
+        }
+}
+
+void signal_config_reloaded(char **const configs)
+{
+        if (!dbus_conn) {
+                LOG_E("Unable to send signal: No DBus connection.");
+        }
+
+        GVariant *body = g_variant_new("(as)", configs);
+        GError *err = NULL;
+
+        g_dbus_connection_emit_signal(dbus_conn,
+                                      NULL,
+                                      FDN_PATH,
+                                      DUNST_IFAC,
+                                      "ConfigReloaded",
+                                      body,
+                                      &err);
+
+        if (err) {
+                LOG_W("Unable to send ConfigReloaded signal: %s", err->message);
+                g_error_free(err);
+        }
 }
 
 void dbus_teardown(int owner_id)

@@ -36,6 +36,25 @@ struct signal_closed {
         GDBusConnection *conn;
 };
 
+struct signal_historyremoved {
+        guint32 id;
+        bool removed;
+        guint subscription_id;
+        GDBusConnection *conn;
+};
+
+struct signal_historycleared {
+        guint32 count;
+        guint subscription_id;
+        GDBusConnection *conn;
+};
+
+struct signal_configreloaded {
+        gchar **configs;
+        guint subscription_id;
+        GDBusConnection *conn;
+};
+
 void dbus_signal_cb_actioninvoked(GDBusConnection *connection,
                                   const gchar *sender_name,
                                   const gchar *object_path,
@@ -206,6 +225,153 @@ void dbus_signal_unsubscribe_closed(struct signal_closed *closed)
 
         closed->conn = NULL;
         closed->subscription_id = -1;
+}
+
+void dbus_signal_cb_historyremoved(GDBusConnection *connection,
+                 const gchar *sender_name,
+                 const gchar *object_path,
+                 const gchar *interface_name,
+                 const gchar *signal_name,
+                 GVariant *parameters,
+                 gpointer user_data)
+{
+        g_return_if_fail(user_data);
+
+        guint32 id;
+
+        struct signal_historyremoved *sig = (struct signal_historyremoved*) user_data;
+        g_variant_get(parameters, "(u)", &id);
+
+        if (id == sig->id) {
+                sig->removed = true;
+        }
+}
+
+void dbus_signal_subscribe_historyremoved(struct signal_historyremoved *sig)
+{
+        assert(sig);
+
+        sig->conn = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, NULL);
+        sig->subscription_id =
+                g_dbus_connection_signal_subscribe(
+                        sig->conn,
+                        FDN_NAME,
+                        DUNST_IFAC,
+                        "NotificationHistoryRemoved",
+                        FDN_PATH,
+                        NULL,
+                        G_DBUS_SIGNAL_FLAGS_NONE,
+                        dbus_signal_cb_historyremoved,
+                        sig,
+                        NULL);
+}
+
+void dbus_signal_unsubscribe_historyremoved(struct signal_historyremoved *sig)
+{
+        assert(sig);
+
+        g_dbus_connection_signal_unsubscribe(sig->conn, sig->subscription_id);
+        g_object_unref(sig->conn);
+
+        sig->conn = NULL;
+        sig->subscription_id = -1;
+}
+
+void dbus_signal_cb_historycleared(GDBusConnection *connection,
+                 const gchar *sender_name,
+                 const gchar *object_path,
+                 const gchar *interface_name,
+                 const gchar *signal_name,
+                 GVariant *parameters,
+                 gpointer user_data)
+{
+        g_return_if_fail(user_data);
+
+        guint32 count;
+
+        struct signal_historycleared *sig = (struct signal_historycleared*) user_data;
+        g_variant_get(parameters, "(u)", &count);
+
+        sig->count = count;
+}
+
+void dbus_signal_subscribe_historycleared(struct signal_historycleared *sig)
+{
+        assert(sig);
+
+        sig->conn = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, NULL);
+        sig->subscription_id =
+                g_dbus_connection_signal_subscribe(
+                        sig->conn,
+                        FDN_NAME,
+                        DUNST_IFAC,
+                        "NotificationHistoryCleared",
+                        FDN_PATH,
+                        NULL,
+                        G_DBUS_SIGNAL_FLAGS_NONE,
+                        dbus_signal_cb_historycleared,
+                        sig,
+                        NULL);
+}
+
+void dbus_signal_unsubscribe_historycleared(struct signal_historycleared *sig)
+{
+        assert(sig);
+
+        g_dbus_connection_signal_unsubscribe(sig->conn, sig->subscription_id);
+        g_object_unref(sig->conn);
+
+        sig->conn = NULL;
+        sig->subscription_id = -1;
+}
+
+
+void dbus_signal_cb_configreloaded(GDBusConnection *connection,
+                 const gchar *sender_name,
+                 const gchar *object_path,
+                 const gchar *interface_name,
+                 const gchar *signal_name,
+                 GVariant *parameters,
+                 gpointer user_data)
+{
+        g_return_if_fail(user_data);
+
+        gchar **configs;
+
+        struct signal_configreloaded *sig = (struct signal_configreloaded*) user_data;
+        g_variant_get(parameters, "(^as)", &configs);
+
+        sig->configs = configs;
+}
+
+void dbus_signal_subscribe_configreloaded(struct signal_configreloaded *sig)
+{
+        assert(sig);
+
+        sig->conn = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, NULL);
+        sig->subscription_id =
+                g_dbus_connection_signal_subscribe(
+                        sig->conn,
+                        FDN_NAME,
+                        DUNST_IFAC,
+                        "ConfigReloaded",
+                        FDN_PATH,
+                        NULL,
+                        G_DBUS_SIGNAL_FLAGS_NONE,
+                        dbus_signal_cb_configreloaded,
+                        sig,
+                        NULL);
+}
+
+void dbus_signal_unsubscribe_configreloaded(struct signal_configreloaded *sig)
+{
+        assert(sig);
+
+        g_dbus_connection_signal_unsubscribe(sig->conn, sig->subscription_id);
+        g_object_unref(sig->conn);
+
+        sig->conn = NULL;
+        sig->subscription_id = -1;
 }
 
 static GVariant *dbus_invoke_ifac(const char *method, GVariant *params, const char *ifac)
@@ -1383,6 +1549,86 @@ TEST test_timeout(void)
         PASS();
 }
 
+TEST test_clearhistory_and_signal(void)
+{
+        GVariant *ret;
+        struct signal_historycleared sig = {0, -1};
+
+        dbus_signal_subscribe_historycleared(&sig);
+
+        guint count = queues_length_history();
+
+        ret = dbus_invoke_ifac("NotificationClearHistory", NULL, DUNST_IFAC);
+
+        ASSERT(ret);
+        g_variant_unref(ret);
+
+        uint waiting = 0;
+        while (sig.count == 0 && waiting < 2000) {
+                usleep(500);
+                waiting++;
+        }
+
+        ASSERT(sig.count == count);
+
+        sig.count = 0;
+        queues_history_clear();
+
+        struct notification *n = notification_create();
+        n->appname = g_strdup("dunstify");
+        n->summary = g_strdup("Testing");
+        queues_history_push(n);
+
+        ret = dbus_invoke_ifac("NotificationClearHistory", NULL, DUNST_IFAC);
+        ASSERT(ret);
+        g_variant_unref(ret);
+
+        waiting = 0;
+        while (sig.count == 0 && waiting < 2000) {
+                usleep(500);
+                waiting++;
+        }
+
+        ASSERT(sig.count == 1);
+
+        queues_history_clear();
+        dbus_signal_unsubscribe_historycleared(&sig);
+        PASS();
+}
+
+TEST test_removehistory_and_signal(void)
+{
+        GVariant *data, *ret;
+        struct signal_historyremoved sig = {0, false, -1};
+
+        dbus_signal_subscribe_historyremoved(&sig);
+        queues_history_clear();
+
+        struct notification *n = notification_create();
+        n->appname = g_strdup("dunstify");
+        n->summary = g_strdup("Testing");
+        queues_history_push(n);
+
+        data = g_variant_new("(u)", sig.id);
+        ret = dbus_invoke_ifac("NotificationRemoveFromHistory", data, DUNST_IFAC);
+
+        ASSERT(ret);
+
+        uint waiting = 0;
+        while (!sig.removed && waiting < 2000) {
+                usleep(500);
+                waiting++;
+        }
+
+        ASSERT(sig.removed);
+        ASSERT(queues_length_history() == 0);
+
+        queues_history_clear();
+        dbus_signal_unsubscribe_historyremoved(&sig);
+        g_variant_unref(ret);
+        PASS();
+}
+
 // TESTS END
 
 GMainLoop *loop;
@@ -1418,6 +1664,8 @@ gpointer run_threaded_tests(gpointer data)
         RUN_TEST(test_override_dbus_timeout);
         RUN_TEST(test_match_dbus_timeout);
         RUN_TEST(test_timeout);
+        RUN_TEST(test_clearhistory_and_signal);
+        RUN_TEST(test_removehistory_and_signal);
         RUN_TEST(test_dbus_cb_dunst_NotificationListHistory);
         RUN_TEST(test_dbus_cb_dunst_RuleEnable);
         RUN_TEST(test_dbus_cb_dunst_RuleList);

@@ -355,10 +355,12 @@ static void queues_destroy_notification(struct notification *n, gpointer user_da
 }
 
 /* see queues.h */
-void queues_history_clear(void)
+guint queues_history_clear(void)
 {
+        guint n = g_queue_get_length(history);
         g_queue_foreach(history, (GFunc)queues_destroy_notification, NULL);
         g_queue_clear(history);
+        return n;
 }
 
 /* see queues.h */
