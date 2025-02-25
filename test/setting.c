@@ -9,13 +9,13 @@ extern const char *base;
 // In this suite a few dunstrc's are tested to see if the settings code works
 // This file is called setting.c, since the name settings.c caused issues.
 
-char *config_paths[2] = {0};
+char *test_paths[2] = {0};
 
 TEST test_dunstrc_markup(void) {
         settings_free(&settings);
 
-        config_paths[0] = g_strconcat(base, "/data/dunstrc.markup", NULL);
-        load_settings(config_paths);
+        test_paths[0] = g_strconcat(base, "/data/dunstrc.markup", NULL);
+        load_settings(test_paths);
 
         ASSERT_STR_EQ(settings.font, "Monospace 8");
 
@@ -26,15 +26,15 @@ TEST test_dunstrc_markup(void) {
         ASSERT_STR_EQ(e_format, got_format);
         ASSERT(settings.indicate_hidden);
 
-        g_clear_pointer(&config_paths[0], g_free);
+        g_clear_pointer(&test_paths[0], g_free);
         PASS();
 }
 
 TEST test_dunstrc_nomarkup(void) {
         settings_free(&settings);
 
-        config_paths[0] = g_strconcat(base, "/data/dunstrc.nomarkup", NULL);
-        load_settings(config_paths);
+        test_paths[0] = g_strconcat(base, "/data/dunstrc.nomarkup", NULL);
+        load_settings(test_paths);
 
         ASSERT_STR_EQ(settings.font, "Monospace 8");
 
@@ -45,7 +45,7 @@ TEST test_dunstrc_nomarkup(void) {
         ASSERT_STR_EQ(e_format, got_format);
         ASSERT(settings.indicate_hidden);
 
-        g_clear_pointer(&config_paths[0], g_free);
+        g_clear_pointer(&test_paths[0], g_free);
         PASS();
 }
 
@@ -55,11 +55,11 @@ TEST test_dunstrc_defaults(void) {
         struct settings s_default;
         struct settings s_dunstrc;
 
-        config_paths[0] = g_strconcat(base, "/data/dunstrc.default", NULL);
+        test_paths[0] = g_strconcat(base, "/data/dunstrc.default", NULL);
         set_defaults();
         s_default = settings;
 
-        load_settings(config_paths);
+        load_settings(test_paths);
         s_dunstrc = settings;
 
         ASSERT_EQ(s_default.corner_radius, s_dunstrc.corner_radius);
@@ -116,7 +116,7 @@ TEST test_dunstrc_defaults(void) {
         settings_free(&s_old);
         settings_free(&s_default);
 
-        g_clear_pointer(&config_paths[0], g_free);
+        g_clear_pointer(&test_paths[0], g_free);
         PASS();
 }
 

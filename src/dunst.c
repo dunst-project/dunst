@@ -26,7 +26,7 @@ GMainLoop *mainloop = NULL;
 
 static struct dunst_status status;
 static bool setup_done = false;
-static char **config_paths = NULL;
+char **config_paths = NULL;
 
 /* see dunst.h */
 void dunst_status(const enum dunst_status_field field,
@@ -232,7 +232,7 @@ void reload(char **const configs)
         rules = NULL;
 
         settings_free(&settings);
-        load_settings(configs);
+        load_settings(length != 0 ? configs : config_paths);
 
         draw_setup();
         setup_done = true;

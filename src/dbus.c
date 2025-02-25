@@ -385,7 +385,7 @@ static void dbus_cb_dunst_NotificationListHistory(GDBusConnection *connection,
                 icon_path = (n->icon_path == NULL) ? "" : n->icon_path;
                 urgency   = notification_urgency_to_string(n->urgency);
                 urls      = (n->urls      == NULL) ? "" : n->urls;
-                stack_tag = (n->stack_tag == NULL) ? "" : n->stack_tag;        
+                stack_tag = (n->stack_tag == NULL) ? "" : n->stack_tag;
 
                 g_variant_builder_add(&n_builder, "{sv}", "body", g_variant_new_string(body));
                 g_variant_builder_add(&n_builder, "{sv}", "message", g_variant_new_string(msg));
@@ -437,9 +437,10 @@ static void dbus_cb_dunst_NotificationRemoveFromHistory(GDBusConnection *connect
         guint32 id;
         g_variant_get(parameters, "(u)", &id);
 
-        queues_history_remove_by_id(id);
-        signal_history_removed(id);
-        wake_up();
+        if (queues_history_remove_by_id(id)) {
+                signal_history_removed(id);
+                wake_up();
+        }
 
         g_dbus_method_invocation_return_value(invocation, NULL);
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
@@ -1489,7 +1490,8 @@ void signal_config_reloaded(char **const configs)
                 LOG_E("Unable to send signal: No DBus connection.");
         }
 
-        GVariant *body = g_variant_new("(as)", configs);
+        guint length = g_strv_length(configs);
+        GVariant *body = g_variant_new("(^as)", length != 0 ? configs : config_paths);
         GError *err = NULL;
 
         g_dbus_connection_emit_signal(dbus_conn,

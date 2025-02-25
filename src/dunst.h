@@ -25,6 +25,8 @@ enum dunst_status_field {
         S_PAUSE_LEVEL,
 };
 
+extern char **config_paths;
+
 /**
  * Modify the current status of dunst
  * @param field The field to change in the global status structure
