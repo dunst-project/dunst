@@ -173,53 +173,16 @@ void parse_commandline(int argc, char *argv[])
     }
 }
 
-typedef struct _NotifyNotificationPrivate
-{
-        guint32         id;
-        char           *app_name;
-        char           *summary;
-        char           *body;
-
-        /* NULL to use icon data. Anything else to have server lookup icon */
-        char           *icon_name;
-
-        /*
-         * -1   = use server default
-         *  0   = never timeout
-         *  > 0 = Number of milliseconds before we timeout
-         */
-        gint            timeout;
-
-        GSList         *actions;
-        GHashTable     *action_map;
-        GHashTable     *hints;
-
-        gboolean        has_nondefault_actions;
-        gboolean        updates_pending;
-
-        gulong          proxy_signal_handler;
-
-        gint            closed_reason;
-} knickers;
-
 int get_id(NotifyNotification *n)
 {
-    knickers *kn = n->priv;
-
-    /* I'm sorry for taking a peek */
-    return kn->id;
+    gint id;
+    g_object_get(G_OBJECT(n), "id", &id, NULL);
+    return id;
 }
 
 void put_id(NotifyNotification *n, guint32 id)
 {
-    knickers *kn = n->priv;
-
-    /* And now I'm putting stuff into
-     * your knickers. I'm sorry.
-     * I'm so sorry.
-     * */
-
-    kn->id = id;
+    g_object_set(G_OBJECT(n), "id", id, NULL);
 }
 
 void actioned(NotifyNotification *n, char *a, gpointer foo)
