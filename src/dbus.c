@@ -122,7 +122,7 @@ static const char *introspection_xml =
     "        </signal>"
 
     "        <signal name=\"NotificationHistoryCleared\">"
-    "            <arg name=\"n\"          type=\"u\"/>"
+    "            <arg name=\"count\"      type=\"u\"/>"
     "        </signal>"
 
     "        <signal name=\"ConfigReloaded\">"
