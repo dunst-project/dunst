@@ -252,18 +252,34 @@ void add_hint(NotifyNotification *n, char *str)
 int main(int argc, char *argv[])
 {
     setlocale(LC_ALL, "");
+    g_set_prgname(argv[0]);
+
     #if !GLIB_CHECK_VERSION(2,35,0)
         g_type_init();
     #endif
+
+    if (capabilities) {
+        print_capabilities();
+        die(0);
+    }
+
+    if (serverinfo) {
+        print_serverinfo();
+        die(0);
+    }
+
     parse_commandline(argc, argv);
+
 
     if (!notify_init(appname)) {
         g_printerr("Unable to initialize libnotify\n");
         die(1);
     }
 
-    NotifyNotification *n;
-    n = notify_notification_new(summary, body, icon);
+    // NOTE: Needed to inform libnotify of the spec version
+    notify_get_server_info(NULL, NULL, NULL, NULL);
+
+    NotifyNotification *n = notify_notification_new(summary, body, icon);
     notify_notification_set_timeout(n, timeout);
     notify_notification_set_urgency(n, urgency);
 
