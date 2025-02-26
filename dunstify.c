@@ -23,6 +23,7 @@ static gboolean printid = false;
 static guint32 replace_id = 0;
 static guint32 close_id = 0;
 static gboolean block = false;
+static gchar **rest = NULL;
 
 static GOptionEntry entries[] =
 {
@@ -40,6 +41,7 @@ static GOptionEntry entries[] =
     { "replace",      'r', 0, G_OPTION_ARG_INT,          &replace_id,     "Set id of this notification.", "ID"},
     { "close",        'C', 0, G_OPTION_ARG_INT,          &close_id,       "Close the notification with the specified ID", "ID"},
     { "block",        'b', 0, G_OPTION_ARG_NONE,         &block,          "Block until notification is closed and print close reason", NULL},
+    { G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_FILENAME_ARRAY, &rest, NULL, NULL },
     { NULL }
 };
 
@@ -119,33 +121,27 @@ void parse_commandline(int argc, char *argv[])
 
     g_option_context_free(context);
 
-    if (capabilities) {
-        print_capabilities();
-        die(0);
-    }
-
-    if (serverinfo) {
-        print_serverinfo();
-        die(0);
-    }
-
     if (*appname == '\0') {
         g_printerr("Provided appname was empty\n");
         die(1);
     }
 
-    int n_args = count_args(argv, argc);
-    if (n_args < 2 && close_id < 1) {
-        g_printerr("I need at least a summary\n");
-        die(1);
-    } else if (n_args < 2) {
-        summary = g_strdup("These are not the summaries you are looking for");
-    } else {
-        summary = g_strdup(get_argv(argv, 1));
+    if (rest != NULL && rest[0] != NULL) {
+        summary = rest[0];
+
+        if (rest[1] != NULL) {
+            body = g_strcompress(rest[1]);
+
+            if (rest[2] != NULL) {
+                    g_printerr("Too many arguments!\n");
+                    die(1);
+            }
+        }
     }
 
-    if (n_args > 2) {
-        body = g_strcompress(get_argv(argv, 2));
+    if (summary == NULL) {
+        g_printerr("I need at least a summary\n");
+        die(1);
     }
 
     if (urgency_str) {
@@ -325,8 +321,10 @@ int main(int argc, char *argv[])
         die(1);
     }
 
-    if (printid)
+    if (printid) {
         g_print("%d\n", get_id(n));
+        fflush(stdout);
+    }
 
     if (block || action_strs)
         g_main_loop_run(l);
