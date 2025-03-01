@@ -1077,14 +1077,6 @@ void signal_notification_closed(struct notification *n, enum reason reason)
         GError *err = NULL;
 
         g_dbus_connection_emit_signal(dbus_conn,
-                                      NULL,
-                                      FDN_PATH,
-                                      DUNST_IFAC,
-                                      "PropertiesChanged",
-                                      body,
-                                      &err);
-
-        g_dbus_connection_emit_signal(dbus_conn,
                                       n->dbus_client,
                                       FDN_PATH,
                                       FDN_IFAC,
