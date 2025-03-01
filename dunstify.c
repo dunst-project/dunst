@@ -169,20 +169,16 @@ void parse_commandline(int argc, char *argv[])
     }
 }
 
-int get_id(NotifyNotification *n)
+gint get_id(NotifyNotification *n)
 {
-    GValue value = G_VALUE_INIT;
-    g_value_init(&value, G_TYPE_UINT);
-    g_object_get_property(G_OBJECT(n), "id", &value);
-    return g_value_get_int(&value);
+    gint32 id;
+    g_object_get(G_OBJECT(n), "id", &id, NULL);
+    return id;
 }
 
 void put_id(NotifyNotification *n, guint32 id)
 {
-    GValue value = G_VALUE_INIT;
-    g_value_init(&value, G_TYPE_UINT);
-    g_value_set_uint(&value, id);
-    g_object_set_property(G_OBJECT(n), "id", &value);
+    g_object_set(G_OBJECT(n), "id", id, NULL);
 }
 
 void actioned(NotifyNotification *n, char *a, gpointer foo)
