@@ -327,6 +327,21 @@
     mouse_middle_click = do_action, close_current
     mouse_right_click = close_all
 
+    ### action menu
+
+    built_in_menu = true
+    menu_frame_color = "#000000"
+
+    #set to true to fill the button with the frame color.
+    #set to false to draw the bounding box with the frame color and frame width.
+    menu_frame_fill = false
+    menu_frame_width = 1
+    menu_height = 30
+    menu_max_per_row = 4
+    menu_max_rows = 5
+    menu_max_width = 100
+    menu_min_width = 50
+
 # Experimental features that may or may not work correctly. Do not expect them
 # to have a consistent behaviour across releases.
 [experimental]
