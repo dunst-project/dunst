@@ -121,6 +121,16 @@ void parse_commandline(int argc, char *argv[])
 
     g_option_context_free(context);
 
+    if (capabilities) {
+        print_capabilities();
+        die(0);
+    }
+
+    if (serverinfo) {
+        print_serverinfo();
+        die(0);
+    }
+
     if (*appname == '\0') {
         g_printerr("Provided appname was empty\n");
         die(1);
@@ -139,7 +149,7 @@ void parse_commandline(int argc, char *argv[])
         }
     }
 
-    if (summary == NULL) {
+    if (summary == NULL && close_id < 1) {
         g_printerr("I need at least a summary\n");
         die(1);
     }
@@ -242,7 +252,6 @@ void add_hint(NotifyNotification *n, char *str)
             notify_notification_set_hint_byte(n, name, (guchar) h_byte);
     } else
         g_printerr("Malformed hint. Expected a type of int, double, string or byte, got %s\n", type);
-
 }
 
 int main(int argc, char *argv[])
@@ -254,18 +263,7 @@ int main(int argc, char *argv[])
         g_type_init();
     #endif
 
-    if (capabilities) {
-        print_capabilities();
-        die(0);
-    }
-
-    if (serverinfo) {
-        print_serverinfo();
-        die(0);
-    }
-
     parse_commandline(argc, argv);
-
 
     if (!notify_init(appname)) {
         g_printerr("Unable to initialize libnotify\n");
