@@ -1,5 +1,23 @@
 # Dunst changelog
 
+## 1.12.2 -- 2025-03-05
+
+### Added
+- Add `urgency`, `stack_tag` and `urls` to dunstctl history (#1425, #1426)
+- Add `--category` to dunstify (also change `-c` behaviour) (#1429)
+- Add dbus signals `NotificationHistoryRemoved`, `NotificationHistoryCleared` and `ConfigReloaded` (#1405, #1277)
+
+### Changed
+- Allow to override build date with `SOURCE_DATE_EPOCH` (#1435)
+- Flush after printing id in dunstify
+
+### Fixed
+- IMPORTANT: Resolve incompatibility between dunstify and  libnotify-0.8.4 (#1443, #1445, #1449)
+- Fix mixup of `bool` and `gboolean` that caused problems in s390x (#1421, #1422)
+- Fix some printf warnings and int/gint/size_t mixed uses (#1424)
+- Fix the scaling of the progress bar gradient (#1447)
+- Actually reload old config files upon `dunstctl reload` (#1447)
+
 ## 1.12.1 -- 2024-12-17
 
 ### Changed
