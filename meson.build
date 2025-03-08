@@ -35,6 +35,18 @@ wayland_client = dependency('wayland-client', required: get_option('wayland'))
 wayland_protos = dependency('wayland-protocols', version: '>=1.12', required: get_option('wayland'))
 wayland_cursor = dependency('wayland-cursor', required: get_option('wayland'))
 
+dunst_depends = [
+	cairo,
+	glib,
+	gio,
+	gdk_pixbuf,
+	pangocairo,
+	systemd,
+	libnotify,
+	realtime,
+	math,
+]
+
 x11_support = x11.found() and xinerama.found() and xext.found() and xrandr.found() and xscrnsaver.found()
 wayland_support = wayland_client.found() and wayland_cursor.found() and wayland_protos.found()
 
@@ -44,6 +56,22 @@ endif
 
 if wayland_support and not x11_support
 	add_project_arguments('-DWAYLAND_ONLY', language: 'c')
+endif
+
+if x11_support
+	dunst_depends += [
+		x11,
+		xinerama,
+		xext,
+		xrandr,
+		xscrnsaver,
+	]
+	add_project_arguments('-DENABLE_X11', language: 'c')
+endif
+
+if wayland_support
+	dunst_depends += [ wayland_client, wayland_cursor ]
+	add_project_arguments('-DENABLE_WAYLAND', language: 'c')
 endif
 
 c_version_arg = '-DVERSION="@0@"'.format(meson.project_version())

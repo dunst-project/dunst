@@ -1,15 +1,3 @@
-dunst_depends = [
-	cairo,
-	glib,
-	gio,
-	gdk_pixbuf,
-	pangocairo,
-	systemd,
-	libnotify,
-	realtime,
-	math,
-]
-
 dunst_src_files = files(
 	'dbus.c', 
 	'draw.c', 
@@ -31,15 +19,6 @@ dunst_src_files = files(
 )
 
 if x11_support
-	add_global_arguments('-DENABLE_X11', language: 'c')
-
-	dunst_depends += [
-		x11,
-		xinerama,
-		xext,
-		xrandr,
-		xscrnsaver,
-	]
 	dunst_src_files += files(
 		'x11/screen.c', 
 		'x11/x.c', 
@@ -47,13 +26,8 @@ if x11_support
 endif
 
 if wayland_support
-	add_global_arguments('-DENABLE_WAYLAND', language: 'c')
-
 	subdir('wayland/protocols')
 
-	dunst_depends += [
-		wayland_client, wayland_cursor,
-	]
 	dunst_src_files += files(
 		'wayland/foreign_toplevel.c', 
 		'wayland/libgwater-wayland.c', 
