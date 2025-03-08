@@ -33,6 +33,7 @@ test_prog = executable('test-runner',
 	dependencies: dunst_depends,
 	c_args: c_version_arg,
 	install: false,
+	build_by_default: false,
 )
 
 test('Run tests',
