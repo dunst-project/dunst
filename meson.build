@@ -11,7 +11,7 @@ project(
 	],
 )
 
-if get_option('buildtype').startswith('debug')
+if get_option('debug')
 	add_project_arguments('-DDEBUG_BUILD', language: 'c')
 endif
 
@@ -35,17 +35,7 @@ wayland_client = dependency('wayland-client', required: get_option('wayland'))
 wayland_protos = dependency('wayland-protocols', version: '>=1.12', required: get_option('wayland'))
 wayland_cursor = dependency('wayland-cursor', required: get_option('wayland'))
 
-dunst_depends = [
-	cairo,
-	glib,
-	gio,
-	gdk_pixbuf,
-	pangocairo,
-	systemd,
-	libnotify,
-	realtime,
-	math,
-]
+dunst_depends = [ cairo, glib, gio, gdk_pixbuf, pangocairo, systemd, libnotify, realtime, math ]
 
 x11_support = x11.found() and xinerama.found() and xext.found() and xrandr.found() and xscrnsaver.found()
 wayland_support = wayland_client.found() and wayland_cursor.found() and wayland_protos.found()
@@ -59,13 +49,7 @@ if wayland_support and not x11_support
 endif
 
 if x11_support
-	dunst_depends += [
-		x11,
-		xinerama,
-		xext,
-		xrandr,
-		xscrnsaver,
-	]
+	dunst_depends += [ x11, xinerama, xext, xrandr, xscrnsaver ]
 	add_project_arguments('-DENABLE_X11', language: 'c')
 endif
 
