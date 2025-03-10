@@ -82,7 +82,7 @@ else
 endif
 src/dunst.o: src/dunst.c
 	${CC} -o $@ -c $< ${CPPFLAGS} ${CFLAGS} \
-		-D_CCDATE="${BUILD_DATE}" -D_CFLAGS="$(filter-out $(filter -I%,${INCS}),${CFLAGS})" -D_LDFLAGS="${LDFLAGS}"
+		-D_CCDATE="${BUILD_DATE}" -D_CFLAGS="$(filter-out $(filter -I%,${INCS}) -fdebug-prefix-map% -fmacro-prefix-map% -ffile-prefix-map%,${CFLAGS})" -D_LDFLAGS="$(filter-out -fdebug-prefix-map% -fmacro-prefix-map% -ffile-prefix-map%,${LDFLAGS})"
 
 %.o: %.c
 	${CC} -o $@ -c $< ${CPPFLAGS} ${CFLAGS}
