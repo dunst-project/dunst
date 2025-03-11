@@ -40,5 +40,6 @@ test_prog = executable(
 test(
     'Run tests',
     test_prog,
+    args: ['-v'],
     env: environment({'TESTDIR': meson.current_source_dir()}),
 )
