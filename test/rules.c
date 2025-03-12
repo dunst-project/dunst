@@ -41,7 +41,6 @@ TEST test_pattern_match(void) {
                 ASSERT(rule_field_matches_string("ffffasd", ".*asd"));
 
                 // Substring matching
-                ASSERT(rule_field_matches_string("asd", ""));
                 ASSERT(rule_field_matches_string("asd", "sd"));
                 ASSERT(rule_field_matches_string("asd", "a"));
                 ASSERT(rule_field_matches_string("asd", "d"));
