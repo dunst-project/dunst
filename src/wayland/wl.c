@@ -220,6 +220,7 @@ static const struct wl_registry_listener registry_listener = {
 };
 
 bool wl_init(void) {
+        ctx.dirty = false;
         wl_list_init(&ctx.outputs);
         wl_list_init(&ctx.seats);
         wl_list_init(&toplevel_list);
@@ -334,11 +335,15 @@ void wl_deinit(void) {
         if (ctx.layer_surface != NULL) {
                 g_clear_pointer(&ctx.layer_surface, zwlr_layer_surface_v1_destroy);
         }
+        if (ctx.frame_callback) {
+                g_clear_pointer(&ctx.frame_callback, wl_callback_destroy);
+        }
         if (ctx.surface != NULL) {
                 g_clear_pointer(&ctx.surface, wl_surface_destroy);
         }
         finish_buffer(&ctx.buffers[0]);
         finish_buffer(&ctx.buffers[1]);
+        ctx.current_buffer = NULL;
 
         // The output list is initialized at the start of init, so no need to
         // check for NULL
@@ -383,10 +388,20 @@ void wl_deinit(void) {
         if (ctx.cursor_theme != NULL) {
                 g_clear_pointer(&ctx.cursor_theme, wl_cursor_theme_destroy);
                 g_clear_pointer(&ctx.cursor_surface, wl_surface_destroy);
+                ctx.cursor_image = NULL;
+        }
+
+        if (ctx.toplevel_manager) {
+                zwlr_foreign_toplevel_manager_v1_stop(ctx.toplevel_manager);
+                g_clear_pointer(&ctx.toplevel_manager, zwlr_foreign_toplevel_manager_v1_destroy);
+                // Set it to the default initialization value instead to UINT32_MAX
+                // (the latter is used on initialization to mark a bad value)
+                ctx.toplevel_manager_name = 0;
         }
 
         // this also disconnects the wl_display
         g_clear_pointer(&ctx.esrc, g_water_wayland_source_free);
+        ctx.display = NULL;
 }
 
 static void schedule_frame_and_commit(void);
