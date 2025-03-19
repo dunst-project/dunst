@@ -40,5 +40,9 @@ test_prog = executable(
 test(
     'Run tests',
     test_prog,
-    env: environment({'TESTDIR': meson.current_source_dir()}),
+    args: ['-v'],
+    env: environment({
+        'TESTDIR': meson.current_source_dir(),
+        'DUNST_TEST_LOG': '1',
+    }),
 )

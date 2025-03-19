@@ -11,10 +11,6 @@ project(
     ],
 )
 
-if get_option('debug')
-    add_project_arguments('-DDEBUG_BUILD', language: 'c')
-endif
-
 cc = meson.get_compiler('c')
 
 cairo = dependency('cairo')
