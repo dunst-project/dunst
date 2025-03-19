@@ -14,17 +14,19 @@
 // NOTE: Keep updated with the dunst manual
 static GLogLevelFlags log_level = G_LOG_LEVEL_MESSAGE;
 
+static enum log_mask log_mask = DUNST_LOG_AUTO;
+
 /* see log.h */
 static const char *log_level_to_string(GLogLevelFlags level)
 {
         switch (level) {
-        case G_LOG_LEVEL_ERROR: return "ERROR";
-        case G_LOG_LEVEL_CRITICAL: return "CRITICAL";
-        case G_LOG_LEVEL_WARNING: return "WARNING";
-        case G_LOG_LEVEL_MESSAGE: return "MESSAGE";
-        case G_LOG_LEVEL_INFO: return "INFO";
-        case G_LOG_LEVEL_DEBUG: return "DEBUG";
-        default: return "UNKNOWN";
+                case G_LOG_LEVEL_ERROR: return "ERROR";
+                case G_LOG_LEVEL_CRITICAL: return "CRITICAL";
+                case G_LOG_LEVEL_WARNING: return "WARNING";
+                case G_LOG_LEVEL_MESSAGE: return "MESSAGE";
+                case G_LOG_LEVEL_INFO: return "INFO";
+                case G_LOG_LEVEL_DEBUG: return "DEBUG";
+                default: return "UNKNOWN";
         }
 }
 
@@ -66,27 +68,22 @@ void log_set_level(GLogLevelFlags level)
  * @param log_domain Used only by GLib
  * @param message_level Used only by GLib
  * @param message Used only by GLib
- * @param testing If not `NULL` (here: `true`), do nothing
+ * @param ignore
  */
 static void dunst_log_handler(
                 const gchar    *log_domain,
                 GLogLevelFlags  message_level,
                 const gchar    *message,
-                gpointer        testing)
+                gpointer        ignore)
 {
         (void)log_domain;
 
-        if (testing)
-                log_level = G_LOG_LEVEL_ERROR;
-
         GLogLevelFlags message_level_masked = message_level & G_LOG_LEVEL_MASK;
 
-/* if you want to have a debug build, you want to log anything,
- * unconditionally, without specifying debug log level again */
-#ifndef DEBUG_BUILD
-        if (log_level < message_level_masked)
+        if (log_mask == DUNST_LOG_NONE ||
+            (log_mask == DUNST_LOG_AUTO && log_level < message_level_masked))
                 return;
-#endif
+
         const char *log_level_str =
                 log_level_to_string(message_level_masked);
 
@@ -98,9 +95,10 @@ static void dunst_log_handler(
 }
 
 /* see log.h */
-void dunst_log_init(bool testing)
+void dunst_log_init(enum log_mask mask)
 {
-        g_log_set_default_handler(dunst_log_handler, (void*)testing);
+        log_mask = mask;
+        g_log_set_default_handler(dunst_log_handler, NULL);
 }
 
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */
