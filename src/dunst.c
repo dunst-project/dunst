@@ -251,7 +251,7 @@ int dunst_main(int argc, char *argv[])
 
         cmdline_load(argc, argv);
 
-        dunst_log_init(false);
+        dunst_log_init(DUNST_LOG_AUTO);
 
         if (cmdline_get_bool("-v/-version/--version", false, "Print version")) {
                 print_version();

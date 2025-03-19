@@ -55,7 +55,7 @@ DEFAULT_CPPFLAGS = -Wno-gnu-zero-variadic-macro-arguments -D_DEFAULT_SOURCE -DVE
 DEFAULT_CFLAGS   = -g -std=gnu11 -pedantic -Wall -Wno-overlength-strings -Os ${EXTRA_CFLAGS}
 DEFAULT_LDFLAGS  = -lm -lrt
 
-CPPFLAGS_DEBUG := -DDEBUG_BUILD
+CPPFLAGS_DEBUG :=
 CFLAGS_DEBUG   := -O0
 LDFLAGS_DEBUG  :=
 
