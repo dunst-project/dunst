@@ -112,3 +112,14 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/dunst-project/docker-images:misc-doxygen
+
+  editorconfig:
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+
+      - name: Check code matching .editorconfig rules with editorconfig-checker
+        run: go run github.com/editorconfig-checker/editorconfig-checker/v3/cmd/editorconfig-checker@latest
+
+    runs-on: ubuntu-latest
