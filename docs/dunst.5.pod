@@ -1122,7 +1122,7 @@ You may also specify a transparency component by using the format #RGBA or #RRGG
 B<NOTE>: '#' is interpreted as a comment, to use it the entire value needs to be quoted.
 For example:
 
-	separator_color="#123456"
+    separator_color="#123456"
 
 =head1 NOTIFY-SEND HINTS
 
@@ -1183,11 +1183,11 @@ The transient value.
 
 Some examples:
 
-	notify-send -h string:fgcolor:#ff4444
+    notify-send -h string:fgcolor:#ff4444
 
-	notify-send -h string:bgcolor:#4444ff -h string:fgcolor:#ff4444 -h string:frcolor:#44ff44
+    notify-send -h string:bgcolor:#4444ff -h string:fgcolor:#ff4444 -h string:frcolor:#44ff44
 
-	notify-send -h int:value:42 "Working ..."
+    notify-send -h int:value:42 "Working ..."
 
 =head1 ACTIONS
 
