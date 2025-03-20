@@ -77,8 +77,8 @@ struct length get_small_max_height(void)
         // by notification content
         // future tests targeting dynamic sizing logic could be added
         // to address this limitation
-		struct length height = { 0, 10 };
-		return height;
+        struct length height = { 0, 10 };
+        return height;
 }
 
 int get_expected_dimension_height(int layout_count, int height)
@@ -293,7 +293,7 @@ TEST test_calculate_dimensions_height_min(void)
 {
         struct length original_height = settings.height;
         bool orginal_gap_size = settings.gap_size;
-		// NOTE: Should be big enough to fit the notification nicely
+        // NOTE: Should be big enough to fit the notification nicely
         settings.height.min = 100;
         settings.height.max = 200;
         settings.gap_size = 0;
