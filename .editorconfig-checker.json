@@ -1,0 +1,6 @@
+{
+        "SpacesAfterTabs": true,
+        "Disable": {
+                "IndentSize": true
+        }
+}
