@@ -15,14 +15,21 @@ SERVICEDIR_SYSTEMD ?= ${PREFIX}/lib/systemd/user
 EXTRA_CFLAGS ?=
 
 DOXYGEN ?= doxygen
-FIND ?= find
 GCOVR ?= gcovr
 GIT ?= git
 PKG_CONFIG ?= pkg-config
 POD2MAN ?= pod2man
-SED ?= sed
 SYSTEMDAEMON ?= systemd
 VALGRIND ?= valgrind
+
+# Provided for compatibility with BSDs
+# You will need to prepend g's to these programs
+INSTALL ?= install
+MAKE ?= make
+FIND ?= find
+SED ?= sed
+AWK ?= awk
+RMDIR ?= rmdir
 
 # Disable systemd service file installation,
 # if you don't want to use systemd albeit installed
