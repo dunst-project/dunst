@@ -633,6 +633,38 @@ static void notification_format_message(struct notification *n)
                                 n->progress != -1 ? pg : "",
                                 MARKUP_NO);
                         break;
+                case 'D':
+                        char *dup_count = g_strdup_printf("(%d)", n->dup_count);
+                        notification_replace_single_field(
+                                &n->msg,
+                                &substr,
+                                n->dup_count > 0 ? dup_count : "",
+                                MARKUP_NO);
+                        g_free(dup_count);
+                        break;
+                case 'A':
+                        notification_replace_single_field(
+                                &n->msg,
+                                &substr,
+                                g_hash_table_size(n->actions) ? settings.action_indicator : "",
+                                MARKUP_NO);
+                        break;
+                case 'C':
+                        char *action_count = g_strdup_printf("%d", g_hash_table_size(n->actions));
+                        notification_replace_single_field(
+                                &n->msg,
+                                &substr,
+                                action_count,
+                                MARKUP_NO);
+                        g_free(action_count);
+                        break;
+                case 'U':
+                        notification_replace_single_field(
+                                &n->msg,
+                                &substr,
+                                n->urls ? settings.url_indicator : "",
+                                MARKUP_NO);
+                        break;
                 case '%':
                         notification_replace_single_field(
                                 &n->msg,
@@ -695,21 +727,41 @@ void notification_update_text_to_render(struct notification *n)
 
         char *buf = NULL;
 
+        char *prev_indicators = NULL;
+        char *indicators = NULL;
+
         char *msg = g_strchomp(n->msg);
 
-        /* print dup_count and msg */
-        if ((n->dup_count > 0 && !settings.hide_duplicate_count)
-            && (g_hash_table_size(n->actions) || n->urls) && settings.show_indicators) {
-                buf = g_strdup_printf("(%d%s%s) %s",
-                                      n->dup_count,
-                                      g_hash_table_size(n->actions) ? "A" : "",
-                                      n->urls ? "U" : "", msg);
-        } else if ((g_hash_table_size(n->actions) || n->urls) && settings.show_indicators) {
-                buf = g_strdup_printf("(%s%s) %s",
-                                      g_hash_table_size(n->actions) ? "A" : "",
-                                      n->urls ? "U" : "", msg);
-        } else if (n->dup_count > 0 && !settings.hide_duplicate_count) {
-                buf = g_strdup_printf("(%d) %s", n->dup_count, msg);
+        if (n->dup_count > 0 && !settings.hide_duplicate_count) {
+                indicators = g_strdup_printf("%d ", n->dup_count);
+        }
+
+        if (settings.show_indicators) {
+                if(g_hash_table_size(n->actions)) {
+                        prev_indicators = indicators;
+                        char *action_count = g_strdup_printf("%d", g_hash_table_size(n->actions));
+
+                        indicators = g_strdup_printf("%s%s%s",
+                                prev_indicators ? prev_indicators : "",
+                                settings.show_action_count ? action_count : "",
+                                settings.action_indicator
+                        );
+
+                        g_free(prev_indicators);
+                        g_free(action_count);
+                }
+                if(n->urls) {
+                        prev_indicators = indicators;
+
+                        indicators = g_strdup_printf("%s%s", prev_indicators ? prev_indicators : "", settings.url_indicator);
+
+                        g_free(prev_indicators);
+                }
+        }
+
+        if (indicators) {
+                buf = g_strdup_printf("(%s) %s", indicators, msg);
+                g_free(indicators);
         } else {
                 buf = g_strdup(msg);
         }
