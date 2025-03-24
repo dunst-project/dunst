@@ -750,7 +750,7 @@ static int calculate_menu_per_row(const struct colored_layout *cl)
                 return 0;
         }
 
-        int menu_count = 300 / menu_width;
+        int menu_count = settings.width.max / menu_width;
         menu_count = MIN(settings.menu_max_per_row, menu_count);
         return menu_count;
 }
@@ -804,7 +804,7 @@ static void draw_built_in_menu(cairo_t *c, struct colored_layout *cl, int area_x
 
         for (int row = 0; row < rows; row++) {
                 int buttons_in_row = MIN(buttons - row * max_per_row, max_per_row);
-                base_button_width = (area_width - settings.padding * (buttons_in_row + 1)) / buttons_in_row;
+                base_button_width = (area_width - settings.h_padding * (buttons_in_row + 1)) / buttons_in_row;
 
                 for (int col = 0; col < buttons_in_row; col++) {
                         int button_index = row * max_per_row + col;
@@ -815,7 +815,7 @@ static void draw_built_in_menu(cairo_t *c, struct colored_layout *cl, int area_x
                         if (!label)
                                 continue;
 
-                        int x = area_x + settings.padding + col * (base_button_width + settings.padding);
+                        int x = area_x + settings.h_padding + col * (base_button_width + settings.h_padding);
                         int y = area_y + row * (settings.menu_height + settings.padding);
                         menu_set_position(cl->n, button_index, x, y, base_button_width, settings.menu_height);
 
