@@ -822,7 +822,7 @@ static void draw_built_in_menu(cairo_t *c, struct colored_layout *cl, int area_x
                         cairo_set_source_rgb(c, settings.menu_frame_color.r, settings.menu_frame_color.g,
                                              settings.menu_frame_color.b);
                         cairo_set_line_width(c, settings.menu_frame_width);
-                        draw_rect(c, x, y, base_button_width, settings.menu_height, scale);
+                        draw_rounded_rect(c, x, y, base_button_width, settings.menu_height, settings.corner_radius, scale, settings.corners);
 
                         if (settings.menu_frame_fill)
                                 cairo_fill(c);
