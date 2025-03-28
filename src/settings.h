@@ -40,32 +40,32 @@ enum mouse_action { MOUSE_NONE, MOUSE_DO_ACTION, MOUSE_CLOSE_CURRENT,
 #define ZWLR_LAYER_SHELL_V1_LAYER_ENUM
 // Needed for compiling without wayland dependency
 enum zwlr_layer_shell_v1_layer {
-	ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND = 0,
-	ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM = 1,
-	ZWLR_LAYER_SHELL_V1_LAYER_TOP = 2,
-	ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY = 3,
+        ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND = 0,
+        ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM = 1,
+        ZWLR_LAYER_SHELL_V1_LAYER_TOP = 2,
+        ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY = 3,
 };
 #endif /* ZWLR_LAYER_SHELL_V1_LAYER_ENUM */
 
 #ifndef ZWLR_LAYER_SURFACE_V1_ANCHOR_ENUM
 #define ZWLR_LAYER_SURFACE_V1_ANCHOR_ENUM
 enum zwlr_layer_surface_v1_anchor {
-	/**
-	 * the top edge of the anchor rectangle
-	 */
-	ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP = 1,
-	/**
-	 * the bottom edge of the anchor rectangle
-	 */
-	ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM = 2,
-	/**
-	 * the left edge of the anchor rectangle
-	 */
-	ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT = 4,
-	/**
-	 * the right edge of the anchor rectangle
-	 */
-	ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT = 8,
+        /**
+         * the top edge of the anchor rectangle
+         */
+        ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP = 1,
+        /**
+         * the bottom edge of the anchor rectangle
+         */
+        ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM = 2,
+        /**
+         * the left edge of the anchor rectangle
+         */
+        ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT = 4,
+        /**
+         * the right edge of the anchor rectangle
+         */
+        ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT = 8,
 };
 #endif /* ZWLR_LAYER_SURFACE_V1_ANCHOR_ENUM */
 

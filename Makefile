@@ -76,9 +76,9 @@ ${OBJ} ${TEST_OBJ}: Makefile config.mk
 
 DATE_FMT = +%Y-%m-%d
 ifdef SOURCE_DATE_EPOCH
-    BUILD_DATE ?= $(shell date -u -d "@$(SOURCE_DATE_EPOCH)" "$(DATE_FMT)" 2>/dev/null || date -u -r "$(SOURCE_DATE_EPOCH)" "$(DATE_FMT)" 2>/dev/null || date -u "$(DATE_FMT)")
+	BUILD_DATE ?= $(shell date -u -d "@$(SOURCE_DATE_EPOCH)" "$(DATE_FMT)" 2>/dev/null || date -u -r "$(SOURCE_DATE_EPOCH)" "$(DATE_FMT)" 2>/dev/null || date -u "$(DATE_FMT)")
 else
-    BUILD_DATE ?= $(shell date "$(DATE_FMT)")
+	BUILD_DATE ?= $(shell date "$(DATE_FMT)")
 endif
 src/dunst.o: src/dunst.c
 	${CC} -o $@ -c $< ${CPPFLAGS} ${CFLAGS} \
@@ -224,10 +224,10 @@ clean-wayland-protocols:
 	rm -f src/wayland/protocols/*.h
 
 .PHONY: install install-dunst install-dunstctl install-dunstrc \
-        install-service install-service-dbus install-service-systemd \
-        uninstall uninstall-dunstctl uninstall-dunstrc \
-        uninstall-service uninstall-service-dbus uninstall-service-systemd \
-        uninstall-keepconf uninstall-purge
+	install-service install-service-dbus install-service-systemd \
+	uninstall uninstall-dunstctl uninstall-dunstrc \
+	uninstall-service uninstall-service-dbus uninstall-service-systemd \
+	uninstall-keepconf uninstall-purge
 install: install-dunst install-dunstctl install-dunstrc install-service
 
 install-dunst: dunst doc
