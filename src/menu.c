@@ -11,6 +11,7 @@
 #include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <xkbcommon/xkbcommon-keysyms.h>
 
 #include "dbus.h"
 #include "dunst.h"
@@ -392,4 +393,168 @@ static gpointer context_menu_thread(gpointer data)
 
         return NULL;
 }
+
+
+gboolean menu_init(struct notification *n)
+{
+        if (n->actions == NULL) {
+                return false;
+        }
+
+        gpointer p_key;
+        gpointer p_value;
+        GHashTableIter iter;
+        n->menus = g_array_sized_new(FALSE, FALSE, sizeof(struct menu),
+                                     g_hash_table_size(n->actions));
+
+        g_hash_table_iter_init(&iter, n->actions);
+        while (g_hash_table_iter_next(&iter, &p_key, &p_value)) {
+                char *key = (char *)p_key;
+                char *value = (char *)p_value;
+                struct menu button = {.value = g_strdup(value),
+                                      .key = g_strdup(key),
+                                      .x = 0,
+                                      .y = 0,
+                                      .width = 0,
+                                      .height = 0};
+
+                g_array_append_val(n->menus, button);
+        }
+        return true;
+}
+
+int menu_get_count(struct notification *n)
+{
+        if (!n->menus) {
+                return 0;
+        }
+        return n->menus->len;
+}
+
+char *menu_get_label(struct notification *n, int index)
+{
+        if (index < 0 || index >= n->menus->len || !n->menus)
+                return NULL;
+        struct menu *button = &g_array_index(n->menus, struct menu, index);
+        return button->value;
+}
+
+void menu_set_position(struct notification *n, int index, int x, int y,
+                       int width, int height)
+{
+        if (index < 0 || index >= n->menus->len || !n->menus)
+                return;
+        struct menu *button = &g_array_index(n->menus, struct menu, index);
+        button->x = x;
+        button->y = y;
+        button->width = width;
+        button->height = height;
+}
+
+void menu_free_array(struct notification *n)
+{
+        if (!n->menus)
+                return;
+        for (guint i = 0; i < n->menus->len; i++) {
+                struct menu *button = &g_array_index(n->menus, struct menu, i);
+                g_free(button->value);
+                g_free(button->key);
+        }
+        g_array_free(n->menus, TRUE);
+        n->menus = NULL;
+}
+
+struct menu *menu_get_at(struct notification *n, int x, int y)
+{
+        if (!n->menus)
+                return NULL;
+        for (guint i = 0; i < n->menus->len; i++) {
+                struct menu *button = &g_array_index(n->menus, struct menu, i);
+                if (x >= button->x && x <= button->x + button->width &&
+                    y >= button->y + n->displayed_top &&
+                    y <= button->y + n->displayed_top + button->height) {
+                        return button;
+                }
+        }
+        return NULL;
+}
+
+/** Get the menu item at the given coordinates
+ * @param n The notification containing the menu
+ * @param index The index of the menu item
+ * @return The menu item at the specified index
+*/
+static struct menu *menu_get(struct notification *n, int index) {
+        if (!n || !n->menus || index < 0 || index >= (int)n->menus->len)
+            return NULL;
+
+        return &g_array_index(n->menus, struct menu, index);
+}
+
+struct menu *menu_get_selected(struct notification *n) {
+        if (!n || n->selected_menu < 0)
+                return NULL;
+
+        return menu_get(n, n->selected_menu);
+}
+
+void menu_activate(struct menu *m) {
+        if (!m || !m->n)
+            return;
+
+        signal_action_invoked(m->n, m->key);
+}
+
+void update_menu_selection(struct notification *n, int new_selection) {
+        if (!n || !n->menus || new_selection < 0 || new_selection >= (int)n->menus->len)
+            return;
+
+        // update the selection
+        n->selected_menu = new_selection;
+}
+
+void menu_move_selection(struct notification *n, unsigned int keysym) {
+        if (!n || !n->menus || n->menus->len == 0)
+            return;
+
+        int count = n->menus->len;
+        int current = n->selected_menu;
+        int new_selection = current;
+        int items_per_row = n->actual_menu_per_row;
+
+        switch (keysym) {
+            case XKB_KEY_Right:
+                new_selection = (current + 1) % count;
+                break;
+            case XKB_KEY_Left:
+                new_selection = (current - 1 + count) % count;
+                break;
+            case XKB_KEY_Down:
+                new_selection = (current + items_per_row);
+                if (new_selection >= count)
+                    new_selection = current % items_per_row;
+                break;
+            case XKB_KEY_Up:
+                new_selection = (current - items_per_row);
+                if (new_selection < 0) {
+                    // calculate the new selection based on the last row
+                    int rows = (count + items_per_row - 1) / items_per_row;
+                    int col = current % items_per_row;
+                    int last_row_items = count - (rows - 1) * items_per_row;
+
+                    if (col >= last_row_items)
+                        col = last_row_items - 1;
+
+                    new_selection = (rows - 1) * items_per_row + col;
+                }
+                break;
+        }
+
+        // update the selection
+        update_menu_selection(n, new_selection);
+
+        // redraw the notification
+        wake_up();
+}
+
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */
