@@ -41,6 +41,10 @@ struct dunst_seat {
                         int32_t x, y;
                 } pts[MAX_TOUCHPOINTS];
         } touch;
+
+        struct {
+                struct wl_keyboard *wl_keyboard;
+        } keyboard;
 };
 
 void create_seat(struct wl_registry *registry, uint32_t global_name, uint32_t version);
