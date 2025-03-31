@@ -11,6 +11,7 @@
 #include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <xkbcommon/xkbcommon-keysyms.h>
 
 #include "dbus.h"
 #include "dunst.h"
@@ -476,6 +477,84 @@ struct menu *menu_get_at(struct notification *n, int x, int y)
                 }
         }
         return NULL;
+}
+
+/** Get the menu item at the given coordinates
+ * @param n The notification containing the menu
+ * @param index The index of the menu item
+ * @return The menu item at the specified index
+*/
+static struct menu *menu_get(struct notification *n, int index) {
+        if (!n || !n->menus || index < 0 || index >= (int)n->menus->len)
+            return NULL;
+
+        return &g_array_index(n->menus, struct menu, index);
+}
+
+struct menu *menu_get_selected(struct notification *n) {
+        if (!n || n->selected_menu < 0)
+                return NULL;
+
+        return menu_get(n, n->selected_menu);
+}
+
+void menu_activate(struct menu *m) {
+        if (!m || !m->n)
+            return;
+
+        signal_action_invoked(m->n, m->key);
+}
+
+void update_menu_selection(struct notification *n, int new_selection) {
+        if (!n || !n->menus || new_selection < 0 || new_selection >= (int)n->menus->len)
+            return;
+
+        // update the selection
+        n->selected_menu = new_selection;
+}
+
+void menu_move_selection(struct notification *n, uint32_t keysym) {
+        if (!n || !n->menus || n->menus->len == 0)
+            return;
+
+        int count = n->menus->len;
+        int current = n->selected_menu;
+        int new_selection = current;
+        int items_per_row = n->actual_menu_per_row;
+
+        switch (keysym) {
+            case XKB_KEY_Right:
+                new_selection = (current + 1) % count;
+                break;
+            case XKB_KEY_Left:
+                new_selection = (current - 1 + count) % count;
+                break;
+            case XKB_KEY_Down:
+                new_selection = (current + items_per_row);
+                if (new_selection >= count)
+                    new_selection = current % items_per_row;
+                break;
+            case XKB_KEY_Up:
+                new_selection = (current - items_per_row);
+                if (new_selection < 0) {
+                    // calculate the new selection based on the last row
+                    int rows = (count + items_per_row - 1) / items_per_row;
+                    int col = current % items_per_row;
+                    int last_row_items = count - (rows - 1) * items_per_row;
+
+                    if (col >= last_row_items)
+                        col = last_row_items - 1;
+
+                    new_selection = (rows - 1) * items_per_row + col;
+                }
+                break;
+        }
+
+        // update the selection
+        update_menu_selection(n, new_selection);
+
+        // redraw the notification
+        wake_up();
 }
 
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

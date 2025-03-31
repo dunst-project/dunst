@@ -36,6 +36,8 @@ struct menu {
         int width;
         int x;
         int y;
+        bool selected;
+        struct notification *n;
 };
 
 /**
@@ -88,6 +90,33 @@ struct menu *menu_get_at(struct notification *n, int x, int y);
  * @param n The notification containing the menu array to be freed.
  */
 void menu_free_array(struct notification *n);
+
+/**
+ * Get the currently selected menu item.
+ * @param n The notification containing the menu
+ * @return The currently selected menu item
+ */
+struct menu *menu_get_selected(struct notification *n);
+
+/**
+ * Activate the selected menu item.
+ * @param m The menu item to activate
+ */
+void menu_activate(struct menu *m);
+
+/**
+ * Update the selected menu item.
+ * @param n The notification containing the menu
+ * @param new_selection The index of the new selected menu item
+ */
+void update_menu_selection(struct notification *n, int new_selection);
+
+/**
+ * Move the selected menu item.
+ * @param n The notification containing the menu
+ * @param keysym The key symbol to determine the direction of movement
+ */
+void menu_move_selection(struct notification *n, uint32_t keysym);
 
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */
