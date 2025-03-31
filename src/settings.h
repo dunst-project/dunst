@@ -187,6 +187,7 @@ struct settings {
         int menu_max_width;
         int menu_min_width;
         struct color menu_frame_color;
+        bool built_in_menu_key_navigation;
 };
 
 extern struct settings settings;

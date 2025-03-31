@@ -330,6 +330,7 @@
     ### action menu
 
     built_in_menu = true
+    built_in_menu_key_navigation = true
     menu_frame_color = "#000000"
 
     #set to true to fill the button with the frame color.

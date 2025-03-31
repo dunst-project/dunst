@@ -1698,6 +1698,16 @@ static const struct setting allowed_settings[] = {
                 .parser = NULL,
                 .parser_data = NULL,
         },
+        {
+                .name = "built_in_menu_key_navigation",
+                .section = "global",
+                .description = "Enable or disable keyboard to control built-in menu for actions",
+                .type = TYPE_CUSTOM,
+                .default_value = "true",
+                .value = &settings.built_in_menu_key_navigation,
+                .parser = string_parse_bool,
+                .parser_data = boolean_enum_data,
+        },
 };
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */
