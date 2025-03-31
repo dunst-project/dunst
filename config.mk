@@ -67,6 +67,7 @@ pkg_config_packs := gio-2.0 \
 ifneq (0,${WAYLAND})
 pkg_config_packs += wayland-client
 pkg_config_packs += wayland-cursor
+pkg_config_packs += xkbcommon
 endif
 
 ifneq (0,${X11})
