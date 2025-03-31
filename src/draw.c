@@ -246,6 +246,12 @@ static bool have_built_in_menu(const struct colored_layout *cl)
         !cl->is_xmore);
 }
 
+static bool have_build_in_menu_keyboard(const struct colored_layout *cl)
+{
+        return (have_built_in_menu(cl) &&
+                settings.built_in_menu_key_navigation == true );
+}
+
 static void get_text_size(PangoLayout *l, int *w, int *h, double scale) {
         pango_layout_get_pixel_size(l, w, h);
         // scale the size down, because it may be rendered at higher DPI
@@ -793,6 +799,7 @@ static void draw_built_in_menu(cairo_t *c, struct colored_layout *cl, int area_x
         }
 
         int max_per_row = calculate_menu_per_row(cl);
+        cl->n->actual_menu_per_row = max_per_row;
         int rows = calculate_menu_rows(cl);
         int base_button_width = calculate_max_button_width(cl);
 
@@ -819,12 +826,24 @@ static void draw_built_in_menu(cairo_t *c, struct colored_layout *cl, int area_x
                         int y = area_y + row * (settings.menu_height + settings.padding);
                         menu_set_position(cl->n, button_index, x, y, base_button_width, settings.menu_height);
 
-                        cairo_set_source_rgb(c, settings.menu_frame_color.r, settings.menu_frame_color.g,
-                                             settings.menu_frame_color.b);
+                        bool is_selected = have_build_in_menu_keyboard(cl) &&
+                                      (button_index == cl->n->selected_menu);
+
+                        // set the color of the button according to the selected state
+                        if (is_selected) {
+                                // backeffect: use the foreground color as the background color
+                                cairo_set_source_rgb(c, COLOR(cl, fg.r), COLOR(cl, fg.g), COLOR(cl, fg.b));
+                        } else {
+                                // normal state: use the background color as the background color
+                                cairo_set_source_rgb(c, settings.menu_frame_color.r, settings.menu_frame_color.g,
+                                                settings.menu_frame_color.b);
+                        }
+
                         cairo_set_line_width(c, settings.menu_frame_width);
                         draw_rounded_rect(c, x, y, base_button_width, settings.menu_height, settings.corner_radius, scale, settings.corners);
 
-                        if (settings.menu_frame_fill)
+                        // selected items are filled, unselected items are only stroked
+                        if (is_selected || settings.menu_frame_fill)
                                 cairo_fill(c);
                         else
                                 cairo_stroke(c);
@@ -836,7 +855,15 @@ static void draw_built_in_menu(cairo_t *c, struct colored_layout *cl, int area_x
                         double text_x = x + (base_button_width - text_width) / 2;
                         double text_y = y + (settings.menu_height - text_height) / 2;
 
-                        cairo_set_source_rgba(c, COLOR(cl, fg.r), COLOR(cl, fg.g), COLOR(cl, fg.b), COLOR(cl, fg.a));
+                        // reverse the colors for the text
+                        if (is_selected) {
+                                // For selected items: use the background color as the text color
+                                cairo_set_source_rgba(c, COLOR(cl, bg.r), COLOR(cl, bg.g), COLOR(cl, bg.b), COLOR(cl, bg.a));
+                        } else {
+                                // For unselected items: use the foreground color as the text color
+                                cairo_set_source_rgba(c, COLOR(cl, fg.r), COLOR(cl, fg.g), COLOR(cl, fg.b), COLOR(cl, fg.a));
+                        }
+
                         cairo_move_to(c, text_x, text_y);
                         pango_cairo_show_layout(c, cl->l);
                 }
