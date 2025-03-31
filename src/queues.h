@@ -192,5 +192,11 @@ void queues_reapply_all_rules(void);
  */
 void queues_teardown(void);
 
+/**
+ * Get the notification which is at the head of the displayed queue
+ * @returns the notification at the head of the displayed queue
+ */
+struct notification *queues_get_displayed_head(void);
+
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

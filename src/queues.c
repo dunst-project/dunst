@@ -664,5 +664,12 @@ void queues_teardown(void)
         waiting = NULL;
 }
 
+struct notification *queues_get_displayed_head(void)
+{
+        if (!displayed || !g_queue_peek_head(displayed))
+                return NULL;
+
+        return g_queue_peek_head(displayed);
+}
 
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */
