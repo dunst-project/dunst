@@ -1,10 +1,10 @@
+#include <gdk-pixbuf/gdk-pixbuf.h>
 #include <glib.h>
 #include <libnotify/notify.h>
 #include <locale.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <gdk-pixbuf/gdk-pixbuf.h>
 
 static gchar *appname = "dunstify";
 static gchar *summary = NULL;
@@ -25,25 +25,107 @@ static guint32 close_id = 0;
 static gboolean block = false;
 static gchar **rest = NULL;
 
-static GOptionEntry entries[] =
-{
-    { "appname",          'a', 0, G_OPTION_ARG_STRING,         &appname,        "Name of your application", "NAME" },
-    { "urgency",          'u', 0, G_OPTION_ARG_STRING,         &urgency_str,    "The urgency of this notification", "URG" },
-    { "hints",            'h', 0, G_OPTION_ARG_STRING_ARRAY,   &hint_strs,      "User specified hints", "HINT" },
-    { "action",           'A', 0, G_OPTION_ARG_STRING_ARRAY,   &action_strs,    "Actions the user can invoke", "ACTION" },
-    { "timeout",          't', 0, G_OPTION_ARG_INT,            &timeout,        "The time in milliseconds until the notification expires", "TIMEOUT" },
-    { "icon",             'i', 0, G_OPTION_ARG_STRING,         &icon,           "An icon that should be displayed with the notification", "ICON" },
-    { "raw_icon",         'I', 0, G_OPTION_ARG_STRING,         &raw_icon_path,  "Path to the icon to be sent as raw image data", "RAW_ICON"},
-    { "category",         'c', 0, G_OPTION_ARG_STRING,         &category,       "The category of this notification", "TYPE" },
-    { "capabilities",     0,   0, G_OPTION_ARG_NONE,           &capabilities,   "Print the server capabilities and exit", NULL },
-    { "serverinfo",       's', 0, G_OPTION_ARG_NONE,           &serverinfo,     "Print server information and exit", NULL },
-    { "printid",          'p', 0, G_OPTION_ARG_NONE,           &printid,        "Print id, which can be used to update/replace this notification", NULL },
-    { "replace",          'r', 0, G_OPTION_ARG_INT,            &replace_id,     "Set id of this notification.", "ID" },
-    { "close",            'C', 0, G_OPTION_ARG_INT,            &close_id,       "Close the notification with the specified ID", "ID" },
-    { "block",            'b', 0, G_OPTION_ARG_NONE,           &block,          "Block until notification is closed and print close reason", NULL },
-    { G_OPTION_REMAINING, 0,   0, G_OPTION_ARG_FILENAME_ARRAY, &rest,            NULL, NULL },
-    { NULL }
-};
+static GOptionEntry entries[] = {
+    {"appname",
+     'a',
+     0,
+     G_OPTION_ARG_STRING,
+     &appname,
+     "Name of your application",
+     "NAME"},
+    {"urgency",
+     'u',
+     0,
+     G_OPTION_ARG_STRING,
+     &urgency_str,
+     "The urgency of this notification",
+     "URG"},
+    {"hints",
+     'h',
+     0,
+     G_OPTION_ARG_STRING_ARRAY,
+     &hint_strs,
+     "User specified hints",
+     "HINT"},
+    {"action",
+     'A',
+     0,
+     G_OPTION_ARG_STRING_ARRAY,
+     &action_strs,
+     "Actions the user can invoke",
+     "ACTION"},
+    {"timeout",
+     't',
+     0,
+     G_OPTION_ARG_INT,
+     &timeout,
+     "The time in milliseconds until the notification expires",
+     "TIMEOUT"},
+    {"icon",
+     'i',
+     0,
+     G_OPTION_ARG_STRING,
+     &icon,
+     "An icon that should be displayed with the notification",
+     "ICON"},
+    {"raw_icon",
+     'I',
+     0,
+     G_OPTION_ARG_STRING,
+     &raw_icon_path,
+     "Path to the icon to be sent as raw image data",
+     "RAW_ICON"},
+    {"category",
+     'c',
+     0,
+     G_OPTION_ARG_STRING,
+     &category,
+     "The category of this notification",
+     "TYPE"},
+    {"capabilities",
+     0,
+     0,
+     G_OPTION_ARG_NONE,
+     &capabilities,
+     "Print the server capabilities and exit",
+     NULL},
+    {"serverinfo",
+     's',
+     0,
+     G_OPTION_ARG_NONE,
+     &serverinfo,
+     "Print server information and exit",
+     NULL},
+    {"printid",
+     'p',
+     0,
+     G_OPTION_ARG_NONE,
+     &printid,
+     "Print id, which can be used to update/replace this notification",
+     NULL},
+    {"replace",
+     'r',
+     0,
+     G_OPTION_ARG_INT,
+     &replace_id,
+     "Set id of this notification.",
+     "ID"},
+    {"close",
+     'C',
+     0,
+     G_OPTION_ARG_INT,
+     &close_id,
+     "Close the notification with the specified ID",
+     "ID"},
+    {"block",
+     'b',
+     0,
+     G_OPTION_ARG_NONE,
+     &block,
+     "Block until notification is closed and print close reason",
+     NULL},
+    {G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_FILENAME_ARRAY, &rest, NULL, NULL},
+    {NULL}};
 
 void die(int exit_value)
 {
@@ -74,10 +156,11 @@ void print_serverinfo(void)
         exit(1);
     }
 
-    g_print("name:%s\nvendor:%s\nversion:%s\nspec_version:%s\n", name,
-                                                                 vendor,
-                                                                 version,
-                                                                 spec_version);
+    g_print("name:%s\nvendor:%s\nversion:%s\nspec_version:%s\n",
+            name,
+            vendor,
+            version,
+            spec_version);
 }
 
 /*
@@ -98,7 +181,8 @@ char *get_argv(char *argv[], int index)
 }
 
 /* Count the number of arguments in argv excluding the terminator "--" */
-int count_args(char *argv[], int argc) {
+int count_args(char *argv[], int argc)
+{
     for (int i = 0; i < argc; i++) {
         if (strcmp(argv[i], "--") == 0)
             return argc - 1;
@@ -114,7 +198,7 @@ void parse_commandline(int argc, char *argv[])
 
     context = g_option_context_new("SUMMARY [BODY]");
     g_option_context_add_main_entries(context, entries, NULL);
-    if (!g_option_context_parse(context, &argc, &argv, &error)){
+    if (!g_option_context_parse(context, &argc, &argv, &error)) {
         g_printerr("Invalid commandline: %s\n", error->message);
         exit(1);
     }
@@ -143,8 +227,8 @@ void parse_commandline(int argc, char *argv[])
             body = g_strcompress(rest[1]);
 
             if (rest[2] != NULL) {
-                    g_printerr("Too many arguments!\n");
-                    die(1);
+                g_printerr("Too many arguments!\n");
+                die(1);
             }
         }
     }
@@ -156,25 +240,19 @@ void parse_commandline(int argc, char *argv[])
 
     if (urgency_str) {
         switch (urgency_str[0]) {
-            case 'l':
-            case 'L':
-            case '0':
-                urgency = NOTIFY_URGENCY_LOW;
-                break;
-            case 'n':
-            case 'N':
-            case '1':
-                urgency = NOTIFY_URGENCY_NORMAL;
-                break;
-            case 'c':
-            case 'C':
-            case '2':
-                urgency = NOTIFY_URGENCY_CRITICAL;
-                break;
-            default:
-                g_printerr("Unknown urgency: %s\n", urgency_str);
-                g_printerr("Assuming normal urgency\n");
-                break;
+        case 'l':
+        case 'L':
+        case '0': urgency = NOTIFY_URGENCY_LOW; break;
+        case 'n':
+        case 'N':
+        case '1': urgency = NOTIFY_URGENCY_NORMAL; break;
+        case 'c':
+        case 'C':
+        case '2': urgency = NOTIFY_URGENCY_CRITICAL; break;
+        default:
+            g_printerr("Unknown urgency: %s\n", urgency_str);
+            g_printerr("Assuming normal urgency\n");
+            break;
         }
     }
 }
@@ -209,8 +287,9 @@ void add_action(NotifyNotification *n, char *str)
     char *action = str;
     char *label = strchr(str, ',');
 
-    if (!label || *(label+1) == '\0') {
-        g_printerr("Malformed action. Expected \"action,label\", got \"%s\"", str);
+    if (!label || *(label + 1) == '\0') {
+        g_printerr("Malformed action. Expected \"action,label\", got \"%s\"",
+                   str);
         return;
     }
 
@@ -224,15 +303,17 @@ void add_hint(NotifyNotification *n, char *str)
 {
     char *type = str;
     char *name = strchr(str, ':');
-    if (!name || *(name+1) == '\0') {
-        g_printerr("Malformed hint. Expected \"type:name:value\", got \"%s\"", str);
+    if (!name || *(name + 1) == '\0') {
+        g_printerr("Malformed hint. Expected \"type:name:value\", got \"%s\"",
+                   str);
         return;
     }
     *name = '\0';
     name++;
     char *value = strchr(name, ':');
-    if (!value || *(value+1) == '\0') {
-        g_printerr("Malformed hint. Expected \"type:name:value\", got \"%s\"", str);
+    if (!value || *(value + 1) == '\0') {
+        g_printerr("Malformed hint. Expected \"type:name:value\", got \"%s\"",
+                   str);
         return;
     }
     *value = '\0';
@@ -249,9 +330,11 @@ void add_hint(NotifyNotification *n, char *str)
         if (h_byte < 0 || h_byte > 0xFF)
             g_printerr("Not a byte: \"%s\"", value);
         else
-            notify_notification_set_hint_byte(n, name, (guchar) h_byte);
+            notify_notification_set_hint_byte(n, name, (guchar)h_byte);
     } else
-        g_printerr("Malformed hint. Expected a type of int, double, string or byte, got %s\n", type);
+        g_printerr("Malformed hint. Expected a type of int, double, string or "
+                   "byte, got %s\n",
+                   type);
 }
 
 int main(int argc, char *argv[])
@@ -259,9 +342,9 @@ int main(int argc, char *argv[])
     setlocale(LC_ALL, "");
     g_set_prgname(argv[0]);
 
-    #if !GLIB_CHECK_VERSION(2,35,0)
-        g_type_init();
-    #endif
+#if !GLIB_CHECK_VERSION(2, 35, 0)
+    g_type_init();
+#endif
 
     parse_commandline(argc, argv);
 
@@ -283,14 +366,14 @@ int main(int argc, char *argv[])
     GError *err = NULL;
 
     if (raw_icon_path) {
-            GdkPixbuf *raw_icon = gdk_pixbuf_new_from_file(raw_icon_path, &err);
+        GdkPixbuf *raw_icon = gdk_pixbuf_new_from_file(raw_icon_path, &err);
 
-            if(err) {
-                g_printerr("Unable to get raw icon: %s\n", err->message);
-                die(1);
-            }
+        if (err) {
+            g_printerr("Unable to get raw icon: %s\n", err->message);
+            die(1);
+        }
 
-            notify_notification_set_image_from_pixbuf(n, raw_icon);
+        notify_notification_set_image_from_pixbuf(n, raw_icon);
     }
 
     if (close_id > 0) {
@@ -324,7 +407,6 @@ int main(int argc, char *argv[])
             add_hint(n, hint_strs[i]);
         }
 
-
     notify_notification_show(n, &err);
     if (err) {
         g_printerr("Unable to send notification: %s\n", err->message);
@@ -339,7 +421,7 @@ int main(int argc, char *argv[])
     if (block || action_strs)
         g_main_loop_run(l);
 
-    g_object_unref(G_OBJECT (n));
+    g_object_unref(G_OBJECT(n));
 
     die(0);
 }
