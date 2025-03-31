@@ -1,54 +1,59 @@
 #ifndef DUNST_OUTPUT_H
 #define DUNST_OUTPUT_H
 
-#include <stdbool.h>
-#include <glib.h>
 #include <cairo.h>
+#include <glib.h>
+#include <stdbool.h>
 
 typedef gpointer window;
 
-struct dimensions {
-        int x;
-        int y;
-        int w;
-        int h;
-        int text_width;
-        int text_height;
+struct dimensions
+{
+    int x;
+    int y;
+    int w;
+    int h;
+    int text_width;
+    int text_height;
 
-        int corner_radius;
+    int corner_radius;
 };
 
-struct screen_info {
-        char *name;
-        int id;
-        int x;
-        int y;
-        unsigned int h;
-        unsigned int mmh;
-        unsigned int w;
-        int dpi;
+struct screen_info
+{
+    char *name;
+    int id;
+    int x;
+    int y;
+    unsigned int h;
+    unsigned int mmh;
+    unsigned int w;
+    int dpi;
 };
 
-struct output {
-        bool (*init)(void);
-        void (*deinit)(void);
+struct output
+{
+    bool (*init)(void);
+    void (*deinit)(void);
 
-        window (*win_create)(void);
-        void (*win_destroy)(window);
+    window (*win_create)(void);
+    void (*win_destroy)(window);
 
-        void (*win_show)(window);
-        void (*win_hide)(window);
+    void (*win_show)(window);
+    void (*win_hide)(window);
 
-        void (*display_surface)(cairo_surface_t *srf, window win, const struct dimensions*);
+    void (*display_surface)(cairo_surface_t *srf,
+                            window win,
+                            const struct dimensions *);
 
-        cairo_t* (*win_get_context)(window);
+    cairo_t *(*win_get_context)(window);
 
-        const struct screen_info* (*get_active_screen)(void);
+    const struct screen_info *(*get_active_screen)(void);
 
-        bool (*is_idle)(void);
-        bool (*have_fullscreen_window)(void);
+    bool (*is_idle)(void);
+    bool (*have_fullscreen_window)(void);
 
-        double (*get_scale)(void);
+    double (*get_scale)(void);
 };
 
 #ifdef ENABLE_X11
@@ -74,7 +79,7 @@ struct output {
  *
  * Either output is skipped if it was not compiled.
  */
-const struct output* output_create(bool force_xwayland);
+const struct output *output_create(bool force_xwayland);
 
 bool is_running_wayland(void);
 

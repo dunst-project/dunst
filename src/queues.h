@@ -1,4 +1,5 @@
-/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
+/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing
+ * information) */
 
 /**
  * @file src/queues.h
@@ -171,14 +172,14 @@ void queues_update(struct dunst_status status, gint64 time);
 gint64 queues_get_next_datachange(gint64 time);
 
 /**
- * Get the notification which has the given id in the displayed and waiting queue or
- * NULL if not found
+ * Get the notification which has the given id in the displayed and waiting
+ * queue or NULL if not found
  *
  * @param id the id searched for.
  *
  * @return the `id` notification  or NULL
  */
-struct notification* queues_get_by_id(gint id);
+struct notification *queues_get_by_id(gint id);
 
 /**
  * Reapply all rules to the queue (used when reloading configs)

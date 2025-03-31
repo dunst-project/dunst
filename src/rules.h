@@ -1,4 +1,5 @@
-/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
+/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing
+ * information) */
 #ifndef DUNST_RULES_H
 #define DUNST_RULES_H
 
@@ -8,57 +9,58 @@
 #include "notification.h"
 #include "settings.h"
 
-struct rule {
-        // Since there's heavy use of offsets from this class, both in rules.c
-        // and in settings_data.h the layout of the class should not be
-        // changed, unless it's well considered and tested. See the comments
-        // below for what should not be changed.
+struct rule
+{
+    // Since there's heavy use of offsets from this class, both in rules.c
+    // and in settings_data.h the layout of the class should not be
+    // changed, unless it's well considered and tested. See the comments
+    // below for what should not be changed.
 
-        // This has to be the first member, see struct setting.rule_offset.
-        char *name;
+    // This has to be the first member, see struct setting.rule_offset.
+    char *name;
 
-        /* filters */
-        char *appname; // this has to be the first filter, see rules.c
-        char *summary;
-        char *body;
-        char *icon;
-        char *category;
-        char *stack_tag;
-        char *desktop_entry;
-        int msg_urgency;
-        gint64 match_dbus_timeout;
+    /* filters */
+    char *appname; // this has to be the first filter, see rules.c
+    char *summary;
+    char *body;
+    char *icon;
+    char *category;
+    char *stack_tag;
+    char *desktop_entry;
+    int msg_urgency;
+    gint64 match_dbus_timeout;
 
-        /* modifying */
-        gint64 timeout; // this has to be the first modifying rule
-        gint64 override_dbus_timeout;
-        enum urgency urgency;
-        char *action_name;
-        enum markup_mode markup;
-        gint history_ignore;
-        gint match_transient;
-        gint set_transient;
-        gint skip_display;
-        gint word_wrap;
-        int ellipsize;
-        int alignment;
-        gint hide_text;
-        int icon_position;
-        int min_icon_size;
-        int max_icon_size;
-        int override_pause_level;
-        char *new_icon;
-        char *default_icon;
-        struct color fg;
-        struct color bg;
-        struct gradient *highlight;
-        struct color fc;
-        char *set_category;
-        char *format;
-        char *script;
-        enum behavior_fullscreen fullscreen;
-        bool enabled;
-        int progress_bar_alignment;
-        char *set_stack_tag; // this has to be the last modifying rule
+    /* modifying */
+    gint64 timeout; // this has to be the first modifying rule
+    gint64 override_dbus_timeout;
+    enum urgency urgency;
+    char *action_name;
+    enum markup_mode markup;
+    gint history_ignore;
+    gint match_transient;
+    gint set_transient;
+    gint skip_display;
+    gint word_wrap;
+    int ellipsize;
+    int alignment;
+    gint hide_text;
+    int icon_position;
+    int min_icon_size;
+    int max_icon_size;
+    int override_pause_level;
+    char *new_icon;
+    char *default_icon;
+    struct color fg;
+    struct color bg;
+    struct gradient *highlight;
+    struct color fc;
+    char *set_category;
+    char *format;
+    char *script;
+    enum behavior_fullscreen fullscreen;
+    bool enabled;
+    int progress_bar_alignment;
+    char *set_stack_tag; // this has to be the last modifying rule
 };
 
 extern GSList *rules;
@@ -87,7 +89,7 @@ bool rule_matches_notification(struct rule *r, struct notification *n);
  *
  * @returns the rule that matches. Null if no rule matches
  */
-struct rule *get_rule(const char* name);
+struct rule *get_rule(const char *name);
 
 /**
  * Check if a rule is an action

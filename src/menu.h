@@ -1,4 +1,5 @@
-/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
+/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing
+ * information) */
 #ifndef DUNST_MENU_H
 #define DUNST_MENU_H
 
@@ -18,13 +19,16 @@ void invoke_action(const char *action);
 void regex_teardown(void);
 
 /**
- * Open the context menu that lets the user select urls/actions/etc for all displayed notifications.
+ * Open the context menu that lets the user select urls/actions/etc for all
+ * displayed notifications.
  */
 void context_menu(void);
 
 /**
- * Open the context menu that lets the user select urls/actions/etc for the specified notifications.
- * @param notifications (nullable) List of notifications for which the context menu should be opened
+ * Open the context menu that lets the user select urls/actions/etc for the
+ * specified notifications.
+ * @param notifications (nullable) List of notifications for which the context
+ * menu should be opened
  */
 void context_menu_for(GList *notifications);
 

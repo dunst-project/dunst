@@ -1,0 +1,12 @@
+---
+BasedOnStyle: LLVM
+IndentWidth: 4
+AllowShortFunctionsOnASingleLine: Empty
+BreakBeforeBraces: Mozilla
+AllowShortCaseLabelsOnASingleLine: true
+AlignConsecutiveShortCaseStatements:
+  Enabled: true
+BreakBeforeBinaryOperators: NonAssignment
+AlignOperands: AlignAfterOperator
+BinPackArguments: false
+BinPackParameters: false

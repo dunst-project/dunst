@@ -1,0 +1,55 @@
+# top-most EditorConfig file
+root = true
+
+[*]
+indent_style = space
+indent_size = 8
+tab_width = 8
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[docs/*.pod]
+indent_size = 4
+
+[*.awk]
+indent_size = 4
+
+[{test/greatest.h,test/functional-tests/test.sh,contrib/notification-history.sh,contrib/dunst_xr_theme_changer.sh}]
+indent_size = 4
+
+[dunstrc*]
+indent_size = 4
+
+# Just for historical purposes to avoid
+# manually reformatting whole files
+[src/wayland/pool-buffer.*]
+indent_style = tab
+
+# looks to be external code
+[src/wayland/libgwater-wayland.*]
+indent_size = 4
+
+[completions/*]
+indent_size = 4
+
+[.valgrind.suppressions]
+indent_size = 3
+
+[*.yml]
+indent_size = 2
+
+[completions/*.zshcomp]
+indent_size = 2
+
+[{Makefile,dunstctl,test/data/test-ini}]
+indent_style = tab
+
+[test/functional-tests/dunstrc.vertical_align]
+indent_style =
+
+# Contains external or generated files
+[src/wayland/protocols/**]
+indent_style =
+trim_trailing_whitespace = false

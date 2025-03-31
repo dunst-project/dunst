@@ -684,7 +684,7 @@ bool wl_have_fullscreen_window(void) {
                 output_name = current_output->global_name;
 
         struct toplevel_v1 *toplevel;
-	wl_list_for_each(toplevel, &toplevel_list, link) {
+        wl_list_for_each(toplevel, &toplevel_list, link) {
                 if (!(toplevel->current.state & TOPLEVEL_STATE_FULLSCREEN &&
                                         toplevel->current.state &
                                         TOPLEVEL_STATE_ACTIVATED))

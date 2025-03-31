@@ -1,12 +1,14 @@
-/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
+/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing
+ * information) */
 #ifndef DUNST_MARKUP_H
 #define DUNST_MARKUP_H
 
-enum markup_mode {
-        MARKUP_NULL,
-        MARKUP_NO,
-        MARKUP_STRIP,
-        MARKUP_FULL
+enum markup_mode
+{
+    MARKUP_NULL,
+    MARKUP_NO,
+    MARKUP_STRIP,
+    MARKUP_FULL
 };
 
 /**
@@ -36,8 +38,8 @@ void markup_strip_a(char **str, char **urls);
  * Remove img-tags of a string. If alt attribute given, use this as replacement.
  *
  * @param str The string to replace img tags
- * @param urls (nullable) If any src-attributes found, an `\n` concatenated string of
- *        the URLs in format `[<alt>] <src>`
+ * @param urls (nullable) If any src-attributes found, an `\n` concatenated
+ * string of the URLs in format `[<alt>] <src>`
  */
 void markup_strip_img(char **str, char **urls);
 

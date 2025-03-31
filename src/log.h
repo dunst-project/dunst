@@ -1,4 +1,5 @@
-/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
+/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing
+ * information) */
 
 #include <errno.h>
 #include <glib.h>
@@ -22,7 +23,8 @@
  * compiling with '-std=gnu99', this should be fine.
  */
 #if __GNUC__ >= 8 || __clang_major__ >= 6
-#define MSG(format, ...) "[%16s:%04d] " format, __func__, __LINE__, ## __VA_ARGS__
+#define MSG(format, ...)                                                       \
+    "[%16s:%04d] " format, __func__, __LINE__, ##__VA_ARGS__
 #endif
 
 #ifdef MSG
@@ -40,16 +42,21 @@
 #define LOG_M g_message
 #define LOG_I g_info
 
-#define DIE(...) do { LOG_C(__VA_ARGS__); exit(EXIT_FAILURE); } while (0)
+#define DIE(...)                                                               \
+    do {                                                                       \
+        LOG_C(__VA_ARGS__);                                                    \
+        exit(EXIT_FAILURE);                                                    \
+    } while (0)
 
 // unified fopen() result messages
 #define MSG_FOPEN_SUCCESS(path, fp) "Opened '%s' (fd: '%d')", path, fileno(fp)
 #define MSG_FOPEN_FAILURE(path) "Cannot open '%s': %s", path, strerror(errno)
 
-enum log_mask {
-        DUNST_LOG_NONE,
-        DUNST_LOG_ALL,
-        DUNST_LOG_AUTO,
+enum log_mask
+{
+    DUNST_LOG_NONE,
+    DUNST_LOG_ALL,
+    DUNST_LOG_AUTO,
 };
 
 /**
@@ -70,7 +77,7 @@ void log_set_level(GLogLevelFlags level);
  * If `level` is `NULL`, nothing will be done.
  * If `level` is an invalid value, nothing will be done.
  */
-void log_set_level_from_string(const char* level);
+void log_set_level_from_string(const char *level);
 
 /**
  * Initialise log handling. Can be called any time.

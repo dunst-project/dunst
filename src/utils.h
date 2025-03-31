@@ -1,4 +1,5 @@
-/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
+/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing
+ * information) */
 #ifndef DUNST_UTILS_H
 #define DUNST_UTILS_H
 
@@ -22,21 +23,24 @@
 
 //! Stringify the given expression or macro
 #define STR_TO(...) _STR_TO(__VA_ARGS__)
-#define _STR_TO(...) "" # __VA_ARGS__
+#define _STR_TO(...) "" #__VA_ARGS__
 
 //! Make a gboolean from a boolean value
 // See https://github.com/dunst-project/dunst/issues/1421
 #define BOOL2G(x) ((x) ? TRUE : FALSE)
 
 //! Assert that expr evaluates to true, if not return with val
-#define ASSERT_OR_RET(expr, val) if (!(expr)) return val;
+#define ASSERT_OR_RET(expr, val)                                               \
+    if (!(expr))                                                               \
+        return val;
 
 //! Convert a second into the internal time representation
 #define S2US(s) (((gint64)(s)) * G_USEC_PER_SEC)
 #define US2S(s) (((gint64)(s)) / G_USEC_PER_SEC)
 
 /**
- * Replaces all occurrences of the char \p needle with the char \p replacement in \p haystack.
+ * Replaces all occurrences of the char \p needle with the char \p replacement
+ * in \p haystack.
  *
  * Does not allocate a new string.
  *
@@ -67,10 +71,12 @@ char *string_replace_at(char *buf, int pos, int len, const char *repl);
  * @param replacement The substring to replace
  * @param haystack (nullable) The string to search the substring for
  */
-char *string_replace_all(const char *needle, const char *replacement, char *haystack);
+char *
+string_replace_all(const char *needle, const char *replacement, char *haystack);
 
 /**
- * Append \p b to string \p a. And concatenate both strings with \p concat, if both are non-empty.
+ * Append \p b to string \p a. And concatenate both strings with \p concat, if
+ * both are non-empty.
  *
  * @param a (nullable) The left side of the string
  * @param b (nullable) The right side of the string
@@ -111,7 +117,8 @@ char **string_to_array(const char *string, const char *delimiter);
 /**
  * Replace tilde and path-specific values with its equivalents
  *
- * The string gets invalidated. The new valid representation is the return value.
+ * The string gets invalidated. The new valid representation is the return
+ * value.
  *
  * @param string (nullable) The string to convert to a path.
  * @returns The tilde-replaced string.
@@ -174,7 +181,7 @@ const char *user_get_home(void);
  * @param value (nullable) The value to change it to.
  * @returns: A bool that is true when it succeeds
  */
-bool safe_setenv(const char* key, const char* value);
+bool safe_setenv(const char *key, const char *value);
 
 /**
  * Some sections are handled differently in dunst. This function tells wether a
@@ -183,7 +190,7 @@ bool safe_setenv(const char* key, const char* value);
  * @param s The name of the section
  * @returns A bool wether this section is one of the special sections
  */
-bool is_special_section(const char* s);
+bool is_special_section(const char *s);
 
 /**
  * This function tells if a section is deprecated.
@@ -191,10 +198,9 @@ bool is_special_section(const char* s);
  * @param s The name of the section
  * @returns A bool wether this section is deprecated
  */
-bool is_deprecated_section(const char* s);
+bool is_deprecated_section(const char *s);
 
 const char *get_section_deprecation_message(const char *s);
-
 
 /**
  * Strips a string of it's brackets if the first and last character are a
@@ -203,8 +209,7 @@ const char *get_section_deprecation_message(const char *s);
  * @param s String to strip
  * @returns Newly allocated string without the brackets, or NULL.
  */
-char *string_strip_brackets(const char* s);
-
+char *string_strip_brackets(const char *s);
 
 /**
  * Returns the length of a string array, -1 if the input is NULL.
@@ -228,7 +233,7 @@ int string_array_length(char **s);
  * @retval true in case of success.
  * @retval false in case of failure, errno will be set appropriately.
  */
-bool is_readable_file(const char * const path);
+bool is_readable_file(const char *const path);
 
 /** @brief Open files verbosely.
  *
@@ -240,7 +245,7 @@ bool is_readable_file(const char * const path);
  * @retval NULL if the fopen() call failed or @p path does not satisfy the
  * conditions of is_readable_file().
  */
-FILE * fopen_verbose(const char * const path);
+FILE *fopen_verbose(const char *const path);
 
 /**
  * Adds the contents of env_name with subdir to the array, interpreting the
@@ -255,7 +260,10 @@ FILE * fopen_verbose(const char * const path);
  * @param alternative A colon-separated list of paths to use as alternative
  * when the environment variable doesn't exits.
  */
-void add_paths_from_env(GPtrArray *arr, char *env_name, char *subdir, char *alternative);
+void add_paths_from_env(GPtrArray *arr,
+                        char *env_name,
+                        char *subdir,
+                        char *alternative);
 
 bool string_is_int(const char *str);
 

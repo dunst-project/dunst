@@ -1,29 +1,35 @@
 #ifndef DUNST_ICON_LOOKUP_H
 #define DUNST_ICON_LOOKUP_H
 
-struct icon_theme {
-        char *name;
-        char *location; // full path to the theme
-        char *subdir_theme; // name of the directory in which the theme is located
+struct icon_theme
+{
+    char *name;
+    char *location;     // full path to the theme
+    char *subdir_theme; // name of the directory in which the theme is located
 
-        int inherits_count;
-        int *inherits_index;
+    int inherits_count;
+    int *inherits_index;
 
-        int dirs_count;
-        struct icon_theme_dir *dirs;
+    int dirs_count;
+    struct icon_theme_dir *dirs;
 };
 
-enum theme_dir_type { THEME_DIR_FIXED, THEME_DIR_SCALABLE, THEME_DIR_THRESHOLD };
-
-struct icon_theme_dir {
-        char *name;
-        int size;
-        int scale;
-        int min_size, max_size;
-        int threshold;
-        enum theme_dir_type type;
+enum theme_dir_type
+{
+    THEME_DIR_FIXED,
+    THEME_DIR_SCALABLE,
+    THEME_DIR_THRESHOLD
 };
 
+struct icon_theme_dir
+{
+    char *name;
+    int size;
+    int scale;
+    int min_size, max_size;
+    int threshold;
+    enum theme_dir_type type;
+};
 
 /**
  * Load a theme with given name from a standard icon directory. Don't call this
@@ -35,7 +41,6 @@ struct icon_theme_dir {
  * @retval -1 if the icon theme cannot be loaded.
  */
 int load_icon_theme(char *name);
-
 
 /**
  * Add theme to the list of default themes. The theme that's added first will
