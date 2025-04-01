@@ -4,6 +4,7 @@
 #include "settings.h"
 #include "queues.h"
 #include <stddef.h>
+#include <xkbcommon/xkbcommon.h>
 #if defined(__linux__) || defined(__FreeBSD__)
 #include <linux/input-event-codes.h>
 #else
@@ -63,13 +64,24 @@ bool handle_builtin_menu_click(int x, int y) {
         struct notification *n = get_notification_at(y);
         if (n) {
                 if (menu_get_count(n) > 0) {
-                        struct menu *m = menu_get_at(n, x, y);
-                        if (m) {
-                                signal_action_invoked(n, m->key);
-                                return true;
+                    struct menu *m = menu_get_at(n, x, y);
+                    if (m) {
+                        // find the index of the menu item
+                        for (guint i = 0; i < n->menus->len; i++) {
+                            struct menu *button = &g_array_index(n->menus, struct menu, i);
+                            if (button == m) {
+                                // update the selection
+                                update_menu_selection(n, i);
+                                break;
+                            }
                         }
+
+                        m->n = n;
+                        menu_activate(m);  // activate the selected menu item
+                        return true;
+                    }
                 }
-        }
+            }
         return false;
 }
 
@@ -138,5 +150,59 @@ void input_handle_click(unsigned int button, bool button_down, int mouse_x, int 
         }
 
         wake_up();
+}
+
+static bool handle_builtin_menu_key(unsigned int keysym, bool pressed) {
+        if (!settings.built_in_menu || !settings.built_in_menu_key_navigation) {
+                return;
+        }
+
+        if (keysym == XKB_KEY_Right ||
+            keysym == XKB_KEY_Left ||
+            keysym == XKB_KEY_Up ||
+            keysym == XKB_KEY_Down
+        ) {
+                struct notification *n = queues_get_displayed_head();
+                if (n) {
+                        if (menu_get_count(n) > 0) {
+                                struct menu *m = menu_get_selected(n);
+                                m->n = n;
+                                if (m) {
+                                        if (pressed) {
+                                                menu_move_selection(n, keysym);
+                                        }
+                                        return true;
+                                }
+                        }
+                }
+        }
+
+        if (keysym == XKB_KEY_Return ||
+            keysym == XKB_KEY_KP_Enter
+        ) {
+                struct notification *n = queues_get_displayed_head();
+                if (n) {
+                        if (menu_get_count(n) > 0) {
+                                struct menu *m = menu_get_selected(n);
+                                m->n = n;
+                                if (m) {
+                                        if (pressed) {
+                                                // activate the selected menu item
+                                                menu_activate(m);
+                                        }
+                                        return true;
+                                }
+                        }
+                }
+        }
+}
+
+void input_handle_key(unsigned int keysym, bool pressed) {
+        LOG_I("Key %s: %u", pressed ? "pressed" : "released", keysym);
+
+        if (settings.built_in_menu && settings.built_in_menu_key_navigation) {
+                if (handle_builtin_menu_key(keysym, pressed))
+                        return;
+        }
 }
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */
