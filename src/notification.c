@@ -793,6 +793,7 @@ void notification_open_context_menu(struct notification *n)
 
 void notification_invalidate_actions(struct notification *n) {
         g_hash_table_remove_all(n->actions);
+        menu_free_array(n);
 }
 
 void notification_keep_original(struct notification *n)
