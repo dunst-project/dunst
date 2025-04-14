@@ -16,8 +16,8 @@ function keypress {
 }
 
 function tmp_dunstrc {
-        cp "$TESTDIR/$1" "$TESTDIR/dunstrc.tmp"
-        echo -e "\n$2" >> "$TESTDIR/dunstrc.tmp"
+    cp "$TESTDIR/$1" "$TESTDIR/dunstrc.tmp"
+    echo -e "\n$2" >> "$TESTDIR/dunstrc.tmp"
 }
 
 function tmp_clean {
@@ -25,9 +25,9 @@ function tmp_clean {
 }
 
 function start_dunst {
-        killall dunst 2>/dev/null
-        $DUNST -config "$TESTDIR/$1" &
-        sleep 0.05
+    killall dunst 2>/dev/null
+    $DUNST -config "$TESTDIR/$1" &
+    sleep 0.05
 }
 
 function basic_notifications {

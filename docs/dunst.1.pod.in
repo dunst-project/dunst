@@ -111,11 +111,11 @@ See dunst(5) for the list of accepted hints.
 
 Some examples:
 
-	notify-send -h string:fgcolor:#ff4444
+    notify-send -h string:fgcolor:#ff4444
 
-	notify-send -h string:bgcolor:#4444ff -h string:fgcolor:#ff4444 -h string:frcolor:#44ff44
+    notify-send -h string:bgcolor:#4444ff -h string:fgcolor:#ff4444 -h string:frcolor:#44ff44
 
-	notify-send -h int:value:42 "Working ..."
+    notify-send -h int:value:42 "Working ..."
 
 =head1 MISCELLANEOUS
 

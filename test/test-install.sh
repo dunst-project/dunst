@@ -14,12 +14,12 @@ export SERVICEDIR_SYSTEMD="/systemd"
 export SERVICEDIR_DBUS="/dbus"
 
 do_make() {  # for convenience/conciseness
-	make -C "${BASE}" "$@"
+        make -C "${BASE}" "$@"
 }
 
 check_dest() {
-	# Check file list given on stdin and see if all are actually present
-	diff -u <(find "${DESTDIR}" -type f -printf "%P\n" | sort) <(sort -)
+        # Check file list given on stdin and see if all are actually present
+        diff -u <(find "${DESTDIR}" -type f -printf "%P\n" | sort) <(sort -)
 }
 
 do_make install

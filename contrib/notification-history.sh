@@ -10,7 +10,7 @@ tests() {
 history_json="$(dunstctl history)"
 history_items="$(printf '%s' "$history_json" | jq -r '.data[0][] | .appname.data , (.timestamp.data | tostring) , .summary.data | gsub("[\\n]"; "\\n")')" # the gsub is to really ensure no escaped new lines in the data lead us to print new lines. New lines in data have to be escaped. (Because) Actual newlines are the field separator essential to the logic of the while loop below, and rofi further down.
 
-#history_items ends up looking like arrays with an order with this meaning: 
+#history_items ends up looking like arrays with an order with this meaning:
 #appname (newline) timestamp (newline) summary (newline)
 #
 #NetworkManager
