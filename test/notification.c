@@ -156,6 +156,7 @@ static struct notification *notification_load_icon_with_scaling(int min_icon_siz
         n->min_icon_size = min_icon_size;
         n->max_icon_size = max_icon_size;
         notification_icon_replace_data(n, raw_icon);
+        assert(n->icon_id);
 
         g_variant_unref(raw_icon);
         g_free(path);

@@ -60,7 +60,7 @@ void notification_print(const struct notification *n)
         printf("\traw_icon set: %s\n", (n->icon_id && !STR_EQ(n->iconname, n->icon_id)) ? "true" : "false");
         printf("\ticon_id: '%s'\n", STR_NN(n->icon_id));
         printf("\tdesktop_entry: '%s'\n", n->desktop_entry ? n->desktop_entry : "");
-        printf("\tcategory: %s\n", STR_NN(n->category));
+        printf("\tcategory: '%s'\n", STR_NN(n->category));
         printf("\ttimeout: %"G_GINT64_FORMAT"\n", n->timeout/1000);
         printf("\tstart: %"G_GINT64_FORMAT"\n", n->start);
         printf("\ttimestamp: %"G_GINT64_FORMAT"\n", n->timestamp);
@@ -77,17 +77,19 @@ void notification_print(const struct notification *n)
         g_free(grad);
 
         printf("\tfullscreen: %s\n", enum_to_string_fullscreen(n->fullscreen));
-        printf("\tformat: %s\n", STR_NN(n->format));
+        printf("\tformat: '%s'\n", STR_NN(n->format));
         printf("\tprogress: %d\n", n->progress);
-        printf("\tstack_tag: %s\n", (n->stack_tag ? n->stack_tag : ""));
+        printf("\tstack_tag: '%s'\n", (n->stack_tag ? n->stack_tag : ""));
         printf("\tid: %d\n", n->id);
         if (n->urls) {
                 char *urls = string_replace_all("\n", "\t\t\n", g_strdup(n->urls));
                 printf("\turls:\n");
                 printf("\t{\n");
-                printf("\t\t%s\n", STR_NN(urls));
+                printf("\t\t'%s'\n", STR_NN(urls));
                 printf("\t}\n");
                 g_free(urls);
+        } else {
+                printf("\turls: {}\n");
         }
         if (g_hash_table_size(n->actions) == 0) {
                 printf("\tactions: {}\n");
@@ -337,8 +339,12 @@ void notification_unref(struct notification *n)
 
 void notification_transfer_icon(struct notification *from, struct notification *to)
 {
-        if (from->iconname && to->iconname
-                        && strcmp(from->iconname, to->iconname) == 0){
+        if (from->iconname && to->iconname && STR_EQ(from->iconname, to->iconname)) {
+
+                // If possible check the icon id
+                if (from->icon_id && to->icon_id && !STR_EQ(from->icon_id, to->icon_id))
+                        return;
+
                 // Icons are the same. Transfer icon surface
                 to->icon = from->icon;
 
@@ -368,7 +374,7 @@ void notification_icon_replace_path(struct notification *n, const char *new_icon
         g_free(n->icon_path);
         n->icon_path = get_path_from_icon_name(new_icon, n->min_icon_size);
         if (n->icon_path) {
-                GdkPixbuf *pixbuf = get_pixbuf_from_file(n->icon_path,
+                GdkPixbuf *pixbuf = get_pixbuf_from_file(n->icon_path, &n->icon_id,
                                 n->min_icon_size, n->max_icon_size,
                                 draw_get_scale());
                 if (pixbuf) {

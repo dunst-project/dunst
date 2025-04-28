@@ -193,8 +193,8 @@ int queues_notification_insert(struct notification *n)
         if (!inserted && STR_FULL(n->stack_tag) && queues_stack_by_tag(n))
                 inserted = true;
 
-        if (!inserted && settings.stack_duplicates && queues_stack_duplicate(n)){
-                if(settings.sort == SORT_TYPE_UPDATE){
+        if (!inserted && settings.stack_duplicates && queues_stack_duplicate(n)) {
+                if (settings.sort == SORT_TYPE_UPDATE) {
                         g_queue_sort(displayed, notification_cmp_data, NULL);
                 }
                 inserted = true;
@@ -203,6 +203,7 @@ int queues_notification_insert(struct notification *n)
         if (!inserted)
                 g_queue_insert_sorted(waiting, n, notification_cmp_data, NULL);
 
+        // The icon is loaded lazily
         if (!n->icon) {
                 notification_icon_replace_path(n, n->iconname);
         }

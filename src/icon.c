@@ -183,10 +183,35 @@ static GdkPixbuf *icon_pixbuf_scale_to_size(GdkPixbuf *pixbuf, double dpi_scale,
         return pixbuf;
 }
 
-GdkPixbuf *get_pixbuf_from_file(const char *filename, int min_size, int max_size, double scale)
+static char *get_id_from_data(const uint8_t *data_pb, size_t width, size_t height, size_t pixelstride, size_t rowstride)
+{
+        /* To calculate a checksum of the current image, we have to remove
+         * all excess spacers, so that our checksummed memory only contains
+         * real data. */
+
+        size_t data_chk_len = pixelstride * width * height;
+        unsigned char *data_chk = g_malloc(data_chk_len);
+        size_t rowstride_short = pixelstride * width;
+
+        for (int i = 0; i < height; i++) {
+                memcpy(data_chk + (i*rowstride_short),
+                       data_pb  + (i*rowstride),
+                       rowstride_short);
+        }
+
+        char *id = g_compute_checksum_for_data(G_CHECKSUM_MD5, data_chk, data_chk_len);
+        g_free(data_chk);
+
+        return id;
+}
+
+GdkPixbuf *get_pixbuf_from_file(const char *filename, char **id, int min_size, int max_size, double scale)
 {
         GError *error = NULL;
         gint w, h;
+
+        ASSERT_OR_RET(filename, NULL);
+        ASSERT_OR_RET(id, NULL);
 
         if (!gdk_pixbuf_get_file_info (filename, &w, &h)) {
                 LOG_W("Failed to load image info for %s", STR_NN(filename));
@@ -206,6 +231,13 @@ GdkPixbuf *get_pixbuf_from_file(const char *filename, int min_size, int max_size
                 g_error_free(error);
         }
 
+        const uint8_t *data = gdk_pixbuf_get_pixels(pixbuf);
+        size_t rowstride = gdk_pixbuf_get_rowstride(pixbuf);
+        size_t n_channels = gdk_pixbuf_get_n_channels(pixbuf);
+        size_t bits_per_sample = gdk_pixbuf_get_bits_per_sample(pixbuf);
+        size_t pixelstride = (n_channels * bits_per_sample + 7)/8;
+
+        *id = get_id_from_data(data, w, h, pixelstride, rowstride);
         return pixbuf;
 }
 
@@ -366,22 +398,9 @@ GdkPixbuf *icon_get_for_data(GVariant *data, char **id, double dpi_scale, int mi
                 return NULL;
         }
 
-        /* To calculate a checksum of the current image, we have to remove
-         * all excess spacers, so that our checksummed memory only contains
-         * real data. */
-        size_t data_chk_len = pixelstride * width * height;
-        unsigned char *data_chk = g_malloc(data_chk_len);
-        size_t rowstride_short = pixelstride * width;
 
-        for (int i = 0; i < height; i++) {
-                memcpy(data_chk + (i*rowstride_short),
-                       data_pb  + (i*rowstride),
-                       rowstride_short);
-        }
+        *id = get_id_from_data(data_pb, width, height, pixelstride, rowstride);
 
-        *id = g_compute_checksum_for_data(G_CHECKSUM_MD5, data_chk, data_chk_len);
-
-        g_free(data_chk);
         g_variant_unref(data_variant);
 
         pixbuf = icon_pixbuf_scale_to_size(pixbuf, dpi_scale, min_size, max_size);

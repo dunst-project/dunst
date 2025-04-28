@@ -766,7 +766,7 @@ void x_win_show(window winptr)
  */
 void x_win_hide(window winptr)
 {
-        LOG_I("X11: Hiding window");
+        LOG_I("Hiding X11 window");
         struct window_x11 *win = (struct window_x11*)winptr;
         ASSERT_OR_RET(win->visible,);
 
