@@ -253,7 +253,10 @@ char *get_path_from_icon_name(const char *iconname, int size)
                         return NULL;
                 }
                 return uri_path;
-        } else if (iconname[0] == '/' || iconname[0] == '~') {
+        } else if (iconname[0] == '/' || iconname[0] == '~'
+                        || (iconname[0] == '.' && iconname[1] == '.' && iconname[2] == '/')
+                        || (iconname[0] == '.' && iconname[1] == '/')) {
+
                 // NOTE: Paths starting with ~ should have already been handled at this point
                 return g_strdup(iconname);
         } else if (settings.enable_recursive_icon_lookup) {
