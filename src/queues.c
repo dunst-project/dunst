@@ -229,7 +229,7 @@ static bool queues_stack_duplicate(struct notification *new)
                         struct notification *old = iter->data;
                         if (notification_is_duplicate(old, new)) {
                                 /* If the progress differs, probably notify-send was used to update the notification
-                                 * So only count it as a duplicate, if the progress was not the same.
+                                 * So only count it as a duplicate, if the progress was the same.
                                  * */
                                 if (old->progress == new->progress) {
                                         old->dup_count++;

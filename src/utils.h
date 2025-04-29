@@ -158,6 +158,8 @@ gint64 string_to_time(const char *string);
  */
 gint64 time_monotonic_now(void);
 
+gint64 time_now(void);
+
 /**
  * Retrieve the HOME directory of the user running dunst
  *

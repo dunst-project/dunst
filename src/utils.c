@@ -336,6 +336,14 @@ gint64 time_monotonic_now(void)
         return S2US(tv_now.tv_sec) + tv_now.tv_nsec / 1000;
 }
 
+gint64 time_now(void)
+{
+        struct timespec tv_now;
+
+        clock_gettime(CLOCK_REALTIME, &tv_now);
+        return S2US(tv_now.tv_sec) + tv_now.tv_nsec / 1000;
+}
+
 /* see utils.h */
 const char *user_get_home(void)
 {

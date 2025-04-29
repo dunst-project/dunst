@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include "dbus.h"
@@ -59,6 +60,7 @@ void notification_print(const struct notification *n)
         printf("\ticon: '%s'\n", STR_NN(n->iconname));
         printf("\traw_icon set: %s\n", (n->icon_id && !STR_EQ(n->iconname, n->icon_id)) ? "true" : "false");
         printf("\ticon_id: '%s'\n", STR_NN(n->icon_id));
+        printf("\ticon_time: %"G_GINT64_FORMAT"\n", n->icon_time);
         printf("\tdesktop_entry: '%s'\n", n->desktop_entry ? n->desktop_entry : "");
         printf("\tcategory: '%s'\n", STR_NN(n->category));
         printf("\ttimeout: %"G_GINT64_FORMAT"\n", n->timeout/1000);
@@ -245,7 +247,7 @@ bool notification_is_duplicate(const struct notification *a, const struct notifi
         return STR_EQ(a->appname, b->appname)
             && STR_EQ(a->summary, b->summary)
             && STR_EQ(a->body, b->body)
-            && (a->icon_position != ICON_OFF ? STR_EQ(a->icon_id, b->icon_id) : 1)
+            && (a->icon_id && b->icon_id && a->icon_position != ICON_OFF ? STR_EQ(a->icon_id, b->icon_id) : true)
             && a->urgency == b->urgency;
 }
 
@@ -340,16 +342,27 @@ void notification_unref(struct notification *n)
 void notification_transfer_icon(struct notification *from, struct notification *to)
 {
         if (from->iconname && to->iconname && STR_EQ(from->iconname, to->iconname)) {
+                // Paths are the same. Check the timestamp
 
-                // If possible check the icon id
-                if (from->icon_id && to->icon_id && !STR_EQ(from->icon_id, to->icon_id))
+                struct stat statbuf;
+                if (stat(from->iconname, &statbuf) != 0)
                         return;
 
-                // Icons are the same. Transfer icon surface
+
+                gint64 timestamp = S2US(statbuf.st_mtim.tv_sec) + statbuf.st_mtim.tv_nsec / 1000;
+                if (timestamp > from->icon_time)
+                        return;
+
+                LOG_D("Transferred icon %s (%d -> %d)", from->iconname, from->id, to->id);
+
+                // Transfer icon surface
                 to->icon = from->icon;
+                to->icon_id = from->icon_id;
+                to->icon_time = from->icon_time;
 
                 // prevent the surface being freed by the old notification
                 from->icon = NULL;
+                from->icon_id = NULL;
         }
 }
 
@@ -379,6 +392,7 @@ void notification_icon_replace_path(struct notification *n, const char *new_icon
                                 draw_get_scale());
                 if (pixbuf) {
                         n->icon = gdk_pixbuf_to_cairo_surface(pixbuf);
+                        n->icon_time = time_now();
                         g_object_unref(pixbuf);
                 } else {
                         LOG_W("Failed to load icon from path: '%s'", n->icon_path);
@@ -398,8 +412,10 @@ void notification_icon_replace_data(struct notification *n, GVariant *new_icon)
         GdkPixbuf *icon = icon_get_for_data(new_icon, &n->icon_id,
                         draw_get_scale(), n->min_icon_size, n->max_icon_size);
         n->icon = gdk_pixbuf_to_cairo_surface(icon);
-        if (icon)
+        if (icon) {
+                n->icon_time = time_now();
                 g_object_unref(icon);
+        }
 }
 
 void notification_replace_format(struct notification *n, const char *format)
