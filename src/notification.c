@@ -247,10 +247,10 @@ bool notification_is_duplicate(const struct notification *a, const struct notifi
         return STR_EQ(a->appname, b->appname)
             && STR_EQ(a->summary, b->summary)
             && STR_EQ(a->body, b->body)
-            && a->icon_position == b->icon_position
-            && (a->iconname && b->iconname ? STR_EQ(a->iconname, b->iconname) : 1)
-            && (a->icon_id && b->icon_id ? STR_EQ(a->icon_id, b->icon_id) : 1)
-            && a->urgency == b->urgency;
+            && a->urgency == b->urgency
+            && (a->icon_position == ICON_OFF || b->icon_position == ICON_OFF
+                            || (a->icon_id && b->icon_id ? STR_EQ(a->icon_id, b->icon_id)
+                            : (a->iconname && b->iconname ? STR_EQ(a->iconname, b->iconname) : 1)));
 }
 
 bool notification_is_locked(struct notification *n) {

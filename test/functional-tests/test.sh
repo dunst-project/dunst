@@ -458,69 +458,61 @@ function replaced_icon {
     start_dunst dunstrc.default
     echo "Normal icon"
     cp "$DATADIR/adwaita-icon1.png" "$TESTDIR/tmp.png"
-    $DUNSTIFY -a "dunst tester" "just icon" -i "$TESTDIR/tmp.png"
-    keypress
-
-    $DUNSTIFY -a "dunst tester" "just icon" -i "$TESTDIR/tmp.png"
-    keypress
+    for i in 1 2; do
+        $DUNSTIFY -a "dunst tester" "just icon" -i "$TESTDIR/tmp.png"
+        keypress
+    done
 
     cp "$DATADIR/adwaita-icon2.png" "$TESTDIR/tmp.png"
-    $DUNSTIFY -a "dunst tester" "just icon" -i "$TESTDIR/tmp.png"
-    keypress
-
-    $DUNSTIFY -a "dunst tester" "just icon" -i "$TESTDIR/tmp.png"
-    keypress
+    for i in 1 2; do
+        $DUNSTIFY -a "dunst tester" "just icon" -i "$TESTDIR/tmp.png"
+        keypress
+    done
 
     $DUNSTCTL close-all
 
     echo "Raw icon"
     cp "$DATADIR/adwaita-icon1.png" "$TESTDIR/tmp.png"
-    $DUNSTIFY -a "dunst tester" "just raw icon" -I "$TESTDIR/tmp.png"
-    keypress
-
-    $DUNSTIFY -a "dunst tester" "just raw icon" -I "$TESTDIR/tmp.png"
-    keypress
+    for i in 1 2; do
+        $DUNSTIFY -a "dunst tester" "just raw icon" -I "$TESTDIR/tmp.png"
+        keypress
+    done
 
     cp "$DATADIR/adwaita-icon2.png" "$TESTDIR/tmp.png"
-    $DUNSTIFY -a "dunst tester" "just raw icon" -I "$TESTDIR/tmp.png"
-    keypress
-
-    $DUNSTIFY -a "dunst tester" "just raw icon" -I "$TESTDIR/tmp.png"
-    keypress
+    for i in 1 2; do
+        $DUNSTIFY -a "dunst tester" "just raw icon" -I "$TESTDIR/tmp.png"
+        keypress
+    done
 
     $DUNSTCTL close-all
 
     echo "Tagged icon"
     cp "$DATADIR/adwaita-icon1.png" "$TESTDIR/tmp.png"
-    $DUNSTIFY -a "dunst tester" "icon with tag" -i "$TESTDIR/tmp.png" -h string:x-dunst-stack-tag:test
-    keypress
-
-    $DUNSTIFY -a "dunst tester" "icon with tag" -i "$TESTDIR/tmp.png" -h string:x-dunst-stack-tag:test
-    keypress
+    for i in 1 2; do
+        $DUNSTIFY -a "dunst tester" "icon with tag $i" -i "$TESTDIR/tmp.png" -h string:x-dunst-stack-tag:test
+        keypress
+    done
 
     cp "$DATADIR/adwaita-icon2.png" "$TESTDIR/tmp.png"
-    $DUNSTIFY -a "dunst tester" "icon with tag" -i "$TESTDIR/tmp.png" -h string:x-dunst-stack-tag:test
-    keypress
-
-    $DUNSTIFY -a "dunst tester" "icon with tag" -i "$TESTDIR/tmp.png" -h string:x-dunst-stack-tag:test
-    keypress
+    for i in 1 2; do
+        $DUNSTIFY -a "dunst tester" "icon with tag $i" -i "$TESTDIR/tmp.png" -h string:x-dunst-stack-tag:test
+        keypress
+    done
 
     $DUNSTCTL close-all
 
     echo "Tagged raw icon"
     cp "$DATADIR/adwaita-icon1.png" "$TESTDIR/tmp.png"
-    $DUNSTIFY -a "dunst tester" "raw icon with tag" -I "$TESTDIR/tmp.png" -h string:x-dunst-stack-tag:test
-    keypress
-
-    $DUNSTIFY -a "dunst tester" "raw icon with tag" -I "$TESTDIR/tmp.png" -h string:x-dunst-stack-tag:test
-    keypress
+    for i in 1 2; do
+        $DUNSTIFY -a "dunst tester" "raw icon with tag $i" -I "$TESTDIR/tmp.png" -h string:x-dunst-stack-tag:test
+        keypress
+    done
 
     cp "$DATADIR/adwaita-icon2.png" "$TESTDIR/tmp.png"
-    $DUNSTIFY -a "dunst tester" "raw icon with tag" -I "$TESTDIR/tmp.png" -h string:x-dunst-stack-tag:test
-    keypress
-
-    $DUNSTIFY -a "dunst tester" "raw icon with tag" -I "$TESTDIR/tmp.png" -h string:x-dunst-stack-tag:test
-    keypress
+    for i in 1 2; do
+        $DUNSTIFY -a "dunst tester" "raw icon with tag $i" -I "$TESTDIR/tmp.png" -h string:x-dunst-stack-tag:test
+        keypress
+    done
 }
 
 if [ -n "$1" ]; then

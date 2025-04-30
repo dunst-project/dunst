@@ -29,6 +29,7 @@ TEST test_notification_is_duplicate(void)
         a->body = g_strdup("Body");
         a->iconname = g_strdup("Icon");
         a->icon_id = g_strdup("Icon");
+        a->icon_position = ICON_LEFT;
         a->urgency = URG_NORM;
 
         struct notification *b = notification_create();
@@ -37,6 +38,7 @@ TEST test_notification_is_duplicate(void)
         b->body = g_strdup("Body");
         b->iconname = g_strdup("Icon");
         b->icon_id = g_strdup("Icon");
+        b->icon_position = ICON_LEFT;
         b->urgency = URG_NORM;
 
         ASSERT(notification_is_duplicate(a, b));
