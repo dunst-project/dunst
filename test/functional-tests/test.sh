@@ -468,6 +468,9 @@ function replaced_icon {
     $DUNSTIFY -a "dunst tester" "just icon" -i "$TESTDIR/tmp.png"
     keypress
 
+    $DUNSTIFY -a "dunst tester" "just icon" -i "$TESTDIR/tmp.png"
+    keypress
+
     $DUNSTCTL close-all
 
     echo "Raw icon"
@@ -479,6 +482,9 @@ function replaced_icon {
     keypress
 
     cp "$DATADIR/adwaita-icon2.png" "$TESTDIR/tmp.png"
+    $DUNSTIFY -a "dunst tester" "just raw icon" -I "$TESTDIR/tmp.png"
+    keypress
+
     $DUNSTIFY -a "dunst tester" "just raw icon" -I "$TESTDIR/tmp.png"
     keypress
 
@@ -496,6 +502,9 @@ function replaced_icon {
     $DUNSTIFY -a "dunst tester" "icon with tag" -i "$TESTDIR/tmp.png" -h string:x-dunst-stack-tag:test
     keypress
 
+    $DUNSTIFY -a "dunst tester" "icon with tag" -i "$TESTDIR/tmp.png" -h string:x-dunst-stack-tag:test
+    keypress
+
     $DUNSTCTL close-all
 
     echo "Tagged raw icon"
@@ -507,6 +516,9 @@ function replaced_icon {
     keypress
 
     cp "$DATADIR/adwaita-icon2.png" "$TESTDIR/tmp.png"
+    $DUNSTIFY -a "dunst tester" "raw icon with tag" -I "$TESTDIR/tmp.png" -h string:x-dunst-stack-tag:test
+    keypress
+
     $DUNSTIFY -a "dunst tester" "raw icon with tag" -I "$TESTDIR/tmp.png" -h string:x-dunst-stack-tag:test
     keypress
 }

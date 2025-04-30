@@ -58,7 +58,7 @@ void notification_print(const struct notification *n)
         printf("\tsummary: '%s'\n", STR_NN(n->summary));
         printf("\tbody: '%s'\n", STR_NN(n->body));
         printf("\ticon: '%s'\n", STR_NN(n->iconname));
-        printf("\traw_icon set: %s\n", (n->icon_id && !STR_EQ(n->iconname, n->icon_id)) ? "true" : "false");
+        printf("\traw_icon: %s\n", (n->icon_id && STR_EMPTY(n->iconname)) ? "true" : "false");
         printf("\ticon_id: '%s'\n", STR_NN(n->icon_id));
         printf("\ticon_time: %"G_GINT64_FORMAT"\n", n->icon_time);
         printf("\tdesktop_entry: '%s'\n", n->desktop_entry ? n->desktop_entry : "");
@@ -247,7 +247,9 @@ bool notification_is_duplicate(const struct notification *a, const struct notifi
         return STR_EQ(a->appname, b->appname)
             && STR_EQ(a->summary, b->summary)
             && STR_EQ(a->body, b->body)
-            && (a->icon_id && b->icon_id && a->icon_position != ICON_OFF ? STR_EQ(a->icon_id, b->icon_id) : true)
+            && a->icon_position == b->icon_position
+            && (a->iconname && b->iconname ? STR_EQ(a->iconname, b->iconname) : 1)
+            && (a->icon_id && b->icon_id ? STR_EQ(a->icon_id, b->icon_id) : 1)
             && a->urgency == b->urgency;
 }
 
@@ -341,29 +343,14 @@ void notification_unref(struct notification *n)
 
 void notification_transfer_icon(struct notification *from, struct notification *to)
 {
-        if (from->iconname && to->iconname && STR_EQ(from->iconname, to->iconname)) {
-                // Paths are the same. Check the timestamp
+        // Transfer icon surface
+        to->icon = from->icon;
+        to->icon_id = from->icon_id;
+        to->icon_time = from->icon_time;
 
-                struct stat statbuf;
-                if (stat(from->iconname, &statbuf) != 0)
-                        return;
-
-
-                gint64 timestamp = S2US(statbuf.st_mtim.tv_sec) + statbuf.st_mtim.tv_nsec / 1000;
-                if (timestamp > from->icon_time)
-                        return;
-
-                LOG_D("Transferred icon %s (%d -> %d)", from->iconname, from->id, to->id);
-
-                // Transfer icon surface
-                to->icon = from->icon;
-                to->icon_id = from->icon_id;
-                to->icon_time = from->icon_time;
-
-                // prevent the surface being freed by the old notification
-                from->icon = NULL;
-                from->icon_id = NULL;
-        }
+        // Prevent the surface being freed by the old notification
+        from->icon = NULL;
+        from->icon_id = NULL;
 }
 
 void notification_icon_replace_path(struct notification *n, const char *new_icon)
