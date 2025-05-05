@@ -609,7 +609,7 @@ static void notification_format_message(struct notification *n)
                         notification_replace_single_field(
                                 &n->msg,
                                 &substr,
-                                n->stack_tag,
+                                n->stack_tag ? n->stack_tag : "",
                                 MARKUP_NO);
                         break;
                 case 'I':
