@@ -142,9 +142,9 @@ docs/dunst.1: docs/dunst.1.pod
 docs/dunst.5: docs/dunst.5.pod
 	${POD2MAN} --name=dunst -c "Dunst Reference" --section=5 --release=${VERSION} $< > $@
 docs/dunstctl.1: docs/dunstctl.pod
-	${POD2MAN} --name=dunstctl -c "dunstctl reference" --section=1 --release=${VERSION} $< > $@
+	${POD2MAN} --name=dunstctl -c "Dunstctl Reference" --section=1 --release=${VERSION} $< > $@
 docs/dunstify.1: docs/dunstify.pod
-	${POD2MAN} --name=dunstify -c "dunstify reference" --section=1 --release=${VERSION} $< > $@
+	${POD2MAN} --name=dunstify -c "Dunstify Reference" --section=1 --release=${VERSION} $< > $@
 
 doc-doxygen:
 	${DOXYGEN} docs/internal/Doxyfile
@@ -200,6 +200,7 @@ clean-dunstify:
 
 clean-doc:
 	rm -f docs/dunst.1
+	rm -f docs/dunst.1.pod
 	rm -f docs/dunst.5
 	rm -f docs/dunstctl.1
 	rm -f docs/dunstify.1

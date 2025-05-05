@@ -49,6 +49,9 @@ indent_style = tab
 [test/functional-tests/dunstrc.vertical_align]
 indent_style =
 
+[meson.build]
+indent_size = 4
+
 # Contains external or generated files
 [src/wayland/protocols/**]
 indent_style =

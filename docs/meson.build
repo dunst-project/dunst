@@ -48,8 +48,25 @@ custom_target(
     output: 'dunstctl.1',
     command: [
         pod2man,
-        '--name=dunst',
-        '--center=dunstctl Reference',
+        '--name=dunstctl',
+        '--center=Dunstctl Reference',
+        '--section=1',
+        pod2man_version_arg,
+        '@INPUT@',
+        '@OUTPUT@',
+    ],
+    install: true,
+    install_dir: man1,
+)
+
+custom_target(
+    'dunstify_pod2man',
+    input: 'dunstify.pod',
+    output: 'dunstify.1',
+    command: [
+        pod2man,
+        '--name=dunstify',
+        '--center=Dunstify Reference',
         '--section=1',
         pod2man_version_arg,
         '@INPUT@',
