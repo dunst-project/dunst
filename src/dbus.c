@@ -896,7 +896,6 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
                         }
                 }
 
-
                 gradient_pattern(grad);
 
                 notification_keep_original(n);
