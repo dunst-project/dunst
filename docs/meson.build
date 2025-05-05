@@ -15,7 +15,7 @@ custom_target(
     command: [
         pod2man,
         '--name=dunst',
-        '--center="Dunst Reference"',
+        '--center=Dunst Reference',
         '--section=1',
         pod2man_version_arg,
         '@INPUT@',
@@ -32,7 +32,7 @@ custom_target(
     command: [
         pod2man,
         '--name=dunst',
-        '--center="Dunst Reference"',
+        '--center=Dunst Reference',
         '--section=5',
         pod2man_version_arg,
         '@INPUT@',
@@ -49,7 +49,7 @@ custom_target(
     command: [
         pod2man,
         '--name=dunstctl',
-        '--center="Dunstctl Reference"',
+        '--center=Dunstctl Reference',
         '--section=1',
         pod2man_version_arg,
         '@INPUT@',
@@ -66,7 +66,7 @@ custom_target(
     command: [
         pod2man,
         '--name=dunstify',
-        '--center="Dunstify Reference"',
+        '--center=Dunstify Reference',
         '--section=1',
         pod2man_version_arg,
         '@INPUT@',
