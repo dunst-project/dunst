@@ -269,6 +269,7 @@ SUITE(suite_notification)
         a->body     = g_strdup("Look at my shiny <notification>");
         a->category = g_strdup("This category");
         a->iconname = g_strdup("/this/is/my/icoknpath.png");
+        a->stack_tag = g_strdup("test");
         a->progress = 95;
 
         const char *strings[] = {
@@ -276,7 +277,7 @@ SUITE(suite_notification)
                 "%s", "I&apos;ve got a summary!",
                 "%b", "Look at my shiny <notification>",
                 "%c", "This category",
-                "%U", "NORMAL",
+                "%S", "test",
                 "%I", "icoknpath.png",
                 "%i", "/this/is/my/icoknpath.png",
                 "%p", "[ 95%]",

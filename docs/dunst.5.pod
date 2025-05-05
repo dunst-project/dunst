@@ -418,7 +418,7 @@ For a complete markup reference, see
 
 =item B<%c>  category
 
-=item B<%U>  urgency (LOW, NORMAL, CRITICAL)
+=item B<%S>  stack_tag
 
 =item B<%i>  iconname (including its path)
 

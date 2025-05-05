@@ -605,11 +605,11 @@ static void notification_format_message(struct notification *n)
                                 n->category,
                                 MARKUP_NO);
                         break;
-                case 'U':
+                case 'S':
                         notification_replace_single_field(
                                 &n->msg,
                                 &substr,
-                                notification_urgency_to_string(n->urgency),
+                                n->stack_tag,
                                 MARKUP_NO);
                         break;
                 case 'I':
