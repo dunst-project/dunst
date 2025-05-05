@@ -3,10 +3,7 @@
 
 include config.mk
 
-VERSION := "1.13.0-non-git"
-ifneq ($(wildcard ./.git/),)
-VERSION := "$(shell ${GIT} describe --tags 2>/dev/null || echo ${VERSION})"
-endif
+VERSION := "$(shell ./get-version.sh)"
 
 SYSTEMD ?= $(shell $(PKG_CONFIG) --silence-errors ${SYSTEMDAEMON} || echo 0)
 

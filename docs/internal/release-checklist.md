@@ -2,7 +2,7 @@
  - [ ] Update the changelog
  - [ ] Write release notes (Only if non-patch release)
  - [ ] Verify that the working directory is clean and on the master branch
- - [ ] Change the version in the Makefile to "x.x.x (iso-date)" (ex. "1.9.0 (2022-06-27)")
+ - [ ] Change the version in the get-version.sh to "x.x.x (iso-date)" (ex. "1.9.0 (2022-06-27)")
  - [ ] Commit changes (Commit title: `Dunst vX.X.X`)
  - [ ] Tag commit, make sure it's an annotated tag (`git tag -a "vX.X.X" -m "Dunst vX.X.X"`)
  - [ ] Push commits and tags
@@ -17,5 +17,5 @@
  - [ ] Copy release notes to githubs release feature
  - [ ] Publish release on github
 
- - [ ] Update Makefile version to "x.x.x-non-git"
+ - [ ] Update the get-version.sh fallback to "x.x.x-non-git"
  - [ ] Commit & push

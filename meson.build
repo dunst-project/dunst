@@ -1,7 +1,7 @@
 project(
     'dunst',
     'c',
-    version: '1.9.2',
+    version: run_command('./get-version.sh', check: true).stdout(),
     license: 'MIT',
     meson_version: '>=0.60.0',
     default_options: [
