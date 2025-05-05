@@ -146,16 +146,17 @@ FILE *fopen_conf(char * const path)
 }
 
 void check_and_correct_settings(struct settings *s) {
+        bool on_wayland = is_running_wayland();
 
 #ifndef ENABLE_WAYLAND
-        if (is_running_wayland()) {
+        if (on_wayland) {
                 /* We are using xwayland now. Setting force_xwayland to make sure
                  * the idle workaround below is activated */
                 settings.force_xwayland = true;
         }
 #endif
 
-        if (settings.force_xwayland && is_running_wayland()) {
+        if (settings.force_xwayland && on_wayland) {
                 if (settings.idle_threshold > 0)
                         LOG_W("Using xwayland. Disabling idle.");
                 /* There is no way to detect if the user is idle

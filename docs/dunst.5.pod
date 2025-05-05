@@ -20,7 +20,9 @@ filters: it applies to all notifications.
 
 See RULES for more details.
 
-All experimental settings are marked with I<Experimental>.
+The "experimental" section contains experimental and unstable settings.
+These options can change in breaking ways between releases.
+If you find a problem with these new features, make sure to report it.
 
 =head2 Global section
 
@@ -31,7 +33,7 @@ All experimental settings are marked with I<Experimental>.
 Specifies on which monitor the notifications should be displayed in, either by
 name or by number, starting from 0. See the B<follow> setting.
 
-=item B<follow> (values: [none/mouse/keyboard] default: none)
+=item B<follow> (values: [none/mouse/keyboard], default: none)
 
 Defines where the notifications should be placed in a multi-monitor setup. All
 values except I<none> override the B<monitor> setting.
@@ -148,7 +150,7 @@ Origin can be one of:
     center
     right-center
 
-=item B<offset> format: (horizontal, vertical)
+=item B<offset> (format: (horizontal, vertical), default: (10, 50))
 
 Respectively the horizontal and vertical offset in pixels from the corner
 of the screen specified by B<origin>. A negative offset will lead to the
@@ -164,7 +166,7 @@ For backwards compatibility this syntax is also accepted.
 
     offset = 10x300
 
-=item B<scale> (default: 0, X11 only)
+=item B<scale> (default: 0) (X11 only)
 
 Specifies a scale factor for dimensions to adapt notifications to
 HiDPI screens. This scales the notification geometry and it's
@@ -304,7 +306,7 @@ of size B<frame_width> will be drawn around each notification instead.
 This setting requires a compositor and any applications displayed between the
 gaps are not currently clickable.
 
-=item B<separator_color> (values: [auto/foreground/frame/#RRGGBB] default: frame)
+=item B<separator_color> (values: [auto/foreground/frame/#RRGGBB], default: frame)
 
 Sets the color of the separator line between two notifications.
 
@@ -422,7 +424,7 @@ For a complete markup reference, see
 
 =item B<%n>  progress value without any extra characters
 
-=item B<%%>  Literal %
+=item B<%%>  literal %
 
 =back
 
@@ -489,7 +491,7 @@ https://specifications.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.ht
 
 If the theme inherits from other themes, they will be used as a backup.
 
-This setting is experimental and not enabled by default. See
+This setting is not enabled by default. See
 B<enable_recursive_icon_lookup> for how to enable it.
 
 =item B<enable_recursive_icon_lookup> (default: false)
@@ -691,6 +693,17 @@ See the example configuration file for examples.
 Old version of dunst allowed changing the colors of different urgencies through
 command line options. This has been long removed in favour of RULES, see issue #328.
 
+=head2 Experimental section
+
+=over 4
+
+=item B<per_monitor_dpi> (default: false)
+
+Use different DPI for each monitor.
+This setting is currently implemented only for X11.
+
+=back
+
 =head1 DUNSTCTL
 
 Dunst now contains a command line control command that can be used to interact
@@ -796,7 +809,7 @@ The allowed attributes are listed below.
 
 =over 4
 
-=item C<appname> (discouraged, see desktop_entry)
+=item C<appname> (see also desktop_entry)
 
 The name of the application as reported by the client. Be aware that the name
 can often differ depending on the locale used.
@@ -1139,55 +1152,70 @@ See RULES for more detailed explanations for some options.
 
 =over 4
 
-=item B<fgcolor>
+=item B<fgcolor> (type: string)
 
 Foreground color.
 
-=item B<bgcolor>
+=item B<bgcolor> (type: string)
 
 Background color.
 
-=item B<frcolor>
+=item B<frcolor> (type: string)
 
 Frame color.
 
-=item B<hlcolor>
+=item B<hlcolor> (type: string or string array)
 
 Highlight color.
 
-=item B<value>
+=item B<value> (type: int or uint)
 
 Progress value.
 
-=item B<image-path>
+=item B<image-path> (type: string)
 
 Icon name. This may be a path or just the icon name.
 
-=item B<image-data>
+The alias B<image_path> is also supported.
+
+=item B<image-data> (type: variant)
 
 A stream of raw image data.
 
-=item B<category>
+The aliases B<image_data> and B<icon_data> are also supported.
+
+=item B<category> (type: string)
 
 The category.
 
-=item B<desktop-entry>
+=item B<desktop-entry> (type: string)
 
 The desktop entry.
 
-=item B<transient>
+=item B<transient> (type: int or boolean)
 
 The transient value.
+
+=item B<x-dunst-stack-tag> (type: string)
+
+The stack tag of the notification.
+A tagged notification will replace an earlier notification with the same tag.
+
+=item B<x-canonical-private-synchronous> (type: string)
+
+Alias for B<x-dunst-stack-tag>.
 
 =back
 
 Some examples:
 
-    notify-send -h string:fgcolor:#ff4444
+    notify-send -h string:fgcolor:#ff4444 "hello"
 
-    notify-send -h string:bgcolor:#4444ff -h string:fgcolor:#ff4444 -h string:frcolor:#44ff44
+    notify-send -h string:bgcolor:#4444ff -h string:fgcolor:#ff4444 -h string:frcolor:#44ff44 ":)"
 
     notify-send -h int:value:42 "Working ..."
+
+    notify-send -h string:x-canonical-private-synchronous:volume "Muted"
 
 =head1 ACTIONS
 
