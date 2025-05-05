@@ -13,23 +13,36 @@ project(
 
 cc = meson.get_compiler('c')
 
+# Required dependencies
 cairo = dependency('cairo')
 glib = dependency('glib-2.0')
 gio = dependency('gio-2.0')
 gdk_pixbuf = dependency('gdk-pixbuf-2.0')
 pangocairo = dependency('pangocairo')
+realtime = cc.find_library('rt')
+math = cc.find_library('m')
+
+# Optional dependencies (X11)
 x11 = dependency('x11', required: get_option('x11'))
 xinerama = dependency('xinerama', required: get_option('x11'))
 xext = dependency('xext', required: get_option('x11'))
 xrandr = dependency('xrandr', required: get_option('x11'), version: '>=1.5')
 xscrnsaver = dependency('xscrnsaver', required: get_option('x11'))
-systemd = dependency('systemd', required: get_option('systemd'))
-libnotify = dependency('libnotify', required: get_option('dunstify'))
-realtime = cc.find_library('rt')
-math = cc.find_library('m')
+
+x11_support = x11.found() and xinerama.found() and xext.found() and xrandr.found() and xscrnsaver.found()
+
+# Optional dependencies (Wayland)
 wayland_client = dependency('wayland-client', required: get_option('wayland'))
 wayland_protos = dependency('wayland-protocols', version: '>=1.12', required: get_option('wayland'))
 wayland_cursor = dependency('wayland-cursor', required: get_option('wayland'))
+
+wayland_support = wayland_client.found() and wayland_cursor.found() and wayland_protos.found()
+
+# Soft dependency (systemd)
+systemd = dependency('systemd', required: get_option('systemd'))
+
+# Optional dependency (dunstify)
+libnotify = dependency('libnotify', required: get_option('dunstify'))
 
 dunst_depends = [
     cairo,
@@ -43,15 +56,8 @@ dunst_depends = [
     math,
 ]
 
-x11_support = x11.found() and xinerama.found() and xext.found() and xrandr.found() and xscrnsaver.found()
-wayland_support = wayland_client.found() and wayland_cursor.found() and wayland_protos.found()
-
 if not x11_support and not wayland_support
-    error('either wayland or x11 support is required')
-endif
-
-if wayland_support and not x11_support
-    add_project_arguments('-DWAYLAND_ONLY', language: 'c')
+    error('You have to compile at least one output (X11, Wayland)')
 endif
 
 if x11_support
@@ -62,6 +68,10 @@ endif
 if wayland_support
     dunst_depends += [wayland_client, wayland_cursor]
     add_project_arguments('-DENABLE_WAYLAND', language: 'c')
+
+    if not x11_support
+        add_project_arguments('-DWAYLAND_ONLY', language: 'c')
+    endif
 endif
 
 c_version_arg = '-DVERSION="@0@"'.format(meson.project_version())
@@ -78,8 +88,8 @@ install_data('dunstctl', install_dir: get_option('bindir'))
 install_data('dunstrc', install_dir: sysconfdir / 'dunst')
 
 conf_data = configuration_data()
-conf_data.set('bindir', get_option('bindir'))
-conf_data.set('sysconfdir', sysconfdir)
+conf_data.set('bindir', get_option('prefix') / get_option('bindir'))
+conf_data.set('sysconfdir', get_option('prefix') / sysconfdir)
 
 configure_file(
     input: 'org.knopwob.dunst.service.in',
