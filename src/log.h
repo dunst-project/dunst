@@ -44,7 +44,13 @@
 
 // unified fopen() result messages
 #define MSG_FOPEN_SUCCESS(path, fp) "Opened '%s' (fd: '%d')", path, fileno(fp)
-#define MSG_FOPEN_FAILURE(path) "Cannot open '%s': '%s'", path, strerror(errno)
+#define MSG_FOPEN_FAILURE(path) "Cannot open '%s': %s", path, strerror(errno)
+
+enum log_mask {
+        DUNST_LOG_NONE,
+        DUNST_LOG_ALL,
+        DUNST_LOG_AUTO,
+};
 
 /**
  * Set the current loglevel to `level`
@@ -69,10 +75,10 @@ void log_set_level_from_string(const char* level);
 /**
  * Initialise log handling. Can be called any time.
  *
- * @param testing If we're in testing mode and should
- *                suppress all output
+ * @param mask If we're in testing mode and should
+ *                suppress all output or show all
  */
-void dunst_log_init(bool testing);
+void dunst_log_init(enum log_mask mask);
 
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

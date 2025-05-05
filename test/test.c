@@ -37,11 +37,10 @@ int main(int argc, char *argv[]) {
         base = realpath(base ? base : "./test", NULL);
 
         /* By default do not print out warning messages, when executing tests.
-         * But allow, if DUNST_TEST_LOG=1 is set in environment. */
+         * But if DUNST_TEST_LOG=1 is set in environment, print everything. */
         const char *log = getenv("DUNST_TEST_LOG");
-        bool printlog = log && atoi(log) ? true : false;
-        dunst_log_init(!printlog);
-
+        enum log_mask printlog = (log && atoi(log)) ? DUNST_LOG_ALL : DUNST_LOG_NONE;
+        dunst_log_init(printlog);
 
         // initialize settings
         char **configs = g_malloc0(2 * sizeof(char *));

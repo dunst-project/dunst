@@ -146,16 +146,17 @@ FILE *fopen_conf(char * const path)
 }
 
 void check_and_correct_settings(struct settings *s) {
+        bool on_wayland = is_running_wayland();
 
 #ifndef ENABLE_WAYLAND
-        if (is_running_wayland()) {
+        if (on_wayland) {
                 /* We are using xwayland now. Setting force_xwayland to make sure
                  * the idle workaround below is activated */
                 settings.force_xwayland = true;
         }
 #endif
 
-        if (settings.force_xwayland && is_running_wayland()) {
+        if (settings.force_xwayland && on_wayland) {
                 if (settings.idle_threshold > 0)
                         LOG_W("Using xwayland. Disabling idle.");
                 /* There is no way to detect if the user is idle
@@ -262,19 +263,19 @@ static void process_conf_file(const gpointer conf_fname, gpointer n_success) {
         ++(*(int *) n_success);
 }
 
-void load_settings(char **const config_paths)
+void load_settings(char **const paths)
 {
         LOG_D("Setting defaults");
         set_defaults();
 
-        guint length = g_strv_length(config_paths);
+        guint length = g_strv_length(paths);
 
         GPtrArray *conf_files;
 
         if (length != 0) {
                 conf_files = g_ptr_array_new_full(length, g_free);
-                for (int i = 0; config_paths[i]; i++)
-                        g_ptr_array_add(conf_files, g_strdup(config_paths[i]));
+                for (int i = 0; paths[i]; i++)
+                        g_ptr_array_add(conf_files, g_strdup(paths[i]));
         } else {
                 // Use default locations (and search drop-ins)
                 conf_files = get_conf_files();

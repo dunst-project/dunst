@@ -67,7 +67,7 @@ const struct output* get_x11_output(void) {
         if (output->init()) {
                 return output;
         } else {
-                LOG_E("Couldn't initialize X11 output. Aborting...");
+                DIE("Couldn't initialize X11 output. Aborting...");
         }
 }
 #endif

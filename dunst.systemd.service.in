@@ -6,5 +6,5 @@ PartOf=graphical-session.target
 [Service]
 Type=dbus
 BusName=org.freedesktop.Notifications
-ExecStart=##PREFIX##/bin/dunst
+ExecStart=@bindir@/dunst
 Slice=session.slice

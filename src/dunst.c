@@ -26,7 +26,7 @@ GMainLoop *mainloop = NULL;
 
 static struct dunst_status status;
 static bool setup_done = false;
-static char **config_paths = NULL;
+char **config_paths = NULL;
 
 /* see dunst.h */
 void dunst_status(const enum dunst_status_field field,
@@ -232,7 +232,7 @@ void reload(char **const configs)
         rules = NULL;
 
         settings_free(&settings);
-        load_settings(configs);
+        load_settings(length != 0 ? configs : config_paths);
 
         draw_setup();
         setup_done = true;
@@ -251,7 +251,7 @@ int dunst_main(int argc, char *argv[])
 
         cmdline_load(argc, argv);
 
-        dunst_log_init(false);
+        dunst_log_init(DUNST_LOG_AUTO);
 
         if (cmdline_get_bool("-v/-version/--version", false, "Print version")) {
                 print_version();
@@ -348,14 +348,20 @@ void usage(int exit_status)
 void print_version(void)
 {
         printf("Dunst - A customizable and lightweight notification-daemon %s\n", VERSION);
+#ifdef _CCDATE
         printf("Compiled on %s with the following options:\n", STR_TO(_CCDATE));
+#endif
 
         printf("X11 support: %s\n", X11_SUPPORT ? "enabled" : "disabled");
         printf("Wayland support: %s\n", WAYLAND_SUPPORT ? "enabled" : "disabled");
         printf("SYSCONFDIR set to: %s\n", SYSCONFDIR);
 
+#ifdef _CFLAGS
         printf("Compiler flags: %s\n", STR_TO(_CFLAGS));
+#endif
+#ifdef _LDFLAGS
         printf("Linker flags: %s\n", STR_TO(_LDFLAGS));
+#endif
         exit(EXIT_SUCCESS);
 }
 

@@ -11,6 +11,7 @@ static gchar *summary = NULL;
 static gchar *body = NULL;
 static NotifyUrgency urgency = NOTIFY_URGENCY_NORMAL;
 static gchar *urgency_str = NULL;
+static gchar *category = NULL;
 static gchar **hint_strs = NULL;
 static gchar **action_strs = NULL;
 static gint timeout = NOTIFY_EXPIRES_DEFAULT;
@@ -22,22 +23,25 @@ static gboolean printid = false;
 static guint32 replace_id = 0;
 static guint32 close_id = 0;
 static gboolean block = false;
+static gchar **rest = NULL;
 
 static GOptionEntry entries[] =
 {
-    { "appname",      'a', 0, G_OPTION_ARG_STRING,       &appname,        "Name of your application", "NAME" },
-    { "urgency",      'u', 0, G_OPTION_ARG_STRING,       &urgency_str,    "The urgency of this notification", "URG" },
-    { "hints",        'h', 0, G_OPTION_ARG_STRING_ARRAY, &hint_strs,      "User specified hints", "HINT" },
-    { "action",       'A', 0, G_OPTION_ARG_STRING_ARRAY, &action_strs,    "Actions the user can invoke", "ACTION" },
-    { "timeout",      't', 0, G_OPTION_ARG_INT,          &timeout,        "The time in milliseconds until the notification expires", "TIMEOUT" },
-    { "icon",         'i', 0, G_OPTION_ARG_STRING,       &icon,           "An icon that should be displayed with the notification", "ICON" },
-    { "raw_icon",     'I', 0, G_OPTION_ARG_STRING,       &raw_icon_path,  "Path to the icon to be sent as raw image data", "RAW_ICON"},
-    { "capabilities", 'c', 0, G_OPTION_ARG_NONE,         &capabilities,   "Print the server capabilities and exit", NULL},
-    { "serverinfo",   's', 0, G_OPTION_ARG_NONE,         &serverinfo,     "Print server information and exit", NULL},
-    { "printid",      'p', 0, G_OPTION_ARG_NONE,         &printid,        "Print id, which can be used to update/replace this notification", NULL},
-    { "replace",      'r', 0, G_OPTION_ARG_INT,          &replace_id,     "Set id of this notification.", "ID"},
-    { "close",        'C', 0, G_OPTION_ARG_INT,          &close_id,       "Close the notification with the specified ID", "ID"},
-    { "block",        'b', 0, G_OPTION_ARG_NONE,         &block,          "Block until notification is closed and print close reason", NULL},
+    { "appname",          'a', 0, G_OPTION_ARG_STRING,         &appname,        "Name of your application", "NAME" },
+    { "urgency",          'u', 0, G_OPTION_ARG_STRING,         &urgency_str,    "The urgency of this notification", "URG" },
+    { "hints",            'h', 0, G_OPTION_ARG_STRING_ARRAY,   &hint_strs,      "User specified hints", "HINT" },
+    { "action",           'A', 0, G_OPTION_ARG_STRING_ARRAY,   &action_strs,    "Actions the user can invoke", "ACTION" },
+    { "timeout",          't', 0, G_OPTION_ARG_INT,            &timeout,        "The time in milliseconds until the notification expires", "TIMEOUT" },
+    { "icon",             'i', 0, G_OPTION_ARG_STRING,         &icon,           "An icon that should be displayed with the notification", "ICON" },
+    { "raw_icon",         'I', 0, G_OPTION_ARG_STRING,         &raw_icon_path,  "Path to the icon to be sent as raw image data", "RAW_ICON"},
+    { "category",         'c', 0, G_OPTION_ARG_STRING,         &category,       "The category of this notification", "TYPE" },
+    { "capabilities",     0,   0, G_OPTION_ARG_NONE,           &capabilities,   "Print the server capabilities and exit", NULL },
+    { "serverinfo",       's', 0, G_OPTION_ARG_NONE,           &serverinfo,     "Print server information and exit", NULL },
+    { "printid",          'p', 0, G_OPTION_ARG_NONE,           &printid,        "Print id, which can be used to update/replace this notification", NULL },
+    { "replace",          'r', 0, G_OPTION_ARG_INT,            &replace_id,     "Set id of this notification.", "ID" },
+    { "close",            'C', 0, G_OPTION_ARG_INT,            &close_id,       "Close the notification with the specified ID", "ID" },
+    { "block",            'b', 0, G_OPTION_ARG_NONE,           &block,          "Block until notification is closed and print close reason", NULL },
+    { G_OPTION_REMAINING, 0,   0, G_OPTION_ARG_FILENAME_ARRAY, &rest,            NULL, NULL },
     { NULL }
 };
 
@@ -132,18 +136,22 @@ void parse_commandline(int argc, char *argv[])
         die(1);
     }
 
-    int n_args = count_args(argv, argc);
-    if (n_args < 2 && close_id < 1) {
-        g_printerr("I need at least a summary\n");
-        die(1);
-    } else if (n_args < 2) {
-        summary = g_strdup("These are not the summaries you are looking for");
-    } else {
-        summary = g_strdup(get_argv(argv, 1));
+    if (rest != NULL && rest[0] != NULL) {
+        summary = rest[0];
+
+        if (rest[1] != NULL) {
+            body = g_strcompress(rest[1]);
+
+            if (rest[2] != NULL) {
+                    g_printerr("Too many arguments!\n");
+                    die(1);
+            }
+        }
     }
 
-    if (n_args > 2) {
-        body = g_strcompress(get_argv(argv, 2));
+    if (summary == NULL && close_id < 1) {
+        g_printerr("I need at least a summary\n");
+        die(1);
     }
 
     if (urgency_str) {
@@ -171,53 +179,16 @@ void parse_commandline(int argc, char *argv[])
     }
 }
 
-typedef struct _NotifyNotificationPrivate
+gint get_id(NotifyNotification *n)
 {
-        guint32         id;
-        char           *app_name;
-        char           *summary;
-        char           *body;
-
-        /* NULL to use icon data. Anything else to have server lookup icon */
-        char           *icon_name;
-
-        /*
-         * -1   = use server default
-         *  0   = never timeout
-         *  > 0 = Number of milliseconds before we timeout
-         */
-        gint            timeout;
-
-        GSList         *actions;
-        GHashTable     *action_map;
-        GHashTable     *hints;
-
-        gboolean        has_nondefault_actions;
-        gboolean        updates_pending;
-
-        gulong          proxy_signal_handler;
-
-        gint            closed_reason;
-} knickers;
-
-int get_id(NotifyNotification *n)
-{
-    knickers *kn = n->priv;
-
-    /* I'm sorry for taking a peek */
-    return kn->id;
+    gint32 id;
+    g_object_get(G_OBJECT(n), "id", &id, NULL);
+    return id;
 }
 
 void put_id(NotifyNotification *n, guint32 id)
 {
-    knickers *kn = n->priv;
-
-    /* And know I'm putting stuff into
-     * your knickers. I'm sorry.
-     * I'm so sorry.
-     * */
-
-    kn->id = id;
+    g_object_set(G_OBJECT(n), "id", id, NULL);
 }
 
 void actioned(NotifyNotification *n, char *a, gpointer foo)
@@ -281,15 +252,17 @@ void add_hint(NotifyNotification *n, char *str)
             notify_notification_set_hint_byte(n, name, (guchar) h_byte);
     } else
         g_printerr("Malformed hint. Expected a type of int, double, string or byte, got %s\n", type);
-
 }
 
 int main(int argc, char *argv[])
 {
     setlocale(LC_ALL, "");
+    g_set_prgname(argv[0]);
+
     #if !GLIB_CHECK_VERSION(2,35,0)
         g_type_init();
     #endif
+
     parse_commandline(argc, argv);
 
     if (!notify_init(appname)) {
@@ -297,10 +270,15 @@ int main(int argc, char *argv[])
         die(1);
     }
 
-    NotifyNotification *n;
-    n = notify_notification_new(summary, body, icon);
+    // NOTE: Needed to inform libnotify of the spec version
+    notify_get_server_info(NULL, NULL, NULL, NULL);
+
+    NotifyNotification *n = notify_notification_new(summary, body, icon);
     notify_notification_set_timeout(n, timeout);
     notify_notification_set_urgency(n, urgency);
+
+    if (category != NULL)
+        notify_notification_set_category(n, category);
 
     GError *err = NULL;
 
@@ -353,8 +331,10 @@ int main(int argc, char *argv[])
         die(1);
     }
 
-    if (printid)
+    if (printid) {
         g_print("%d\n", get_id(n));
+        fflush(stdout);
+    }
 
     if (block || action_strs)
         g_main_loop_run(l);

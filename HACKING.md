@@ -77,11 +77,11 @@ documentation for this can be found at https://github.com/dunst-project/docker-i
 # Comments
 
 - Comment system is held similar to JavaDoc
-    - Use `@param` to describe all input parameters
-    - Use `@return` to describe the output value
-    - Use `@retval` to describe special return values (like `NULL`)
-    - Documentation comments should start with a double star (`/**`)
-    - Append `()` to function names and prepend variables with `#` to properly reference them in the docs
+        - Use `@param` to describe all input parameters
+        - Use `@return` to describe the output value
+        - Use `@retval` to describe special return values (like `NULL`)
+        - Documentation comments should start with a double star (`/**`)
+        - Append `()` to function names and prepend variables with `#` to properly reference them in the docs
 - Add comments to all functions and methods
 - Markdown inside the comments is allowed and also desired
 - Add the comments to the prototype. Doxygen will merge the protoype and implementation documentation anyways.
@@ -104,21 +104,21 @@ documentation for this can be found at https://github.com/dunst-project/docker-i
 For logging, there are printf-like macros `LOG_(E|C|W|M|I|D)`.
 
 - `LOG_E` (ERROR):
-    - All messages, which lead to immediate abort and are caused by a programming error. The program needs patching and the error is not user recoverable.
-    - e.g.: Switching over an enum, `LOG_E` would go into the default case.
+        - All messages, which lead to immediate abort and are caused by a programming error. The program needs patching and the error is not user recoverable.
+        - e.g.: Switching over an enum, `LOG_E` would go into the default case.
 - `LOG_C` (CRITICAL):
-    - The program cannot continue to work. It is used in the wrong manner or some outer conditions are not met.
-    - e.g.: `-config` parameter value is unreadable file
+        - The program cannot continue to work. It is used in the wrong manner or some outer conditions are not met.
+        - e.g.: `-config` parameter value is unreadable file
 - `DIE` (CRITICAL):
-    - A shorthand for `LOG_C` and terminating the program after. This does not dump the core (unlike `LOG_E`).
+        - A shorthand for `LOG_C` and terminating the program after. This does not dump the core (unlike `LOG_E`).
 - `LOG_W` (WARNING):
-    - Something is not in shape, but it's recoverable.
-    - e.g.: A value is not parsable in the config file, which will default.
+        - Something is not in shape, but it's recoverable.
+        - e.g.: A value is not parsable in the config file, which will default.
 - `LOG_M` (MESSAGE):
-    - Important info, which informs about the state.
-    - e.g.: An empty notification does get removed immediately.
+        - Important info, which informs about the state.
+        - e.g.: An empty notification does get removed immediately.
 - `LOG_I` (INFO):
-    - Mostly unneccessary info, but important to debug (as the user) some use cases.
-    - e.g.: print the notification contents after arriving
+        - Mostly unneccessary info, but important to debug (as the user) some use cases.
+        - e.g.: print the notification contents after arriving
 - `LOG_D` (DEBUG):
-    - Only important during development or tracing some bugs (as the developer).
+        - Only important during development or tracing some bugs (as the developer).

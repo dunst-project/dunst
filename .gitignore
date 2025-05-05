@@ -10,6 +10,7 @@ core
 vgcore.*
 
 /docs/*.1
+/docs/dunst.1.pod
 /docs/*.5
 /docs/internal/coverage
 /docs/internal/html

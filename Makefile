@@ -3,10 +3,7 @@
 
 include config.mk
 
-VERSION := "1.12.1-non-git"
-ifneq ($(wildcard ./.git/),)
-VERSION := $(shell ${GIT} describe --tags 2>/dev/null || echo ${VERSION})
-endif
+VERSION := "$(shell ./get-version.sh)"
 
 SYSTEMD ?= $(shell $(PKG_CONFIG) --silence-errors ${SYSTEMDAEMON} || echo 0)
 
@@ -74,9 +71,15 @@ debug: all
 
 ${OBJ} ${TEST_OBJ}: Makefile config.mk
 
+DATE_FMT = +%Y-%m-%d
+ifdef SOURCE_DATE_EPOCH
+	BUILD_DATE ?= $(shell date -u -d "@$(SOURCE_DATE_EPOCH)" "$(DATE_FMT)" 2>/dev/null || date -u -r "$(SOURCE_DATE_EPOCH)" "$(DATE_FMT)" 2>/dev/null || date -u "$(DATE_FMT)")
+else
+	BUILD_DATE ?= $(shell date "$(DATE_FMT)")
+endif
 src/dunst.o: src/dunst.c
 	${CC} -o $@ -c $< ${CPPFLAGS} ${CFLAGS} \
-		-D_CCDATE="$(shell date '+%Y-%m-%d')" -D_CFLAGS="$(filter-out $(filter -I%,${INCS}),${CFLAGS})" -D_LDFLAGS="${LDFLAGS}"
+		-D_CCDATE="${BUILD_DATE}" -D_CFLAGS="$(filter-out $(filter -I%,${INCS}) -fdebug-prefix-map% -fmacro-prefix-map% -ffile-prefix-map%,${CFLAGS})" -D_LDFLAGS="$(filter-out -fdebug-prefix-map% -fmacro-prefix-map% -ffile-prefix-map%,${LDFLAGS})"
 
 %.o: %.c
 	${CC} -o $@ -c $< ${CPPFLAGS} ${CFLAGS}
@@ -132,14 +135,16 @@ doc: docs/dunst.1 docs/dunst.5 docs/dunstctl.1 docs/dunstify.1
 
 # Can't dedup this as we need to explicitly provide the name and title text to
 # pod2man :(
+docs/dunst.1.pod: docs/dunst.1.pod.in
+	${SED} "s|@sysconfdir@|${SYSCONFDIR}|" $< > $@
 docs/dunst.1: docs/dunst.1.pod
-	${SED} "s|##SYSCONFDIR##|${SYSCONFDIR}|" $< | ${POD2MAN} --name=dunst -c "Dunst Reference" --section=1 --release=${VERSION} > $@
+	${POD2MAN} --name=dunst -c "Dunst Reference" --section=1 --release=${VERSION} $< > $@
 docs/dunst.5: docs/dunst.5.pod
 	${POD2MAN} --name=dunst -c "Dunst Reference" --section=5 --release=${VERSION} $< > $@
 docs/dunstctl.1: docs/dunstctl.pod
-	${POD2MAN} --name=dunstctl -c "dunstctl reference" --section=1 --release=${VERSION} $< > $@
+	${POD2MAN} --name=dunstctl -c "Dunstctl Reference" --section=1 --release=${VERSION} $< > $@
 docs/dunstify.1: docs/dunstify.pod
-	${POD2MAN} --name=dunstify -c "dunstify reference" --section=1 --release=${VERSION} $< > $@
+	${POD2MAN} --name=dunstify -c "Dunstify Reference" --section=1 --release=${VERSION} $< > $@
 
 doc-doxygen:
 	${DOXYGEN} docs/internal/Doxyfile
@@ -147,11 +152,11 @@ doc-doxygen:
 .PHONY: service service-dbus service-systemd wayland-protocols
 service: service-dbus
 service-dbus:
-	@${SED} "s|##PREFIX##|$(PREFIX)|" org.knopwob.dunst.service.in > org.knopwob.dunst.service
+	@${SED} "s|@bindir@|$(BINDIR)|" org.knopwob.dunst.service.in > org.knopwob.dunst.service
 ifneq (0,${SYSTEMD})
 service: service-systemd
 service-systemd:
-	@${SED} "s|##PREFIX##|$(PREFIX)|" dunst.systemd.service.in > dunst.systemd.service
+	@${SED} "s|@bindir@|$(BINDIR)|" dunst.systemd.service.in > dunst.systemd.service
 endif
 
 ifneq (0,${WAYLAND})
@@ -195,6 +200,7 @@ clean-dunstify:
 
 clean-doc:
 	rm -f docs/dunst.1
+	rm -f docs/dunst.1.pod
 	rm -f docs/dunst.5
 	rm -f docs/dunstctl.1
 	rm -f docs/dunstify.1
@@ -216,10 +222,10 @@ clean-wayland-protocols:
 	rm -f src/wayland/protocols/*.h
 
 .PHONY: install install-dunst install-dunstctl install-dunstrc \
-        install-service install-service-dbus install-service-systemd \
-        uninstall uninstall-dunstctl uninstall-dunstrc \
-        uninstall-service uninstall-service-dbus uninstall-service-systemd \
-        uninstall-keepconf uninstall-purge
+	install-service install-service-dbus install-service-systemd \
+	uninstall uninstall-dunstctl uninstall-dunstrc \
+	uninstall-service uninstall-service-dbus uninstall-service-systemd \
+	uninstall-keepconf uninstall-purge
 install: install-dunst install-dunstctl install-dunstrc install-service
 
 install-dunst: dunst doc
