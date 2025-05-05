@@ -566,6 +566,7 @@ static void notification_format_message(struct notification *n)
         g_clear_pointer(&n->msg, g_free);
 
         n->msg = string_replace_all("\\n", "\n", g_strdup(n->format));
+        n->msg = string_replace_all("\\t", "\t", n->msg);
 
         /* replace all formatter */
         for(char *substr = strchr(n->msg, '%');
@@ -596,6 +597,20 @@ static void notification_format_message(struct notification *n)
                                 &substr,
                                 n->body,
                                 n->markup);
+                        break;
+                case 'c':
+                        notification_replace_single_field(
+                                &n->msg,
+                                &substr,
+                                n->category,
+                                MARKUP_NO);
+                        break;
+                case 'S':
+                        notification_replace_single_field(
+                                &n->msg,
+                                &substr,
+                                n->stack_tag,
+                                MARKUP_NO);
                         break;
                 case 'I':
                         icon_tmp = g_strdup(n->iconname);

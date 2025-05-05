@@ -397,10 +397,10 @@ the notification window.
 
 Regardless of the status of the B<markup> setting, any markup tags that are
 present in the format will be parsed. Note that because of that, if a literal
-ampersand (&) is needed it needs to be escaped as '&amp;'
+ampersand (&) is needed it needs to be escaped as '&amp;'.
 
-If '\n' is present anywhere in the format, it will be replaced with
-a literal newline.
+If '\n' or '\t' is present anywhere in the format, it will be replaced with
+a literal newline or tab respectively.
 
 If any of the following strings are present, they will be replaced with the
 equivalent notification attribute.
@@ -415,6 +415,10 @@ For a complete markup reference, see
 =item B<%s>  summary
 
 =item B<%b>  body
+
+=item B<%c>  category
+
+=item B<%S>  stack_tag
 
 =item B<%i>  iconname (including its path)
 
