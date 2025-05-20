@@ -177,6 +177,16 @@ struct settings {
         struct position offset; // NOTE: we rely on the fact that lenght and position are similar
         int notification_limit;
         int gap_size;
+
+        bool built_in_menu;
+        bool menu_frame_fill;
+        int menu_frame_width;
+        int menu_height;
+        int menu_max_per_row;
+        int menu_max_rows;
+        int menu_max_width;
+        int menu_min_width;
+        struct color menu_frame_color;
 };
 
 extern struct settings settings;
