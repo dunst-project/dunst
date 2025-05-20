@@ -837,7 +837,7 @@ static void draw_built_in_menu(cairo_t *c, struct colored_layout *cl, int area_x
                         double text_y = y + (settings.menu_height - text_height) / 2;
 
                         cairo_set_source_rgba(c, COLOR(cl, fg.r), COLOR(cl, fg.g), COLOR(cl, fg.b), COLOR(cl, fg.a));
-                        cairo_move_to(c, text_x, text_y);
+                        cairo_move_to(c, round(text_x * scale), round(text_y * scale));
                         pango_cairo_show_layout(c, cl->l);
                 }
         }
