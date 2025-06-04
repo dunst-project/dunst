@@ -628,16 +628,16 @@ static void dbus_cb_dunst_RuleEnable(GDBusConnection *connection,
         }
 
         struct rule *target_rule = get_rule(name);
-        g_free(name);
-
         if (target_rule == NULL) {
                 g_dbus_method_invocation_return_error(invocation,
                         G_DBUS_ERROR,
                         G_DBUS_ERROR_INVALID_ARGS,
                         "There is no rule named \"%s\"",
                         name);
+                g_free(name);
                 return;
         }
+        g_free(name);
 
         if (state == 0)
                 target_rule->enabled = false;
