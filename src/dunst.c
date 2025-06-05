@@ -302,7 +302,6 @@ int dunst_main(int argc, char *argv[])
         guint term_src = g_unix_signal_add(SIGTERM, quit_signal, NULL);
         guint int_src = g_unix_signal_add(SIGINT, quit_signal, NULL);
 
-        dunst_status_int(S_PAUSE_LEVEL, settings.default_pause_level);
 
         if (startup_notification) {
                 struct notification *n = notification_create();
@@ -321,6 +320,11 @@ int dunst_main(int argc, char *argv[])
 
         setup_done = true;
         run(GINT_TO_POINTER(DUNST_TIMER)); // The first run() is a scheduled one
+
+
+        // Set default_pause_level only after showing the startup notification
+        dunst_status_int(S_PAUSE_LEVEL, settings.default_pause_level);
+
         g_main_loop_run(mainloop);
         g_clear_pointer(&mainloop, g_main_loop_unref);
 
