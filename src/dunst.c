@@ -302,6 +302,8 @@ int dunst_main(int argc, char *argv[])
         guint term_src = g_unix_signal_add(SIGTERM, quit_signal, NULL);
         guint int_src = g_unix_signal_add(SIGINT, quit_signal, NULL);
 
+        dunst_status_int(S_PAUSE_LEVEL, settings.default_pause_level);
+
         if (startup_notification) {
                 struct notification *n = notification_create();
                 n->id = 0;

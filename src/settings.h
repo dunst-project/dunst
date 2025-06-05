@@ -177,6 +177,7 @@ struct settings {
         struct position offset; // NOTE: we rely on the fact that lenght and position are similar
         int notification_limit;
         int gap_size;
+        int default_pause_level;
 };
 
 extern struct settings settings;

@@ -1220,6 +1220,16 @@ static const struct setting allowed_settings[] = {
                 .parser = string_parse_bool,
                 .parser_data = boolean_enum_data,
         },
+        {
+                .name = "default_pause_level",
+                .section = "global",
+                .description = "Start dunst with a this pause level set.",
+                .type = TYPE_INT,
+                .default_value = "0",
+                .value = &settings.default_pause_level,
+                .parser = NULL,
+                .parser_data = NULL,
+        },
         // manual extractions below
         {
                 .name = "follow",
