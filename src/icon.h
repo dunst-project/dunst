@@ -11,6 +11,8 @@ cairo_surface_t *gdk_pixbuf_to_cairo_surface(GdkPixbuf *pixbuf);
 /** Retrieve an icon by its full filepath, scaled according to settings.
  *
  * @param filename A string representing a readable file path
+ * @param id   (necessary) A unique identifier of the returned pixbuf.
+ *             Only filled, if the return value is non-NULL.
  * @param min_size An iteger representing the desired minimum unscaled icon size.
  * @param max_size An iteger representing the desired maximum unscaled icon size.
  * @param scale An integer representing the output dpi scaling.
@@ -18,7 +20,7 @@ cairo_surface_t *gdk_pixbuf_to_cairo_surface(GdkPixbuf *pixbuf);
  * @return an instance of `GdkPixbuf`
  * @retval NULL: file does not exist, not readable, etc..
  */
-GdkPixbuf *get_pixbuf_from_file(const char *filename, int min_size, int max_size, double scale);
+GdkPixbuf *get_pixbuf_from_file(const char *filename, char **id, int min_size, int max_size, double scale);
 
 
 /**

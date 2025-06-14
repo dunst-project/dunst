@@ -65,6 +65,7 @@ struct notification {
         cairo_surface_t *icon;         /**< The raw cached icon data used to draw */
         char *icon_id;           /**< Plain icon information, which acts as the icon's id.
                                       May be a hash for a raw icon or a name/path for a regular app icon. */
+        gint64 icon_time;        /**< Time of reception of the icon (or opening of the file in case of a path) */
         char *iconname;          /**< plain icon information (may be a path or just a name) as recieved from dbus.
                                    Use this to compare the icon name with rules. May also be modified by rules.*/
         char *icon_path;         /**< Full path to the notification's icon. */

@@ -336,6 +336,23 @@ gint64 time_monotonic_now(void)
         return S2US(tv_now.tv_sec) + tv_now.tv_nsec / 1000;
 }
 
+gint64 time_now(void)
+{
+        struct timespec tv_now;
+
+        clock_gettime(CLOCK_REALTIME, &tv_now);
+        return S2US(tv_now.tv_sec) + tv_now.tv_nsec / 1000;
+}
+
+gint64 modification_time(const char *path)
+{
+        struct stat statbuf;
+        if (stat(path, &statbuf) != 0)
+                return -1;
+
+        return S2US(statbuf.st_mtim.tv_sec) + statbuf.st_mtim.tv_nsec / 1000;
+}
+
 /* see utils.h */
 const char *user_get_home(void)
 {
@@ -487,6 +504,13 @@ bool string_is_int(const char *str) {
                 return *str == '\0';
         }
         return true;
+}
+
+bool is_like_path(const char *string)
+{
+        return string[0] == '/' || string[0] == '~'
+                || (string[0] == '.' && string[1] == '.' && string[2] == '/')
+                || (string[0] == '.' && string[1] == '/');
 }
 
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */
