@@ -11,6 +11,8 @@
 #define BTN_RIGHT	(0x111)
 #define BTN_MIDDLE	(0x112)
 #define BTN_TOUCH	(0x14a)
+#define BTN_FORWARD	(0x115)
+#define BTN_BACK	(0x116)
 #endif
 
 int get_notification_clickable_height(struct notification *n, bool first, bool last)
@@ -79,6 +81,12 @@ void input_handle_click(unsigned int button, bool button_down, int mouse_x, int 
                         // TODO Add separate action for touch
                         acts = settings.mouse_left_click;
                         break;
+                case BTN_FORWARD:
+                        acts = settings.mouse_scroll_up;
+                        break;
+                case BTN_BACK:
+                        acts = settings.mouse_scroll_down;
+                        break;
                 default:
                         LOG_W("Unsupported mouse button: '%d'", button);
                         return;
@@ -97,7 +105,7 @@ void input_handle_click(unsigned int button, bool button_down, int mouse_x, int 
                         continue;
                 }
 
-                if (act == MOUSE_DO_ACTION || act == MOUSE_CLOSE_CURRENT || act == MOUSE_CONTEXT || act == MOUSE_OPEN_URL) {
+                if (act == MOUSE_DO_ACTION || act == MOUSE_CLOSE_CURRENT || act == MOUSE_CONTEXT || act == MOUSE_OPEN_URL || act== MOUSE_BACKWARD_SCRIPT || act == MOUSE_FORWARD_SCRIPT) {
                         struct notification *n = get_notification_at(mouse_y);
 
                         if (n) {
@@ -107,6 +115,10 @@ void input_handle_click(unsigned int button, bool button_down, int mouse_x, int 
                                         notification_do_action(n);
                                 } else if (act == MOUSE_OPEN_URL) {
                                         notification_open_url(n);
+                                } else if (act == MOUSE_FORWARD_SCRIPT){
+                                        notification_invoke_script_rule(n,MAT_FORWARD);
+                                } else if (act == MOUSE_BACKWARD_SCRIPT){
+                                        notification_invoke_script_rule(n,MAT_BACK);
                                 } else {
                                         notification_open_context_menu(n);
                                 }
