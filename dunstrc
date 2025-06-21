@@ -330,7 +330,7 @@
     mouse_left_click = close_current
     mouse_middle_click = do_action, close_current
     mouse_right_click = close_all
-    mouse_scroll_forward = forwad_script
+    mouse_scroll_forward = forward_script
     mouse_scroll_backward = back_script
 
 # Experimental features that may or may not work correctly. Do not expect them
