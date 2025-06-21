@@ -55,6 +55,8 @@ struct rule {
         char *set_category;
         char *format;
         char *script;
+        char *script_mouse_forward;
+        char *script_mouse_back;
         enum behavior_fullscreen fullscreen;
         bool enabled;
         int progress_bar_alignment;

@@ -108,6 +108,22 @@ void notification_print(const struct notification *n)
                 }
                 printf("\n");
         }
+        printf("\tscript_mouse_forward_count: %d\n", n->script_mouse_forward_count);
+        if (n->script_mouse_forward_count > 0) {
+                printf("\tscripts_mf: ");
+                for (int i = 0; i < n->script_mouse_forward_count; i++) {
+                        printf("'%s' ", STR_NN(n->scripts_mf[i]));
+                }
+                printf("\n");
+        }
+        printf("\tscript_mouse_back_count: %d\n", n->script_mouse_back_count);
+        if (n->script_mouse_back_count > 0) {
+                printf("\tscripts_mb: ");
+                for (int i = 0; i < n->script_mouse_back_count; i++) {
+                        printf("'%s' ", STR_NN(n->scripts_mb[i]));
+                }
+                printf("\n");
+        }
         printf("}\n");
         fflush(stdout);
 }
@@ -115,6 +131,7 @@ void notification_print(const struct notification *n)
 /* see notification.h */
 void notification_run_script(struct notification *n)
 {
+
         if (n->script_run && !settings.always_run_script)
                 return;
 
@@ -126,10 +143,33 @@ void notification_run_script(struct notification *n)
         const char *icon = n->iconname ? n->iconname : "";
 
         const char *urgency = notification_urgency_to_string(n->urgency);
+        int script_count = 0;
+        switch(n->script_choice){
+            case MAT_FORWARD:
+                script_count = n->script_mouse_forward_count;
+                break;
+            case MAT_BACK:
+                script_count = n->script_mouse_back_count;
+                break;
+            default:
+                script_count = n->script_count;
+              break;
+        }
 
-        for(int i = 0; i < n->script_count; i++) {
+        for(int i = 0; i < script_count; i++) {
 
-                const char *script = n->scripts[i];
+                const char *script;
+                switch(n->script_choice){
+                    case MAT_FORWARD:
+                        script = n->scripts_mf[i];
+                        break;
+                    case MAT_BACK:
+                        script = n->scripts_mb[i];
+                        break;
+                    default:
+                        script = n->scripts[i];
+                        break;
+                }
 
                 if (STR_EMPTY(script))
                         continue;
@@ -173,7 +213,7 @@ void notification_run_script(struct notification *n)
                                                 urgency,
                                                 (char *)NULL);
 
-                                LOG_W("Unable to run script %s: %s", n->scripts[i], strerror(errno));
+                                LOG_W("Unable to run script %s: %s", script, strerror(errno));
                                 exit(EXIT_FAILURE);
                         }
                 }
@@ -526,6 +566,8 @@ void notification_init(struct notification *n)
                 gradient_release(n->colors.highlight);
                 n->colors.highlight = gradient_acquire(defcolors.highlight);
         }
+        /*Script setup*/
+        n->script_choice = MAT_OTHERS;
 
         /* Sanitize misc hints */
         if (n->progress < 0)
@@ -805,6 +847,12 @@ void notification_open_context_menu(struct notification *n)
 
         context_menu_for(notifications);
 }
+
+void notification_invoke_script_rule(struct notification *n,enum mouse_action_type act){
+    n->script_choice = act;
+    notification_run_script(n);
+}
+
 
 void notification_invalidate_actions(struct notification *n) {
         g_hash_table_remove_all(n->actions);

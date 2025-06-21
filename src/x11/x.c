@@ -26,6 +26,8 @@
 #define BTN_RIGHT   (0x111)
 #define BTN_MIDDLE  (0x112)
 #define BTN_TOUCH   (0x14a)
+#define BTN_FORWARD (0x115)
+#define BTN_BACK    (0x116)
 #endif
 
 #include "../dbus.h"
@@ -427,6 +429,10 @@ static unsigned int x_mouse_button_to_linux_event_code(unsigned int x_button)
                         return BTN_MIDDLE;
                 case Button3:
                         return BTN_RIGHT;
+                case Button4:
+                        return BTN_FORWARD;
+                case Button5:
+                        return BTN_BACK;
                 default:
                         LOG_W("Unsupported mouse button: '%d'", x_button);
                         return 0;
