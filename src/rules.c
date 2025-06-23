@@ -133,27 +133,27 @@ void rule_apply(struct rule *r, struct notification *n, bool save)
                 n->scripts[n->script_count + 1] = NULL;
                 n->script_count++;
         }
-        if (r->script_mouse_forward) {
-                if (save && n->original->script_mouse_forward == NULL)
-                        n->original->script_mouse_forward = n->script_mouse_forward_count > 0
-                                            ? g_strdup(n->scripts_mf[0])
+        if (r->script_scroll_up) {
+                if (save && n->original->script_scroll_up == NULL)
+                        n->original->script_scroll_up = n->script_scroll_up_count > 0
+                                            ? g_strdup(n->script_scroll_up[0])
                                             : g_strdup(r->script);
 
-                n->scripts_mf = g_renew(char *, n->scripts_mf, n->script_mouse_forward_count + 2);
-                n->scripts_mf[n->script_mouse_forward_count] = g_strdup(r->script_mouse_forward);
-                n->scripts_mf[n->script_mouse_forward_count + 1] = NULL;
-                n->script_mouse_forward_count++;
+                n->script_scroll_up = g_renew(char *, n->script_scroll_up, n->script_scroll_up_count + 2);
+                n->script_scroll_up[n->script_scroll_up_count] = g_strdup(r->script_scroll_up);
+                n->script_scroll_up[n->script_scroll_up_count + 1] = NULL;
+                n->script_scroll_up_count++;
         }
-        if (r->script_mouse_back) {
-                if (save && n->original->script_mouse_back == NULL)
-                        n->original->script_mouse_back = n->script_mouse_back_count > 0
-                                            ? g_strdup(n->scripts_mb[0])
+        if (r->script_scroll_down) {
+                if (save && n->original->script_scroll_down == NULL)
+                        n->original->script_scroll_down = n->script_scroll_down_count > 0
+                                            ? g_strdup(n->script_scroll_down[0])
                                             : g_strdup(r->script);
 
-                n->scripts_mb = g_renew(char *, n->scripts_mb, n->script_mouse_back_count + 2);
-                n->scripts_mb[n->script_mouse_back_count] = g_strdup(r->script_mouse_back);
-                n->scripts_mb[n->script_mouse_back_count + 1] = NULL;
-                n->script_mouse_back_count++;
+                n->script_scroll_down = g_renew(char *, n->script_scroll_down, n->script_scroll_down_count + 2);
+                n->script_scroll_down[n->script_scroll_down_count] = g_strdup(r->script_scroll_down);
+                n->script_scroll_down[n->script_scroll_down_count + 1] = NULL;
+                n->script_scroll_down_count++;
         }
 }
 
@@ -207,8 +207,8 @@ void rule_print(const struct rule *r)
         if (r->set_category != NULL) printf("\tset_category: '%s'\n", r->set_category);
         if (r->format != NULL) printf("\tformat: '%s'\n", r->format);
         if (r->script != NULL) printf("\tscript: '%s'\n", r->script);
-        if (r->script_mouse_forward != NULL) printf("\tscript_mouse_forward: '%s'\n", r->script_mouse_forward);
-        if (r->script_mouse_back != NULL) printf("\tscript_mouse_back: '%s'\n", r->script_mouse_back);
+        if (r->script_scroll_up != NULL) printf("\tscript_scroll_up: '%s'\n", r->script_scroll_up);
+        if (r->script_scroll_down != NULL) printf("\tscript_scroll_down: '%s'\n", r->script_scroll_down);
         if (r->fullscreen != FS_NULL) printf("\tfullscreen: %s\n", enum_to_string_fullscreen(r->fullscreen));
         if (r->progress_bar_alignment != -1) printf("\tprogress_bar_alignment: %d\n", r->progress_bar_alignment);
         if (r->set_stack_tag != NULL) printf("\tset_stack_tag: %s\n", r->set_stack_tag);

@@ -105,9 +105,8 @@ void input_handle_click(unsigned int button, bool button_down, int mouse_x, int 
                         continue;
                 }
 
-                if (act == MOUSE_DO_ACTION || act == MOUSE_CLOSE_CURRENT || act == MOUSE_CONTEXT || act == MOUSE_OPEN_URL || act== MOUSE_BACKWARD_SCRIPT || act == MOUSE_FORWARD_SCRIPT) {
+                if (act == MOUSE_DO_ACTION || act == MOUSE_CLOSE_CURRENT || act == MOUSE_CONTEXT || act == MOUSE_OPEN_URL || act== MOUSE_SCROLL_SCRIPT) {
                         struct notification *n = get_notification_at(mouse_y);
-
                         if (n) {
                                 if (act == MOUSE_CLOSE_CURRENT) {
                                         n->marked_for_closure = REASON_USER;
@@ -115,10 +114,13 @@ void input_handle_click(unsigned int button, bool button_down, int mouse_x, int 
                                         notification_do_action(n);
                                 } else if (act == MOUSE_OPEN_URL) {
                                         notification_open_url(n);
-                                } else if (act == MOUSE_FORWARD_SCRIPT){
-                                        notification_invoke_script_rule(n,MAT_FORWARD);
-                                } else if (act == MOUSE_BACKWARD_SCRIPT){
-                                        notification_invoke_script_rule(n,MAT_BACK);
+                                } else if (act == MOUSE_SCROLL_SCRIPT){
+                                        if(button==BTN_FORWARD){
+                                            notification_invoke_script_rule(n,MOUSE_ACTION_SCROLL_UP);
+                                        }
+                                        else if(button==BTN_BACK){
+                                            notification_invoke_script_rule(n,MOUSE_ACTION_SCROLL_DOWN);
+                                        }
                                 } else {
                                         notification_open_context_menu(n);
                                 }

@@ -19,9 +19,9 @@ enum icon_position {
 };
 
 enum mouse_action_type{
-    MAT_OTHERS=0,
-    MAT_FORWARD,
-    MAT_BACK,
+    MOUSE_ACTION_OTHERS=0,
+    MOUSE_ACTION_SCROLL_UP,
+    MOUSE_ACTION_SCROLL_DOWN,
 };
 
 enum behavior_fullscreen {
@@ -96,11 +96,11 @@ struct notification {
         char **scripts;
         int script_count;
 
-        char **scripts_mf;
-        int script_mouse_forward_count;
+        char **script_scroll_up;
+        int script_scroll_up_count;
 
-        char **scripts_mb;
-        int script_mouse_back_count;
+        char **script_scroll_down;
+        int script_scroll_down_count;
 
         struct notification_colors colors;
 

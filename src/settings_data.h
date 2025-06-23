@@ -312,8 +312,7 @@ static const struct string_to_enum_def mouse_action_enum_data[] = {
         {"context",        MOUSE_CONTEXT },
         {"context_all",    MOUSE_CONTEXT_ALL },
         {"open_url",       MOUSE_OPEN_URL },
-        {"forward_script", MOUSE_FORWARD_SCRIPT },
-        {"back_script",    MOUSE_BACKWARD_SCRIPT },
+        {"mouse_scroll_script", MOUSE_SCROLL_SCRIPT },
         ENUM_END,
 };
 
@@ -522,7 +521,7 @@ static const struct setting allowed_settings[] = {
                 .rule_offset = offsetof(struct rule, script),
         },
         {
-                .name = "script_mouse_forward",
+                .name = "script_scroll_up",
                 .section = "*",
                 .description = "script for mouse scroll up",
                 .type = TYPE_PATH,
@@ -530,10 +529,10 @@ static const struct setting allowed_settings[] = {
                 .value = NULL,
                 .parser = NULL,
                 .parser_data = NULL,
-                .rule_offset = offsetof(struct rule, script_mouse_forward),
+                .rule_offset = offsetof(struct rule, script_scroll_up),
         },
         {
-                .name = "script_mouse_back",
+                .name = "script_scroll_down",
                 .section = "*",
                 .description = "script for mouse scroll down",
                 .type = TYPE_PATH,
@@ -541,7 +540,7 @@ static const struct setting allowed_settings[] = {
                 .value = NULL,
                 .parser = NULL,
                 .parser_data = NULL,
-                .rule_offset = offsetof(struct rule, script_mouse_back),
+                .rule_offset = offsetof(struct rule, script_scroll_down),
         },
         {
                 .name = "background",
@@ -1350,7 +1349,7 @@ static const struct setting allowed_settings[] = {
                 .section = "global",
                 .description = "Action of right click event",
                 .type = TYPE_LIST,
-                .default_value = "forward_script",
+                .default_value = "mouse_scroll_script",
                 .value = &settings.mouse_scroll_up,
                 .parser = NULL,
                 .parser_data = GINT_TO_POINTER(MOUSE_LIST),
@@ -1360,7 +1359,7 @@ static const struct setting allowed_settings[] = {
                 .section = "global",
                 .description = "Action of right click event",
                 .type = TYPE_LIST,
-                .default_value = "back_script",
+                .default_value = "mouse_scroll_script",
                 .value = &settings.mouse_scroll_down,
                 .parser = NULL,
                 .parser_data = GINT_TO_POINTER(MOUSE_LIST),

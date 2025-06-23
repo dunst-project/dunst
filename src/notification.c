@@ -108,19 +108,19 @@ void notification_print(const struct notification *n)
                 }
                 printf("\n");
         }
-        printf("\tscript_mouse_forward_count: %d\n", n->script_mouse_forward_count);
-        if (n->script_mouse_forward_count > 0) {
+        printf("\tscript_mouse_forward_count: %d\n", n->script_scroll_up_count);
+        if (n->script_scroll_up_count > 0) {
                 printf("\tscripts_mf: ");
-                for (int i = 0; i < n->script_mouse_forward_count; i++) {
-                        printf("'%s' ", STR_NN(n->scripts_mf[i]));
+                for (int i = 0; i < n->script_scroll_up_count; i++) {
+                        printf("'%s' ", STR_NN(n->script_scroll_up[i]));
                 }
                 printf("\n");
         }
-        printf("\tscript_mouse_back_count: %d\n", n->script_mouse_back_count);
-        if (n->script_mouse_back_count > 0) {
+        printf("\tscript_mouse_back_count: %d\n", n->script_scroll_down_count);
+        if (n->script_scroll_down_count > 0) {
                 printf("\tscripts_mb: ");
-                for (int i = 0; i < n->script_mouse_back_count; i++) {
-                        printf("'%s' ", STR_NN(n->scripts_mb[i]));
+                for (int i = 0; i < n->script_scroll_down_count; i++) {
+                        printf("'%s' ", STR_NN(n->script_scroll_down[i]));
                 }
                 printf("\n");
         }
@@ -145,11 +145,11 @@ void notification_run_script(struct notification *n)
         const char *urgency = notification_urgency_to_string(n->urgency);
         int script_count = 0;
         switch(n->script_choice){
-            case MAT_FORWARD:
-                script_count = n->script_mouse_forward_count;
+            case MOUSE_ACTION_SCROLL_UP:
+                script_count = n->script_scroll_up_count;
                 break;
-            case MAT_BACK:
-                script_count = n->script_mouse_back_count;
+            case MOUSE_ACTION_SCROLL_DOWN:
+                script_count = n->script_scroll_down_count;
                 break;
             default:
                 script_count = n->script_count;
@@ -160,11 +160,11 @@ void notification_run_script(struct notification *n)
 
                 const char *script;
                 switch(n->script_choice){
-                    case MAT_FORWARD:
-                        script = n->scripts_mf[i];
+                    case MOUSE_ACTION_SCROLL_UP:
+                        script = n->script_scroll_up[i];
                         break;
-                    case MAT_BACK:
-                        script = n->scripts_mb[i];
+                    case MOUSE_ACTION_SCROLL_DOWN:
+                        script = n->script_scroll_down[i];
                         break;
                     default:
                         script = n->scripts[i];
@@ -567,7 +567,7 @@ void notification_init(struct notification *n)
                 n->colors.highlight = gradient_acquire(defcolors.highlight);
         }
         /*Script setup*/
-        n->script_choice = MAT_OTHERS;
+        n->script_choice = MOUSE_ACTION_OTHERS;
 
         /* Sanitize misc hints */
         if (n->progress < 0)
