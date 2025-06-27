@@ -596,7 +596,7 @@ B<Defaults:>
 
 =item * C<mouse_left_click=close_current>
 
-=item * C<mouse_middle_click=do_action, close_current>
+=item * C<mouse_middle_click=do_action, remove_current>
 
 =item * C<mouse_right_click=close_all>
 
