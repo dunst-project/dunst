@@ -315,6 +315,8 @@ void settings_free(struct settings *s)
         g_free(s->mouse_left_click);
         g_free(s->mouse_middle_click);
         g_free(s->mouse_right_click);
+        g_free(s->mouse_scroll_down);
+        g_free(s->mouse_scroll_up);
 
         g_free(s->close_ks.str);
         g_free(s->close_all_ks.str);

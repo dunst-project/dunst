@@ -323,11 +323,14 @@
     # * close_all: Close all notifications.
     # * context: Open context menu for the notification.
     # * context_all: Open context menu for all notifications.
+    # * mouse_scroll_script: Run script on rule section based on button pressed
     # These values can be strung together for each mouse event, and
     # will be executed in sequence.
     mouse_left_click = close_current
     mouse_middle_click = do_action, close_current
     mouse_right_click = close_all
+    mouse_scroll_up = mouse_scroll_script
+    mouse_scroll_down = mouse_scroll_script
 
 # Experimental features that may or may not work correctly. Do not expect them
 # to have a consistent behaviour across releases.
@@ -401,6 +404,8 @@
 #    alignment
 #    hide_text
 #    override_pause_level
+#    script_scroll_up
+#    script_scroll_down
 #
 # Shell-like globbing will get expanded.
 #
@@ -493,4 +498,8 @@
 #    appname = "some_volume_notifiers"
 #    set_stack_tag = "volume"
 #
+#[volume-changer]
+#    appname = "some_volume_notifiers"
+#    script_scroll_up = some_volum_change_up_script
+#    script_scroll_down = some_volum_change_down_script
 # vim: ft=cfg

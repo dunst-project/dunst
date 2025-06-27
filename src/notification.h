@@ -6,7 +6,6 @@
 #include <stdbool.h>
 #include <pango/pango-layout.h>
 #include <cairo.h>
-
 #include "markup.h"
 #include "draw.h"
 
@@ -17,6 +16,12 @@ enum icon_position {
         ICON_RIGHT,
         ICON_TOP,
         ICON_OFF
+};
+
+enum mouse_action_type{
+    MOUSE_ACTION_OTHERS=0,
+    MOUSE_ACTION_SCROLL_UP,
+    MOUSE_ACTION_SCROLL_DOWN,
 };
 
 enum behavior_fullscreen {
@@ -86,8 +91,17 @@ struct notification {
 
         enum markup_mode markup;
         char *format;
+
+        enum mouse_action_type script_choice;
         char **scripts;
         int script_count;
+
+        char **script_scroll_up;
+        int script_scroll_up_count;
+
+        char **script_scroll_down;
+        int script_scroll_down_count;
+
         struct notification_colors colors;
 
         char *stack_tag;    /**< stack notifications by tag */
@@ -251,6 +265,11 @@ void notification_open_url(struct notification *n);
  * Convenience function that creates the GList and passes it to context_menu_for().
  */
 void notification_open_context_menu(struct notification *n);
+
+/**
+ * Run script provided inside rules for different mouse actions
+ */
+void notification_invoke_script_rule(struct notification *n,enum mouse_action_type act);
 
 /**
  * Remove all client action data from the notification.
