@@ -104,8 +104,31 @@ void queues_notification_close_id(gint id, enum reason reason);
  *
  * @param n (transfer full) The notification to close
  * @param reason The #reason to close
- * */
+ */
 void queues_notification_close(struct notification *n, enum reason reason);
+
+/**
+ * Remove the given notification from all queues
+ *
+ * Sends a signal and removes the selected notification from all queues.
+ *
+ * @param n (transfer full) The notification to remove
+ * @param reason The #reason to remove
+ */
+void queues_notification_remove(struct notification *n, enum reason reason);
+
+/**
+ * Remove the notification that has n->id == id
+ *
+ * Sends a signal and removes the selected notification from all queues.
+ *
+ * @param id The id of the notification to remove
+ * @param reason The #reason to remove
+ *
+ * @post Call wake_up() to synchronize the queues with the UI
+ *       (which closes the notification on screen)
+ */
+void queues_notification_remove_id(gint id, enum reason reason);
 
 /**
  * Removes all notifications from history

@@ -355,6 +355,14 @@ static gboolean context_menu_result_dispatch(gpointer user_data)
                                 queues_notification_close(n, n->marked_for_closure);
                         n->marked_for_closure = 0;
                 }
+
+                // If the notification was marked for removal, remove it from history
+                if (n->marked_for_removal) {
+                        // Don't close notification if context was aborted
+                        // if (dmenu_output != NULL)
+                        queues_notification_remove(n, n->marked_for_removal);
+                        n->marked_for_removal = 0;
+                }
         }
 
         menu_ctx.locked_notifications = NULL;

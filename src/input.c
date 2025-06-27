@@ -97,7 +97,7 @@ void input_handle_click(unsigned int button, bool button_down, int mouse_x, int 
                         continue;
                 }
 
-                if (act == MOUSE_DO_ACTION || act == MOUSE_CLOSE_CURRENT || act == MOUSE_CONTEXT || act == MOUSE_OPEN_URL) {
+                if (act == MOUSE_DO_ACTION || act == MOUSE_CLOSE_CURRENT || act == MOUSE_REMOVE_CURRENT || act == MOUSE_CONTEXT || act == MOUSE_OPEN_URL) {
                         struct notification *n = get_notification_at(mouse_y);
 
                         if (n) {
@@ -107,6 +107,8 @@ void input_handle_click(unsigned int button, bool button_down, int mouse_x, int 
                                         notification_do_action(n);
                                 } else if (act == MOUSE_OPEN_URL) {
                                         notification_open_url(n);
+                                } else if (act == MOUSE_REMOVE_CURRENT) {
+                                        n->marked_for_removal = REASON_USER;
                                 } else {
                                         notification_open_context_menu(n);
                                 }

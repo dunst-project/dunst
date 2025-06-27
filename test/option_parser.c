@@ -373,6 +373,7 @@ TEST test_string_to_list(void)
                 "none, close_current",
                 "close_all,close_current",
                 "close_all,close_current,close_all",
+                "remove_current,close_current,close_all",
         };
         const enum mouse_action results[][4] = {
                 {MOUSE_CLOSE_CURRENT, MOUSE_ACTION_END},
@@ -380,6 +381,7 @@ TEST test_string_to_list(void)
                 {MOUSE_NONE, MOUSE_CLOSE_CURRENT, MOUSE_ACTION_END},
                 {MOUSE_CLOSE_ALL, MOUSE_CLOSE_CURRENT, MOUSE_ACTION_END},
                 {MOUSE_CLOSE_ALL, MOUSE_CLOSE_CURRENT, MOUSE_CLOSE_ALL, MOUSE_ACTION_END},
+                {MOUSE_REMOVE_CURRENT, MOUSE_CLOSE_CURRENT, MOUSE_CLOSE_ALL, MOUSE_ACTION_END},
         };
 
         static char buf[100];
