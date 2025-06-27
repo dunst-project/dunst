@@ -289,6 +289,8 @@ void rule_free(struct rule *r)
         g_free(r->set_category);
         g_free(r->format);
         g_free(r->script);
+        g_free(r->script_scroll_down);
+        g_free(r->script_scroll_up);
         g_free(r->set_stack_tag);
 
         g_free(r);
