@@ -341,26 +341,6 @@ void queues_notification_close_id(gint id, enum reason reason)
         }
 }
 
-void queues_notification_remove_id(gint id, enum reason reason)
-{
-        struct notification *target = NULL;
-
-        GQueue *allqueues[] = { displayed, waiting, history };
-        for (size_t i = 0; i < sizeof(allqueues)/sizeof(GQueue*); i++) {
-                for (GList *iter = g_queue_peek_head_link(allqueues[i]); iter;
-                     iter = iter->next) {
-                        struct notification *n = iter->data;
-                        if (n->id == id) {
-                                g_queue_remove(allqueues[i], n);
-                                target = n;
-                                break;
-                        }
-                }
-        }
-        if (target)
-                signal_notification_removed(target, reason);
-}
-
 /* see queues.h */
 void queues_notification_close(struct notification *n, enum reason reason)
 {
@@ -371,7 +351,8 @@ void queues_notification_close(struct notification *n, enum reason reason)
 void queues_notification_remove(struct notification *n, enum reason reason)
 {
         assert(n != NULL);
-        queues_notification_remove_id(n->id, reason);
+        queues_notification_close_id(n->id, reason);
+        queues_history_remove_by_id(n->id);
 }
 
 static void queues_destroy_notification(struct notification *n, gpointer user_data)

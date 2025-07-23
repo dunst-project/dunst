@@ -19,7 +19,6 @@ enum reason {
 int dbus_init(void);
 void dbus_teardown(int id);
 void signal_notification_closed(struct notification *n, enum reason reason);
-void signal_notification_removed(struct notification *n, enum reason reason);
 void signal_action_invoked(const struct notification *n, const char *identifier);
 void signal_length_propertieschanged(void);
 void signal_history_removed(guint id);

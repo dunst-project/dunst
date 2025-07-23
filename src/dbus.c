@@ -1117,63 +1117,6 @@ void signal_notification_closed(struct notification *n, enum reason reason)
         }
 }
 
-void signal_notification_removed(struct notification *n, enum reason reason)
-{
-        if (!n->dbus_valid) {
-                LOG_W("Removing notification with reason '%d' not supported. "
-                      "Notification already closed.", reason);
-                return;
-        }
-
-        if (reason < REASON_MIN || REASON_MAX < reason) {
-                LOG_W("Removing notification with reason '%d' not supported. "
-                      "Closing it with reason '%d'.", reason, REASON_UNDEF);
-                reason = REASON_UNDEF;
-        }
-
-        if (!dbus_conn) {
-                LOG_E("Unable to remove notification: No DBus connection.");
-        }
-
-        GVariant *body = g_variant_new("(uu)", n->id, reason);
-        GError *err = NULL;
-
-        g_dbus_connection_emit_signal(dbus_conn,
-                                      n->dbus_client,
-                                      FDN_PATH,
-                                      FDN_IFAC,
-                                      "NotificationRemoved",
-                                      body,
-                                      &err);
-
-        notification_invalidate_actions(n);
-
-        if (err) {
-                LOG_W("Unable to remove notification: %s", err->message);
-                g_error_free(err);
-        } else {
-                char* reason_string;
-                switch (reason) {
-                        case REASON_TIME:
-                                reason_string="time";
-                                break;
-                        case REASON_USER:
-                                reason_string="user";
-                                break;
-                        case REASON_SIG:
-                                reason_string="signal";
-                                break;
-                        case REASON_UNDEF:
-                                reason_string="undefined";
-                                break;
-                        default:
-                                reason_string="unknown";
-                }
-
-                LOG_D("Queues: Removing notification for reason: %s", reason_string);
-        }
-}
-
 void signal_action_invoked(const struct notification *n, const char *identifier)
 {
         if (!n->dbus_valid) {
