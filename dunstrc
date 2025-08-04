@@ -320,6 +320,7 @@
     # * open_url: If the notification has exactly one url, open it. If there are multiple
     #             ones, open the context menu.
     # * close_current: Close current notification.
+    # * remove_current: Remove current notification from history.
     # * close_all: Close all notifications.
     # * context: Open context menu for the notification.
     # * context_all: Open context menu for all notifications.

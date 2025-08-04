@@ -373,6 +373,13 @@ void queues_notification_close(struct notification *n, enum reason reason)
         queues_notification_close_id(n->id, reason);
 }
 
+void queues_notification_remove(struct notification *n, enum reason reason)
+{
+        assert(n != NULL);
+        queues_notification_close_id(n->id, reason);
+        queues_history_remove_by_id(n->id);
+}
+
 static void queues_destroy_notification(struct notification *n, gpointer user_data)
 {
         (void)user_data;
@@ -501,6 +508,13 @@ void queues_update(struct dunst_status status, gint64 time)
                 if (n->marked_for_closure) {
                         queues_notification_close(n, n->marked_for_closure);
                         n->marked_for_closure = 0;
+                        iter = nextiter;
+                        continue;
+                }
+
+                if (n->marked_for_removal) {
+                        queues_notification_remove(n, n->marked_for_removal);
+                        n->marked_for_removal = 0;
                         iter = nextiter;
                         continue;
                 }

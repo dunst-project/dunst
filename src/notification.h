@@ -107,6 +107,7 @@ struct notification {
         enum behavior_fullscreen fullscreen; //!< The instruction what to do with it, when desktop enters fullscreen
         bool script_run;        /**< Has the script been executed already? */
         guint8 marked_for_closure;
+        guint8 marked_for_removal; /**< If set, the notification is marked for removal in history */
         bool word_wrap;
         PangoEllipsizeMode ellipsize;
         PangoAlignment alignment;
