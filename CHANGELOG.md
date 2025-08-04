@@ -1,5 +1,26 @@
 # Dunst changelog
 
+## 1.13.0 -- 2025-08-04
+
+### Added
+- Add meson build system (#1226, #1224)
+- Add `remove_current` action (close and remove from history) (#1491)
+- Support xdg-shell as a fallback on Wayland (#1433)
+- Add `default_pause_level` settings (#1487, #1484)
+- Add an `.editorconfig` file (#1461)
+- Add format options (`%c`, `%U`)
+
+### Changed
+- Improve Makefile and build flags (#1456, #1457)
+- Change the way icons are cached (#1473, #1471)
+- Improve deinit and init for Wayland (#1458)
+- Rework logging for tests
+
+### Fixed
+- When no graphical output is detected, exit qietly (#1466, #1095)
+- Fix `dunstctl reload` on Wayland (#1434, #1458)
+- Fix a use-after-free (#1486)
+
 ## 1.12.2 -- 2025-03-05
 
 ### Added
