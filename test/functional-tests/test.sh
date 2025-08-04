@@ -412,7 +412,7 @@ function dmenu_order {
     echo "dmenu_order"
     echo "###################################"
 
-    tmp_dunstrc dunstrc.default "sort=urgency"
+    tmp_dunstrc dunstrc.default "sort=urgency_descending"
     start_dunst dunstrc.tmp
 
     for i in critical normal low
