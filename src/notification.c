@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include "dbus.h"
@@ -57,10 +58,11 @@ void notification_print(const struct notification *n)
         printf("\tsummary: '%s'\n", STR_NN(n->summary));
         printf("\tbody: '%s'\n", STR_NN(n->body));
         printf("\ticon: '%s'\n", STR_NN(n->iconname));
-        printf("\traw_icon set: %s\n", (n->icon_id && !STR_EQ(n->iconname, n->icon_id)) ? "true" : "false");
+        printf("\traw_icon: %s\n", (n->icon_id && STR_EMPTY(n->iconname)) ? "true" : "false");
         printf("\ticon_id: '%s'\n", STR_NN(n->icon_id));
+        printf("\ticon_time: %"G_GINT64_FORMAT"\n", n->icon_time);
         printf("\tdesktop_entry: '%s'\n", n->desktop_entry ? n->desktop_entry : "");
-        printf("\tcategory: %s\n", STR_NN(n->category));
+        printf("\tcategory: '%s'\n", STR_NN(n->category));
         printf("\ttimeout: %"G_GINT64_FORMAT"\n", n->timeout/1000);
         printf("\tstart: %"G_GINT64_FORMAT"\n", n->start);
         printf("\ttimestamp: %"G_GINT64_FORMAT"\n", n->timestamp);
@@ -77,17 +79,19 @@ void notification_print(const struct notification *n)
         g_free(grad);
 
         printf("\tfullscreen: %s\n", enum_to_string_fullscreen(n->fullscreen));
-        printf("\tformat: %s\n", STR_NN(n->format));
+        printf("\tformat: '%s'\n", STR_NN(n->format));
         printf("\tprogress: %d\n", n->progress);
-        printf("\tstack_tag: %s\n", (n->stack_tag ? n->stack_tag : ""));
+        printf("\tstack_tag: '%s'\n", (n->stack_tag ? n->stack_tag : ""));
         printf("\tid: %d\n", n->id);
         if (n->urls) {
                 char *urls = string_replace_all("\n", "\t\t\n", g_strdup(n->urls));
                 printf("\turls:\n");
                 printf("\t{\n");
-                printf("\t\t%s\n", STR_NN(urls));
+                printf("\t\t'%s'\n", STR_NN(urls));
                 printf("\t}\n");
                 g_free(urls);
+        } else {
+                printf("\turls: {}\n");
         }
         if (g_hash_table_size(n->actions) == 0) {
                 printf("\tactions: {}\n");
@@ -243,8 +247,10 @@ bool notification_is_duplicate(const struct notification *a, const struct notifi
         return STR_EQ(a->appname, b->appname)
             && STR_EQ(a->summary, b->summary)
             && STR_EQ(a->body, b->body)
-            && (a->icon_position != ICON_OFF ? STR_EQ(a->icon_id, b->icon_id) : 1)
-            && a->urgency == b->urgency;
+            && a->urgency == b->urgency
+            && (a->icon_position == ICON_OFF || b->icon_position == ICON_OFF
+                            || (a->icon_id && b->icon_id ? STR_EQ(a->icon_id, b->icon_id)
+                            : (a->iconname && b->iconname ? STR_EQ(a->iconname, b->iconname) : 1)));
 }
 
 bool notification_is_locked(struct notification *n) {
@@ -337,14 +343,14 @@ void notification_unref(struct notification *n)
 
 void notification_transfer_icon(struct notification *from, struct notification *to)
 {
-        if (from->iconname && to->iconname
-                        && strcmp(from->iconname, to->iconname) == 0){
-                // Icons are the same. Transfer icon surface
-                to->icon = from->icon;
+        // Transfer icon surface
+        to->icon = from->icon;
+        to->icon_id = from->icon_id;
+        to->icon_time = from->icon_time;
 
-                // prevent the surface being freed by the old notification
-                from->icon = NULL;
-        }
+        // Prevent the surface being freed by the old notification
+        from->icon = NULL;
+        from->icon_id = NULL;
 }
 
 void notification_icon_replace_path(struct notification *n, const char *new_icon)
@@ -368,11 +374,12 @@ void notification_icon_replace_path(struct notification *n, const char *new_icon
         g_free(n->icon_path);
         n->icon_path = get_path_from_icon_name(new_icon, n->min_icon_size);
         if (n->icon_path) {
-                GdkPixbuf *pixbuf = get_pixbuf_from_file(n->icon_path,
+                GdkPixbuf *pixbuf = get_pixbuf_from_file(n->icon_path, &n->icon_id,
                                 n->min_icon_size, n->max_icon_size,
                                 draw_get_scale());
                 if (pixbuf) {
                         n->icon = gdk_pixbuf_to_cairo_surface(pixbuf);
+                        n->icon_time = time_now();
                         g_object_unref(pixbuf);
                 } else {
                         LOG_W("Failed to load icon from path: '%s'", n->icon_path);
@@ -392,8 +399,10 @@ void notification_icon_replace_data(struct notification *n, GVariant *new_icon)
         GdkPixbuf *icon = icon_get_for_data(new_icon, &n->icon_id,
                         draw_get_scale(), n->min_icon_size, n->max_icon_size);
         n->icon = gdk_pixbuf_to_cairo_surface(icon);
-        if (icon)
+        if (icon) {
+                n->icon_time = time_now();
                 g_object_unref(icon);
+        }
 }
 
 void notification_replace_format(struct notification *n, const char *format)

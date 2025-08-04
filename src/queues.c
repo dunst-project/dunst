@@ -193,8 +193,8 @@ int queues_notification_insert(struct notification *n)
         if (!inserted && STR_FULL(n->stack_tag) && queues_stack_by_tag(n))
                 inserted = true;
 
-        if (!inserted && settings.stack_duplicates && queues_stack_duplicate(n)){
-                if(settings.sort == SORT_TYPE_UPDATE){
+        if (!inserted && settings.stack_duplicates && queues_stack_duplicate(n)) {
+                if (settings.sort == SORT_TYPE_UPDATE) {
                         g_queue_sort(displayed, notification_cmp_data, NULL);
                 }
                 inserted = true;
@@ -203,6 +203,7 @@ int queues_notification_insert(struct notification *n)
         if (!inserted)
                 g_queue_insert_sorted(waiting, n, notification_cmp_data, NULL);
 
+        // The icon is loaded lazily. this is skipped if the icon was transferred
         if (!n->icon) {
                 notification_icon_replace_path(n, n->iconname);
         }
@@ -221,14 +222,35 @@ int queues_notification_insert(struct notification *n)
  */
 static bool queues_stack_duplicate(struct notification *new)
 {
+        gint64 modtime = -1;
+
         GQueue *allqueues[] = { displayed, waiting };
         for (size_t i = 0; i < sizeof(allqueues)/sizeof(GQueue*); i++) {
                 for (GList *iter = g_queue_peek_head_link(allqueues[i]); iter;
                      iter = iter->next) {
                         struct notification *old = iter->data;
                         if (notification_is_duplicate(old, new)) {
+
+                                // Additional check to see if the icon was modified
+                                // But only if the icon is from a file
+                                //
+                                if (old->icon && !new->icon_id && is_like_path(old->iconname)) {
+                                        if (modtime < 0)
+                                                modtime = modification_time(old->iconname);
+
+                                        // File was touched, check if the hash is the same
+                                        if (modtime > old->icon_time) {
+                                                notification_icon_replace_path(new, new->iconname);
+
+                                                if (!STR_EQ(new->icon_id, old->icon_id))
+                                                        continue;
+                                        } else {
+                                                notification_transfer_icon(old, new);
+                                        }
+                                }
+
                                 /* If the progress differs, probably notify-send was used to update the notification
-                                 * So only count it as a duplicate, if the progress was not the same.
+                                 * So only count it as a duplicate, if the progress was the same.
                                  * */
                                 if (old->progress == new->progress) {
                                         old->dup_count++;
@@ -242,8 +264,6 @@ static bool queues_stack_duplicate(struct notification *new)
 
                                 if (allqueues[i] == displayed)
                                         new->start = time_monotonic_now();
-
-                                notification_transfer_icon(old, new);
 
                                 notification_unref(old);
                                 return true;
@@ -272,14 +292,19 @@ static bool queues_stack_by_tag(struct notification *new)
                                 iter->data = new;
                                 new->dup_count = old->dup_count;
 
+                                if (old->icon && !new->icon_id && is_like_path(old->iconname)) {
+                                        gint64 modtime = modification_time(old->iconname);
+                                        if (modtime <= old->icon_time) {
+                                                notification_transfer_icon(old, new);
+                                        }
+                                }
+
                                 signal_notification_closed(old, 1);
 
                                 if (allqueues[i] == displayed) {
                                         new->start = time_monotonic_now();
                                         notification_run_script(new);
                                 }
-
-                                notification_transfer_icon(old, new);
 
                                 notification_unref(old);
                                 return true;

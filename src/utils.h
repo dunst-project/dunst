@@ -158,6 +158,10 @@ gint64 string_to_time(const char *string);
  */
 gint64 time_monotonic_now(void);
 
+gint64 time_now(void);
+
+gint64 modification_time(const char *path);
+
 /**
  * Retrieve the HOME directory of the user running dunst
  *
@@ -258,6 +262,11 @@ FILE * fopen_verbose(const char * const path);
 void add_paths_from_env(GPtrArray *arr, char *env_name, char *subdir, char *alternative);
 
 bool string_is_int(const char *str);
+
+// Actually checks only the first characters
+// Is true when the string starts with one of:
+// ./ ../ ~ /
+bool is_like_path(const char *string);
 
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

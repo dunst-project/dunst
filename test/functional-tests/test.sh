@@ -3,6 +3,7 @@
 # prefix should be the root of the repository
 PREFIX="${PREFIX:-../..}"
 TESTDIR="$PREFIX/test/functional-tests"
+DATADIR="$PREFIX/test/data"
 DUNST="${DUNST:-$PREFIX/dunst}"
 DUNSTIFY="${DUNSTIFY:-$PREFIX/dunstify}"
 DUNSTCTL="${DUSNTCTL:-$PREFIX/dunstctl}"
@@ -68,7 +69,7 @@ function replace {
     echo "replace"
     echo "###################################"
     start_dunst dunstrc.default
-    id=$($DUNSTIFY -a "dunst tester" -p "Replace" "this should get replaces after keypress")
+    id=$($DUNSTIFY -a "dunst tester" -p "Replace" "this should get replaced after keypress")
     keypress
     $DUNSTIFY -a "dunst tester" -r $id "Success?" "I hope this is not a new notification"
     keypress
@@ -411,7 +412,7 @@ function dmenu_order {
     echo "dmenu_order"
     echo "###################################"
 
-    tmp_dunstrc dunstrc.default "sort=urgency"
+    tmp_dunstrc dunstrc.default "sort=urgency_descending"
     start_dunst dunstrc.tmp
 
     for i in critical normal low
@@ -449,6 +450,71 @@ function dmenu_order {
     tmp_clean
 }
 
+function replaced_icon {
+    echo "###################################"
+    echo "replaced_icon "
+    echo "###################################"
+
+    start_dunst dunstrc.default
+    echo "Normal icon"
+    cp "$DATADIR/adwaita-icon1.png" "$TESTDIR/tmp.png"
+    for i in 1 2; do
+        $DUNSTIFY -a "dunst tester" "just icon" -i "$TESTDIR/tmp.png"
+        keypress
+    done
+
+    cp "$DATADIR/adwaita-icon2.png" "$TESTDIR/tmp.png"
+    for i in 1 2; do
+        $DUNSTIFY -a "dunst tester" "just icon" -i "$TESTDIR/tmp.png"
+        keypress
+    done
+
+    $DUNSTCTL close-all
+
+    echo "Raw icon"
+    cp "$DATADIR/adwaita-icon1.png" "$TESTDIR/tmp.png"
+    for i in 1 2; do
+        $DUNSTIFY -a "dunst tester" "just raw icon" -I "$TESTDIR/tmp.png"
+        keypress
+    done
+
+    cp "$DATADIR/adwaita-icon2.png" "$TESTDIR/tmp.png"
+    for i in 1 2; do
+        $DUNSTIFY -a "dunst tester" "just raw icon" -I "$TESTDIR/tmp.png"
+        keypress
+    done
+
+    $DUNSTCTL close-all
+
+    echo "Tagged icon"
+    cp "$DATADIR/adwaita-icon1.png" "$TESTDIR/tmp.png"
+    for i in 1 2; do
+        $DUNSTIFY -a "dunst tester" "icon with tag $i" -i "$TESTDIR/tmp.png" -h string:x-dunst-stack-tag:test
+        keypress
+    done
+
+    cp "$DATADIR/adwaita-icon2.png" "$TESTDIR/tmp.png"
+    for i in 1 2; do
+        $DUNSTIFY -a "dunst tester" "icon with tag $i" -i "$TESTDIR/tmp.png" -h string:x-dunst-stack-tag:test
+        keypress
+    done
+
+    $DUNSTCTL close-all
+
+    echo "Tagged raw icon"
+    cp "$DATADIR/adwaita-icon1.png" "$TESTDIR/tmp.png"
+    for i in 1 2; do
+        $DUNSTIFY -a "dunst tester" "raw icon with tag $i" -I "$TESTDIR/tmp.png" -h string:x-dunst-stack-tag:test
+        keypress
+    done
+
+    cp "$DATADIR/adwaita-icon2.png" "$TESTDIR/tmp.png"
+    for i in 1 2; do
+        $DUNSTIFY -a "dunst tester" "raw icon with tag $i" -I "$TESTDIR/tmp.png" -h string:x-dunst-stack-tag:test
+        keypress
+    done
+}
+
 if [ -n "$1" ]; then
     while [ -n "$1" ]; do
         $1
@@ -473,6 +539,7 @@ else
     vertical_align
     hot_reload
     dmenu_order
+    replaced_icon
 fi
 
 killall dunst
