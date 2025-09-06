@@ -113,9 +113,17 @@ static const char *introspection_xml =
     "            <annotation name=\"org.freedesktop.DBus.Property.EmitsChangedSignal\" value=\"true\"/>"
     "        </property>"
 
-    "        <property name=\"displayedLength\" type=\"u\" access=\"read\" />"
-    "        <property name=\"historyLength\" type=\"u\" access=\"read\" />"
-    "        <property name=\"waitingLength\" type=\"u\" access=\"read\" />"
+    "        <property name=\"displayedLength\" type=\"u\" access=\"read\">"
+    "            <annotation name=\"org.freedesktop.DBus.Property.EmitsChangedSignal\" value=\"true\"/>"
+    "        </property>"
+    "        <property name=\"historyLength\" type=\"u\" access=\"read\">"
+    "            <annotation name=\"org.freedesktop.DBus.Property.EmitsChangedSignal\" value=\"true\"/>"
+    "        </property>"
+
+    "        <property name=\"waitingLength\" type=\"u\" access=\"read\">"
+    "            <annotation name=\"org.freedesktop.DBus.Property.EmitsChangedSignal\" value=\"true\"/>"
+    "        </property>"
+
 
     "        <signal name=\"NotificationHistoryRemoved\">"
     "            <arg name=\"id\"         type=\"u\"/>"
