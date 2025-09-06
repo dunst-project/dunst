@@ -1001,6 +1001,39 @@ void signal_length_propertieschanged(void)
         g_clear_pointer(&invalidated_builder, g_variant_builder_unref);
 }
 
+void signal_paused_propertieschanged(void)
+{
+        if(!dbus_conn)
+                return;
+
+        struct dunst_status status = dunst_status_get();
+
+        GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE_VARDICT);
+        GVariantBuilder *invalidated_builder = g_variant_builder_new(G_VARIANT_TYPE_STRING_ARRAY);
+
+        g_variant_builder_add(builder,
+                              "{sv}",
+                              "paused", g_variant_new_boolean(status.pause_level != 0));
+        g_variant_builder_add(builder,
+                              "{sv}",
+                              "pauseLevel", g_variant_new_uint32(status.pause_level));
+
+        g_dbus_connection_emit_signal(dbus_conn,
+                                      NULL,
+                                      FDN_PATH,
+                                      PROPERTIES_IFAC,
+                                      "PropertiesChanged",
+                                      g_variant_new("(sa{sv}as)",
+                                                    DUNST_IFAC,
+                                                    builder,
+                                                    invalidated_builder),
+                                      NULL);
+
+        g_clear_pointer(&builder, g_variant_builder_unref);
+        g_clear_pointer(&invalidated_builder, g_variant_builder_unref);
+
+}
+
 static void dbus_cb_Notify(
                 GDBusConnection *connection,
                 const gchar *sender,
@@ -1207,27 +1240,8 @@ gboolean dbus_cb_dunst_Properties_Set(GDBusConnection *connection,
                 dunst_status_int(S_PAUSE_LEVEL, targetPauseLevel);
                 wake_up();
 
-                GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE_VARDICT);
-                GVariantBuilder *invalidated_builder = g_variant_builder_new(G_VARIANT_TYPE_STRING_ARRAY);
-                g_variant_builder_add(builder,
-                                      "{sv}",
-                                      "paused", g_variant_new_boolean(targetPauseLevel != 0));
-                g_variant_builder_add(builder,
-                                      "{sv}",
-                                      "pauseLevel", g_variant_new_uint32(targetPauseLevel));
-                g_dbus_connection_emit_signal(connection,
-                                              NULL,
-                                              object_path,
-                                              PROPERTIES_IFAC,
-                                              "PropertiesChanged",
-                                              g_variant_new("(sa{sv}as)",
-                                                            interface_name,
-                                                            builder,
-                                                            invalidated_builder),
-                                              NULL);
+                signal_paused_propertieschanged();
 
-                g_clear_pointer(&builder, g_variant_builder_unref);
-                g_clear_pointer(&invalidated_builder, g_variant_builder_unref);
                 return true;
         }
 
