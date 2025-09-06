@@ -184,6 +184,8 @@ gboolean pause_signal(gpointer data)
         dunst_status_int(S_PAUSE_LEVEL, MAX_PAUSE_LEVEL);
         wake_up();
 
+        signal_paused_propertieschanged();
+
         return G_SOURCE_CONTINUE;
 }
 
@@ -193,6 +195,8 @@ gboolean unpause_signal(gpointer data)
 
         dunst_status_int(S_PAUSE_LEVEL, 0);
         wake_up();
+
+        signal_paused_propertieschanged();
 
         return G_SOURCE_CONTINUE;
 }
