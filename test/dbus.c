@@ -1382,6 +1382,74 @@ TEST test_signal_length_propertieschanged(void)
         PASS();
 }
 
+TEST test_signal_paused_propertieschanged_pause(void)
+{
+        struct signal_propertieschanged sig = {NULL, NULL, NULL, -1};
+
+        dbus_signal_subscribe_propertieschanged(&sig);
+
+        pause_signal(NULL);
+
+        uint waiting = 0;
+
+        while(!sig.interface && waiting < 2000) {
+                usleep(500);
+                waiting++;
+        }
+
+        ASSERT_STR_EQ(sig.interface, DUNST_IFAC);
+
+        gboolean paused;
+        g_variant_lookup(sig.array_dict_sv_data, "paused", "b", &paused);
+
+        ASSERT_EQ(paused, TRUE);
+
+        guint32 pause_level;
+        g_variant_lookup(sig.array_dict_sv_data, "pauseLevel", "u", &pause_level);
+
+        ASSERT_EQ(pause_level, 100);
+
+        g_free(sig.interface);
+        g_variant_unref(sig.array_dict_sv_data);
+        g_variant_unref(sig.array_s_data);
+        dbus_signal_unsubscribe_propertieschanged(&sig);
+        PASS();
+}
+
+TEST test_signal_paused_propertieschanged_unpause(void)
+{
+        struct signal_propertieschanged sig = {NULL, NULL, NULL, -1};
+
+        dbus_signal_subscribe_propertieschanged(&sig);
+
+        unpause_signal(NULL);
+
+        uint waiting = 0;
+
+        while(!sig.interface && waiting < 2000) {
+                usleep(500);
+                waiting++;
+        }
+
+        ASSERT_STR_EQ(sig.interface, DUNST_IFAC);
+
+        gboolean paused;
+        g_variant_lookup(sig.array_dict_sv_data, "paused", "b", &paused);
+
+        ASSERT_EQ(paused, FALSE);
+
+        guint32 pause_level;
+        g_variant_lookup(sig.array_dict_sv_data, "pauseLevel", "u", &pause_level);
+
+        ASSERT_EQ(pause_level, 0);
+
+        g_free(sig.interface);
+        g_variant_unref(sig.array_dict_sv_data);
+        g_variant_unref(sig.array_s_data);
+        dbus_signal_unsubscribe_propertieschanged(&sig);
+        PASS();
+}
+
 TEST test_close_and_signal(void)
 {
         GVariant *data, *ret;
@@ -1660,6 +1728,8 @@ gpointer run_threaded_tests(gpointer data)
         RUN_TEST(test_close_and_signal);
         RUN_TEST(test_signal_actioninvoked);
         RUN_TEST(test_signal_length_propertieschanged);
+        RUN_TEST(test_signal_paused_propertieschanged_pause);
+        RUN_TEST(test_signal_paused_propertieschanged_unpause);
         RUN_TEST(test_timeout_overflow);
         RUN_TEST(test_override_dbus_timeout);
         RUN_TEST(test_match_dbus_timeout);

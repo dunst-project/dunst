@@ -47,6 +47,8 @@ int dunst_main(int argc, char *argv[]);
 void usage(int exit_status);
 void print_version(void);
 
+gboolean pause_signal(gpointer data);
+gboolean unpause_signal(gpointer data);
 gboolean quit_signal(gpointer data);
 
 #endif
