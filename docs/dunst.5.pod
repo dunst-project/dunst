@@ -1114,8 +1114,8 @@ When the script is called details of the notification that triggered it will be
 passed via environment variables. The following variables are available:
 B<DUNST_APP_NAME>, B<DUNST_SUMMARY>, B<DUNST_BODY>, B<DUNST_ICON_PATH>,
 B<DUNST_URGENCY>, B<DUNST_ID>, B<DUNST_PROGRESS>, B<DUNST_CATEGORY>,
-B<DUNST_STACK_TAG>, B<DUNST_URLS>, B<DUNST_TIMEOUT>, B<DUNST_TIMESTAMP>,
-B<DUNST_DESKTOP_ENTRY>, and B<DUNST_STACK_TAG>.
+B<DUNST_STACK_TAG>, B<DUNST_URLS>, B<DUNST_TIMEOUT>, B<DUNST_TIMESTAMP>, 
+and B<DUNST_DESKTOP_ENTRY>.
 
 Another, less recommended way to get notifcations details from a script is via
 command line parameters. These are passed to the script in the following order:
