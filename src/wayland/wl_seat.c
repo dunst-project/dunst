@@ -19,6 +19,13 @@
 #include "../settings.h"
 #include "wl_ctx.h"
 
+#include <xkbcommon/xkbcommon.h>
+#include <sys/mman.h>
+#include <unistd.h>
+
+static struct xkb_context *xkb_context = NULL;
+static struct xkb_state *xkb_state = NULL;
+
 static void touch_handle_motion(void *data, struct wl_touch *wl_touch,
                 uint32_t time, int32_t id,
                 wl_fixed_t surface_x, wl_fixed_t surface_y) {
@@ -46,7 +53,6 @@ static void touch_handle_down(void *data, struct wl_touch *wl_touch,
 static void touch_handle_up(void *data, struct wl_touch *wl_touch,
                 uint32_t serial, uint32_t time, int32_t id) {
         struct dunst_seat *seat = data;
-
         if (id >= MAX_TOUCHPOINTS) {
                 return;
         }
@@ -99,7 +105,6 @@ static void pointer_handle_button(void *data, struct wl_pointer *wl_pointer,
                 uint32_t serial, uint32_t time, uint32_t button,
                 uint32_t button_state) {
         struct dunst_seat *seat = data;
-
         input_handle_click(button, button_state, seat->pointer.x, seat->pointer.y);
 }
 
@@ -119,6 +124,116 @@ static const struct wl_pointer_listener pointer_listener = {
         .axis = pointer_handle_axis,
 };
 
+static void keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
+                uint32_t format, int32_t fd, uint32_t size) {
+
+        struct dunst_seat *seat = data;
+        (void)seat;
+
+        if (format != WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1) {
+                close(fd);
+                return;
+        }
+
+        char *keymap_str = mmap(NULL, size, PROT_READ, MAP_SHARED, fd, 0);
+        if (keymap_str == MAP_FAILED) {
+                close(fd);
+                return;
+        }
+
+        if (!xkb_context)
+                xkb_context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
+
+        struct xkb_keymap *keymap = xkb_keymap_new_from_string(xkb_context,
+                keymap_str, XKB_KEYMAP_FORMAT_TEXT_V1, XKB_KEYMAP_COMPILE_NO_FLAGS);
+
+        munmap(keymap_str, size);
+        close(fd);
+
+        if (!keymap)
+                return;
+
+        if (xkb_state)
+                xkb_state_unref(xkb_state);
+
+        xkb_state = xkb_state_new(keymap);
+        xkb_keymap_unref(keymap);
+}
+
+static void keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
+                uint32_t serial, struct wl_surface *surface,
+                struct wl_array *keys) {
+
+        struct dunst_seat *seat = data;
+        (void)seat;
+}
+
+static void keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
+                uint32_t serial, struct wl_surface *surface) {
+
+        struct dunst_seat *seat = data;
+        (void)seat;
+}
+
+static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
+                uint32_t serial, uint32_t time, uint32_t key, uint32_t state) {
+
+        struct dunst_seat *seat = data;
+        (void)seat;
+
+        if (!xkb_state)
+                return;
+
+        uint32_t keycode = key + 8; // XKB uses evdev + 8 keycode convention
+        xkb_keysym_t keysym = xkb_state_key_get_one_sym(xkb_state, keycode);
+
+        if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
+                input_handle_key(keysym, true);
+        } else {
+                input_handle_key(keysym, false);
+        }
+}
+
+static void keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
+                uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched,
+                uint32_t mods_locked, uint32_t group) {
+        if (!xkb_state)
+                return;
+
+        xkb_state_update_mask(xkb_state, mods_depressed, mods_latched,
+                              mods_locked, 0, 0, group);
+}
+
+static void keyboard_handle_repeat_info(void *data, struct wl_keyboard *keyboard,
+                int32_t rate, int32_t delay) {
+        // store the repeat info if needed
+        // rate: repeat times per second
+        // delay: delay in milliseconds
+        LOG_D("Keyboard repeat info - rate: %d, delay: %d", rate, delay);
+}
+
+static const struct wl_keyboard_listener keyboard_listener = {
+        .keymap = keyboard_handle_keymap,
+        .enter = keyboard_handle_enter,
+        .leave = keyboard_handle_leave,
+        .key = keyboard_handle_key,
+        .modifiers = keyboard_handle_modifiers,
+        .repeat_info = keyboard_handle_repeat_info,
+};
+
+// cleanup xkb resources
+void cleanup_keyboard_resources(void) {
+        if (xkb_state) {
+                xkb_state_unref(xkb_state);
+                xkb_state = NULL;
+        }
+
+        if (xkb_context) {
+                xkb_context_unref(xkb_context);
+                xkb_context = NULL;
+        }
+}
+
 static void destroy_seat_pointer(struct dunst_seat *seat) {
         wl_pointer_release(seat->pointer.wl_pointer);
         seat->pointer.wl_pointer = NULL;
@@ -127,6 +242,11 @@ static void destroy_seat_pointer(struct dunst_seat *seat) {
 static void destroy_seat_touch(struct dunst_seat *seat) {
         wl_touch_release(seat->touch.wl_touch);
         seat->touch.wl_touch = NULL;
+}
+
+static void destroy_seat_keyboard(struct dunst_seat *seat) {
+        wl_keyboard_release(seat->keyboard.wl_keyboard);
+        seat->keyboard.wl_keyboard = NULL;
 }
 
 void destroy_seat(struct dunst_seat *seat) {
@@ -170,12 +290,15 @@ void destroy_seat(struct dunst_seat *seat) {
         seat->name = NULL;
 
         g_free(seat);
+
+        if (wl_list_empty(&ctx.seats)) {
+                cleanup_keyboard_resources();
+        }
 }
 
 static void seat_handle_capabilities(void *data, struct wl_seat *wl_seat,
                 uint32_t capabilities) {
         struct dunst_seat *seat = data;
-
         if (capabilities & WL_SEAT_CAPABILITY_POINTER) {
                 if (seat->pointer.wl_pointer == NULL) {
                         seat->pointer.wl_pointer = wl_seat_get_pointer(wl_seat);
@@ -194,6 +317,16 @@ static void seat_handle_capabilities(void *data, struct wl_seat *wl_seat,
                 }
         } else if (seat->touch.wl_touch != NULL) {
                 destroy_seat_touch(seat);
+        }
+
+        if (capabilities & WL_SEAT_CAPABILITY_KEYBOARD) {
+                if(seat->keyboard.wl_keyboard == NULL) {
+                        seat->keyboard.wl_keyboard = wl_seat_get_keyboard(wl_seat);
+                        wl_keyboard_add_listener(seat->keyboard.wl_keyboard,
+                                &keyboard_listener, seat);
+                }
+        } else if (seat->keyboard.wl_keyboard != NULL) {
+                destroy_seat_keyboard(seat);
         }
 }
 

@@ -178,6 +178,17 @@ struct settings {
         int notification_limit;
         int gap_size;
         int default_pause_level;
+
+        bool built_in_menu;
+        bool menu_frame_fill;
+        int menu_frame_width;
+        int menu_height;
+        int menu_max_per_row;
+        int menu_max_rows;
+        int menu_max_width;
+        int menu_min_width;
+        struct color menu_frame_color;
+        bool built_in_menu_key_navigation;
 };
 
 extern struct settings settings;
