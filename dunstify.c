@@ -22,26 +22,38 @@ static gboolean serverinfo = false;
 static gboolean printid = false;
 static guint32 replace_id = 0;
 static guint32 close_id = 0;
-static gboolean block = false;
+static gboolean wait = false;
 static gchar **rest = NULL;
+static gboolean transient = false;
+static gboolean say_version = false;
 
 static GOptionEntry entries[] =
 {
-    { "appname",          'a', 0, G_OPTION_ARG_STRING,         &appname,        "Name of your application", "NAME" },
     { "urgency",          'u', 0, G_OPTION_ARG_STRING,         &urgency_str,    "The urgency of this notification", "URG" },
-    { "hints",            'h', 0, G_OPTION_ARG_STRING_ARRAY,   &hint_strs,      "User specified hints", "HINT" },
-    { "action",           'A', 0, G_OPTION_ARG_STRING_ARRAY,   &action_strs,    "Actions the user can invoke", "ACTION" },
-    { "timeout",          't', 0, G_OPTION_ARG_INT,            &timeout,        "The time in milliseconds until the notification expires", "TIMEOUT" },
+    { "expire-time",      't', 0, G_OPTION_ARG_INT,            &timeout,        "The time in milliseconds until the notification expires", "TIMEOUT" },
+    { "app-name",         'a', 0, G_OPTION_ARG_STRING,         &appname,        "Name of your application", "NAME" },
     { "icon",             'i', 0, G_OPTION_ARG_STRING,         &icon,           "An icon that should be displayed with the notification", "ICON" },
     { "raw_icon",         'I', 0, G_OPTION_ARG_STRING,         &raw_icon_path,  "Path to the icon to be sent as raw image data", "RAW_ICON"},
     { "category",         'c', 0, G_OPTION_ARG_STRING,         &category,       "The category of this notification", "TYPE" },
-    { "capabilities",     0,   0, G_OPTION_ARG_NONE,           &capabilities,   "Print the server capabilities and exit", NULL },
-    { "serverinfo",       's', 0, G_OPTION_ARG_NONE,           &serverinfo,     "Print server information and exit", NULL },
-    { "printid",          'p', 0, G_OPTION_ARG_NONE,           &printid,        "Print id, which can be used to update/replace this notification", NULL },
-    { "replace",          'r', 0, G_OPTION_ARG_INT,            &replace_id,     "Set id of this notification.", "ID" },
+    { "transient",        'e', 0, G_OPTION_ARG_INT,            &transient,      "Mark the notification as transient", NULL },
+    { "hint",             'h', 0, G_OPTION_ARG_STRING_ARRAY,   &hint_strs,      "User specified hints", "TYPE:NAME:VALUE" },
+    { "print-id",         'p', 0, G_OPTION_ARG_NONE,           &printid,        "Print id, which can be used to update/replace this notification", NULL },
+    { "replace-id",       'r', 0, G_OPTION_ARG_INT,            &replace_id,     "Set id of this notification.", "ID" },
+    { "wait",             'w', 0, G_OPTION_ARG_NONE,           &wait,           "Block until notification is closed and print close reason", NULL },
+    { "action",           'A', 0, G_OPTION_ARG_STRING_ARRAY,   &action_strs,    "Actions the user can invoke", "ACTION" },
     { "close",            'C', 0, G_OPTION_ARG_INT,            &close_id,       "Close the notification with the specified ID", "ID" },
-    { "block",            'b', 0, G_OPTION_ARG_NONE,           &block,          "Block until notification is closed and print close reason", NULL },
-    { G_OPTION_REMAINING, 0,   0, G_OPTION_ARG_FILENAME_ARRAY, &rest,            NULL, NULL },
+
+    // Legacy names
+    { "hints",            0, 0, G_OPTION_ARG_STRING_ARRAY,     &hint_strs,      "Legacy alias of '--hint'", "HINT" },
+    { "timeout",          0, 0, G_OPTION_ARG_INT,              &timeout,        "Legacy alias of '--expire-time'", "TIMEOUT" },
+    { "printid",          0, 0, G_OPTION_ARG_NONE,             &printid,        "Legacy alias of '--print-id'", NULL },
+    { "replace",          0, 0, G_OPTION_ARG_INT,              &replace_id,     "Legacy alias of '--replace-id'", "ID" },
+    { "block",            'b', 0, G_OPTION_ARG_NONE,           &wait,           "Legacy alias of '--wait'", NULL },
+
+    { "capabilities",     0, 0, G_OPTION_ARG_NONE,             &capabilities,   "Print the server capabilities and exit", NULL },
+    { "serverinfo",       0, 0, G_OPTION_ARG_NONE,             &serverinfo,     "Print server information and exit", NULL },
+    { "version",          'v', 0, G_OPTION_ARG_NONE,           &say_version,    "Print server information and exit", NULL },
+    { G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_FILENAME_ARRAY,   &rest,           NULL, NULL },
     { NULL }
 };
 
@@ -78,6 +90,11 @@ void print_serverinfo(void)
                                                                  vendor,
                                                                  version,
                                                                  spec_version);
+}
+
+void print_version(void)
+{
+    printf("dunstify (shipped with Dunst %s)\n", VERSION);
 }
 
 /*
@@ -128,6 +145,11 @@ void parse_commandline(int argc, char *argv[])
 
     if (serverinfo) {
         print_serverinfo();
+        die(0);
+    }
+
+    if (say_version) {
+        print_version();
         die(0);
     }
 
@@ -280,6 +302,9 @@ int main(int argc, char *argv[])
     if (category != NULL)
         notify_notification_set_category(n, category);
 
+    if (transient)
+        notify_notification_set_hint(n, "transient", g_variant_new_boolean(TRUE));
+
     GError *err = NULL;
 
     if (raw_icon_path) {
@@ -309,7 +334,7 @@ int main(int argc, char *argv[])
 
     GMainLoop *l = NULL;
 
-    if (block || action_strs) {
+    if (wait || action_strs) {
         l = g_main_loop_new(NULL, false);
         g_signal_connect(n, "closed", G_CALLBACK(closed), NULL);
     }
@@ -336,7 +361,7 @@ int main(int argc, char *argv[])
         fflush(stdout);
     }
 
-    if (block || action_strs)
+    if (wait || action_strs)
         g_main_loop_run(l);
 
     g_object_unref(G_OBJECT (n));
@@ -344,4 +369,4 @@ int main(int argc, char *argv[])
     die(0);
 }
 
-/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */
+/* vim: set ft=c tabstop=4 shiftwidth=4 expandtab textwidth=0: */
