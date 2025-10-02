@@ -265,6 +265,7 @@ install-completions:
 	install -Dm644 completions/dunstctl.bashcomp ${DESTDIR}${BASHCOMPLETIONDIR}/dunstctl
 	install -Dm644 completions/_dunst.zshcomp ${DESTDIR}${ZSHCOMPLETIONDIR}/_dunst
 	install -Dm644 completions/_dunstctl.zshcomp ${DESTDIR}${ZSHCOMPLETIONDIR}/_dunstctl
+	install -Dm644 completions/_dunstify.zshcomp ${DESTDIR}${ZSHCOMPLETIONDIR}/_dunstify
 	install -Dm644 completions/dunst.fishcomp ${DESTDIR}${FISHCOMPLETIONDIR}/dunst.fish
 	install -Dm644 completions/dunstctl.fishcomp ${DESTDIR}${FISHCOMPLETIONDIR}/dunstctl.fish
 
