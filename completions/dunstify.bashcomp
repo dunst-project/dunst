@@ -1,0 +1,35 @@
+_dunstify() {
+    local opts cur prev split=false
+    _get_comp_words_by_ref cur prev
+    COMPREPLY=()
+    opts='-? --help \
+      -u --urgency \
+      -t --expire-time \
+      -a --app-name \
+      -i --icon \
+      -I --raw-icon \
+      -c --category \
+      -e --transient \
+      -h --hint \
+      -p --print-id \
+      -r --replace-id \
+      -w --wait \
+      -A --action \
+      -C --close \
+      --capabilities \
+      --serverinfo \
+      -v --version'
+
+    case "$prev" in
+        -u|--urgency) COMPREPLY=( $( compgen -W 'low normal critical' -- "$cur") )
+            return ;;
+        -I|--raw-icon) _filedir
+            return ;;
+    esac
+
+    case "$cur" in
+        *) COMPREPLY=( $( compgen -W "$opts" -- "$cur" ) ) ;;
+    esac
+} && complete -F _dunstify dunstify
+
+# ex: filetype=sh

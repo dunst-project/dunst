@@ -271,6 +271,8 @@ install-completions:
 ifneq (0,${DUNSTIFY})
 install: install-completions-dunstify
 install-completions-dunstify:
+	install -Dm644 completions/dunstify.bashcomp ${DESTDIR}${BASHCOMPLETIONDIR}/dunstify
+	install -Dm644 completions/_dunstify.zshcomp ${DESTDIR}${ZSHCOMPLETIONDIR}/_dunstify
 	install -Dm644 completions/dunstify.fishcomp ${DESTDIR}${FISHCOMPLETIONDIR}/dunstify.fish
 endif
 endif
@@ -305,8 +307,10 @@ endif
 uninstall-completions:
 	rm -f ${DESTDIR}${BASHCOMPLETIONDIR}/dunst
 	rm -f ${DESTDIR}${BASHCOMPLETIONDIR}/dunstctl
+	rm -f ${DESTDIR}${BASHCOMPLETIONDIR}/dunstify
 	rm -f ${DESTDIR}${ZSHCOMPLETIONDIR}/_dunst
 	rm -f ${DESTDIR}${ZSHCOMPLETIONDIR}/_dunstctl
+	rm -f ${DESTDIR}${ZSHCOMPLETIONDIR}/_dunstify
 	rm -f ${DESTDIR}${FISHCOMPLETIONDIR}/dunst.fish
 	rm -f ${DESTDIR}${FISHCOMPLETIONDIR}/dunstctl.fish
 	rm -f ${DESTDIR}${FISHCOMPLETIONDIR}/dunstify.fish

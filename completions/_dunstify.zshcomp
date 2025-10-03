@@ -1,0 +1,61 @@
+#compdef _dunstify dunstify
+
+# ZSH arguments completion script for the dunstify command
+
+_dunstify_ids() {
+  local -a ids
+  ids=(${(f)"$(dunstctl history | awk '/"id" :/ {getline; getline; print $3}')"})
+  compadd "$@" $ids
+}
+
+local curcontext="$curcontext" ret=1
+local -a state line subs
+
+_arguments -C \
+  '1:opt:->opts' \
+  '2:param:->params' \
+  && ret=0
+
+case $state in
+  (opts)
+    _arguments \
+      {-v,--version}"[Print version]" \
+      {-?,--help}"[Show help options]" \
+      --capabilities"[Print the server capabilities and exit]" \
+      --serverinfo"[Print server information and exit]" \
+      {-w,--wait}"[Block until notification is closed]" \
+      {-p,--print-id}"[Print id, which can be used to update/replace this notification]" \
+      {-e,--transient}"[Mark the notification as transient]" \
+      {-u,--urgency}"[The urgency of this notification]" \
+      {-t,--expire-time}"[Expiration time in milliseconds]" \
+      {-a,--app-name}"[Name of your application]" \
+      {-i,--icon}"[Name of the notification icon]" \
+      {-I,--raw-icon}"[Path to the icon to be sent as raw image data]" \
+      {-c,--category}"[The category of this notification]" \
+      {-h,--hint}"[User specified hints]" \
+      {-r,--replace-id}"[Set id of this notification]" \
+      {-A,--action}"[Actions the user can invoke]" \
+      {-C,--close}"[Close the notification with the specified ID]"
+      ;;
+
+  (params)
+    case $line[1] in
+      -u)
+        local -a urgency;
+        urgency=(
+          "low"
+          "normal"
+          "critical"
+        )
+        _describe urgency urgency && ret=0
+        ;;
+
+      -I|--raw-icon)
+        _arguments '*:file:_files' && ret=0
+        ;;
+
+      -r|--replace-id|-C|--close)
+        _arguments '*:id:_dunstify_ids' && ret=0
+        ;;
+    esac
+esac
