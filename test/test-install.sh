@@ -33,6 +33,7 @@ testprefix/bin/dunstctl
 testprefix/bin/dunstify
 testprefix/share/bash-completion/completions/dunst
 testprefix/share/bash-completion/completions/dunstctl
+testprefix/share/bash-completion/completions/dunstify
 testprefix/share/fish/vendor_completions.d/dunst.fish
 testprefix/share/fish/vendor_completions.d/dunstctl.fish
 testprefix/share/fish/vendor_completions.d/dunstify.fish
@@ -42,6 +43,7 @@ testprefix/share/man/man1/dunstify.1
 testprefix/share/man/man5/dunst.5
 testprefix/share/zsh/site-functions/_dunst
 testprefix/share/zsh/site-functions/_dunstctl
+testprefix/share/zsh/site-functions/_dunstify
 EOF
 
 do_make uninstall
