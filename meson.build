@@ -113,6 +113,7 @@ if libnotify.found()
         'dunstify',
         'dunstify.c',
         dependencies: [glib, libnotify, gdk_pixbuf],
+        c_args: c_version_arg,
         install: true,
     )
 endif
@@ -124,6 +125,11 @@ if pod2man.found()
     subdir('docs')
 endif
 
+completions = get_option('completions')
+if completions
+  subdir('completions')
+endif
+
 summary(
     {
         'X11 support': x11_support,
@@ -131,6 +137,7 @@ summary(
         'Man pages': pod2man.found(),
         'Dunstify': libnotify.found(),
         'Install systemd service units': systemd.found(),
+        'Install shell completions': completions,
     },
     bool_yn: true,
 )
