@@ -3,3 +3,4 @@ option('wayland', type: 'feature', value: 'auto', description: 'Enable wayland s
 option('x11', type: 'feature', value: 'auto', description: 'Enable X11 support')
 option('dunstify', type: 'feature', value: 'auto', description: 'Install libnotify dunstify utility')
 option('systemd', type: 'feature', value: 'auto', description: 'Install systemd user service unit')
+option('completions', type: 'boolean', value: true, description: 'Install shell completions')
