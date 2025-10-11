@@ -3,12 +3,12 @@
 #include <assert.h>
 #include <cairo.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
+#include <librsvg/rsvg.h>
 #include <stdbool.h>
 #include <string.h>
 #include <math.h>
 
 #include "log.h"
-#include "notification.h"
 #include "settings.h"
 #include "utils.h"
 #include "icon-lookup.h"
@@ -205,7 +205,7 @@ static char *get_id_from_data(const uint8_t *data_pb, size_t width, size_t heigh
         return id;
 }
 
-GdkPixbuf *get_pixbuf_from_file(const char *filename, char **id, int min_size, int max_size, double scale)
+cairo_surface_t *get_cairo_surface_from_file(const char *filename, char **id, struct color fg_color, int min_size, int max_size, double scale)
 {
         GError *error = NULL;
         gint w, h;
@@ -217,28 +217,74 @@ GdkPixbuf *get_pixbuf_from_file(const char *filename, char **id, int min_size, i
                 LOG_W("Failed to load image info for %s", STR_NN(filename));
                 return NULL;
         }
-        GdkPixbuf *pixbuf = NULL;
+
         // TODO immediately rescale icon upon scale changes
         icon_size_clamp(&w, &h, min_size, max_size);
-        pixbuf = gdk_pixbuf_new_from_file_at_scale(filename,
+        cairo_surface_t *icon_surface = cairo_image_surface_create(
+                        CAIRO_FORMAT_ARGB32,
                         round(w * scale),
-                        round(h * scale),
-                        TRUE,
-                        &error);
+                        round(h * scale)
+                );
+        const char *ext = strrchr(filename, '.');
+        if (ext && !strcmp(ext, ".svg")) {
+                RsvgHandle *handle = rsvg_handle_new_from_file(filename, &error);
+                const guint8 stylesheet[37];
+                const size_t stylesheet_len = sizeof(stylesheet) / sizeof(guint8);
+
+                g_snprintf((char*)stylesheet, stylesheet_len, "path { fill: #%02x%02x%02x%02x !important; }",
+                                (int)(fg_color.r * 255),
+                                (int)(fg_color.g * 255),
+                                (int)(fg_color.b * 255),
+                                (int)(fg_color.a * 255));
+                rsvg_handle_set_stylesheet(handle, stylesheet, stylesheet_len, &error);
+
+                cairo_t *cr = cairo_create(icon_surface);
+                RsvgRectangle viewport = {
+                        0,
+                        0,
+                        cairo_image_surface_get_width(icon_surface),
+                        cairo_image_surface_get_height(icon_surface)
+                };
+                rsvg_handle_render_document(handle, cr, &viewport, &error);
+                cairo_destroy(cr);
+                g_object_unref(handle);
+        } else {
+                GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file_at_scale(filename,
+                                round(w * scale),
+                                round(h * scale),
+                                TRUE,
+                                &error);
+                icon_surface = gdk_pixbuf_to_cairo_surface(pixbuf);
+                g_object_unref(pixbuf);
+        }
 
         if (error) {
                 LOG_W("%s", error->message);
                 g_error_free(error);
         }
 
-        const uint8_t *data = gdk_pixbuf_get_pixels(pixbuf);
-        size_t rowstride = gdk_pixbuf_get_rowstride(pixbuf);
-        size_t n_channels = gdk_pixbuf_get_n_channels(pixbuf);
-        size_t bits_per_sample = gdk_pixbuf_get_bits_per_sample(pixbuf);
-        size_t pixelstride = (n_channels * bits_per_sample + 7)/8;
+        const uint8_t *data = cairo_image_surface_get_data(icon_surface);
+        size_t rowstride = cairo_image_surface_get_stride(icon_surface);
+
+        int pixelstride;
+        switch (cairo_image_surface_get_format(icon_surface)) {
+                case CAIRO_FORMAT_A8:
+                        pixelstride = 1;
+                        break;
+                case CAIRO_FORMAT_RGB24:
+                        pixelstride = 3;
+                        break;
+                case CAIRO_FORMAT_ARGB32:
+                        pixelstride = 4;
+                        break;
+                default:
+                        LOG_W("Unsupported cairo format %d", cairo_image_surface_get_format(icon_surface));
+                        cairo_surface_destroy(icon_surface);
+                        return NULL;
+        }
 
         *id = get_id_from_data(data, w, h, pixelstride, rowstride);
-        return pixbuf;
+        return icon_surface;
 }
 
 char *get_path_from_icon_name(const char *iconname, int size)
