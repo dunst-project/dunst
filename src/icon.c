@@ -8,6 +8,7 @@
 #include <string.h>
 #include <math.h>
 
+#include "draw.h"
 #include "log.h"
 #include "settings.h"
 #include "utils.h"
@@ -205,7 +206,7 @@ static char *get_id_from_data(const uint8_t *data_pb, size_t width, size_t heigh
         return id;
 }
 
-cairo_surface_t *get_cairo_surface_from_file(const char *filename, char **id, struct color fg_color, int min_size, int max_size, double scale)
+cairo_surface_t *get_cairo_surface_from_file(const char *filename, char **id, const char *fg_color, const char *bg_color, int min_size, int max_size, double scale)
 {
         GError *error = NULL;
         gint w, h;
@@ -228,15 +229,11 @@ cairo_surface_t *get_cairo_surface_from_file(const char *filename, char **id, st
         const char *ext = strrchr(filename, '.');
         if (ext && !strcmp(ext, ".svg")) {
                 RsvgHandle *handle = rsvg_handle_new_from_file(filename, &error);
-                const guint8 stylesheet[37];
-                const size_t stylesheet_len = sizeof(stylesheet) / sizeof(guint8);
 
-                g_snprintf((char*)stylesheet, stylesheet_len, "path { fill: #%02x%02x%02x%02x !important; }",
-                                (int)(fg_color.r * 255),
-                                (int)(fg_color.g * 255),
-                                (int)(fg_color.b * 255),
-                                (int)(fg_color.a * 255));
-                rsvg_handle_set_stylesheet(handle, stylesheet, stylesheet_len, &error);
+                // @(fore|back)ground already take up enough bytes, so we can safely use a fixed-size buffer here.
+                char *resolved_css = string_replace_all("@foreground", fg_color, settings.svg_icon_stylesheet);
+                resolved_css = string_replace_all("@background", bg_color, resolved_css);
+                rsvg_handle_set_stylesheet(handle, (guint8 *)resolved_css, strlen(resolved_css), &error);
 
                 cairo_t *cr = cairo_create(icon_surface);
                 RsvgRectangle viewport = {

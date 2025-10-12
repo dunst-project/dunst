@@ -371,9 +371,10 @@ void notification_icon_replace_path(struct notification *n, const char *new_icon
         g_free(n->icon_path);
         n->icon_path = get_path_from_icon_name(new_icon, n->min_icon_size);
         if (n->icon_path) {
+                char fg_color[10], bg_color[10];
                 cairo_surface_t *icon_surface = get_cairo_surface_from_file(n->icon_path, &n->icon_id,
-                                n->colors.fg, n->min_icon_size, n->max_icon_size,
-                                draw_get_scale());
+                                color_to_string(n->colors.fg, fg_color), color_to_string(n->colors.bg, bg_color),
+                                n->min_icon_size, n->max_icon_size, draw_get_scale());
                 if (icon_surface) {
                         n->icon = icon_surface;
                         n->icon_time = time_now();

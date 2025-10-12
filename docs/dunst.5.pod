@@ -516,6 +516,27 @@ to set B<icon_theme> to the name of the theme you want. To enable this new
 behaviour, set B<enable_recursive_icon_lookup> to true in the I<[global]>
 section. See the respective settings for more details.
 
+=item B<svg_icon_stylesheet> (default: "path { fill: @foreground !important; }")
+
+This setting allows you to set a custom CSS stylesheet for SVG icons. This can
+be used to change the color of monochrome SVG icons to match the foreground
+color of the notification. The default stylesheet does exactly that. If you
+don't want any stylesheet to be applied, set this setting to an empty string.
+
+The following variables are available for use in the stylesheet:
+
+=over 4
+
+=item C<@foreground>
+
+The foreground color of the notification.
+
+=item C<@background>
+
+The background color of the notification.
+
+=back
+
 =item B<sticky_history> (values: [true/false], default: true)
 
 If set to true, notifications that have been recalled from history will not

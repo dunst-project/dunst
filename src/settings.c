@@ -7,18 +7,15 @@
 #include "settings.h"
 
 #include <dirent.h>
-#include <errno.h>
 #include <fnmatch.h>
 #include <glib.h>
 #include <stdio.h>
 #include <string.h>
 
-#include "dunst.h"
 #include "log.h"
 #include "notification.h"
 #include "option_parser.h"
 #include "ini.h"
-#include "rules.h"
 #include "utils.h"
 #include "output.h"
 

@@ -13,14 +13,16 @@ cairo_surface_t *gdk_pixbuf_to_cairo_surface(GdkPixbuf *pixbuf);
  * @param filename A string representing a readable file path
  * @param id   (necessary) A unique identifier of the returned pixbuf.
  *             Only filled, if the return value is non-NULL.
+ * @param fg_color A string representing the desired foreground color in hex format.
+ * @param bg_color A string representing the desired background color in hex format.
  * @param min_size An iteger representing the desired minimum unscaled icon size.
  * @param max_size An iteger representing the desired maximum unscaled icon size.
  * @param scale An integer representing the output dpi scaling.
  *
- * @return an instance of `GdkPixbuf`
+ * @return an instance of `cairo_surface_t`
  * @retval NULL: file does not exist, not readable, etc..
  */
-cairo_surface_t *get_cairo_surface_from_file(const char *filename, char **id, struct color fg_color, int min_size, int max_size, double scale);
+cairo_surface_t *get_cairo_surface_from_file(const char *filename, char **id, const char *fg_color, const char *bg_color, int min_size, int max_size, double scale);
 
 
 /**
