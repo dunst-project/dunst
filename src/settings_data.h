@@ -1354,6 +1354,16 @@ static const struct setting allowed_settings[] = {
                 .different_default = true,
         },
         {
+                .name = "svg_icon_stylesheet",
+                .section = "global",
+                .description = "CSS stylesheet to use for SVG icons",
+                .type = TYPE_STRING,
+                .default_value = "path { fill: @foreground !important; }",
+                .value = &settings.svg_icon_stylesheet,
+                .parser = NULL,
+                .parser_data = NULL,
+        },
+        {
                 .name = "enable_posix_regex",
                 .section = "global",
                 .description = "Enable POSIX regex for filtering rules",

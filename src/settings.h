@@ -146,6 +146,7 @@ struct settings {
         enum vertical_alignment vertical_alignment;
         char **icon_theme; // experimental
         bool enable_recursive_icon_lookup; // experimental
+        char *svg_icon_stylesheet;
         bool enable_regex; // experimental
         char *icon_path;
         enum follow_mode f_mode;

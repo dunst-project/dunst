@@ -62,6 +62,7 @@ LDFLAGS_DEBUG  :=
 pkg_config_packs := gio-2.0 \
                     gdk-pixbuf-2.0 \
                     "glib-2.0 >= 2.44" \
+                    librsvg-2.0 \
                     pangocairo \
 
 ifneq (0,${WAYLAND})
