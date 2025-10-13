@@ -7,4 +7,5 @@ PartOf=graphical-session.target
 Type=dbus
 BusName=org.freedesktop.Notifications
 ExecStart=@bindir@/dunst
+ExecReload=@bindir@/dunstctl reload
 Slice=session.slice
