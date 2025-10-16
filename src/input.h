@@ -14,5 +14,12 @@
  */
 void input_handle_click(unsigned int button, bool button_down, int mouse_x, int mouse_y);
 
+/**
+* Handle incoming key events
+* @param keysym The key symbol
+* @param True if the key is pressed, false if it is released
+*/
+void input_handle_key(unsigned int keysym, bool pressed);
+
 #endif
 /* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */
