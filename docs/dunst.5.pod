@@ -1021,6 +1021,10 @@ B<IMPORTANT NOTE>: This currently DOES NOT re-apply the attributes from the
 urgency_* sections. The changed urgency will only be visible in rules defined
 later. Use C<msg_urgency> to match it.
 
+=item C<override_pause_level>
+
+See B<override_pause_level>.
+
 =item C<skip_display>
 
 Setting this to true will prevent the notification from being displayed
