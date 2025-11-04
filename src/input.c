@@ -55,12 +55,35 @@ struct notification *get_notification_at(const int y) {
         return NULL;
 }
 
+bool handle_builtin_menu_click(int x, int y) {
+        if (!settings.built_in_menu) {
+                return false;
+        }
+
+        struct notification *n = get_notification_at(y);
+        if (n) {
+                if (menu_get_count(n) > 0) {
+                        struct menu *m = menu_get_at(n, x, y);
+                        if (m) {
+                                signal_action_invoked(n, m->key);
+                                return true;
+                        }
+                }
+        }
+        return false;
+}
+
 void input_handle_click(unsigned int button, bool button_down, int mouse_x, int mouse_y){
         LOG_I("Pointer handle button %i: %i", button, button_down);
 
         if (button_down) {
                 // make sure it only reacts on button release
                 return;
+        }
+
+        if (settings.built_in_menu){
+                if (handle_builtin_menu_click( mouse_x, mouse_y))
+                        return;
         }
 
         enum mouse_action *acts;
