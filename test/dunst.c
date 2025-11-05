@@ -19,5 +19,3 @@ SUITE(suite_dunst)
 {
         RUN_TEST(test_dunst_status);
 }
-
-/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

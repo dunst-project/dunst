@@ -352,5 +352,3 @@ bool rule_offset_is_filter(const size_t offset) {
         const size_t first_filter = offsetof(struct rule, appname);
         return (offset >= first_filter) && !rule_offset_is_modifying(offset);
 }
-
-/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

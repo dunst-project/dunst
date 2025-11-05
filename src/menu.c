@@ -400,4 +400,3 @@ static gpointer context_menu_thread(gpointer data)
 
         return NULL;
 }
-/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

@@ -147,4 +147,3 @@ struct pool_buffer *get_next_buffer(struct wl_shm *shm,
 
 	return buffer;
 }
-/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

@@ -67,4 +67,3 @@ char *get_path_from_icon_name(const char *iconname, int size);
 GdkPixbuf *icon_get_for_data(GVariant *data, char **id, double dpi_scale, int min_size, int max_size);
 
 #endif
-/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

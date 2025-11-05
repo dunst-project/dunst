@@ -81,4 +81,3 @@ void log_set_level_from_string(const char* level);
 void dunst_log_init(enum log_mask mask);
 
 #endif
-/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

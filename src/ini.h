@@ -32,4 +32,3 @@ struct ini *load_ini_file(FILE *fp);
 void finish_ini(struct ini *ini);
 
 #endif
-/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

@@ -102,4 +102,3 @@ void destroy_output(struct dunst_output *output) {
         g_free(output->name);
         g_free(output);
 }
-/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

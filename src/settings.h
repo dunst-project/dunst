@@ -188,4 +188,3 @@ void load_settings(char **const config_paths);
 void settings_free(struct settings *s);
 
 #endif
-/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

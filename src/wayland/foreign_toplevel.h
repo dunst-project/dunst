@@ -29,5 +29,5 @@ struct toplevel_output {
 extern const struct zwlr_foreign_toplevel_manager_v1_listener toplevel_manager_impl;
 
 extern struct wl_list toplevel_list;
+
 #endif
-/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

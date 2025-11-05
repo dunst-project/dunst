@@ -276,4 +276,3 @@ const char *enum_to_string_fullscreen(enum behavior_fullscreen in);
 void notification_keep_original(struct notification *n);
 
 #endif
-/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

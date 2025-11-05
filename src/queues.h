@@ -216,4 +216,3 @@ void queues_reapply_all_rules(void);
 void queues_teardown(void);
 
 #endif
-/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

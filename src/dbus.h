@@ -27,4 +27,3 @@ void signal_history_cleared(guint n);
 void signal_config_reloaded(char **const configs);
 
 #endif
-/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

@@ -302,5 +302,3 @@ SUITE(suite_notification)
 
         RUN_TEST(test_notification_maxlength);
 }
-
-/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

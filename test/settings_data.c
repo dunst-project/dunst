@@ -145,4 +145,3 @@ SUITE(suite_settings_data)
         RUN_TEST(test_value_non_null);
         RUN_TEST(test_valid_parser_and_data_per_type);
 }
-/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

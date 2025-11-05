@@ -107,4 +107,3 @@ const struct output* output_create(bool force_xwayland)
 
         DIE("No applicable ouput was found (X11, Wayland)");
 }
-/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

@@ -702,6 +702,3 @@ void queues_teardown(void)
         g_queue_free_full(waiting, teardown_notification);
         waiting = NULL;
 }
-
-
-/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

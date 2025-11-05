@@ -48,4 +48,3 @@ void destroy_seat(struct dunst_seat *seat);
 void add_seat_to_idle_handler(struct dunst_seat *seat);
 
 #endif
-/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

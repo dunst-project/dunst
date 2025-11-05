@@ -31,5 +31,3 @@ SUITE(suite_log)
 
         log_level = oldlevel;
 }
-
-/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

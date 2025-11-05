@@ -22,15 +22,6 @@ indent_size = 4
 [dunstrc*]
 indent_size = 4
 
-# Just for historical purposes to avoid
-# manually reformatting whole files
-[src/wayland/pool-buffer.*]
-indent_style = tab
-
-# looks to be external code
-[src/wayland/libgwater-wayland.*]
-indent_size = 4
-
 [completions/*]
 indent_size = 4
 
@@ -46,13 +37,16 @@ indent_size = 2
 [{Makefile,dunstctl,test/data/test-ini}]
 indent_style = tab
 
-[test/functional-tests/dunstrc.vertical_align]
-indent_style =
-
 [meson.build]
 indent_size = 4
 
-# Contains external or generated files
+# External code below
+[src/wayland/pool-buffer.*]
+indent_style = tab
+
+[src/wayland/libgwater-wayland.*]
+indent_size = 4
+
 [src/wayland/protocols/**]
 indent_style =
 trim_trailing_whitespace = false

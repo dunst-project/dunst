@@ -953,5 +953,3 @@ double x_get_scale(void) {
         LOG_D("X11 scale: %f", scale);
         return scale;
 }
-
-/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */
