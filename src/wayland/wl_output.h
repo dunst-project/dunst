@@ -22,4 +22,3 @@ void create_output(struct wl_registry *registry, uint32_t global_name, uint32_t 
 void destroy_output(struct dunst_output *seat);
 
 #endif
-/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

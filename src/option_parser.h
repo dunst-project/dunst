@@ -35,4 +35,3 @@ void cmdline_usage_append(const char *key, const char *type, const char *descrip
 const char *cmdline_create_usage(void);
 
 #endif
-/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

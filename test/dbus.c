@@ -1771,5 +1771,3 @@ SUITE(suite_dbus)
         g_thread_unref(thread_tests);
         g_main_loop_unref(loop);
 }
-
-/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

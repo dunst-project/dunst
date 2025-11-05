@@ -104,4 +104,3 @@ bool rule_offset_is_modifying(const size_t offset);
 bool rule_offset_is_filter(const size_t offset);
 
 #endif
-/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

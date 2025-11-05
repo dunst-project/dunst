@@ -166,4 +166,3 @@ void finish_ini(struct ini *ini)
         g_clear_pointer(&ini->sections, g_free);
         ini->section_count = 0;
 }
-

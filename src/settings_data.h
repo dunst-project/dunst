@@ -1620,5 +1620,5 @@ static const struct setting allowed_settings[] = {
                 .parser_data = NULL,
         },
 };
+
 #endif
-/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

@@ -87,5 +87,3 @@ void free_dummy_notification(void *notification)
         // wrapper function to work with g_slist_free_full
         notification_unref((struct notification *) notification);
 }
-
-/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

@@ -406,5 +406,3 @@ GdkPixbuf *icon_get_for_data(GVariant *data, char **id, double dpi_scale, int mi
 
         return pixbuf;
 }
-
-/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

@@ -71,4 +71,3 @@ SUITE(suite_menu)
         RUN_TEST(test_extract_urls_from_one_url_path);
         RUN_TEST(test_extract_urls_from_one_url_anchor);
 }
-/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

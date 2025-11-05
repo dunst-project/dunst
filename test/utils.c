@@ -211,4 +211,3 @@ SUITE(suite_utils)
         RUN_TEST(test_string_to_path);
         RUN_TEST(test_string_to_time);
 }
-/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

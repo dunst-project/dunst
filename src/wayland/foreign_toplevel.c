@@ -168,4 +168,3 @@ const struct zwlr_foreign_toplevel_manager_v1_listener toplevel_manager_impl = {
         .toplevel = toplevel_manager_handle_toplevel,
         .finished = toplevel_manager_handle_finished,
 };
-/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

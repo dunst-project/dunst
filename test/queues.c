@@ -1156,8 +1156,7 @@ SUITE(suite_queues)
         RUN_TEST(test_queue_timeout);
         RUN_TEST(test_queues_update_fullscreen);
         RUN_TEST(test_queues_update_paused);
-        RUN_TEST(test_queues_update_pause_level
-        );
+        RUN_TEST(test_queues_update_pause_level);
         RUN_TEST(test_queues_update_seep_showlowurg);
         RUN_TEST(test_queues_update_seeping);
         RUN_TEST(test_queues_update_xmore);
@@ -1168,5 +1167,3 @@ SUITE(suite_queues)
 
         settings.stack_duplicates = store;
 }
-
-/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

@@ -1532,5 +1532,3 @@ void dbus_teardown(int owner_id)
         g_bus_unown_name(owner_id);
         dbus_conn = NULL;
 }
-
-/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

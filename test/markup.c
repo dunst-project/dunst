@@ -152,5 +152,3 @@ SUITE(suite_markup)
         test_markup_strip_img_suite();
         RUN_TEST(test_markup_transform);
 }
-
-/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

@@ -1072,4 +1072,3 @@ SUITE(suite_option_parser)
 
         g_strfreev(argv);
 }
-/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

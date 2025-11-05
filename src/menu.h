@@ -29,4 +29,3 @@ void context_menu(void);
 void context_menu_for(GList *notifications);
 
 #endif
-/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

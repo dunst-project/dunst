@@ -826,5 +826,3 @@ void notification_keep_original(struct notification *n)
         *n->original = empty_rule;
         n->original->name = g_strdup("original");
 }
-
-/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

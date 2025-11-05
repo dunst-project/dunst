@@ -7,48 +7,47 @@
     background = "#285577"
     foreground = "#ffffff"
     timeout = 10
-	default_icon = dialog-information
+    default_icon = dialog-information
 
 [urgency_critical]
     background = "#900000"
     foreground = "#ffffff"
     timeout = 0
-	default_icon = dialog-information
+    default_icon = dialog-information
 
 [hide]
-	category = .*hide.*
-	hide_text = yes
+    category = .*hide.*
+    hide_text = yes
 
 [icon-left]
-	category = .*icon-left.*
-	icon_position = left
+    category = .*icon-left.*
+    icon_position = left
 
 [icon-off]
-	category = .*icon-off.*
-	icon_position = off
+    category = .*icon-off.*
+    icon_position = off
 
 [icon-right]
-	category = .*icon-right.*
-	icon_position = right
+    category = .*icon-right.*
+    icon_position = right
 
 [icon-top]
-	category = .*icon-top.*
-	icon_position = top
+    category = .*icon-top.*
+    icon_position = top
 
 [alignment-left]
-	category = .*alignment-left.*
-	alignment = left
+    category = .*alignment-left.*
+    alignment = left
 
 [alignment-right]
-	category = .*alignment-right.*
-	alignment = right
+    category = .*alignment-right.*
+    alignment = right
 
 [alignment-center]
-	category = .*alignment-center.*
-	alignment = center
+    category = .*alignment-center.*
+    alignment = center
 
 [global]
     icon_path = /usr/share/icons/Papirus/24x24/status/:/usr/share/icons/Papirus/24x24/devices/:/usr/share/icons/gnome/16x16/status/:/usr/share/icons/gnome/16x16/devices/
-	enable_posix_regex = yes
+    enable_posix_regex = yes
     # can be appended by script
-

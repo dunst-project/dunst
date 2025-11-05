@@ -105,4 +105,3 @@ SUITE(suite_icon)
 
         g_clear_pointer(&icon_path, g_free);
 }
-/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

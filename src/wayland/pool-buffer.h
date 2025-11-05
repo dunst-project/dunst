@@ -23,4 +23,3 @@ struct pool_buffer *get_next_buffer(struct wl_shm *shm,
 void finish_buffer(struct pool_buffer *buffer);
 
 #endif
-/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

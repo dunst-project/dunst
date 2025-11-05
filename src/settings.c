@@ -321,5 +321,3 @@ void settings_free(struct settings *s)
         g_free(s->history_ks.str);
         g_free(s->context_ks.str);
 }
-
-/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

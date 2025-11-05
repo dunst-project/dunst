@@ -17,5 +17,3 @@ SUITE(suite_misc)
 {
         RUN_TEST(assert_version_number);
 }
-
-/* vim: set tabstop=8 shiftwidth=8 expandtab textwidth=0: */

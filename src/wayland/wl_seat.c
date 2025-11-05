@@ -290,4 +290,3 @@ void create_seat(struct wl_registry *registry, uint32_t global_name, uint32_t ve
         add_seat_to_idle_handler(seat);
         wl_list_insert(&ctx.seats, &seat->link);
 }
-/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

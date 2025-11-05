@@ -512,5 +512,3 @@ bool is_like_path(const char *string)
                 || (string[0] == '.' && string[1] == '.' && string[2] == '/')
                 || (string[0] == '.' && string[1] == '/');
 }
-
-/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

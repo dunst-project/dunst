@@ -100,5 +100,3 @@ void dunst_log_init(enum log_mask mask)
         log_mask = mask;
         g_log_set_default_handler(dunst_log_handler, NULL);
 }
-
-/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */

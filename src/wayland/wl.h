@@ -28,5 +28,5 @@ bool wl_have_fullscreen_window(void);
 // should be multiplied by this value, but don't use it to multiply other
 // values. All sizes should be in unscaled units.
 double wl_get_scale(void);
+
 #endif
-/* vim: set ft=c tabstop=8 shiftwidth=8 expandtab textwidth=0: */
