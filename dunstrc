@@ -223,6 +223,9 @@
     # define all lookup paths.
     enable_recursive_icon_lookup = true
 
+    # CSS rules to apply to the SVG icons.
+    svg_icon_stylesheet = "path { fill: @foreground !important; }"
+
     # Set icon theme (only used for recursive icon lookup)
     icon_theme = Adwaita
     # You can also set multiple icon themes, with the leftmost one being used first.

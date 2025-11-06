@@ -15,17 +15,14 @@
 #include <unistd.h>
 
 #include "dbus.h"
-#include "dunst.h"
 #include "icon.h"
 #include "log.h"
 #include "markup.h"
 #include "menu.h"
-#include "queues.h"
 #include "rules.h"
 #include "settings.h"
 #include "utils.h"
 #include "draw.h"
-#include "icon-lookup.h"
 #include "settings_data.h"
 
 static void notification_extract_urls(struct notification *n);
@@ -374,13 +371,13 @@ void notification_icon_replace_path(struct notification *n, const char *new_icon
         g_free(n->icon_path);
         n->icon_path = get_path_from_icon_name(new_icon, n->min_icon_size);
         if (n->icon_path) {
-                GdkPixbuf *pixbuf = get_pixbuf_from_file(n->icon_path, &n->icon_id,
-                                n->min_icon_size, n->max_icon_size,
-                                draw_get_scale());
-                if (pixbuf) {
-                        n->icon = gdk_pixbuf_to_cairo_surface(pixbuf);
+                char fg_color[10], bg_color[10];
+                cairo_surface_t *icon_surface = get_cairo_surface_from_file(n->icon_path, &n->icon_id,
+                                color_to_string(n->colors.fg, fg_color), color_to_string(n->colors.bg, bg_color),
+                                n->min_icon_size, n->max_icon_size, draw_get_scale());
+                if (icon_surface) {
+                        n->icon = icon_surface;
                         n->icon_time = time_now();
-                        g_object_unref(pixbuf);
                 } else {
                         LOG_W("Failed to load icon from path: '%s'", n->icon_path);
                 }
