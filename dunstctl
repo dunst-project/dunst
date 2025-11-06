@@ -10,7 +10,7 @@ DBUS_IFAC_FDN="org.freedesktop.Notifications"
 
 die() {
 	printf "%s\n" "${1}" >&2
-	if [ -z "$DBUS_SESSION_BUS_ADDRESS" ]; then
+	if [ -z "${DBUS_SESSION_BUS_ADDRESS:-}" ]; then
 		echo "DBUS_SESSION_BUS_ADDRESS is blank. Is the D-Bus session configured correctly?" >&2
 	fi
 	exit 1
@@ -36,7 +36,8 @@ show_help() {
 	                                    notification with given ID
 	  history-rm ID                     Remove the notification from
 	                                    history with given ID.
-	  is-paused [-e|--exit-code]        Check if pause level is greater than 0, optionally with exit code instead of text output
+	  is-paused [-e|--exit-code]        Check if pause level is greater than 0,
+	                                    optionally with exit code instead of text output
 	  set-paused true|false|toggle      Set the pause status
 	  get-pause-level                   Get the current pause level
 	  set-pause-level level             Set the pause level

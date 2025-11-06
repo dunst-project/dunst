@@ -2,7 +2,7 @@ project(
     'dunst',
     'c',
     version: run_command('./get-version.sh', check: true).stdout(),
-    license: 'MIT',
+    license: 'BSD',
     meson_version: '>=0.60.0',
     default_options: [
         'c_std=gnu11',

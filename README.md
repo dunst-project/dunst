@@ -206,7 +206,7 @@ Please use the [issue tracker][issue-tracker] provided by GitHub to send us bug 
 
 - [Friso Smit](https://github.com/fwsmit) <fw.smit01@gmail.com>
 - [Bjoern Hiller](https://github.com/zappolowski) <bjoern.hiller@gmail.com>
-- [Federico Angelilli](https://github.com/bynect) <fedeangemail@gmail.com>
+- [Federico Angelilli](https://github.com/fedang) <fedeangemail@gmail.com>
 
 Please only refer to active maintainers for issues and bugs.
 

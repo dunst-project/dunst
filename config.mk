@@ -52,7 +52,7 @@ endif
 
 # flags
 DEFAULT_CPPFLAGS = -Wno-gnu-zero-variadic-macro-arguments -D_DEFAULT_SOURCE -DVERSION=\"${VERSION}\" -DSYSCONFDIR=\"${SYSCONFDIR}\" ${ENABLE_WAYLAND} ${ENABLE_X11}
-DEFAULT_CFLAGS   = -g -std=gnu11 -pedantic -Wall -Wno-overlength-strings -Os ${EXTRA_CFLAGS}
+DEFAULT_CFLAGS   = -g -std=gnu11 -pedantic -Wall -Wno-overlength-strings -Wno-expansion-to-defined -Os ${EXTRA_CFLAGS}
 DEFAULT_LDFLAGS  = -lm -lrt
 
 CPPFLAGS_DEBUG :=
@@ -62,7 +62,7 @@ LDFLAGS_DEBUG  :=
 pkg_config_packs := gio-2.0 \
                     gdk-pixbuf-2.0 \
                     "glib-2.0 >= 2.44" \
-                    pangocairo \
+                    pangocairo
 
 ifneq (0,${WAYLAND})
 pkg_config_packs += wayland-client
