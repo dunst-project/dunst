@@ -226,8 +226,7 @@ static bool queues_stack_duplicate(struct notification *new)
 
         GQueue *allqueues[] = { displayed, waiting };
         for (size_t i = 0; i < sizeof(allqueues)/sizeof(GQueue*); i++) {
-                for (GList *iter = g_queue_peek_head_link(allqueues[i]); iter;
-                     iter = iter->next) {
+                for (GList *iter = g_queue_peek_head_link(allqueues[i]); iter; iter = iter->next) {
                         struct notification *old = iter->data;
                         if (notification_is_duplicate(old, new)) {
 
@@ -284,18 +283,28 @@ static bool queues_stack_by_tag(struct notification *new)
 {
         GQueue *allqueues[] = { displayed, waiting };
         for (size_t i = 0; i < sizeof(allqueues)/sizeof(GQueue*); i++) {
-                for (GList *iter = g_queue_peek_head_link(allqueues[i]); iter;
-                            iter = iter->next) {
+                for (GList *iter = g_queue_peek_head_link(allqueues[i]); iter; iter = iter->next) {
                         struct notification *old = iter->data;
                         if (STR_FULL(old->stack_tag) && STR_EQ(old->stack_tag, new->stack_tag)
                                         && STR_EQ(old->appname, new->appname)) {
                                 iter->data = new;
                                 new->dup_count = old->dup_count;
 
-                                if (old->icon && !new->icon_id && is_like_path(old->iconname)) {
-                                        gint64 modtime = modification_time(old->iconname);
-                                        if (modtime <= old->icon_time) {
-                                                notification_transfer_icon(old, new);
+                                bool replace = false;
+
+                                // Transfer old icon when new:
+                                // has no icon
+                                // has the same name (not a path)
+                                // has the same path and the modtime is older than the notification
+                                if (old->icon) {
+                                        if (!new->iconname) {
+                                                replace = true;
+                                        } else if (STR_EQ(new->iconname, old->iconname)) {
+                                                replace = true;
+                                                if (is_like_path(old->iconname)) {
+                                                        gint64 modtime = modification_time(old->iconname);
+                                                        replace = modtime <= old->icon_time;
+                                                }
                                         }
                                 }
 
@@ -305,6 +314,9 @@ static bool queues_stack_by_tag(struct notification *new)
                                         new->start = time_monotonic_now();
                                         notification_run_script(new);
                                 }
+
+                                if (replace)
+                                        notification_transfer_icon(old, new);
 
                                 notification_unref(old);
                                 return true;
