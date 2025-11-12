@@ -622,6 +622,11 @@ TEST test_string_to_sepcolor(void)
                 g_free(gt2);
                 ASSERTm(buf, (!GRADIENT_VALID(val.gradient) && !GRADIENT_VALID(results[i].gradient))
                                 || gradient_same(results[i].gradient, val.gradient));
+
+                if (GRADIENT_VALID(val.gradient)) {
+                        gradient_release(val.gradient);
+                        val.gradient = NULL;
+                }
         }
 
         gradient_release(grad1);

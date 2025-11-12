@@ -159,16 +159,16 @@ void draw_setup(void)
                 load_icon_themes();
 }
 
-static inline double color_apply_delta(double base, double delta)
-{
-        base += delta;
-        if (base > 1)
-                base = 1;
-        if (base < 0)
-                base = 0;
-
-        return base;
-}
+//static inline double color_apply_delta(double base, double delta)
+//{
+//        base += delta;
+//        if (base > 1)
+//                base = 1;
+//        if (base < 0)
+//                base = 0;
+//
+//        return base;
+//}
 
 static struct gradient *calculate_foreground_color(struct gradient *bg)
 {

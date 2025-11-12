@@ -236,6 +236,10 @@ int string_parse_color(const char *s, struct color *ret)
 
 int string_parse_gradient(const char *s, struct gradient **ret)
 {
+        // XXX
+        gradient_release(*ret);
+        *ret = NULL;
+
         struct color colors[16];
         size_t length = 0;
 
@@ -486,7 +490,7 @@ bool set_rule(struct setting setting, char* value, char* section) {
 
 void set_defaults(void) {
         LOG_D("Initializing settings");
-        settings = (struct settings) {0};
+        memset(&settings, 0, sizeof(struct settings));
 
         for (size_t i = 0; i < G_N_ELEMENTS(allowed_settings); i++) {
                 // FIXME Rule settings can only have a default if they have an

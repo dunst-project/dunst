@@ -902,7 +902,7 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
                 if (!GRADIENT_VALID(n->original->fg))
                         n->original->fg = gradient_acquire(n->colors.fg);
                 gradient_release(n->colors.fg);
-                n->colors.fg = gradient_acquire(grad);
+                n->colors.fg = grad;
         }
 
         if ((grad = dbus_get_gradient(hints, "bgcolor"))) {
@@ -910,7 +910,7 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
                 if (!GRADIENT_VALID(n->original->bg))
                         n->original->bg = gradient_acquire(n->colors.bg);
                 gradient_release(n->colors.bg);
-                n->colors.bg = gradient_acquire(grad);
+                n->colors.bg = grad;
         }
 
         if ((grad = dbus_get_gradient(hints, "frcolor"))) {
@@ -918,7 +918,7 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
                 if (!GRADIENT_VALID(n->original->fc))
                         n->original->fc = gradient_acquire(n->colors.frame);
                 gradient_release(n->colors.frame);
-                n->colors.frame = gradient_acquire(grad);
+                n->colors.frame = grad;
         }
 
         if ((grad = dbus_get_gradient(hints, "hlcolor"))) {
@@ -926,7 +926,7 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
                 if (!GRADIENT_VALID(n->original->highlight))
                         n->original->highlight = gradient_acquire(n->colors.highlight);
                 gradient_release(n->colors.highlight);
-                n->colors.highlight = gradient_acquire(grad);
+                n->colors.highlight = grad;
         }
 
         g_variant_unref(hints);

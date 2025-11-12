@@ -340,6 +340,9 @@ void notification_unref(struct notification *n)
 
         notification_private_free(n->priv);
 
+        gradient_release(n->colors.fg);
+        gradient_release(n->colors.bg);
+        gradient_release(n->colors.frame);
         gradient_release(n->colors.highlight);
 
         g_free(n->format);

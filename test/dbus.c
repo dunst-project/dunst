@@ -870,7 +870,7 @@ TEST test_dbus_cb_dunst_RuleList(void)
         ASSERT_FALSE(g_variant_dict_lookup(&d, "bg", "s", &str));
 
         g_variant_dict_clear(&d);
-        gradient_release(rule->fc);
+        gradient_release(rule->fg);
         g_variant_unref(dict);
         g_variant_unref(array);
         g_variant_unref(result);
