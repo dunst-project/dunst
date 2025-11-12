@@ -589,10 +589,10 @@ static void dbus_cb_dunst_RuleList(GDBusConnection *connection,
                                               "icon_position",
                                               "s",
                                               enum_to_string(icon_position_enum_data, r->icon_position));
-                color_entry(r->fg, &dict, "fg");
-                color_entry(r->bg, &dict, "bg");
+                gradient_entry(r->fg, &dict, "fg");
+                gradient_entry(r->bg, &dict, "bg");
                 gradient_entry(r->highlight, &dict, "highlight");
-                color_entry(r->fc, &dict, "fc");
+                gradient_entry(r->fc, &dict, "fc");
                 if (r->format)
                         g_variant_dict_insert(&dict, "format", "s", r->format);
                 if (r->default_icon)
@@ -714,6 +714,39 @@ static void dbus_cb_GetCapabilities(
         g_dbus_method_invocation_return_value(invocation, value);
 
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
+}
+
+static struct gradient *dbus_get_gradient(GVariant *hints, const char *field)
+{
+        struct gradient *grad = NULL;
+        GVariant *dict_value;
+
+        if ((dict_value = g_variant_lookup_value(hints, field, G_VARIANT_TYPE_STRING_ARRAY))) {
+                char **cols = (char **)g_variant_get_strv(dict_value, NULL);
+                size_t length = g_strv_length(cols);
+                grad = gradient_alloc(length);
+
+                for (size_t i = 0; i < length; i++) {
+                        if (!string_parse_color(cols[i], &grad->colors[i])) {
+                                g_free(grad);
+                                goto end;
+                        }
+                }
+
+                gradient_pattern(grad);
+end:
+                g_variant_unref(dict_value);
+        } else if ((dict_value = g_variant_lookup_value(hints, field, G_VARIANT_TYPE_STRING))) {
+                struct color c;
+                if (string_parse_color(g_variant_get_string(dict_value, NULL), &c)) {
+                        grad = gradient_alloc(1);
+                        grad->colors[0] = c;
+                        gradient_pattern(grad);
+                }
+                g_variant_unref(dict_value);
+        }
+
+        return grad;
 }
 
 static struct notification *dbus_message_to_notification(const gchar *sender, GVariant *parameters)
@@ -862,70 +895,38 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
         }
 
         // Modify these values after the notification is initialized and all rules are applied.
-        if ((dict_value = g_variant_lookup_value(hints, "fgcolor", G_VARIANT_TYPE_STRING))) {
-                struct color c;
-                if (string_parse_color(g_variant_get_string(dict_value, NULL), &c)) {
-                        notification_keep_original(n);
-                        if (!COLOR_VALID(n->original->fg)) n->original->fg = n->colors.fg;
-                        n->colors.fg = c;
-                }
-                g_variant_unref(dict_value);
-        }
+        struct gradient *grad;
 
-        if ((dict_value = g_variant_lookup_value(hints, "bgcolor", G_VARIANT_TYPE_STRING))) {
-                struct color c;
-                if (string_parse_color(g_variant_get_string(dict_value, NULL), &c)) {
-                        notification_keep_original(n);
-                        if (!COLOR_VALID(n->original->bg)) n->original->bg = n->colors.bg;
-                        n->colors.bg = c;
-                }
-                g_variant_unref(dict_value);
-        }
-
-        if ((dict_value = g_variant_lookup_value(hints, "frcolor", G_VARIANT_TYPE_STRING))) {
-                struct color c;
-                if (string_parse_color(g_variant_get_string(dict_value, NULL), &c)) {
-                        notification_keep_original(n);
-                        if (!COLOR_VALID(n->original->fc)) n->original->fc = n->colors.frame;
-                        n->colors.frame = c;
-                }
-                g_variant_unref(dict_value);
-        }
-
-        if ((dict_value = g_variant_lookup_value(hints, "hlcolor", G_VARIANT_TYPE_STRING_ARRAY))) {
-                char **cols = (char **)g_variant_get_strv(dict_value, NULL);
-                size_t length = g_strv_length(cols);
-                struct gradient *grad = gradient_alloc(length);
-
-                for (size_t i = 0; i < length; i++) {
-                        if (!string_parse_color(cols[i], &grad->colors[i])) {
-                                g_free(grad);
-                                goto end;
-                        }
-                }
-
-                gradient_pattern(grad);
-
+        if ((grad = dbus_get_gradient(hints, "fgcolor"))) {
                 notification_keep_original(n);
-                if (!GRADIENT_VALID(n->original->highlight)) n->original->highlight = gradient_acquire(n->colors.highlight);
+                if (!GRADIENT_VALID(n->original->fg))
+                        n->original->fg = gradient_acquire(n->colors.fg);
+                gradient_release(n->colors.fg);
+                n->colors.fg = gradient_acquire(grad);
+        }
+
+        if ((grad = dbus_get_gradient(hints, "bgcolor"))) {
+                notification_keep_original(n);
+                if (!GRADIENT_VALID(n->original->bg))
+                        n->original->bg = gradient_acquire(n->colors.bg);
+                gradient_release(n->colors.bg);
+                n->colors.bg = gradient_acquire(grad);
+        }
+
+        if ((grad = dbus_get_gradient(hints, "frcolor"))) {
+                notification_keep_original(n);
+                if (!GRADIENT_VALID(n->original->fc))
+                        n->original->fc = gradient_acquire(n->colors.frame);
+                gradient_release(n->colors.frame);
+                n->colors.frame = gradient_acquire(grad);
+        }
+
+        if ((grad = dbus_get_gradient(hints, "hlcolor"))) {
+                notification_keep_original(n);
+                if (!GRADIENT_VALID(n->original->highlight))
+                        n->original->highlight = gradient_acquire(n->colors.highlight);
                 gradient_release(n->colors.highlight);
                 n->colors.highlight = gradient_acquire(grad);
-
-end:
-                g_variant_unref(dict_value);
-        } else if ((dict_value = g_variant_lookup_value(hints, "hlcolor", G_VARIANT_TYPE_STRING))) {
-                struct color c;
-                if (string_parse_color(g_variant_get_string(dict_value, NULL), &c)) {
-                        struct gradient *grad = gradient_alloc(1);
-                        grad->colors[0] = c;
-                        gradient_pattern(grad);
-
-                        notification_keep_original(n);
-                        if (!GRADIENT_VALID(n->original->highlight)) n->original->highlight = gradient_acquire(n->colors.highlight);
-                        gradient_release(n->colors.highlight);
-                        n->colors.highlight = gradient_acquire(grad);
-                }
-                g_variant_unref(dict_value);
         }
 
         g_variant_unref(hints);

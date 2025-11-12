@@ -170,31 +170,32 @@ static inline double color_apply_delta(double base, double delta)
         return base;
 }
 
-static struct color calculate_foreground_color(struct color bg)
+static struct gradient *calculate_foreground_color(struct gradient *bg)
 {
-        double c_delta = 0.1;
-        struct color fg = bg;
+        //double c_delta = 0.1;
+        //struct color fg = bg;
 
-        /* do we need to darken or brighten the colors? */
-        bool darken = (bg.r + bg.g + bg.b) / 3 > 0.5;
+        ///* do we need to darken or brighten the colors? */
+        //bool darken = (bg.r + bg.g + bg.b) / 3 > 0.5;
 
-        int signedness = darken ? -1 : 1;
+        //int signedness = darken ? -1 : 1;
 
-        fg.r = color_apply_delta(fg.r, c_delta * signedness);
-        fg.g = color_apply_delta(fg.g, c_delta * signedness);
-        fg.b = color_apply_delta(fg.b, c_delta * signedness);
+        //fg.r = color_apply_delta(fg.r, c_delta * signedness);
+        //fg.g = color_apply_delta(fg.g, c_delta * signedness);
+        //fg.b = color_apply_delta(fg.b, c_delta * signedness);
 
-        return fg;
+        // TODO
+        return bg;
 }
 
-static struct color layout_get_sepcolor(struct colored_layout *cl,
-                                        struct colored_layout *cl_next)
+static struct gradient *layout_get_sepcolor(struct colored_layout *cl,
+                                            struct colored_layout *cl_next)
 {
         switch (settings.sep_color.type) {
                 case SEP_FRAME:
                         return COLOR(cl_next->n->urgency > cl->n->urgency ? cl_next : cl, frame);
                 case SEP_CUSTOM:
-                        return settings.sep_color.color;
+                        return settings.sep_color.gradient;
                 case SEP_FOREGROUND:
                         return COLOR(cl, fg);
                 case SEP_AUTO:
@@ -392,10 +393,10 @@ static struct colored_layout *layout_init_shared(cairo_t *c, struct notification
         cl->n = n;
 
         // Invalid colors should never reach this point!
-        assert(settings.frame_width == 0 || COLOR_VALID(COLOR(cl, frame)));
-        assert(!have_progress_bar(cl) || COLOR(cl, highlight) != NULL);
-        assert(COLOR_VALID(COLOR(cl, fg)));
-        assert(COLOR_VALID(COLOR(cl, bg)));
+        assert(settings.frame_width == 0 || GRADIENT_VALID(COLOR(cl, frame)));
+        assert(!have_progress_bar(cl) || GRADIENT_VALID(COLOR(cl, highlight)));
+        assert(GRADIENT_VALID(COLOR(cl, fg)));
+        assert(GRADIENT_VALID(COLOR(cl, bg)));
         return cl;
 }
 
@@ -747,11 +748,11 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
         radius_int = frame_internal_radius(corner_radius, settings.frame_width, height);
 
         draw_rounded_rect(c, x, y, width, height, radius_int, scale, corners);
-        cairo_set_source_rgba(c, COLOR(cl, frame.r), COLOR(cl, frame.g), COLOR(cl, frame.b), COLOR(cl, frame.a));
+        cairo_set_source(c, COLOR(cl, frame->pattern));
         cairo_fill(c);
 
         draw_rounded_rect(c, x, y, width, height, radius_int, scale, corners);
-        cairo_set_source_rgba(c, COLOR(cl, bg.r), COLOR(cl, bg.g), COLOR(cl, bg.b), COLOR(cl, bg.a));
+        cairo_set_source(c, COLOR(cl, bg->pattern));
         cairo_fill(c);
 
         cairo_set_operator(c, CAIRO_OPERATOR_SOURCE);
@@ -759,8 +760,8 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
         if (   settings.sep_color.type != SEP_FRAME
             && settings.separator_height > 0
             && (corners & (C_BOT | _C_LAST)) == 0) {
-                struct color sep_color = layout_get_sepcolor(cl, cl_next);
-                cairo_set_source_rgba(c, sep_color.r, sep_color.g, sep_color.b, sep_color.a);
+                struct gradient *sep_color = layout_get_sepcolor(cl, cl_next);
+                cairo_set_source(c, sep_color->pattern);
 
                 draw_rect(c, settings.frame_width, y + height, width, settings.separator_height, scale);
 
@@ -855,7 +856,7 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, int
         // text positioning
         if (!cl->n->hide_text) {
                 cairo_move_to(c, round(text_x * scale), round(text_y * scale));
-                cairo_set_source_rgba(c, COLOR(cl, fg.r), COLOR(cl, fg.g), COLOR(cl, fg.b), COLOR(cl, fg.a));
+                cairo_set_source(c, COLOR(cl, fg->pattern));
                 pango_cairo_update_layout(c, cl->l);
                 pango_cairo_show_layout(c, cl->l);
         }
@@ -896,15 +897,15 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, int
                 */
 
                 // back layer (background)
-                cairo_set_source_rgba(c, COLOR(cl, bg.r), COLOR(cl, bg.g), COLOR(cl, bg.b), COLOR(cl, bg.a));
+                cairo_set_source(c, COLOR(cl, bg->pattern));
                 draw_rounded_rect(c, x_bar_2, frame_y, progress_width_2, progress_height,
                         settings.progress_bar_corner_radius, scale, settings.progress_bar_corners);
                 cairo_fill(c);
 
                 // top layer (fill)
-                cairo_matrix_t matrix;
-                cairo_matrix_init_scale(&matrix, 1.0 / progress_width_scaled, 1.0);
-                cairo_pattern_set_matrix(COLOR(cl, highlight->pattern), &matrix);
+                cairo_matrix_t bar_matrix;
+                cairo_matrix_init_scale(&bar_matrix, 1.0 / progress_width_scaled, 1.0);
+                cairo_pattern_set_matrix(COLOR(cl, highlight->pattern), &bar_matrix);
                 cairo_set_source(c, COLOR(cl, highlight->pattern));
 
                 draw_rounded_rect(c, x_bar_1, frame_y, progress_width_1, progress_height,
@@ -912,7 +913,7 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, int
                 cairo_fill(c);
 
                 // border
-                cairo_set_source_rgba(c, COLOR(cl, frame.r), COLOR(cl, frame.g), COLOR(cl, frame.b), COLOR(cl, frame.a));
+                cairo_set_source(c, COLOR(cl, frame->pattern));
                 cairo_set_line_width(c, frame_width * scale);
                 draw_rounded_rect(c,
                                 frame_x + half_frame_width + 1,

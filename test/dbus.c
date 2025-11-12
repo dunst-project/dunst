@@ -820,7 +820,9 @@ TEST test_dbus_cb_dunst_RuleList(void)
         rule->appname = "dunstify";
         rule->urgency = URG_CRIT;
         rule->match_transient = true;
-        rule->fg = (struct color){.r = 0.1, .g = 0.1, .b = 0.1, .a = 1.0};
+
+        struct color fg = {.r = 0.1, .g = 0.1, .b = 0.1, .a = 1.0};
+        rule->fg = gradient_from_color(fg);
 
         GVariant *result = dbus_invoke_ifac("RuleList", NULL, DUNST_IFAC);
         ASSERT(result != NULL);
@@ -868,6 +870,7 @@ TEST test_dbus_cb_dunst_RuleList(void)
         ASSERT_FALSE(g_variant_dict_lookup(&d, "bg", "s", &str));
 
         g_variant_dict_clear(&d);
+        gradient_release(rule->fc);
         g_variant_unref(dict);
         g_variant_unref(array);
         g_variant_unref(result);
@@ -960,17 +963,16 @@ TEST test_dbus_notify_colors(void)
         struct color frame = { 1.0, (double)0xaa/0xff, (double)0xcc/0xff, (double)0xbb/0xff };
         struct color fg = { 1.0, (double)0xaa/0xff, (double)0xbb/0xff, 1.0 };
 
-        ASSERTm("Valid color strings should change the notification color", COLOR_SAME(n->colors.frame, frame));
-        ASSERTm("Valid color strings should change the notification color", COLOR_SAME(n->colors.fg, fg));
+        ASSERTm("Valid color strings should change the notification color",
+                        gradient_check_color(n->colors.frame, frame));
+        ASSERTm("Valid color strings should change the notification color",
+                        gradient_check_color(n->colors.fg, fg));
 
         // Invalid color strings are ignored
-        ASSERTm("Invalid color strings should not change the color struct", COLOR_SAME(n->colors.bg, settings.colors_norm.bg));
+        ASSERTm("Invalid color strings should not change the color struct", gradient_same(n->colors.bg, settings.colors_norm.bg));
 
-        ASSERTm("Invalid color strings should not change the gradient struct", n->colors.highlight->length == settings.colors_norm.highlight->length);
+        ASSERTm("Invalid color strings should not change the gradient struct", gradient_same(n->colors.highlight, settings.colors_norm.highlight));
 
-        for (size_t i = 0; i < settings.colors_norm.highlight->length; i++)
-                ASSERTm("Invalid color strings should not change the gradient struct",
-                        COLOR_SAME(n->colors.highlight->colors[i], settings.colors_norm.highlight->colors[i]));
 
         dbus_notification_free(n_dbus);
 

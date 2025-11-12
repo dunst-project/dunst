@@ -163,14 +163,13 @@ int string_parse_list(const void *data, const char *s, void *ret) {
 int string_parse_sepcolor(const void *data, const char *s, void *ret)
 {
         LOG_D("parsing sep_color");
-        struct separator_color_data *sep_color = (struct separator_color_data*) ret;
-        struct color invalid = COLOR_UNINIT;
+        struct separator_color_data *sep_color = (struct separator_color_data*)ret;
 
         enum separator_color type;
         bool is_enum = string_parse_enum(data, s, &type);
         if (is_enum) {
                 sep_color->type = type;
-                sep_color->color = invalid;
+                sep_color->gradient = NULL;
                 return true;
         } else {
                 if (STR_EMPTY(s)) {
@@ -178,7 +177,7 @@ int string_parse_sepcolor(const void *data, const char *s, void *ret)
                         return false;
                 }
 
-                if (string_parse_color(s, &sep_color->color)) {
+                if (string_parse_gradient(s, &sep_color->gradient)) {
                         sep_color->type = SEP_CUSTOM;
                         return true;
                 }

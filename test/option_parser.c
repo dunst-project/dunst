@@ -1,10 +1,6 @@
 #include "../src/option_parser.c"
 #include "greatest.h"
-
-#define ARRAY_SAME_LENGTH(a, b) { \
-        ASSERT_EQm("Test is invalid. Input data has to be the same length",\
-                        G_N_ELEMENTS(a), G_N_ELEMENTS(b));\
-}
+#include "helpers.h"
 
 enum greatest_test_res ARRAY_EQ(char **a, char **b){
         ASSERT(a);
@@ -591,36 +587,53 @@ TEST test_string_to_sepcolor(void)
                 "#AB123C",
         };
 
+        struct gradient *grad1 = gradient_from_color((struct color) {
+                (double)0x12 / 0xff, (double)0x34 / 0xff, (double)0x56 / 0xff, 1.0
+        });
+        struct gradient *grad2 = gradient_from_color((struct color) {
+                (double)0xab / 0xff, (double)0x12 / 0xff, (double)0x3c / 0xff, 1.0
+        });
+        struct gradient *grad3 = gradient_from_color((struct color) {
+                (double)0xab / 0xff, (double)0x12 / 0xff, (double)0x3c / 0xff, 1.0
+        });
+
         const struct separator_color_data results[] = {
-                {SEP_AUTO, COLOR_UNINIT},
-                {SEP_FOREGROUND, COLOR_UNINIT},
-                {SEP_FRAME, COLOR_UNINIT},
-                {SEP_CUSTOM, { (double)0x12 / 0xff, (double)0x34 / 0xff, (double)0x56 / 0xff, 1.0}},
-                {SEP_CUSTOM, { (double)0xab / 0xff, (double)0x12 / 0xff, (double)0x3c / 0xff, 1.0}},
-                {SEP_CUSTOM, { (double)0xab / 0xff, (double)0x12 / 0xff, (double)0x3c / 0xff, 1.0}},
+                {SEP_AUTO, NULL},
+                {SEP_FOREGROUND, NULL},
+                {SEP_FRAME, NULL},
+                {SEP_CUSTOM, grad1 },
+                {SEP_CUSTOM, grad2 },
+                {SEP_CUSTOM, grad3 },
         };
 
         ARRAY_SAME_LENGTH(inputs, results);
 
-        static char buf[100];
-        char buf1[10], buf2[10];
+        static char buf[200];
 
         for (size_t i = 0; i < G_N_ELEMENTS(inputs); i++) {
                 sprintf(buf, "Failed in round %zu. Expected %i, got %i", i, results[i].type, val.type);
                 ASSERTm(buf, set_from_string(&val, s, inputs[i]));
                 ASSERT_EQm(buf, results[i].type, val.type);
 
-                sprintf(buf, "Failed in round %zu. Expected %s, got %s", i,
-                                color_to_string(results[i].color, buf1), color_to_string(val.color, buf2));
-                ASSERTm(buf, (!COLOR_VALID(val.color) && !COLOR_VALID(results[i].color)) || COLOR_SAME(results[i].color, val.color));
+                char *gt1 = gradient_to_string(results[i].gradient);
+                char *gt2 = gradient_to_string(val.gradient);
+                sprintf(buf, "Failed in round %zu. Expected %s, got %s", i,  gt1, gt2);
+                g_free(gt1);
+                g_free(gt2);
+                ASSERTm(buf, (!GRADIENT_VALID(val.gradient) && !GRADIENT_VALID(results[i].gradient))
+                                || gradient_same(results[i].gradient, val.gradient));
         }
+
+        gradient_release(grad1);
+        gradient_release(grad2);
+        gradient_release(grad3);
 
         PASS();
 }
 
 TEST test_string_to_sepcolor_invalid(void)
 {
-        struct separator_color_data val = {123, COLOR_UNINIT};
+        struct separator_color_data val = {123, NULL};
         struct setting s;
         s.type = TYPE_CUSTOM;
         s.value = &val;
@@ -645,7 +658,7 @@ TEST test_string_to_sepcolor_invalid(void)
         }
 
         ASSERT_EQm("Sep color shouldn't changed from invalid inputs", 123, (int) val.type);
-        ASSERTm("Sep color shouldn't changed from invalid inputs", !COLOR_VALID(val.color));
+        ASSERTm("Sep color shouldn't changed from invalid inputs", !GRADIENT_VALID(val.gradient));
         PASS();
 }
 
