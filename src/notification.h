@@ -39,9 +39,9 @@ enum urgency {
 typedef struct _notification_private NotificationPrivate;
 
 struct notification_colors {
-        struct color frame;
-        struct color bg;
-        struct color fg;
+        struct gradient *frame;
+        struct gradient *bg;
+        struct gradient *fg;
         struct gradient *highlight;
 };
 
