@@ -207,6 +207,8 @@ case "${1:-}" in
 		case "$2" in
 			(*[!0123456789]*)
 				die "Please give a number as paused level parameter." ;;
+			([!123456789]?*)
+				die "Please give a number without leading zeros as paused level parameter." ;;
 			('')
 				die "Please give a number as paused level parameter." ;;
 		esac
