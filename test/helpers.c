@@ -87,3 +87,35 @@ void free_dummy_notification(void *notification)
         // wrapper function to work with g_slist_free_full
         notification_unref((struct notification *) notification);
 }
+
+bool gradient_same(struct gradient *grad, struct gradient *grad2)
+{
+        if (grad == grad2)
+                return true;
+
+        if (grad->length != grad2->length)
+                return false;
+
+        for (size_t i = 0; i < grad->length; i++) {
+                if (!COLOR_SAME(grad->colors[i], grad2->colors[i]))
+                        return false;
+        }
+
+        return true;
+}
+
+bool gradient_check_color(struct gradient *grad, struct color col)
+{
+        if (grad == NULL || grad->length != 1)
+                return false;
+
+        return COLOR_SAME(col, grad->colors[0]);
+}
+
+struct gradient *gradient_from_color(struct color col)
+{
+        struct gradient *grad = gradient_alloc(1);
+        grad->colors[0] = col;
+        gradient_pattern(grad);
+        return grad;
+}

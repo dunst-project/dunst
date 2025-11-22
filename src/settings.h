@@ -88,7 +88,7 @@ enum setting_type { TYPE_MIN = 0, TYPE_INT, TYPE_DOUBLE, TYPE_STRING,
 
 struct separator_color_data {
         enum separator_color type;
-        struct color color;
+        struct gradient *gradient;
 };
 
 struct length {
@@ -103,7 +103,7 @@ struct position {
 
 struct settings {
         bool print_notifications;
-        bool per_monitor_dpi;
+        bool per_monitor_dpi; // experimental
         bool stack_duplicates;
         bool hide_duplicate_count;
         char *font;
@@ -134,7 +134,7 @@ struct settings {
         int text_icon_padding;
         struct separator_color_data sep_color;
         int frame_width;
-        struct color frame_color;
+        struct gradient *frame_color;
         int startup_notification;
         char *monitor;
         int monitor_num;
@@ -146,7 +146,7 @@ struct settings {
         enum vertical_alignment vertical_alignment;
         char **icon_theme; // experimental
         bool enable_recursive_icon_lookup; // experimental
-        bool enable_regex; // experimental
+        bool enable_regex;
         char *icon_path;
         enum follow_mode f_mode;
         bool always_run_script;
@@ -174,7 +174,7 @@ struct settings {
         enum origin_values origin;
         struct length width;
         struct length height;
-        struct position offset; // NOTE: we rely on the fact that lenght and position are similar
+        struct position offset; // NOTE: we rely on the fact that length and position have the same layout
         int notification_limit;
         int gap_size;
         int default_pause_level;
