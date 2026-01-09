@@ -804,10 +804,12 @@ bool wl_have_fullscreen_window(void) {
                                         TOPLEVEL_STATE_ACTIVATED))
                         continue;
 
+                if(output_name == UINT32_MAX)
+                        return true;
+
                 struct toplevel_output *pos;
                 wl_list_for_each(pos, &toplevel->output_list, link) {
-                        if (output_name == UINT32_MAX ||
-                                        pos->dunst_output->global_name ==
+                        if (pos->dunst_output->global_name ==
                                         output_name) {
                                 return true;
                         }
