@@ -17,12 +17,14 @@ struct dunst_status {
         bool fullscreen; //!< a fullscreen window is currently focused
         int pause_level;    //!< current pause level. 0 = all notifications come through, 100 = no notifications come through
         bool idle;       //!< set true if the user is idle
+        bool mouse_over; //!< set true if the mouse is over the notification window
 };
 
 enum dunst_status_field {
         S_FULLSCREEN,
         S_IDLE,
         S_PAUSE_LEVEL,
+        S_MOUSE_OVER,
 };
 
 extern char **config_paths;

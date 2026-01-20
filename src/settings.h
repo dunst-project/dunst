@@ -178,6 +178,7 @@ struct settings {
         int notification_limit;
         int gap_size;
         int default_pause_level;
+        bool pause_on_mouse_over;
 };
 
 extern struct settings settings;

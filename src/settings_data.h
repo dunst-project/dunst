@@ -1241,6 +1241,16 @@ static const struct setting allowed_settings[] = {
                 .parser = NULL,
                 .parser_data = NULL,
         },
+        {
+                .name = "pause_on_mouse_over",
+                .section = "global",
+                .description = "Pause notification timeout when mouse is over the notification window.",
+                .type = TYPE_CUSTOM,
+                .default_value = "false",
+                .value = &settings.pause_on_mouse_over,
+                .parser = string_parse_bool,
+                .parser_data = boolean_enum_data,
+        },
         // manual extractions below
         {
                 .name = "follow",

@@ -330,6 +330,11 @@
     mouse_middle_click = do_action, close_current
     mouse_right_click = close_all
 
+    # Pause notification timeout when mouse hovers over the notification window.
+    # When enabled, notifications won't timeout while the mouse pointer is over
+    # them. The timeout resumes when the pointer leaves the window.
+    pause_on_mouse_over = false
+
 # Experimental features that may or may not work correctly. Do not expect them
 # to have a consistent behaviour across releases.
 [experimental]

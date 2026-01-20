@@ -39,6 +39,9 @@ void dunst_status(const enum dunst_status_field field,
         case S_IDLE:
                 status.idle = value;
                 break;
+        case S_MOUSE_OVER:
+                status.mouse_over = value;
+                break;
         default:
                 LOG_E("Invalid %s enum value in %s:%d for bool type", "dunst_status", __FILE__, __LINE__);
                 break;
