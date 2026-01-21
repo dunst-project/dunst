@@ -1243,8 +1243,8 @@ static const struct setting allowed_settings[] = {
         },
         {
                 .name = "pause_on_mouse_over",
-                .section = "global",
-                .description = "Pause notification timeout when mouse is over the notification window.",
+                .section = "experimental",
+                .description = "Pause notification timeout when mouse is over the notification window. Only works on Wayland.",
                 .type = TYPE_CUSTOM,
                 .default_value = "false",
                 .value = &settings.pause_on_mouse_over,
