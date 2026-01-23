@@ -712,6 +712,11 @@ command line options. This has been long removed in favour of RULES, see issue #
 Use different DPI for each monitor.
 This setting is currently implemented only for X11.
 
+=item B<pause_on_mouse_over> (default: false)
+
+Pause notification timeout when hovering with the mouse pointer.
+This setting is currently implemented only for Wayland.
+
 =back
 
 =head1 DUNSTCTL
