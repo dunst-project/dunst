@@ -340,6 +340,12 @@
     # where there are multiple screens with very different dpi values.
     per_monitor_dpi = false
 
+    # Pause notification timeout when mouse hovers over the notification window.
+    # When enabled, notifications won't timeout while the mouse pointer is over
+    # them. The timeout resumes when the pointer leaves the window.
+    # Only works on Wayland.
+    pause_on_mouse_over = false
+
 
 [urgency_low]
     # IMPORTANT: colors have to be defined in quotation marks.

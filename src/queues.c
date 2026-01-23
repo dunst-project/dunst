@@ -159,6 +159,12 @@ static bool queues_notification_is_finished(struct notification *n, struct dunst
                 return false;
         }
 
+        /* don't timeout when mouse is over the notification window */
+        if (status.mouse_over && !n->transient) {
+                n->start = time_monotonic_now();
+                return false;
+        }
+
         /* remove old message */
         if (time - n->start > n->timeout) {
                 return true;
