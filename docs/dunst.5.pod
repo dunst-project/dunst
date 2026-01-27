@@ -815,6 +815,7 @@ For filtering rules that filter based on strings you can use regular
 expressions. It's recommended to set B<enable_posix_regex> to true. You can then
 use the POSIX Extended Regular Expression syntax:
 https://en.m.wikibooks.org/wiki/Regular_Expressions/POSIX-Extended_Regular_Expressions.
+Eventually B<enable_posix_regex> will be enabled by default.
 
 A matching rule is made by assigning a filter attribute to the value you want to match.
 Shell-like globbing is supported when matching values.
