@@ -220,8 +220,6 @@
    match-leak-kinds: definite
    fun:*alloc
    ...
-   obj:/usr/local/lib/libgio-2.0.so.0.8000.5
-   ...
    fun:g_bus_own_name
    fun:dbus_init
    fun:test_dbus_init
@@ -234,36 +232,76 @@
    match-leak-kinds: definite
    fun:calloc
    ...
-   obj:/usr/local/lib/librsvg-2.so.2.40.21
-   ...
-   obj:/usr/local/lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-svg.so
-   obj:/usr/local/lib/libgdk_pixbuf-2.0.so.0.4200.10
    fun:gdk_pixbuf_new_from_file
    fun:notification_setup_raw_image
    ...
 }
 
 {
-   freebsd_dbus_leak
+   glib_gobject_leak_freebsd_generic
    Memcheck:Leak
-   match-leak-kinds: definite
+   fun:calloc
+   fun:g_malloc0
+   ...
+   obj:*/libgobject-2.0.so*
+}
+
+{
+   glib_gobject_type_create_instance
+   Memcheck:Leak
    fun:calloc
    fun:g_malloc0
    fun:g_type_create_instance
-   fun:g_param_spec_internal
-   ...
-   obj:/usr/local/lib/libgio-2.0.so.0.8000.5
-   obj:/usr/local/lib/libgobject-2.0.so.0.8000.5
-   ...
-   fun:g_object_new
    ...
 }
 
 {
-   glib_freebsd
+   glib_gio_socket_factory_leak
    Memcheck:Leak
-   fun:*alloc
+   fun:calloc
+   fun:g_malloc0
+   fun:g_socket_connection_factory_register_type
    ...
-   fun:g_dbus_address_get_stream_sync
+}
+
+{
+   glib_gio_socket_factory_lookup
+   Memcheck:Leak
+   fun:calloc
+   fun:g_malloc0
    ...
+   fun:g_socket_connection_factory_lookup_type
+   ...
+}
+
+{
+   glib_iconv_open_leak
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_convert_with_iconv
+   ...
+}
+
+{
+   glib_get_charset_leak
+   Memcheck:Leak
+   ...
+   fun:g_get_charset
+   ...
+}
+
+# Probably an optimization (?)
+{
+   freebsd_libc_fnmatch_cond
+   Memcheck:Cond
+   fun:fnmatch
+   fun:rule_field_matches_string
+}
+
+{
+   freebsd_libc_fnmatch_cond
+   Memcheck:Value8
+   fun:fnmatch
+   fun:rule_field_matches_string
 }

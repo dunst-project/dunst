@@ -274,7 +274,7 @@ void rule_free(struct rule *r)
 static inline bool rule_field_matches_string(const char *value, const char *pattern)
 {
         if (settings.enable_regex) {
-                if (!pattern) {
+                if (STR_EMPTY(pattern)) {
                         return true;
                 }
                 if (!value) {
