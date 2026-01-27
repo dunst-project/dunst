@@ -691,7 +691,7 @@ TEST test_dbus_cb_dunst_Properties_Set_pause_level(void)
 TEST test_dbus_cb_dunst_NotificationListHistory(void)
 {
         struct notification *n = notification_create();
-        gint64 timestamp1 = n->timestamp;
+        gint64 timestamp1 = n->real_timestamp;
         n->appname = g_strdup("dunstify");
         n->summary = g_strdup("Testing");
         n->urgency = 2;
@@ -701,7 +701,7 @@ TEST test_dbus_cb_dunst_NotificationListHistory(void)
         queues_history_push(n);
 
         n = notification_create();
-        gint64 timestamp2 = n->timestamp;
+        gint64 timestamp2 = n->real_timestamp;
         n->appname = g_strdup("notify-send");
         n->summary = g_strdup("More testing");
         n->urgency = 0;

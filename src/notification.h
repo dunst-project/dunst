@@ -76,7 +76,8 @@ struct notification {
         bool receiving_raw_icon; /**< Still waiting for raw icon to be received */
 
         gint64 start;      /**< begin of current display (in milliseconds) */
-        gint64 timestamp;  /**< arrival time (in milliseconds) */
+        gint64 timestamp;  /**< monotonic arrival time (in milliseconds) */
+        gint64 real_timestamp;  /**< real arrival time (unix epoch) */
         gint64 timeout;    /**< time to display (in milliseconds) */
         gint64 dbus_timeout; /**< time to display (in milliseconds) (set by dbus) */
         int locked;     /**< If non-zero the notification is locked **/

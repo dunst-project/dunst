@@ -456,6 +456,7 @@ struct notification *notification_create(void)
         n->format = g_strdup(settings.format);
 
         n->timestamp = time_monotonic_now();
+        n->real_timestamp = time_now();
 
         n->urgency = URG_NORM;
         n->timeout = -1;
