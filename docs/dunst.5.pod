@@ -717,6 +717,12 @@ This setting is currently implemented only for X11.
 Pause notification timeout when hovering with the mouse pointer.
 This setting is currently implemented only for Wayland.
 
+=item B<enable_pcre_regex> (default: false)
+
+Use PCRE regular expressions for filtering rules.
+For more information see https://en.wikipedia.org/wiki/Perl_Compatible_Regular_Expressions.
+This setting overrides B<enable_posix_regex>.
+
 =back
 
 =head1 DUNSTCTL

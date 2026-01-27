@@ -217,6 +217,13 @@
     # Display indicators for URLs (U) and actions (A).
     show_indicators = yes
 
+    # When set to true (recommended), you can use POSIX regular expressions for filtering rules.
+    # If this is set to false (not recommended), dunst will use fnmatch(3) for matching strings.
+    # Dunst doesn't pass any flags to fnmatch, so you cannot make use of extended patterns.
+    #
+    # Note that this will eventually be true by default.
+    enable_posix_regex = false
+
     ### Icons ###
 
     # Recursive icon lookup. You can set a single theme, instead of having to
@@ -346,6 +353,9 @@
     # Only works on Wayland.
     pause_on_mouse_over = false
 
+    # Use PCRE regular expressions for filtering rules.
+    # This setting overrides enable_posix_regex.
+    enable_pcre_regex = false
 
 [urgency_low]
     # IMPORTANT: colors have to be defined in quotation marks.

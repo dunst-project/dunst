@@ -103,7 +103,7 @@ struct position {
 
 struct settings {
         bool print_notifications;
-        bool per_monitor_dpi;
+        bool per_monitor_dpi; // experimental
         bool stack_duplicates;
         bool hide_duplicate_count;
         char *font;
@@ -146,7 +146,8 @@ struct settings {
         enum vertical_alignment vertical_alignment;
         char **icon_theme; // experimental
         bool enable_recursive_icon_lookup; // experimental
-        bool enable_regex; // experimental
+        bool enable_regex;
+        bool enable_pcre; // experimental
         char *icon_path;
         enum follow_mode f_mode;
         bool always_run_script;
