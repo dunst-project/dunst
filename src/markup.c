@@ -77,15 +77,13 @@ void markup_strip_a(char **str, char **urls)
 
                 // the tag is broken, ignore it
                 if (!tag1_end) {
-                        LOG_W("Given link is broken: '%s'",
-                              tag1);
+                        LOG_W("Given link is broken: '%s'", tag1);
                         string_replace_at(*str, tag1-*str, strlen(tag1), "");
                         break;
                 }
                 if (tag2 && tag2 < tag1_end) {
                         int repl_len =  (tag2 - tag1) + strlen("</a>");
-                        LOG_W("Given link is broken: '%.*s.'",
-                              repl_len, tag1);
+                        LOG_W("Given link is broken: '%.*s.'", repl_len, tag1);
                         string_replace_at(*str, tag1-*str, repl_len, "");
                         break;
                 }
@@ -98,7 +96,6 @@ void markup_strip_a(char **str, char **urls)
                         href = href+6;
 
                         const char *quote = strstr(href, "\"");
-
                         if (quote && quote < tag1_end) {
                                 plain_url = g_strndup(href, quote-href);
                         }
@@ -123,6 +120,9 @@ void markup_strip_a(char **str, char **urls)
                 if (plain_url && urls) {
                         text = string_replace_all("]", "", text);
                         text = string_replace_all("[", "", text);
+
+                        // Prevent dmenu from splitting items
+                        text = string_replace_all("\n", "\\n", text);
 
                         char *url = g_strdup_printf("[%s] %s", text, plain_url);
 
@@ -157,18 +157,18 @@ void markup_strip_img(char **str, char **urls)
                 const char *alt_s = strstr(start, "alt=\"");
                 const char *src_s = strstr(start, "src=\"");
 
-                char *text_alt = NULL;
-                char *text_src = NULL;
-
+                char *text_alt = NULL, *text_src = NULL;
                 const char *src_e = NULL, *alt_e = NULL;
-                if (alt_s)
-                        alt_e = strstr(alt_s + strlen("alt=\""), "\"");
-                if (src_s)
-                        src_e = strstr(src_s + strlen("src=\""), "\"");
 
-                // Move pointer to the actual start
-                alt_s = alt_s ? alt_s + strlen("alt=\"") : NULL;
-                src_s = src_s ? src_s + strlen("src=\"") : NULL;
+                // Move pointer to the actual start and get end
+                if (alt_s) {
+                        alt_s += strlen("alt=\"");
+                        alt_e = strstr(alt_s, "\"");
+                }
+                if (src_s) {
+                        src_s += strlen("src=\"");
+                        src_e = strstr(src_s, "\"");
+                }
 
                 /* check if alt and src attribute are given
                  * If both given, check the alignment of all pointers */
@@ -206,6 +206,9 @@ void markup_strip_img(char **str, char **urls)
                 if (text_src && urls) {
                         text_alt = string_replace_all("]", "", text_alt);
                         text_alt = string_replace_all("[", "", text_alt);
+
+                        // Prevent dmenu from splitting items
+                        text_alt = string_replace_all("\n", "\\n", text_alt);
 
                         char *url = g_strdup_printf("[%s] %s", text_alt, text_src);
 

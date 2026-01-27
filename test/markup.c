@@ -65,13 +65,12 @@ TEST test_markup_transform(void)
         PASS();
 }
 
-TEST helper_markup_strip_a (const char *in, const char *exp, const char *urls)
+TEST helper_markup_strip_a(const char *in, const char *exp, const char *urls)
 {
-        // out_urls is a return parameter and the content should be ignored
-        char *out_urls = (char *)0x04; //Chosen by a fair dice roll
         char *out = g_strdup(in);
         char *msg = g_strconcat("url: ", in, NULL);
 
+        char *out_urls;
         markup_strip_a(&out, &out_urls);
 
         ASSERT_STR_EQm(msg, exp, out);
@@ -96,22 +95,25 @@ SUITE(test_markup_strip_a_suite)
         RUN_TESTp(helper_markup_strip_a, "<a>valid</a> link",                            "valid link", NULL);
         RUN_TESTp(helper_markup_strip_a, "<a href=\"https://url.com\">valid link",       "valid link", "[valid link] https://url.com");
 
+        RUN_TESTp(helper_markup_strip_a, "<a href=\"https://url.com\">some\n\nlink</a>", "some\n\nlink", "[some\\n\\nlink] https://url.com");
+        RUN_TESTp(helper_markup_strip_a, "<a href=\"https://url.com\">one\ntwo\n",       "one\ntwo\n",   "[one\\ntwo\\n] https://url.com");
+
         RUN_TESTp(helper_markup_strip_a, "<a href=\"https://url.com\" invalid</a> link", " link",      NULL);
         RUN_TESTp(helper_markup_strip_a, "<a invalid</a> link",                          " link",      NULL);
 }
 
-TEST helper_markup_strip_img (const char *in, const char *exp, const char *urls)
+TEST helper_markup_strip_img(const char *in, const char *exp, const char *urls)
 {
-        // out_urls is a return parameter and the content should be ignored
-        char *out_urls = (char *)0x04; //Chosen by a fair dice roll
         char *out = g_strdup(in);
         char *msg = g_strconcat("url: ", in, NULL);
 
+        char *out_urls;
         markup_strip_img(&out, &out_urls);
 
         ASSERT_STR_EQm(msg, exp, out);
 
         if (urls) {
+                ASSERT_NEQm(msg, out_urls, NULL);
                 ASSERT_STR_EQm(msg, urls, out_urls);
         } else {
                 ASSERT_EQm(msg, urls, out_urls);
@@ -133,6 +135,9 @@ SUITE(test_markup_strip_img_suite)
         RUN_TESTp(helper_markup_strip_img, "v <img alt=\"valid\" src=\"url.com\"> img",           "v valid img",   "[valid] url.com");
         RUN_TESTp(helper_markup_strip_img, "v <img src=\"url.com\" alt=\"valid\"> img",           "v valid img",   "[valid] url.com");
         RUN_TESTp(helper_markup_strip_img, "v <img src=\"url.com\" alt=\"valid\" alt=\"i\"> img", "v valid img",   "[valid] url.com");
+
+        RUN_TESTp(helper_markup_strip_img, "v <img src=\"url.com\" alt=\"invalid > an\nimg\n",    "v [image] an\nimg\n", "[image] url.com");
+        RUN_TESTp(helper_markup_strip_img, "v <img alt=\"valid\nalt\" src=\"url.com\"> img",      "v valid\nalt img",   "[valid\\nalt] url.com");
 
         RUN_TESTp(helper_markup_strip_img, "i <img alt=\"invalid  src=\"https://url.com\"> img",  "i [image] img", "[image] https://url.com");
         RUN_TESTp(helper_markup_strip_img, "i <img alt=\"broken\" src=\"https://url.com  > img",  "i broken img",  NULL);
