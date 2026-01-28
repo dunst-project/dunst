@@ -1,3 +1,12 @@
+/* SPDX-License-Identifier: BSD-3-Clause */
+/**
+ * @file
+ * @ingroup utils
+ * @brief Search icon in theme directories
+ * @copyright Copyright 2021-2026 Dunst contributors
+ * @license BSD-3-Clause
+ */
+
 #ifndef DUNST_ICON_LOOKUP_H
 #define DUNST_ICON_LOOKUP_H
 
@@ -31,7 +40,7 @@ struct icon_theme_dir {
  *
  * @param name Name of the directory in which the theme is located. Note that
  *             it is NOT the name of the theme as specified in index.theme.
- * @returns The index of the theme, which can be used to set it as default.
+ * @return The index of the theme, which can be used to set it as default.
  * @retval -1 if the icon theme cannot be loaded.
  */
 int load_icon_theme(char *name);
@@ -53,7 +62,7 @@ void add_default_theme(int theme_index);
  * @param name         Name of the icon or full path to it.
  * @param theme_index  Index of the theme to use.
  * @param size         Size of the icon.
- * @returns The full path to the icon.
+ * @return The full path to the icon.
  * @retval NULL if the icon cannot be found or is not readable.
  */
 char *find_icon_in_theme(const char *name, int theme_index, int size);
@@ -68,7 +77,7 @@ void set_default_theme(int theme_index);
  *
  * @param name Name of the icon or full path to it.
  * @param size Size of the icon.
- * @returns The full path to the icon.
+ * @return The full path to the icon.
  * @retval NULL if the icon cannot be found or is not readable.
  */
 char *find_icon_path(const char *name, int size);

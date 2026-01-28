@@ -3,7 +3,7 @@
  * @file
  * @ingroup wayland
  * @brief Wayland output wrapper
- * @copyright Copyright 2026 Dunst contributors
+ * @copyright Copyright 2021-2026 Dunst contributors
  * @license BSD-3-Clause
  */
 

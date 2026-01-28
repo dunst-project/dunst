@@ -1,3 +1,12 @@
+/* SPDX-License-Identifier: BSD-3-Clause */
+/**
+ * @file
+ * @ingroup graphics
+ * @brief Layout and render notifications
+ * @copyright Copyright 2018-2026 Dunst contributors
+ * @license BSD-3-Clause
+ */
+
 #ifndef DUNST_DRAW_H
 #define DUNST_DRAW_H
 

@@ -3,7 +3,7 @@
  * @file
  * @ingroup wayland
  * @brief Wayland rendering buffer pool
- * @copyright Copyright 2026 Dunst contributors
+ * @copyright Copyright 2020-2026 Dunst contributors
  * @license BSD-3-Clause
  */
 

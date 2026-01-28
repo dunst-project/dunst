@@ -1,3 +1,10 @@
+/* SPDX-License-Identifier: BSD-3-Clause */
+/**
+ * @file
+ * @copyright Copyright 2021-2026 Dunst contributors
+ * @license BSD-3-Clause
+ */
+
 #define _GNU_SOURCE
 #include "icon-lookup.h"
 

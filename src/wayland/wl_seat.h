@@ -3,7 +3,7 @@
  * @file
  * @ingroup wayland
  * @brief Wayland seat managment
- * @copyright Copyright 2026 Dunst contributors
+ * @copyright Copyright 2024-2026 Dunst contributors
  * @license BSD-3-Clause
  */
 

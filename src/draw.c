@@ -1,4 +1,9 @@
-#include "draw.h"
+/* SPDX-License-Identifier: BSD-3-Clause */
+/**
+ * @file
+ * @copyright Copyright 2018-2026 Dunst contributors
+ * @license BSD-3-Clause
+ */
 
 #include <assert.h>
 #include <math.h>
@@ -11,6 +16,7 @@
 #include <inttypes.h>
 #include <glib.h>
 
+#include "draw.h"
 #include "dunst.h"
 #include "icon.h"
 #include "log.h"
