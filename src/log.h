@@ -2,7 +2,7 @@
 /**
  * @file
  * @ingroup utils
- * @brief Logging subsystem and helpers.
+ * @brief Logging subsystem and helpers
  * @copyright Copyright 2013-2014 Sascha Kruse
  * @copyright Copyright 2014-2026 Dunst contributors
  * @license BSD-3-Clause

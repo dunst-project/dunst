@@ -1,5 +1,15 @@
+/* SPDX-License-Identifier: BSD-3-Clause */
+/**
+ * @file
+ * @ingroup wayland
+ * @brief Wayland output wrapper
+ * @copyright Copyright 2026 Dunst contributors
+ * @license BSD-3-Clause
+ */
+
 #ifndef DUNST_WL_OUTPUT_H
 #define DUNST_WL_OUTPUT_H
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <wayland-client.h>

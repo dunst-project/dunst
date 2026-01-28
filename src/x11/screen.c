@@ -1,4 +1,10 @@
-#include "screen.h"
+/* SPDX-License-Identifier: BSD-3-Clause */
+/**
+ * @file
+ * @copyright Copyright 2013-2014 Sascha Kruse
+ * @copyright Copyright 2014-2026 Dunst contributors
+ * @license BSD-3-Clause
+ */
 
 #include <assert.h>
 #include <glib.h>
@@ -19,6 +25,7 @@
 #include "../settings.h"
 #include "../utils.h"
 #include "x.h"
+#include "screen.h"
 
 struct screen_info *screens;
 int screens_len;

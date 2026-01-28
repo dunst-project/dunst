@@ -1,3 +1,12 @@
+/* SPDX-License-Identifier: BSD-3-Clause */
+/**
+ * @file
+ * @ingroup wayland
+ * @brief Wayland foreign toplevel support
+ * @copyright Copyright 2026 Dunst contributors
+ * @license BSD-3-Clause
+ */
+
 #ifndef DUNST_FOREIGN_TOPLEVEL_H
 #define DUNST_FOREIGN_TOPLEVEL_H
 #include <wayland-client.h>

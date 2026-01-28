@@ -1,9 +1,17 @@
-/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
+/* SPDX-License-Identifier: BSD-3-Clause */
+/**
+ * @file
+ * @ingroup x11
+ * @brief Xorg output wrapper
+ * @copyright Copyright 2013-2014 Sascha Kruse
+ * @copyright Copyright 2014-2026 Dunst contributors
+ * @license BSD-3-Clause
+ */
+
 #ifndef DUNST_X_H
 #define DUNST_X_H
 
 #define XLIB_ILLEGAL_ACCESS
-
 #include <cairo.h>
 #include <glib.h>
 #include <stdbool.h>
@@ -12,7 +20,6 @@
 #include <X11/Xlib.h>
 
 #include "../output.h"
-
 #include "screen.h"
 
 struct x_context {
