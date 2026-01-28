@@ -2,9 +2,9 @@ name: main
 
 on:
   push:
-  pull_request:
     branches:
       - master
+  pull_request:
 
 jobs:
   # Enforce the standard of g_malloc instead of malloc in the project
@@ -16,7 +16,7 @@ jobs:
       - name: enforce-g_malloc
         run: "! git grep -P '(?<!g_)malloc' ':!.valgrind.suppressions' ':!.github/workflows/main.yml'"
 
-  build:
+  build-linux:
     strategy:
       fail-fast: false
       matrix:
@@ -68,7 +68,8 @@ jobs:
       image: ghcr.io/dunst-project/docker-images:${{ matrix.distro }}
 
   coverage:
-    needs: build
+    needs:
+      - build-linux
     env:
       CC: gcc
 

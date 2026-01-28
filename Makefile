@@ -97,7 +97,7 @@ endif
 test: test/test clean-coverage-run
 	# Make sure an error code is returned when the test fails
 	/usr/bin/env bash -c 'set -euo pipefail;\
-	TESTDIR=./test ./test/test -v | ./test/greenest.awk '
+	TESTDIR=./test ./test/test -v | ${AWK} -f ./test/greenest.awk '
 
 test-valgrind: test/test
 	TESTDIR=./test ${VALGRIND} \
@@ -229,51 +229,51 @@ clean-wayland-protocols:
 install: install-dunst install-dunstctl install-dunstrc install-service
 
 install-dunst: dunst doc
-	install -Dm755 dunst ${DESTDIR}${BINDIR}/dunst
-	install -Dm644 docs/dunst.1 ${DESTDIR}${MANPREFIX}/man1/dunst.1
-	install -Dm644 docs/dunst.5 ${DESTDIR}${MANPREFIX}/man5/dunst.5
-	install -Dm644 docs/dunstctl.1 ${DESTDIR}${MANPREFIX}/man1/dunstctl.1
-	install -Dm644 docs/dunstify.1 ${DESTDIR}${MANPREFIX}/man1/dunstify.1
+	${INSTALL} -Dm755 dunst ${DESTDIR}${BINDIR}/dunst
+	${INSTALL} -Dm644 docs/dunst.1 ${DESTDIR}${MANPREFIX}/man1/dunst.1
+	${INSTALL} -Dm644 docs/dunst.5 ${DESTDIR}${MANPREFIX}/man5/dunst.5
+	${INSTALL} -Dm644 docs/dunstctl.1 ${DESTDIR}${MANPREFIX}/man1/dunstctl.1
+	${INSTALL} -Dm644 docs/dunstify.1 ${DESTDIR}${MANPREFIX}/man1/dunstify.1
 
 install-dunstctl: dunstctl
-	install -Dm755 dunstctl ${DESTDIR}${BINDIR}/dunstctl
+	${INSTALL} -Dm755 dunstctl ${DESTDIR}${BINDIR}/dunstctl
 
 ifeq (1,${SYSCONF_FORCE_NEW})
 install-dunstrc:
-	install -Dm644 dunstrc ${DESTDIR}${SYSCONFFILE}
+	${INSTALL} -Dm644 dunstrc ${DESTDIR}${SYSCONFFILE}
 endif
 
 install-service: install-service-dbus
 install-service-dbus: service-dbus
-	install -Dm644 org.knopwob.dunst.service ${DESTDIR}${SERVICEDIR_DBUS}/org.knopwob.dunst.service
+	${INSTALL} -Dm644 org.knopwob.dunst.service ${DESTDIR}${SERVICEDIR_DBUS}/org.knopwob.dunst.service
 ifneq (0,${SYSTEMD})
 install-service: install-service-systemd
 install-service-systemd: service-systemd
-	install -Dm644 dunst.systemd.service ${DESTDIR}${SERVICEDIR_SYSTEMD}/dunst.service
+	${INSTALL} -Dm644 dunst.systemd.service ${DESTDIR}${SERVICEDIR_SYSTEMD}/dunst.service
 endif
 
 ifneq (0,${DUNSTIFY})
 install: install-dunstify
 install-dunstify: dunstify
-	install -Dm755 dunstify ${DESTDIR}${BINDIR}/dunstify
+	${INSTALL} -Dm755 dunstify ${DESTDIR}${BINDIR}/dunstify
 endif
 
 ifneq (0,${COMPLETIONS})
 install: install-completions
 install-completions:
-	install -Dm644 completions/dunst.bashcomp ${DESTDIR}${BASHCOMPLETIONDIR}/dunst
-	install -Dm644 completions/dunstctl.bashcomp ${DESTDIR}${BASHCOMPLETIONDIR}/dunstctl
-	install -Dm644 completions/_dunst.zshcomp ${DESTDIR}${ZSHCOMPLETIONDIR}/_dunst
-	install -Dm644 completions/_dunstctl.zshcomp ${DESTDIR}${ZSHCOMPLETIONDIR}/_dunstctl
-	install -Dm644 completions/dunst.fishcomp ${DESTDIR}${FISHCOMPLETIONDIR}/dunst.fish
-	install -Dm644 completions/dunstctl.fishcomp ${DESTDIR}${FISHCOMPLETIONDIR}/dunstctl.fish
+	${INSTALL} -Dm644 completions/dunst.bashcomp ${DESTDIR}${BASHCOMPLETIONDIR}/dunst
+	${INSTALL} -Dm644 completions/dunstctl.bashcomp ${DESTDIR}${BASHCOMPLETIONDIR}/dunstctl
+	${INSTALL} -Dm644 completions/_dunst.zshcomp ${DESTDIR}${ZSHCOMPLETIONDIR}/_dunst
+	${INSTALL} -Dm644 completions/_dunstctl.zshcomp ${DESTDIR}${ZSHCOMPLETIONDIR}/_dunstctl
+	${INSTALL} -Dm644 completions/dunst.fishcomp ${DESTDIR}${FISHCOMPLETIONDIR}/dunst.fish
+	${INSTALL} -Dm644 completions/dunstctl.fishcomp ${DESTDIR}${FISHCOMPLETIONDIR}/dunstctl.fish
 
 ifneq (0,${DUNSTIFY})
 install: install-completions-dunstify
 install-completions-dunstify:
-	install -Dm644 completions/dunstify.bashcomp ${DESTDIR}${BASHCOMPLETIONDIR}/dunstify
-	install -Dm644 completions/_dunstify.zshcomp ${DESTDIR}${ZSHCOMPLETIONDIR}/_dunstify
-	install -Dm644 completions/dunstify.fishcomp ${DESTDIR}${FISHCOMPLETIONDIR}/dunstify.fish
+	${INSTALL} -Dm644 completions/dunstify.bashcomp ${DESTDIR}${BASHCOMPLETIONDIR}/dunstify
+	${INSTALL} -Dm644 completions/_dunstify.zshcomp ${DESTDIR}${ZSHCOMPLETIONDIR}/_dunstify
+	${INSTALL} -Dm644 completions/dunstify.fishcomp ${DESTDIR}${FISHCOMPLETIONDIR}/dunstify.fish
 endif
 endif
 
@@ -289,7 +289,7 @@ uninstall-keepconf: uninstall-service uninstall-dunstctl uninstall-completions
 
 uninstall-dunstrc:
 	rm -f ${DESTDIR}${SYSCONFFILE}
-	rmdir --ignore-fail-on-non-empty ${DESTDIR}${SYSCONFDIR}/dunst
+	${RMDIR} --ignore-fail-on-non-empty ${DESTDIR}${SYSCONFDIR}/dunst
 
 uninstall-dunstctl:
 	rm -f ${DESTDIR}${BINDIR}/dunstctl

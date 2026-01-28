@@ -110,7 +110,7 @@
 
 # a librsvg memoryleak that shows up in arch, but not in the CI environment
 {
-   <librsvg-arch>
+   librsvg-arch
    Memcheck:Leak
    match-leak-kinds: definite
    fun:malloc
@@ -133,6 +133,25 @@
    obj:*fontconfig*
    ...
    obj:*pango*
+   ...
+}
+
+# The same functions leak even without fontconfig :x
+{
+   other_pango_leaks
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:pango_layout_get_pixel_size
+   ...
+}
+
+{
+   other_pango_leaks2
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:pango_renderer_draw_layout
    ...
 }
 
@@ -193,4 +212,96 @@
    fun:notification_setup_raw_image
    fun:notification_load_icon_with_scaling
    ...
+}
+
+{
+   g_bus_own_name_supp
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:*alloc
+   ...
+   fun:g_bus_own_name
+   fun:dbus_init
+   fun:test_dbus_init
+   ...
+}
+
+{
+   gdk_pixbuf_new_from_file_freebsd
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:calloc
+   ...
+   fun:gdk_pixbuf_new_from_file
+   fun:notification_setup_raw_image
+   ...
+}
+
+{
+   glib_gobject_leak_freebsd_generic
+   Memcheck:Leak
+   fun:calloc
+   fun:g_malloc0
+   ...
+   obj:*/libgobject-2.0.so*
+}
+
+{
+   glib_gobject_type_create_instance
+   Memcheck:Leak
+   fun:calloc
+   fun:g_malloc0
+   fun:g_type_create_instance
+   ...
+}
+
+{
+   glib_gio_socket_factory_leak
+   Memcheck:Leak
+   fun:calloc
+   fun:g_malloc0
+   fun:g_socket_connection_factory_register_type
+   ...
+}
+
+{
+   glib_gio_socket_factory_lookup
+   Memcheck:Leak
+   fun:calloc
+   fun:g_malloc0
+   ...
+   fun:g_socket_connection_factory_lookup_type
+   ...
+}
+
+{
+   glib_iconv_open_leak
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_convert_with_iconv
+   ...
+}
+
+{
+   glib_get_charset_leak
+   Memcheck:Leak
+   ...
+   fun:g_get_charset
+   ...
+}
+
+# Probably an optimization (?)
+{
+   freebsd_libc_fnmatch_cond
+   Memcheck:Cond
+   fun:fnmatch
+   fun:rule_field_matches_string
+}
+
+{
+   freebsd_libc_fnmatch_cond
+   Memcheck:Value8
+   fun:fnmatch
+   fun:rule_field_matches_string
 }
