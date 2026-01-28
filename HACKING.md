@@ -1,7 +1,8 @@
 # Important notes on the code
 
-**You can generate an internal overview with doxygen. For this, use `make doc-doxygen` and you'll find an internal overview of all functions and symbols in `docs/internal/html`. You will also need `graphviz` for this.**
-
+**You can generate an internal overview with doxygen.
+For this, use `make doc-doxygen` and you'll find an internal overview of all functions and symbols in `docs/internal/html`.
+You will also need `graphviz` for this.**
 
 For people wanting to develop new features or fix bugs for dunst, here are the
 steps you should take.
