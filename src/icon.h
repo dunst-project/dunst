@@ -27,7 +27,7 @@ cairo_surface_t *gdk_pixbuf_to_cairo_surface(GdkPixbuf *pixbuf);
  * @param scale An integer representing the output dpi scaling.
  *
  * @return an instance of `GdkPixbuf`
- * @retval NULL: file does not exist, not readable, etc..
+ * @retval NULL when file does not exist, not readable, etc..
  */
 GdkPixbuf *get_pixbuf_from_file(const char *filename, char **id, int min_size, int max_size, double scale);
 
@@ -54,7 +54,7 @@ int get_icon_height(cairo_surface_t *icon, double scale);
  *                 recursive icon lookup is enabled.
  *
  * @return a newly allocated string with the icon path
- * @retval NULL: file does not exist, not readable, etc..
+ * @retval NULL when file does not exist, not readable, etc..
  */
 char *get_path_from_icon_name(const char *iconname, int size);
 
@@ -71,7 +71,7 @@ char *get_path_from_icon_name(const char *iconname, int size);
  * @param min_size An integer representing the desired minimum unscaled icon size.
  * @param max_size An integer representing the desired maximum unscaled icon size.
  * @return an instance of `GdkPixbuf` derived from the GVariant
- * @retval NULL: GVariant parameter nulled, invalid or in wrong format
+ * @retval NULL when GVariant parameter is NULL, invalid or in wrong format
  */
 GdkPixbuf *icon_get_for_data(GVariant *data, char **id, double dpi_scale, int min_size, int max_size);
 

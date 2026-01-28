@@ -65,7 +65,6 @@ static char *markup_br2nl(char *str)
         return str;
 }
 
-/* see markup.h */
 void markup_strip_a(char **str, char **urls)
 {
         assert(*str);
@@ -140,7 +139,6 @@ void markup_strip_a(char **str, char **urls)
         }
 }
 
-/* see markup.h */
 void markup_strip_img(char **str, char **urls)
 {
         const char *start;
@@ -226,7 +224,6 @@ void markup_strip_img(char **str, char **urls)
         }
 }
 
-/* see markup.h */
 char *markup_strip(char *str)
 {
         ASSERT_OR_RET(str, NULL);
@@ -313,7 +310,6 @@ static char *markup_escape_unsupported(char *str)
         return str;
 }
 
-/* see markup.h */
 char *markup_transform(char *str, enum markup_mode markup_mode)
 {
         ASSERT_OR_RET(str, NULL);

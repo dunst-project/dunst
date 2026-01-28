@@ -180,7 +180,6 @@ void get_theme_path(void) {
         }
 }
 
-// see icon-lookup.h
 int load_icon_theme(char *name) {
         if(!theme_path) {
                 get_theme_path();
