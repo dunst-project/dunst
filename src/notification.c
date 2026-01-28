@@ -1,6 +1,10 @@
-/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
-
-#include "notification.h"
+/* SPDX-License-Identifier: BSD-3-Clause */
+/**
+ * @file
+ * @copyright Copyright 2013-2014 Sascha Kruse
+ * @copyright Copyright 2014-2026 Dunst contributors
+ * @license BSD-3-Clause
+ */
 
 #include <assert.h>
 #include <errno.h>
@@ -14,6 +18,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include "notification.h"
 #include "dbus.h"
 #include "dunst.h"
 #include "icon.h"
@@ -21,8 +26,6 @@
 #include "markup.h"
 #include "menu.h"
 #include "queues.h"
-#include "rules.h"
-#include "settings.h"
 #include "utils.h"
 #include "draw.h"
 #include "icon-lookup.h"

@@ -2,7 +2,7 @@
 /**
  * @file
  * @ingroup utils
- * @brief Search icon in theme directories
+ * @brief Recursive icon lookup in theme directories
  * @copyright Copyright 2021-2026 Dunst contributors
  * @license BSD-3-Clause
  */

@@ -1,8 +1,10 @@
-#include "input.h"
-#include "log.h"
-#include "menu.h"
-#include "settings.h"
-#include "queues.h"
+/* SPDX-License-Identifier: BSD-3-Clause */
+/**
+ * @file
+ * @copyright Copyright 2020-2026 Dunst contributors
+ * @license BSD-3-Clause
+ */
+
 #include <stddef.h>
 #if defined(__linux__) || defined(__FreeBSD__)
 #include <linux/input-event-codes.h>
@@ -12,6 +14,12 @@
 #define BTN_MIDDLE	(0x112)
 #define BTN_TOUCH	(0x14a)
 #endif
+
+#include "input.h"
+#include "log.h"
+#include "menu.h"
+#include "settings.h"
+#include "queues.h"
 
 int get_notification_clickable_height(struct notification *n, bool first, bool last)
 {
@@ -29,7 +37,8 @@ int get_notification_clickable_height(struct notification *n, bool first, bool l
         return notification_size;
 }
 
-struct notification *get_notification_at(const int y) {
+struct notification *get_notification_at(const int y)
+{
         int curr_y = 0;
         bool first = true;
         bool last;
@@ -55,7 +64,8 @@ struct notification *get_notification_at(const int y) {
         return NULL;
 }
 
-void input_handle_click(unsigned int button, bool button_down, int mouse_x, int mouse_y){
+void input_handle_click(unsigned int button, bool button_down, int mouse_x, int mouse_y)
+{
         LOG_I("Pointer handle button %i: %i", button, button_down);
 
         if (button_down) {

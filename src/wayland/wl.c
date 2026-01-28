@@ -1,6 +1,11 @@
-#define _POSIX_C_SOURCE 200112L
-#include "wl.h"
+/* SPDX-License-Identifier: BSD-3-Clause */
+/**
+ * @file
+ * @copyright Copyright 2020-2026 Dunst contributors
+ * @license BSD-3-Clause
+ */
 
+#define _POSIX_C_SOURCE 200112L
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -24,8 +29,9 @@
 #include "protocols/wlr-layer-shell-unstable-v1.h"
 #include "protocols/wlr-foreign-toplevel-management-unstable-v1-client-header.h"
 #include "protocols/wlr-foreign-toplevel-management-unstable-v1.h"
-#include "pool-buffer.h"
 
+#include "wl.h"
+#include "pool-buffer.h"
 #include "../dunst.h"
 #include "../log.h"
 #include "../settings.h"

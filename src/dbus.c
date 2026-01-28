@@ -1,22 +1,26 @@
-/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
-#include "dbus.h"
+/* SPDX-License-Identifier: BSD-3-Clause */
+/**
+ * @file
+ * @copyright Copyright 2011-2014 Sascha Kruse
+ * @copyright Copyright 2014-2026 Dunst contributors
+ * @license BSD-3-Clause
+ */
 
 #include <gio/gio.h>
 #include <glib.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "dbus.h"
 #include "draw.h"
 #include "dunst.h"
 #include "log.h"
 #include "menu.h"
-#include "notification.h"
+#include "rules.h"
 #include "queues.h"
 #include "settings.h"
-#include "settings_data.h"
 #include "utils.h"
-#include "rules.h"
-#include "option_parser.h"
+#include "settings_data.h"
 
 #define FDN_PATH "/org/freedesktop/Notifications"
 #define FDN_IFAC "org.freedesktop.Notifications"

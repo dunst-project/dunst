@@ -1,6 +1,10 @@
-/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
-
-#include "markup.h"
+/* SPDX-License-Identifier: BSD-3-Clause */
+/**
+ * @file
+ * @copyright Copyright 2013-2014 Sascha Kruse
+ * @copyright Copyright 2014-2026 Dunst contributors
+ * @license BSD-3-Clause
+ */
 
 #include <assert.h>
 #include <ctype.h>
@@ -8,6 +12,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "markup.h"
 #include "log.h"
 #include "settings.h"
 #include "utils.h"

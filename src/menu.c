@@ -1,4 +1,10 @@
-/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
+/* SPDX-License-Identifier: BSD-3-Clause */
+/**
+ * @file
+ * @copyright Copyright 2013-2014 Sascha Kruse
+ * @copyright Copyright 2014-2026 Dunst contributors
+ * @license BSD-3-Clause
+ */
 
 #include "menu.h"
 
@@ -63,7 +69,6 @@ void regex_teardown(void)
         }
 }
 
-/* see menu.h */
 char *extract_urls(const char *to_match)
 {
         if (!to_match)
@@ -311,14 +316,12 @@ static GList *get_actionable_notifications(void)
         return g_list_reverse(locked_notifications);
 }
 
-/* see menu.h */
 void context_menu(void)
 {
         GList *notifications = get_actionable_notifications();
         context_menu_for(notifications);
 }
 
-/* see menu.h */
 void context_menu_for(GList *notifications)
 {
         if (menu_ctx.locked_notifications) {

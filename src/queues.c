@@ -1,25 +1,17 @@
-/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
-
+/* SPDX-License-Identifier: BSD-3-Clause */
 /**
- * @file src/queues.c
- * @brief All important functions to handle the notification queues for
- * history, entrance and currently displayed ones.
- *
- * Every method requires to have executed queues_init() at the start.
- *
- * A read only representation of the queue with the current notifications
- * can get acquired by calling queues_get_displayed().
- *
- * When ending the program or resetting the queues, tear down the stack with
- * queues_teardown(). (And reinit with queues_init() if needed.)
+ * @file
+ * @copyright Copyright 2013-2014 Sascha Kruse
+ * @copyright Copyright 2014-2026 Dunst contributors
+ * @license BSD-3-Clause
  */
-#include "queues.h"
 
 #include <assert.h>
 #include <glib.h>
 #include <stdio.h>
 #include <string.h>
 
+#include "queues.h"
 #include "dunst.h"
 #include "log.h"
 #include "notification.h"
