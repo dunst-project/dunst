@@ -28,9 +28,12 @@ TEST test_pattern_match(void) {
         ASSERT_FALSE(rule_field_matches_string("ffff", "?"));
         ASSERT_FALSE(rule_field_matches_string("Ac", "[a-z][a-z]"));
 
+        // This is checked before fnmatch/regex kicks in
+        ASSERT(rule_field_matches_string("asd", ""));
+
         // Things that differ between fnmatch(3) and regex(3)
 
-        if (settings.enable_regex) {
+        if (settings.enable_pcre || settings.enable_regex) {
                 // Single character matching
                 ASSERT(rule_field_matches_string("a", "."));
 
@@ -41,7 +44,6 @@ TEST test_pattern_match(void) {
                 ASSERT(rule_field_matches_string("ffffasd", ".*asd"));
 
                 // Substring matching
-                ASSERT(rule_field_matches_string("asd", ""));
                 ASSERT(rule_field_matches_string("asd", "sd"));
                 ASSERT(rule_field_matches_string("asd", "a"));
                 ASSERT(rule_field_matches_string("asd", "d"));
@@ -54,7 +56,8 @@ TEST test_pattern_match(void) {
                 ASSERT_FALSE(rule_field_matches_string("azd", "asd|dfg|ghj"));
 
                 // Special characters
-                ASSERT_FALSE(rule_field_matches_string("{", "{"));
+                // Notice the disagreement between PCRE and ERE!
+                ASSERT_EQ(rule_field_matches_string("{", "{"), settings.enable_pcre);
                 ASSERT(rule_field_matches_string("{", "\\{"));
                 ASSERT(rule_field_matches_string("a", "(a)"));
         } else {
@@ -68,7 +71,6 @@ TEST test_pattern_match(void) {
                 ASSERT(rule_field_matches_string("ffffasd", "*asd"));
 
                 // Substring matching
-                ASSERT_FALSE(rule_field_matches_string("asd", ""));
                 ASSERT_FALSE(rule_field_matches_string("asd", "sd"));
                 ASSERT_FALSE(rule_field_matches_string("asd", "a"));
                 ASSERT_FALSE(rule_field_matches_string("asd", "d"));
@@ -80,11 +82,27 @@ TEST test_pattern_match(void) {
 SUITE(suite_rules) {
         bool store = settings.enable_regex;
 
+        /*
+         * Test fnmatch
+         */
         settings.enable_regex = false;
         RUN_TEST(test_pattern_match);
 
+        /*
+         * Test Posix regex
+         */
         settings.enable_regex = true;
         RUN_TEST(test_pattern_match);
 
         settings.enable_regex = store;
+
+        /*
+         * Test PCRE regex
+         */
+        store = settings.enable_pcre;
+
+        settings.enable_pcre = true;
+        RUN_TEST(test_pattern_match);
+
+        settings.enable_pcre = store;
 }
