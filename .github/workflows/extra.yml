@@ -1,0 +1,83 @@
+name: extra
+on:
+  push:
+    branches:
+      - master
+  issue_comment:
+    types: [created]
+
+jobs:
+  check-extra:
+    runs-on: ubuntu-latest
+    if: >-
+      github.event_name == 'issue_comment' &&
+      github.event.issue.pull_request &&
+      contains(github.event.comment.body, '/extra-ci') &&
+      (github.event.comment.author_association == 'OWNER' || github.event.comment.author_association == 'MEMBER' || github.event.comment.author_association == 'COLLABORATOR')
+
+    steps:
+      - name: React to comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              content: 'eyes'
+            });
+
+  build-freebsd:
+    runs-on: ubuntu-latest
+
+    if: >-
+      github.event_name == 'push' ||
+      (
+        github.event_name == 'issue_comment' &&
+        github.event.issue.pull_request &&
+        contains(github.event.comment.body, '/extra-ci') &&
+        (github.event.comment.author_association == 'OWNER' || github.event.comment.author_association == 'MEMBER' || github.event.comment.author_association == 'COLLABORATOR')
+      )
+
+    env:
+      CC: gcc
+      EXTRA_CFLAGS: "-Werror"
+      MAKE: gmake
+      INSTALL: ginstall
+      FIND: gfind
+      SED: gsed
+      AWK: gawk
+      RMDIR: grmdir
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'issue_comment' && format('refs/pull/{0}/head', github.event.issue.number) || '' }}
+
+      - name: Test in FreeBSD
+        uses: vmactions/freebsd-vm@v1
+        with:
+          envs: "CC EXTRA_CFLAGS MAKE INSTALL FIND SED AWK RMDIR"
+          usesh: true
+          sync: rsync
+          copyback: false
+
+          prepare: |
+            pkg install -y x11-toolkits/pango devel/glib20 graphics/gdk-pixbuf2 graphics/cairo graphics/wayland \
+              devel/libnotify devel/dbus x11/libXScrnSaver x11/libXrandr x11/libXext x11/libX11 perl5 \
+              devel/pkgconf devel/evdev-proto valgrind x11/libXinerama graphics/wayland-protocols x11-fonts/dejavu \
+              devel/gettext-runtime gsed gawk gcc git librsvg2 bash findutils coreutils gmake
+
+          run: |
+            git config --global --add safe.directory '*'
+            git describe --tags
+
+            echo "* Run test suite"
+            gmake -j test
+
+            echo "* Run install test"
+            ./test/test-install.sh
+
+            echo "* Run valgrind test"
+            gmake -j test-valgrind

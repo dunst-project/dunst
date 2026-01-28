@@ -3,6 +3,9 @@
 # Throw error any time a command fails
 set -euo pipefail
 
+MAKE=${MAKE:-make}
+FIND=${FIND:-find}
+
 # Export parameters so they are useable by subshells and make
 export BASE="$(dirname "$(dirname "$(readlink -f "$0")")")"
 export DESTDIR="${BASE}/install"
@@ -14,12 +17,12 @@ export SERVICEDIR_SYSTEMD="/systemd"
 export SERVICEDIR_DBUS="/dbus"
 
 do_make() {  # for convenience/conciseness
-        make -C "${BASE}" "$@"
+        ${MAKE} -C "${BASE}" "$@"
 }
 
 check_dest() {
         # Check file list given on stdin and see if all are actually present
-        diff -u <(find "${DESTDIR}" -type f -printf "%P\n" | sort) <(sort -)
+        diff -u <($FIND "${DESTDIR}" -type f -printf "%P\n" | sort) <(sort -)
 }
 
 do_make install
@@ -56,8 +59,8 @@ EOF
 do_make uninstall-purge
 
 # Expect empty
-if ! [ -z "$(find "${DESTDIR}" -type f)" ]; then
+if ! [ -z "$($FIND "${DESTDIR}" -type f)" ]; then
         echo "Uninstall failed, following files weren't removed"
-        find "${DESTDIR}" -type f
+        $FIND "${DESTDIR}" -type f
         exit 1
 fi
