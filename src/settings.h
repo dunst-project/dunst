@@ -1,4 +1,13 @@
-/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
+/* SPDX-License-Identifier: BSD-3-Clause */
+/**
+ * @file
+ * @ingroup config
+ * @brief Type definitions for settings
+ * @copyright Copyright 2013-2014 Sascha Kruse
+ * @copyright Copyright 2014-2026 Dunst contributors
+ * @license BSD-3-Clause
+ */
+
 #ifndef DUNST_SETTINGS_H
 #define DUNST_SETTINGS_H
 
@@ -12,7 +21,9 @@
 #include "x11/x.h"
 #endif
 
-// Note: Wayland doesn't support hotkeys
+/**
+ * @warning Wayland doesn't support hotkeys
+ */
 struct keyboard_shortcut {
         char *str;
 #ifdef ENABLE_X11
@@ -174,7 +185,8 @@ struct settings {
         enum origin_values origin;
         struct length width;
         struct length height;
-        struct position offset; // NOTE: we rely on the fact that lenght and position are similar
+        /** @note We rely on the fact that lenght and position have the same layout */
+        struct position offset;
         int notification_limit;
         int gap_size;
         int default_pause_level;

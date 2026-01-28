@@ -1,7 +1,9 @@
-/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
-
-/** @file src/settings.c
- * @brief Take care of the settings.
+/* SPDX-License-Identifier: BSD-3-Clause */
+/**
+ * @file
+ * @copyright Copyright 2013-2014 Sascha Kruse
+ * @copyright Copyright 2014-2026 Dunst contributors
+ * @license BSD-3-Clause
  */
 
 #include "settings.h"
@@ -15,16 +17,11 @@
 
 #include "dunst.h"
 #include "log.h"
-#include "notification.h"
 #include "option_parser.h"
-#include "ini.h"
-#include "rules.h"
 #include "utils.h"
-#include "output.h"
 
 #ifndef SYSCONFDIR
-/** @brief Fallback for doxygen, mostly.
- *
+/**
  * Since this gets defined by $DEFAULT_CPPFLAGS at compile time doxygen seems to
  * miss the correct value.
  */
@@ -34,14 +31,14 @@
 struct settings settings;
 bool print_notifications = false;
 
-/** @brief Filter for scandir().
- *
- * @returns @brief An integer indicating success
- *
- * @retval @brief 1 if file name matches *.conf
- * @retval @brief 0 otherwise
+/**
+ * Filter for scandir().
  *
  * @param dent [in] @brief directory entry
+ *
+ * @return An integer indicating success
+ * @retval @brief 1 if file name matches *.conf
+ * @retval @brief 0 otherwise
  */
 static int is_drop_in(const struct dirent *dent) {
         return 0 == fnmatch("*.conf", dent->d_name, FNM_PATHNAME | FNM_PERIOD)
@@ -49,10 +46,10 @@ static int is_drop_in(const struct dirent *dent) {
                     : 0;
 }
 
-/** @brief Get all relevant config base directories
- *
- * Returns an array of all XDG config base directories, @e most @e important @e
- * first.
+/**
+ * Get all relevant config base directories.
+ * Returns an array of all XDG config base directories,
+ * @e most @e important @e first.
  *
  * @returns A %NULL-terminated array of gchar* strings representing the paths
  * of all XDG base directories in @e descending order of importance.
@@ -64,7 +61,8 @@ static GPtrArray *get_xdg_conf_basedirs(void) {
         GPtrArray *arr = g_ptr_array_new_full(4, g_free);
         g_ptr_array_add(arr, g_build_filename(g_get_user_config_dir(), "dunst", NULL));
 
-        /*
+        /**
+         * @note
          * A default of SYSCONFDIR is set to separate installs to a
          * local PREFIX. With this default /usr/local/etc/xdg is set a
          * system-wide config location and not /etc/xdg. Users/admins

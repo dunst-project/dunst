@@ -9,6 +9,9 @@
 #include "dunst.h"
 
 /**
+ * @defgroup config Settings and options
+ * Parsing and validation of configuration options.
+ *
  * @defgroup utils Utilities
  * String helpers, logging, and memory management.
  *

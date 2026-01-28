@@ -1,4 +1,13 @@
-/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
+/* SPDX-License-Identifier: BSD-3-Clause */
+/**
+ * @file
+ * @ingroup config
+ * @brief Parser for settings and cmdline arguments
+ * @copyright Copyright 2013-2014 Sascha Kruse
+ * @copyright Copyright 2014-2026 Dunst contributors
+ * @license BSD-3-Clause
+ */
+
 #ifndef DUNST_OPTION_PARSER_H
 #define DUNST_OPTION_PARSER_H
 
