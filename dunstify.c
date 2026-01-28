@@ -1,3 +1,12 @@
+/* SPDX-License-Identifier: BSD-3-Clause */
+/**
+ * @file
+ * @brief Alternative to notify-send tailored for Dunst
+ * @copyright Copyright 2013-2014 Sascha Kruse
+ * @copyright Copyright 2014-2026 Dunst contributors
+ * @license BSD-3-Clause
+ */
+
 #include <glib.h>
 #include <libnotify/notify.h>
 #include <locale.h>
