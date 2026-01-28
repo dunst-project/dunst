@@ -293,9 +293,16 @@ void load_settings(char **const paths)
 
 void settings_free(struct settings *s)
 {
-        gradient_release(s->colors_low.highlight);
-        gradient_release(s->colors_norm.highlight);
-        gradient_release(s->colors_crit.highlight);
+        struct notification_colors *nc[] = { &s->colors_low, &s->colors_norm, &s->colors_crit };
+        for (int i = 0; i < 3; i++) {
+                gradient_release(nc[i]->fg);
+                gradient_release(nc[i]->bg);
+                gradient_release(nc[i]->frame);
+                gradient_release(nc[i]->highlight);
+        }
+
+        gradient_release(s->frame_color);
+        gradient_release(s->sep_color.gradient);
 
         g_free(s->font);
         g_free(s->format);

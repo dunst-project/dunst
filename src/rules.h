@@ -48,10 +48,10 @@ struct rule {
         int override_pause_level;
         char *new_icon;
         char *default_icon;
-        struct color fg;
-        struct color bg;
+        struct gradient *fg;
+        struct gradient *bg;
         struct gradient *highlight;
-        struct color fc;
+        struct gradient *fc;
         char *set_category;
         char *format;
         char *script;

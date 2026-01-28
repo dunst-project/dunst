@@ -35,13 +35,17 @@ static void notification_format_message(struct notification *n);
 const char *enum_to_string_fullscreen(enum behavior_fullscreen in)
 {
         switch (in) {
-        case FS_SHOW: return "show";
-        case FS_DELAY: return "delay";
-        case FS_PUSHBACK: return "pushback";
-        case FS_NULL: return "(null)";
-        default:
-                LOG_E("Invalid %s enum value in %s:%d", "fullscreen", __FILE__, __LINE__);
-                break;
+                case FS_SHOW:
+                        return "show";
+                case FS_DELAY:
+                        return "delay";
+                case FS_PUSHBACK:
+                        return "pushback";
+                case FS_NULL:
+                        return "(null)";
+                default:
+                        LOG_E("Invalid %s enum value in %s:%d", "fullscreen", __FILE__, __LINE__);
+                        return "";
         }
 }
 
@@ -69,12 +73,20 @@ void notification_print(const struct notification *n)
         printf("\turgency: %s\n", notification_urgency_to_string(n->urgency));
         printf("\ttransient: %d\n", n->transient);
         printf("\tformatted: '%s'\n", STR_NN(n->msg));
-        char buf[10];
-        printf("\tfg: %s\n", STR_NN(color_to_string(n->colors.fg, buf)));
-        printf("\tbg: %s\n", STR_NN(color_to_string(n->colors.bg, buf)));
-        printf("\tframe: %s\n", STR_NN(color_to_string(n->colors.frame, buf)));
 
-        char *grad = gradient_to_string(n->colors.highlight);
+        char *grad = gradient_to_string(n->colors.fg);
+        printf("\tfg: %s\n", STR_NN(grad));
+        g_free(grad);
+
+        grad = gradient_to_string(n->colors.bg);
+        printf("\tbg: %s\n", STR_NN(grad));
+        g_free(grad);
+
+        grad = gradient_to_string(n->colors.frame);
+        printf("\tframe: %s\n", STR_NN(grad));
+        g_free(grad);
+
+        grad = gradient_to_string(n->colors.highlight);
         printf("\thighlight: %s\n", STR_NN(grad));
         g_free(grad);
 
@@ -328,6 +340,9 @@ void notification_unref(struct notification *n)
 
         notification_private_free(n->priv);
 
+        gradient_release(n->colors.fg);
+        gradient_release(n->colors.bg);
+        gradient_release(n->colors.frame);
         gradient_release(n->colors.highlight);
 
         g_free(n->format);
@@ -473,10 +488,9 @@ struct notification *notification_create(void)
         n->max_icon_size = 32;
         n->receiving_raw_icon = false;
 
-        struct color invalid = COLOR_UNINIT;
-        n->colors.fg = invalid;
-        n->colors.bg = invalid;
-        n->colors.frame = invalid;
+        n->colors.fg = NULL;
+        n->colors.bg = NULL;
+        n->colors.frame = NULL;
         n->colors.highlight = NULL;
 
         n->script_run = false;
@@ -527,9 +541,20 @@ void notification_init(struct notification *n)
                 default:
                         g_error("Unhandled urgency type: %d", n->urgency);
         }
-        if (!COLOR_VALID(n->colors.fg)) n->colors.fg = defcolors.fg;
-        if (!COLOR_VALID(n->colors.bg)) n->colors.bg = defcolors.bg;
-        if (!COLOR_VALID(n->colors.frame)) n->colors.frame = defcolors.frame;
+        if (!GRADIENT_VALID(n->colors.fg)) {
+                gradient_release(n->colors.fg);
+                n->colors.fg = gradient_acquire(defcolors.fg);
+        }
+
+        if (!GRADIENT_VALID(n->colors.bg)) {
+                gradient_release(n->colors.bg);
+                n->colors.bg = gradient_acquire(defcolors.bg);
+        }
+
+        if (!GRADIENT_VALID(n->colors.frame)) {
+                gradient_release(n->colors.frame);
+                n->colors.frame = gradient_acquire(defcolors.frame);
+        }
 
         if (!GRADIENT_VALID(n->colors.highlight)) {
                 gradient_release(n->colors.highlight);

@@ -52,24 +52,33 @@ void rule_apply(struct rule *r, struct notification *n, bool save)
         RULE_APPLY(icon_position, -1);
         RULE_APPLY(override_pause_level, -1);
 
-        if (COLOR_VALID(r->fg)) {
-                if (save && !COLOR_VALID(n->original->fg)) n->original->fg = n->colors.fg;
-                n->colors.fg = r->fg;
+        if (GRADIENT_VALID(r->fg)) {
+                if (save && !GRADIENT_VALID(n->original->fg)) {
+                        n->original->fg = gradient_acquire(n->colors.fg);
+                }
+                gradient_release(n->colors.fg);
+                n->colors.fg = gradient_acquire(r->fg);
         }
-        if (COLOR_VALID(r->bg)) {
-                if (save && !COLOR_VALID(n->original->bg)) n->original->bg = n->colors.bg;
-                n->colors.bg = r->bg;
+        if (GRADIENT_VALID(r->bg)) {
+                if (save && !GRADIENT_VALID(n->original->bg)) {
+                        n->original->bg = gradient_acquire(n->colors.bg);
+                }
+                gradient_release(n->colors.bg);
+                n->colors.bg = gradient_acquire(r->bg);
         }
-        if (r->highlight != NULL) {
-                if (save && n->original->highlight == NULL) {
+        if (GRADIENT_VALID(r->highlight)) {
+                if (save && !GRADIENT_VALID(n->original->highlight)) {
                         n->original->highlight = gradient_acquire(n->colors.highlight);
                 }
                 gradient_release(n->colors.highlight);
                 n->colors.highlight = gradient_acquire(r->highlight);
         }
-        if (COLOR_VALID(r->fc)) {
-                if (save && !COLOR_VALID(n->original->fc)) n->original->fc = n->colors.frame;
-                n->colors.frame = r->fc;
+        if (GRADIENT_VALID(r->fc)) {
+                if (save && !GRADIENT_VALID(n->original->fc)) {
+                        n->original->fc = gradient_acquire(n->colors.frame);
+                }
+                gradient_release(n->colors.frame);
+                n->colors.frame = gradient_acquire(r->fc);
         }
         if (r->action_name) {
                 if (save && n->original->action_name == NULL)
@@ -173,12 +182,19 @@ void rule_print(const struct rule *r)
         if (r->new_icon != NULL) printf("\tnew_icon: '%s'\n", r->new_icon);
         if (r->default_icon != NULL) printf("\tdefault_icon: '%s'\n", r->default_icon);
 
-        char buf[10];
-        if (COLOR_VALID(r->fg)) printf("\tfg: %s\n", color_to_string(r->fg, buf));
-        if (COLOR_VALID(r->bg)) printf("\tbg: %s\n", color_to_string(r->bg, buf));
-        if (COLOR_VALID(r->fc)) printf("\tframe: %s\n", color_to_string(r->fc, buf));
+        char *grad = gradient_to_string(r->fg);
+        printf("\tfg: %s\n", STR_NN(grad));
+        g_free(grad);
 
-        char *grad = gradient_to_string(r->highlight);
+        grad = gradient_to_string(r->bg);
+        printf("\tbg: %s\n", STR_NN(grad));
+        g_free(grad);
+
+        grad = gradient_to_string(r->fc);
+        printf("\tframe: %s\n", STR_NN(grad));
+        g_free(grad);
+
+        grad = gradient_to_string(r->highlight);
         printf("\thighlight: %s\n", STR_NN(grad));
         g_free(grad);
 
@@ -260,7 +276,11 @@ void rule_free(struct rule *r)
         g_free(r->action_name);
         g_free(r->new_icon);
         g_free(r->default_icon);
+
+        gradient_release(r->fg);
+        gradient_release(r->bg);
         gradient_release(r->highlight);
+        gradient_release(r->fc);
 
         g_free(r->set_category);
         g_free(r->format);
