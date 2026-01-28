@@ -136,7 +136,7 @@ struct notification {
  * The reference counter is set to 1.
  *
  * This function is guaranteed to return a valid pointer.
- * @returns The generated notification
+ * @return The generated notification
  */
 struct notification *notification_create(void);
 
@@ -185,7 +185,7 @@ struct notification *notification_lock(struct notification *n);
 struct notification *notification_unlock(struct notification *n);
 
 /**
- * Transfer the image surface of \p from to \p to. The image surface is
+ * Transfer the image surface of @p from to @p to. The image surface is
  * transfered only if the icon names match. When the icon is transferred, it is
  * removed from the old notification to make sure it's not freed twice.
  *

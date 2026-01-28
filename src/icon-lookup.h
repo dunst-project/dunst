@@ -57,7 +57,7 @@ void add_default_theme(int theme_index);
 
 /**
  * Find icon of specified size in selected theme. This function will not return
- * icons that cannot be scaled to \p size according to index.theme.
+ * icons that cannot be scaled to @p size according to index.theme.
  *
  * @param name         Name of the icon or full path to it.
  * @param theme_index  Index of the theme to use.
@@ -71,7 +71,7 @@ void set_default_theme(int theme_index);
 
 /**
  * Find icon of specified size in the default theme or an inherited theme. This
- * function will not return icons that cannot be scaled to \p size according to
+ * function will not return icons that cannot be scaled to @p size according to
  * index.theme.
 
  *

@@ -240,10 +240,11 @@ void dispatch_menu_result(const char *input)
         g_free(in);
 }
 
-/** Call dmenu with the specified input. Blocks until dmenu is finished.
+/**
+ * Call dmenu with the specified input. Blocks until dmenu is finished.
  *
  * @param dmenu_input The input string to feed into dmenu
- * @returns the selected string from dmenu
+ * @return the selected string from dmenu
  */
 char *invoke_dmenu(const char *dmenu_input)
 {

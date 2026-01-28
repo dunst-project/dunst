@@ -2,7 +2,7 @@
 /**
  * @file
  * @ingroup graphics
- * @brief Notification image loading
+ * @brief Notification images loading
  * @copyright Copyright 2018-2026 Dunst contributors
  * @license BSD-3-Clause
  */

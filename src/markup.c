@@ -241,11 +241,11 @@ char *markup_strip(char *str)
 }
 
 /**
- * Determine if an & character pointed to by \p str is a markup & entity or
+ * Determine if an & character pointed to by @p str is a markup & entity or
  * part of the text
  *
- * @retval true: \p str is an entity
- * @retval false: It's no valid entity
+ * @retval true if @p str is an entity
+ * @retval false otherwise
  */
 static bool markup_is_entity(const char *str)
 {

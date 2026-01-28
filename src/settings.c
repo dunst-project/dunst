@@ -34,11 +34,11 @@ bool print_notifications = false;
 /**
  * Filter for scandir().
  *
- * @param dent [in] @brief directory entry
+ * @param dent [in] directory entry
  *
  * @return An integer indicating success
- * @retval @brief 1 if file name matches *.conf
- * @retval @brief 0 otherwise
+ * @retval 1 if file name matches *.conf
+ * @retval 0 otherwise
  */
 static int is_drop_in(const struct dirent *dent) {
         return 0 == fnmatch("*.conf", dent->d_name, FNM_PATHNAME | FNM_PERIOD)
@@ -51,7 +51,7 @@ static int is_drop_in(const struct dirent *dent) {
  * Returns an array of all XDG config base directories,
  * @e most @e important @e first.
  *
- * @returns A %NULL-terminated array of gchar* strings representing the paths
+ * @return A %NULL-terminated array of gchar* strings representing the paths
  * of all XDG base directories in @e descending order of importance.
  *
  * The result @e must @e not be freed! The array is cached in a static variable,
@@ -102,7 +102,8 @@ static void config_files_add_drop_ins(GPtrArray *config_files, const char *path)
         g_free(drop_ins);
 }
 
-/** @brief Find all config files.
+/**
+ * Find all config files.
  *
  * Searches the default config locations most important config file and it's
  * drop-ins and puts their locations in a GPtrArray, @e most important last.
