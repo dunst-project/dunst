@@ -53,7 +53,8 @@ $(error You have to compile at least one output (X11, Wayland))
 endif
 endif
 
-OBJ := ${SRC:.c=.o}
+DUNST_OBJ := ${SRC:.c=.o}
+COMMON_OBJ := $(filter-out src/main.o,${DUNST_OBJ})
 TEST_SRC := $(sort $(shell ${FIND} test/ -name '*.c'))
 TEST_OBJ := $(TEST_SRC:.c=.o)
 DEPS := ${SRC:.c=.d} ${TEST_SRC:.c=.d}
@@ -69,7 +70,7 @@ debug: all
 
 -include $(DEPS)
 
-${OBJ} ${TEST_OBJ}: Makefile config.mk
+${DUNST_OBJ} ${TEST_OBJ}: Makefile config.mk
 
 DATE_FMT = +%Y-%m-%d
 ifdef SOURCE_DATE_EPOCH
@@ -84,8 +85,8 @@ src/dunst.o: src/dunst.c
 %.o: %.c
 	${CC} -o $@ -c $< ${CPPFLAGS} ${CFLAGS}
 
-dunst: ${OBJ} main.o
-	${CC} -o ${@} ${OBJ} main.o ${CFLAGS} ${LDFLAGS}
+dunst: ${DUNST_OBJ}
+	${CC} -o ${@} ${DUNST_OBJ} ${CFLAGS} ${LDFLAGS}
 
 ifneq (0,${DUNSTIFY})
 all: dunstify
@@ -124,8 +125,8 @@ test-coverage-report: test-coverage
 test/%.o: test/%.c src/%.c
 	${CC} -o $@ -c $< ${CFLAGS} ${CPPFLAGS}
 
-test/test: ${OBJ} ${TEST_OBJ}
-	${CC} -o ${@} ${TEST_OBJ} $(filter-out ${TEST_OBJ:test/%=src/%},${OBJ}) ${CFLAGS} ${LDFLAGS}
+test/test: ${COMMON_OBJ} ${TEST_OBJ}
+	${CC} -o ${@} ${TEST_OBJ} $(filter-out ${TEST_OBJ:test/%=src/%},${COMMON_OBJ}) ${CFLAGS} ${LDFLAGS}
 
 functional-tests: dunst dunstify
 	PREFIX=. ./test/functional-tests/test.sh
@@ -189,7 +190,7 @@ endif
 clean: clean-dunst clean-dunstify clean-doc clean-tests clean-coverage clean-coverage-run
 
 clean-dunst:
-	rm -f dunst ${OBJ} main.o main.d ${DEPS}
+	rm -f dunst ${DUNST_OBJ} ${DEPS}
 	rm -f org.knopwob.dunst.service
 	rm -f dunst.systemd.service
 

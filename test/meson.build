@@ -23,7 +23,8 @@ test_src_files = [
 
 fs = import('fs')
 foreach dunst_src_file : dunst_src_files
-    if fs.name(dunst_src_file) not in test_src_files
+    name = fs.name(dunst_src_file)
+    if name not in test_src_files and name != 'main.c'
         test_src_files += dunst_src_file
     endif
 endforeach

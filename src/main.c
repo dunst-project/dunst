@@ -1,4 +1,4 @@
-#include "src/dunst.h"
+#include "dunst.h"
 
 int main(int argc, char *argv[])
 {

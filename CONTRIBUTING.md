@@ -138,3 +138,8 @@ For logging, there are printf-like macros `LOG_(E|C|W|M|I|D)`.
         - Mostly unneccessary info, but important to debug (as the user) some use cases.
 - `LOG_D` (DEBUG):
         - Only important during development or tracing some bugs (as the developer).
+
+## Updating the build system
+
+If you need to change the build system, for example add another dependency,
+remember to modify both the Makefile and meson.build file!
