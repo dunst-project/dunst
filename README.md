@@ -1,6 +1,4 @@
-[![main](https://github.com/dunst-project/dunst/workflows/main/badge.svg)](https://github.com/dunst-project/dunst/actions?query=workflow%3Amain) \
-[![extra](https://github.com/dunst-project/dunst/workflows/extra/badge.svg)](https://github.com/dunst-project/dunst/actions?query=workflow%3Aextra) \
-[![codecov](https://codecov.io/gh/dunst-project/dunst/branch/master/graph/badge.svg)](https://codecov.io/gh/dunst-project/dunst)
+[![main](https://github.com/dunst-project/dunst/workflows/main/badge.svg)](https://github.com/dunst-project/dunst/actions?query=workflow%3Amain) [![extra](https://github.com/dunst-project/dunst/workflows/extra/badge.svg)](https://github.com/dunst-project/dunst/actions?query=workflow%3Aextra) [![codecov](https://codecov.io/gh/dunst-project/dunst/branch/master/graph/badge.svg)](https://codecov.io/gh/dunst-project/dunst)
 
 # Dunst
 
