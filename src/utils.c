@@ -1,5 +1,10 @@
-/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
-#include "utils.h"
+/* SPDX-License-Identifier: BSD-3-Clause */
+/**
+ * @file
+ * @copyright Copyright 2013-2014 Sascha Kruse
+ * @copyright Copyright 2014-2026 Dunst contributors
+ * @license BSD-3-Clause
+ */
 
 #include <assert.h>
 #include <ctype.h>
@@ -15,10 +20,10 @@
 #include <unistd.h>
 #include <wordexp.h>
 
+#include "utils.h"
 #include "log.h"
 #include "settings_data.h"
 
-/* see utils.h */
 char *string_replace_char(char needle, char replacement, char *haystack)
 {
         ASSERT_OR_RET(haystack, NULL);
@@ -29,7 +34,6 @@ char *string_replace_char(char needle, char replacement, char *haystack)
         return haystack;
 }
 
-/* see utils.h */
 char *string_replace_at(char *buf, int pos, int len, const char *repl)
 {
         assert(buf);
@@ -59,7 +63,6 @@ char *string_replace_at(char *buf, int pos, int len, const char *repl)
         return tmp;
 }
 
-/* see utils.h */
 char *string_replace_all(const char *needle, const char *replacement, char *haystack)
 {
         ASSERT_OR_RET(haystack, NULL);
@@ -86,7 +89,6 @@ char *string_replace_all(const char *needle, const char *replacement, char *hays
         return haystack;
 }
 
-/* see utils.h */
 char *string_append(char *a, const char *b, const char *sep)
 {
         if (STR_EMPTY(a)) {
@@ -106,7 +108,6 @@ char *string_append(char *a, const char *b, const char *sep)
         return new;
 }
 
-/* see utils.h */
 char *string_strip_quotes(const char *value)
 {
         ASSERT_OR_RET(value, NULL);
@@ -122,7 +123,6 @@ char *string_strip_quotes(const char *value)
         return s;
 }
 
-/* see utils.h */
 void string_strip_delimited(char *str, char a, char b)
 {
         assert(str);
@@ -151,7 +151,6 @@ void string_strip_delimited(char *str, char a, char b)
         str[iwrite] = 0;
 }
 
-/* see utils.h */
 char **string_to_array(const char *string, const char *delimiter)
 {
         char **arr = NULL;
@@ -164,7 +163,6 @@ char **string_to_array(const char *string, const char *delimiter)
         return arr;
 }
 
-/* see utils.h */
 int string_array_length(char **s)
 {
         if (!s)
@@ -177,7 +175,6 @@ int string_array_length(char **s)
         return len;
 }
 
-/* see utils.h */
 char *string_to_path(char *string)
 {
         ASSERT_OR_RET(string, string);
@@ -210,7 +207,6 @@ char *string_to_path(char *string)
         return res;
 }
 
-/* see utils.h */
 bool safe_string_to_long_long(long long *in, const char *str) {
         errno = 0;
         char *endptr;
@@ -230,7 +226,6 @@ bool safe_string_to_long_long(long long *in, const char *str) {
         return true;
 }
 
-/* see utils.h */
 bool safe_string_to_int(int *in, const char *str) {
         long long l;
         if (!safe_string_to_long_long(&l, str))
@@ -247,7 +242,6 @@ bool safe_string_to_int(int *in, const char *str) {
         return true;
 }
 
-/* see utils.h */
 bool safe_string_to_double(double *in, const char *str) {
         errno = 0;
         char *endptr;
@@ -266,7 +260,6 @@ bool safe_string_to_double(double *in, const char *str) {
         return true;
 }
 
-/* see utils.h */
 gint64 string_to_time(const char *string)
 {
         assert(string);
@@ -319,15 +312,16 @@ gint64 string_to_time(const char *string)
         }
 }
 
-/* see utils.h */
 gint64 time_monotonic_now(void)
 {
         struct timespec tv_now;
 
-        /* On Linux, BOOTTIME is the correct monotonic time,
+        /**
+         * @note On Linux, BOOTTIME is the correct monotonic time,
          * as BOOTTIME counts onwards during sleep. For all other
          * POSIX compliant OSes, MONOTONIC should also count onwards
-         * during system sleep. */
+         * during system sleep.
+         */
 #ifdef __linux__
         clock_gettime(CLOCK_BOOTTIME, &tv_now);
 #else
@@ -353,7 +347,6 @@ gint64 modification_time(const char *path)
         return S2US(statbuf.st_mtim.tv_sec) + statbuf.st_mtim.tv_nsec / 1000;
 }
 
-/* see utils.h */
 const char *user_get_home(void)
 {
         static const char *home_directory = NULL;
@@ -369,7 +362,6 @@ const char *user_get_home(void)
         return home_directory;
 }
 
-/* see utils.h */
 bool safe_setenv(const char* key, const char* value){
         if (!key)
                 return false;
@@ -403,7 +395,6 @@ static const char* deprecated_sections_message[] = {
         "Settings in the shortcuts sections have been moved to the global section.\nAlternatively you can bind shortcuts in your window manager to dunstctl commands. For that, see the manual for dunstctl.", // shortcuts
 };
 
-/* see utils.h */
 bool is_special_section(const char* s) {
         for (size_t i = 0; i < G_N_ELEMENTS(special_sections); i++) {
                 if (STR_EQ(special_sections[i], s)) {
@@ -413,7 +404,6 @@ bool is_special_section(const char* s) {
         return false;
 }
 
-/* see utils.h */
 bool is_deprecated_section(const char* s) {
         for (size_t i = 0; i < G_N_ELEMENTS(deprecated_sections); i++) {
                 if (STR_EQ(deprecated_sections[i], s)) {
@@ -432,7 +422,6 @@ const char *get_section_deprecation_message(const char *s) {
         return "";
 }
 
-/* see utils.h */
 char *string_strip_brackets(const char* s) {
         if (!s)
                 return NULL;
@@ -445,7 +434,6 @@ char *string_strip_brackets(const char* s) {
 
 }
 
-/* see utils.h */
 bool is_readable_file(const char * const path)
 {
         struct stat statbuf;
@@ -467,7 +455,6 @@ bool is_readable_file(const char * const path)
         return result;
 }
 
-/* see utils.h */
 FILE *fopen_verbose(const char * const path)
 {
         FILE *f = NULL;
@@ -482,7 +469,6 @@ FILE *fopen_verbose(const char * const path)
         return f;
 }
 
-/* see utils.h */
 void add_paths_from_env(GPtrArray *arr, char *env_name, char *subdir, char *alternative) {
         const char *xdg_data_dirs = g_getenv(env_name);
         if (!xdg_data_dirs)

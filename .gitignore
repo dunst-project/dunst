@@ -1,4 +1,5 @@
 *.swp
+*.old
 *.o
 *.d
 *.gcda

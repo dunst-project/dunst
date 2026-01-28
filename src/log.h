@@ -1,4 +1,12 @@
-/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
+/* SPDX-License-Identifier: BSD-3-Clause */
+/**
+ * @file
+ * @ingroup utils
+ * @brief Logging subsystem and helpers.
+ * @copyright Copyright 2013-2014 Sascha Kruse
+ * @copyright Copyright 2014-2026 Dunst contributors
+ * @license BSD-3-Clause
+ */
 
 #include <errno.h>
 #include <glib.h>
@@ -42,7 +50,7 @@
 
 #define DIE(...) do { LOG_C(__VA_ARGS__); exit(EXIT_FAILURE); } while (0)
 
-// unified fopen() result messages
+// Unified fopen() result messages
 #define MSG_FOPEN_SUCCESS(path, fp) "Opened '%s' (fd: '%d')", path, fileno(fp)
 #define MSG_FOPEN_FAILURE(path) "Cannot open '%s': %s", path, strerror(errno)
 
