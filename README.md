@@ -1,4 +1,11 @@
-[![main](https://github.com/dunst-project/dunst/workflows/main/badge.svg)](https://github.com/dunst-project/dunst/actions?query=workflow%3Amain) [![extra](https://github.com/dunst-project/dunst/workflows/extra/badge.svg)](https://github.com/dunst-project/dunst/actions?query=workflow%3Aextra) [![codecov](https://codecov.io/gh/dunst-project/dunst/branch/master/graph/badge.svg)](https://codecov.io/gh/dunst-project/dunst)
+[![main][main-badge]][main-link] [![extra][extra-badge]][extra-link] [![codecov][codecov-badge]][codecov-link]
+
+[main-badge]: https://github.com/dunst-project/dunst/actions/workflows/main.yml/badge.svg?branch=master
+[main-link]: https://github.com/dunst-project/dunst/actions?query=workflow%3Amain
+[extra-badge]: https://github.com/dunst-project/dunst/actions/workflows/extra.yml/badge.svg?event=push&branch=master
+[extra-link]: https://github.com/dunst-project/dunst/actions?query=workflow%3Aextra
+[codecov-badge]: https://codecov.io/gh/dunst-project/dunst/branch/master/graph/badge.svg
+[codecov-link]: https://codecov.io/gh/dunst-project/dunst
 
 # Dunst
 
