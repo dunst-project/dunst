@@ -175,7 +175,7 @@ you do want it removed as well.
 ## Contributing
 
 Contributions are very welcome. Before contributing, make sure to look at the
-contribution documentation in [HACKING.md](./HACKING.md).
+contribution documentation in [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 Make sure you test your code and where possible add automated tests. These
 tests are also checked on memory leaks (with `make test-valgrind`).

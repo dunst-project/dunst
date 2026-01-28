@@ -75,3 +75,5 @@ custom_target(
     install: true,
     install_dir: man1,
 )
+
+# TODO: Add doxygen
