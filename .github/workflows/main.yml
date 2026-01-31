@@ -73,6 +73,8 @@ jobs:
     env:
       CC: gcc
 
+    if: github.repository == 'dunst-project/dunst'
+
     steps:
       - uses: actions/checkout@v4
         with:

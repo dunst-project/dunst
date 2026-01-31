@@ -180,14 +180,6 @@ contribution documentation in [HACKING.md](./HACKING.md).
 Make sure you test your code and where possible add automated tests. These
 tests are also checked on memory leaks (with `make test-valgrind`).
 
-## Troubleshooting
-
-### Cannot set settings via command line
-
-This functionality was removed during the refactor. It might be re-added later
-in some form. See [#940](https://github.com/dunst-project/dunst/issues/940) for
-details.
-
 ## Bug reports
 
 Please use the [issue tracker][issue-tracker] provided by GitHub to send us bug reports or feature requests.
@@ -206,7 +198,7 @@ Please use the [issue tracker][issue-tracker] provided by GitHub to send us bug 
 
 - [Friso Smit](https://github.com/fwsmit) <fw.smit01@gmail.com>
 - [Bjoern Hiller](https://github.com/zappolowski) <bjoern.hiller@gmail.com>
-- [Federico Angelilli](https://github.com/fedang) <fedeangemail@gmail.com>
+- [Federico Angelilli](https://github.com/fedang) <code@fedang.net>
 
 Please only refer to active maintainers for issues and bugs.
 
