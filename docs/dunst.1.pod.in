@@ -57,39 +57,6 @@ Display a notification on startup.
 
 =back
 
-=head2 DEPRECATED OPTIONS
-
-Old version of dunst allowed changing the colors of different urgencies through
-command line options. This has been long removed in favour of RULES, see issue #328.
-
-=over 4
-
-=item B<-li/ni/ci icon>
-
-Set notification icon.
-
-=item B<-lf/nf/cf color>
-
-Set notification foreground color.
-
-=item B<-lb/nb/cb color>
-
-Set notification background color.
-
-=item B<-lh/nh/ch color>
-
-Set notification highlight color.
-
-=item B<-lfr/nfr/cfr color>
-
-Set notification frame color.
-
-=item B<-lto/nto/cto secs>
-
-Set notification timeout time.
-
-=back
-
 =head1 CONFIGURATION
 
 A default configuration file is included (usually @sysconfdir@/dunst/dunstrc)
