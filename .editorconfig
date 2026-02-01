@@ -41,9 +41,6 @@ indent_style = tab
 indent_size = 4
 
 # External code below
-[src/wayland/pool-buffer.*]
-indent_style = tab
-
 [src/wayland/libgwater-wayland.*]
 indent_size = 4
 
