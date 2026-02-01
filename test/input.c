@@ -96,7 +96,7 @@ TEST test_notification_at(void)
         for (GSList *iter = notifications; iter; iter = iter->next) {
                 n = iter->data;
                 n->displayed_height = display_height;
-                queues_notification_insert(n);
+                queues_notification_insert(n, STATUS_NORMAL);
         }
 
         queues_update(STATUS_NORMAL, time_monotonic_now());

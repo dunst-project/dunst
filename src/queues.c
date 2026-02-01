@@ -209,7 +209,6 @@ int queues_notification_insert(struct notification *n, struct dunst_status statu
                 LOG_M("Dropping notification: '%s' '%s'", STR_NN(n->body), STR_NN(n->summary));
         }
 
-
         return n->id;
 }
 
@@ -224,7 +223,7 @@ static bool queues_stack_duplicate(struct notification *new)
         gint64 modtime = -1;
 
         GQueue *allqueues[] = { displayed, waiting };
-        for (size_t i = 0; i < sizeof(allqueues)/sizeof(GQueue*); i++) {
+        for (size_t i = 0; i < G_N_ELEMENTS(allqueues); i++) {
                 for (GList *iter = g_queue_peek_head_link(allqueues[i]); iter; iter = iter->next) {
                         struct notification *old = iter->data;
                         if (notification_is_duplicate(old, new)) {
@@ -528,6 +527,7 @@ void queues_update(struct dunst_status status, gint64 time)
                 }
 
                 if (status.fullscreen && n->fullscreen == FS_DROP) {
+                        notification_run_script(n);
                         queues_notification_close(n, REASON_UNDEF);
                         iter = nextiter;
                         continue;
@@ -560,6 +560,15 @@ void queues_update(struct dunst_status status, gint64 time)
                 nextiter = iter->next;
 
                 ASSERT_OR_RET(n,);
+
+                if (status.fullscreen && n->fullscreen == FS_DROP) {
+                        n->start = time;
+                        notification_run_script(n);
+
+                        queues_notification_close(n, REASON_UNDEF);
+                        iter = nextiter;
+                        continue;
+                }
 
                 if (!queues_notification_is_ready(n, status, false)) {
                         iter = nextiter;
@@ -598,16 +607,19 @@ void queues_update(struct dunst_status status, gint64 time)
                                 i_waiting = i_waiting->prev;
                         }
 
-                        if (i_waiting && notification_cmp(i_displayed->data, i_waiting->data) > 0) {
-                                struct notification *todisp = i_waiting->data;
-
-                                todisp->start = time;
-                                notification_run_script(todisp);
-
-                                queues_swap_notifications(displayed, i_displayed, waiting, i_waiting);
-                        } else {
+                        if (!i_waiting || notification_cmp(i_displayed->data, i_waiting->data) <= 0)
                                 break;
+
+                        struct notification *todisp = i_waiting->data;
+                        todisp->start = time;
+                        notification_run_script(todisp);
+
+                        if (status.fullscreen && todisp->fullscreen == FS_DROP) {
+                                queues_notification_close(todisp, REASON_UNDEF);
+                                continue;
                         }
+
+                        queues_swap_notifications(displayed, i_displayed, waiting, i_waiting);
                 }
         }
         signal_length_propertieschanged();
