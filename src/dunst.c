@@ -251,6 +251,15 @@ void reload(char **const configs)
         unpause_signal(NULL);
 }
 
+// TODO: Rewrite the cmdline parsing completely
+// Also follow the linux convention in v2 for -s(hort) --long
+#define CMDLINE_VERSION "-v/-version/--version"
+#define CMDLINE_VERBOSITY "-verbosity/--verbosity"
+#define CMDLINE_CONFIG "-conf/-config/--config"
+#define CMDLINE_PRINT "-print/--print"
+#define CMDLINE_STARTNOTIF "-startup_notification/--startup_notification"
+#define CMDLINE_HELP "-h/-help/--help"
+
 int dunst_main(int argc, char *argv[])
 {
         dunst_status_int(S_PAUSE_LEVEL, 0);
@@ -262,18 +271,17 @@ int dunst_main(int argc, char *argv[])
 
         dunst_log_init(DUNST_LOG_AUTO);
 
-        if (cmdline_get_bool("-v/-version/--version", false, "Print version")) {
+        if (cmdline_get_bool(CMDLINE_VERSION, false, "Print version"))
                 print_version();
-        }
 
-        char *verbosity = cmdline_get_string("-verbosity", NULL, "Minimum level for message");
+        char *verbosity = cmdline_get_string(CMDLINE_VERBOSITY, NULL, "Minimum level for message");
         log_set_level_from_string(verbosity);
         g_free(verbosity);
 
-        cmdline_usage_append("-conf/-config", "string", "Path to configuration file");
+        cmdline_usage_append(CMDLINE_CONFIG, "string", "Path to configuration file");
 
         int start = 1, count = 1;
-        while (cmdline_get_string_offset("-conf/-config", NULL, start, &start))
+        while (cmdline_get_string_offset(CMDLINE_CONFIG, NULL, start, &start))
                 count++;
 
         // Leaves an extra space for the NULL
@@ -282,17 +290,16 @@ int dunst_main(int argc, char *argv[])
         char *path = NULL;
 
         do {
-                path = cmdline_get_string_offset("-conf/-config", NULL, start, &start);
+                path = cmdline_get_string_offset(CMDLINE_CONFIG, NULL, start, &start);
                 config_paths[count++] = path;
         } while (path != NULL);
 
-        print_notifications = cmdline_get_bool("-print/--print", false, "Print notifications to stdout");
+        print_notifications = cmdline_get_bool(CMDLINE_PRINT, false, "Print notifications to stdout");
 
-        bool startup_notification = cmdline_get_bool("-startup_notification/--startup_notification",
-                        false, "Display a notification on startup.");
+        bool startnotif = cmdline_get_bool(CMDLINE_STARTNOTIF, false, "Display a notification on startup.");
 
         /* Help should always be the last to set up as calls to cmdline_get_* (as a side effect) add entries to the usage list. */
-        if (cmdline_get_bool("-h/-help/--help", false, "Print help")) {
+        if (cmdline_get_bool(CMDLINE_HELP, false, "Print help")) {
                 usage(EXIT_SUCCESS);
         }
 
@@ -306,13 +313,12 @@ int dunst_main(int argc, char *argv[])
         guint pause_src = g_unix_signal_add(SIGUSR1, pause_signal, NULL);
         guint unpause_src = g_unix_signal_add(SIGUSR2, unpause_signal, NULL);
 
-        /* register SIGINT/SIGTERM handler for
-         * graceful termination */
+        // Register SIGINT/SIGTERM handler for graceful termination
         guint term_src = g_unix_signal_add(SIGTERM, quit_signal, NULL);
         guint int_src = g_unix_signal_add(SIGINT, quit_signal, NULL);
 
 
-        if (startup_notification) {
+        if (startnotif) {
                 struct notification *n = notification_create();
                 n->id = 0;
                 n->appname = g_strdup("dunst");
@@ -324,7 +330,7 @@ int dunst_main(int argc, char *argv[])
                 n->urgency = URG_LOW;
                 notification_init(n);
                 queues_notification_insert(n);
-                // we do not call wakeup now, wake_up does not work here yet
+                // We do not call wakeup now, wake_up does not work here yet
         }
 
         setup_done = true;
@@ -337,7 +343,7 @@ int dunst_main(int argc, char *argv[])
         g_main_loop_run(mainloop);
         g_clear_pointer(&mainloop, g_main_loop_unref);
 
-        /* remove signal handler watches */
+        // Remove signal handler watchers
         g_source_remove(pause_src);
         g_source_remove(unpause_src);
         g_source_remove(term_src);
