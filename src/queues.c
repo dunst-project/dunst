@@ -1,25 +1,17 @@
-/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
-
+/* SPDX-License-Identifier: BSD-3-Clause */
 /**
- * @file src/queues.c
- * @brief All important functions to handle the notification queues for
- * history, entrance and currently displayed ones.
- *
- * Every method requires to have executed queues_init() at the start.
- *
- * A read only representation of the queue with the current notifications
- * can get acquired by calling queues_get_displayed().
- *
- * When ending the program or resetting the queues, tear down the stack with
- * queues_teardown(). (And reinit with queues_init() if needed.)
+ * @file
+ * @copyright Copyright 2013-2014 Sascha Kruse
+ * @copyright Copyright 2014-2026 Dunst contributors
+ * @license BSD-3-Clause
  */
-#include "queues.h"
 
 #include <assert.h>
 #include <glib.h>
 #include <stdio.h>
 #include <string.h>
 
+#include "queues.h"
 #include "dunst.h"
 #include "log.h"
 #include "notification.h"
@@ -37,7 +29,6 @@ int next_notification_id = 1;
 static bool queues_stack_duplicate(struct notification *n);
 static bool queues_stack_by_tag(struct notification *n);
 
-/* see queues.h */
 void queues_init(void)
 {
         history   = g_queue_new();
@@ -45,13 +36,11 @@ void queues_init(void)
         waiting   = g_queue_new();
 }
 
-/* see queues.h */
 GList *queues_get_displayed(void)
 {
         return g_queue_peek_head_link(displayed);
 }
 
-/* see queues.h */
 struct notification *queues_get_head_waiting(void)
 {
         if (waiting->length == 0)
@@ -59,25 +48,21 @@ struct notification *queues_get_head_waiting(void)
         return g_queue_peek_head(waiting);
 }
 
-/* see queues.h */
 unsigned int queues_length_waiting(void)
 {
         return waiting->length;
 }
 
-/* see queues.h */
 unsigned int queues_length_displayed(void)
 {
         return displayed->length;
 }
 
-/* see queues.h */
 unsigned int queues_length_history(void)
 {
         return history->length;
 }
 
-/* see queues.h */
 GList *queues_get_history(void)
 {
         return g_queue_peek_head_link(history);
@@ -138,8 +123,8 @@ static bool queues_notification_is_ready(const struct notification *n, struct du
  * @param n the notification to check
  * @param status the current status of dunst
  * @param time the current time
- * @retval true: the notification is timed out
- * @retval false: otherwise
+ * @retval true if the notification is timed out
+ * @retval false otherwise
  */
 static bool queues_notification_is_finished(struct notification *n, struct dunst_status status, gint64 time)
 {
@@ -173,7 +158,6 @@ static bool queues_notification_is_finished(struct notification *n, struct dunst
         return false;
 }
 
-/* see queues.h */
 int queues_notification_insert(struct notification *n)
 {
         /* do not display the message, if the message is empty */
@@ -223,8 +207,8 @@ int queues_notification_insert(struct notification *n)
 /**
  * Replaces duplicate notification and stacks it
  *
- * @retval true: notification got stacked
- * @retval false: notification did not get stacked
+ * @retval true if notification got stacked
+ * @retval false otherwise
  */
 static bool queues_stack_duplicate(struct notification *new)
 {
@@ -282,8 +266,8 @@ static bool queues_stack_duplicate(struct notification *new)
 /**
  * Replaces the first notification of the same stack_tag
  *
- * @retval true: notification got stacked
- * @retval false: notification did not get stacked
+ * @retval true if notification got stacked
+ * @retval false otherwise
  */
 static bool queues_stack_by_tag(struct notification *new)
 {
@@ -332,7 +316,6 @@ static bool queues_stack_by_tag(struct notification *new)
         return false;
 }
 
-/* see queues.h */
 bool queues_notification_replace_id(struct notification *new)
 {
         GQueue *allqueues[] = { displayed, waiting };
@@ -358,7 +341,6 @@ bool queues_notification_replace_id(struct notification *new)
         return false;
 }
 
-/* see queues.h */
 void queues_notification_close_id(gint id, enum reason reason)
 {
         struct notification *target = NULL;
@@ -384,7 +366,6 @@ void queues_notification_close_id(gint id, enum reason reason)
         }
 }
 
-/* see queues.h */
 void queues_notification_close(struct notification *n, enum reason reason)
 {
         assert(n != NULL);
@@ -404,7 +385,6 @@ static void queues_destroy_notification(struct notification *n, gpointer user_da
         notification_unref(n);
 }
 
-/* see queues.h */
 guint queues_history_clear(void)
 {
         guint n = g_queue_get_length(history);
@@ -413,7 +393,6 @@ guint queues_history_clear(void)
         return n;
 }
 
-/* see queues.h */
 void queues_history_pop(void)
 {
         if (g_queue_is_empty(history))
@@ -425,7 +404,6 @@ void queues_history_pop(void)
         g_queue_insert_sorted(waiting, n, notification_cmp_data, NULL);
 }
 
-/* see queues.h */
 void queues_history_pop_by_id(gint id)
 {
         struct notification *n = NULL;
@@ -453,7 +431,6 @@ void queues_history_pop_by_id(gint id)
         g_queue_insert_sorted(waiting, n, notification_cmp_data, NULL);
 }
 
-/* see queues.h */
 void queues_history_push(struct notification *n)
 {
         if (!n->history_ignore) {
@@ -469,7 +446,6 @@ void queues_history_push(struct notification *n)
         }
 }
 
-/* see queues.h */
 void queues_history_push_all(void)
 {
         while (displayed->length > 0) {
@@ -481,7 +457,6 @@ void queues_history_push_all(void)
         }
 }
 
-/* see queues.h */
 bool queues_history_remove_by_id(gint id) {
         struct notification *n = NULL;
 
@@ -505,7 +480,6 @@ bool queues_history_remove_by_id(gint id) {
         return true;
 }
 
-/* see queues.h */
 void queues_update(struct dunst_status status, gint64 time)
 {
         GList *iter, *nextiter;
@@ -624,7 +598,6 @@ void queues_update(struct dunst_status status, gint64 time)
         signal_length_propertieschanged();
 }
 
-/* see queues.h */
 gint64 queues_get_next_datachange(gint64 time)
 {
         gint64 wakeup_time = G_MAXINT64;
@@ -666,7 +639,6 @@ gint64 queues_get_next_datachange(gint64 time)
 
 
 
-/* see queues.h */
 struct notification* queues_get_by_id(gint id)
 {
         assert(id > 0);
@@ -710,7 +682,6 @@ static void teardown_notification(gpointer data)
         notification_unref(n);
 }
 
-/* see queues.h */
 void queues_teardown(void)
 {
         g_queue_free_full(history, teardown_notification);

@@ -1,3 +1,10 @@
+/* SPDX-License-Identifier: BSD-3-Clause */
+/**
+ * @file
+ * @copyright Copyright 2021-2026 Dunst contributors
+ * @license BSD-3-Clause
+ */
+
 #define _GNU_SOURCE
 #include "icon-lookup.h"
 
@@ -34,7 +41,7 @@ int get_icon_theme(char *name) {
  * @param icon_dir A directory where icon themes are stored
  * @param subdir_theme The subdirectory in which the theme is located
  *
- * @returns the index to the theme that was loaded
+ * @return the index to the theme that was loaded
  * @retval -1 means no index was found
  */
 int load_icon_theme_from_dir(const char *icon_dir, const char *subdir_theme) {
@@ -173,7 +180,6 @@ void get_theme_path(void) {
         }
 }
 
-// see icon-lookup.h
 int load_icon_theme(char *name) {
         if(!theme_path) {
                 get_theme_path();

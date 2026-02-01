@@ -1,3 +1,12 @@
+/* SPDX-License-Identifier: BSD-3-Clause */
+/**
+ * @file
+ * @ingroup wayland
+ * @brief Wayland window managment
+ * @copyright Copyright 2020-2026 Dunst contributors
+ * @license BSD-3-Clause
+ */
+
 #ifndef DUNST_WL_H
 #define DUNST_WL_H
 

@@ -1,14 +1,14 @@
-/* copyright 2012 - 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
-
+/* SPDX-License-Identifier: BSD-3-Clause */
 /**
- *  @file src/log.c
- *  @brief logging wrapper to use GLib's logging capabilities
+ * @file
+ * @copyright Copyright 2012-2014 Sascha Kruse
+ * @copyright Copyright 2014-2026 Dunst contributors
+ * @license BSD-3-Clause
  */
-
-#include "log.h"
 
 #include <glib.h>
 
+#include "log.h"
 #include "utils.h"
 
 // NOTE: Keep updated with the dunst manual
@@ -16,7 +16,6 @@ static GLogLevelFlags log_level = G_LOG_LEVEL_MESSAGE;
 
 static enum log_mask log_mask = DUNST_LOG_AUTO;
 
-/* see log.h */
 static const char *log_level_to_string(GLogLevelFlags level)
 {
         switch (level) {
@@ -30,7 +29,6 @@ static const char *log_level_to_string(GLogLevelFlags level)
         }
 }
 
-/* see log.h */
 void log_set_level_from_string(const char *level)
 {
         ASSERT_OR_RET(level,);
@@ -72,9 +70,9 @@ void log_set_level(GLogLevelFlags level)
  */
 static void dunst_log_handler(
                 const gchar    *log_domain,
-                GLogLevelFlags  message_level,
+                GLogLevelFlags message_level,
                 const gchar    *message,
-                gpointer        ignore)
+                gpointer       ignore)
 {
         (void)log_domain;
 
@@ -94,7 +92,6 @@ static void dunst_log_handler(
                 g_print("%s: %s\n", log_level_str, message);
 }
 
-/* see log.h */
 void dunst_log_init(enum log_mask mask)
 {
         log_mask = mask;

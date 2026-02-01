@@ -1,4 +1,13 @@
-/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
+/* SPDX-License-Identifier: BSD-3-Clause */
+/**
+ * @file
+ * @ingroup config
+ * @brief Rules managment and helpers
+ * @copyright Copyright 2013-2014 Sascha Kruse
+ * @copyright Copyright 2014-2026 Dunst contributors
+ * @license BSD-3-Clause
+ */
+
 #ifndef DUNST_RULES_H
 #define DUNST_RULES_H
 
@@ -71,7 +80,7 @@ extern GSList *rules;
  *
  * @param name Name of the rule.
  *
- * @returns A new initialised rule.
+ * @return A new initialised rule.
  */
 struct rule *rule_new(const char *name);
 
@@ -85,21 +94,21 @@ bool rule_matches_notification(struct rule *r, struct notification *n);
 /**
  * Get rule with this name from rules
  *
- * @returns the rule that matches. Null if no rule matches
+ * @return the rule that matches. Null if no rule matches
  */
 struct rule *get_rule(const char* name);
 
 /**
  * Check if a rule is an action
  *
- * @returns a boolean if the rule is an action
+ * @return a boolean if the rule is an action
  */
 bool rule_offset_is_modifying(const size_t offset);
 
 /**
  * Check if a rule is an filter
  *
- * @returns a boolean if the rule is an filter
+ * @return a boolean if the rule is an filter
  */
 bool rule_offset_is_filter(const size_t offset);
 

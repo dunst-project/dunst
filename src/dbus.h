@@ -1,4 +1,12 @@
-/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
+/* SPDX-License-Identifier: BSD-3-Clause */
+/**
+ * @file
+ * @ingroup notify
+ * @brief DBus support and implementation of the Desktop Notifications Specification
+ * @copyright Copyright 2011-2014 Sascha Kruse
+ * @copyright Copyright 2014-2026 Dunst contributors
+ * @license BSD-3-Clause
+ */
 
 #ifndef DUNST_DBUS_H
 #define DUNST_DBUS_H

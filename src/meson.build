@@ -1,4 +1,5 @@
 dunst_src_files = files(
+    'main.c',
     'dbus.c',
     'draw.c',
     'dunst.c',
@@ -40,7 +41,6 @@ endif
 
 executable(
     'dunst',
-    '../main.c',
     dunst_src_files,
     dependencies: dunst_depends,
     c_args: c_version_arg,

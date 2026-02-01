@@ -1,3 +1,12 @@
+/* SPDX-License-Identifier: BSD-3-Clause */
+/**
+ * @file
+ * @ingroup wayland
+ * @brief Wayland rendering buffer pool
+ * @copyright Copyright 2020-2026 Dunst contributors
+ * @license BSD-3-Clause
+ */
+
 #ifndef DUNST_POOL_BUFFER_H
 #define DUNST_POOL_BUFFER_H
 

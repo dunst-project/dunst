@@ -1,6 +1,10 @@
-/* copyright 2012 - 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
-
-#include "dunst.h"
+/* SPDX-License-Identifier: BSD-3-Clause */
+/**
+ * @file
+ * @copyright Copyright 2011-2014 Sascha Kruse
+ * @copyright Copyright 2014-2026 Dunst contributors
+ * @license BSD-3-Clause
+ */
 
 #include <assert.h>
 #include <glib.h>
@@ -10,6 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "dunst.h"
 #include "dbus.h"
 #include "draw.h"
 #include "log.h"
@@ -20,7 +25,6 @@
 #include "queues.h"
 #include "settings.h"
 #include "utils.h"
-#include "output.h"
 
 GMainLoop *mainloop = NULL;
 
@@ -28,7 +32,6 @@ static struct dunst_status status;
 static bool setup_done = false;
 char **config_paths = NULL;
 
-/* see dunst.h */
 void dunst_status(const enum dunst_status_field field,
                   bool value)
 {
@@ -61,7 +64,6 @@ void dunst_status_int(const enum dunst_status_field field,
         }
 }
 
-/* see dunst.h */
 struct dunst_status dunst_status_get(void)
 {
         return status;

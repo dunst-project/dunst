@@ -1,6 +1,16 @@
-/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
+/* SPDX-License-Identifier: BSD-3-Clause */
+/**
+ * @file
+ * @ingroup config
+ * @brief List of all the valid settings and values
+ * @copyright Copyright 2013-2014 Sascha Kruse
+ * @copyright Copyright 2014-2026 Dunst contributors
+ * @license BSD-3-Clause
+ */
+
 #ifndef DUNST_SETTING_DATA_H
 #define DUNST_SETTING_DATA_H
+
 #include <stddef.h>
 #include <pango/pango-layout.h>
 

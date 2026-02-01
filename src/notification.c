@@ -1,6 +1,10 @@
-/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
-
-#include "notification.h"
+/* SPDX-License-Identifier: BSD-3-Clause */
+/**
+ * @file
+ * @copyright Copyright 2013-2014 Sascha Kruse
+ * @copyright Copyright 2014-2026 Dunst contributors
+ * @license BSD-3-Clause
+ */
 
 #include <assert.h>
 #include <errno.h>
@@ -14,6 +18,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include "notification.h"
 #include "dbus.h"
 #include "dunst.h"
 #include "icon.h"
@@ -21,8 +26,6 @@
 #include "markup.h"
 #include "menu.h"
 #include "queues.h"
-#include "rules.h"
-#include "settings.h"
 #include "utils.h"
 #include "draw.h"
 #include "icon-lookup.h"
@@ -31,7 +34,6 @@
 static void notification_extract_urls(struct notification *n);
 static void notification_format_message(struct notification *n);
 
-/* see notification.h */
 const char *enum_to_string_fullscreen(enum behavior_fullscreen in)
 {
         switch (in) {
@@ -49,7 +51,6 @@ struct _notification_private {
         gint refcount;
 };
 
-/* see notification.h */
 void notification_print(const struct notification *n)
 {
         //TODO: use logging info for this
@@ -116,7 +117,6 @@ void notification_print(const struct notification *n)
         fflush(stdout);
 }
 
-/* see notification.h */
 void notification_run_script(struct notification *n)
 {
         if (n->script_run && !settings.always_run_script)
@@ -203,7 +203,6 @@ const char *notification_urgency_to_string(const enum urgency urgency)
         }
 }
 
-/* see notification.h */
 int notification_cmp(const struct notification *a, const struct notification *b)
 {
         const struct notification *a_order;
@@ -231,7 +230,6 @@ int notification_cmp(const struct notification *a, const struct notification *b)
         return a_order->id - b_order->id;
 }
 
-/* see notification.h */
 int notification_cmp_data(const void *va, const void *vb, void *data)
 {
         (void)data;
@@ -282,21 +280,18 @@ static void notification_private_free(NotificationPrivate *p)
         g_free(p);
 }
 
-/* see notification.h */
 gint notification_refcount_get(struct notification *n)
 {
         assert(n->priv->refcount > 0);
         return g_atomic_int_get(&n->priv->refcount);
 }
 
-/* see notification.h */
 void notification_ref(struct notification *n)
 {
         assert(n->priv->refcount > 0);
         g_atomic_int_inc(&n->priv->refcount);
 }
 
-/* see notification.h */
 void notification_unref(struct notification *n)
 {
         ASSERT_OR_RET(n,);
@@ -411,7 +406,6 @@ void notification_replace_format(struct notification *n, const char *format)
         n->format = g_strdup(format);
 }
 
-/* see notification.h */
 void notification_replace_single_field(char **haystack,
                                        char **needle,
                                        const char *replacement,
@@ -443,7 +437,6 @@ static NotificationPrivate *notification_private_create(void)
         return priv;
 }
 
-/* see notification.h */
 struct notification *notification_create(void)
 {
         struct notification *n = g_malloc0(sizeof(struct notification));
@@ -493,7 +486,6 @@ struct notification *notification_create(void)
         return n;
 }
 
-/* see notification.h */
 void notification_init(struct notification *n)
 {
         /* default to empty string to avoid further NULL faults */
@@ -768,7 +760,6 @@ void notification_update_text_to_render(struct notification *n)
         n->text_to_render = buf;
 }
 
-/* see notification.h */
 void notification_do_action(struct notification *n)
 {
         assert(n->default_action_name);
@@ -792,7 +783,6 @@ void notification_do_action(struct notification *n)
         }
 }
 
-/* see notification.h */
 void notification_open_url(struct notification *n)
 {
         if (!n->urls) {
@@ -805,7 +795,6 @@ void notification_open_url(struct notification *n)
                 open_browser(n->urls);
 }
 
-/* see notification.h */
 void notification_open_context_menu(struct notification *n)
 {
         GList *notifications = NULL;

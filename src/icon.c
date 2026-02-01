@@ -1,4 +1,9 @@
-#include "icon.h"
+/* SPDX-License-Identifier: BSD-3-Clause */
+/**
+ * @file
+ * @copyright Copyright 2018-2026 Dunst contributors
+ * @license BSD-3-Clause
+ */
 
 #include <assert.h>
 #include <cairo.h>
@@ -8,7 +13,7 @@
 #include <math.h>
 
 #include "log.h"
-#include "notification.h"
+#include "icon.h"
 #include "settings.h"
 #include "utils.h"
 #include "icon-lookup.h"

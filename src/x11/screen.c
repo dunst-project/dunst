@@ -1,4 +1,10 @@
-#include "screen.h"
+/* SPDX-License-Identifier: BSD-3-Clause */
+/**
+ * @file
+ * @copyright Copyright 2013-2014 Sascha Kruse
+ * @copyright Copyright 2014-2026 Dunst contributors
+ * @license BSD-3-Clause
+ */
 
 #include <assert.h>
 #include <glib.h>
@@ -19,6 +25,7 @@
 #include "../settings.h"
 #include "../utils.h"
 #include "x.h"
+#include "screen.h"
 
 struct screen_info *screens;
 int screens_len;
@@ -43,9 +50,9 @@ static Window get_focused_window(void);
  * We do not expect to change xrdb often, but there's much
  * overhead to query it once.
  *
- * @retval -DBL_MAX: uncached
- * @retval     <=0: Invalid and unusable value
- * @retval      >0: valid
+ * @retval -DBL_MAX if dpi is not cached
+ * @retval     <=0 when the value is invalid and thus unusable
+ * @retval      >0 when the value is valid
  */
 double screen_dpi_xft_cache = -DBL_MAX;
 
@@ -227,7 +234,6 @@ void screen_update_fallback(void)
         screens[0].h = DisplayHeight(xctx.dpy, screen);
 }
 
-/* see screen.h */
 bool have_fullscreen_window(void)
 {
         return window_is_fullscreen(get_focused_window());
@@ -251,7 +257,6 @@ static int XErrorHandlerFullscreen(Display *display, XErrorEvent *e)
         return 0;
 }
 
-/* see screen.h */
 bool window_is_fullscreen(Window window)
 {
         bool fs = false;
@@ -401,7 +406,7 @@ const struct screen_info *get_active_screen(void)
                 if (ret > 0)
                         goto sc_cleanup;
 
-                /* something seems to be wrong. Fall back to default */
+                /* Something seems to be wrong. Fall back to default */
                 ret = 0;
                 goto sc_cleanup;
         }

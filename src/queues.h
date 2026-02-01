@@ -1,7 +1,19 @@
-/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
-
+/* SPDX-License-Identifier: BSD-3-Clause */
 /**
- * @file src/queues.h
+ * @file
+ * @ingroup notify
+ * @brief Queues for history, waiting and displayed notifications
+ * @copyright Copyright 2013-2014 Sascha Kruse
+ * @copyright Copyright 2014-2026 Dunst contributors
+ * @license BSD-3-Clause
+ *
+ * Every method requires to have executed queues_init() at the start.
+ *
+ * A read only representation of the queue with the current notifications
+ * can get acquired by calling queues_get_displayed().
+ *
+ * When ending the program or resetting the queues, tear down the stack with
+ * queues_teardown(). (And reinit with queues_init() if needed.)
  */
 
 #ifndef DUNST_QUEUE_H
@@ -36,8 +48,8 @@ GList *queues_get_history(void);
 /**
  * Get the highest notification in line
  *
- * @returns the first notification in waiting
- * @retval NULL: waiting is empty
+ * @return the first notification in waiting
+ * @retval NULL if waiting is empty
  */
 struct notification *queues_get_head_waiting(void);
 
@@ -69,8 +81,8 @@ unsigned int queues_length_history(void);
  * - If n->id != 0, n replaces notification n with id n->id
  * - If n->id == 0, n gets a new id assigned
  *
- * @returns The new value of `n->id`
- * @retval 0: the notification was dismissed and freed
+ * @return The new value of `n->id`
+ * @retval 0 if the notification was dismissed and freed
  */
 int queues_notification_insert(struct notification *n);
 
@@ -81,8 +93,8 @@ int queues_notification_insert(struct notification *n);
  *
  * @param new replacement for the old notification
  *
- * @retval true: a matching notification has been found and is replaced
- * @retval false: otherwise
+ * @retval true if a matching notification has been found and is replaced
+ * @retval false otherwise
  */
 bool queues_notification_replace_id(struct notification *new);
 
@@ -100,7 +112,8 @@ bool queues_notification_replace_id(struct notification *new);
 void queues_notification_close_id(gint id, enum reason reason);
 
 /**
- * Close the given notification. \see queues_notification_close_id().
+ * Close the given notification.
+ * @see queues_notification_close_id()
  *
  * @param n (transfer full) The notification to close
  * @param reason The #reason to close

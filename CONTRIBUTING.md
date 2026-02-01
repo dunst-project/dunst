@@ -1,22 +1,31 @@
 # Important notes on the code
 
-**You can generate an internal overview with doxygen. For this, use `make doc-doxygen` and you'll find an internal overview of all functions and symbols in `docs/internal/html`. You will also need `graphviz` for this.**
+**You can generate an internal overview with doxygen.
+For this, use `make doc-doxygen` and you'll find an internal overview of all functions and symbols in `docs/internal/html`.
+You will also need `graphviz` for this.**
 
+For people wanting to develop new features or fix bugs for dunst, here are the steps you should take.
 
-For people wanting to develop new features or fix bugs for dunst, here are the
-steps you should take.
+## Contributing user scripts
 
-# Running dunst
+You can contribute with convenience scripts that make using Dunst easier.
+This scripts will live in `contrib/` and can be used as reference by fellow users.
+
+## Running dunst
 
 For building dunst, you should take a look at the README. After dunst is built,
 you can run it with:
 
-        ./dunst
+```
+./dunst -verbosity debug
+```
 
 This might not work, however, since dunst will abort when another instance of
 dunst or another notification daemon is running. You will see a message like:
 
-        CRITICAL: [dbus_cb_name_lost:1044] Cannot acquire 'org.freedesktop.Notifications': Name is acquired by 'dunst' with PID '20937'.
+```
+CRITICAL: [dbus_cb_name_lost:1044] Cannot acquire 'org.freedesktop.Notifications': Name is acquired by 'dunst' with PID '20937'.
+```
 
 So it's best to kill any running instance of dunst before trying to run the
 version you just built. You can do that by making a shell function as follows
@@ -36,45 +45,54 @@ run_dunst() {
 If you run this function is the root directory of the repository, it will build
 dunst, kill any running instances and run your freshly built version of dunst.
 
-# Testing dunst
+## Testing dunst
 
 To test dunst, it's good to know the following commands. This way you can test
 dunst on your local system and you don't have to wait for CI to finish.
 
-## Run test suite
+### Run test suite
 
 This will build dunst if there were any changes and run the test suite. You will
 need `awk` for this to work (to color the output of the tests).
 
         make test
 
-## Run memory leak tests
+### Run memory leak tests
 
 This will build dunst if there were any changes and run the test suite with
 valgrind to make sure there aren't any memory leaks. You will have to build your
 tests so that they free all allocated memory after you are done, otherwise this
 test will fail. You will need to have `valgrind` installed for this.
 
-        make test-valgrind
+```
+make test-valgrind
+```
 
+If you notice that a leak report does not depend on the code (for example when upgrading dependencies or porting to a new platform)
+you can exclude those particular functions in the file `.valgrind.suppressions`.
 
 ## Build the doxygen documentation
 
 The internal documentation can be built with (`doxygen` and `graphviz` required):
 
-        make doc-doxygen
+```
+make doc-doxygen
+```
 
 To open them in your browser you can run something like:
 
-        firefox docs/internal/html/index.html
+```
+firefox docs/internal/html/index.html
+```
 
-
-# Running the tests with docker
+## Running the tests with docker
 
 Dunst has a few docker images for running tests on different distributions. The
 documentation for this can be found at https://github.com/dunst-project/docker-images
 
-# Comments
+For maintainers: The extra workflow (which contains FreeBSD) can be run by commenting `/extra-ci` in the target PR.
+
+## Comments
 
 - Comment system is held similar to JavaDoc
         - Use `@param` to describe all input parameters
@@ -88,8 +106,7 @@ documentation for this can be found at https://github.com/dunst-project/docker-i
   Except for **static** methods, add the documentation header to the implementation and *not to the prototype*.
 - Member documentation should happen with `/**<` and should span to the right side of the member
 - Test files that have the same name as a file in src/\* can include the
-  associated .c file. This is because they are being compiled INSTEAD of the src
-  file.
+  associated .c file. This is because they are being compiled INSTEAD of the src file.
 
 
 ## Log messages
@@ -119,6 +136,10 @@ For logging, there are printf-like macros `LOG_(E|C|W|M|I|D)`.
         - e.g.: An empty notification does get removed immediately.
 - `LOG_I` (INFO):
         - Mostly unneccessary info, but important to debug (as the user) some use cases.
-        - e.g.: print the notification contents after arriving
 - `LOG_D` (DEBUG):
         - Only important during development or tracing some bugs (as the developer).
+
+## Updating the build system
+
+If you need to change the build system, for example add another dependency,
+remember to modify both the Makefile and meson.build file!

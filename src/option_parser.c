@@ -1,4 +1,10 @@
-/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
+/* SPDX-License-Identifier: BSD-3-Clause */
+/**
+ * @file
+ * @copyright Copyright 2013-2014 Sascha Kruse
+ * @copyright Copyright 2014-2026 Dunst contributors
+ * @license BSD-3-Clause
+ */
 
 #include "option_parser.h"
 
@@ -36,7 +42,7 @@ int string_parse_enum(const void *data, const char *s, void * ret) {
 
 // Only changes the return when succesful
 //
-// @returns True for success, false otherwise.
+// @return True for success, false otherwise.
 int string_parse_enum_list(const void *data, char **s, void *ret_void)
 {
         int **ret = (int **) ret_void;
@@ -60,13 +66,15 @@ int string_parse_enum_list(const void *data, char **s, void *ret_void)
         return true;
 }
 
-// Parse a string list of enum values and return a single integer with the
-// values bit-flipped into it. This is only useful when the enum values all
-// occupy different bits (for exampel 1<<0, 1<<1 and 1<<2) and the order
-// doesn't matter.
-// Only changes the return when succesful
-//
-// @returns True for success, false otherwise.
+/**
+ * Parse a string list of enum values and return a single integer with the
+ * values bit-flipped into it. This is only useful when the enum values all
+ * occupy different bits (for exampel 1<<0, 1<<1 and 1<<2) and the order
+ * doesn't matter.
+ *
+ * @note Only changes the return when succesful.
+ * @return True for success, false otherwise.
+ */
 int string_parse_enum_list_to_single(const void *data, char **s, int *ret)
 {
         int tmp = 0, tmp_ret = 0;
@@ -93,7 +101,11 @@ int string_parse_corners(const void *data, const char *s, void *ret)
         return success;
 }
 
-// When allow empty is true, empty strings are interpreted as -1
+/**
+ * Parse a list of integers.
+ *
+ * @note When allow empty is true, empty strings are interpreted as -1.
+ */
 bool string_parse_int_list(char **s, int **ret, bool allow_empty) {
         int len = string_array_length(s);
         ASSERT_OR_RET(s, false);
@@ -119,7 +131,9 @@ bool string_parse_int_list(char **s, int **ret, bool allow_empty) {
         return true;
 }
 
-// Only changes the return when succesful
+/**
+ * @note Only changes the return when succesful
+ */
 int string_parse_list(const void *data, const char *s, void *ret) {
         const enum list_type type = GPOINTER_TO_INT(data);
         char **arr = NULL;
@@ -188,7 +202,10 @@ int string_parse_sepcolor(const void *data, const char *s, void *ret)
 
 #define UINT_MAX_N(bits) ((1 << bits) - 1)
 
-// Parse a #RRGGBB[AA] string
+/**
+ * Parse a color string.
+ * The format is: @verbatim #RRGGBB[AA] @endverbatim
+ */
 int string_parse_color(const char *s, struct color *ret)
 {
         if (STR_EMPTY(s) || *s != '#') {
@@ -268,7 +285,7 @@ int string_parse_gradient(const char *s, struct gradient **ret)
 
 int string_parse_bool(const void *data, const char *s, void *ret)
 {
-        // this is needed, since string_parse_enum assumses a
+        // This is needed, since string_parse_enum assumses a
         // variable of size int is passed
         int tmp_int = -1;
         bool success = string_parse_enum(data, s, &tmp_int);
@@ -277,7 +294,7 @@ int string_parse_bool(const void *data, const char *s, void *ret)
         return success;
 }
 
-// Parse a string that may represent an integer value
+/** Parse a string that may represent an integer value */
 int string_parse_maybe_int(const void *data, const char *s, void *ret)
 {
         int *intval = (int *)data;
@@ -326,7 +343,9 @@ int get_setting_id(const char *key, const char *section) {
         return -1;
 }
 
-// NOTE: We do minimal checks in this function so the values should be sanitized somewhere else
+/**
+ * @warning We do minimal checks in this function so the values should be sanitized somewhere else.
+ */
 int string_parse_length(void *ret_in, const char *s) {
         struct length *ret = (struct length*) ret_in;
         char *s_stripped = string_strip_brackets(s);
@@ -378,8 +397,8 @@ bool set_from_string(void *target, struct setting setting, const char *value) {
         }
 
         bool success = false;
-        // Do not use setting.value, since we might want to set a rule. Use
-        // target instead
+        // Do not use setting.value, since we might want to set a rule.
+        // Use target instead!
         switch (setting.type) {
                 case TYPE_INT:
                         return safe_string_to_int(target, value);

@@ -1,4 +1,12 @@
-/* copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information) */
+/* SPDX-License-Identifier: BSD-3-Clause */
+/**
+ * @file
+ * @ingroup main
+ * @brief Main event loop logic
+ * @copyright Copyright 2011-2014 Sascha Kruse
+ * @copyright Copyright 2014-2026 Dunst contributors
+ * @license BSD-3-Clause
+ */
 
 #ifndef DUNST_DUNST_H
 #define DUNST_DUNST_H

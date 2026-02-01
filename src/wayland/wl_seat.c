@@ -1,6 +1,11 @@
-#define _POSIX_C_SOURCE 200112L
-#include "wl_seat.h"
+/* SPDX-License-Identifier: BSD-3-Clause */
+/**
+ * @file
+ * @copyright Copyright 2024-2026 Dunst contributors
+ * @license BSD-3-Clause
+ */
 
+#define _POSIX_C_SOURCE 200112L
 #include <linux/input-event-codes.h>
 
 #include "protocols/idle.h"
@@ -18,6 +23,7 @@
 #include "../input.h"
 #include "../log.h"
 #include "../settings.h"
+#include "wl_seat.h"
 #include "wl_ctx.h"
 
 static void touch_handle_motion(void *data, struct wl_touch *wl_touch,

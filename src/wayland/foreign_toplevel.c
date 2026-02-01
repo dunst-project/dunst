@@ -1,9 +1,16 @@
+/* SPDX-License-Identifier: BSD-3-Clause */
+/**
+ * @file
+ * @copyright Copyright 2021-2026 Dunst contributors
+ * @license BSD-3-Clause
+ */
+
 #define _POSIX_C_SOURCE 200112L
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
+
 #include "protocols/wlr-foreign-toplevel-management-unstable-v1-client-header.h"
-/* #include "protocols/wlr-foreign-toplevel-management-unstable-v1.h" */
 
 #include "foreign_toplevel.h"
 #include "../dunst.h"

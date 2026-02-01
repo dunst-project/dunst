@@ -1,5 +1,12 @@
-#include "ini.h"
+/* SPDX-License-Identifier: BSD-3-Clause */
+/**
+ * @file
+ * @copyright Copyright 2013-2014 Sascha Kruse
+ * @copyright Copyright 2014-2026 Dunst contributors
+ * @license BSD-3-Clause
+ */
 
+#include "ini.h"
 #include "utils.h"
 #include "log.h"
 #include "settings.h"
@@ -63,7 +70,7 @@ bool ini_is_set(struct ini *ini, const char *ini_section, const char *ini_key)
         return get_value(ini, ini_section, ini_key) != NULL;
 }
 
-const char *next_section(const struct ini *ini,const char *section)
+const char *next_section(const struct ini *ini, const char *section)
 {
         ASSERT_OR_RET(ini->section_count > 0, NULL);
         ASSERT_OR_RET(section, ini->sections[0].name);

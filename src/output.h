@@ -1,3 +1,12 @@
+/* SPDX-License-Identifier: BSD-3-Clause */
+/**
+ * @file
+ * @ingroup utils
+ * @brief Generic graphics backend wrapper
+ * @copyright Copyright 2020-2026 Dunst contributors
+ * @license BSD-3-Clause
+ */
+
 #ifndef DUNST_OUTPUT_H
 #define DUNST_OUTPUT_H
 
