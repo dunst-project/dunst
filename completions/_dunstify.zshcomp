@@ -33,6 +33,7 @@ case $state in
       {-I,--raw-icon}"[Path to the icon to be sent as raw image data]" \
       {-c,--category}"[The category of this notification]" \
       {-h,--hint}"[User specified hints]" \
+      {--stack-tag}"[Dunst specific stack tag]" \
       {-r,--replace-id}"[Set id of this notification]" \
       {-A,--action}"[Actions the user can invoke]" \
       {-C,--close}"[Close the notification with the specified ID]"

@@ -24,6 +24,7 @@ complete -c dunstify -s r -l replace-id -x -a '(__fish_dunstify_history)' -d 'Se
 complete -c dunstify -s C -l close -x -a '(__fish_dunstify_history)' -d 'Close the notification with the specified ID'
 complete -c dunstify -s w -l wait -d 'Block until notification is closed and print close reason'
 complete -c dunstify -s e -l transient -d 'Mark the notification as transient'
+complete -c dunstify -l stack-tag -d 'Set dunst stack tag hint'
 complete -c dunstify -s v -l version -d 'Print version information'
 
 # ex: filetype=fish

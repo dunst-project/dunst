@@ -16,6 +16,7 @@ _dunstify() {
       -w --wait \
       -A --action \
       -C --close \
+      --stack-tag \
       --capabilities \
       --serverinfo \
       -v --version'
