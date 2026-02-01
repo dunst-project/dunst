@@ -107,3 +107,17 @@ Useful if something isn't working.
 Show all available commands with a brief description.
 
 =back
+
+=head1 COPYRIGHT
+
+Copyright 2011-2014 Sascha Kruse
+
+Copyright 2014-2026 Dunst contributors
+
+Dunst is released under the BSD 3-Clause License, see LICENSE for more information.
+
+If you feel that copyrights are violated, please send an email to the maintainers.
+
+=head1 SEE ALSO
+
+dunst(5), dmenu(1), notify-send(1), dunstify(1)

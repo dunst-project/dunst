@@ -1266,19 +1266,19 @@ Time units understood by dunst are "ms", "s", "m", "h" and "d".
 
 Example time: "1000ms", "10m".
 
-=head1 AUTHORS
-
-Written by Sascha Kruse <knopwob@googlemail.com>.
-
 =head1 REPORTING BUGS
 
 Bugs and suggestions should be reported on GitHub at https://github.com/dunst-project/dunst/issues.
 
 =head1 COPYRIGHT
 
-Copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information).
+Copyright 2011-2014 Sascha Kruse
 
-If you feel that copyrights are violated, please send me an email.
+Copyright 2014-2026 Dunst contributors
+
+Dunst is released under the BSD 3-Clause License, see LICENSE for more information.
+
+If you feel that copyrights are violated, please send an email to the maintainers.
 
 =head1 SEE ALSO
 

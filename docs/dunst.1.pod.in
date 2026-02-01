@@ -4,7 +4,7 @@ dunst - a customizable and lightweight notification-daemon
 
 =head1 SYNOPSIS
 
-dunst [-conf file] [-verbosity v] [-print] [--startup_notification]
+dunst [--config FILE] [--verbosity v] [--print] [--startup_notification]
 
 =head1 DESCRIPTION
 
@@ -27,7 +27,7 @@ systemd service.
 
 List all command line flags
 
-=item B<-conf/-config file>
+=item B<-conf/-config/--config FILE>
 
 Use alternative config file.
 This disables the search for other config files.
@@ -40,7 +40,7 @@ testing)
 
 Print version information.
 
-=item B<-verbosity> (values: 'crit', 'warn', 'mesg', 'info', 'debug' default 'mesg')
+=item B<-verbosity/--verbosity> (values: 'crit', 'warn', 'mesg', 'info', 'debug' default 'mesg')
 
 Do not display log messages, which have lower precedence than specified
 verbosity. This won't affect printing notifications on the terminal. Use
@@ -148,9 +148,8 @@ So if a dunstrc is first found in F<~/.config/dunst/dunstrc>, drop-ins will be
 searched in F<~/.config/dunst/dunstrc.d/*>. Settings in more important files
 override those in less important ones.
 
-=head1 AUTHORS
-
-Written by Sascha Kruse <knopwob@googlemail.com>
+If you want to dynamically change the config you can simply use the command
+B<dunstctl reload> to load the modified files. See more in dunst(5).
 
 =head1 REPORTING BUGS
 
@@ -158,9 +157,13 @@ Bugs and suggestions should be reported on GitHub at https://github.com/dunst-pr
 
 =head1 COPYRIGHT
 
-Copyright 2013 Sascha Kruse and contributors (see LICENSE for licensing information)
+Copyright 2011-2014 Sascha Kruse
 
-If you feel that copyrights are violated, please send me an email.
+Copyright 2014-2026 Dunst contributors
+
+Dunst is released under the BSD 3-Clause License, see LICENSE for more information.
+
+If you feel that copyrights are violated, please send an email to the maintainers.
 
 =head1 SEE ALSO
 

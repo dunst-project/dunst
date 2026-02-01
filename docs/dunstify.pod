@@ -77,7 +77,16 @@ Block until notification is closed and print close reason.
 
 =back
 
+=head1 COPYRIGHT
+
+Copyright 2011-2014 Sascha Kruse
+
+Copyright 2014-2026 Dunst contributors
+
+Dunst is released under the BSD 3-Clause License, see LICENSE for more information.
+
+If you feel that copyrights are violated, please send an email to the maintainers.
+
 =head1 SEE ALSO
 
 notify-send(1), dunst(5), dunstctl(1), dunst(1)
-
