@@ -19,61 +19,77 @@ send desktop notifications from the command line.
 
 Show help options.
 
-=item B<-a, --appname=NAME>
+=item B<-a, --app-name=NAME>
 
 Set the app name of the notification.
+Accepted legacy alias: B<--appname>.
 
 =item B<-u, --urgency=URG>
 
 Set the urgency level (low, normal, critical) of the notification.
 
-=item B<-h, --hints=HINT>
+=item B<-h, --hint=HINT>
 
 Specifies hints to pass. Valid types are BOOLEAN, INT, DOUBLE, STRING, BYTE and VARIANT.
+Accepted legacy alias: B<--hints>.
 
 =item B<-A, --action=ACTION>
 
 Specifies the actions to display to the user.
 
-=item B<-t, --timeout=TIMEOUT>
+=item B<-e, --transient>
+
+Mark the notification as transient.
+
+=item B<-t, --expire-time=TIMEOUT>
 
 The time in milliseconds until the notification expires.
+Accepted legacy alias: B<--timeout>.
 
 =item B<-i, --icon=ICON>
 
 Specifies an icon to display with the notification.
 
-=item B<-I, --raw_icon=PATH>
+=item B<-I, --raw-icon=PATH>
 
 Path to the icon to be sent as raw image data.
+Accepted legacy alias: B<--raw_icon>.
 
 =item B<-c, --category=TYPE>
 
 The category of this notification.
 
-=item B<--capabilities>
-
-Print the server capabilities and exit.
-
-=item B<-s, --serverinfo>
-
-Print server information and exit.
-
-=item B<-p, --printid>
+=item B<-p, --print-id>
 
 Print id, which can be used to update/replace this notification.
+Accepted legacy alias: B<--printid>.
 
-=item B<-r, --replace=ID>
+=item B<-r, --replace-id=ID>
 
 Set the id of this notification to The ID of the notification to replace.
+Accepted legacy alias: B<--replace>.
 
 =item B<-C, --close=ID>
 
 Close the notification with the specified ID.
 
-=item B<-b, --block>
+=item B<-w, --wait>
 
 Block until notification is closed and print close reason.
+Accepted legacy alias: B<-b, --block>.
+
+=item B<--capabilities>
+
+Print the server capabilities and exit.
+
+=item B<--serverinfo>
+
+Print server information and exit.
+
+=item B<-v, --version>
+
+Print dunstify version information.
+Not present on Dunst versions prior to v1.13.
 
 =back
 
