@@ -1054,7 +1054,7 @@ static void dbus_cb_Notify(
                 return;
         }
 
-        int id = queues_notification_insert(n);
+        int id = queues_notification_insert(n, dunst_status_get());
 
         GVariant *reply = g_variant_new("(u)", id);
         g_dbus_method_invocation_return_value(invocation, reply);

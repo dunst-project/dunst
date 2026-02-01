@@ -331,7 +331,7 @@ int dunst_main(int argc, char *argv[])
                 n->markup = MARKUP_NO;
                 n->urgency = URG_LOW;
                 notification_init(n);
-                queues_notification_insert(n);
+                queues_notification_insert(n, status);
                 // We do not call wakeup now, wake_up does not work here yet
         }
 
