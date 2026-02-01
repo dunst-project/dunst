@@ -527,7 +527,6 @@ void queues_update(struct dunst_status status, gint64 time)
                 }
 
                 if (status.fullscreen && n->fullscreen == FS_DROP) {
-                        notification_run_script(n);
                         queues_notification_close(n, REASON_UNDEF);
                         iter = nextiter;
                         continue;
@@ -614,12 +613,10 @@ void queues_update(struct dunst_status status, gint64 time)
                         todisp->start = time;
                         notification_run_script(todisp);
 
-                        if (status.fullscreen && todisp->fullscreen == FS_DROP) {
+                        if (status.fullscreen && todisp->fullscreen == FS_DROP)
                                 queues_notification_close(todisp, REASON_UNDEF);
-                                continue;
-                        }
-
-                        queues_swap_notifications(displayed, i_displayed, waiting, i_waiting);
+                        else
+                                queues_swap_notifications(displayed, i_displayed, waiting, i_waiting);
                 }
         }
         signal_length_propertieschanged();
