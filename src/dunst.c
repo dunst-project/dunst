@@ -32,17 +32,19 @@ static struct dunst_status status;
 static bool setup_done = false;
 char **config_paths = NULL;
 
-void dunst_status(const enum dunst_status_field field,
-                  bool value)
+void dunst_status(const enum dunst_status_field field, bool value)
 {
         switch (field) {
         case S_FULLSCREEN:
+                LOG_D("Updated fullscreen state: %s\n", value ? "yes" : "no");
                 status.fullscreen = value;
                 break;
         case S_IDLE:
+                LOG_D("Updated idle state: %s\n", value ? "yes" : "no");
                 status.idle = value;
                 break;
         case S_MOUSE_OVER:
+                LOG_D("Updated mouse over state: %s\n", value ? "yes" : "no");
                 status.mouse_over = value;
                 break;
         default:
@@ -51,8 +53,7 @@ void dunst_status(const enum dunst_status_field field,
         }
 }
 
-void dunst_status_int(const enum dunst_status_field field,
-                  int value)
+void dunst_status_int(const enum dunst_status_field field, int value)
 {
         switch (field) {
         case S_PAUSE_LEVEL:
@@ -84,7 +85,8 @@ enum dunst_run_reason {
         DUNST_WAKEUP,
 };
 
-const char* dunst_run_reason_str(enum dunst_run_reason reason) {
+const char* dunst_run_reason_str(enum dunst_run_reason reason)
+{
         switch(reason) {
                 case DUNST_TIMER:
                         return "DUNST_TIMER";
