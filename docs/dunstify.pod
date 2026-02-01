@@ -78,6 +78,17 @@ Close the notification with the specified ID.
 Block until notification is closed and print close reason.
 Accepted legacy alias: B<-b, --block>.
 
+=item B<--stack-tag=TAG>
+
+Set the dunst stack tag property of the notification to TAG.
+A tagged notification will replace an earlier notification with the same tag.
+
+The following commands are equivalent:
+
+    dunstify -h string:x-dunst-stack-tag:TAG "hello"
+
+    dunstify --stack-tag TAG "hello"
+
 =item B<--capabilities>
 
 Print the server capabilities and exit.

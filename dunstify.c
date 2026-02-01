@@ -25,6 +25,7 @@ static gchar **hint_strs = NULL;
 static gchar **action_strs = NULL;
 static gint timeout = NOTIFY_EXPIRES_DEFAULT;
 static gchar *icon = NULL;
+static gchar *stack_tag = NULL;
 static gchar *raw_icon_path = NULL;
 static gboolean capabilities = false;
 static gboolean serverinfo = false;
@@ -51,6 +52,7 @@ static GOptionEntry entries[] = {
     { "wait",             'w', 0, G_OPTION_ARG_NONE,           &wait,           "Block until notification is closed and print close reason", NULL },
     { "action",           'A', 0, G_OPTION_ARG_STRING_ARRAY,   &action_strs,    "Actions the user can invoke", "ACTION" },
     { "close",            'C', 0, G_OPTION_ARG_INT,            &close_id,       "Close the notification with the specified ID", "ID" },
+    { "stack-tag",        0,   0, G_OPTION_ARG_STRING,         &stack_tag,      "Add a dunst stack tag to replace a notification with the same TAG", "TAG" },
 
     // Legacy names
     { "appname",          0,   0, G_OPTION_ARG_STRING,         &appname,        "Legacy alias of '--app-name'", NULL },
@@ -318,7 +320,6 @@ int main(int argc, char *argv[])
         notify_notification_set_hint(n, "transient", g_variant_new_boolean(TRUE));
 
     GError *err = NULL;
-
     if (raw_icon_path) {
             GdkPixbuf *raw_icon = gdk_pixbuf_new_from_file(raw_icon_path, &err);
 
@@ -351,15 +352,20 @@ int main(int argc, char *argv[])
         g_signal_connect(n, "closed", G_CALLBACK(closed), NULL);
     }
 
-    if (action_strs)
+    if (stack_tag != NULL)
+        notify_notification_set_hint(n, "x-dunst-stack-tag", g_variant_new_string(stack_tag));
+
+    if (action_strs) {
         for (int i = 0; action_strs[i]; i++) {
             add_action(n, action_strs[i]);
         }
+    }
 
-    if (hint_strs)
+    if (hint_strs) {
         for (int i = 0; hint_strs[i]; i++) {
             add_hint(n, hint_strs[i]);
         }
+    }
 
 
     notify_notification_show(n, &err);
