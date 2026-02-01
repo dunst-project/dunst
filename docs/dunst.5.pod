@@ -918,7 +918,7 @@ Equivalent to the C<format> setting.
 
 The frame color color of the notification. See COLORS for possible values.
 
-=item C<fullscreen> (values: [delay/show/pushback], default: show)
+=item C<fullscreen> (values: [delay/show/pushback/drop], default: show)
 
 This attribute specifies how notifications are handled if a fullscreen window
 is focused. By default it's set to show so notifications are being shown.
@@ -930,6 +930,10 @@ held back and displayed when the focus to the fullscreen window is lost.
 Or pushback which is equivalent to delay with the difference that already
 existing notifications are paused and hidden until the focus to the fullscreen
 window is lost.
+
+There is additionally the drop value. Existing notifications will be closed
+when entering fullscreen and new notifications will go straight to history.
+This is similar to pushback without redisplaying after leaving fullscreen mode.
 
 On Wayland, if B<follow> is set to mouse or keyboard, the output where the
 notification is located cannot be determined. So dunst will delay or pushback if
