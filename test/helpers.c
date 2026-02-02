@@ -6,10 +6,13 @@
 
 GVariant *notification_setup_raw_image(const char *path)
 {
-        GdkPixbuf *pb = gdk_pixbuf_new_from_file(path, NULL);
-
-        if (!pb)
+        GError *err = NULL;
+        GdkPixbuf *pb = gdk_pixbuf_new_from_file(path, &err);
+        if (!pb) {
+                printf("Failed to load image: %s\n", err->message);
+                g_error_free(err);
                 return NULL;
+        }
 
         GVariant *hint_data = g_variant_new_from_data(
                                 G_VARIANT_TYPE("ay"),
@@ -30,7 +33,6 @@ GVariant *notification_setup_raw_image(const char *path)
                                 hint_data);
 
         g_object_unref(pb);
-
         return hint;
 }
 

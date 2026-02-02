@@ -132,20 +132,18 @@ TEST test_notification_referencing(void)
 
 static struct notification *notification_load_icon_with_scaling(int min_icon_size, int max_icon_size)
 {
-        static bool svg_failed = false;
-
         struct notification *n = notification_create();
-
         char *path;
         GVariant *raw_icon = NULL;
 
+        static bool svg_failed = false;
         if (!svg_failed) {
                 path = g_strconcat(base, "/data/icons/valid.svg", NULL); // 16x16
                 raw_icon = notification_setup_raw_image(path);
 
                 if (raw_icon == NULL) {
                         svg_failed = true;
-                        printf("Failed to load svg icon, using png\n");
+                        printf("Failed to load SVG icon, falling back to PNG\n");
                         g_free(path);
                 }
         }
@@ -155,14 +153,16 @@ static struct notification *notification_load_icon_with_scaling(int min_icon_siz
                 raw_icon = notification_setup_raw_image(path);
         }
 
+        assert(raw_icon && "The icon file was not loaded!");
+
         n->min_icon_size = min_icon_size;
         n->max_icon_size = max_icon_size;
         notification_icon_replace_data(n, raw_icon);
-        assert(n->icon_id);
+
+        assert(n->icon_id && "The icon checksum was not calculated!");
 
         g_variant_unref(raw_icon);
         g_free(path);
-
         return n;
 }
 
