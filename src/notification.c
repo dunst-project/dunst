@@ -37,8 +37,8 @@ static void notification_format_message(struct notification *n);
 const char *enum_to_string_fullscreen(enum behavior_fullscreen in)
 {
         switch (in) {
-                case FS_DROP:
-                        return "drop";
+                case FS_SUPPRESS:
+                        return "suppress";
                 case FS_SHOW:
                         return "show";
                 case FS_DELAY:

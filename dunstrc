@@ -447,8 +447,8 @@
 #        If the notification is already drawn, it won't get undrawn.
 # pushback: same as delay, but when switching into fullscreen, the notification will get
 #           withdrawn from screen again and will get delayed like a new notification
-# drop: withdraw the displayed notification when entering fullscreen and never show the
-#       new notifications that arrive during fullscreen mode
+# suppress: withdraw the displayed notification when entering fullscreen and never show
+#           the new notifications that arrive during fullscreen mode
 #[fullscreen_delay_everything]
 #    fullscreen = delay
 #[fullscreen_show_critical]

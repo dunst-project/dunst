@@ -762,7 +762,7 @@ TEST test_queue_timeout(void)
 TEST test_queues_update_fullscreen(void)
 {
         settings.notification_limit = 5;
-        struct notification *n_show, *n_delay, *n_push, *n_drop, *n_drop2;
+        struct notification *n_show, *n_delay, *n_push, *n_suppress, *n_suppress2;
 
         queues_init();
 
@@ -775,40 +775,40 @@ TEST test_queues_update_fullscreen(void)
         n_push = test_notification("push", 10);
         n_push->fullscreen = FS_PUSHBACK;
 
-        n_drop = test_notification("drop", 10);
-        n_drop->fullscreen = FS_DROP;
+        n_suppress = test_notification("suppress", 10);
+        n_suppress->fullscreen = FS_SUPPRESS;
 
         queues_notification_insert(n_show, STATUS_NORMAL);
         queues_notification_insert(n_delay, STATUS_NORMAL);
         queues_notification_insert(n_push, STATUS_NORMAL);
-        queues_notification_insert(n_drop, STATUS_NORMAL);
+        queues_notification_insert(n_suppress, STATUS_NORMAL);
 
         queues_update(STATUS_FS, time_monotonic_now());
         QUEUE_CONTAINS(DISP, n_show);
         QUEUE_CONTAINS(WAIT, n_delay);
         QUEUE_CONTAINS(WAIT, n_push);
-        QUEUE_CONTAINS(HIST, n_drop);
+        QUEUE_CONTAINS(HIST, n_suppress);
 
         queues_update(STATUS_NORMAL, time_monotonic_now());
         QUEUE_CONTAINS(DISP, n_show);
         QUEUE_CONTAINS(DISP, n_delay);
         QUEUE_CONTAINS(DISP, n_push);
-        QUEUE_CONTAINS(HIST, n_drop);
+        QUEUE_CONTAINS(HIST, n_suppress);
 
         queues_update(STATUS_FS, time_monotonic_now());
         QUEUE_CONTAINS(DISP, n_show);
         QUEUE_CONTAINS(DISP, n_delay);
         QUEUE_CONTAINS(WAIT, n_push);
-        QUEUE_CONTAINS(HIST, n_drop);
+        QUEUE_CONTAINS(HIST, n_suppress);
 
         /* test insertion while fullscreen */
-        n_drop2 = test_notification("drop2", 10);
-        n_drop2->fullscreen = FS_DROP;
+        n_suppress2 = test_notification("suppress2", 10);
+        n_suppress2->fullscreen = FS_SUPPRESS;
 
         QUEUE_LEN_ALL(1, 2, 1);
-        queues_notification_insert(n_drop2, STATUS_FS);
+        queues_notification_insert(n_suppress2, STATUS_FS);
         QUEUE_LEN_ALL(1, 2, 2);
-        QUEUE_CONTAINS(HIST, n_drop2);
+        QUEUE_CONTAINS(HIST, n_suppress2);
 
         queues_teardown();
         PASS();
@@ -992,7 +992,7 @@ TEST test_queues_update_seep_showlowurg(void)
         n3->fullscreen = FS_SHOW;
 
         n4 = test_notification("n4", 0);
-        n4->fullscreen = FS_DROP;
+        n4->fullscreen = FS_SUPPRESS;
 
         n3->urgency = URG_LOW;
         n4->urgency = URG_CRIT;
@@ -1017,7 +1017,7 @@ TEST test_queues_update_seep_showlowurg(void)
         PASS();
 }
 
-TEST test_queues_update_seep_drop(void)
+TEST test_queues_update_seep_suppress(void)
 {
         // Test 4 notifications during fullscreen and only the one
         // with the lowest priority is eligible to get shown
@@ -1029,13 +1029,13 @@ TEST test_queues_update_seep_drop(void)
         n1->fullscreen = FS_DELAY;
 
         n2 = test_notification("n2", 0);
-        n2->fullscreen = FS_DROP;
+        n2->fullscreen = FS_SUPPRESS;
 
         n3 = test_notification("n3", 0);
         n3->fullscreen = FS_SHOW;
 
         n4 = test_notification("n4", 0);
-        n4->fullscreen = FS_DROP;
+        n4->fullscreen = FS_SUPPRESS;
 
         n5 = test_notification("n5", 0);
         n5->fullscreen = FS_PUSHBACK;
@@ -1071,14 +1071,14 @@ TEST test_queues_update_seep_drop(void)
         PASS();
 }
 
-TEST test_queues_update_drop(void)
+TEST test_queues_update_suppress(void)
 {
         settings.notification_limit = 4;
         struct notification *n1, *n2, *n3;
         queues_init();
 
         n1 = test_notification("n1", 0);
-        n1->fullscreen = FS_DROP;
+        n1->fullscreen = FS_SUPPRESS;
 
         n2 = test_notification("n2", 0);
         n2->fullscreen = FS_SHOW;
@@ -1275,8 +1275,8 @@ SUITE(suite_queues)
         RUN_TEST(test_queues_update_paused);
         RUN_TEST(test_queues_update_pause_level);
         RUN_TEST(test_queues_update_seep_showlowurg);
-        RUN_TEST(test_queues_update_seep_drop);
-        RUN_TEST(test_queues_update_drop);
+        RUN_TEST(test_queues_update_seep_suppress);
+        RUN_TEST(test_queues_update_suppress);
         RUN_TEST(test_queues_update_seeping);
         RUN_TEST(test_queues_update_xmore);
         RUN_TEST(test_queues_timeout_before_paused);

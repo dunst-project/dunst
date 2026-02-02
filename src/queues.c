@@ -203,7 +203,7 @@ int queues_notification_insert(struct notification *n, struct dunst_status statu
         if (print_notifications)
                 notification_print(n);
 
-        if (status.fullscreen && n->fullscreen == FS_DROP) {
+        if (status.fullscreen && n->fullscreen == FS_SUPPRESS) {
                 notification_run_script(n);
                 queues_notification_close(n, REASON_UNDEF);
                 LOG_M("Dropping notification: '%s' '%s'", STR_NN(n->body), STR_NN(n->summary));
@@ -526,7 +526,7 @@ void queues_update(struct dunst_status status, gint64 time)
                         continue;
                 }
 
-                if (status.fullscreen && n->fullscreen == FS_DROP) {
+                if (status.fullscreen && n->fullscreen == FS_SUPPRESS) {
                         queues_notification_close(n, REASON_UNDEF);
                         iter = nextiter;
                         continue;
@@ -560,7 +560,7 @@ void queues_update(struct dunst_status status, gint64 time)
 
                 ASSERT_OR_RET(n,);
 
-                if (status.fullscreen && n->fullscreen == FS_DROP) {
+                if (status.fullscreen && n->fullscreen == FS_SUPPRESS) {
                         n->start = time;
                         notification_run_script(n);
 
@@ -613,7 +613,7 @@ void queues_update(struct dunst_status status, gint64 time)
                         todisp->start = time;
                         notification_run_script(todisp);
 
-                        if (status.fullscreen && todisp->fullscreen == FS_DROP)
+                        if (status.fullscreen && todisp->fullscreen == FS_SUPPRESS)
                                 queues_notification_close(todisp, REASON_UNDEF);
                         else
                                 queues_swap_notifications(displayed, i_displayed, waiting, i_waiting);
