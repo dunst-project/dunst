@@ -905,7 +905,7 @@ static void x_shortcut_init(struct keyboard_shortcut *ks)
 {
         ASSERT_OR_RET(ks && ks->str,);
 
-        if (STR_EQ(ks->str, "none") || (STR_EQ(ks->str, ""))) {
+        if (STR_EMPTY(ks->str) || STR_EQ(ks->str, "none")) {
                 ks->is_valid = false;
                 return;
         }

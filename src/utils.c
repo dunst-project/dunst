@@ -341,7 +341,7 @@ gint64 time_now(void)
 gint64 modification_time(const char *path)
 {
         struct stat statbuf;
-        if (stat(path, &statbuf) != 0)
+        if (!path || stat(path, &statbuf) != 0)
                 return -1;
 
         return S2US(statbuf.st_mtim.tv_sec) + statbuf.st_mtim.tv_nsec / 1000;
@@ -439,7 +439,7 @@ bool is_readable_file(const char * const path)
         struct stat statbuf;
         bool result = false;
 
-        if (0 == stat(path, &statbuf)) {
+        if (path && 0 == stat(path, &statbuf)) {
                 /** See what intersting stuff can be done with FIFOs */
                 if (!(statbuf.st_mode & (S_IFIFO | S_IFREG))) {
                         /** Sets errno if stat() was successful but @p path [in]
@@ -469,12 +469,16 @@ FILE *fopen_verbose(const char * const path)
         return f;
 }
 
-void add_paths_from_env(GPtrArray *arr, char *env_name, char *subdir, char *alternative) {
+void add_paths_from_env(GPtrArray *arr, char *env_name, char *subdir, char *alternative)
+{
         const char *xdg_data_dirs = g_getenv(env_name);
         if (!xdg_data_dirs)
                 xdg_data_dirs = alternative;
 
         char **xdg_data_dirs_arr = string_to_array(xdg_data_dirs, ":");
+        if (!xdg_data_dirs_arr)
+                return;
+
         for (int i = 0; xdg_data_dirs_arr[i] != NULL; i++) {
                 char *loc = g_build_filename(xdg_data_dirs_arr[i], subdir, NULL);
                 g_ptr_array_add(arr, loc);

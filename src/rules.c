@@ -210,7 +210,8 @@ void rule_apply_all(struct notification *n)
         }
 }
 
-bool rule_apply_special_filters(struct rule *r, const char *name) {
+bool rule_apply_special_filters(struct rule *r, const char *name)
+{
         if (is_deprecated_section(name)) // shouldn't happen, but just in case
                 return false;
 

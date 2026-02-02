@@ -14,6 +14,7 @@
 
 #include "foreign_toplevel.h"
 #include "../dunst.h"
+#include "../log.h"
 #include "wl_output.h"
 #include "wl.h"
 
@@ -39,6 +40,11 @@ static void toplevel_handle_output_enter(void *data,
 
         struct toplevel_v1 *toplevel = data;
         struct toplevel_output *toplevel_output = calloc(1, sizeof(struct toplevel_output));
+        if (!toplevel_output) {
+                LOG_W("Failed to allocate memory for toplevel output");
+                return;
+        }
+
         struct dunst_output *dunst_output = wl_output_get_user_data(wl_output);
         toplevel_output->dunst_output = dunst_output;
 
@@ -151,7 +157,7 @@ static void toplevel_manager_handle_toplevel(void *data,
 
         struct toplevel_v1 *toplevel = calloc(1, sizeof(struct toplevel_v1));
         if (!toplevel) {
-                fprintf(stderr, "Failed to allocate memory for toplevel\n");
+                LOG_W("Failed to allocate memory for toplevel");
                 return;
         }
 
