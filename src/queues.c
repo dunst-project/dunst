@@ -105,16 +105,16 @@ static void queues_swap_notifications(GQueue *queueA,
  */
 static bool queues_notification_is_ready(const struct notification *n, struct dunst_status status, bool shown)
 {
-        if (status.pause_level > n->override_pause_level) {
+        if (status.pause_level > n->override_pause_level)
                 return false;
-        }
 
         if (status.fullscreen && shown)
                 return n && n->fullscreen != FS_PUSHBACK;
-        else if (status.fullscreen && !shown)
+
+        if (status.fullscreen && !shown)
                 return n && n->fullscreen == FS_SHOW;
-        else
-                return true;
+
+        return true;
 }
 
 /**
@@ -158,9 +158,9 @@ static bool queues_notification_is_finished(struct notification *n, struct dunst
         return false;
 }
 
-int queues_notification_insert(struct notification *n)
+int queues_notification_insert(struct notification *n, struct dunst_status status)
 {
-        /* do not display the message, if the message is empty */
+        /* Do not display if the message is empty */
         if (STR_EMPTY(n->msg)) {
                 if (settings.always_run_script) {
                         notification_run_script(n);
@@ -193,13 +193,21 @@ int queues_notification_insert(struct notification *n)
         if (!inserted)
                 g_queue_insert_sorted(waiting, n, notification_cmp_data, NULL);
 
-        // The icon is loaded lazily. this is skipped if the icon was transferred
+        /* The icon is loaded lazily.
+         * This is skipped if the icon was transferred.
+         */
         if (!n->icon) {
                 notification_icon_replace_path(n, n->iconname);
         }
 
         if (print_notifications)
                 notification_print(n);
+
+        if (status.fullscreen && n->fullscreen == FS_SUPPRESS) {
+                notification_run_script(n);
+                queues_notification_close(n, REASON_UNDEF);
+                LOG_M("Dropping notification: '%s' '%s'", STR_NN(n->body), STR_NN(n->summary));
+        }
 
         return n->id;
 }
@@ -215,7 +223,7 @@ static bool queues_stack_duplicate(struct notification *new)
         gint64 modtime = -1;
 
         GQueue *allqueues[] = { displayed, waiting };
-        for (size_t i = 0; i < sizeof(allqueues)/sizeof(GQueue*); i++) {
+        for (size_t i = 0; i < G_N_ELEMENTS(allqueues); i++) {
                 for (GList *iter = g_queue_peek_head_link(allqueues[i]); iter; iter = iter->next) {
                         struct notification *old = iter->data;
                         if (notification_is_duplicate(old, new)) {
@@ -518,6 +526,12 @@ void queues_update(struct dunst_status status, gint64 time)
                         continue;
                 }
 
+                if (status.fullscreen && n->fullscreen == FS_SUPPRESS) {
+                        queues_notification_close(n, REASON_UNDEF);
+                        iter = nextiter;
+                        continue;
+                }
+
                 if (!queues_notification_is_ready(n, status, true)) {
                         g_queue_delete_link(displayed, iter);
                         g_queue_insert_sorted(waiting, n, notification_cmp_data, NULL);
@@ -545,6 +559,15 @@ void queues_update(struct dunst_status status, gint64 time)
                 nextiter = iter->next;
 
                 ASSERT_OR_RET(n,);
+
+                if (status.fullscreen && n->fullscreen == FS_SUPPRESS) {
+                        n->start = time;
+                        notification_run_script(n);
+
+                        queues_notification_close(n, REASON_UNDEF);
+                        iter = nextiter;
+                        continue;
+                }
 
                 if (!queues_notification_is_ready(n, status, false)) {
                         iter = nextiter;
@@ -579,20 +602,21 @@ void queues_update(struct dunst_status status, gint64 time)
                 while (   (i_waiting   = g_queue_peek_head_link(waiting))
                        && (i_displayed = g_queue_peek_tail_link(displayed))) {
 
-                        while (i_waiting && ! queues_notification_is_ready(i_waiting->data, status, false)) {
+                        while (i_waiting && !queues_notification_is_ready(i_waiting->data, status, false)) {
                                 i_waiting = i_waiting->prev;
                         }
 
-                        if (i_waiting && notification_cmp(i_displayed->data, i_waiting->data) > 0) {
-                                struct notification *todisp = i_waiting->data;
-
-                                todisp->start = time;
-                                notification_run_script(todisp);
-
-                                queues_swap_notifications(displayed, i_displayed, waiting, i_waiting);
-                        } else {
+                        if (!i_waiting || notification_cmp(i_displayed->data, i_waiting->data) <= 0)
                                 break;
-                        }
+
+                        struct notification *todisp = i_waiting->data;
+                        todisp->start = time;
+                        notification_run_script(todisp);
+
+                        if (status.fullscreen && todisp->fullscreen == FS_SUPPRESS)
+                                queues_notification_close(todisp, REASON_UNDEF);
+                        else
+                                queues_swap_notifications(displayed, i_displayed, waiting, i_waiting);
                 }
         }
         signal_length_propertieschanged();

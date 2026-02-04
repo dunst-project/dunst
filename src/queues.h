@@ -77,6 +77,7 @@ unsigned int queues_length_history(void);
  * Respects stack_duplicates, and notification replacement
  *
  * @param n the notification to insert
+ * @param status the current dunst status
  *
  * - If n->id != 0, n replaces notification n with id n->id
  * - If n->id == 0, n gets a new id assigned
@@ -84,7 +85,7 @@ unsigned int queues_length_history(void);
  * @return The new value of `n->id`
  * @retval 0 if the notification was dismissed and freed
  */
-int queues_notification_insert(struct notification *n);
+int queues_notification_insert(struct notification *n, struct dunst_status status);
 
 /**
  * Replace the notification which matches the id field of

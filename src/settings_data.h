@@ -285,6 +285,7 @@ static struct string_to_enum_def follow_mode_enum_data[] = {
 };
 
 static const struct string_to_enum_def fullscreen_enum_data[] = {
+        {"suppress", FS_SUPPRESS },
         {"show",     FS_SHOW },
         {"delay",    FS_DELAY },
         {"pushback", FS_PUSHBACK },
@@ -599,7 +600,7 @@ static const struct setting allowed_settings[] = {
         {
                 .name = "fullscreen",
                 .section = "*",
-                .description = "This attribute specifies how notifications are handled if a fullscreen window is focused. One of show, delay, or pushback.",
+                .description = "This attribute specifies how notifications are handled if a fullscreen window is focused. One of show, delay, suppress or pushback.",
                 .type = TYPE_CUSTOM,
                 .default_value = "show",
                 .value = NULL,

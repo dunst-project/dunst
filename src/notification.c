@@ -37,13 +37,19 @@ static void notification_format_message(struct notification *n);
 const char *enum_to_string_fullscreen(enum behavior_fullscreen in)
 {
         switch (in) {
-        case FS_SHOW: return "show";
-        case FS_DELAY: return "delay";
-        case FS_PUSHBACK: return "pushback";
-        case FS_NULL: return "(null)";
-        default:
-                LOG_E("Invalid %s enum value in %s:%d", "fullscreen", __FILE__, __LINE__);
-                break;
+                case FS_SUPPRESS:
+                        return "suppress";
+                case FS_SHOW:
+                        return "show";
+                case FS_DELAY:
+                        return "delay";
+                case FS_PUSHBACK:
+                        return "pushback";
+                case FS_NULL:
+                        return "(null)";
+                default:
+                        LOG_E("Invalid %s enum value in %s:%d", "fullscreen", __FILE__, __LINE__);
+                        break;
         }
 }
 

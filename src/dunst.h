@@ -42,10 +42,8 @@ extern char **config_paths;
  * @param field The field to change in the global status structure
  * @param value Anything boolean or DO_TOGGLE to toggle the current value
  */
-void dunst_status(const enum dunst_status_field field,
-                  bool value);
-void dunst_status_int(const enum dunst_status_field field,
-                  int value);
+void dunst_status(const enum dunst_status_field field, bool value);
+void dunst_status_int(const enum dunst_status_field field, int value);
 
 struct dunst_status dunst_status_get(void);
 
