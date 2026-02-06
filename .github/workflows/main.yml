@@ -14,7 +14,11 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: enforce-g_malloc
-        run: "! git grep -P '(?<!g_)malloc' ':!.valgrind.suppressions' ':!.github/workflows/main.yml'"
+        run: >
+          ! git grep -P '\<(malloc|calloc|free)\>\s*\('
+          -- '*.c' '*.h'
+          ':!.valgrind.suppressions'
+          ':!.github/workflows/main.yml'
 
   build-linux:
     strategy:

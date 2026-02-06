@@ -154,34 +154,34 @@ TEST test_string_to_path(void)
 
         exp = "/usr/local/bin/script";
         ASSERT_STR_EQ(exp, (ptr = string_to_path(g_strdup(exp))));
-        free(ptr);
+        g_free(ptr);
 
         // This might fail, when a user named path exists on the host running the tests.
         exp = "~path/with/wrong/tilde";
         ASSERT_STR_EQ(exp, (ptr = string_to_path(g_strdup(exp))));
-        free(ptr);
+        g_free(ptr);
 
         ASSERT_STR_EQ((exp = g_strconcat(home, "/.path/with/tilde", NULL)),
                       (ptr = string_to_path(g_strdup("~/.path/with/tilde"))));
-        free(exp);
-        free(ptr);
+        g_free(exp);
+        g_free(ptr);
 
         ASSERT_STR_EQ((exp = g_strconcat(home, "/.path/with/tilde and some space", NULL)),
                       (ptr = string_to_path(g_strdup("~/.path/with/tilde and some space"))));
-        free(exp);
-        free(ptr);
+        g_free(exp);
+        g_free(ptr);
 
         ASSERT_STR_EQ((exp = g_strconcat(home, "/.path/with/HOME environment variable", NULL)),
                       (ptr = string_to_path(g_strdup("$HOME/.path/with/HOME environment variable"))));
-        free(exp);
-        free(ptr);
+        g_free(exp);
+        g_free(ptr);
 
 // Just glibc properly returns an error when using `WRDE_UNDEF` and an
 // undefined variable is found. musl accepts this flag and ignores it.
 #ifdef __GLIBC__
         exp = "/some/$UNDEFINED/variable";
         ASSERT_STR_EQ(exp, (ptr = string_to_path(g_strdup(exp))));
-        free(ptr);
+        g_free(ptr);
 #endif
 
         PASS();
