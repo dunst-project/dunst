@@ -154,7 +154,8 @@ struct ini *load_ini_file(FILE *fp)
 
                 add_entry(ini, current_section, key, value);
         }
-        free(line);
+
+        g_free(line);
         g_free(current_section);
         return ini;
 }

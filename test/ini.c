@@ -14,7 +14,7 @@ TEST test_next_section(void)
         struct ini * ini = load_ini_file(config_file);
         ASSERT(ini);
         fclose(config_file);
-        free(config_path);
+        g_free(config_path);
 
         const char *section = NULL;
         ASSERT_STR_EQ("bool", (section = next_section(ini, section)));
@@ -24,7 +24,7 @@ TEST test_next_section(void)
         ASSERT_STR_EQ("int", (section = next_section(ini, section)));
         ASSERT_STR_EQ("double", (section = next_section(ini, section)));
         finish_ini(ini);
-        free(ini);
+        g_free(ini);
         PASS();
 }
 

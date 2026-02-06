@@ -44,7 +44,7 @@ static void toplevel_handle_output_enter(void *data,
         }
 
         struct toplevel_v1 *toplevel = data;
-        struct toplevel_output *toplevel_output = calloc(1, sizeof(struct toplevel_output));
+        struct toplevel_output *toplevel_output = g_malloc0(sizeof(struct toplevel_output));
         if (!toplevel_output) {
                 LOG_W("Failed to allocate memory for toplevel output");
                 return;
@@ -122,11 +122,13 @@ static void toplevel_handle_closed(void *data,
         struct toplevel_v1 *toplevel = data;
 
         wl_list_remove(&toplevel->link);
+
         struct toplevel_output *pos, *tmp;
-        wl_list_for_each_safe(pos, tmp, &toplevel->output_list, link){
-                free(pos);
+        wl_list_for_each_safe(pos, tmp, &toplevel->output_list, link) {
+                g_free(pos);
         }
-        free(toplevel);
+
+        g_free(toplevel);
         zwlr_foreign_toplevel_handle_v1_destroy(zwlr_toplevel);
 }
 
@@ -165,7 +167,7 @@ static void toplevel_manager_handle_toplevel(void *data,
         (void)data;
         (void)toplevel_manager;
 
-        struct toplevel_v1 *toplevel = calloc(1, sizeof(struct toplevel_v1));
+        struct toplevel_v1 *toplevel = g_malloc0(sizeof(struct toplevel_v1));
         if (!toplevel) {
                 LOG_W("Failed to allocate memory for toplevel");
                 return;

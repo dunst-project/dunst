@@ -42,11 +42,11 @@ TEST test_cmdline_get_string(void)
 {
         char *ptr;
         ASSERT_STR_EQ("A simple string from the cmdline", (ptr =cmdline_get_string("-string", "", "")));
-        free(ptr);
+        g_free(ptr);
         ASSERT_STR_EQ("Single_word_string", (ptr = cmdline_get_string("-str/-s", "", "")));
-        free(ptr);
+        g_free(ptr);
         ASSERT_STR_EQ("Default", (ptr = cmdline_get_string("-nonexistent", "Default", "")));
-        free(ptr);
+        g_free(ptr);
         PASS();
 }
 
@@ -394,7 +394,7 @@ TEST test_string_to_list(void)
                         ASSERT_EQm(buf, val[j], results[i][j]);
                 }
         }
-        free(val);
+        g_free(val);
         PASS();
 }
 
