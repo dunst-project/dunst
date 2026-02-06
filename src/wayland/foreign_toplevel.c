@@ -38,6 +38,11 @@ static void toplevel_handle_output_enter(void *data,
 {
         (void)zwlr_toplevel;
 
+        if (!wl_output) {
+                LOG_D("Ignoring NULL toplevel output\n");
+                return;
+        }
+
         struct toplevel_v1 *toplevel = data;
         struct toplevel_output *toplevel_output = calloc(1, sizeof(struct toplevel_output));
         if (!toplevel_output) {
@@ -57,9 +62,14 @@ static void toplevel_handle_output_leave(void *data,
 {
         (void)zwlr_toplevel;
 
-        struct toplevel_v1 *toplevel = data;
+        if (!wl_output) {
+                LOG_D("Ignoring NULL toplevel output\n");
+                return;
+        }
 
+        struct toplevel_v1 *toplevel = data;
         struct dunst_output *output = wl_output_get_user_data(wl_output);
+
         struct toplevel_output *pos, *tmp;
         wl_list_for_each_safe(pos, tmp, &toplevel->output_list, link){
                 if (pos->dunst_output->name == output->name) {
