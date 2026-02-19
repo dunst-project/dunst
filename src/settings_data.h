@@ -1385,6 +1385,16 @@ static const struct setting allowed_settings[] = {
                 .parser_data = boolean_enum_data,
         },
         {
+                .name = "enable_pcre_regex",
+                .section = "experimental",
+                .description = "Use PCRE regex for filtering rules (overrides enable_posix_regex)",
+                .type = TYPE_CUSTOM,
+                .default_value = "false",
+                .value = &settings.enable_pcre,
+                .parser = string_parse_bool,
+                .parser_data = boolean_enum_data,
+        },
+        {
                 .name = "frame_width",
                 .section = "global",
                 .description = "Width of frame around the window",

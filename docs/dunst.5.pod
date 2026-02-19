@@ -717,6 +717,12 @@ This setting is currently implemented only for X11.
 Pause notification timeout when hovering with the mouse pointer.
 This setting is currently implemented only for Wayland.
 
+=item B<enable_pcre_regex> (default: false)
+
+Use PCRE regular expressions for filtering rules.
+For more information see https://en.wikipedia.org/wiki/Perl_Compatible_Regular_Expressions.
+This setting overrides B<enable_posix_regex>.
+
 =back
 
 =head1 DUNSTCTL
@@ -809,6 +815,7 @@ For filtering rules that filter based on strings you can use regular
 expressions. It's recommended to set B<enable_posix_regex> to true. You can then
 use the POSIX Extended Regular Expression syntax:
 https://en.m.wikibooks.org/wiki/Regular_Expressions/POSIX-Extended_Regular_Expressions.
+Eventually B<enable_posix_regex> will be enabled by default.
 
 A matching rule is made by assigning a filter attribute to the value you want to match.
 Shell-like globbing is supported when matching values.
