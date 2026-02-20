@@ -248,7 +248,7 @@ static bool queues_stack_duplicate(struct notification *new)
 
                                 /* If the progress differs, probably notify-send was used to update the notification
                                  * So only count it as a duplicate, if the progress was the same.
-                                 * */
+                                 */
                                 if (old->progress == new->progress) {
                                         old->dup_count++;
                                 } else {
@@ -259,8 +259,11 @@ static bool queues_stack_duplicate(struct notification *new)
                                 new->dup_count = old->dup_count;
                                 signal_notification_closed(old, 1);
 
-                                if (allqueues[i] == displayed)
+                                /* Run script if the duplicate notification is already displayed */
+                                if (allqueues[i] == displayed) {
                                         new->start = time_monotonic_now();
+                                        notification_run_script(new);
+                                }
 
                                 notification_unref(old);
                                 return true;
@@ -308,6 +311,7 @@ static bool queues_stack_by_tag(struct notification *new)
 
                                 signal_notification_closed(old, 1);
 
+                                /* Run script if the stacked notification is already displayed */
                                 if (allqueues[i] == displayed) {
                                         new->start = time_monotonic_now();
                                         notification_run_script(new);
