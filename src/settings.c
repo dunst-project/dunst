@@ -296,6 +296,10 @@ void settings_free(struct settings *s)
         gradient_release(s->colors_norm.highlight);
         gradient_release(s->colors_crit.highlight);
 
+        gradient_release(s->colors_low.bg);
+        gradient_release(s->colors_norm.bg);
+        gradient_release(s->colors_crit.bg);
+
         g_free(s->font);
         g_free(s->format);
         g_free(s->icons[0]);
