@@ -176,13 +176,27 @@ static inline double color_apply_delta(double base, double delta)
         return base;
 }
 
-static struct color calculate_foreground_color(struct color bg)
+static struct color calculate_foreground_color(struct gradient *bg)
 {
         double c_delta = 0.1;
-        struct color fg = bg;
+
+        struct color avg;
+
+        /* takes average of gradient color stops in bg */
+        for (size_t i = 0; i < bg->length; i++) {
+                avg.r += bg->colors[i].r;
+                avg.g += bg->colors[i].r;
+                avg.b += bg->colors[i].r;
+        }
+
+        avg.r /= bg->length;
+        avg.g /= bg->length;
+        avg.b /= bg->length;
+
+        struct color fg = avg;
 
         /* do we need to darken or brighten the colors? */
-        bool darken = (bg.r + bg.g + bg.b) / 3 > 0.5;
+        bool darken = (avg.r + avg.g + avg.b) / 3 > 0.5;
 
         int signedness = darken ? -1 : 1;
 
@@ -754,7 +768,7 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
 
         draw_rounded_rect(c, x, y, width, height, radius_int, scale, corners);
 
-        cairo_set_source_rgba(c, COLOR(cl, bg.r), COLOR(cl, bg.g), COLOR(cl, bg.b), COLOR(cl, bg.a));
+        // cairo_set_source_rgba(c, COLOR(cl, bg.r), COLOR(cl, bg.g), COLOR(cl, bg.b), COLOR(cl, bg.a));
         cairo_fill(c);
 
         draw_rounded_rect(c, x, y, width, height, radius_int, scale, corners);
@@ -918,7 +932,7 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, int
                 */
 
                 // back layer (background)
-                cairo_set_source_rgba(c, COLOR(cl, bg.r), COLOR(cl, bg.g), COLOR(cl, bg.b), COLOR(cl, bg.a));
+                //cairo_set_source_rgba(c, COLOR(cl, bg.r), COLOR(cl, bg.g), COLOR(cl, bg.b), COLOR(cl, bg.a));
                 draw_rounded_rect(c, x_bar_2, frame_y, progress_width_2, progress_height,
                         settings.progress_bar_corner_radius, scale, settings.progress_bar_corners);
                 cairo_fill(c);
