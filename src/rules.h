@@ -58,7 +58,7 @@ struct rule {
         char *new_icon;
         char *default_icon;
         struct color fg;
-        struct color bg;
+        struct gradient *bg;
         struct gradient *highlight;
         struct color fc;
         char *set_category;
