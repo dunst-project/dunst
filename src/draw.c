@@ -400,8 +400,8 @@ static struct colored_layout *layout_init_shared(cairo_t *c, struct notification
         // Invalid colors should never reach this point!
         assert(settings.frame_width == 0 || COLOR_VALID(COLOR(cl, frame)));
         assert(!have_progress_bar(cl) || COLOR(cl, highlight) != NULL);
+        assert(COLOR(cl, bg) != NULL);
         assert(COLOR_VALID(COLOR(cl, fg)));
-        assert(COLOR_VALID(COLOR(cl, bg)));
         return cl;
 }
 
@@ -753,12 +753,28 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
         radius_int = frame_internal_radius(corner_radius, settings.frame_width, height);
 
         draw_rounded_rect(c, x, y, width, height, radius_int, scale, corners);
-        cairo_set_source_rgba(c, COLOR(cl, frame.r), COLOR(cl, frame.g), COLOR(cl, frame.b), COLOR(cl, frame.a));
+
+        cairo_set_source_rgba(c, COLOR(cl, bg.r), COLOR(cl, bg.g), COLOR(cl, bg.b), COLOR(cl, bg.a));
         cairo_fill(c);
 
         draw_rounded_rect(c, x, y, width, height, radius_int, scale, corners);
-        cairo_set_source_rgba(c, COLOR(cl, bg.r), COLOR(cl, bg.g), COLOR(cl, bg.b), COLOR(cl, bg.a));
+
+        // TODO: background gradient angle option in dunstrc
+        double degrees = 0.0;
+        double radians = degrees * (G_PI / 180.0);
+
+        double dynamic_width = (width * fabs(cos(radians))) + (height * fabs(sin(radians)));
+
+        cairo_matrix_t bg_matrix;
+        cairo_matrix_init_scale(&bg_matrix, 1.0 / dynamic_width, 1.0);
+        cairo_matrix_rotate(&bg_matrix, radians);
+
+        bg_matrix.x0 = (fmax(0.0, -cos(radians)) * width + fmax(0.0, sin(radians)) * height) / dynamic_width;
+
+        cairo_pattern_set_matrix(COLOR(cl, bg->pattern), &bg_matrix);
+        cairo_set_source(c, COLOR(cl, bg->pattern));
         cairo_fill(c);
+
 
         cairo_set_operator(c, CAIRO_OPERATOR_SOURCE);
 
