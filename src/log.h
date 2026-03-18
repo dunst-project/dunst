@@ -27,7 +27,7 @@
  * This requires -Wno-gnu-zero-variadic-macro-arguments with clang
  * because of token pasting ',' and %__VA_ARGS__ being a GNU extension.
  * However, the result is the same with both gcc and clang and since we are
- * compiling with '-std=gnu99', this should be fine.
+ * compiling with '-std=gnu11', this should be fine.
  */
 #if __GNUC__ >= 8 || __clang_major__ >= 6
 #define MSG(format, ...) "[%16s:%04d] " format, __func__, __LINE__, ## __VA_ARGS__

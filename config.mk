@@ -58,13 +58,19 @@ ENABLE_X11= -DENABLE_X11
 endif
 
 # flags
-DEFAULT_CPPFLAGS = -Wno-gnu-zero-variadic-macro-arguments -D_DEFAULT_SOURCE -DVERSION=\"${VERSION}\" -DSYSCONFDIR=\"${SYSCONFDIR}\" ${ENABLE_WAYLAND} ${ENABLE_X11}
-DEFAULT_CFLAGS   = -g -std=gnu11 -pedantic -Wall -Wno-overlength-strings -Wno-expansion-to-defined -Os ${EXTRA_CFLAGS}
+DEFAULT_CPPFLAGS = -D_DEFAULT_SOURCE -DVERSION=\"${VERSION}\" -DSYSCONFDIR=\"${SYSCONFDIR}\" ${ENABLE_WAYLAND} ${ENABLE_X11}
+DEFAULT_CFLAGS   = -g -std=gnu11 -pedantic -Wall -Wno-overlength-strings -Wno-expansion-to-defined -Os
 DEFAULT_LDFLAGS  = -lm -lrt
 
 CPPFLAGS_DEBUG :=
 CFLAGS_DEBUG   := -O0
 LDFLAGS_DEBUG  :=
+
+ifeq ($(CC),clang)
+DEFAULT_CFLAGS += -Wno-gnu-zero-variadic-macro-arguments -Wno-unknown-warning-option -Wno-c2y-extensions -Wno-c2x-extensions
+endif
+
+DEFAULT_CFLAGS += ${EXTRA_CFLAGS}
 
 pkg_config_packs := gio-2.0 \
                     gdk-pixbuf-2.0 \

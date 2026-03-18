@@ -1,5 +1,22 @@
 # Dunst changelog
 
+## 1.13.2 -- 2026-03-18
+
+### Added
+- Add *experimental* support for PCRE regex (see manual) (#1536)
+- Add fullscreen `suppress` mode (#1539, #1187)
+- Add dunstify shorthand for stack-tags (--stack-tag) (#1540)
+
+### Changed
+- Improve doxygen docs (#1538)
+- Make the build more generic and improve support for FreeBSD (#1537)
+
+### Fixed
+- Run script for duplicate notifications (#1542, #1115)
+- Add NULL check in wayland toplevel events
+- Fix markup newline parsing (#1054)
+- Restore dunstify `-a` and update docs
+
 ## 1.13.1 -- 2026-01-23
 
 ### Added
