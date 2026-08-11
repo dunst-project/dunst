@@ -78,7 +78,11 @@ void notification_print(const struct notification *n)
         printf("\tformatted: '%s'\n", STR_NN(n->msg));
         char buf[10];
         printf("\tfg: %s\n", STR_NN(color_to_string(n->colors.fg, buf)));
-        printf("\tbg: %s\n", STR_NN(color_to_string(n->colors.bg, buf)));
+
+        char *bg_grad = gradient_to_string(n->colors.bg);
+        printf("\bg: %s\n", STR_NN(bg_grad));
+        g_free(bg_grad);
+
         printf("\tframe: %s\n", STR_NN(color_to_string(n->colors.frame, buf)));
 
         char *grad = gradient_to_string(n->colors.highlight);
@@ -330,6 +334,7 @@ void notification_unref(struct notification *n)
         notification_private_free(n->priv);
 
         gradient_release(n->colors.highlight);
+        gradient_release(n->colors.bg);
 
         g_free(n->format);
         g_strfreev(n->scripts);
@@ -474,7 +479,7 @@ struct notification *notification_create(void)
 
         struct color invalid = COLOR_UNINIT;
         n->colors.fg = invalid;
-        n->colors.bg = invalid;
+        n->colors.bg = NULL;
         n->colors.frame = invalid;
         n->colors.highlight = NULL;
 
@@ -526,7 +531,12 @@ void notification_init(struct notification *n)
                         g_error("Unhandled urgency type: %d", n->urgency);
         }
         if (!COLOR_VALID(n->colors.fg)) n->colors.fg = defcolors.fg;
-        if (!COLOR_VALID(n->colors.bg)) n->colors.bg = defcolors.bg;
+
+        if (!GRADIENT_VALID(n->colors.bg)) {
+                gradient_release(n->colors.bg);
+                n->colors.bg = gradient_acquire(defcolors.bg);
+        }
+
         if (!COLOR_VALID(n->colors.frame)) n->colors.frame = defcolors.frame;
 
         if (!GRADIENT_VALID(n->colors.highlight)) {

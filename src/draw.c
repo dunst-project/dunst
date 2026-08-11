@@ -176,13 +176,27 @@ static inline double color_apply_delta(double base, double delta)
         return base;
 }
 
-static struct color calculate_foreground_color(struct color bg)
+static struct color calculate_foreground_color(struct gradient *bg)
 {
         double c_delta = 0.1;
-        struct color fg = bg;
+
+        struct color avg;
+
+        /* takes average of gradient color stops in bg */
+        for (size_t i = 0; i < bg->length; i++) {
+                avg.r += bg->colors[i].r;
+                avg.g += bg->colors[i].r;
+                avg.b += bg->colors[i].r;
+        }
+
+        avg.r /= bg->length;
+        avg.g /= bg->length;
+        avg.b /= bg->length;
+
+        struct color fg = avg;
 
         /* do we need to darken or brighten the colors? */
-        bool darken = (bg.r + bg.g + bg.b) / 3 > 0.5;
+        bool darken = (avg.r + avg.g + avg.b) / 3 > 0.5;
 
         int signedness = darken ? -1 : 1;
 
@@ -400,8 +414,8 @@ static struct colored_layout *layout_init_shared(cairo_t *c, struct notification
         // Invalid colors should never reach this point!
         assert(settings.frame_width == 0 || COLOR_VALID(COLOR(cl, frame)));
         assert(!have_progress_bar(cl) || COLOR(cl, highlight) != NULL);
+        assert(COLOR(cl, bg) != NULL);
         assert(COLOR_VALID(COLOR(cl, fg)));
-        assert(COLOR_VALID(COLOR(cl, bg)));
         return cl;
 }
 
@@ -753,12 +767,28 @@ static cairo_surface_t *render_background(cairo_surface_t *srf,
         radius_int = frame_internal_radius(corner_radius, settings.frame_width, height);
 
         draw_rounded_rect(c, x, y, width, height, radius_int, scale, corners);
-        cairo_set_source_rgba(c, COLOR(cl, frame.r), COLOR(cl, frame.g), COLOR(cl, frame.b), COLOR(cl, frame.a));
+
+        // cairo_set_source_rgba(c, COLOR(cl, bg.r), COLOR(cl, bg.g), COLOR(cl, bg.b), COLOR(cl, bg.a));
         cairo_fill(c);
 
         draw_rounded_rect(c, x, y, width, height, radius_int, scale, corners);
-        cairo_set_source_rgba(c, COLOR(cl, bg.r), COLOR(cl, bg.g), COLOR(cl, bg.b), COLOR(cl, bg.a));
+
+        // TODO: background gradient angle option in dunstrc
+        double degrees = 0.0;
+        double radians = degrees * (G_PI / 180.0);
+
+        double dynamic_width = (width * fabs(cos(radians))) + (height * fabs(sin(radians)));
+
+        cairo_matrix_t bg_matrix;
+        cairo_matrix_init_scale(&bg_matrix, 1.0 / dynamic_width, 1.0);
+        cairo_matrix_rotate(&bg_matrix, radians);
+
+        bg_matrix.x0 = (fmax(0.0, -cos(radians)) * width + fmax(0.0, sin(radians)) * height) / dynamic_width;
+
+        cairo_pattern_set_matrix(COLOR(cl, bg->pattern), &bg_matrix);
+        cairo_set_source(c, COLOR(cl, bg->pattern));
         cairo_fill(c);
+
 
         cairo_set_operator(c, CAIRO_OPERATOR_SOURCE);
 
@@ -902,7 +932,7 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, int
                 */
 
                 // back layer (background)
-                cairo_set_source_rgba(c, COLOR(cl, bg.r), COLOR(cl, bg.g), COLOR(cl, bg.b), COLOR(cl, bg.a));
+                //cairo_set_source_rgba(c, COLOR(cl, bg.r), COLOR(cl, bg.g), COLOR(cl, bg.b), COLOR(cl, bg.a));
                 draw_rounded_rect(c, x_bar_2, frame_y, progress_width_2, progress_height,
                         settings.progress_bar_corner_radius, scale, settings.progress_bar_corners);
                 cairo_fill(c);

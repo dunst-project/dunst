@@ -50,7 +50,7 @@ typedef struct _notification_private NotificationPrivate;
 
 struct notification_colors {
         struct color frame;
-        struct color bg;
+        struct gradient *bg;
         struct color fg;
         struct gradient *highlight;
 };
