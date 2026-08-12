@@ -375,6 +375,19 @@ static const struct string_to_enum_def corners_enum_data[] = {
         ENUM_END,
 };
 
+static const struct string_to_enum_def timeout_bar_style_enum_data[] = {
+        { "top",         TIMEOUT_BAR_TOP },        // Horizontal bar at the top edge, shrinks horizontally
+        { "bottom",      TIMEOUT_BAR_BOTTOM },     // Horizontal bar at the bottom edge, shrinks horizontally
+        { "top_bottom",  TIMEOUT_BAR_TOP_BOTTOM }, // Two bars at top and bottom, both shrink horizontally
+        { "up_span",     TIMEOUT_BAR_UP_SPAN },    // Full-height bar starting at the top, shrinks downward
+        { "down_span",   TIMEOUT_BAR_DOWN_SPAN },  // Full-height bar starting at the bottom, shrinks upward
+        { "left_span",   TIMEOUT_BAR_LEFT_SPAN },  // Full-width bar starting at the left, shrinks rightward
+        { "floodin",     TIMEOUT_BAR_FLOODIN },    // Animated wavy surface rising from bottom to top
+        { "drainout",    TIMEOUT_BAR_DRAINOUT },   // Animated wavy surface falling from top to bottom
+        { "glow",        TIMEOUT_BAR_GLOW },       // Bar with dynamic intensity and color shift as it expires
+        ENUM_END,
+};
+
 static const struct setting allowed_settings[] = {
         // These icon settings have to be above the icon rule
         {
@@ -1439,6 +1452,47 @@ static const struct setting allowed_settings[] = {
                 .parser_data = NULL,
         },
         {
+                .name = "enable_timeout_bar",
+                .section = "global",
+                .description = "Show the timeout bar",
+                .type = TYPE_CUSTOM,
+                .default_value = "true",
+                .value = &settings.enable_timeout_bar,
+                .parser = string_parse_bool,
+                .parser_data = boolean_enum_data,
+        },
+        {
+                .name = "timeout_bar_style",
+                .section = "global",
+                .description = "Style of timeout bar: top, top_bottom, full",
+                .type = TYPE_CUSTOM,
+                .default_value = "top",
+                .value = &settings.timeout_bar_style,
+                .parser = string_parse_enum,
+                .parser_data = timeout_bar_style_enum_data,
+        },
+        {
+                .name = "timeout_bar_height",
+                .section = "global",
+                .description = "Height (in px) for timeout_bar", // only for top, top_bottom styles
+                .type = TYPE_INT,
+                .default_value = "4",
+                .value = &settings.timeout_bar_height,
+                .parser = NULL,
+                .parser_data = NULL,
+        },
+        {
+                .name = "timeout_bar_color",
+                .section = "*",
+                .description = "timeout bar color override",
+                .type = TYPE_COLOR,
+                .default_value = "*",
+                .value = NULL,
+                .parser = NULL,
+                .parser_data = NULL,
+                .rule_offset = offsetof(struct rule, timeout_bar),
+        },
+        {
                 .name = "frame_color",
                 .section = "urgency_low",
                 .description = "Frame color for notifications with low urgency",
@@ -1555,6 +1609,36 @@ static const struct setting allowed_settings[] = {
                 .type = TYPE_TIME,
                 .default_value = "0",
                 .value = &settings.timeouts[URG_CRIT],
+                .parser = NULL,
+                .parser_data = NULL,
+        },
+        {
+                .name = "timeout_bar_color",
+                .section = "urgency_low",
+                .description = "timeout bar color for notifications with low urgency",
+                .type = TYPE_COLOR,
+                .default_value = "#00ffff",
+                .value = &settings.colors_low.timeout_bar,
+                .parser = NULL,
+                .parser_data = NULL,
+        },
+        {
+                .name = "timeout_bar_color",
+                .section = "urgency_normal",
+                .description = "timeout bar color for notifications with normal urgency",
+                .type = TYPE_COLOR,
+                .default_value = "#ff9e64",
+                .value = &settings.colors_norm.timeout_bar,
+                .parser = NULL,
+                .parser_data = NULL,
+        },
+        {
+                .name = "timeout_bar_color",
+                .section = "urgency_critical",
+                .description = "timeout bar color for notifications with critical urgency",
+                .type = TYPE_COLOR,
+                .default_value = "#bf616a",
+                .value = &settings.colors_crit.timeout_bar,
                 .parser = NULL,
                 .parser_data = NULL,
         },

@@ -16,6 +16,8 @@
 #include "dunst.h"
 #include "log.h"
 #include "menu.h"
+#include "notification.h"
+#include "option_parser.h"
 #include "rules.h"
 #include "queues.h"
 #include "settings.h"
@@ -127,7 +129,6 @@ static const char *introspection_xml =
     "        <property name=\"waitingLength\" type=\"u\" access=\"read\">"
     "            <annotation name=\"org.freedesktop.DBus.Property.EmitsChangedSignal\" value=\"true\"/>"
     "        </property>"
-
 
     "        <signal name=\"NotificationHistoryRemoved\">"
     "            <arg name=\"id\"         type=\"u\"/>"
@@ -749,6 +750,11 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
         g_variant_iter_next(&i, "^a&s", &actions);
         g_variant_iter_next(&i, "@a{?*}", &hints);
         g_variant_iter_next(&i, "i", &timeout);
+
+        /* If notification replaces an existing one, ignore new timeout */
+        if (n->id != 0) {
+                timeout = -1;
+        }
 
         gsize num = 0;
         while (actions[num]) {

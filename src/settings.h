@@ -112,6 +112,18 @@ struct position {
         int y;
 };
 
+enum timeout_bar_style {
+        TIMEOUT_BAR_TOP,
+        TIMEOUT_BAR_BOTTOM,
+        TIMEOUT_BAR_TOP_BOTTOM,
+        TIMEOUT_BAR_UP_SPAN,
+        TIMEOUT_BAR_DOWN_SPAN,
+        TIMEOUT_BAR_LEFT_SPAN,
+        TIMEOUT_BAR_FLOODIN,
+        TIMEOUT_BAR_DRAINOUT,
+        TIMEOUT_BAR_GLOW,
+};
+
 struct settings {
         bool print_notifications;
         bool per_monitor_dpi; // experimental
@@ -123,6 +135,9 @@ struct settings {
         struct notification_colors colors_crit;
         char *format;
         gint64 timeouts[3];
+        bool enable_timeout_bar;
+        enum timeout_bar_style timeout_bar_style;
+        int timeout_bar_height;   // in pixels
         char *icons[3];
         unsigned int transparency;
         char *title;

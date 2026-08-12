@@ -60,6 +60,7 @@ struct rule {
         struct color fg;
         struct color bg;
         struct gradient *highlight;
+        struct color timeout_bar;
         struct color fc;
         char *set_category;
         char *format;
