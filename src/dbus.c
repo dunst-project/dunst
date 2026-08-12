@@ -408,7 +408,7 @@ static void dbus_cb_dunst_NotificationListHistory(GDBusConnection *connection,
                         g_variant_new_string(default_action_name));
                 g_variant_builder_add(&n_builder, "{sv}", "icon_path", g_variant_new_string(icon_path));
                 g_variant_builder_add(&n_builder, "{sv}", "id", g_variant_new_int32(n->id));
-                g_variant_builder_add(&n_builder, "{sv}", "timestamp", g_variant_new_int64(n->timestamp));
+                g_variant_builder_add(&n_builder, "{sv}", "timestamp", g_variant_new_int64(n->real_timestamp));
                 g_variant_builder_add(&n_builder, "{sv}", "timeout", g_variant_new_int64(n->timeout));
                 g_variant_builder_add(&n_builder, "{sv}", "progress", g_variant_new_int32(n->progress));
                 g_variant_builder_add(&n_builder, "{sv}", "urgency", g_variant_new_string(urgency));
