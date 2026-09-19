@@ -66,5 +66,6 @@ struct wl_ctx {
 extern struct wl_ctx ctx;
 
 void set_dirty(void);
+void wl_teardown_surface(void);
 
 #endif
