@@ -159,6 +159,25 @@ static void xdg_toplevel_handle_close(void *data,
         surface_handle_closed();
 }
 
+void wl_teardown_surface(void) {
+        if (ctx.layer_surface)
+                zwlr_layer_surface_v1_destroy(ctx.layer_surface);
+        ctx.layer_surface = NULL;
+
+        if (ctx.xdg_toplevel)
+                xdg_toplevel_destroy(ctx.xdg_toplevel);
+        ctx.xdg_toplevel = NULL;
+
+        if (ctx.xdg_surface)
+                xdg_surface_destroy(ctx.xdg_surface);
+        ctx.xdg_surface = NULL;
+
+        ctx.layer_surface_output = NULL;
+        ctx.surface_output = NULL;
+
+        surface_handle_closed();
+}
+
 static void xdg_wm_base_handle_ping(void *data,
                 struct xdg_wm_base *xdg_wm_base,
                 uint32_t serial) {
