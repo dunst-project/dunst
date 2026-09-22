@@ -777,7 +777,8 @@ do anything about that behavior.
 
 Note that dunst creates a "desktop layer" using the layer shell protocol and not
 a regular Wayland window. This has some limitations like stated above.
-For example you can't set a window title/class.
+For example you can't set a window title/class. Some compositors can access the
+layer through its namespace "notifications".
 
 =head1 RULES
 
