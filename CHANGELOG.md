@@ -47,6 +47,8 @@
 ### Changed
 - Improve Makefile and build flags (#1456, #1457)
 - Change the way icons are cached (#1473, #1471)
+
+Note on urgency vs pause_level: notification urgency is one of `low`, `normal`, or `critical`. Internally these map to numeric ranks (commonly low=0, normal=1, critical=2 — see `urgency_*` / rule matching in the codebase). `pause_level` is a 0–100 threshold: a notification is shown only when its effective urgency rank is **greater than** the current pause level (after `override_pause_level` on rules is applied). In practice, keep `pause_level` at 0 for normal operation; raise it to suppress low/normal noise while still allowing critical (or rule-overridden) notifications through.
 - Improve deinit and init for Wayland (#1458)
 - Rework logging for tests
 
