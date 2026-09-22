@@ -53,6 +53,7 @@ struct notification_colors {
         struct color bg;
         struct color fg;
         struct gradient *highlight;
+        struct color timeout_bar;
 };
 
 struct notification {
@@ -89,6 +90,7 @@ struct notification {
         gint64 timestamp;  /**< arrival time (in milliseconds) */
         gint64 timeout;    /**< time to display (in milliseconds) */
         gint64 dbus_timeout; /**< time to display (in milliseconds) (set by dbus) */
+        gint64 bar_start;  /**< fixed start for timeout bar (never updated) */
         int locked;     /**< If non-zero the notification is locked **/
         PangoAlignment progress_bar_alignment; /**< Horizontal alignment of the progress bar **/
 
