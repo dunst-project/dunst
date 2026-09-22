@@ -159,6 +159,36 @@ static void xdg_toplevel_handle_close(void *data,
         surface_handle_closed();
 }
 
+// Tear down the shell surface and everything hanging off it, then schedule a
+// redraw so that it gets rebuilt.
+//
+// Needed when the output our surface lives on goes away. The compositor does
+// not send zwlr_layer_surface_v1.closed in that case, so the frame callback in
+// flight is orphaned: its surface is not shown on any output any more, so
+// wl_callback.done never arrives and frame_handle_done() never runs. That
+// leaves ctx.dirty == true together with a non-NULL ctx.frame_callback, which
+// turns both set_dirty() and schedule_frame_and_commit() into no-ops for good:
+// send_frame() is never called again and notifications stop being drawn until
+// dunst is restarted.
+void wl_teardown_surface(void) {
+        if (ctx.layer_surface)
+                zwlr_layer_surface_v1_destroy(ctx.layer_surface);
+        ctx.layer_surface = NULL;
+
+        if (ctx.xdg_toplevel)
+                xdg_toplevel_destroy(ctx.xdg_toplevel);
+        ctx.xdg_toplevel = NULL;
+
+        if (ctx.xdg_surface)
+                xdg_surface_destroy(ctx.xdg_surface);
+        ctx.xdg_surface = NULL;
+
+        ctx.layer_surface_output = NULL;
+        ctx.surface_output = NULL;
+
+        surface_handle_closed();
+}
+
 static void xdg_wm_base_handle_ping(void *data,
                 struct xdg_wm_base *xdg_wm_base,
                 uint32_t serial) {
