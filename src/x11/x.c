@@ -763,8 +763,6 @@ void x_win_show(window winptr)
 
         XMapRaised(xctx.dpy, win->xwin);
         win->visible = true;
-
-        x_display_surface(win->root_surface, win, &win->dim);
 }
 
 /*
