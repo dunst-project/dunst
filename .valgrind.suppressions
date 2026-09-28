@@ -136,6 +136,22 @@
    ...
 }
 
+# fontconfig also leaks while parsing its configuration during the font map
+# setup that glycin triggers. Same leak as above, but reached through glycin
+# (the image loader backend newer gdk-pixbuf/librsvg builds use) rather than
+# through pango, so fontconfig_pango_leaks does not match it.
+{
+   fontconfig_glycin_leaks
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:*alloc
+   ...
+   obj:*fontconfig*
+   ...
+   obj:*glycin*
+   ...
+}
+
 # The same functions leak even without fontconfig :x
 {
    other_pango_leaks
