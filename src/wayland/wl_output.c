@@ -98,6 +98,14 @@ void create_output(struct wl_registry *registry, uint32_t global_name, uint32_t 
 }
 
 void destroy_output(struct dunst_output *output) {
+        // Is our surface actually on the output that is going away? Checking
+        // the surfaces themselves keeps wl_deinit() out of this: it destroys
+        // them before walking the output list, and we must not resurrect a
+        // surface while shutting down.
+        bool drop_surface = (ctx.surface != NULL || ctx.layer_surface != NULL) &&
+                            (ctx.layer_surface_output == output ||
+                             ctx.surface_output == output);
+
         if (ctx.surface_output == output) {
                 ctx.surface_output = NULL;
         }
@@ -105,6 +113,15 @@ void destroy_output(struct dunst_output *output) {
                 ctx.layer_surface_output = NULL;
         }
         wl_list_remove(&output->link);
+
+        // Drop the surface before the output it was on disappears. Done after
+        // wl_list_remove(), so that the surface is rebuilt on one of the
+        // remaining outputs rather than on the one being destroyed.
+        if (drop_surface) {
+                LOG_D("Output with our surface is gone, dropping the surface");
+                wl_teardown_surface();
+        }
+
         wl_output_destroy(output->wl_output);
         g_free(output->name);
         g_free(output);
