@@ -645,13 +645,13 @@ the notification sent before the user defined timeout.
 
 =item B<override_pause_level> (values: [0-100], default: 0)
 
-A notification will appear whenever notification's I<override_pause_level> is greater than the paused level.
+A notification will appear whenever the notification's I<override_pause_level> is greater than or equal to dunst's current pause level.
 Setting this to values other than 0 allows you to create partial pause modes, where more urgent notifications get through,
 but less urgent stay paused.
 
-For example, when you can set a low battery notification's override_pause_level to 60 and then
-set dunst's pause level to 60. This will cause dunst to only show battery level notification
-(and other notifications with override_pause_level >= 60), while suspending others.
+The default I<override_pause_level> of a notification is determined by its urgency via the C<override_pause_level> set in the respective C<[urgency_*]> configuration section (in the default config: low urgency defaults to 0, normal urgency to 30, and critical urgency to 60). Rules can further override this value for specific notifications.
+
+For example, you can set a low battery notification rule with C<override_pause_level = 60> and set dunst's pause level to 60. This will cause dunst to only show the battery notification (and other notifications with override_pause_level >= 60, such as critical notifications), while suspending others.
 
 =back
 
