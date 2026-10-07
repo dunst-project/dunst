@@ -98,6 +98,12 @@ void create_output(struct wl_registry *registry, uint32_t global_name, uint32_t 
 }
 
 void destroy_output(struct dunst_output *output) {
+        // sway < 1.11 doesn't send zwlr_layer_surface_v1.closed here, which
+        // leaves a pending frame callback that never fires
+        bool drop_surface = (ctx.surface != NULL || ctx.layer_surface != NULL) &&
+                            (ctx.layer_surface_output == output ||
+                             ctx.surface_output == output);
+
         if (ctx.surface_output == output) {
                 ctx.surface_output = NULL;
         }
@@ -105,6 +111,12 @@ void destroy_output(struct dunst_output *output) {
                 ctx.layer_surface_output = NULL;
         }
         wl_list_remove(&output->link);
+
+        if (drop_surface) {
+                LOG_D("Output with our surface is gone, dropping the surface");
+                wl_teardown_surface();
+        }
+
         wl_output_destroy(output->wl_output);
         g_free(output->name);
         g_free(output);
