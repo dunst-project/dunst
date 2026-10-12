@@ -12,11 +12,17 @@
 #include <glib.h>
 #include <stddef.h>
 #include <regex.h>
+#include <stdio.h>
+#include <string.h>
 
+#include "draw.h"
 #include "dunst.h"
 #include "utils.h"
-#include "settings_data.h"
 #include "log.h"
+#include "markup.h"
+#include "notification.h"
+#include "settings.h"
+#include "settings_data.h"
 
 GSList *rules = NULL;
 
@@ -72,6 +78,11 @@ void rule_apply(struct rule *r, struct notification *n, bool save)
                 }
                 gradient_release(n->colors.highlight);
                 n->colors.highlight = gradient_acquire(r->highlight);
+        }
+        if (COLOR_VALID(r->timeout_bar)) {
+                if (save && !COLOR_VALID(n->original->timeout_bar))
+                        n->original->timeout_bar = n->colors.timeout_bar;
+                n->colors.timeout_bar = r->timeout_bar;
         }
         if (COLOR_VALID(r->fc)) {
                 if (save && !COLOR_VALID(n->original->fc)) n->original->fc = n->colors.frame;

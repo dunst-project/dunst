@@ -866,7 +866,7 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, int
                 pango_cairo_show_layout(c, cl->l);
         }
 
-        // progress bar positioning
+        // progress bar positioning (for notification progress, e.g., download progress)
         if (have_progress_bar(cl)) {
                 int progress = MIN(cl->n->progress, 100);
                 unsigned int frame_x = 0;
@@ -907,7 +907,6 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, int
                         settings.progress_bar_corner_radius, scale, settings.progress_bar_corners);
                 cairo_fill(c);
 
-                // top layer (fill)
                 cairo_matrix_t matrix;
                 cairo_matrix_init_scale(&matrix, 1.0 / progress_width_scaled, 1.0);
                 cairo_pattern_set_matrix(COLOR(cl, highlight->pattern), &matrix);
@@ -946,6 +945,109 @@ static struct dimensions layout_render(cairo_surface_t *srf,
 
         cairo_surface_t *content = render_background(srf, cl, cl_next, dim.y, dim.w, bg_height, dim.corner_radius, corners, &bg_width, scale);
         cairo_t *c = cairo_create(content);
+
+        // Draw timeout bar (if enabled) behind the content
+        if (settings.enable_timeout_bar && cl->n && cl->n->timeout > 0 && cl->n->start > 0) {
+                gint64 now = time_monotonic_now();
+                gint64 elapsed = now - cl->n->start;   // TODO: use cl->n->bar_start later
+
+                // calculate progress (0.0 to 1.0)
+                double progress = (double)elapsed / (double)cl->n->timeout;
+                if (progress > 1.0) progress = 1.0;
+                if (progress < 0.0) progress = 0.0;
+
+                // Dimensions of the notification content area (without frame)
+                // int notif_x = dim.x;
+                // int notif_y = dim.y;
+                int notif_width = dim.w;
+                int notif_height = bg_height;
+                double bar_width = notif_width * (1.0 - progress) * scale;
+                // double bar_x = notif_x * scale;
+
+                int bar_height = settings.timeout_bar_height;
+                struct color bar_color = cl->n->colors.timeout_bar;
+                cairo_set_source_rgba(c, bar_color.r, bar_color.g, bar_color.b, bar_color.a);
+
+                switch (settings.timeout_bar_style) {
+                        case TIMEOUT_BAR_TOP:
+                                cairo_rectangle(c, 0, 0, bar_width, bar_height);
+                                break;
+                        case TIMEOUT_BAR_BOTTOM:
+                            cairo_rectangle(c, 0, bg_height - bar_height, bar_width, bar_height);
+                            break;
+                        case TIMEOUT_BAR_TOP_BOTTOM:
+                                cairo_rectangle(c, 0, 0, bar_width, bar_height);
+                                cairo_rectangle(c, 0, bg_height - bar_height, bar_width, bar_height);
+                                break;
+                        case TIMEOUT_BAR_UP_SPAN:
+                            bar_height = notif_height * (1.0 - progress);
+                            cairo_rectangle(c, 0, 0, notif_width, bar_height);
+                            break;
+                        case TIMEOUT_BAR_DOWN_SPAN:
+                            bar_height = notif_height * (1.0 - progress);
+                            cairo_rectangle(c, 0, notif_height - bar_height, notif_width, bar_height);
+                            break;
+                        case TIMEOUT_BAR_LEFT_SPAN:
+                                cairo_rectangle(c, 0, 0, bar_width, bg_height);
+                                break;
+                        case TIMEOUT_BAR_FLOODIN: {
+                                double amplitude = 3.0 * scale;
+                                double frequency = 0.1 / scale;
+                                double phase = progress * 30.0;
+                                // Starts empty (bottom) and rises to the top (0)
+                                double water_level = bg_height * (1.0 - progress) * scale;
+                                cairo_move_to(c, 0, bg_height * scale);
+                                cairo_line_to(c, 0, water_level);
+                                // wavy surface
+                                for (int x = 0; x <= notif_width * scale; x += 2) {
+                                        double wavy_y = water_level + amplitude * sin((x * frequency) + phase);
+                                        cairo_line_to(c, x, wavy_y);
+                                }
+                                cairo_line_to(c, notif_width * scale, bg_height * scale);
+                                cairo_close_path(c);
+                                break;
+                        }
+                        case TIMEOUT_BAR_DRAINOUT: {
+                                double amplitude = 3.0 * scale;
+                                double frequency = 0.1 / scale;
+                                double phase = progress * 30.0;
+                                // Starts full (0) and drops down to the bottom (bg_height)
+                                double water_level = bg_height * progress * scale;
+                                cairo_move_to(c, 0, bg_height * scale);
+                                cairo_line_to(c, 0, water_level);
+                                // wavy surface
+                                for (int x = 0; x <= notif_width * scale; x += 2) {
+                                        double wavy_y = water_level + amplitude * sin((x * frequency) + phase);
+                                        cairo_line_to(c, x, wavy_y);
+                                }
+                                cairo_line_to(c, notif_width * scale, bg_height * scale);
+                                cairo_close_path(c);
+                                break;
+                        }
+                        case TIMEOUT_BAR_GLOW: {
+                                double intensity = progress;
+                                // Color shift
+                                double target_r = 1.0;
+                                double target_g = 0.0;
+                                double target_b = 0.0;
+                                // Linear interpolation b/w base bar color and target color
+                                double current_r = bar_color.r + (target_r - bar_color.r) * intensity;
+                                double current_g = bar_color.g + (target_g - bar_color.g) * intensity;
+                                double current_b = bar_color.b + (target_b - bar_color.b) * intensity;
+                                // Overlapping translucent rectangles to create glow
+                                for (int i = 6; i > 0; i--) {
+                                        // alpha reduced for glow layers, but increased with intensity
+                                        cairo_set_source_rgba(c, current_r, current_g, current_b, bar_color.a * 0.20 * intensity);
+                                        cairo_rectangle(c, 0, 0, bar_width, bar_height + (i * 5 * scale));
+                                        cairo_fill(c);
+                                }
+                                cairo_set_source_rgba(c, current_r, current_g, current_b, bar_color.a);
+                                cairo_rectangle(c, 0, 0, bar_width, bar_height);
+                                break;
+                        }
+                }
+                cairo_fill(c);
+        }
 
         render_content(c, cl, bg_width, bg_height, scale);
 
