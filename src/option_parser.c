@@ -259,7 +259,7 @@ int string_parse_gradient(const char *s, struct gradient **ret)
 
         gchar **strs = g_strsplit(s, ",", -1);
         for (int i = 0; strs[i] != NULL; i++) {
-                if (i > 16) {
+                if (i >= 16) {
                         LOG_W("Do you really need so many colors? ;)");
                         break;
                 }

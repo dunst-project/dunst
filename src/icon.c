@@ -367,9 +367,42 @@ GdkPixbuf *icon_get_for_data(GVariant *data, char **id, double dpi_scale, int mi
                       &n_channels,
                       &data_variant);
 
-        // note: (A+7)/8 rounds up A to the next byte boundary
-        pixelstride = (n_channels * bits_per_sample + 7)/8;
-        len_expected = (height - 1) * rowstride + width * pixelstride;
+        if (width <= 0 || height <= 0 || rowstride <= 0) {
+                LOG_W("Invalid image dimensions or rowstride");
+                g_variant_unref(data_variant);
+                return NULL;
+        }
+
+        if (bits_per_sample != 8 ||
+            (n_channels != 3 && n_channels != 4)) {
+                LOG_W("Invalid image format");
+                g_variant_unref(data_variant);
+                return NULL;
+        }
+
+        if (has_alpha != (n_channels == 4)) {
+                LOG_W("Inconsistent alpha channel information");
+                g_variant_unref(data_variant);
+                return NULL;
+        }
+
+        pixelstride = n_channels; /* bits_per_sample == 8 */
+
+        gsize row_bytes = (gsize) width * pixelstride;
+        if ((gsize) rowstride < row_bytes) {
+                LOG_W("Rowstride is smaller than the image row size");
+                g_variant_unref(data_variant);
+                return NULL;
+        }
+
+        gsize preceding_rows = (gsize) height - 1;
+        if (preceding_rows > (G_MAXSIZE - row_bytes) / (gsize) rowstride) {
+                LOG_W("Image data length overflows");
+                g_variant_unref(data_variant);
+                return NULL;
+        }
+
+        len_expected = preceding_rows * (gsize) rowstride + row_bytes;
         len_actual = g_variant_get_size(data_variant);
 
         if (len_actual != len_expected) {
