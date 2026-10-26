@@ -26,6 +26,7 @@
 #include "markup.h"
 #include "menu.h"
 #include "queues.h"
+#include "settings.h"
 #include "utils.h"
 #include "draw.h"
 #include "icon-lookup.h"
@@ -477,6 +478,7 @@ struct notification *notification_create(void)
         n->colors.bg = invalid;
         n->colors.frame = invalid;
         n->colors.highlight = NULL;
+        n->colors.timeout_bar = invalid;
 
         n->script_run = false;
         n->dbus_valid = false;
@@ -489,6 +491,7 @@ struct notification *notification_create(void)
         n->default_action_name = g_strdup("default");
 
         n->script_count = 0;
+
         return n;
 }
 
@@ -533,6 +536,8 @@ void notification_init(struct notification *n)
                 gradient_release(n->colors.highlight);
                 n->colors.highlight = gradient_acquire(defcolors.highlight);
         }
+
+        if (!COLOR_VALID(n->colors.timeout_bar)) n->colors.timeout_bar = defcolors.timeout_bar;
 
         /* Sanitize misc hints */
         if (n->progress < 0)

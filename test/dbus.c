@@ -1598,7 +1598,7 @@ TEST test_timeout(void)
 
         rule = rule_new("test_timeout");
         rule->appname = "dunstteststack";
-        rule->timeout = 100001;
+        rule->timeout = 100000;
 
         gint64 expected_timeout = rule->timeout;
 

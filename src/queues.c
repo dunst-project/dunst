@@ -259,9 +259,14 @@ static bool queues_stack_duplicate(struct notification *new)
                                 new->dup_count = old->dup_count;
                                 signal_notification_closed(old, 1);
 
+                                /* Preserve timeout_bar state */
+                                new->start = old->start;
+                                new->timeout = old->timeout;
+                                new->colors.timeout_bar = old->colors.timeout_bar;
+
                                 /* Run script if the duplicate notification is already displayed */
                                 if (allqueues[i] == displayed) {
-                                        new->start = time_monotonic_now();
+                                        // new->start = time_monotonic_now();
                                         notification_run_script(new);
                                 }
 
@@ -291,6 +296,11 @@ static bool queues_stack_by_tag(struct notification *new)
                                 iter->data = new;
                                 new->dup_count = old->dup_count;
 
+                                /* Preserve timeout bar state */
+                                new->start = old->start;
+                                new->timeout = old->timeout;
+                                new->colors.timeout_bar = old->colors.timeout_bar;
+
                                 bool replace = false;
 
                                 // Transfer old icon when new:
@@ -313,7 +323,7 @@ static bool queues_stack_by_tag(struct notification *new)
 
                                 /* Run script if the stacked notification is already displayed */
                                 if (allqueues[i] == displayed) {
-                                        new->start = time_monotonic_now();
+                                        // new->start = time_monotonic_now();
                                         notification_run_script(new);
                                 }
 
@@ -332,16 +342,19 @@ bool queues_notification_replace_id(struct notification *new)
 {
         GQueue *allqueues[] = { displayed, waiting };
         for (size_t i = 0; i < sizeof(allqueues)/sizeof(GQueue*); i++) {
-                for (GList *iter = g_queue_peek_head_link(allqueues[i]);
-                            iter;
-                            iter = iter->next) {
+                for (GList *iter = g_queue_peek_head_link(allqueues[i]); iter; iter = iter->next) {
                         struct notification *old = iter->data;
                         if (old->id == new->id) {
                                 iter->data = new;
                                 new->dup_count = old->dup_count;
 
+                                /* Preserve timeout_bar state */
+                                new->start = old->start;
+                                new->timeout = old->timeout;
+                                new->colors.timeout_bar = old->colors.timeout_bar;
+
                                 if (allqueues[i] == displayed) {
-                                        new->start = time_monotonic_now();
+                                        // new->start = time_monotonic_now();
                                         notification_run_script(new);
                                 }
 
@@ -629,39 +642,53 @@ void queues_update(struct dunst_status status, gint64 time)
 gint64 queues_get_next_datachange(gint64 time)
 {
         gint64 wakeup_time = G_MAXINT64;
+        bool has_timeout_notification = false;
         gint64 next_second = time + S2US(1) - (time % S2US(1));
 
-        for (GList *iter = g_queue_peek_head_link(displayed); iter;
-                        iter = iter->next) {
+        // Check for immediate timeouts and see if any non‑sticky notification exists
+        for (GList *iter = g_queue_peek_head_link(displayed); iter; iter = iter->next) {
                 struct notification *n = iter->data;
                 gint64 timeout_ts = n->start + n->timeout;
 
                 if (n->timeout > 0 && n->locked == 0) {
-                        if (timeout_ts > time)
-                                wakeup_time = MIN(wakeup_time, timeout_ts);
-                        else
-                                // while we're processing or while locked, the notification already timed out
+                        has_timeout_notification = true;
+                        if (timeout_ts <= time) {
+                                // Notification already timed out so immediate wakeup
                                 return time;
+                        }
+                }
+        }
+
+        // If there are notifications on screen, wake up in 33ms (30 FPS) to animate the timeout_bar
+        if (has_timeout_notification) return time + 33333;
+
+        // No animation needed; compute future wakeup for age threshold or future timeouts
+        for (GList *iter = g_queue_peek_head_link(displayed); iter; iter = iter->next) {
+                struct notification *n = iter->data;
+                gint64 timeout_ts = n->start + n->timeout;
+
+                if (n->timeout > 0 && n->locked == 0 && timeout_ts > time) {
+                        wakeup_time = MIN(wakeup_time, timeout_ts);
                 }
 
                 if (settings.show_age_threshold >= 0) {
                         gint64 age = time - n->timestamp;
-
                         if (age > settings.show_age_threshold - S2US(1)) {
-                                /* Notification age should be updated -- sleep
+                                // Update age at the next second boundary
+                                 /* Notification age should be updated -- sleep
                                  * until the next turn of second.
                                  * This ensures that all notifications' ages
                                  * will change at once, and that at most one
                                  * update will occur each second for this
                                  * purpose. */
                                 wakeup_time = MIN(wakeup_time, next_second);
-                        }
-                        else
+                        } else {
                                 wakeup_time = MIN(wakeup_time, n->timestamp + settings.show_age_threshold);
+                        }
                 }
         }
 
-        return wakeup_time != G_MAXINT64 ? wakeup_time : -1;
+        return (wakeup_time != G_MAXINT64) ? wakeup_time : -1;
 }
 
 

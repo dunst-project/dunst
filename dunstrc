@@ -335,6 +335,33 @@
     mouse_middle_click = do_action, close_current
     mouse_right_click = close_all
 
+    ### Timeout_bar
+
+    # Show a visual indicator displaying the remaining time for the notification.
+    # When enabled, a bar will be drawn that shrinks as the notification's
+    # timeout approaches.
+    enable_timeout_bar = true
+
+# Define the position, appearance, and animation of the timeout bar.
+    # Accepted values:
+    # Geometric styles:
+    # * top: Draws a bar at the top of the notification.
+    # * bottom: Draws a bar at the bottom of the notification.
+    # * top_bottom: Draws a bar at both the top and bottom.
+    # * left_span: Draws a vertical bar on the left side of the notification.
+    # * up_span: Draws a bar that scales upwards.
+    # * down_span: Draws a bar that scales downwards.
+    # Dynamic/Animated styles:
+    # * floodin: An animated wave that fills the notification from the bottom up.
+    # * drainout: An animated wave that drains the notification from top to bottom.
+    # * glow: A solid bar that gains an intense, color-shifting glow as the timeout nears completion.
+    timeout_bar_style = top
+
+    # The thickness (height or width, depending on the style) of the
+    # timeout bar in pixels.
+    timeout_bar_height = 4
+
+
 # Experimental features that may or may not work correctly. Do not expect them
 # to have a consistent behaviour across releases.
 [experimental]
@@ -363,23 +390,27 @@
     timeout = 10
     # Icon for notifications with low urgency
     default_icon = dialog-information
+    timeout_bar_color =  "#ff9e64"
 
 [urgency_normal]
     background = "#285577"
     foreground = "#ffffff"
-    timeout = 10
+    timeout = 15
     override_pause_level = 30
     # Icon for notifications with normal urgency
     default_icon = dialog-information
+    timeout_bar_color = "#ffffff" # "#ff9e64"
 
 [urgency_critical]
     background = "#900000"
     foreground = "#ffffff"
     frame_color = "#ff0000"
-    timeout = 0
+    timeout = 30
     override_pause_level = 60
     # Icon for notifications with critical urgency
     default_icon = dialog-warning
+    # timeout_bar_color =  "#bf616a"
+    timeout_bar_color = "#ff000080"
 
 # Every section that isn't one of the above is interpreted as a rules to
 # override settings for certain messages.
