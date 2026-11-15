@@ -50,6 +50,16 @@ struct wl_ctx {
 #endif
         uint32_t toplevel_manager_name;
         struct zwlr_foreign_toplevel_manager_v1 *toplevel_manager;
+        struct xdg_activation_v1 *xdg_activation;
+
+        // The input event that is currently being handled. Only set while a
+        // click is processed, so that actions triggered by it can request an
+        // activation token from the compositor.
+        struct {
+                struct wl_seat *seat;
+                uint32_t serial;
+        } input_event;
+
         bool configured;
         bool dirty;
 

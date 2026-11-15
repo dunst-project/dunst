@@ -29,6 +29,8 @@
 #include "protocols/wlr-layer-shell-unstable-v1.h"
 #include "protocols/wlr-foreign-toplevel-management-unstable-v1-client-header.h"
 #include "protocols/wlr-foreign-toplevel-management-unstable-v1.h"
+#include "protocols/xdg-activation-v1-client-header.h"
+#include "protocols/xdg-activation-v1.h"
 
 #include "wl.h"
 #include "pool-buffer.h"
@@ -278,6 +280,10 @@ static void handle_global(void *data, struct wl_registry *registry,
                 ctx.cursor_shape_manager = wl_registry_bind(registry, name,
                                 &wp_cursor_shape_manager_v1_interface, 1);
 #endif
+        } else if (strcmp(interface, xdg_activation_v1_interface.name) == 0) {
+                ctx.xdg_activation = wl_registry_bind(registry, name,
+                                &xdg_activation_v1_interface, 1);
+                LOG_D("Found xdg-activation-v1");
         } else if (strcmp(interface, zwlr_foreign_toplevel_manager_v1_interface.name) == 0 &&
                         version >= ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_STATE_FULLSCREEN_SINCE_VERSION) {
                 LOG_D("Found toplevel manager %i", name);
@@ -472,6 +478,9 @@ void wl_deinit(void) {
 
         if (ctx.idle_handler)
                 g_clear_pointer(&ctx.idle_handler, org_kde_kwin_idle_destroy);
+
+        if (ctx.xdg_activation)
+                g_clear_pointer(&ctx.xdg_activation, xdg_activation_v1_destroy);
 
         if (ctx.layer_shell)
                 g_clear_pointer(&ctx.layer_shell, zwlr_layer_shell_v1_destroy);
@@ -863,4 +872,70 @@ double wl_get_scale(void) {
         if (scale <= 0)
                 scale = 1;
         return scale;
+}
+
+static void activation_token_handle_done(void *data,
+                struct xdg_activation_token_v1 *activation_token,
+                const char *token) {
+        char **result = data;
+
+        g_free(*result);
+        *result = g_strdup(token);
+}
+
+static const struct xdg_activation_token_v1_listener activation_token_listener = {
+        .done = activation_token_handle_done,
+};
+
+char *wl_get_activation_token(const char *app_id) {
+        if (ctx.xdg_activation == NULL || ctx.input_event.seat == NULL ||
+                        ctx.surface == NULL) {
+                return NULL;
+        }
+
+        // Use a private queue so that waiting for the token doesn't dispatch
+        // any other events (and re-enter the input handling we're called from)
+        struct wl_event_queue *queue = wl_display_create_queue(ctx.display);
+        if (queue == NULL) {
+                LOG_W("Unable to request an activation token: allocation failed");
+                return NULL;
+        }
+
+        struct xdg_activation_v1 *activation = wl_proxy_create_wrapper(ctx.xdg_activation);
+        if (activation == NULL) {
+                LOG_W("Unable to request an activation token: allocation failed");
+                wl_event_queue_destroy(queue);
+                return NULL;
+        }
+        wl_proxy_set_queue((struct wl_proxy *) activation, queue);
+
+        struct xdg_activation_token_v1 *activation_token =
+                xdg_activation_v1_get_activation_token(activation);
+        wl_proxy_wrapper_destroy(activation);
+
+        char *token = NULL;
+        xdg_activation_token_v1_add_listener(activation_token,
+                        &activation_token_listener, &token);
+        xdg_activation_token_v1_set_serial(activation_token,
+                        ctx.input_event.serial, ctx.input_event.seat);
+        xdg_activation_token_v1_set_surface(activation_token, ctx.surface);
+        if (app_id != NULL && *app_id != '\0') {
+                xdg_activation_token_v1_set_app_id(activation_token, app_id);
+        }
+        xdg_activation_token_v1_commit(activation_token);
+
+        // Compositors reply to the commit right away, so the token arrives
+        // before the roundtrip completes
+        if (wl_display_roundtrip_queue(ctx.display, queue) < 0) {
+                LOG_W("Unable to request an activation token: roundtrip failed");
+        } else if (token == NULL) {
+                LOG_W("Unable to request an activation token: no reply from the compositor");
+        } else {
+                LOG_D("Received activation token");
+        }
+
+        xdg_activation_token_v1_destroy(activation_token);
+        wl_event_queue_destroy(queue);
+
+        return token;
 }

@@ -42,6 +42,8 @@ const struct output output_x11 = {
         have_fullscreen_window,
 
         x_get_scale,
+
+        NULL,
 };
 #endif
 
@@ -65,6 +67,8 @@ const struct output output_wl = {
         wl_have_fullscreen_window,
 
         wl_get_scale,
+
+        wl_get_activation_token,
 };
 #endif
 

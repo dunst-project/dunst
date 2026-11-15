@@ -184,6 +184,11 @@ ifneq (,$(wildcard ${DATA_DIR_WAYLAND_PROTOCOLS}/staging/cursor-shape/cursor-sha
 	wayland-scanner client-header ${DATA_DIR_WAYLAND_PROTOCOLS}/unstable/tablet/tablet-unstable-v2.xml src/wayland/protocols/tablet-unstable-v2-client-header.h
 	wayland-scanner private-code ${DATA_DIR_WAYLAND_PROTOCOLS}/unstable/tablet/tablet-unstable-v2.xml src/wayland/protocols/tablet-unstable-v2.h
 endif
+	# wayland-protocols >= 1.21
+ifneq (,$(wildcard ${DATA_DIR_WAYLAND_PROTOCOLS}/staging/xdg-activation/xdg-activation-v1.xml))
+	wayland-scanner client-header ${DATA_DIR_WAYLAND_PROTOCOLS}/staging/xdg-activation/xdg-activation-v1.xml src/wayland/protocols/xdg-activation-v1-client-header.h
+	wayland-scanner private-code ${DATA_DIR_WAYLAND_PROTOCOLS}/staging/xdg-activation/xdg-activation-v1.xml src/wayland/protocols/xdg-activation-v1.h
+endif
 endif
 
 .PHONY: clean clean-dunst clean-dunstify clean-doc clean-tests clean-coverage clean-coverage-run clean-wayland-protocols

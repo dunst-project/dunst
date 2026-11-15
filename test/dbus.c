@@ -1341,6 +1341,106 @@ TEST test_signal_actioninvoked(void)
         PASS();
 }
 
+struct signal_activationtoken {
+        guint id;
+        gchar *token;
+        bool before_action;
+        const struct signal_actioninvoked *actioninvoked;
+        guint subscription_id;
+        GDBusConnection *conn;
+};
+
+void dbus_signal_cb_activationtoken(GDBusConnection *connection,
+                                    const gchar *sender_name,
+                                    const gchar *object_path,
+                                    const gchar *interface_name,
+                                    const gchar *signal_name,
+                                    GVariant *parameters,
+                                    gpointer user_data)
+{
+        g_return_if_fail(user_data);
+
+        guint32 id;
+        gchar *token;
+
+        struct signal_activationtoken *sig = (struct signal_activationtoken*) user_data;
+
+        g_variant_get(parameters, "(us)", &id, &token);
+
+        if (id == sig->id) {
+                sig->before_action = !sig->actioninvoked->key;
+                sig->token = token;
+        } else {
+                g_free(token);
+        }
+}
+
+static char *test_get_activation_token(const char *app_id)
+{
+        return g_strdup("test-token");
+}
+
+TEST test_signal_activationtoken(void)
+{
+        const struct notification *n;
+        struct dbus_notification *n_dbus;
+        struct signal_actioninvoked sig = {0, NULL, -1};
+        struct signal_activationtoken sig_token = {0, NULL, false, &sig, -1};
+
+        const struct output *output_orig = output;
+        const struct output output_token = {
+                .get_activation_token = test_get_activation_token,
+        };
+
+        sig_token.conn = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, NULL);
+        sig_token.subscription_id =
+                g_dbus_connection_signal_subscribe(
+                        sig_token.conn,
+                        FDN_NAME,
+                        FDN_IFAC,
+                        "ActivationToken",
+                        FDN_PATH,
+                        NULL,
+                        G_DBUS_SIGNAL_FLAGS_NONE,
+                        dbus_signal_cb_activationtoken,
+                        &sig_token,
+                        NULL);
+        dbus_signal_subscribe_actioninvoked(&sig);
+
+        n_dbus = dbus_notification_new();
+        n_dbus->app_name = "dunstteststack";
+        n_dbus->app_icon = "NONE2";
+        n_dbus->summary = "Headline for New";
+        n_dbus->body = "Text";
+        g_hash_table_insert(n_dbus->actions, g_strdup("actionkey"), g_strdup("Print this text"));
+
+        dbus_notification_fire(n_dbus, &sig.id);
+        sig_token.id = sig.id;
+        n = queues_debug_find_notification_by_id(sig.id);
+
+        output = &output_token;
+        signal_action_invoked(n, "actionkey");
+        output = output_orig;
+
+        uint waiting = 0;
+        while (!sig.key && waiting < 2000) {
+                usleep(500);
+                waiting++;
+        }
+
+        ASSERT_STR_EQ("actionkey", sig.key);
+        ASSERT_STR_EQ("test-token", sig_token.token);
+        ASSERTm("ActivationToken has to be sent before ActionInvoked", sig_token.before_action);
+
+        g_free(sig.key);
+        g_free(sig_token.token);
+        dbus_notification_free(n_dbus);
+        dbus_signal_unsubscribe_actioninvoked(&sig);
+        g_dbus_connection_signal_unsubscribe(sig_token.conn, sig_token.subscription_id);
+        g_object_unref(sig_token.conn);
+        PASS();
+}
+
 TEST test_signal_length_propertieschanged(void)
 {
         struct dbus_notification *n_dbus;
@@ -1727,6 +1827,7 @@ gpointer run_threaded_tests(gpointer data)
         RUN_TESTp(test_server_caps, MARKUP_NO);
         RUN_TEST(test_close_and_signal);
         RUN_TEST(test_signal_actioninvoked);
+        RUN_TEST(test_signal_activationtoken);
         RUN_TEST(test_signal_length_propertieschanged);
         RUN_TEST(test_signal_paused_propertieschanged_pause);
         RUN_TEST(test_signal_paused_propertieschanged_unpause);

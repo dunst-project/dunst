@@ -26,6 +26,22 @@
 #include "wl_seat.h"
 #include "wl_ctx.h"
 
+// Remember the seat and serial of the input event while it's handled, so an
+// action invoked by it can request an xdg-activation token. Compositors (e.g.
+// KWin) only grant a token for a serial that is at least as recent as the
+// last user interaction, so this has to be the serial of the button release
+// dunst acts on, not the earlier press.
+static void handle_click(struct dunst_seat *seat, uint32_t serial,
+                unsigned int button, bool button_down, int x, int y) {
+        ctx.input_event.seat = seat->wl_seat;
+        ctx.input_event.serial = serial;
+
+        input_handle_click(button, button_down, x, y);
+
+        ctx.input_event.seat = NULL;
+        ctx.input_event.serial = 0;
+}
+
 static void touch_handle_motion(void *data, struct wl_touch *wl_touch,
                 uint32_t time, int32_t id,
                 wl_fixed_t surface_x, wl_fixed_t surface_y) {
@@ -57,9 +73,8 @@ static void touch_handle_up(void *data, struct wl_touch *wl_touch,
         if (id >= MAX_TOUCHPOINTS) {
                 return;
         }
-        input_handle_click(BTN_TOUCH, false,
+        handle_click(seat, serial, BTN_TOUCH, false,
                         seat->touch.pts[id].x, seat->touch.pts[id].y);
-
 }
 
 static void touch_handle_frame(void *data, struct wl_touch *wl_touch) {
@@ -112,7 +127,7 @@ static void pointer_handle_button(void *data, struct wl_pointer *wl_pointer,
                 uint32_t button_state) {
         struct dunst_seat *seat = data;
 
-        input_handle_click(button, button_state, seat->pointer.x, seat->pointer.y);
+        handle_click(seat, serial, button, button_state, seat->pointer.x, seat->pointer.y);
 }
 
 static void pointer_handle_leave(void *data, struct wl_pointer *wl_pointer,
