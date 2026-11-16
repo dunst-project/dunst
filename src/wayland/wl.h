@@ -38,4 +38,9 @@ bool wl_have_fullscreen_window(void);
 // values. All sizes should be in unscaled units.
 double wl_get_scale(void);
 
+// Request an xdg-activation token for the input event that is currently being
+// handled. Returns a newly allocated string or NULL if there's no such event
+// or the compositor didn't provide a token.
+char *wl_get_activation_token(const char *app_id);
+
 #endif

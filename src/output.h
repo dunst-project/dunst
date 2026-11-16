@@ -58,6 +58,20 @@ struct output {
         bool (*have_fullscreen_window)(void);
 
         double (*get_scale)(void);
+
+        /**
+         * Request a token that lets another application activate its window
+         * in response to the input event that is currently being handled.
+         *
+         * This member is `NULL` if the output doesn't support activation
+         * tokens.
+         *
+         * @param app_id The application that will be activated (nullable)
+         *
+         * @return a newly allocated token string
+         * @retval NULL: if no token could be obtained
+         */
+        char *(*get_activation_token)(const char *app_id);
 };
 
 #ifdef ENABLE_X11

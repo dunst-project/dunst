@@ -77,6 +77,11 @@ static const char *introspection_xml =
     "            <arg name=\"id\"         type=\"u\"/>"
     "            <arg name=\"action_key\" type=\"s\"/>"
     "        </signal>"
+
+    "        <signal name=\"ActivationToken\">"
+    "            <arg name=\"id\"               type=\"u\"/>"
+    "            <arg name=\"activation_token\" type=\"s\"/>"
+    "        </signal>"
     "    </interface>"
     "    <interface name=\""DUNST_IFAC"\">"
 
@@ -1162,6 +1167,44 @@ void signal_notification_closed(struct notification *n, enum reason reason)
         }
 }
 
+/**
+ * Emit the `ActivationToken` signal, so the application can bring its window
+ * to the front when it handles the following `ActionInvoked` signal. The spec
+ * requires it to be sent before `ActionInvoked`.
+ *
+ * Nothing is sent if the output can't provide a token, e.g. when the action
+ * wasn't triggered by clicking on the notification.
+ *
+ * @param n The notification an action is being invoked on
+ */
+static void signal_activation_token(const struct notification *n)
+{
+        if (!output || !output->get_activation_token)
+                return;
+
+        char *token = output->get_activation_token(n->desktop_entry);
+        if (!token)
+                return;
+
+        GVariant *body = g_variant_new("(us)", n->id, token);
+        GError *err = NULL;
+
+        g_dbus_connection_emit_signal(dbus_conn,
+                                      n->dbus_client,
+                                      FDN_PATH,
+                                      FDN_IFAC,
+                                      "ActivationToken",
+                                      body,
+                                      &err);
+
+        if (err) {
+                LOG_W("Unable to send activation token: %s", err->message);
+                g_error_free(err);
+        }
+
+        g_free(token);
+}
+
 void signal_action_invoked(const struct notification *n, const char *identifier)
 {
         if (!n->dbus_valid) {
@@ -1169,6 +1212,8 @@ void signal_action_invoked(const struct notification *n, const char *identifier)
                       "Notification already closed.", identifier);
                 return;
         }
+
+        signal_activation_token(n);
 
         GVariant *body = g_variant_new("(us)", n->id, identifier);
         GError *err = NULL;
